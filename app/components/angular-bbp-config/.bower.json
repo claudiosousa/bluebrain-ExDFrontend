@@ -1,0 +1,44 @@
+{
+  "name": "angular-bbp-config",
+  "version": "0.2.0",
+  "authors": [
+    "BBP/EPFL"
+  ],
+  "description": "An angular module that load bbpConfig keys from a bbpConfig global.",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://bbpcode.epfl.ch/platform/JSLibAngularConfig"
+  },
+  "main": [
+    "angular-bbp-config.js"
+  ],
+  "moduleType": [
+    "angular"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "package.json",
+    "Gruntfile",
+    "karam.conf.js"
+  ],
+  "dependencies": {
+    "angular": "~1.2.16"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.2.16",
+    "angular-scenario": "~1.2.16"
+  },
+  "_release": "0.2.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.2.0",
+    "commit": "87b0544f66d0202e04c084c4128e768d5304e462"
+  },
+  "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularConfig",
+  "_target": "~0.2.0",
+  "_originalSource": "angular-bbp-config"
+}

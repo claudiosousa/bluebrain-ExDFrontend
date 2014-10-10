@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <title>HBP Styleguide</title>
+  <meta name="description" content="">
+  <meta name="generator" content="kss-node" />
+
+  <meta name="viewport" content="width=device-width">
+
+  <link href="http://fonts.googleapis.com/css?family=Droid+Serif" rel="stylesheet" type="text/css">
+
+  <link rel="stylesheet" href="public/kss.css">
+  <link rel="stylesheet" href="public/style.css">
+
+</head>
+<body>
+
+<nav class="navbar navbar-fixed-top navbar-hbp" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <span class="hbp-site-current visible-xs-inline"><a href="./index.html">Styleguide</a></span>
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" style="height: 0px;">
+            <ul class="hbp-site-selector nav navbar-nav hidden-xs">
+                <li class="dropdown">
+                    <div>
+                        <span class="hbp-site-current"><a href="./index.html">Styleguide</a></span>
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a href="https://humanbrainproject.eu/">Public</a></li>
+                        <li><a href>Platform</a></li>
+                        <li class="active"><a href>Styleguide</a></li>
+                        <li><a href="https://collaboration.humanbrainproject.eu/">Collaboration</a></li>
+                        <li><a href="https://education.humanbrainproject.eu/">Education</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="hbp-secondary-navbar nav navbar-nav">
+                
+                <li><a href="section-1.html">SASS Variables</a></li>
+                
+                <li><a href="section-2.html">Standard Components</a></li>
+                
+                <li><a href="section-3.html">Typography</a></li>
+                
+                <li><a href="section-4.html">Forms</a></li>
+                
+            </ul>
+            <ul class="hbp-secondary-navbar nav navbar-nav visible-xs-block">
+                
+                <li><a href="section-1.html">SASS Variables</a></li>
+                
+                <li><a href="section-2.html">Standard Components</a></li>
+                
+                <li><a href="section-3.html">Typography</a></li>
+                
+                <li><a href="section-4.html">Forms</a></li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div role="main" ng-app="hbpCommon">
+  <article class="container">
+    
+
+      
+      
+        
+          <h1 class="kss-title"><span class="kss-ref">1.0</span> - SASS Variables</h1>
+        
+          
+              
+                <p>The variable described here are defined in _variable.scss.
+All variable are global and should be created in this file.
+Please try to factor out existing code to not duplicate
+variable content.
+
+</p>
+<p>To avoid any conflict with third parties SASS variable our
+variables should be prefixed with <code>bbp-</code>.
+Before creating a new variable please check that there are not a
+corresponding Bootstrap variable covering the same useage that
+exists, most on them will be reproduce in this document but you
+can look at the
+<a href="http://getbootstrap.com/customize">official documentation</a>
+if some are missing.</p>
+
+              
+          
+         
+      
+        
+         <section class="kss-depth-2">
+          <h1 class="kss-title"><span class="kss-ref">1.1</span> - Colors</h1>
+        
+          
+              
+                <p>This is the list of existing color variable as well
+as what they should be used for. If you add a new variable
+you should add an entry in this form. Variable containing
+color information should be prefixed with &apos;&apos;&apos;bbp-color-&apos;&apos;&apos;.</p>
+
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-3">
+          <h1 class="kss-title"><span class="kss-ref">1.1.1</span> - Naming</h1>
+        
+          
+              
+                <p>When namming the colors try to use semantic name rather than colors,
+for example &apos;&apos;&apos;warning&apos;&apos;&apos; instead of &apos;&apos;&apos;yellow&apos;&apos;&apos;
+because a restyling might change the color completly.
+
+</p>
+<p>You can however use relative color informations like &apos;&apos;&apos;light&apos;&apos;&apos; or
+&apos;&apos;&apos;darker&apos;&apos;&apos; to indicate various version of the same style. If the color
+targets a specific usage you can use the postfix &apos;&apos;&apos;-bg&apos;&apos;&apos; for background,
+&apos;&apos;&apos;-border&apos;&apos;&apos; for border or &apos;&apos;&apos;-text&apos;&apos;&apos; for text.</p>
+
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-2">
+          <h1 class="kss-title"><span class="kss-ref">1.2</span> - Variables</h1>
+        
+          
+              
+                <table class="table table-striped">
+    <thead>
+        <th>Variable Name</th>
+        <th>Usage</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>$hbp-common-asset-path</code></td>
+            <td>Set this path to point to the angular-hbp-common/dist/assets folder.</td>
+        </tr>
+        <tr>
+            <td><code>$hbp-brand-height</code></td>
+            <td>Set the line-height of the brand and derive the diamond space from this.</td>
+        </tr>
+        <tr>
+            <td><code>$hbp-common-navbar-height</code></td>
+            <td>Defines the height of the navbar.</td>
+        </tr>
+    </tbody>
+ </table>
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-3">
+          <h1 class="kss-title"><span class="kss-ref">1.2.2</span> - Color List</h1>
+        
+          
+              
+                <table class="table table-striped">
+    <thead>
+        <th>Variable Name</th>
+        <th>Color</th>
+        <th>Usage</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>$hbp-header-bg</td>
+            <td><span class="colorbox" style="background: #CCC"></span> #CCC</td>
+            <td>It&apos;s the background color for the portal&apos;s header.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-toolbar-bg</td>
+            <td><span class="colorbox" style="background: #DDD"></span> #DDD</td>
+            <td>Background color for the toolbars.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-toolbar-border</td>
+            <td><span class="colorbox" style="background: #AAA"></span> #AAA</td>
+            <td>Border color for the toolbars</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-border</td>
+            <td><span class="colorbox" style="background: #CCC"></span> #CCC</td>
+            <td>Generic border color for element that are not toolbars, typically with a background set to $body-bg</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-border-dark:</td>
+            <td><span class="colorbox" style="background: #888"></span> #888</td>
+            <td>Generic darker border when more contrast is needed.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-grey-text</td>
+            <td><span class="colorbox" style="background: #888"></span> #888</td>
+            <td>Some lighter text, for example when corresponding content is disabled.</td>
+        </tr>
+        <tr>
+            <td>$hpb-color-transparent-white:</td>
+            <td><span class="colorbox" style="background: rgba(255, 255, 255, 0.7)"></span> rgba(255, 255, 255, 0.7)</td>
+            <td>A slightly transparent white.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-highlight:</td>
+            <td><span class="colorbox" style="background: #FFE"></span> #FFE</td>
+            <td>An highlight color, typically for background that are set to $body-bg when not highlighted.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-highlight-light</td>
+            <td><span class="colorbox" style="background: #F5F5F5"></span> #F5F5F5</td>
+            <td>A more subtle highlight color when even less contrast is needed.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-highlight-glow</td>
+            <td><span class="colorbox" style="background: rgba(102, 175, 233, 0.6)"></span> rgba(102, 175, 233, 0.6)</td>
+            <td>A glow color for highlight.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-shadow-dark:</td>
+            <td><span class="colorbox" style="background: rgba(0,0,0,0.6)"></span> rgba(0,0,0,0.6)</td>
+            <td>A very contrasted shadow.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-shadow</td>
+            <td><span class="colorbox" style="background: rgba(0,0,0,0.2)"></span> rgba(0,0,0,0.2)</td>
+            <td>Generic shadow.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-shadow-light</td>
+            <td><span class="colorbox" style="background: rgba(0,0,0,0.1)"></span> rgba(0,0,0,0.1)</td>
+            <td>A light shadow.</td>
+        </tr>
+        <tr>
+            <td>$hbp-color-shadow-lighter</td>
+            <td><span class="colorbox" style="background: rgba(0, 0, 0, 0.075)"></span> rgba(0, 0, 0, 0.075)</td>
+            <td>A very sublte shadow.</td>
+        </tr>
+    </tbody>
+</table>
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-2">
+          <h1 class="kss-title"><span class="kss-ref">1.3</span> - Important Bootstrap Variables</h1>
+        
+          
+              
+                <p>Those variables from Bootstrap should be used every possible time.</p>
+
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-3">
+          <h1 class="kss-title"><span class="kss-ref">1.3.1</span> - Components</h1>
+        
+          
+              
+                <p>Define common padding and border radius sizes and more.
+Values based on 14px text and 1.428 line-height (~20px to start).
+
+</p>
+<pre><code>$padding-base-vertical:     6px;
+$padding-base-horizontal:   12px;
+
+$padding-large-vertical:    10px;
+$padding-large-horizontal:  16px;
+
+$padding-small-vertical:    5px;
+$padding-small-horizontal:  10px;
+
+$padding-xs-vertical:       1px;
+$padding-xs-horizontal:     5px;
+
+$line-height-large:         1.33;
+$line-height-small:         1.5;
+
+$border-radius-base:        4px;
+$border-radius-large:       6px;
+$border-radius-small:       3px;</code></pre>
+
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-3">
+          <h1 class="kss-title"><span class="kss-ref">1.3.2</span> - Grid</h1>
+        
+          
+              
+                <p>Padding between columns. Gets divided in half for the left and right.
+</p>
+<pre><code>$grid-gutter-width:         30px;</code></pre>
+
+              
+          
+        
+          </section>
+        
+      
+        
+         <section class="kss-depth-3">
+          <h1 class="kss-title"><span class="kss-ref">1.3.3</span> - Bootstrap Color Variables</h1>
+        
+          
+              
+                <p>Since we use sass bootstrap we inherit from thier variables. Amongst them are a few that define color. Here is a list of them followed by their custom value if we modifed them (see: <a href="http://getbootstrap.com/customize/#colors">Bootstrap&apos;s documentation</a>).</p>
+
+</p>
+<table class="table table-striped">
+    <thead>
+        <th>Variable Name</th>
+        <th>Color</th>
+        <th>Usage</th>
+        <th>Customized Value</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>$gray-darker</td>
+            <td>lighten(#000, 13.5%)</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$gray-dark</td>
+            <td>lighten(#000, 20%)</td>
+            <td>$text-color</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$gray</td>
+            <td>lighten(#000, 33.5%)</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$gray-light</td>
+            <td>lighten(#000, 60%)</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$gray-lighter</td>
+            <td>lighten(#000, 93.5%)</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$brand-primary</td>
+            <td><span class="colorbox" style="background: #428bca"></span> #428bca</td>
+            <td>$link-color</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$brand-success</td>
+            <td><span class="colorbox" style="background: #5cb85c"></span> #5cb85c</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$brand-info</td>
+            <td><span class="colorbox" style="background: #5bc0de"></span> #5bc0de</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$brand-warning</td>
+            <td><span class="colorbox" style="background: #f0ad4e"></span> #f0ad4e</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$brand-danger</td>
+            <td><span class="colorbox" style="background: #d9534f"></span> #d9534f</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$body-bg</td>
+            <td><span class="colorbox" style="background: #fff"></span> #fff</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>$link-hover-color</td>
+            <td>darken($link-color, 15%)</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+              
+          
+        
+          </section>
+        
+      
+    
+  </article>
+</div>
+<!-- SCRIPTS -->
+<script src="public/kss.js"></script>
+<script src="public/prettify.js"></script>
+
+<script src="/scripts/angular-hbp-common.js"></script>
+
+<script>
+  window.bbpConfig = {
+      auth: {
+          clientId: 'styleguide',
+          url: ''
+      }
+  };
+  $(document).ready(function(){
+    // Ensure code blocks are highlighted properly...
+    $('pre>code').addClass('prettyprint');
+    prettyPrint();
+  });
+</script>
+
+</body>
+</html>

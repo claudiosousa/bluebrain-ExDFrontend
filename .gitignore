@@ -1,0 +1,30 @@
+# Generic Files #
+#################
+.git
+.project
+.settings
+*.sublime-project
+*.sublime-workspace
+
+# Dist #
+########
+/dist
+
+# Bower Components Extra Files#
+###############################
+/app/components/**/Gemfile.*
+/app/components/**/src
+/app/config.json
+
+# Generated Files/Folders #
+###########################
+/node_modules
+/*unit.xml
+/coverage
+/npm-debug.log
+/reports
+
+# Temp Folders #
+################
+.tmp
+.sass-cache

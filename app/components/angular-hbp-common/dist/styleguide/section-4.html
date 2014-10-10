@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <title>HBP Styleguide</title>
+  <meta name="description" content="">
+  <meta name="generator" content="kss-node" />
+
+  <meta name="viewport" content="width=device-width">
+
+  <link href="http://fonts.googleapis.com/css?family=Droid+Serif" rel="stylesheet" type="text/css">
+
+  <link rel="stylesheet" href="public/kss.css">
+  <link rel="stylesheet" href="public/style.css">
+
+</head>
+<body>
+
+<nav class="navbar navbar-fixed-top navbar-hbp" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <span class="hbp-site-current visible-xs-inline"><a href="./index.html">Styleguide</a></span>
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" style="height: 0px;">
+            <ul class="hbp-site-selector nav navbar-nav hidden-xs">
+                <li class="dropdown">
+                    <div>
+                        <span class="hbp-site-current"><a href="./index.html">Styleguide</a></span>
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a href="https://humanbrainproject.eu/">Public</a></li>
+                        <li><a href>Platform</a></li>
+                        <li class="active"><a href>Styleguide</a></li>
+                        <li><a href="https://collaboration.humanbrainproject.eu/">Collaboration</a></li>
+                        <li><a href="https://education.humanbrainproject.eu/">Education</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="hbp-secondary-navbar nav navbar-nav">
+                
+                <li><a href="section-1.html">SASS Variables</a></li>
+                
+                <li><a href="section-2.html">Standard Components</a></li>
+                
+                <li><a href="section-3.html">Typography</a></li>
+                
+                <li><a href="section-4.html">Forms</a></li>
+                
+            </ul>
+            <ul class="hbp-secondary-navbar nav navbar-nav visible-xs-block">
+                
+                <li><a href="section-1.html">SASS Variables</a></li>
+                
+                <li><a href="section-2.html">Standard Components</a></li>
+                
+                <li><a href="section-3.html">Typography</a></li>
+                
+                <li><a href="section-4.html">Forms</a></li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div role="main" ng-app="hbpCommon">
+  <article class="container">
+    
+
+      
+      
+        
+          <h1 class="kss-title"><span class="kss-ref">4.0</span> - Forms</h1>
+        
+          
+              
+                <p>Forms are using Bootstrap form as a default.
+<a href="http://getbootstrap.com/css/#forms">http://getbootstrap.com/css/#forms</a></p>
+
+              
+          
+         
+      
+        
+         <section class="kss-depth-2">
+          <h1 class="kss-title"><span class="kss-ref">4.1</span> - Form Control</h1>
+        
+          
+              <div class="kss-box"><p>The bootstrap form-control. Below are our customization on it.</p>
+</div>
+              <table class="kss-mod-list">
+                <tr class="kss-mod-desc-group">
+                  <td class="kss-mod-desc"><p>Default styling</p></td>
+                  <td class="kss-mod-name"></td>
+                </tr>
+                <tr class="kss-mod-example">
+                  <td colspan="2"><form role="form">
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control {$modifiers}" id="exampleInputEmail1" placeholder="Enter email">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control {$modifiers}" id="exampleInputPassword1" placeholder="Password">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputFile">File input</label>
+    <input type="file" id="exampleInputFile">
+    <p class="help-block">Example block-level help text here.</p>
+  </div>
+  <div class="form-group">
+    <label for="manager">Manager</label>
+    <select id="manager" class="form-control {$modifiers}">
+         <option value="1" selected="selected">John</option>
+         <option value="2">Henry</option>
+         <option value="3">Bill</option>
+     </select>
+  </div>
+  <div class="checkbox">
+    <label>
+      <input type="checkbox"> Check me out
+    </label>
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form></td>
+                </tr>
+              
+                <tr class="kss-mod-desc-group">
+                  <td class="kss-mod-desc"><p>use a more quiet and minimalist version of the control.</p>
+</td>
+                  <td class="kss-mod-name"><p>.form-control-naked</p></td>
+                </tr>
+                <tr class="kss-mod-example">
+                  <td colspan="2"><form role="form">
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control form-control-naked" id="exampleInputEmail1" placeholder="Enter email">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control form-control-naked" id="exampleInputPassword1" placeholder="Password">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputFile">File input</label>
+    <input type="file" id="exampleInputFile">
+    <p class="help-block">Example block-level help text here.</p>
+  </div>
+  <div class="form-group">
+    <label for="manager">Manager</label>
+    <select id="manager" class="form-control form-control-naked">
+         <option value="1" selected="selected">John</option>
+         <option value="2">Henry</option>
+         <option value="3">Bill</option>
+     </select>
+  </div>
+  <div class="checkbox">
+    <label>
+      <input type="checkbox"> Check me out
+    </label>
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form></td>
+                </tr>
+              
+              </table>
+              <div class="kss-markup">
+                <pre class="prettyprint lang-html">&lt;form role=&quot;form&quot;&gt;
+  &lt;div class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;exampleInputEmail1&quot;&gt;Email address&lt;/label&gt;
+    &lt;input type=&quot;email&quot; class=&quot;form-control {$modifiers}&quot; id=&quot;exampleInputEmail1&quot; placeholder=&quot;Enter email&quot;&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;exampleInputPassword1&quot;&gt;Password&lt;/label&gt;
+    &lt;input type=&quot;password&quot; class=&quot;form-control {$modifiers}&quot; id=&quot;exampleInputPassword1&quot; placeholder=&quot;Password&quot;&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;exampleInputFile&quot;&gt;File input&lt;/label&gt;
+    &lt;input type=&quot;file&quot; id=&quot;exampleInputFile&quot;&gt;
+    &lt;p class=&quot;help-block&quot;&gt;Example block-level help text here.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;manager&quot;&gt;Manager&lt;/label&gt;
+    &lt;select id=&quot;manager&quot; class=&quot;form-control {$modifiers}&quot;&gt;
+         &lt;option value=&quot;1&quot; selected=&quot;selected&quot;&gt;John&lt;/option&gt;
+         &lt;option value=&quot;2&quot;&gt;Henry&lt;/option&gt;
+         &lt;option value=&quot;3&quot;&gt;Bill&lt;/option&gt;
+     &lt;/select&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;checkbox&quot;&gt;
+    &lt;label&gt;
+      &lt;input type=&quot;checkbox&quot;&gt; Check me out
+    &lt;/label&gt;
+  &lt;/div&gt;
+  &lt;button type=&quot;submit&quot; class=&quot;btn btn-default&quot;&gt;Submit&lt;/button&gt;
+&lt;/form&gt;</pre>
+              </div>
+          
+        
+          </section>
+        
+      
+    
+  </article>
+</div>
+<!-- SCRIPTS -->
+<script src="public/kss.js"></script>
+<script src="public/prettify.js"></script>
+
+<script src="/scripts/angular-hbp-common.js"></script>
+
+<script>
+  window.bbpConfig = {
+      auth: {
+          clientId: 'styleguide',
+          url: ''
+      }
+  };
+  $(document).ready(function(){
+    // Ensure code blocks are highlighted properly...
+    $('pre>code').addClass('prettyprint');
+    prettyPrint();
+  });
+</script>
+
+</body>
+</html>

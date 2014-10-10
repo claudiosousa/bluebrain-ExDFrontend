@@ -1,0 +1,53 @@
+<h1>Getting Started</h1>
+
+
+<div class="well">
+  <h4>Yo {{appTitle}}!</h4>
+  <p>Your application has been generated. Now is the time to start the real work.</p>
+  <p>You will find below a list of steps to take in order to get started with
+    the HBP/BBP modules and pointers to other commonly used module documentation.
+  </p>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <h3>BBP Config</h3>
+    <p><code>angular-bbp-config</code> module is required by most of the
+      other HBP modules to retrieve specific environment variables which ranges
+      from REST services endpoint URL to feature activations.</p>
+    <p>It is up to every application to retrieve this information before the
+      angular application is bootstraped.</p>
+    <p>The current template asynchronously load <a href="./config.json">./config.json</a>
+      before starting the application. The code that does that is located at the end of
+      <tt>app/scripts/app.js</tt>.</p>
+    <p>The content of config.json should not be deployed real server. Instead, you should
+      rely and customize the following Puppet Hiera data file:
+      <a href="https://bbpcode.epfl.ch/code/gitweb?p=infra/bbp-puppet-modules.git;a=blob;f=hieradata/hostgroup/webapplication/platform.yaml;h=54026e74af5a17d7802e1d5879b57708d6048135;hb=refs/heads/devel"
+      >infra/bbp-puppet-modules.git/hieradata/hostgroup/webapplication/platform.yaml</a>
+  </div>
+  <div class="col-md-6">
+    <h3>Authentication using OIDC Client</h3>
+    <p><code>bbp-oidc-client</code> module is used to authenticate against the
+      HBP OIDC servers.</p>
+    <p>You can configure its behavior in <code>app/scripts/app.js</code>.</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <h3>HBP Common</h3>
+    <p><code>angular-hbp-common</code> is a set of common resources to achieve an
+      uniform look &amp; feel amongs all HBP web applications.</p>
+    <p>Common CSS style are described in the styleguide.</p>
+    <p>Common AngularJS directive have to be documented. At this point, you can browse
+      the sources in bower_components/angular-hbp-common/angular-hbp-common.js</p>
+  </div>
+  <div class="col-md-6">
+    <h3>Other documentation resources</h3>
+    <ul>
+      <li><a href="https://docs.angularjs.org">AngularJS Documentation</a></li>
+      <li><a href="https://github.com/angular-ui/ui-router/wiki">Angular UI Router Wiki</a></li>
+      <li><a href="http://angular-ui.github.io/bootstrap/">Angular UI Bootstrap</a></li>
+      <li><a href="http://getbootstrap.com">Twitter Bootstrap</a></li>
+    </ul>
+  </div>
+</div>

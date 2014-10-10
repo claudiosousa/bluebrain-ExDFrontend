@@ -1,0 +1,22 @@
+Javascript client for OpenId connect secured REST services
+
+Usage:
+
+1) init client object on page loading
+	
+	var client;
+	$(document).ready(function() {
+		client = new bbp.client( { redirect_uri: 'http://bluebrain43.epfl.ch/oidc-clients/js/test/index.html' } );
+	});
+
+this will prompt the user to login as soon as it will open the page
+
+2) use the client in your code
+
+	$('#readBtn').click( function() {
+		client.get( 'http://localhost:8181/api/collaboration/rest/v1/artifact.json/156243', 
+					function(data) {console.log('data received: ', data); }
+				   );
+	});
+	
+for a complete example see test/index.html

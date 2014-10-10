@@ -1,0 +1,20 @@
+$hbp-common-asset-path: "/bower_components/angular-hbp-common/dist/assets";
+
+// Dependencies (scss deps are injected here by grunt-wiredep).
+// bower:scss
+@import "../components/bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
+@import "../components/angular-hbp-common/dist/scss/hbp-common.scss";
+// endbower
+
+// Accounts for the fixed navbar
+.ex-dfrontend-app {
+  margin-top: 80px;
+}
+
+// Footer
+.footer {
+  padding: $padding-base-vertical 0;
+  font-size: 11px;
+  border-top: thin solid $hbp-color-border;
+  background: $hbp-color-shadow-light;
+}
