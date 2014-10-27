@@ -62,6 +62,11 @@ Asynchronously load the config and bootstrap the application in my-app.js:
 }());
 ```
 
+Releases
+========
+
+2.0: use bbpConfig.get(key, [default]) instead of bbpConfig(key, [default])
+
 Copyright
 =========
 
