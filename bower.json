@@ -1,5 +1,5 @@
 {
-  "name": "ex-dfrontend",
+  "name": "exd-frontend",
   "version": "0.0.2",
   "repository": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend",
   "dependencies": {

@@ -6,10 +6,6 @@
 *.sublime-project
 *.sublime-workspace
 
-# Dist #
-########
-/dist
-
 # Bower Components Extra Files#
 ###############################
 /app/components/**/Gemfile.*
