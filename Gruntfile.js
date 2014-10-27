@@ -366,7 +366,8 @@ module.exports = function (grunt) {
           expand: true,
           cwd: '.',
           src: [
-              'bower_components/bbp-oidc-client/js/bbp-oidc-client.js'
+              'bower_components/bbp-oidc-client/js/bbp-oidc-client.js',
+              'bower_components/jquery/dist/jquery.min.js'
           ],
           dest: '<%= yeoman.dist %>'
         }]
