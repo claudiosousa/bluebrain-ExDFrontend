@@ -21,11 +21,16 @@ module.exports = function (grunt) {
     dist: 'dist'
   };
 
+  var bbpConfig = grunt.file.readJSON((grunt.file.exists('app/config.json') ?
+        'app/config.json' : 'app/config.json.sample'));
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
     // Project settings
     yeoman: appConfig,
+    bbpConfig: bbpConfig,
+    pkg: grunt.file.readJSON('package.json'),
 
     // Watches files for changes and runs tasks based on the changed files
     watch: {
@@ -217,28 +222,27 @@ module.exports = function (grunt) {
     // concat, minify and revision files. Creates configurations in memory so
     // additional tasks can operate on them
     useminPrepare: {
-      html: '<%= yeoman.app %>/index.html',
-      options: {
-        dest: '<%= yeoman.dist %>',
-        flow: {
-          html: {
-            steps: {
-              js: ['concat', 'uglifyjs'],
-              css: ['cssmin']
-            },
-            post: {}
-          }
+        html: '<%= yeoman.app %>/index.html',
+        options: {
+            dest: '<%= yeoman.dist %>',
+            flow: {
+                html: {
+                    steps: {
+                        js: ['concat', 'uglifyjs'],
+                        css: ['cssmin']
+                    },
+                    post: {}
+                }
+            }
         }
-      }
     },
-
-    // Performs rewrites based on filerev and the useminPrepare configuration
+    // Performs rewrites based on rev and the useminPrepare configuration
     usemin: {
-      html: ['<%= yeoman.dist %>/{,*/}*.html'],
-      css: ['<%= yeoman.dist %>/styles/{,*/}*.css'],
-      options: {
-        assetsDirs: ['<%= yeoman.dist %>','<%= yeoman.dist %>/images']
-      }
+        html: ['<%= yeoman.dist %>/{,*/}*.html'],
+        css: ['<%= yeoman.dist %>/css/{,*/}*.css'],
+        options: {
+            assetsDirs: ['<%= yeoman.dist %>'],
+        }
     },
 
     // The following *-min tasks will produce minified files in the dist folder
@@ -353,6 +357,18 @@ module.exports = function (grunt) {
           cwd: '.',
           src: 'bower_components/bootstrap-sass-official/assets/fonts/bootstrap/*',
           dest: '<%= yeoman.dist %>'
+        }, { // copy hbpcommon assets to dist
+          expand: true,
+          cwd: '.',
+          src: 'bower_components/angular-hbp-common/dist/assets/**/*.*',
+          dest: '<%= yeoman.dist %>'
+        },{
+          expand: true,
+          cwd: '.',
+          src: [
+              'bower_components/bbp-oidc-client/js/bbp-oidc-client.js'
+          ],
+          dest: '<%= yeoman.dist %>'
         }]
       },
       styles: {
@@ -384,7 +400,72 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
+    },
+
+    bump: {
+        options: {
+            files: ['package.json', 'bower.json'],
+            updateConfigs: ['pkg'],
+            commit: false,
+            push: false,
+            createTag: false
+        }
+    },
+
+    gitcommit: {
+        bump: {
+            options: {
+                message: 'bump to <%= pkg.version %>',
+                ignoreEmpty: true
+            },
+            files: {
+                src: ['package.json', 'bower.json']
+            },
+        },
+        dist: {
+            options: {
+                message: 'built artefact',
+                ignoreEmpty: true
+            },
+            files: {
+                src: ['dist/**/*']
+            },
+        }
+    },
+
+    gittag: {
+        dist: {
+            options: {
+                tag: '<%=pkg.version%>',
+                message: 'Version <%=pkg.version%> release'
+            }
+        }
+    },
+
+    gitpush: {
+        bump: {
+            options: {
+                verbose: true, // for debug purpose
+                remote: 'origin',
+                branch: 'HEAD:master'
+            }
+        },
+        dist: {
+            options: {
+                tags: true
+            }
+        }
+    },
+
+    publish: {
+        options: {
+            registry: 'http://bbpteam.epfl.ch/repository/npm'
+        },
+        dist: {
+            src: ['.']
+        }
     }
+
   });
 
 
@@ -419,8 +500,8 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'wiredep',
-    'useminPrepare',
     'compass:dist',
+    'useminPrepare',
     'imagemin',
     'svgmin',
     'autoprefixer',
@@ -440,4 +521,22 @@ module.exports = function (grunt) {
     'test',
     'build'
   ]);
+
+  grunt.registerTask('ci', 'Run all the build steps on the CI server', function (target) {
+      var tasks = ['test', 'build'];
+      if (target === 'patch' || target === 'minor' || target === 'major') {
+          tasks.unshift('bump:'+target);
+
+          tasks.push('gitcommit:bump');
+          tasks.push('gitpush:bump');
+
+          tasks.push('gitcommit:dist');
+          tasks.push('gittag:dist');
+          tasks.push('gitpush:dist');
+
+          tasks.push('publish:dist');
+      }
+      grunt.task.run(tasks);
+  });
+
 };

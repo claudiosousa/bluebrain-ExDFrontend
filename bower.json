@@ -1,6 +1,7 @@
 {
   "name": "ex-dfrontend",
-  "version": "0.0.1",
+  "version": "0.0.0",
+  "repository": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend",
   "dependencies": {
     "angular": "~1.2.0",
     "json3": "~3.3.1",
