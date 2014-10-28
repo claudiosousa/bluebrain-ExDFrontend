@@ -54,6 +54,10 @@
     "type": "git",
     "url": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend"
   },
+  "files": [
+    "package.json",
+    "dist"
+  ],
   "keywords": [
     "angular",
     "application",
