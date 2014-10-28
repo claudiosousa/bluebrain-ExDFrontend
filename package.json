@@ -65,5 +65,5 @@
   ],
   "author": "BBP/EPFL",
   "license": "© 2014, BBP/EPFL, all rights reserved",
-  "private": true
+  "private": false
 }
