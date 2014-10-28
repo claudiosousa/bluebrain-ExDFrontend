@@ -1,6 +1,7 @@
 {
   "name": "exdfrontend",
   "version": "0.0.3",
+  "description": "Neurorobotics experiment designer",
   "dependencies": {},
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -48,5 +49,21 @@
   },
   "publishConfig": {
     "registry": "http://bbpteam.epfl.ch/repository/npm"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend"
+  },
+  "keywords": [
+    "angular",
+    "application",
+    "hbp",
+    "neurorobotics",
+    "experiment",
+    "designer",
+    "exd"
+  ],
+  "author": "BBP/EPFL",
+  "license": "© 2014, BBP/EPFL, all rights reserved",
+  "private": true
 }
