@@ -1,20 +1,64 @@
-$hbp-common-asset-path: "/bower_components/angular-hbp-common/dist/assets";
-
+$hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 // Dependencies (scss deps are injected here by grunt-wiredep).
 // bower:scss
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 @import "angular-hbp-common/dist/scss/hbp-common.scss";
+@import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
 // endbower
-
 // Accounts for the fixed navbar
 .ex-dfrontend-app {
-  margin-top: 80px;
+    margin-top: 80px;
 }
-
 // Footer
 .footer {
-  padding: $padding-base-vertical 0;
-  font-size: 11px;
-  border-top: thin solid $hbp-color-border;
-  background: $hbp-color-shadow-light;
+    padding: $padding-base-vertical 0;
+    font-size: 11px;
+    border-top: thin solid $hbp-color-border;
+    background: $hbp-color-shadow-light;
+}
+
+.bbp-uri-select-dropdown {
+    width: 100%;
+}
+
+.exd-model-selection-box
+{
+	margin: 1px;
+}
+
+.exd-model-description-box
+{
+  	height: 350px;
+  	border: 6px solid silver;
+  	overflow: hidden;
+	margin-bottom: 6px;
+}
+
+.exd-model-img-thumbnail {
+    border: 0 none;
+    box-shadow: none;
+}
+
+input[readonly].exd-model-selection {
+   background-color: #fff;
+}
+
+.fadein,
+.fadeout {
+  -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
+  -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
+  -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
+  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
+}
+
+.fadein.ng-hide-remove,
+.fadeout.ng-hide-add.ng-hide-add-active {
+  opacity: 0;
+  display: block !important;
+}
+
+.fadeout.ng-hide-add,
+.fadein.ng-hide-remove.ng-hide-remove-active {
+  opacity: 1;
+  display: block !important;
 }

@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,iBAAkB;EAChB,UAAU,EAAE,KAAK;EACjB,UAAU,EAAE,IAAI;EAChB,UAAU,EAAE,MAAM;EAElB,oBAAG;IACD,UAAU,EAAE,IAAI;IAChB,OAAO,EAAE,CAAC;IACV,MAAM,EAAE,CAAC;EAEX,oBAAG;IACD,aAAa,EAAG,cAA2B;EAE7C,+BAAa;IACX,aAAa,EAAE,IAAI;EAErB,wBAAO;IACL,OAAO,EAAE,KAAK;IACd,OAAO,EAAE,QAAQ;IACjB,MAAM,EAAE,OAAO;IACf,KAAK,ECmyBqB,OAAU;EDjyBtC,8BAAa;IACX,eAAe,EAAE,IAAI;IACrB,UAAU,EE0HgB,IAAI;EFxHhC,2BAAU;IACR,OAAO,EAAE,KAAK;IACd,OAAO,EAAE,QAAQ;EAGnB;+DAC4C;IAC1C,KAAK,EEyGmB,IAAI;EFtG9B,+BAAc;IACZ,UAAU,EAAE,MAAM;IAClB,KAAK,EEmGmB,IAAI;IFlG5B,MAAM,EAAE,OAAO;EAEjB,8CAA6B;IAC3B,UAAU,EAAE,MAAM;IAClB,KAAK,EE8FmB,IAAI;EF3F9B,yBAAQ;IACN,KAAK,EAAE,KAAK",
+"sources": ["../../src/styles/components/_mini-browser.scss","../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_variables.scss","../../bower_components/angular-hbp-common/dist/scss/hbp/_variables.scss"],
+"names": [],
+"file": "angular-hbp-document-client.css"
+}

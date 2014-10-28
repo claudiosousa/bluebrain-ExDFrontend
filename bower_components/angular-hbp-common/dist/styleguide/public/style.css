@@ -8208,9 +8208,10 @@ a.list-group-item:focus {
 .list-group-item.disabled:focus {
   background-color: #eeeeee;
   color: #777777;
+  cursor: not-allowed;
 }
 
-/* line 79, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 80, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item.disabled .list-group-item-heading,
 .list-group-item.disabled:hover .list-group-item-heading,
@@ -8218,7 +8219,7 @@ a.list-group-item:focus {
   color: inherit;
 }
 
-/* line 82, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 83, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item.disabled .list-group-item-text,
 .list-group-item.disabled:hover .list-group-item-text,
@@ -8226,7 +8227,7 @@ a.list-group-item:focus {
   color: #777777;
 }
 
-/* line 90, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 91, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item.active,
 .list-group-item.active:hover,
@@ -8237,7 +8238,7 @@ a.list-group-item:focus {
   border-color: #004a97;
 }
 
-/* line 99, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 100, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item.active .list-group-item-heading,
 .list-group-item.active .list-group-item-heading > small,
@@ -8251,7 +8252,7 @@ a.list-group-item:focus {
   color: inherit;
 }
 
-/* line 102, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 103, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item.active .list-group-item-text,
 .list-group-item.active:hover .list-group-item-text,
@@ -8407,14 +8408,14 @@ a.list-group-item-danger.active:focus {
   border-color: #a94442;
 }
 
-/* line 124, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 125, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item-heading {
   margin-top: 0;
   margin-bottom: 5px;
 }
 
-/* line 128, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
+/* line 129, ../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_list-group.scss */
 
 .list-group-item-text {
   margin-bottom: 0;
@@ -10275,7 +10276,7 @@ button.close {
   background-position: center center;
 }
 
-/* line 62, ../../src/styles/hbp/_common_navbar.scss */
+/* line 73, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp {
   color: #eeeeee;
@@ -10292,7 +10293,7 @@ button.close {
   z-index: 2;
 }
 
-/* line 80, ../../src/styles/hbp/_common_navbar.scss */
+/* line 91, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp::before {
   display: block;
@@ -10306,7 +10307,7 @@ button.close {
   background-repeat: repeat-y no-repeat;
 }
 
-/* line 92, ../../src/styles/hbp/_common_navbar.scss */
+/* line 103, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp::after {
   display: block;
@@ -10319,27 +10320,28 @@ button.close {
   border-bottom: 1px solid #aaaaaa;
 }
 
-/* line 104, ../../src/styles/hbp/_common_navbar.scss */
+/* line 115, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp a {
   color: #aaaaaa;
 }
 
-/* line 106, ../../src/styles/hbp/_common_navbar.scss */
+/* line 117, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp a:hover {
   color: #cccccc;
 }
 
-/* line 111, ../../src/styles/hbp/_common_navbar.scss */
+/* line 122, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .icon-bar {
   background-color: #777777;
 }
 
-/* line 115, ../../src/styles/hbp/_common_navbar.scss */
+/* line 126, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .navbar-header {
+  padding-left: 12px;
   /* Degrade the logo behind the scene
      on screen where (width < 490px) */
   overflow: hidden;
@@ -10347,15 +10349,21 @@ button.close {
   /*---~---*/
 }
 
-/* line 123, ../../src/styles/hbp/_common_navbar.scss */
+/* line 135, ../../src/styles/hbp/_common_navbar.scss */
 
-.navbar-hbp .navbar-brand {
-  font-size: inherit;
+.navbar-hbp .hbp-site-current > a {
   font-weight: bold;
   color: #eeeeee;
+  margin-right: 12px;
 }
 
-/* line 130, ../../src/styles/hbp/_common_navbar.scss */
+/* line 140, ../../src/styles/hbp/_common_navbar.scss */
+
+.navbar-hbp .hbp-site-current > a:hover {
+  text-decoration: none;
+}
+
+/* line 146, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .navbar-nav > li > a:hover,
 .navbar-hbp .navbar-nav > li > a:focus {
@@ -10363,14 +10371,14 @@ button.close {
   color: #cccccc;
 }
 
-/* line 135, ../../src/styles/hbp/_common_navbar.scss */
+/* line 151, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .navbar-nav > .open > a {
   background: none;
   color: #aaaaaa;
 }
 
-/* line 140, ../../src/styles/hbp/_common_navbar.scss */
+/* line 156, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .navbar-nav > li > a.active {
   background: none;
@@ -10378,74 +10386,68 @@ button.close {
   color: #eeeeee;
 }
 
-/* line 146, ../../src/styles/hbp/_common_navbar.scss */
+/* line 162, ../../src/styles/hbp/_common_navbar.scss */
+
+.navbar-hbp .hbp-logo {
+  height: 50px;
+  width: 60px;
+  background-size: hbp-common-navbar-height auto;
+}
+
+/* line 168, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp.navbar-fixed-top {
   border-width: 0px 0px 0px;
 }
 
-/* line 151, ../../src/styles/hbp/_common_navbar.scss */
-
-.navbar-hbp .hbp-site-current {
-  font-weight: bold;
-  color: #eeeeee;
-  margin-right: 12px;
-}
-
-/* line 156, ../../src/styles/hbp/_common_navbar.scss */
-
-.navbar-hbp .hbp-site-current:hover {
-  text-decoration: none;
-}
-
-/* line 161, ../../src/styles/hbp/_common_navbar.scss */
+/* line 172, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .dropdown-menu {
   background: rgba(34, 34, 34, 0.9);
   font-size: 1em;
 }
 
-/* line 165, ../../src/styles/hbp/_common_navbar.scss */
+/* line 176, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .dropdown-menu > li > a {
   color: #aaaaaa;
   padding: 6px 15px 3px 15px;
 }
 
-/* line 170, ../../src/styles/hbp/_common_navbar.scss */
+/* line 181, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .dropdown-menu > li > a:hover {
   color: #cccccc;
   background: rgba(119, 119, 119, 0.5);
 }
 
-/* line 175, ../../src/styles/hbp/_common_navbar.scss */
+/* line 186, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .dropdown-menu > li.active > a {
   color: #eeeeee;
 }
 
-/* line 179, ../../src/styles/hbp/_common_navbar.scss */
+/* line 190, ../../src/styles/hbp/_common_navbar.scss */
 
 .navbar-hbp .dropdown-menu > li.active > a:hover {
   background: #004a97;
 }
 
 @media (min-width: 768px) {
-  /* line 189, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 200, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-collapse {
     line-height: 1.428571429;
   }
 
-  /* line 193, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 204, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp li .dropdown-menu {
     margin-top: -5px;
     border-top: 5px solid #005e56;
   }
 
-  /* line 199, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 210, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-nav > li > a,
   .navbar-hbp .navbar-nav > li > div {
@@ -10455,14 +10457,14 @@ button.close {
     vertical-align: middle;
   }
 
-  /* line 206, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 217, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector {
     line-height: 50px;
     margin-right: 36px;
   }
 
-  /* line 210, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 221, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector .dropdown-toggle i {
     padding: 5px;
@@ -10470,48 +10472,47 @@ button.close {
     transition: border 200ms;
     border: 1px solid rgba(0, 0, 0, 0);
     border-radius: 4px;
-    margin-left: -24px;
   }
 
-  /* line 220, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 230, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector:hover .dropdown-toggle i,
   .navbar-hbp .hbp-site-selector .open .dropdown-toggle i {
     border: 1px solid #777777;
   }
 
-  /* line 224, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 234, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector .dropdown-menu {
     margin-left: -15px;
   }
 
-  /* line 228, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 238, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector > li > a {
     padding-left: 0px;
   }
 
-  /* line 232, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 242, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector > .dropdown > a {
     min-width: 0;
   }
 
-  /* line 237, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 247, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp li.dropdown > .dropdown-toggle {
     margin-top: 0;
     line-height: 50px;
   }
 
-  /* line 242, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 252, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-brand.hbp-logo {
     margin-left: -10px;
   }
 
-  /* line 246, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 256, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .glyphicon-chevron-down {
     vertical-align: -1px;
@@ -10519,21 +10520,21 @@ button.close {
 }
 
 @media (max-width: 767px) {
-  /* line 255, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 265, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-logo {
     background-image: url("./assets/hbp_logo_horizontal.png");
     width: 383px;
   }
 
-  /* line 260, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 270, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-collapse {
     background: rgba(34, 34, 34, 0.95);
     max-height: none;
   }
 
-  /* line 265, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 275, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-toggle {
     margin-top: 10px;
@@ -10542,34 +10543,34 @@ button.close {
     padding: 0 6px;
   }
 
-  /* line 272, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 282, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-toggle:hover,
   .navbar-hbp .navbar-toggle:focus {
     background-color: #333333;
   }
 
-  /* line 277, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 287, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .navbar-nav > li > a:hover,
   .navbar-hbp .navbar-nav > li > a:focus {
     background: rgba(119, 119, 119, 0.2);
   }
 
-  /* line 282, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 292, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector,
   .navbar-hbp .hbp-secondary-navbar {
     border-bottom: 1px solid #515151;
   }
 
-  /* line 286, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 296, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector {
     line-height: 1.428571429;
   }
 
-  /* line 289, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 299, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector .dropdown-toggle i {
     border: 0;
@@ -10577,20 +10578,20 @@ button.close {
     border-radius: 4px;
   }
 
-  /* line 295, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 305, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector:hover {
     background: rgba(119, 119, 119, 0.2);
   }
 
-  /* line 300, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 310, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector .dropdown {
     float: left;
     padding: 10px 15px;
   }
 
-  /* line 306, ../../src/styles/hbp/_common_navbar.scss */
+  /* line 316, ../../src/styles/hbp/_common_navbar.scss */
 
   .navbar-hbp .hbp-site-selector li > a:hover,
   .navbar-hbp .hbp-site-selector li > a:focus {

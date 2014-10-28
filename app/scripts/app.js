@@ -9,7 +9,7 @@
  * Main module of the application.
  */
 angular
-.module('exDfrontendApp', ['ngAnimate','ngCookies','ngResource','ngSanitize','ngTouch','ui.router','ui.bootstrap','bbpOidcClient','hbpCommon','bbpConfig'])
+.module('exDfrontendApp', ['ngAnimate','ngCookies','ngResource','ngSanitize','ngTouch','ui.router','ui.bootstrap','bbpOidcClient','hbpCommon','bbpConfig','hbpDocumentClient'])
 // Routes
 .config(function ($stateProvider, $urlRouterProvider) {
   // Configuring routes using `angular-ui-router` states.
@@ -18,6 +18,10 @@ angular
     url: '/',
     templateUrl: 'views/main.html',
     controller: 'mainCtrl'
+  }).state('new', {
+    url: '/new',
+    templateUrl: 'views/new.html',
+    controller: 'NewCtrl'
   });
   // Provide a default route.
   // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)

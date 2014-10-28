@@ -1,0 +1,24 @@
+<div class="hbp-mini-browser">
+    <ul ng-if="currentEntity.children.list === undefined">
+        <li><bbp-loading class="bbp-browser-loading"/></li>
+    </ul>
+    <ul  ng-if="currentEntity.children.list !== undefined">
+        <li ng-if="!currentEntity.root">
+            <a ng-click="back($event)"><i class="hbp-browser-entity-icon fa fa-level-up"></i>..</a>
+        </li>
+        <li ng-if="currentEntity.children.list.length === 0"><span class="no-entity">Empty</span></li>
+        <li ng-repeat="child in currentEntity.children.list">
+            <a ng-if="isBrowsable(child)" ng-click="browseTo(child, $event)" ng-mouseover="mouseOver(child)">
+                <hbp-icon entity="child"></hbp-icon>
+                {{child._name}}
+                <button ng-if="isSelectable(child)" ng-click="select(child, $event)" class="btn btn-xs btn-default">Select</button>
+            </a>
+            <span ng-if="!isBrowsable(child)" ng-class="{disabled: !isSelectable(child)}" ng-mouseover="mouseOver(child)">
+                <hbp-icon entity="child"></hbp-icon>
+                {{child._name}}
+                <button ng-if="isSelectable(child)" ng-click="select(child, $event)" class="btn btn-xs btn-default">Select</button>
+            </span>
+        </li>
+        <li ng-if="currentEntity.children.hasNext"><a class="hbp-mini-browser-more" ng-click="loadMore()">Load more</a></li>
+    </ul>
+</div>

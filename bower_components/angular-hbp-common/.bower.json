@@ -1,10 +1,9 @@
 {
   "name": "angular-hbp-common",
-  "description": "Common components for HBP websites.",
-  "version": "0.3.0",
+  "version": "0.2.7",
   "private": true,
   "repository": {
-    "url": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
+    "url": "ssh://amblet@bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
   },
   "dependencies": {
     "angular": "~1.2.16",
@@ -13,7 +12,7 @@
     "jquery": "~1.11.0",
     "bootstrap-sass-official": "~3.2.0",
     "angular-ui-router": "~0.2.10",
-    "angular-bbp-config": "~0.2.0",
+    "angular-bbp-config": "~0.1.2",
     "bbp-oidc-client": "~0.5.0",
     "lodash": "~2.4.1",
     "angular-ui-bootstrap-bower": "~0.11.0"
@@ -37,16 +36,13 @@
     "src",
     "Gemfile*.*"
   ],
-  "resolutions": {
-    "angular-bbp-config": "~0.2.0"
-  },
-  "_release": "0.3.0",
+  "_release": "0.2.7",
   "_resolution": {
     "type": "version",
-    "tag": "0.3.0",
-    "commit": "b8b8dcc7d17c91771e3b8babf6d8280cfa270f56"
+    "tag": "0.2.7",
+    "commit": "7b8ef8d12b2bb8ac8ab74e52b341cee5eec99da5"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon",
-  "_target": "*",
+  "_target": "~0.2.1",
   "_originalSource": "angular-hbp-common"
 }

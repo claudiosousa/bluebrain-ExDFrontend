@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JSLibAngularDocumentClient</title>
+    <!-- bower:css -->
+    <link rel="stylesheet" href="../bower_components/angular-hbp-common/dist/hbp-common.css" />
+    <!-- endbower -->
+    <link rel="stylesheet" href="./styles/angular-hbp-document-client.css" />
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <h1>Document Browser</h1>
+    <div ng-app="myApp">
+      <ul class="tree tree-project" ng-controller="projectListCtrl">
+        <li ng-repeat="p in projects" class="item item-project">
+          <span class="icon icon-project">p</span>
+          <a class="icon icon-container-open" href>></a>
+          <a href>{{p._name}}</a>
+        </li>
+      </ul>
+    </div>
+    <!-- bower:js -->
+    <script src="../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../bower_components/es5-shim/es5-shim.js"></script>
+    <script src="../bower_components/lodash/dist/lodash.compat.js"></script>
+    <script src="../bower_components/angular/angular.js"></script>
+    <script src="../bower_components/json3/lib/json3.min.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/affix.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/alert.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/button.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/carousel.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/collapse.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/dropdown.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tab.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/transition.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/scrollspy.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/modal.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tooltip.js"></script>
+    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/popover.js"></script>
+    <script src="../bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="../bower_components/angular-bbp-config/angular-bbp-config.js"></script>
+    <script src="../bower_components/bbp-oidc-client/angular-bbp-oidc-client.js"></script>
+    <script src="../bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js"></script>
+    <script src="../bower_components/angular-hbp-common/dist/angular-hbp-common.js"></script>
+    <!-- endbower -->
+
+    <script src="./html2js/templates.js"></script>
+    <script src="./src/document-client.js"></script>
+    <script src="./src/directives/mini-browser.js"></script>
+    <script src="./src/services/entity-store.js"></script>
+    <script src="./src/services/project-store.js"></script>
+    <script src="./src/services/file-store.js"></script>
+    <script src="./src/services/resolve-user-id.js"></script>
+
+    <script src="./myapp.js"></script>
+  </body>
+</html>
