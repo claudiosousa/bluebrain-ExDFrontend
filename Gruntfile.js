@@ -465,6 +465,10 @@ module.exports = function (grunt) {
         dist: {
             src: ['.']
         }
+    },
+
+    exec: {
+        tag_latest_npm: 'npm tag exdfrontend@<%= pkg.version %> latest'
     }
 
   });
@@ -536,6 +540,7 @@ module.exports = function (grunt) {
           tasks.push('gitpush:dist');
 
           tasks.push('publish:dist');
+          tasks.push('exec:tag_latest_npm');
       }
       grunt.task.run(tasks);
   });
