@@ -5,7 +5,7 @@ angular.module('hbpCommon', [
   'bbpOidcClient',
   'hbp-common-templates'
 ]);
-window.hbpCommonVersion = '0.3.0';
+window.hbpCommonVersion = '0.2.6';
 angular.module('hbpCommon').controller('hbpMetaNavigationCtrl', [
   '$rootScope',
   '$scope',
@@ -368,7 +368,7 @@ angular.module('hbpCommon').factory('hbpUserDirectory', [
   function ($rootScope, $q, $http, $cacheFactory, bbpConfig) {
     'use strict';
     var userCache = $cacheFactory('hbpUserCache');
-    var userApiUrl = bbpConfig.get('api.user.v0') + '/';
+    var userApiUrl = bbpConfig('api.user.v0') + '/';
     // key used to store the logged in user in the cache
     var currentUserKey = '_currentUser_';
     $rootScope.$on('user:disconnected', function () {

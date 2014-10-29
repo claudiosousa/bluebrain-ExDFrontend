@@ -63,11 +63,7 @@ the change.
 Changelog
 =========
 
-[0.3.0]  Update Common Navbar: use simpler layout, the site navigator has been
-            removed and placed in a more general `user navigation`.
-         Fix Common Navbar: remove styles about logo in header site navigation.
-
-[0.2.2]  Fixed font for buttons in headers
+[0.2.2] Fixed font for buttons in headers
 
 [0.2.1]  Added: hbpDialogFactory.confirm(options)
          Deprecated: hbpDialogFactory.confirmation()

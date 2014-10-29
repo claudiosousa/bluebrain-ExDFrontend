@@ -166,25 +166,27 @@ angular code to work properly.</p>
                   <td colspan="2"><nav class="navbar navbar-fixed-top navbar-hbp" role="navigation">
        <div class="container-fluid">
            <div class="navbar-header">
+               <span class="hbp-site-current visible-xs-inline"><a href="#">Styleguide</a></span>
                <button type="button" class="navbar-toggle">
                    <span class="sr-only">Toggle navigation</span>
                    <span class="icon-bar"></span>
                    <span class="icon-bar"></span>
                    <span class="icon-bar"></span>
                </button>
-               <a class="navbar-brand hbp-site-current" href="#">
-                 Styleguide
-               </a>
            </div>
            <div class="collapse navbar-collapse" style="height: 0px;">
                <ul class="hbp-site-selector nav navbar-nav hidden-xs">
                    <li class="dropdown">
-                       <a href class="dropdown-toggle">
-                           <span class="visible-xs-inline">Websites</span>
-                           <i class="glyphicon glyphicon-chevron-down"></i>
-                       </a>
+                       <div href="" class="dropdown-toggle">
+                           <span class="hbp-site-current"><a href="#">Styleguide</a></span>
+                           <a href><i class="glyphicon glyphicon-chevron-down"></i></a>
+                       </div>
                        <ul class="dropdown-menu">
-                           <li ng-repeat="site in sites" ng-class="{ active: isActiveSite(site) }"><a href="{{site.url}}">{{site.name}}</a></li>
+                           <li><a href="https://humanbrainproject.eu/">Public</a></li>
+                           <li><a href>Platform</a></li>
+                           <li class="active"><a href>Styleguide</a></li>
+                           <li><a href="https://collaboration.humanbrainproject.eu/">Collaboration</a></li>
+                           <li><a href="https://education.humanbrainproject.eu/">Education</a></li>
                        </ul>
                    </li>
                </ul>
@@ -194,17 +196,26 @@ angular code to work properly.</p>
                    <li><a href="#">Tools</a></li>
                    <li><a ui-sref="job-manager" ui-sref-active="active" href="#/job-manager">Jobs <bbp-job-badge><span class="badge badge-hbp badge-hbp-done">0</span></bbp-job-badge></a></li>
                </ul>
-               <ul class="hbp-user-widget nav navbar-nav navbar-right">
-                   <li>
-                       <a href class="dropdown-toggle">
-                           User Name <i class="glyphicon glyphicon-cog"></i>
-                       </a>
-                       <div class="dropdown-menu">
-                           <ul>
-                               <li><a href>Logout</a></li>
-                           </ul>
-                       </div>
+               <ul class="hbp-secondary-navbar nav navbar-nav visible-xs-block">
+                   <li class="dropdown">
+                       <a href class="dropdown-toggle">Website Selector <i class="glyphicon glyphicon-chevron-down"></i></a>
+                       <ul class="dropdown-menu">
+                           <li><a href="https://humanbrainproject.eu/">Public</a></li>
+                           <li><a href>Platform</a></li>
+                           <li class="active"><a href>Styleguide</a></li>
+                           <li><a href="https://collaboration.humanbrainproject.eu/">Collaboration</a></li>
+                           <li><a href="https://education.humanbrainproject.eu/">Education</a></li>
+                       </ul>
                    </li>
+               </ul>
+               <ul class="hbp-user-widget nav navbar-nav navbar-right">
+                   <li class="hbp-user-widget-display-name dropdown">
+                       <a href="" class="dropdown-toggle">Olivier Amblet <i class="glyphicon glyphicon-chevron-down"></i></a>
+                       <ul class="dropdown-menu">
+                           <li><a href>Logout</a></li>
+                       </ul>
+                   </li>
+                   <li class="hbp-user-widget-action"><a href=""><i class="glyphicon glyphicon-cog"></i><span class="visible-xs-inline"> Settings</span></a></li>
                </ul>
            </div>
        </div>
@@ -216,25 +227,27 @@ angular code to work properly.</p>
                 <pre class="prettyprint lang-html">&lt;nav class=&quot;navbar navbar-fixed-top navbar-hbp&quot; role=&quot;navigation&quot;&gt;
        &lt;div class=&quot;container-fluid&quot;&gt;
            &lt;div class=&quot;navbar-header&quot;&gt;
+               &lt;span class=&quot;hbp-site-current visible-xs-inline&quot;&gt;&lt;a href=&quot;#&quot;&gt;Styleguide&lt;/a&gt;&lt;/span&gt;
                &lt;button type=&quot;button&quot; class=&quot;navbar-toggle&quot;&gt;
                    &lt;span class=&quot;sr-only&quot;&gt;Toggle navigation&lt;/span&gt;
                    &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
                    &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
                    &lt;span class=&quot;icon-bar&quot;&gt;&lt;/span&gt;
                &lt;/button&gt;
-               &lt;a class=&quot;navbar-brand hbp-site-current&quot; href=&quot;#&quot;&gt;
-                 Styleguide
-               &lt;/a&gt;
            &lt;/div&gt;
            &lt;div class=&quot;collapse navbar-collapse&quot; style=&quot;height: 0px;&quot;&gt;
                &lt;ul class=&quot;hbp-site-selector nav navbar-nav hidden-xs&quot;&gt;
                    &lt;li class=&quot;dropdown&quot;&gt;
-                       &lt;a href class=&quot;dropdown-toggle&quot;&gt;
-                           &lt;span class=&quot;visible-xs-inline&quot;&gt;Websites&lt;/span&gt;
-                           &lt;i class=&quot;glyphicon glyphicon-chevron-down&quot;&gt;&lt;/i&gt;
-                       &lt;/a&gt;
+                       &lt;div href=&quot;&quot; class=&quot;dropdown-toggle&quot;&gt;
+                           &lt;span class=&quot;hbp-site-current&quot;&gt;&lt;a href=&quot;#&quot;&gt;Styleguide&lt;/a&gt;&lt;/span&gt;
+                           &lt;a href&gt;&lt;i class=&quot;glyphicon glyphicon-chevron-down&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+                       &lt;/div&gt;
                        &lt;ul class=&quot;dropdown-menu&quot;&gt;
-                           &lt;li ng-repeat=&quot;site in sites&quot; ng-class=&quot;{ active: isActiveSite(site) }&quot;&gt;&lt;a href=&quot;{{site.url}}&quot;&gt;{{site.name}}&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href=&quot;https://humanbrainproject.eu/&quot;&gt;Public&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href&gt;Platform&lt;/a&gt;&lt;/li&gt;
+                           &lt;li class=&quot;active&quot;&gt;&lt;a href&gt;Styleguide&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href=&quot;https://collaboration.humanbrainproject.eu/&quot;&gt;Collaboration&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href=&quot;https://education.humanbrainproject.eu/&quot;&gt;Education&lt;/a&gt;&lt;/li&gt;
                        &lt;/ul&gt;
                    &lt;/li&gt;
                &lt;/ul&gt;
@@ -244,17 +257,26 @@ angular code to work properly.</p>
                    &lt;li&gt;&lt;a href=&quot;#&quot;&gt;Tools&lt;/a&gt;&lt;/li&gt;
                    &lt;li&gt;&lt;a ui-sref=&quot;job-manager&quot; ui-sref-active=&quot;active&quot; href=&quot;#/job-manager&quot;&gt;Jobs &lt;bbp-job-badge&gt;&lt;span class=&quot;badge badge-hbp badge-hbp-done&quot;&gt;0&lt;/span&gt;&lt;/bbp-job-badge&gt;&lt;/a&gt;&lt;/li&gt;
                &lt;/ul&gt;
-               &lt;ul class=&quot;hbp-user-widget nav navbar-nav navbar-right&quot;&gt;
-                   &lt;li&gt;
-                       &lt;a href class=&quot;dropdown-toggle&quot;&gt;
-                           User Name &lt;i class=&quot;glyphicon glyphicon-cog&quot;&gt;&lt;/i&gt;
-                       &lt;/a&gt;
-                       &lt;div class=&quot;dropdown-menu&quot;&gt;
-                           &lt;ul&gt;
-                               &lt;li&gt;&lt;a href&gt;Logout&lt;/a&gt;&lt;/li&gt;
-                           &lt;/ul&gt;
-                       &lt;/div&gt;
+               &lt;ul class=&quot;hbp-secondary-navbar nav navbar-nav visible-xs-block&quot;&gt;
+                   &lt;li class=&quot;dropdown&quot;&gt;
+                       &lt;a href class=&quot;dropdown-toggle&quot;&gt;Website Selector &lt;i class=&quot;glyphicon glyphicon-chevron-down&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+                       &lt;ul class=&quot;dropdown-menu&quot;&gt;
+                           &lt;li&gt;&lt;a href=&quot;https://humanbrainproject.eu/&quot;&gt;Public&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href&gt;Platform&lt;/a&gt;&lt;/li&gt;
+                           &lt;li class=&quot;active&quot;&gt;&lt;a href&gt;Styleguide&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href=&quot;https://collaboration.humanbrainproject.eu/&quot;&gt;Collaboration&lt;/a&gt;&lt;/li&gt;
+                           &lt;li&gt;&lt;a href=&quot;https://education.humanbrainproject.eu/&quot;&gt;Education&lt;/a&gt;&lt;/li&gt;
+                       &lt;/ul&gt;
                    &lt;/li&gt;
+               &lt;/ul&gt;
+               &lt;ul class=&quot;hbp-user-widget nav navbar-nav navbar-right&quot;&gt;
+                   &lt;li class=&quot;hbp-user-widget-display-name dropdown&quot;&gt;
+                       &lt;a href=&quot;&quot; class=&quot;dropdown-toggle&quot;&gt;Olivier Amblet &lt;i class=&quot;glyphicon glyphicon-chevron-down&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+                       &lt;ul class=&quot;dropdown-menu&quot;&gt;
+                           &lt;li&gt;&lt;a href&gt;Logout&lt;/a&gt;&lt;/li&gt;
+                       &lt;/ul&gt;
+                   &lt;/li&gt;
+                   &lt;li class=&quot;hbp-user-widget-action&quot;&gt;&lt;a href=&quot;&quot;&gt;&lt;i class=&quot;glyphicon glyphicon-cog&quot;&gt;&lt;/i&gt;&lt;span class=&quot;visible-xs-inline&quot;&gt; Settings&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
                &lt;/ul&gt;
            &lt;/div&gt;
        &lt;/div&gt;

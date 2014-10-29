@@ -1,0 +1,57 @@
+{
+  "name": "angular-hbp-document-client",
+  "version": "0.2.4",
+  "authors": [
+    "BBP/EPFL"
+  ],
+  "repository": {
+    "url": "git+ssh://bbpcode.epfl.ch/platform/JSLibAngularDocumentClient",
+    "type": "git"
+  },
+  "description": "Provides `hbp-document-client` Angular library",
+  "main": [
+    "dist/angular-hbp-document-client.js",
+    "dist/angular-hbp-document-client.css",
+    "dist/scss/angular-hbp-document-client.scss"
+  ],
+  "keywords": [
+    "angular",
+    "library",
+    "hbp",
+    "document",
+    "service",
+    "client",
+    "document"
+  ],
+  "license": "© 2014, BBP/EPFL, all rights reserved.",
+  "homepage": "https://bbpcode.epfl.ch/code/#/admin/projects/platform/JSLibAngularDocumentClient",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "angular": "~1.2.23",
+    "angular-hbp-common": "~0.2.1",
+    "angular-bbp-config": "~0.2.0",
+    "bbp-oidc-client": "~0.5.1"
+  },
+  "resolutions": {
+    "angular-bbp-config": "~0.2.0"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.2.23"
+  },
+  "_release": "0.2.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.2.4",
+    "commit": "b770b6e18ac3c0a485b79869729ab8e0225ec598"
+  },
+  "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularDocumentClient",
+  "_target": "*",
+  "_originalSource": "angular-hbp-document-client"
+}

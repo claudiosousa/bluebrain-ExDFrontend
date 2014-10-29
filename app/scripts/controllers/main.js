@@ -9,7 +9,6 @@
  * to the `home` state.
  */
 angular.module('exDfrontendApp')
-.controller('mainCtrl', function($scope) {
-  // Configure Your Scope
-  $scope.appTitle = 'Ex Dfrontend';
+	.controller('mainCtrl', function($scope) {
+		$scope.toto = 'toto'; // TODO: remove me
 });
