@@ -34,6 +34,7 @@ module.exports = function(config) {
       'app/scripts/**/*.js',
       'test/mock/**/*.js',
       'test/spec/**/*.js',
+      'app/partials/**/*.html',
       {pattern: 'app/views/*.*', included: false, served: true}
     ],
 
@@ -41,14 +42,23 @@ module.exports = function(config) {
         // source files, that you want to generate coverage for
         // do not include tests or libraries
         // (these files will be instrumented by Istanbul)
-        'app/scripts/**/*.js': ['coverage']
+        'app/scripts/**/*.js': ['coverage'],
+        'app/partials/**/*.html': ['ng-html2js']
+    },
+
+    ngHtml2JsPreprocessor: {
+        stripPrefix: 'app/',
+        prependPrefix: '',
+
+        // the name of the Angular module to create
+        moduleName: "exd.templates"
     },
 
     // list of files / patterns to exclude
     exclude: [],
 
     // web server port
-    port: 8080,
+    port: 9002,
 
     // Start these browsers, currently available:
     // - Chrome
@@ -67,9 +77,11 @@ module.exports = function(config) {
     // Which plugins to enable
     plugins: [
         'karma-phantomjs-launcher',
+        'karma-chrome-launcher',
         'karma-jasmine',
         'karma-coverage',
-        'karma-junit-reporter'
+        'karma-junit-reporter',
+        'karma-ng-html2js-preprocessor'
     ],
 
     junitReporter: {

@@ -1,6 +1,6 @@
 {
   "name": "exdfrontend",
-  "version": "0.0.8",
+  "version": "0.0.7",
   "description": "Neurorobotics experiment designer",
   "dependencies": {},
   "devDependencies": {
@@ -35,6 +35,9 @@
     "karma-coverage": "^0.2.1",
     "karma-junit-reporter": "^0.2.2",
     "karma-phantomjs-launcher": "^0.1.4",
+    "ng-html2js": "1.2.0",
+    "karma-ng-html2js-preprocessor": "~0.1",
+    "karma-chrome-launcher": "^0.1.5",
     "load-grunt-tasks": "^0.4.0",
     "time-grunt": "^0.3.1",
     "grunt-git": "^0.2.6"
