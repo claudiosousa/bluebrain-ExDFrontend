@@ -15,8 +15,8 @@
             </div>
         </div>
     </div>
-    <!-- If the dialog is close and the user did not yet select anything, then we disay the default text and image. -->
-    <!-- If the dialog is open and the user hover a non valid entity, then we disay the default text and image. -->
+    <!-- If the dialog is close and the user did not yet select anything, then we display the default text and image. -->
+    <!-- If the dialog is open and the user hovers a non valid entity, then we display the default text and image. -->
     <div ng-show="(hoveredEntity===undefined  && dialogOpen) || (!dialogOpen && input.selectedEntity===undefined)" class="exd-model-description-box">
         <div ng-show="(hoveredEntity===undefined && dialogOpen) || (!dialogOpen && input.selectedEntity===undefined)" class="hbp-sidebar hbp-sidebar-yscroll fadein fadeout" >
             <div class="hbp-sidebar-panel">
@@ -33,7 +33,7 @@
             </div>
         </div>
     </div>
-    <!-- If the dialog is close and the user has already selected a valid entity, then we disay the selected entity. -->
+    <!-- If the dialog is close and the user has already selected a valid entity, then we display the selected entity. -->
     <div ng-show="!dialogOpen && input.selectedEntity!==undefined" class="exd-model-description-box">
         <div ng-show="!dialogOpen && input.selectedEntity!==undefined" class="hbp-sidebar hbp-sidebar-yscroll fadein fadeout">
             <div class="hbp-sidebar-panel">
