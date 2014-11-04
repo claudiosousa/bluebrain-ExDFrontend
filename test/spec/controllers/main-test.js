@@ -3,7 +3,7 @@
 describe('Controller: mainCtrl', function () {
 
   // load the controller's module
-  beforeEach(module('exDfrontendApp'));
+  beforeEach(module('exdFrontendApp'));
 
   var controller, scope;
 

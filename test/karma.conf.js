@@ -30,10 +30,30 @@ module.exports = function(config) {
       'bower_components/angular-bbp-config/angular-bbp-config.js',
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/angular-hbp-document-client/dist/angular-hbp-document-client.js',
+      'app/scripts/gz3d/client/js/include/jquery-1.9.1.js',
+      'app/scripts/gz3d/client/js/include/jquery.mobile-1.4.0.min.js',
+      'app/scripts/gz3d/client/js/include/three.js',
+      'app/scripts/gz3d/client/js/include/OrbitControls.js',
+      'app/scripts/gz3d/client/js/include/Detector.js',
+      'app/scripts/gz3d/client/js/include/stats.min.js',
+      'app/scripts/gz3d/client/js/include/eventemitter2.js',
+      'app/scripts/gz3d/client/js/include/roslib.js',
+      'app/scripts/gz3d/client/js/include/ColladaLoader.js',
+      'app/scripts/gz3d/client/js/include/CopyShader.js',
+      'app/scripts/gz3d/client/js/include/SSAOShader.js',
+      'app/scripts/gz3d/client/js/include/EffectComposer.js',
+      'app/scripts/gz3d/client/js/include/RenderPass.js',
+      'app/scripts/gz3d/client/js/include/MaskPass.js',
+      'app/scripts/gz3d/client/js/include/ShaderPass.js',
+      'app/scripts/gz3d/client/js/include/xml2json.js',
+      'app/scripts/gz3d/build/gz3d.js',
       'test/support/**/*.js',
-      'app/scripts/**/*.js',
+      'app/scripts/*.js',
       'test/mock/**/*.js',
       'test/spec/**/*.js',
+      'app/scripts/controllers/**/*.js',
+      'app/scripts/directives/**/*.js',
+      'app/scripts/services/**/*.js',
       'app/partials/**/*.html',
       {pattern: 'app/views/*.*', included: false, served: true}
     ],
@@ -42,7 +62,10 @@ module.exports = function(config) {
         // source files, that you want to generate coverage for
         // do not include tests or libraries
         // (these files will be instrumented by Istanbul)
-        'app/scripts/**/*.js': ['coverage'],
+        'app/scripts/*.js': ['coverage'],
+        'app/scripts/directives/**/*.js': ['coverage'],
+        'app/scripts/controllers/**/*.js': ['coverage'],
+        'app/scripts/services/**/*.js': ['coverage'],
         'app/partials/**/*.html': ['ng-html2js']
     },
 

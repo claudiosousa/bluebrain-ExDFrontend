@@ -3,13 +3,13 @@
 
     /**
      * @ngdoc function
-     * @name exDfrontendApp.controller:NewCtrl
+     * @name exdFrontendApp.controller:NewCtrl
      * @description
      * # NewCtrl
-     * Controller of the exDfrontendApp
+     * Controller of the exdFrontendApp
      */
-    angular.module('exDfrontendApp')
-        .controller('NewCtrl', ['$scope', function($scope) {
+    angular.module('exdFrontendApp')
+        .controller('NewCtrl', ['$scope', '$state', function($scope, $state) {
             $scope.environmentInput = {
                 type: 'nrp/environment',
                 title: 'Environment',
@@ -29,6 +29,9 @@
                 description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
                 selectedEntity: undefined
             };
+
+            $scope.$state = $state;
+            
             $scope.brainInput.selectableExtended = function(entity) {
                 if (entity && entity.nrpBinding && $scope.neurobotInput.selectedEntity && $scope.neurobotInput.selectedEntity.nrpName) {
                     return $scope.neurobotInput.selectedEntity.nrpName === entity.nrpBinding;

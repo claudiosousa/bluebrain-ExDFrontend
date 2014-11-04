@@ -1,7 +1,14 @@
 (function() {
         'use strict';
 
-
+        /**
+         * @ngdoc
+         * @name exdModelSelector
+         *
+         * @description
+         * `exdModelSelector` is the directive that controls the appearance of selectors and
+         *  and that attaches all the mini-browser callbacks
+         */
         function configureMiniBrowser(scope, rootScope, http, bbpConfig, hbpFileStore) {
             var dialogOpen = false;
             scope.dialogOpen = dialogOpen;
@@ -71,7 +78,7 @@
                 });
             }
 
-            angular.module('exDfrontendApp').directive('exdModelSelector', ['$http', '$q', 'hbpFileStore', 'bbpConfig', '$compile', '$rootScope',
+            angular.module('exdFrontendApp').directive('exdModelSelector', ['$http', '$q', 'hbpFileStore', 'bbpConfig', '$compile', '$rootScope',
                 function($http, $q, hbpFileStore, bbpConfig, $compile, $rootScope) {
                     return {
                         restrict: 'E',

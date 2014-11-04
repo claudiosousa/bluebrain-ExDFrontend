@@ -1,7 +1,7 @@
 $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 // Dependencies (scss deps are injected here by grunt-wiredep).
 // bower:scss
-@import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
+@import "bootstrap-sass-official/assets/stylesheets/bootstrap.scss";
 @import "angular-hbp-common/dist/scss/hbp-common.scss";
 @import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
 // endbower

@@ -3,14 +3,15 @@
 
     /**
      * @ngdoc overview
-     * @name exDfrontendApp
+     * @name exdFrontendApp
      * @description
-     * # exDfrontendApp
+     * # exdFrontendApp
      *
      * Main module of the application.
      */
+
     angular
-        .module('exDfrontendApp', ['ngAnimate', 'ngCookies', 'ngResource', 'ngSanitize', 'ngTouch', 'ui.router', 'ui.bootstrap', 'bbpOidcClient', 'hbpCommon', 'bbpConfig', 'hbpDocumentClient'])
+        .module('exdFrontendApp', ['ngAnimate', 'ngCookies', 'ngResource', 'ngSanitize', 'ngTouch', 'ui.router', 'ui.bootstrap', 'bbpOidcClient', 'hbpCommon', 'bbpConfig', 'hbpDocumentClient', 'gzangular'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
@@ -23,7 +24,12 @@
                 url: '/new',
                 templateUrl: 'views/new.html',
                 controller: 'NewCtrl'
+            }).state('gz3d-view', {
+                url: '/gz3d-view',
+                templateUrl: 'views/gz3d-view.html',
+                controller: 'Gz3dViewCtrl'
             });
+
             // Provide a default route.
             // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
             $urlRouterProvider.otherwise('/');
@@ -44,9 +50,11 @@
     angular.bootstrap().invoke(['$http', function($http) {
         var boot = function() {
             angular.element(document).ready(function() {
-                angular.bootstrap(document, ['exDfrontendApp']);
+                angular.bootstrap(document, ['exdFrontendApp']);
             });
         };
+
+
         if (window.bbpConfig) {
             boot();
         } else {

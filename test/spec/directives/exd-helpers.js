@@ -2,7 +2,7 @@
 
 describe('Directive: exdModelSelector', function () {
 
-  beforeEach(module('exDfrontendApp'));
+  beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
 
   var $scope, $compile, $q, hbpEntityStore, hbpProjectStore;

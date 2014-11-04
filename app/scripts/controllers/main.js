@@ -9,7 +9,7 @@
      * `MainCtrl` is the main application controller and his associated
      * to the `home` state.
      */
-    angular.module('exDfrontendApp')
+    angular.module('exdFrontendApp')
         .controller('mainCtrl', function($scope) {
             $scope.toto = 'toto'; // TODO: remove me
         });

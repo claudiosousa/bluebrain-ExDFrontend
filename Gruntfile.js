@@ -482,8 +482,18 @@ module.exports = function(grunt) {
 
         exec: {
             tag_latest_npm: 'npm tag exdfrontend@<%= pkg.version %> latest'
-        }
+        },
 
+        jsdoc: {
+          doc: {
+            src: [
+              '<%= yeoman.app %>/scripts/{,*/}*.js'
+            ],
+            options: {
+              destination: 'doc'
+            }
+          }
+        },
     });
 
 
@@ -557,5 +567,7 @@ module.exports = function(grunt) {
         }
         grunt.task.run(tasks);
     });
+
+    grunt.registerTask('doc', ['clean', 'jsdoc']);
 
 };

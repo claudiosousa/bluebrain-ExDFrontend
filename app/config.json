@@ -22,6 +22,14 @@
             "v2": "https://services-dev.humanbrainproject.eu/provenance/v0/api",
             "v1": "https://services-dev.humanbrainproject.eu/provenance/v0/api",
             "v0": "https://services-dev.humanbrainproject.eu/provenance/v0/api"
+        },
+        "neurorobotics": {
+            "gzweb": {
+                "development1": {
+                    "websocket": "localhost:7681",
+                    "assets": "http://localhost:8080/assets"
+                }
+            }
         }
     },
     "auth": {

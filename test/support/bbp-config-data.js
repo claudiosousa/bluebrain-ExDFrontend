@@ -23,8 +23,16 @@ window.bbpConfig = {
       'v2': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api',
       'v1': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api',
       'v0': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api'
+    },
+    'neurorobotics': {
+      'gzweb': {
+          'development1': {
+              'websocket': 'localhost:7681',
+              'assets': 'http://localhost:8080/assets'
+          }
+      }
     }
-  },
+  }, 
   'auth': {
     'url': 'https://services-test.humanbrainproject-test.eu/oidc',
     'clientId': 'portal-client'
