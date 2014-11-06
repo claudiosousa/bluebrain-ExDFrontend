@@ -1,6 +1,7 @@
 var GZ3D = GZ3D || {
   REVISION : '1',
-  assetsPath: undefined
+  assetsPath: 'http://localhost:8080/assets',
+  webSocketUrl: 'ws://localhost:7681'
 };
 
 
@@ -751,11 +752,6 @@ GZ3D.Gui = function(scene)
   this.emitter = new EventEmitter2({verbose: true});
   this.guiEvents = guiEvents;
 };
-
-GZ3D.setAssetsPath = function(path)
-{
-  this.assetsPath = path;
-}
 
 /**
  * Initialize GUI

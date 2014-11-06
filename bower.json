@@ -19,7 +19,9 @@
     "bbp-oidc-client": "latest",
     "angular-hbp-common": "latest",
     "angular-bbp-config": "latest",
-    "angular-hbp-document-client": "latest"
+    "angular-hbp-document-client": "latest",
+    "xml2json": "latest",
+    "stats.js": "latest"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.0",

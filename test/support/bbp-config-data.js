@@ -27,7 +27,7 @@ window.bbpConfig = {
     'neurorobotics': {
       'gzweb': {
           'development1': {
-              'websocket': 'localhost:7681',
+              'websocket': 'ws://localhost:7681',
               'assets': 'http://localhost:8080/assets'
           }
       }

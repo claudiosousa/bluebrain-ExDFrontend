@@ -24,9 +24,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should set port for serving the assets directory', function () {
     expect(rootScope.GZ3D).toBeDefined();
-    var getType = {};
-    expect(getType.toString.call(rootScope.GZ3D.setAssetsPath)).toBe('[object Function]');
     expect(rootScope.GZ3D.assetsPath).toMatch('http://');
     expect(rootScope.GZ3D.assetsPath).toMatch('assets');
+    expect(rootScope.GZ3D.webSocketUrl).toMatch('ws://');
   });
 });

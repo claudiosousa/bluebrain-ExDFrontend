@@ -47,6 +47,6 @@
     "commit": "c25f8d06a0f9748a1f109c4e289e66fbac7499e8"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibOidcClient",
-  "_target": "~0.5.1",
+  "_target": "~0.5.0",
   "_originalSource": "bbp-oidc-client"
 }
