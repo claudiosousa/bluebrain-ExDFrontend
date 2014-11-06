@@ -56,7 +56,7 @@ describe('Directive: exdModelSelector', function () {
     // Check that the title is replaced properly
     expect(element.html()).toContain("<div class=\"hbp-sidebar-title ng-binding\">Brain description:");
     // Check that the description is replaced properly
-    expect(element.html()).toContain("<p class=\"ng-binding\">The brain model to link the robot to a neural simulation. A brain description consists in an XML file.</p>")
+    expect(element.html()).toContain("<p class=\"ng-binding\">The brain model to link the robot to a neural simulation. A brain description consists in an XML file.</p>");
   });
 
   it('should open and close dialog properly', function() {
@@ -89,12 +89,12 @@ describe('Directive: exdModelSelector', function () {
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
-    }
+    };
 
     var testInvalidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/other',
-    }
+    };
 
     var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
     $compile(element)($scope);
@@ -119,12 +119,12 @@ describe('Directive: exdModelSelector', function () {
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
-    }
+    };
 
     var testInvalidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/other',
-    }
+    };
 
     var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
     $compile(element)($scope);
@@ -146,12 +146,12 @@ describe('Directive: exdModelSelector', function () {
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
-    }
+    };
 
     var testInvalidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/other',
-    }
+    };
 
     var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
     $compile(element)($scope);
@@ -177,7 +177,7 @@ describe('Directive: exdModelSelector', function () {
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
-    }
+    };
 
     var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
     $compile(element)($scope);

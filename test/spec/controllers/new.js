@@ -23,8 +23,8 @@ describe('Controller: NewCtrl', function() {
     });
 
     it('should create "environmentInput", "neurobotInput" and "brainInput" with specific properties', function() {
-        var inputKeys = ["environmentInput", "neurobotInput", "brainInput"];
-        var propertyKeys = ["type", "title", "description"];
+        var inputKeys = ['environmentInput', 'neurobotInput', 'brainInput'];
+        var propertyKeys = ['type', 'title', 'description'];
         var inputLength = inputKeys.length;
         var propertyLength = propertyKeys.length;
 
