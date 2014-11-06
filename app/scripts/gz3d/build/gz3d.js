@@ -2435,11 +2435,14 @@ GZ3D.GZIface.prototype.onConnected = function()
 
   var lightUpdate = function(message)
   {
-    if (!this.scene.getByName(message.name))
+    var entity = this.scene.getByName(message.name);
+    if (!entity)
     {
       var lightObj = this.createLightFromMsg(message);
       this.scene.add(lightObj);
       guiEvents.emit('notification_popup', message.name+' inserted');
+    } else {
+      this.scene.updateLight(entity, message);
     }
     this.gui.setLightStats(message, 'update');
   };
@@ -2863,6 +2866,7 @@ GZ3D.GZIface.prototype.createVisualFromMsg = function(visual)
 GZ3D.GZIface.prototype.createLightFromMsg = function(light)
 {
   var obj, factor, range, direction;
+  var special_params = [0., 0., 0.];
 
   if (light.type === 1)
   {
@@ -2875,6 +2879,9 @@ GZ3D.GZIface.prototype.createLightFromMsg = function(light)
     factor = 5;
     direction = light.direction;
     range = light.range;
+    special_params[0] = light.spot_inner_angle;
+    special_params[1] = light.spot_outer_angle;
+    special_params[2] = light.spot_falloff;
   }
   else if (light.type === 3)
   {
@@ -2887,7 +2894,7 @@ GZ3D.GZIface.prototype.createLightFromMsg = function(light)
         light.attenuation_constant * factor,
         light.pose, range, light.cast_shadows, light.name,
         direction, light.specular, light.attenuation_linear,
-        light.attenuation_quadratic);
+        light.attenuation_quadratic, special_params);
 
   return obj;
 };
@@ -5140,7 +5147,7 @@ GZ3D.Scene.prototype.init = function()
   // camera
   this.camera = new THREE.PerspectiveCamera(
       60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-  this.defaultCameraPosition = new THREE.Vector3(0, -5, 5);
+  this.defaultCameraPosition = new THREE.Vector3(5, 0, 1);
   this.resetView();
 
   // Grid
@@ -5452,7 +5459,7 @@ GZ3D.Scene.prototype.initScene = function()
   // create a sun light
   var obj = this.createLight(3, new THREE.Color(0.8, 0.8, 0.8), 0.9,
        {position: {x:0, y:0, z:10}, orientation: {x:0, y:0, z:0, w:1}},
-       null, true, 'sun', {x: 0.5, y: 0.1, z: -0.9});
+       null, true, 'sun', {x: 0.5, y: 0.1, z: -0.9}, [0., 0., 0.]);
 
   this.add(obj);
 };
@@ -5857,6 +5864,89 @@ GZ3D.Scene.prototype.getByName = function(name)
 };
 
 /**
+ * Update a light
+ * @param {THREE.Object3D} model
+ * @param {} light message
+ */
+GZ3D.Scene.prototype.updateLight = function(model, light)
+{
+  var factor, range, direction;
+
+  if (this.modelManipulator && this.modelManipulator.object &&
+      this.modelManipulator.hovered)
+  {
+    return;
+  }
+
+  if( light.pose ) {
+    this.setPose(model, light.pose.position, light.pose.orientation);
+  }
+
+  var axel = typeof(model);
+  if (typeof(model) === THREE.PointLight)
+  {
+    factor = 1.5;
+    direction = null;
+    range = light.range;
+  }
+  else if (typeof(model) === THREE.SpotLight)
+  {
+    factor = 5;
+    direction = light.direction;
+    range = light.range;
+  }
+  else if (typeof(model) === THREE.DirectionalLight)
+  {
+    factor = 1;
+    direction = light.direction;
+    range = null;
+  }
+
+  if( light.diffuse ) {
+    var color = new THREE.Color();
+
+    if (typeof(diffuse) === 'undefined')
+    {
+      diffuse = 0xffffff;
+    }
+    else if (typeof(diffuse) !== THREE.Color)
+    {
+      color.r = diffuse.r;
+      color.g = diffuse.g;
+      color.b = diffuse.b;
+      diffuse = color.clone();
+    }
+    model.color = diffuse;
+  }
+  if( light.specular ) {
+    // property not relevant in THREE.js
+  }
+  if( light.attenuation_constant ) {
+    model.intensity = light.attenuation_constant * factor;
+  }
+  if( light.attenuation_linear ) {
+    // property not relevant in THREE.js
+  }
+  if( light.attenuation_quadratic ) {
+    // property not relevant in THREE.js
+  }
+  if( light.range ) {
+    model.distance = range;
+  }
+  if( light.type == 2 ) {
+    if( light.spot_inner_angle ) {
+      // property not relevant in THREE.js
+    }
+    if( light.spot_outer_angle ) {
+      model.angle = light.spot_outer_angle;
+    }
+    if( light.spot_falloff ) {
+      model.exponent = light.spot_falloff;
+    }
+  }
+};
+
+/**
  * Update a model's pose
  * @param {THREE.Object3D} model
  * @param {} position
@@ -6015,7 +6105,7 @@ GZ3D.Scene.prototype.createBox = function(width, height, depth)
  */
 GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     distance, cast_shadows, name, direction, specular, attenuation_linear,
-    attenuation_quadratic)
+    attenuation_quadratic, special_params)
 {
   var obj = new THREE.Object3D();
   var color = new THREE.Color();
@@ -6070,7 +6160,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   else if (type === 2)
   {
     elements = this.createSpotLight(obj, diffuse, intensity,
-        distance, cast_shadows);
+        distance, cast_shadows, special_params);
   }
   else if (type === 3)
   {
@@ -6159,7 +6249,7 @@ GZ3D.Scene.prototype.createPointLight = function(obj, color, intensity,
  * @returns {[THREE.Light, THREE.Mesh]}
  */
 GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
-    distance, cast_shadows)
+    distance, cast_shadows, special_params)
 {
   if (typeof(intensity) === 'undefined')
   {
@@ -6170,7 +6260,7 @@ GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
     distance = 20;
   }
 
-  var lightObj = new THREE.SpotLight(color, intensity);
+  var lightObj = new THREE.SpotLight(color, intensity, 0, 10, 0)
   lightObj.distance = distance;
   lightObj.position.set(0,0,0);
   lightObj.shadowDarkness = 0.3;
