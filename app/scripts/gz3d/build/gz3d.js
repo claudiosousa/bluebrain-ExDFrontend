@@ -5459,7 +5459,7 @@ GZ3D.Scene.prototype.initScene = function()
   // create a sun light
   var obj = this.createLight(3, new THREE.Color(0.8, 0.8, 0.8), 0.9,
        {position: {x:0, y:0, z:10}, orientation: {x:0, y:0, z:0, w:1}},
-       null, true, 'sun', {x: 0.5, y: 0.1, z: -0.9}, [0., 0., 0.]);
+       null, true, 'sun', {x: 0.5, y: 0.1, z: -0.9});
 
   this.add(obj);
 };
@@ -5882,20 +5882,19 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     this.setPose(model, light.pose.position, light.pose.orientation);
   }
 
-  var axel = typeof(model);
-  if (typeof(model) === THREE.PointLight)
+  if (light.type === 1)
   {
     factor = 1.5;
     direction = null;
     range = light.range;
   }
-  else if (typeof(model) === THREE.SpotLight)
+  else if (light.type === 2)
   {
     factor = 5;
     direction = light.direction;
     range = light.range;
   }
-  else if (typeof(model) === THREE.DirectionalLight)
+  else if (light.type === 3)
   {
     factor = 1;
     direction = light.direction;
@@ -6260,7 +6259,7 @@ GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
     distance = 20;
   }
 
-  var lightObj = new THREE.SpotLight(color, intensity, 0, 10, 0)
+  var lightObj = new THREE.SpotLight(color, intensity, distance, special_params[1], special_params[2]);
   lightObj.distance = distance;
   lightObj.position.set(0,0,0);
   lightObj.shadowDarkness = 0.3;
