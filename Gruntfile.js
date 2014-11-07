@@ -494,6 +494,14 @@ module.exports = function(grunt) {
             }
           }
         },
+
+        preprocess : {
+          options: {
+            context : {
+              NRP_LIGHTS_WIREFRAME_OFF: true
+            }
+          }
+        },
     });
 
 
@@ -569,5 +577,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('doc', ['clean', 'jsdoc']);
+
+    grunt.loadNpmTasks('grunt-preprocess');
 
 };

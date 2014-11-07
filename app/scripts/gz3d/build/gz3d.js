@@ -6192,6 +6192,10 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   obj.serverProperties.attenuation_linear = attenuation_linear;
   obj.serverProperties.attenuation_quadratic = attenuation_quadratic;
 
+  // @ifdef NRP_LIGHTS_WIREFRAME_OFF
+  helper.visible = false;
+  // @endif
+
   obj.add(lightObj);
   obj.add(helper);
   return obj;
