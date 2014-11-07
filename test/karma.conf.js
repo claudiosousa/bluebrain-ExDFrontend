@@ -46,7 +46,7 @@ module.exports = function(config) {
       'app/scripts/gz3d/client/js/include/RenderPass.js',
       'app/scripts/gz3d/client/js/include/MaskPass.js',
       'app/scripts/gz3d/client/js/include/ShaderPass.js',
-      'app/scripts/gz3d/build/gz3d.js',
+      'app/scripts/gz3d/build/gz3d.preprocessed.js',
       'test/support/**/*.js',
       'app/scripts/*.js',
       'test/mock/**/*.js',

@@ -2218,10 +2218,12 @@ GZ3D.GZIface.prototype.onConnected = function()
       this.scene.name = message.name;
     }
 
+    // @ifdef NRP_GRID_ON
     if (message.grid === true)
     {
       this.gui.guiEvents.emit('show_grid', 'show');
     }
+    //@endif
 
     if (message.ambient)
     {

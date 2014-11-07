@@ -498,7 +498,13 @@ module.exports = function(grunt) {
         preprocess : {
           options: {
             context : {
-              NRP_LIGHTS_WIREFRAME_OFF: true
+              NRP_LIGHTS_WIREFRAME_OFF: true,
+              NRP_GRID_ON: undefined
+            }
+          },
+          multifile : {
+           files : {
+             'app/scripts/gz3d/build/gz3d.preprocessed.js' : 'app/scripts/gz3d/build/gz3d.js'
             }
           }
         },
@@ -509,8 +515,9 @@ module.exports = function(grunt) {
         if (target === 'dist') {
             return grunt.task.run(['build', 'connect:dist:keepalive']);
         }
-
+        
         grunt.task.run([
+            'preprocess',
             'clean:server',
             'wiredep',
             'concurrent:server',
@@ -534,6 +541,7 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask('build', [
+        'preprocess',
         'clean:dist',
         'wiredep',
         'compass:dist',
@@ -579,5 +587,4 @@ module.exports = function(grunt) {
     grunt.registerTask('doc', ['clean', 'jsdoc']);
 
     grunt.loadNpmTasks('grunt-preprocess');
-
 };
