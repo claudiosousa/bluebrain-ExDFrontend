@@ -5867,6 +5867,7 @@ GZ3D.Scene.prototype.getByName = function(name)
 GZ3D.Scene.prototype.updateLight = function(model, light)
 {
   var factor, range, direction;
+  var lightObj = model.children[0];
 
   if (this.modelManipulator && this.modelManipulator.object &&
       this.modelManipulator.hovered)
@@ -5900,24 +5901,24 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
   if( light.diffuse ) {
     var color = new THREE.Color();
 
-    if (typeof(diffuse) === 'undefined')
+    if (typeof(light.diffuse) === 'undefined')
     {
-      diffuse = 0xffffff;
+      light.diffuse = 0xffffff;
     }
-    else if (typeof(diffuse) !== THREE.Color)
+    else if (typeof(light.diffuse) !== THREE.Color)
     {
-      color.r = diffuse.r;
-      color.g = diffuse.g;
-      color.b = diffuse.b;
+      color.r = light.diffuse.r;
+      color.g = light.diffuse.g;
+      color.b = light.diffuse.b;
       diffuse = color.clone();
     }
-    model.color = diffuse;
+    lightObj.color = light.diffuse;
   }
   if( light.specular ) {
     // property not relevant in THREE.js
   }
   if( light.attenuation_constant ) {
-    model.intensity = light.attenuation_constant * factor;
+    lightObj.intensity = light.attenuation_constant * factor;
   }
   if( light.attenuation_linear ) {
     // property not relevant in THREE.js
@@ -5926,17 +5927,17 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     // property not relevant in THREE.js
   }
   if( light.range ) {
-    model.distance = range;
+    lightObj.distance = range;
   }
   if( light.type == 2 ) {
     if( light.spot_inner_angle ) {
       // property not relevant in THREE.js
     }
     if( light.spot_outer_angle ) {
-      model.angle = light.spot_outer_angle;
+      lightObj.angle = light.spot_outer_angle;
     }
     if( light.spot_falloff ) {
-      model.exponent = light.spot_falloff;
+      lightObj.exponent = light.spot_falloff;
     }
   }
 };
