@@ -498,8 +498,8 @@ module.exports = function(grunt) {
         preprocess : {
           options: {
             context : {
-              NRP_LIGHTS_WIREFRAME_OFF: true,
-              NRP_GRID_ON: undefined
+              NRP_LIGHTS_WIREFRAME_OFF: undefined,
+              NRP_GRID_ON: true
             }
           },
           multifile : {
@@ -533,6 +533,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('test', [
+        'preprocess',
         'clean:server',
         'concurrent:test',
         'autoprefixer',
