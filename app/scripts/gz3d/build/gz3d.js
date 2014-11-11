@@ -2120,7 +2120,7 @@ GZ3D.GZIface.prototype.connect = function()
 {
   // connect to websocket
   this.webSocket = new ROSLIB.Ros({
-    url : 'ws://' + location.hostname + ':7681'
+    url : GZ3D.webSocketUrl
   });
 
   var that = this;
