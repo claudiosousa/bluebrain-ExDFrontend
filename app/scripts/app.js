@@ -64,3 +64,13 @@
         }
     }]);
 }());
+
+// These are the two functions of JQuery mobile used by GZWeb. We deliberately
+// chose to redeclare them as empty and not to include JQuery mobile. The
+// reason is that JQuery mobile along with angular and the bootstrap based hbp template
+// result in quite a layout mess. JQuery "improves" the layout by adding some divs and
+// some css styles that try to make the page full screen but rather fail at this job in
+// our case.
+
+$.fn.buttonMarkup = function(){};
+$.fn.popup = function(){};
