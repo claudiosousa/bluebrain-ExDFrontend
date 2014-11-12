@@ -15,9 +15,16 @@
     <link rel="stylesheet" href="bower_components/angular-hbp-document-client/dist/angular-hbp-document-client.css" />
     <!-- endbower -->
     <!-- endbuild -->
+
     <!-- build:css(.tmp) styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
+
+    <!-- build:css(app) styles/gz3d.css -->
+    <link rel="stylesheet" href="styles/gz3d.css"/>
+    <link rel="stylesheet" href="styles/reset.css"/>
+    <!-- endbuild -->
+
 </head>
 
 <body>
@@ -70,7 +77,7 @@
         <div ui-view></div>
     </div>
 
-   
+
 
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
@@ -107,11 +114,7 @@
     <!-- endbower -->
     <!-- endbuild -->
 
-    
-    <!-- include from gzweb client -->
-    <link rel="stylesheet" href="styles/gz3d.css"/>
-    <link rel="stylesheet" href="styles/reset.css"/>
-
+    <!-- build:js({app,.tmp,.}) scripts/gz3d.js -->
     <script src="scripts/gz3d/client/js/include/jquery-1.9.1.js"></script>
     <script src="scripts/gz3d/client/js/include/jquery.mobile-1.4.0.min.js"></script>
     <script src="scripts/gz3d/client/js/include/three.js"></script>
@@ -125,11 +128,10 @@
     <script src="scripts/gz3d/client/js/include/EffectComposer.js"></script>
     <script src="scripts/gz3d/client/js/include/RenderPass.js"></script>
     <script src="scripts/gz3d/client/js/include/MaskPass.js"></script>
-    <script src="scripts/gz3d/client/js/include/ShaderPass.js"></script>
-
+    <script src="scripts/gz3d/client/js/include/ShaderPass.js"></script
     <script src="scripts/gz3d/build/gz3d.preprocessed.js"></script>
-    <!-- include from gzweb client -->
-    
+    <!-- endbuild -->
+
     <!-- build:js({app,.tmp,.}) scripts/app.js -->
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
