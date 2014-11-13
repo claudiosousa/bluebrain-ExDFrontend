@@ -74,3 +74,4 @@
 
 $.fn.buttonMarkup = function(){};
 $.fn.popup = function(){};
+$.fn.checkboxradio = function(){};

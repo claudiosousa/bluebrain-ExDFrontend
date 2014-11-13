@@ -5,10 +5,12 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 @import "angular-hbp-common/dist/scss/hbp-common.scss";
 @import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
 // endbower
+
 // Accounts for the fixed navbar
-.ex-dfrontend-app {
+.container-with-navbar-margin {
     margin-top: 80px;
 }
+
 // Footer
 .footer {
     padding: $padding-base-vertical 0;
@@ -61,4 +63,10 @@ input[readonly].exd-model-selection {
 .fadein.ng-hide-remove.ng-hide-remove-active {
   opacity: 1;
   display: block !important;
+}
+
+// Canvas issue see
+// http://stackoverflow.com/questions/15807833/div-containing-canvas-have-got-a-strange-bottom-margin-of-5px
+canvas {
+  display: block;
 }
