@@ -5145,7 +5145,7 @@ GZ3D.Scene.prototype.init = function()
   // camera
   this.camera = new THREE.PerspectiveCamera(
       60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-  this.defaultCameraPosition = new THREE.Vector3(5, 0, 1);
+  this.defaultCameraPosition = new THREE.Vector3(/* @echo NRP_CAMERA_INITPOS */);
   this.resetView();
 
   // Grid
@@ -6194,7 +6194,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   obj.serverProperties.attenuation_linear = attenuation_linear;
   obj.serverProperties.attenuation_quadratic = attenuation_quadratic;
 
-  // @ifdef NRP_LIGHTS_WIREFRAME_OFF
+  // @ifndef NRP_LIGHTS_WIREFRAME_ON
   helper.visible = false;
   // @endif
 

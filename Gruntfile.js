@@ -498,8 +498,9 @@ module.exports = function(grunt) {
         preprocess : {
           options: {
             context : {
-              NRP_LIGHTS_WIREFRAME_OFF: undefined,
-              NRP_GRID_ON: true
+              NRP_LIGHTS_WIREFRAME_ON: undefined, // set to true if wanted
+              NRP_GRID_ON: undefined, // set to true if wanted
+              NRP_CAMERA_INITPOS: '5, 0, 1' // initial camera position = 'X, Y, Z'
             }
           },
           multifile : {
