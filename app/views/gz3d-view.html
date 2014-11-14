@@ -1102,14 +1102,25 @@
 
       <!-- content -->
       <div data-role="content" id="container">
-        <div data-role="popup" id="notification-popup" data-history="false"></div>
-        <div data-role="popup" data-corners="false" id="model-popup" data-history="false">
-          <ul data-role="listview">
-            <li id="view-transparent" data-corners="false" data-icon="false" data-iconpos="right"><a href="#">Transparent</a></li>
-            <li id="view-wireframe" data-corners="false" data-icon="false" data-iconpos="right"><a href="#">Wireframe</a></li>
-            <li id="view-joints" data-corners="false" data-icon="false" data-iconpos="right"><a href="#">Joints</a></li>
-            <li id="delete-entity" data-corners="false" data-icon="false"><a href="#">Delete</a></li>
-          </ul>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-6" style="padding: 0;">
+              <div class="hbp-toolbar hbp-toolbar-expand">
+                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
+                <div class="hbp-toolbar-label">&nbsp;</div>
+                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-minus"></i></div>
+                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-play"></i></div>
+              </div>
+            </div>
+            <div class="col-sm-6" style="padding: 0;">
+              <div class="hbp-toolbar hbp-toolbar-expand">
+                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-pause"></i></div>
+                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-plus"></i></div>
+                <div class="hbp-toolbar-label">&nbsp;</div>
+                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <!-- content -->
