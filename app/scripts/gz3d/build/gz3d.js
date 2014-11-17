@@ -2538,16 +2538,10 @@ GZ3D.GZIface.prototype.onConnected = function()
       if (entity.children[0] instanceof THREE.PointLight)
       {
         attenuation_constant *= 1.5;
-        entityMsg.type = 1;
       }
       else if (entity.children[0] instanceof THREE.SpotLight)
       {
         attenuation_constant *= 5;
-        entityMsg.type = 2;
-      }
-      else if (entity.children[0] instanceof THREE.DirectionalLight)
-      {
-        entityMsg.type = 3;
       }
 
       entityMsg.attenuation_constant = attenuation_constant;
@@ -5887,19 +5881,19 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     this.setPose(model, light.pose.position, light.pose.orientation);
   }
 
-  if (light.type === 1)
+  if (lightObj instanceof THREE.PointLight)
   {
     factor = 1.5;
     direction = null;
     range = light.range;
   }
-  else if (light.type === 2)
+  else if (lightObj instanceof THREE.SpotLight)
   {
     factor = 5;
     direction = light.direction;
     range = light.range;
   }
-  else if (light.type === 3)
+  else if (lightObj instanceof THREE.DirectionalLight)
   {
     factor = 1;
     direction = light.direction;
