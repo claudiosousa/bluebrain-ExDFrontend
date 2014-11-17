@@ -72,6 +72,7 @@
 // some css styles that try to make the page full screen but rather fail at this job in
 // our case.
 
+/* global $: false */
 $.fn.buttonMarkup = function(){};
 $.fn.popup = function(){};
 $.fn.checkboxradio = function(){};

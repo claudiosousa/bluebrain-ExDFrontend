@@ -1101,28 +1101,27 @@
       <!-- header -->
 
       <!-- content -->
-      <div ng-controller="treeControl" data-role="content" id="container">
-        <div class="container-fluid" id="overlay" style="position: absolute; top:50px; left:0px;">
+      <div ng-controller="Gz3dViewCtrl" data-role="content" id="container">
+        <div class="container-fluid" id="overlay" style="position: absolute; top:50px; left:0px; width:100%">
           <div class="row">
             <div class="col-sm-6" style="padding: 0;">
               <div class="hbp-toolbar hbp-toolbar-expand">
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
                 <div class="hbp-toolbar-label">&nbsp;</div>
-                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-minus"></i></div>
+                <div class="hbp-toolbar-action"><i ng-click="incrementLightIntensity(-0.1);" class="glyphicon glyphicon-minus"></i></div>
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-play"></i></div>
               </div>
             </div>
             <div class="col-sm-6" style="padding: 0;">
               <div class="hbp-toolbar hbp-toolbar-expand">
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-pause"></i></div>
-                <div class="hbp-toolbar-action" ng-click="changeLight('diffuse', 'left_spot', 'rgb(255,0,0)');"><i class="glyphicon glyphicon-plus"></i></div>
+                <div class="hbp-toolbar-action" ng-click="incrementLightIntensity(0.1);"><i class="glyphicon glyphicon-plus"></i></div>
                 <div class="hbp-toolbar-label">&nbsp;</div>
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
       <!-- content -->
 
