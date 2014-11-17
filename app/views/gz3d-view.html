@@ -1102,7 +1102,7 @@
 
       <!-- content -->
       <div data-role="content" id="container">
-        <div class="container-fluid">
+        <div class="container-fluid" id="overlay" style="position: absolute; top:50px; left:0px;">
           <div class="row">
             <div class="col-sm-6" style="padding: 0;">
               <div class="hbp-toolbar hbp-toolbar-expand">
@@ -1115,19 +1115,20 @@
             <div class="col-sm-6" style="padding: 0;">
               <div class="hbp-toolbar hbp-toolbar-expand">
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-pause"></i></div>
-                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-plus"></i></div>
+                <div class="hbp-toolbar-action" ng-click="changeLight('diffuse', 'left_spot', 'rgb(255,0,0)');"><i class="glyphicon glyphicon-plus"></i></div>
                 <div class="hbp-toolbar-label">&nbsp;</div>
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
       <!-- content -->
 
     </div>
     <!-- page -->
-
+    
     <!-- WebGL -->
     <script>
       if (!Detector.webgl)

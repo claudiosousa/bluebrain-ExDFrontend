@@ -2535,13 +2535,19 @@ GZ3D.GZIface.prototype.onConnected = function()
 
       var attenuation_constant = entity.children[0].intensity;
       // Adjust according to factor
-      if (entity instanceof THREE.PointLight)
+      if (entity.children[0] instanceof THREE.PointLight)
       {
         attenuation_constant *= 1.5;
+        entityMsg.type = 1;
       }
-      else if (entity instanceof THREE.SpotLight)
+      else if (entity.children[0] instanceof THREE.SpotLight)
       {
         attenuation_constant *= 5;
+        entityMsg.type = 2;
+      }
+      else if (entity.children[0] instanceof THREE.DirectionalLight)
+      {
+        entityMsg.type = 3;
       }
 
       entityMsg.attenuation_constant = attenuation_constant;
