@@ -28,5 +28,9 @@
                   scene.emitter.emit('entityChanged', entity);
                 }
             };
+
+            $scope.pauseGazebo = function(paused) {
+                gui.emitter.emit('pause', paused);
+            };
         }]);
 }());

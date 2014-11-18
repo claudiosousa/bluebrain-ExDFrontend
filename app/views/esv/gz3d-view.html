@@ -1109,12 +1109,12 @@
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
                 <div class="hbp-toolbar-label">&nbsp;</div>
                 <div class="hbp-toolbar-action"><i ng-click="incrementLightIntensity(-0.1);" class="glyphicon glyphicon-minus"></i></div>
-                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-play"></i></div>
+                <div class="hbp-toolbar-action"><i ng-click="pauseGazebo(false);" class="glyphicon glyphicon-play"></i></div>
               </div>
             </div>
             <div class="col-sm-6" style="padding: 0;">
               <div class="hbp-toolbar hbp-toolbar-expand">
-                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-pause"></i></div>
+                <div class="hbp-toolbar-action"><i ng-click="pauseGazebo(true);" class="glyphicon glyphicon-pause"></i></div>
                 <div class="hbp-toolbar-action" ng-click="incrementLightIntensity(0.1);"><i class="glyphicon glyphicon-plus"></i></div>
                 <div class="hbp-toolbar-label">&nbsp;</div>
                 <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
