@@ -82,7 +82,7 @@
                 function($http, $q, hbpFileStore, bbpConfig, $compile, $rootScope) {
                     return {
                         restrict: 'E',
-                        templateUrl: 'partials/exd-input-file-button.html',
+                        templateUrl: 'partials/exd/exd-input-file-button.html',
                         scope: {
                             input: '=exdInput',
                             imageDefaultThumbnail: '@exdImageDefaultThumbnail'

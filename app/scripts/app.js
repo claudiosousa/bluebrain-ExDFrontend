@@ -18,15 +18,15 @@
             // (See https://github.com/angular-ui/ui-router/wiki)
             $stateProvider.state('home', {
                 url: '/',
-                templateUrl: 'views/main.html',
+                templateUrl: 'views/common/main.html',
                 controller: 'mainCtrl'
             }).state('new', {
                 url: '/new',
-                templateUrl: 'views/new.html',
+                templateUrl: 'views/exd/new.html',
                 controller: 'NewCtrl'
             }).state('gz3d-view', {
                 url: '/gz3d-view',
-                templateUrl: 'views/gz3d-view.html',
+                templateUrl: 'views/esv/gz3d-view.html',
                 controller: 'Gz3dViewCtrl'
             });
 
