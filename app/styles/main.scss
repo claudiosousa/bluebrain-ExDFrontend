@@ -29,14 +29,25 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
   box-shadow: none;
 }
 
-.nrp-main-titles
+.nrp-main-title
+{
+  text-align: center;
+}
+
+.nrp-main-hints
 {
   text-align:center;
   margin-bottom: 22px;
   font-size: 21px;
   font-family: "Petit Formal Script", arial, cursive;
-  font-weight: 900;
-  transform: rotate(-1deg);
+  fill: #777;
+  transform: rotate(-5deg);
+}
+
+.nrp-main-hints-arrow
+{
+  text-align: center;
+  fill: #777;
 }
 
 .fadein,
