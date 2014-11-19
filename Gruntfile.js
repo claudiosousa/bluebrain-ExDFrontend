@@ -46,6 +46,10 @@ module.exports = function(grunt) {
                     livereload: '<%= connect.options.livereload %>'
                 }
             },
+            jspreprocessed: {
+                files: ['<%= yeoman.app %>/scripts/esv/gz3d/build/gz3d.js'],
+                tasks: ['preprocess']
+            },
             jsTest: {
                 files: ['test/spec/**/*.js'],
                 tasks: ['newer:jshint:test', 'karma']
@@ -505,7 +509,7 @@ module.exports = function(grunt) {
           },
           multifile : {
            files : {
-             'app/scripts/esv/gz3d/build/gz3d.preprocessed.js' : 'app/scripts/esv/gz3d/build/gz3d.js'
+             '<%= yeoman.app %>/scripts/esv/gz3d/build/gz3d.preprocessed.js' : '<%= yeoman.app %>/scripts/esv/gz3d/build/gz3d.js'
             }
           }
         },

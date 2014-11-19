@@ -1088,7 +1088,7 @@ GZ3D.Gui.prototype.init = function()
           $( '#notification-popup' ).html('&nbsp;'+notification+'&nbsp;');
           $( '#notification-popup' ).popup('open', {
               y:window.innerHeight-50});
-          
+
           if (duration === undefined)
           {
             duration = 2000;
@@ -5204,7 +5204,7 @@ GZ3D.Scene.prototype.init = function()
 
   this.timeDown = null;
 
-  this.controls = new THREE.OrbitControls(this.camera);
+  this.controls = new THREE.OrbitControls(this.camera, this.getDomElement());
   this.scene.add(this.controls.targetIndicator);
 
   this.emitter = new EventEmitter2({ verbose: true });
@@ -7543,11 +7543,11 @@ GZ3D.SdfParser.prototype.init = function()
             'When connected scene will be reinitialized', 5000);
     that.onConnectionError();
   });
-  
+
   this.gziface.emitter.on('material', function(mat) {
     that.materials = mat;
   });
-  
+
   this.gziface.emitter.on('gzstatus', function(gzstatus) {
     if (gzstatus === 'error')
     {
@@ -7568,7 +7568,7 @@ GZ3D.SdfParser.prototype.init = function()
 GZ3D.SdfParser.prototype.onConnectionError = function()
 {
   this.scene.initScene();
-  
+
   var that = this;
   var entityCreated = function(model, type)
   {
@@ -7578,7 +7578,7 @@ GZ3D.SdfParser.prototype.onConnectionError = function()
     }
   };
   this.gui.emitter.on('entityCreated', entityCreated);
-  
+
   var deleteEntity = function(entity)
   {
     var name = entity.name;
@@ -8292,9 +8292,9 @@ GZ3D.SdfParser.prototype.addModelByType = function(model, type)
     modelObj.name = model.name;
     this.scene.setPose(modelObj, translation, quaternion);
   }
-  
+
   var that = this;
-  
+
   var addModelFunc;
   addModelFunc = function()
   {
@@ -8310,7 +8310,7 @@ GZ3D.SdfParser.prototype.addModelByType = function(model, type)
       setTimeout(addModelFunc, 100);
     }
   };
-  
+
   setTimeout(addModelFunc , 100);
 
 //  this.scene.add(modelObj);
