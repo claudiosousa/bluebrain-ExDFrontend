@@ -1,0 +1,67 @@
+<div class="container-with-navbar-margin container-fluid">
+  <h2>Brain Interfaces & Body Integrator</h2>
+  <h4><span class="label label-warning">The Brain Interfaces & Body Integrator development will start soon.</span></h4>
+
+  <p>One of the biggest challenges for neurorobotics experiments is the coupling between brain models and the various
+    sensors and effectors of a robot. In the Neurorobotics Platform, this task is solved by the Brain Interfaces and
+    Body Integrator (BIBI). The Brain Interfaces & Body Integrator (BIBI) will let the user choose a brain simulator
+    and a brain model to run on it, and then it will let the user connect it to a virtual robot. These connections are
+    then used during the simulation to transfer data from the sensors of the virtual robot to the desired parts of the
+    brain
+    model and from the brain model back to the actuators of the virtual robot.
+  </p>
+
+  <p>BIBI is used to specify the connections
+    between brain model and robot during design time. During the simulation, the Closed-Loop Engine is responsible for
+    transferring the respective data between brain simulation engine (e.g. NETSIM) and the World Simulation Engine.
+    So-called transfer functions offer the user a programmatic framework to transform the data that is exchanged between
+    brain and robot model (see SP 10 specification document). For example, transfer functions are the way to translate
+    spikes and current coming from a neural simulation into the physical signals for robot servo-motors or activation
+    signals for abstract muscle models.</p>
+
+  <h4>Meanwhile...</h4>
+
+  <p>The first neural simulator that the platform will support is <a href="http://nest-initiative.org/">NEST</a> (<img
+    src="img/common/nest-logo.png" alt="NEST"/>). The platform will support <a href="http://neuralensemble.org/PyNN/">PyNN</a>
+    (<img
+      src="img/common/pynn-logo.png" alt="PyNN"/>) as another way to write your simulation scripts. You can start
+    writing these scripts.</p>
+
+  <p>The transfer functions describe how spikes from the neuronal simulation are to be translated into commands for a
+    robot and how the sensor data from the robot should be translated back to spikes. This translation is specified by
+    the users of the Neurorobotics project, which are neuroscientists. Thus, a framework is provided to make the
+    specification of these transfer functions as easy as possible for the users and abstracting away as much as possible
+    technical details. This framework is referred to as Transfer Functions framework (TF framework).</p>
+
+  <p>Here is a python example of a transfer function. The package <span class="CodeMirror">NeuroboticsFramework</span>
+    can be installed via <span
+      class="CodeMirror">pip install --pre -i http://bbpsrv19.epfl.ch:9090/simple python-cle</span>.</p>
+
+  <textarea ui-codemirror="{
+            lineWrapping : true,
+            lineNumbers: true,
+            mode: 'text/x-python',
+            readOnly: true
+        }">__author__ = 'GeorgHinkel'
+
+import NeuroboticsFramework as nrp
+from husky import Husky
+
+# Transfer functions may in general have some state
+# in this case, we reserve memory for a global double variable
+right_arm_v = 0
+
+# The annotation Neuron2Robot registers this function as a transfer function
+# As the parameter neuron0 is not explicitly mapped, the framework will assume a mapping
+# to the neuron with the GID neuron0
+# The structure of the imported Husky module is generated from the robot model
+@nrp.Neuron2Robot(Husky.RightArm.pose)
+def right_arm(t, neuron0):
+global right_arm_v
+if neuron0:
+right_arm_v = 1
+else:
+right_arm_v /= 2
+return right_arm_v</textarea>
+
+</div>

@@ -11,7 +11,7 @@
      */
 
     angular
-        .module('exdFrontendApp', ['ngAnimate', 'ngCookies', 'ngResource', 'ngSanitize', 'ngTouch', 'ui.router', 'ui.bootstrap', 'bbpOidcClient', 'hbpCommon', 'bbpConfig', 'hbpDocumentClient', 'gzangular'])
+        .module('exdFrontendApp', ['ngAnimate', 'ngCookies', 'ngResource', 'ngSanitize', 'ngTouch', 'ui.router', 'ui.bootstrap', 'ui.codemirror', 'bbpOidcClient', 'hbpCommon', 'bbpConfig', 'hbpDocumentClient', 'gzangular'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
@@ -28,6 +28,18 @@
                 url: '/gz3d-view',
                 templateUrl: 'views/esv/gz3d-view.html',
                 controller: 'Gz3dViewCtrl'
+            }).state('rd', {
+              url: '/rd',
+              templateUrl: 'views/common/rd.html'
+            }).state('ed', {
+              url: '/ed',
+              templateUrl: 'views/common/ed.html'
+            }).state('bibi', {
+              url: '/bibi',
+              templateUrl: 'views/common/bibi.html'
+            }).state('esv-wall', {
+              url: '/esv-wall',
+              templateUrl: 'views/common/esv-display-wall.html'
             });
 
             // Provide a default route.

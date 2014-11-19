@@ -1,0 +1,32 @@
+<div class="container-with-navbar-margin container-fluid">
+  <h2>Environment Designer</h2>
+  <h4><span class="label label-warning">The Environment Designer development will start soon.</span></h4>
+
+  <p>The Environment Designer will allow users to design virtual environments for interactions with simulated robots in
+    the context of virtual experiments. The user can either refer to a library of pre-build parts and design primitives,
+    or design new objects by specifying their appearance and their physical properties.</p>
+  <h4>Meanwhile...</h4>
+
+  <p>The neurorobotics platform is built on top of <a href="http://gazebosim.org/">Gazebo</a> <img
+    src="img/common/gazebo-logo.png"/>. Any environment created for Gazebo (and made of simple primitive or Collada
+    objects) is therefore compatible with the platform. Gazebo uses the SDF format. If you want your environments to be
+    available, you need to upload the corresponding SDF file(s) and assets through the portal document browser (<img
+      src="img/common/document-browser.png" alt="Document browser"/>). In order for it to be recognised by the platform,
+    the
+    main sdf file needs to be edited:
+  <ul>
+    <li>The content type should be changed to <b>nrp/environment</b></li>
+    <li>A custom attribute <b>nrpDescription</b> with a string containing the description of the environment needs to be
+      added.
+    </li>
+    <li>A custom attribute <b>nrpName</b> with a string containing the name of the environment needs to be added,</li>
+    <li>An optional attribute <b>thumbnail</b> with the uuid to an image uploaded to the portal representing the
+      environment can be added.
+    </li>
+  </ul>
+  </p>
+  <p>The virtual room environment main file (virtual_room.sdf) properties:<br>
+    <img class="img-thumbnail" src="img/common/document-browser-nrp-environment-properties.png"
+         alt="Virtual room environment file properties"/>
+  </p>
+</div>
