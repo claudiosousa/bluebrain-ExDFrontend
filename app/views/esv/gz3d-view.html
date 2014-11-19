@@ -1101,7 +1101,7 @@
       <!-- header -->
 
       <!-- content -->
-      <div ng-controller="Gz3dViewCtrl" data-role="content" id="container">
+      <div ng-controller="Gz3dViewCtrl" ng-mousedown="openContextMenu($event);" data-role="content" id="container">
         <div class="container-fluid" id="overlay" style="position: absolute; top:50px; left:0px; width:100%">
           <div class="row">
             <div class="col-sm-6" style="padding: 0;">
@@ -1122,12 +1122,24 @@
             </div>
           </div>
         </div>
+
+        <div id="contextmenu" ng-show="isShowContextMenu" ng-style="{ 'position': 'absolute', 'left': contextMenuLeft, 'top': contextMenuTop, 'z-index': 1000 , 'background-color' : 'white' }">
+
+          <!-- context menu -->
+          <ul class="hbp-list-tableview hbp-list-tableview-selectable">
+            <li class="hbp-list-tableview-heading">Change Color</li>
+            <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('red');">Red</li>
+            <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('blue');">Blue</li>
+          </ul>
+
+        </div>
+
       </div>
       <!-- content -->
 
     </div>
     <!-- page -->
-    
+
     <!-- WebGL -->
     <script>
       if (!Detector.webgl)
