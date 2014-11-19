@@ -1,0 +1,41 @@
+<div class="container-with-navbar-margin container-fluid">
+  <h2>The Experiment Simulation Viewer - Display Wall</h2>
+  <h4><span class="label label-success">The Experiment Simulation Viewer - Display Wall development is in good progresses.</span>
+  </h4>
+
+  <p>The first version could be started with the following procedure:</p>
+  <textarea ui-codemirror="{
+            lineWrapping : true,
+            lineNumbers: true,
+            readOnly: true,
+            mode: 'text/x-sh'
+        }"># Connect to the vizcluster / worker process
+ssh bbpvizuser@bbplxviz03
+
+# Load Gazebo
+cd /nfs4/bbp.epfl.ch/user/peppicel/public/
+source setup-gzserver.sh
+export GAZEBO_MASTER_URI=http://bbpca030.epfl.ch:11345
+
+# Start ESVRender
+cd ESVRender/build/bin
+./ESVRenderDemo --eq-client --eq-listen bbplxviz04.epfl.ch:1234
+
+
+# Connect to the vizcluster / worker process
+ssh bbpvizuser@bbplxviz04
+# Load Gazebo
+cd /nfs4/bbp.epfl.ch/user/peppicel/public/
+source setup-gzserver.sh
+export GAZEBO_MASTER_URI=http://bbpca030.epfl.ch:11345
+
+# Start ESVRender
+cd ESVRender/build/bin
+./ESVRenderDemo --eq-config
+../../apps/ESVRenderDemo/Configs/LausanneDisplayWall/displaywall-direct-nodes3and4-without-local.eqc --ini-cfg
+../../apps/ESVRenderDemo/Configs/LausanneDisplayWall/displaywall.ini</textarea>
+  <hr>
+  <img src="img/common/virtual_room.jpg" class="img-thumbnail">
+
+
+</div>

@@ -21,7 +21,13 @@
     "angular-bbp-config": "latest",
     "angular-hbp-document-client": "latest",
     "xml2json": "latest",
-    "stats.js": "latest"
+    "stats.js": "latest",
+    "angular-ui-codemirror": "latest"
+  },
+  "overrides": {
+    "codemirror": {
+      "main": ["lib/codemirror.js", "lib/codemirror.css", "mode/python/python.js", "mode/shell/shell.js"]
+    }
   },
   "devDependencies": {
     "angular-mocks": "~1.2.0",
