@@ -5178,9 +5178,6 @@ GZ3D.Scene.prototype.init = function()
 
   // Need to use `document` instead of getDomElement in order to get events
   // outside the webgl div element.
-  document.addEventListener( 'mouseup',
-      function(event) {that.onPointerUp(event);}, false );
-
   this.getDomElement().addEventListener( 'mouseup',
       function(event) {that.onPointerUp(event);}, false );
 
@@ -6202,6 +6199,8 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   helper.visible = false;
   // @endif
 
+  lightObj.initialIntensity = lightObj.intensity;
+  
   obj.add(lightObj);
   obj.add(helper);
   return obj;

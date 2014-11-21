@@ -18,17 +18,6 @@
       GZ3D.webSocketUrl = bbpConfig.get("api.neurorobotics.gzweb.development1.websocket");
       $rootScope.GZ3D = GZ3D;
 
-      $scope.incrementLightIntensity = function (ratio) {
-        var factor = 1 + ratio;
-        var lights = scene.scene.__lights;
-        var numberOfLights = lights.length;
-        for (var i = 0; i < numberOfLights; i++) {
-          lights[i].intensity *= factor;
-          var entity = scene.getByName(lights[i].name);
-          scene.emitter.emit('entityChanged', entity);
-        }
-      };
-
       $scope.pauseGazebo = function (paused) {
         gui.emitter.emit('pause', paused);
       };
@@ -110,6 +99,25 @@
           scene.radialMenu.showing = false;
         }
       };
+
+      // Lights management
+               
+      var incrementLightIntensities = function (ratio) {
+        var lights = scene.scene.__lights; 
+        var numberOfLights = lights.length;
+        for (var i = 1; i < numberOfLights; i++) {
+          lights[i].intensity = (1 + ratio) * lights[i].initialIntensity;
+          var entity = scene.getByName(lights[i].name);
+          scene.emitter.emit('entityChanged', entity);
+        }
+      };
+
+      $scope.sliderPosition = 50;
+      $scope.updateLightIntensities = function(sliderPosition) {
+        var ratio = 2.0 * (sliderPosition - 50.0) / 100.5; // turns the slider position ([0,100]) into an increase/decrease ratio ([-1, 1])
+        // we avoid purposedly -1.0 when dividing by 100 + epsilon -- for zero intensity cannot scale to a positive value!
+        incrementLightIntensities(ratio);
+      }
 
     }]);
 }());

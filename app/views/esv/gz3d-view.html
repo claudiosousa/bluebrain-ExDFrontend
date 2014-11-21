@@ -1100,43 +1100,40 @@
       </fieldset>
       <!-- header -->
 
-      <!-- content -->
+      <!-- container -->
       <div ng-controller="Gz3dViewCtrl" ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container">
-        <div class="container-fluid" id="overlay" style="position: absolute; top:50px; left:0px; width:100%">
-          <div class="row">
-            <div class="col-sm-6" style="padding: 0;">
-              <div class="hbp-toolbar hbp-toolbar-expand">
-                <div class="hbp-toolbar-action"><i class="glyphicon glyphicon-heart"></i></div>
-                <div class="hbp-toolbar-label">&nbsp;</div>
-                <div class="hbp-toolbar-action"><i ng-click="incrementLightIntensity(-0.1);" class="glyphicon glyphicon-minus"></i></div>
-                <div class="hbp-toolbar-action"><i ng-click="pauseGazebo(false);" class="glyphicon glyphicon-play"></i></div>
-              </div>
+        <!-- overlay -->
+        <div id="overlay" class="esv-overlay">
+            <div class="hbp-toolbar hbp-toolbar-expand">
+                <div class="hbp-toolbar-action"><i ng-click="pauseGazebo(false);" class="glyphicon glyphicon-play"></i>
+                </div>
+                <div class="hbp-toolbar-action"><i ng-click="pauseGazebo(true);" class="glyphicon glyphicon-pause"></i>
+                </div>
+                <div class="esv-toolbar-large-tool">
+                    <i class="fa fa-lightbulb-o"></i>
+                    <input id="lightslider" type="range" min="0" max="100" steps="10" ng-model="sliderPosition" ng-change="updateLightIntensities(sliderPosition)"/>
+                </div>
+                <div class="esv-toolbar-large-tool">
+                    <i class="fa fa-info-circle"></i>
+                    <span>{{hoveredObject}}</span>
+                </div>
             </div>
-            <div class="col-sm-6" style="padding: 0;">
-              <div class="hbp-toolbar hbp-toolbar-expand">
-                <div class="hbp-toolbar-action"><i ng-click="pauseGazebo(true);" class="glyphicon glyphicon-pause"></i></div>
-                <div class="hbp-toolbar-action" ng-click="incrementLightIntensity(0.1);"><i class="glyphicon glyphicon-plus"></i></div>
-                <div class="hbp-toolbar-label">{{hoveredObject}}</div>
-                <div class="hbp-toolbar-label">&nbsp;</div>
-              </div>
-            </div>
-          </div>
         </div>
+        <!-- overlay -->
 
-        <div id="contextmenu" ng-show="isContextMenuShown" ng-style="{ 'position': 'absolute', 'left': contextMenuLeft, 'top': contextMenuTop, 'z-index': 1000 , 'background-color' : 'white' }">
-
-          <!-- context menu -->
+        <!-- context menu -->
+        <div id="contextmenu" class="esv-contextmenu" ng-show="isContextMenuShown" ng-style="{ 'left': contextMenuLeft, 'top': contextMenuTop }">
           <ul class="hbp-list-tableview hbp-list-tableview-selectable">
             <li class="hbp-list-tableview-heading">Change Color</li>
             <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('red'); $event.stopPropagation();">Red</li>
             <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('blue'); $event.stopPropagation();">Blue</li>
             <li class="hbp-list-tableview-entry" ng-click="toggleScreenChangeMenu(false); $event.stopPropagation();">No Change (Close)</li>
           </ul>
-
         </div>
+        <!-- context menu -->
 
       </div>
-      <!-- content -->
+      <!-- container -->
 
     </div>
     <!-- page -->
