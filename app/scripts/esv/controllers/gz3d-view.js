@@ -11,6 +11,9 @@
 
   /* global GZ3D: false */
   /* global scene: false */
+  /* global gui: false */
+  /* global THREE: false */
+  /* global console: false */
 
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', function ($rootScope, $scope, bbpConfig) {
@@ -36,11 +39,11 @@
         var intersect = new THREE.Vector3();
         var model = scene.getRayCastModel(pos, intersect);
         return model;
-      }
+      };
 
       $scope.updateHoverInfo = function (event) {
         var model = $scope.getModelUnderMouse(event);
-        if (model != null) {
+        if (model !== null) {
           $scope.hoveredObject = model.name;
         } else {
           $scope.hoveredObject = "";
@@ -105,19 +108,20 @@
       var incrementLightIntensities = function (ratio) {
         var lights = scene.scene.__lights; 
         var numberOfLights = lights.length;
-        for (var i = 1; i < numberOfLights; i++) {
-          lights[i].intensity = (1 + ratio) * lights[i].initialIntensity;
+        for (var i = 1; i < numberOfLights; i+=1) { // we don't change the ambient light (i = 0)
           var entity = scene.getByName(lights[i].name);
+          var lightObj = entity.children[0];
+          lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
           scene.emitter.emit('entityChanged', entity);
         }
       };
 
       $scope.sliderPosition = 50;
       $scope.updateLightIntensities = function(sliderPosition) {
-        var ratio = 2.0 * (sliderPosition - 50.0) / 100.5; // turns the slider position ([0,100]) into an increase/decrease ratio ([-1, 1])
-        // we avoid purposedly -1.0 when dividing by 100 + epsilon -- for zero intensity cannot scale to a positive value!
+        var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
+        // we avoid purposedly -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
         incrementLightIntensities(ratio);
-      }
+      };
 
     }]);
 }());
