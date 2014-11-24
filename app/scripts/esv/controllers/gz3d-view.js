@@ -31,7 +31,7 @@
 
       $scope.hoveredObject = "";
 
-      function getModelUnderMouse(event) {
+      $scope.getModelUnderMouse = function(event) {
         var pos = new THREE.Vector2(event.clientX, event.clientY);
         var intersect = new THREE.Vector3();
         var model = scene.getRayCastModel(pos, intersect);
@@ -39,7 +39,7 @@
       }
 
       $scope.updateHoverInfo = function (event) {
-        var model = getModelUnderMouse(event);
+        var model = $scope.getModelUnderMouse(event);
         if (model != null) {
           $scope.hoveredObject = model.name;
         } else {
@@ -77,7 +77,7 @@
       $scope.toggleScreenChangeMenu = function (show, event) {
         if (show) {
           if (!$scope.isContextMenuShown) {
-            var model = getModelUnderMouse(event);
+            var model = $scope.getModelUnderMouse(event);
             // scene.radialMenu.showing is a property of GZ3D that was originally used to display a radial menu, We are
             // reusing it for our context menu. The reason is that this variables disables or enables the controls of
             // scene in the render loop.
