@@ -6,6 +6,7 @@
 *.sublime-project
 *.sublime-workspace
 *.preprocessed.js
+*.swp
 
 # Bower Components Extra Files#
 ###############################

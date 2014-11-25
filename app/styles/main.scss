@@ -6,11 +6,12 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 @import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
 // endbower
 
+@import "toolbar-extensions";
 @import url("//fonts.googleapis.com/css?family=Petit+Formal+Script");
 
 // Accounts for the fixed navbar
 .container-with-navbar-margin {
-    margin-top: 80px;
+    margin-top: $hbp-common-navbar-height;
 }
 
 // Footer
@@ -32,6 +33,7 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 .nrp-main-title
 {
   text-align: center;
+  padding-top: 30px;
 }
 
 .nrp-main-hints
@@ -146,4 +148,37 @@ and (max-device-width : 1024px) {
   .esv-toolbar-large-tool {
     display: none;
   }
+}
+
+// create new classes for dividing bootstrap into 5ths
+// see http://stackoverflow.com/a/22799354/2677943
+// modified answer to use scss in order to only change
+// width and do not touch anything else.
+.col-xs-5ths {
+    @extend .col-xs-12;
+    width: 20%;
+}
+.col-sm-5ths {
+    @extend .col-sm-12;
+}
+.col-md-5ths {
+    @extend .col-md-12;
+}
+.col-lg-5ths {
+    @extend .col-lg-12;
+}
+@media (min-width: $screen-sm-min) {
+    .col-sm-5ths {
+        width: 20%;
+    }
+}
+@media (min-width: $screen-md-min) {
+    .col-md-5ths {
+        width: 20%;
+    }
+}
+@media (min-width: $screen-lg-min) {
+    .col-lg-5ths {
+        width: 20%;
+    }
 }

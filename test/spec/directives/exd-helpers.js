@@ -50,13 +50,13 @@ describe('Directive: exdModelSelector', function () {
         selectedEntity: undefined
     };
 
-    var element = $compile("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>")($scope);
+    var element = $compile('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>')($scope);
     // fire all the watches, so the scope expression {{1 + 1}} will be evaluated
     $scope.$digest();
     // Check that the title is replaced properly
-    expect(element.html()).toContain("<div class=\"hbp-sidebar-title ng-binding\">Brain description:");
+    expect(element.html()).toContain('<div class="hbp-sidebar-title ng-binding">Brain description:');
     // Check that the description is replaced properly
-    expect(element.html()).toContain("<p class=\"ng-binding\">The brain model to link the robot to a neural simulation. A brain description consists in an XML file.</p>");
+    expect(element.html()).toContain('<p class="ng-binding">The brain model to link the robot to a neural simulation. A brain description consists in an XML file.</p>');
   });
 
   it('should open and close dialog properly', function() {
@@ -67,7 +67,7 @@ describe('Directive: exdModelSelector', function () {
         description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
         selectedEntity: undefined
     };
-    var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -96,7 +96,7 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/other',
     };
 
-    var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -112,10 +112,10 @@ describe('Directive: exdModelSelector', function () {
         description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
         selectedEntity: undefined
     };
-    $scope.testInput.selectableExtended = function(entity) {
-        return false; 
+    $scope.testInput.selectableExtended = function() {
+        return false;
     };
-    
+
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
@@ -126,7 +126,7 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/other',
     };
 
-    var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -153,7 +153,7 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/other',
     };
 
-    var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -179,7 +179,7 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/brain',
     };
 
-    var element = angular.element("<exd-model-selector exd-input='testInput' exd-image-default-thumbnail='/img/brain.png'/></exd-model-selector>");
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 

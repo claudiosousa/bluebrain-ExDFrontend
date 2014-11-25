@@ -1,0 +1,58 @@
+{
+  "name": "test",
+  "layers": {
+    "7134bc12": {
+      "name": "layer1",
+      "structure": {
+        "tile": {
+          "size": 2,
+          "occupants": {
+            "0,0":"aef12af2"
+          }
+        },
+        "dynamic": {
+          "2abdc78f": {
+            "f": "even(3/7)"
+          }
+        }
+      }
+    }
+  },
+  "neurons": {
+    "aef12af2": {
+      "name": "iaf_neuron",
+      "color": "blue",
+      "projections": {
+        "7134bc12": {
+          "tile": {
+            "size": 5,
+            "weights": {
+              "0,0":  0.4,
+              "1,0":  1.0,
+              "2,0": -0.5,
+              "3,0":  0.4,
+              "4,0": -0.8
+            }
+          },
+          "dynamic":{}
+        }
+      }
+    },
+    "2abdc78f": {
+      "name": "my_neuron",
+      "color": "orange",
+      "projections": {
+        "7134bc12": {
+          "tile": {
+            "size": 0,
+            "weights":{}
+          },
+          "dynamic":{
+            "w": "sin(d)",
+            "p": "normal(0,2)(d)"
+          }
+        }
+      }
+    }
+  }
+}

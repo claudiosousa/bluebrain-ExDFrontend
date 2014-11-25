@@ -40,6 +40,24 @@
             }).state('esv-wall', {
               url: '/esv-wall',
               templateUrl: 'views/common/esv-display-wall.html'
+            }).state('ncd', {
+              url: '/ncd',
+              abstract: true,
+              controller: 'NcdCtrl',
+              templateUrl: 'views/common/ncd.html'
+            }).state('ncd.main', {
+              url: '',
+              templateUrl: 'views/ncd/main.html',
+              data: {
+                //this will be used for the entry in the ncd navbar
+                displayName: 'Main'
+              }
+            }).state('ncd.neurons', {
+              url: '/neurons',
+              templateUrl: 'views/ncd/neurons.html',
+              data: {
+                displayName: 'Neurons'
+              }
             });
 
             // Provide a default route.

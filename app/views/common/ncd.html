@@ -1,0 +1,13 @@
+<div class="container-with-navbar-margin">
+  <div class='hbp-toolbar'>
+    <a
+      class="hbp-toolbar-nav"
+      ng-repeat='curState in $state.get() | filter:{"name":"ncd."}'
+      ng-class='{active: $state.is(curState.name)}'
+      href='{{$state.href(curState)}}'
+    >
+      {{curState.data.displayName}}
+    </a>
+  </div>
+  <div ui-view ></div>
+</div>

@@ -6,7 +6,7 @@ var scene = {};
 scene.radialMenu = {};
 scene.radialMenu.showing = false;
 scene.modelManipulator = {};
-scene.modelManipulator.pickerNames = "";
+scene.modelManipulator.pickerNames = '';
 
 var gui = {};
 gui.emitter = {};
@@ -66,7 +66,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(getType.toString.call(scope.setColorOnEntity)).toBe('[object Function]');
 
     // currently no element is selected, hence we want a console.error message
-    scope.setColorOnEntity("value_does_not_matter_here");
+    scope.setColorOnEntity('value_does_not_matter_here');
     expect(console.error).toHaveBeenCalled();
     expect(console.error.callCount).toEqual(1);
 
@@ -100,7 +100,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     show = true;
     event = { 'clientX' : 100, 'clientY': 200 };
     scope.isContextMenuShown = false;
-    scope.getModelUnderMouse = function(event) {
+    scope.getModelUnderMouse = function() {
       return { 'name' : 'vr_screen_1' };
     };
     scene.selectedEntity = { 'some_key' : 'some_value' };
@@ -147,7 +147,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       scene.emitter = {};
       scene.emitter.emit = jasmine.createSpy('emit');
 
-      var light0 = THREE.AmbientLight;
+      // three is loaded externally, jshint does not know that
+      var light0 = THREE.AmbientLight; // jshint ignore:line
 
       var light1 = {
           name: 'left_spot',
@@ -159,7 +160,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       };
       scene.scene.__lights = [light1, light2];
 
-      var helper = undefined;
+      // helper is defined as 'undefined' for semantical reasons
+      var helper = undefined; // jshint ignore:line
       var entity0 = {
           children: [light0, helper]
       };
