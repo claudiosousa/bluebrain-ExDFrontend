@@ -1417,14 +1417,13 @@ GZ3D.Gui.prototype.setPaused = function(paused)
 {
   if (paused)
   {
-    $('#playText').html(
-        '<img style="height:1.2em" src="img/gz3d/play.png" title="Play">');
+    $('#play-gazebo').css('box-shadow', '');
+    $('#pause-gazebo').css('box-shadow', 'inset 0 0 20px rgba(0, 0, 0, 0.2)');
   }
   else
   {
-    $('#playText').html(
-        '<img style="height:1.2em" src="img/gz3d/pause.png" title="Pause">'
-        );
+    $('#play-gazebo').css('box-shadow', 'inset 0 0 20px rgba(0, 0, 0, 0.2)');
+    $('#pause-gazebo').css('box-shadow', '');
   }
 };
 
