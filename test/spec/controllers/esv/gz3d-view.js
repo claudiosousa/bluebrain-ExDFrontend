@@ -8,6 +8,9 @@ scene.radialMenu.showing = false;
 scene.modelManipulator = {};
 scene.modelManipulator.pickerNames = "";
 
+var gui = {};
+gui.emitter = {};
+
 describe('Controller: Gz3dViewCtrl', function () {
 
   // load the controller's module
@@ -27,7 +30,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
       $rootScope: rootScope,
       $scope: scope,
-      scene : scene
+      scene : scene,
+      gui : gui
     });
 
     // create mock for console
@@ -105,6 +109,24 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.contextMenuTop).toEqual(event.clientY);
     expect(scope.contextMenuLeft).toEqual(event.clientX);
     expect(scope.selectedEntity).toEqual(scene.selectedEntity);
+  });
+
+  it('should pause or start gazebo', function () {
+    // test if globals exist
+    expect(gui).toBeDefined();
+    expect(gui.emitter).toBeDefined();
+
+    // test if function exists
+    var getType = {};
+    expect(getType.toString.call(scope.pauseGazebo)).toBe('[object Function]');
+
+    // creat mock for emit
+    gui.emitter.emit = jasmine.createSpy('emit');
+    // call function to test
+    scope.pauseGazebo(true);
+    // expect emit() to be called
+    expect(gui.emitter.emit).toHaveBeenCalledWith('pause', true);
+    expect(gui.emitter.emit.callCount).toEqual(1);
   });
 
 });
