@@ -111,22 +111,79 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.selectedEntity).toEqual(scene.selectedEntity);
   });
 
-  it('should pause or start gazebo', function () {
-    // test if globals exist
-    expect(gui).toBeDefined();
-    expect(gui.emitter).toBeDefined();
+  it('should pause or start gazebo', function() {
+      // test if globals exist
+      expect(gui).toBeDefined();
+      expect(gui.emitter).toBeDefined();
 
-    // test if function exists
-    var getType = {};
-    expect(getType.toString.call(scope.pauseGazebo)).toBe('[object Function]');
+      // test if function exists
+      var getType = {};
+      expect(getType.toString.call(scope.pauseGazebo)).toBe('[object Function]');
 
-    // creat mock for emit
-    gui.emitter.emit = jasmine.createSpy('emit');
-    // call function to test
-    scope.pauseGazebo(true);
-    // expect emit() to be called
-    expect(gui.emitter.emit).toHaveBeenCalledWith('pause', true);
-    expect(gui.emitter.emit.callCount).toEqual(1);
+      // creat mock for emit
+      gui.emitter.emit = jasmine.createSpy('emit');
+      // call function to test
+      scope.pauseGazebo(true);
+      // expect emit() to be called
+      expect(gui.emitter.emit).toHaveBeenCalledWith('pause', true);
+      expect(gui.emitter.emit.callCount).toEqual(1);
+  });
+
+  it('should turn slider position into light intensities', function() {
+      var getType = {};
+      expect(getType.toString.call(scope.updateLightIntensities)).toBe('[object Function]');
+      expect(getType.toString.call(scope.incrementLightIntensities)).toBe('[object Function]');
+      scope.incrementLightIntensities = jasmine.createSpy('incrementLightIntensities');
+
+      scope.updateLightIntensities(60.0);
+
+      expect(scope.incrementLightIntensities).toHaveBeenCalledWith((60 - 50) / 50.25);
+      expect(scope.incrementLightIntensities.callCount).toEqual(1);
+  });
+
+
+  it('should emit light intensity changes', function() {
+      scene.scene = {};
+      scene.emitter = {};
+      scene.emitter.emit = jasmine.createSpy('emit');
+      var light0 = {
+          name: 'ambient',
+          initialIntensity: 1.0
+      };
+      var light1 = {
+          name: 'left_spot',
+          initialIntensity: 0.5
+      };
+      var light2 = {
+          name: 'right_spot',
+          initialIntensity: 0.5
+      };
+      scene.scene.__lights = [light0, light1, light2];
+
+      var helper = undefined;
+      var entity1 = {
+          children: [light1, helper]
+      };
+      var entity2 = {
+          children: [light2, helper]
+      };
+      scene.getByName = function(name) {
+          if (name === 'left_spot') {
+              return entity1;
+          }
+
+          if (name === 'right_spot') {
+              return entity2;
+          }
+
+          return undefined;
+      };
+
+      scope.incrementLightIntensities(-0.5);
+
+      expect(scene.emitter.emit).toHaveBeenCalledWith('entityChanged', entity1);
+      expect(scene.emitter.emit).toHaveBeenCalledWith('entityChanged', entity2);
+      expect(scene.emitter.emit.callCount).toEqual(2);
   });
 
 });

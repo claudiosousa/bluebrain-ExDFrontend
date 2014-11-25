@@ -105,7 +105,7 @@
 
       // Lights management
                
-      var incrementLightIntensities = function (ratio) {
+      $scope.incrementLightIntensities = function (ratio) {
         var lights = scene.scene.__lights; 
         var numberOfLights = lights.length;
         for (var i = 1; i < numberOfLights; i+=1) { // we don't change the ambient light (i = 0)
@@ -120,7 +120,7 @@
       $scope.updateLightIntensities = function(sliderPosition) {
         var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
         // we avoid purposedly -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
-        incrementLightIntensities(ratio);
+        $scope.incrementLightIntensities(ratio);
       };
 
     }]);
