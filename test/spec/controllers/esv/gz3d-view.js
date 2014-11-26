@@ -146,7 +146,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       scene.scene = {};
       scene.emitter = {};
       scene.emitter.emit = jasmine.createSpy('emit');
+
       var light0 = THREE.AmbientLight;
+
       var light1 = {
           name: 'left_spot',
           initialIntensity: 0.5
@@ -158,13 +160,20 @@ describe('Controller: Gz3dViewCtrl', function () {
       scene.scene.__lights = [light1, light2];
 
       var helper = undefined;
+      var entity0 = {
+          children: [light0, helper]
+      };
       var entity1 = {
           children: [light1, helper]
       };
       var entity2 = {
-          children: [light0, light2, helper]
+          children: [light2, helper]
       };
       scene.getByName = function(name) {
+          if (name === 'ambient') {
+              return entity0;
+          }
+
           if (name === 'left_spot') {
               return entity1;
           }

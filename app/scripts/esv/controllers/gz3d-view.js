@@ -109,11 +109,11 @@
         var lights = scene.scene.__lights; 
         var numberOfLights = lights.length;
         for (var i = 0; i < numberOfLights; i+=1) {
-          var entity = scene.getByName(lights[i].name);
-          var lightObj = entity.children[0];
-          if( lightObj instanceof THREE.AmbientLight ) { // we don't change ambient lights
+          if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
             continue;
           }
+          var entity = scene.getByName(lights[i].name);
+          var lightObj = entity.children[0];
           lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
           scene.emitter.emit('entityChanged', entity);
         }
