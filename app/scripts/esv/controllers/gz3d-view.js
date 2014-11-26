@@ -108,9 +108,12 @@
       $scope.incrementLightIntensities = function (ratio) {
         var lights = scene.scene.__lights; 
         var numberOfLights = lights.length;
-        for (var i = 1; i < numberOfLights; i+=1) { // we don't change the ambient light (i = 0)
+        for (var i = 0; i < numberOfLights; i+=1) {
           var entity = scene.getByName(lights[i].name);
           var lightObj = entity.children[0];
+          if( lightObj instanceof THREE.AmbientLight ) { // we don't change ambient lights
+            continue;
+          }
           lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
           scene.emitter.emit('entityChanged', entity);
         }
