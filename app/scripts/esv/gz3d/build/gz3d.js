@@ -5886,6 +5886,16 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     factor = 1.5;
     direction = null;
     range = light.range;
+
+  // @ifdef NRP_SYNC_SLIDER_ON
+  if (light.name === 'left_spot') {
+    var ratio = (light.attenuation_constant * factor) / lightObj.initialIntensity;
+    var position = 50.25 * (ratio - 1) + 50.0;
+    var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
+    scope.sliderPosition = position;
+    scope.$digest(); 
+  }
+  // @endif
   }
   else if (lightObj instanceof THREE.SpotLight)
   {

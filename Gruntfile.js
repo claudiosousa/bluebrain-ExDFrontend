@@ -507,7 +507,8 @@ module.exports = function(grunt) {
             context : {
               NRP_LIGHTS_WIREFRAME_ON: undefined, // set to true if wanted
               NRP_GRID_ON: undefined, // set to true if wanted
-              NRP_CAMERA_INITPOS: '5, 0, 1' // initial camera position = 'X, Y, Z'
+              NRP_CAMERA_INITPOS: '5, 0, 1', // initial camera position = 'X, Y, Z',
+              NRP_SYNC_SLIDER_ON: true, // activate temporary hack to synchronize sliders when multiple clients are used
             }
           },
           multifile : {
