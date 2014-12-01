@@ -1944,10 +1944,12 @@ GZ3D.Gui.prototype.formatStats = function(stats)
     colorHex = {};
     for (comp in diffuse)
     {
-      colorHex[comp] = diffuse[comp].toString(16);
-      if (colorHex[comp].length === 1)
-      {
-        colorHex[comp] = '0' + colorHex[comp];
+      if (diffuse.hasOwnProperty(comp)) {
+        colorHex[comp] = diffuse[comp].toString(16);
+        if (colorHex[comp].length === 1)
+        {
+          colorHex[comp] = '0' + colorHex[comp];
+        }
       }
     }
     color.diffuse = '#' + colorHex['r'] + colorHex['g'] + colorHex['b'];
@@ -1960,10 +1962,12 @@ GZ3D.Gui.prototype.formatStats = function(stats)
     colorHex = {};
     for (comp in specular)
     {
-      colorHex[comp] = specular[comp].toString(16);
-      if (colorHex[comp].length === 1)
-      {
-        colorHex[comp] = '0' + colorHex[comp];
+      if (specular.hasOwnProperty(comp)) {
+        colorHex[comp] = specular[comp].toString(16);
+        if (colorHex[comp].length === 1)
+        {
+          colorHex[comp] = '0' + colorHex[comp];
+        }
       }
     }
     color.specular = '#' + colorHex['r'] + colorHex['g'] + colorHex['b'];
@@ -2044,15 +2048,19 @@ GZ3D.Gui.prototype.roundNumber = function(stats, isColor, decimals)
  * @returns stats
  */
 GZ3D.Gui.prototype.roundArray = function(stats, isColor, decimals)
-{
+{ 
+  var result = {}; 
   for (var key in stats)
   {
-    if (typeof stats[key] === 'number')
-    {
-      stats[key] = this.roundNumber(stats[key], isColor, decimals);
+    if (stats.hasOwnProperty(key)) {
+      if (typeof stats[key] === 'number')
+      {
+        result[key] = this.roundNumber(stats[key], isColor, decimals);
+      }
     }
   }
-  return stats;
+
+  return result;
 };
 
 /**
@@ -5887,15 +5895,22 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     direction = null;
     range = light.range;
 
-  // @ifdef NRP_SYNC_SLIDER_ON
-  if (light.name === 'left_spot') {
-    var ratio = (light.attenuation_constant * factor) / lightObj.initialIntensity;
-    var position = 50.25 * (ratio - 1) + 50.0;
-    var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
-    scope.sliderPosition = position;
-    scope.$digest(); 
-  }
-  // @endif
+    // @ifdef NRP_SYNC_SLIDER_ON
+    if (light.name === 'left_spot') {
+        var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
+        if (scope.lightChangeTriggered === false) {
+            var ratio = (light.attenuation_constant * factor) / lightObj.initialIntensity;
+            var position = Math.round(50.25 * (ratio - 1) + 50.0);
+
+            if (position !== Math.round(scope.sliderPosition)) {
+                scope.sliderPosition = position;
+                scope.$digest();
+            }
+        } else {
+          scope.lightChangeTriggered = false;
+        }
+    }
+    // @endif
   }
   else if (lightObj instanceof THREE.SpotLight)
   {
@@ -6128,6 +6143,10 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     color.g = diffuse.g;
     color.b = diffuse.b;
     diffuse = color.clone();
+  }
+  
+  if (typeof(specular) === 'undefined') {
+    specular = 0xffffff;
   }
   else if (typeof(specular) !== THREE.Color)
   {
