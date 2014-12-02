@@ -1105,9 +1105,7 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
             <div class="hbp-toolbar hbp-toolbar-expand">
-                <div class="hbp-toolbar-action" id="play-gazebo"><i ng-click="pauseGazebo(false);" class="glyphicon glyphicon-play"></i>
-                </div>
-                <div class="hbp-toolbar-action" id="pause-gazebo"><i ng-click="pauseGazebo(true);" class="glyphicon glyphicon-pause"></i>
+                <div class="hbp-toolbar-action" id="play-gazebo" ng-click="pauseGazebo();"><i id="playLink" class="glyphicon glyphicon-play"></i>
                 </div>
                 <div class="esv-toolbar-large-tool">
                     <i class="fa fa-lightbulb-o"></i>

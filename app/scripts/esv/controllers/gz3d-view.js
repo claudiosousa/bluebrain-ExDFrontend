@@ -20,9 +20,10 @@
       GZ3D.assetsPath = bbpConfig.get("api.neurorobotics.gzweb.development1.assets");
       GZ3D.webSocketUrl = bbpConfig.get("api.neurorobotics.gzweb.development1.websocket");
       $rootScope.GZ3D = GZ3D;
+      $scope.paused = false;
 
-      $scope.pauseGazebo = function (paused) {
-        gui.emitter.emit('pause', paused);
+      $scope.pauseGazebo = function () {
+        gui.emitter.emit('pause', $scope.paused);
       };
 
       // stores, whether the context menu should be displayed

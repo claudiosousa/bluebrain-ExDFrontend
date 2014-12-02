@@ -123,9 +123,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       // creat mock for emit
       gui.emitter.emit = jasmine.createSpy('emit');
       // call function to test
-      scope.pauseGazebo(true);
+      scope.pauseGazebo();
       // expect emit() to be called
-      expect(gui.emitter.emit).toHaveBeenCalledWith('pause', true);
+      expect(gui.emitter.emit).toHaveBeenCalledWith('pause', false);
       expect(gui.emitter.emit.callCount).toEqual(1);
   });
 

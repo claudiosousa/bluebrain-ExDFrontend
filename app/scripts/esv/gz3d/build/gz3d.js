@@ -1414,16 +1414,20 @@ GZ3D.Gui.prototype.init = function()
  */
 GZ3D.Gui.prototype.setPaused = function(paused)
 {
+
   if (paused)
   {
-    $('#play-gazebo').css('box-shadow', '');
-    $('#pause-gazebo').css('box-shadow', 'inset 0 0 20px rgba(0, 0, 0, 0.2)');
+    $('#playLink').removeClass("glyphicon-pause");
+    $('#playLink').addClass("glyphicon-play");
   }
   else
   {
-    $('#play-gazebo').css('box-shadow', 'inset 0 0 20px rgba(0, 0, 0, 0.2)');
-    $('#pause-gazebo').css('box-shadow', '');
+    $('#playLink').removeClass("glyphicon-play");
+    $('#playLink').addClass("glyphicon-pause");
   }
+
+  var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
+  scope.paused = paused ? false : true;
 };
 
 /**
@@ -6272,6 +6276,17 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   // @endif
 
   lightObj.initialIntensity = lightObj.intensity; //TODO(Luc): retrieve initial intensity from .sdf by means of a service
+
+  // @ifdef NRP_SYNC_SLIDER_ON
+  if (lightObj.name === 'left_spot') {
+    var originalLeftSpotConstants = new THREE.Vector3(/* @echo NRP_REF_LEFT_SPOT_CONSTANTS */);
+    var ratio = (lightObj.initialIntensity) / (originalLeftSpotConstants.x * 1.5);
+    var position = 50.25 * (ratio - 1) + 50.0;
+    var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
+    scope.sliderPosition = position;
+    scope.$digest(); 
+  }
+  // @endif
   
   obj.add(lightObj);
   obj.add(helper);

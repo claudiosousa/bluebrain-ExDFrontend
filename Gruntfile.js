@@ -509,6 +509,7 @@ module.exports = function(grunt) {
               NRP_GRID_ON: undefined, // set to true if wanted
               NRP_CAMERA_INITPOS: '5, 0, 1', // initial camera position = 'X, Y, Z',
               NRP_SYNC_SLIDER_ON: undefined, // activate temporary hack to synchronize sliders when multiple clients are used
+              NRP_REF_LEFT_SPOT_CONSTANTS: '0.3, 0.04, 0.03', // temporary hack to set initial slider position
             }
           },
           multifile : {
