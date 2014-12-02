@@ -10,15 +10,6 @@ var GZ3D = GZ3D || {
 /*global $:false */
 /*global angular*/
 
-var attenuationToIntensity = function(attenuationConstant, lightType) {
-  const intensityFactor = [0.05, 0.06, 0.05];
-  return intensityFactor[lightType - 1] / attenuationConstant;
-}
-
-var intensityToAttenuation = function(intensity, lightType) {
-  return attenuationToIntensity(intensity, lightType);
-}
-
 var guiEvents = new EventEmitter2({ verbose: true });
 
 var emUnits = function(value)
@@ -2554,18 +2545,18 @@ GZ3D.GZIface.prototype.onConnected = function()
       entityMsg.range = lightObj.distance;
 
       
-      var lightType = 3;
+      var lightType = that.scene.DIRECTIONAL;
       // Adjust according to factor
       if (lightObj instanceof THREE.PointLight)
       {
-        lightType = 1;
+        lightType = that.scene.POINT;
       }
       else if (lightObj instanceof THREE.SpotLight)
       {
-        lightType = 2;
+        lightType = that.scene.SPOT;
       }
 
-      var attenuation_constant = intensityToAttenuation(lightObj.intensity, lightType);
+      var attenuation_constant = that.scene.intensityToAttenuation(lightObj.intensity, lightType);
       entityMsg.attenuation_constant = attenuation_constant;
       entityMsg.attenuation_linear = entity.serverProperties.attenuation_linear;
       entityMsg.attenuation_quadratic = entity.serverProperties.attenuation_quadratic;
@@ -2885,33 +2876,30 @@ GZ3D.GZIface.prototype.createVisualFromMsg = function(visual)
 
 GZ3D.GZIface.prototype.createLightFromMsg = function(light)
 {
-  var obj, factor, range, direction;
-  var special_params = [0., 0., 0.];
+  var obj, direction;
+  var special_params = [0.0, 0.0, 0.0];
 
-  if (light.type === 1)
+  if (light.type === this.scene.POINT)
   {
     direction = null;
-    range = light.range;
   }
-  else if (light.type === 2)
+  else if (light.type === this.scene.SPOT)
   {
     direction = light.direction;
-    range = light.range;
     special_params[0] = light.spot_inner_angle;
     special_params[1] = light.spot_outer_angle;
     special_params[2] = light.spot_falloff;
   }
-  else if (light.type === 3)
+  else if (light.type === this.scene.DIRECTIONAL)
   {
     direction = light.direction;
-    range = null;
   }
 
-  var intensity = attenuationToIntensity(light.attenuation_constant, light.type);
+  var intensity = this.scene.attenuationToIntensity(light.attenuation_constant, light.type);
 
   obj = this.scene.createLight(light.type, light.diffuse,
         intensity,
-        light.pose, range, light.cast_shadows, light.name,
+        light.pose, light.range, light.cast_shadows, light.name,
         direction, light.specular, light.attenuation_linear,
         light.attenuation_quadratic, special_params);
 
@@ -5131,9 +5119,23 @@ GZ3D.RadialMenu.prototype.setNumberOfItems = function(number)
  * @constructor
  */
 GZ3D.Scene = function()
-{
+{  
   this.init();
 };
+
+GZ3D.Scene.prototype.POINT = 1;
+GZ3D.Scene.prototype.SPOT = 2;
+GZ3D.Scene.prototype.DIRECTIONAL = 3;
+
+GZ3D.Scene.prototype.attenuationToIntensity = function(attenuationConstant, lightType) {
+  var INTENSITY_FACTOR = [0.05, 0.06, 0.05]; 
+  return INTENSITY_FACTOR[lightType - 1] / attenuationConstant;
+}
+
+GZ3D.Scene.prototype.intensityToAttenuation = function(intensity, lightType) {
+  return GZ3D.Scene.prototype.attenuationToIntensity(intensity, lightType);
+}
+
 
 /**
  * Initialize scene
@@ -5886,8 +5888,7 @@ GZ3D.Scene.prototype.getByName = function(name)
  */
 GZ3D.Scene.prototype.updateLight = function(model, light)
 {
-  const pointLightType = 1, spotLightType = 2, directionalLightType = 3;
-  var range, direction;
+  var direction, lightType;
   var lightObj = model.children[0];
 
   if (this.modelManipulator && this.modelManipulator.object &&
@@ -5920,13 +5921,12 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
   if (lightObj instanceof THREE.PointLight)
   {
     direction = null;
-    range = light.range;
-
+    lightType = this.POINT;
     // @ifdef NRP_SYNC_SLIDER_ON
     if (light.name === 'left_spot') {
         var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
         if (scope.lightChangeTriggered === false) {
-            var ratio = attenuationToIntensity(attenuation_constant, spot) / lightObj.initialIntensity;
+            var ratio = this.attenuationToIntensity(light.attenuation_constant, spot) / lightObj.initialIntensity;
             var position = Math.round(50.25 * (ratio - 1) + 50.0);
 
             if (position !== Math.round(scope.sliderPosition)) {
@@ -5942,12 +5942,12 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
   else if (lightObj instanceof THREE.SpotLight)
   {
     direction = light.direction;
-    range = light.range;
+    lightType = this.SPOT;
   }
   else if (lightObj instanceof THREE.DirectionalLight)
   {
     direction = light.direction;
-    range = null;
+    lightType = this.DIRECTIONAL;
   }
 
   if (light.diffuse) {
@@ -5970,7 +5970,7 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     // property not relevant in THREE.js
   }
   if (light.attenuation_constant) {
-    lightObj.intensity = light.attenuation_constant * factor;
+    lightObj.intensity = this.attenuationToIntensity(light.attenuation_constant, lightType);
   }
   if (light.attenuation_linear) {
     // property not relevant in THREE.js
@@ -5979,7 +5979,12 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     // property not relevant in THREE.js
   }
   if (light.range) {
-    lightObj.distance = range;
+    // THREE.js's light distance impacts the attenuation factor defined in the shader: 
+    // attenuation factor = 1.0 - distance-to-enlighted-point / light.distance
+    // Gazebo's range (taken from OGRE 3D API) does not contribute to attenuation; it is a hard limit
+    // for light scope.
+    // Nevertheless, we identify them for sake of simplicity.
+    lightObj.distance = light.range; 
   }
   if (lightObj instanceof THREE.SpotLight) {
     if (light.spot_inner_angle) {
@@ -5999,7 +6004,7 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     model.direction.copy(dir);
     dir.applyMatrix4(matrixWorld); // localToWorld
     lightObj.target.position.copy(dir);
-  } else if (light.type === pointLightType || light.type === spotLightType) {
+  } else if (light.type === this.POINT || light.type === this.SPOT) {
     var dir = new THREE.Vector3(0,0,0);
     dir.copy(model.direction);
     model.localToWorld(dir);
@@ -6217,20 +6222,21 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   }
 
   var elements;
-  if (type === 1)
+  if (type === this.POINT)
   {
     elements = this.createPointLight(obj, diffuse, intensity,
         distance, cast_shadows);
   }
-  else if (type === 2)
+  else if (type === this.SPOT)
   {
     elements = this.createSpotLight(obj, diffuse, intensity,
         distance, cast_shadows, special_params);
   }
-  else if (type === 3)
+  else if (type === this.DIRECTIONAL)
   {
     elements = this.createDirectionalLight(obj, diffuse, intensity,
         cast_shadows);
+    elements[0].distance = distance;
   }
 
   var lightObj = elements[0];
@@ -6265,7 +6271,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   helper.visible = false;
   // @endif
 
-  lightObj.initialIntensity = lightObj.intensity;
+  lightObj.initialIntensity = lightObj.intensity; //TODO(Luc): retrieve initial intensity from .sdf by means of a service
   
   obj.add(lightObj);
   obj.add(helper);
@@ -6332,7 +6338,9 @@ GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
   }
 
   var lightObj = new THREE.SpotLight(color, intensity, distance, special_params[1], special_params[2]);
-  lightObj.distance = distance;
+  if (distance) {
+    lightObj.distance = distance;
+  }
   lightObj.position.set(0,0,0);
   lightObj.shadowDarkness = 0.3;
 
