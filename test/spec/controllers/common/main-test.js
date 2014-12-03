@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Controller: mainCtrl', function () {
+describe('Controller: MainCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -10,7 +10,7 @@ describe('Controller: mainCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
-    controller = $controller('mainCtrl', {
+    controller = $controller('MainCtrl', {
       $scope: scope
     });
   }));

@@ -16,14 +16,21 @@
   /* global console: false */
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', function ($rootScope, $scope, bbpConfig) {
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, simulationControl, simulationGenerator, lightControl, screenControl) {
       GZ3D.assetsPath = bbpConfig.get("api.neurorobotics.gzweb.development1.assets");
       GZ3D.webSocketUrl = bbpConfig.get("api.neurorobotics.gzweb.development1.websocket");
       $rootScope.GZ3D = GZ3D;
       $scope.paused = false;
+      
+      $scope.simulation = simulationControl.state();
 
-      $scope.pauseGazebo = function () {
-        gui.emitter.emit('pause', $scope.paused);
+      $scope.pauseSimulation = function () {
+        if ($scope.simulation == undefined || $scope.simulation.simulationID !== 1) {
+          return;
+        }
+
+        var state = $scope.paused ? 'resumed' : 'paused';
+        simulationControl.updateState({state: state});
       };
 
       // stores, whether the context menu should be displayed
@@ -71,6 +78,13 @@
           entityToChange.children[0].material.color.setHex(colors[value]);
           entityToChange.children[0].material.ambient.setHex(colors[value]);
           entityToChange.children[0].material.specular.setHex(colors[value]);
+
+          // send RESTful commands to server
+          var screenParams = {};
+          screenParams.model = $scope.selectedEntity.name;
+          screenParams.visual = 'screen_glass';
+          screenParams.color = (value === 0 ? 'Gazebo/Red' : 'Gazebo/Blue');
+          screenControl.updateScreenColor(screenParams);
         }
 
         // deactivate the context menu after a color was assigned
@@ -110,13 +124,18 @@
         var lights = scene.scene.__lights; 
         var numberOfLights = lights.length;
         for (var i = 0; i < numberOfLights; i+=1) {
-          if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
+          if (lights[i] instanceof THREE.AmbientLight) { // we don't change ambient lights
             continue;
           }
-          var entity = scene.getByName(lights[i].name);
+          var name = lights[i].name;
+          var entity = scene.getByName(name);
           var lightObj = entity.children[0];
           lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
-          scene.emitter.emit('entityChanged', entity);
+          var lightParams = {};
+          lightParams.name = name;
+          var lightType = scene.getLightType(lightObj);
+          lightParams.attenuation_constant = scene.intensityToAttenuation(lightObj.intensity, lightType);
+          lightControl.updateLight(lightParams);
         }
       };
 

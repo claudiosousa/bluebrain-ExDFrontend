@@ -5130,6 +5130,19 @@ GZ3D.Scene = function()
 GZ3D.Scene.prototype.POINT = 1;
 GZ3D.Scene.prototype.SPOT = 2;
 GZ3D.Scene.prototype.DIRECTIONAL = 3;
+GZ3D.Scene.prototype.UNKNOWN = 4;
+
+GZ3D.Scene.prototype.getLightType = function(lightObj) {
+  if (lightObj instanceof THREE.PointLight) {
+    return GZ3D.Scene.prototype.POINT;
+  } else if (lightObj instanceof THREE.SpotLight) {
+    return GZ3D.Scene.prototype.SPOT;
+  } else if (lightObj instanceof THREE.DirectionalLight) {
+    return GZ3D.Scene.prototype.DIRECTIONAL;
+  }
+
+  return GZ3D.Scene.prototype.UNKNOWN;
+}
 
 GZ3D.Scene.prototype.attenuationToIntensity = function(attenuationConstant, lightType) {
   var INTENSITY_FACTOR = [0.05, 0.06, 0.05]; 

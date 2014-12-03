@@ -10,7 +10,7 @@
      * to the `home` state.
      */
     angular.module('exdFrontendApp')
-        .controller('mainCtrl', function($scope) {
+        .controller('MainCtrl', function($scope) {
             $scope.toto = 'toto'; // TODO: remove me
         });
 }());

@@ -19,7 +19,7 @@
             $stateProvider.state('home', {
                 url: '/',
                 templateUrl: 'views/common/main.html',
-                controller: 'mainCtrl'
+                controller: 'MainCtrl'
             }).state('new', {
                 url: '/new',
                 templateUrl: 'views/exd/new.html',

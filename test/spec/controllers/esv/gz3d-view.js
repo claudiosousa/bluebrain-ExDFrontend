@@ -6,7 +6,7 @@ var scene = {};
 scene.radialMenu = {};
 scene.radialMenu.showing = false;
 scene.modelManipulator = {};
-scene.modelManipulator.pickerNames = '';
+scene.modelManipulator.pickerNames = "";
 
 var gui = {};
 gui.emitter = {};
@@ -19,13 +19,19 @@ describe('Controller: Gz3dViewCtrl', function () {
   var Gz3dViewCtrl,
     scope,
     rootScope,
-    bbpConfig;
+    bbpConfig,
+    httpBackend;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_) {
+  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_, _$httpBackend_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
+    httpBackend = _$httpBackend_;
+    
+    httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally. 
+    httpBackend.whenGET('http://bbpce013.epfl.ch:8080/simulation/1/state').respond({ simulationID: 1, experimentID: "fakeExperiment"});
+    httpBackend.whenPUT(/()/).respond(200);
 
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
       $rootScope: rootScope,
@@ -43,6 +49,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(rootScope.GZ3D.assetsPath).toMatch('http://');
     expect(rootScope.GZ3D.assetsPath).toMatch('assets');
     expect(rootScope.GZ3D.webSocketUrl).toMatch('ws://');
+  });
+
+  it('should retrieve the simulation object with simulation id equal to 1', function() {
+      httpBackend.expectGET('http://bbpce013.epfl.ch:8080/simulation/1/state');
+      httpBackend.flush();
+      expect(scope.simulation.simulationID).toBe(1); 
   });
 
   it('should set a color on the selected screen', function() {
@@ -66,14 +78,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(getType.toString.call(scope.setColorOnEntity)).toBe('[object Function]');
 
     // currently no element is selected, hence we want a console.error message
-    scope.setColorOnEntity('value_does_not_matter_here');
+    scope.setColorOnEntity("value_does_not_matter_here");
     expect(console.error).toHaveBeenCalled();
     expect(console.error.callCount).toEqual(1);
 
     // pretend we selected a screen now
-    scope.selectedEntity = { 'name' : 'vr_screen_0' };
+    scope.selectedEntity = { 'name' : 'vr_left_screen_0' };
     scope.setColorOnEntity('red');
-    expect(scene.getByName).toHaveBeenCalledWith('vr_screen_0::body::screen_glass');
+    expect(scene.getByName).toHaveBeenCalledWith('vr_left_screen_0::body::screen_glass');
 
     var redHexValue = 0xff0000;
     expect(entityToChange.children[0].material.color.setHex).toHaveBeenCalledWith(redHexValue);
@@ -82,6 +94,10 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(entityToChange.children[0].material.ambient.setHex.callCount).toEqual(1);
     expect(entityToChange.children[0].material.specular.setHex).toHaveBeenCalledWith(redHexValue);
     expect(entityToChange.children[0].material.specular.setHex.callCount).toEqual(1);
+
+    // test RESTful call
+    httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction', {"model":"vr_left_screen_0","visual":"screen_glass","color":"Gazebo/Blue"});
+    httpBackend.flush();
   });
 
   it('should toggle a menu to be able to change the screen color', function() {
@@ -100,7 +116,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     show = true;
     event = { 'clientX' : 100, 'clientY': 200 };
     scope.isContextMenuShown = false;
-    scope.getModelUnderMouse = function() {
+    scope.getModelUnderMouse = function(event) {
       return { 'name' : 'vr_screen_1' };
     };
     scene.selectedEntity = { 'some_key' : 'some_value' };
@@ -111,22 +127,21 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.selectedEntity).toEqual(scene.selectedEntity);
   });
 
-  it('should pause or start gazebo', function() {
-      // test if globals exist
-      expect(gui).toBeDefined();
-      expect(gui.emitter).toBeDefined();
-
-      // test if function exists
+  it('should pause or start the simulation', function() {
+      // test if object function exists
       var getType = {};
-      expect(getType.toString.call(scope.pauseGazebo)).toBe('[object Function]');
+      expect(getType.toString.call(scope.pauseSimulation)).toBe('[object Function]');
+   
+      scope.simulation = { simulationID: 1 };
+      scope.paused = true;
+      scope.pauseSimulation();
+      httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/state', {state: 'resumed'});
 
-      // creat mock for emit
-      gui.emitter.emit = jasmine.createSpy('emit');
-      // call function to test
-      scope.pauseGazebo();
-      // expect emit() to be called
-      expect(gui.emitter.emit).toHaveBeenCalledWith('pause', false);
-      expect(gui.emitter.emit.callCount).toEqual(1);
+      httpBackend.flush();
+
+      scope.paused = false;
+      scope.pauseSimulation();
+      httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/state', {state: 'paused'});   
   });
 
   it('should turn slider position into light intensities', function() {
@@ -144,20 +159,16 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should emit light intensity changes', function() {
       scene.scene = {};
-      scene.emitter = {};
-      scene.emitter.emit = jasmine.createSpy('emit');
 
-      // three is loaded externally, jshint does not know that
-      var light0 = THREE.AmbientLight; // jshint ignore:line
+      // three is loaded externally, jshint does not know that      
+      var light0 = new THREE.AmbientLight(); // jshint ignore:line
+      var light1 = new THREE.PointLight(); // jshint ignore:line
+      light1.name = 'left_spot';
+      light1.initialIntensity = 0.5;
+      var light2 = new THREE.PointLight();// jshint ignore:line
+      light2.name = 'right_spot';
+      light2.initialIntensity = 0.5;
 
-      var light1 = {
-          name: 'left_spot',
-          initialIntensity: 0.5
-      };
-      var light2 = {
-          name: 'right_spot',
-          initialIntensity: 0.5
-      };
       scene.scene.__lights = [light1, light2];
 
       // helper is defined as 'undefined' for semantical reasons
@@ -186,12 +197,16 @@ describe('Controller: Gz3dViewCtrl', function () {
 
           return undefined;
       };
+      
+      scene.getLightType = rootScope.GZ3D.Scene.prototype.getLightType;
+      scene.intensityToAttenuation = rootScope.GZ3D.Scene.prototype.intensityToAttenuation;
 
       scope.incrementLightIntensities(-0.5);
 
-      expect(scene.emitter.emit).toHaveBeenCalledWith('entityChanged', entity1);
-      expect(scene.emitter.emit).toHaveBeenCalledWith('entityChanged', entity2);
-      expect(scene.emitter.emit.callCount).toEqual(2);
+      // test RESTful call
+      httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction/light', { name: 'left_spot', attenuation_constant: 0.2 });
+      httpBackend.flush();
+      httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction/light', { name: 'right_spot', attenuation_constant: 0.2 });
   });
 
 });
