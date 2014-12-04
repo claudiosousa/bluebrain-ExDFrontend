@@ -25,7 +25,7 @@
       $scope.simulation = simulationControl.state();
 
       $scope.pauseSimulation = function () {
-        if ($scope.simulation == undefined || $scope.simulation.simulationID !== 1) {
+        if ($scope.simulation === undefined || $scope.simulation.simulationID !== 1) {
           return;
         }
 

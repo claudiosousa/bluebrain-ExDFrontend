@@ -11,7 +11,7 @@
             state: {
                 method: 'GET'
             },
-            updateState: {
+            updateState: { // this method starts, stops, pauses or resumes the simulation
                 method: 'PUT'
             }
         });
