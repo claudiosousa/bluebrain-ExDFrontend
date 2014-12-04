@@ -16,14 +16,13 @@
   /* global console: false */
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, simulationControl, simulationGenerator, lightControl, screenControl) {
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'WorldStats', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, WorldStats, simulationControl, simulationGenerator, lightControl, screenControl) {
       GZ3D.assetsPath = bbpConfig.get("api.neurorobotics.gzweb.development1.assets");
       GZ3D.webSocketUrl = bbpConfig.get("api.neurorobotics.gzweb.development1.websocket");
       $rootScope.GZ3D = GZ3D;
-      $scope.paused = false;
-      
-      $scope.simulation = simulationControl.state();
+      $scope.paused = true;
 
+      $scope.simulation = simulationControl.state();
       $scope.pauseSimulation = function () {
         if ($scope.simulation === undefined || $scope.simulation.simulationID !== 1) {
           return;
@@ -32,6 +31,22 @@
         var state = $scope.paused ? 'resumed' : 'paused';
         simulationControl.updateState({state: state});
       };
+
+      WorldStats.setRealTimeCallback(function (realTimeValue) {
+        $scope.$apply(function() {
+          $scope.realTimeText = realTimeValue;
+        });
+      });
+
+      WorldStats.setSimulationTimeCallback(function (simulationTimeValue) {
+        $scope.$apply(function() {
+          $scope.simulationTimeText = simulationTimeValue;
+        });
+      });
+
+      WorldStats.setPausedCallback(function (paused) {
+        $scope.paused = paused;
+      });
 
       // stores, whether the context menu should be displayed
       $scope.isContextMenuShown = false;
@@ -119,9 +134,9 @@
       };
 
       // Lights management
-               
+
       $scope.incrementLightIntensities = function (ratio) {
-        var lights = scene.scene.__lights; 
+        var lights = scene.scene.__lights;
         var numberOfLights = lights.length;
         for (var i = 0; i < numberOfLights; i+=1) {
           if (lights[i] instanceof THREE.AmbientLight) { // we don't change ambient lights

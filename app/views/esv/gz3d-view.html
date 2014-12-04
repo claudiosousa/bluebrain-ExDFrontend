@@ -1104,18 +1104,33 @@
       <div ng-controller="Gz3dViewCtrl" ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container">
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
-            <div class="hbp-toolbar hbp-toolbar-expand">
-                <div class="hbp-toolbar-action" id="play-gazebo" ng-click="pauseSimulation();"><i id="playLink" class="glyphicon glyphicon-play"></i>
-                </div>
-                <div class="esv-toolbar-large-tool">
-                    <i class="fa fa-lightbulb-o"></i>
-                    <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition" ng-change="updateLightIntensities(sliderPosition)"/>
-                </div>
-                <div class="esv-toolbar-large-tool hidden-xs hidden-sm">
-                    <i class="fa fa-info-circle"></i>
-                    <span>{{hoveredObject}}</span>
-                </div>
+          <div class="hbp-toolbar hbp-toolbar-expand">
+            <div class="hbp-toolbar-action" ng-click="pauseSimulation();"><i id="playLink"
+                                                                         ng-class="{'glyphicon': true, 'glyphicon-play': paused, 'glyphicon-pause': !paused}"></i>
             </div>
+            <div class="esv-toolbar-large-tool"
+                 style="line-height:13px; padding-top:7px; padding-bottom:7px; display:table;">
+              <div style="display: table-row">
+                <div style="display:table-cell">
+                  <span style="font-size:x-small">Simulation time:</span><br/>
+                  <span style="font-size:x-small">Real time:</span>
+                </div>
+                <div style="display:table-cell">
+                  <span style="font-size:x-small">{{simulationTimeText}}</span><br/>
+                  <span style="font-size:x-small">{{realTimeText}}</span>
+                </div>
+              </div>
+            </div>
+            <div class="esv-toolbar-large-tool">
+              <i class="fa fa-lightbulb-o"></i>
+              <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition"
+                     ng-change="updateLightIntensities(sliderPosition)"/>
+            </div>
+            <div class="esv-toolbar-large-tool hidden-xs hidden-sm">
+              <i class="fa fa-info-circle"></i>
+              <span>{{hoveredObject}}</span>
+            </div>
+          </div>
         </div>
         <!-- overlay -->
 
