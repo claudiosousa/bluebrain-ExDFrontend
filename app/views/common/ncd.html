@@ -1,13 +1,16 @@
 <div class="container-with-navbar-margin">
   <div class='hbp-toolbar'>
     <a
-      class="hbp-toolbar-nav"
+      class='hbp-toolbar-nav'
       ng-repeat='curState in $state.get() | filter:{"name":"ncd."}'
       ng-class='{active: $state.is(curState.name)}'
       href='{{$state.href(curState)}}'
     >
       {{curState.data.displayName}}
     </a>
+    <div class='hbp-toolbar-item' style='float:right'>
+      <span ng-if='!input.entity' class='glyphicon glyphicon-warning-sign'></span> {{input.entity._name || 'No Blueprint selected!'}}
+    </div>
   </div>
   <div ui-view ></div>
 </div>

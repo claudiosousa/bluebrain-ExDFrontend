@@ -26,8 +26,8 @@
         "neurorobotics": {
             "gzweb": {
                 "development1": {
-                    "websocket": "ws://localhost:7681",
-                    "assets": "http://localhost:8080/assets"
+                    "websocket": "ws://bbpca030:7681",
+                    "assets": "http://bbpca030"
                 }
             }
         }

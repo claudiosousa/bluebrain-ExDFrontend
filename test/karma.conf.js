@@ -70,7 +70,7 @@ module.exports = function(config) {
         // source files, that you want to generate coverage for
         // do not include tests or libraries
         // (these files will be instrumented by Istanbul)
-        'app/scripts/*.js': ['coverage'],
+        'app/scripts/app.js': ['coverage'],
         'app/scripts/ncd/**/*.js': ['coverage'],
         'app/scripts/exd/**/*.js': ['coverage'],
         'app/scripts/common/**/*.js': ['coverage'],

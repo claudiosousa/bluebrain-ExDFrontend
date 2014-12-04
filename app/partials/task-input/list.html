@@ -1,0 +1,9 @@
+<div class="bbp-input-vertical-group">
+    <div ng-repeat="input in input.value track by $index" class="input-group input-group-parent">
+        <bbp-configuration-input bbp-input="input"></bbp-configuration-input>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="removeItem($event, $index)"><i class="glyphicon glyphicon-remove text-danger"></i></button>
+        </span>
+    </div>
+    <button ng-click="addItem($event)" class="form-control btn btn-default" tooltip="Click to add entries to the list" tooltip-append-to-body="true"><i class="glyphicon glyphicon-plus"></i></button>
+</div>

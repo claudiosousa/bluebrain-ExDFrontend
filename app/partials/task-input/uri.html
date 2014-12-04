@@ -1,0 +1,9 @@
+<div class="dropdown" ng-class="{open: dialogOpen}">
+    <div class="input-group">
+        <input class="form-control" ng-focus="openDialog()" ng-model="input.entity._name" ng-required="true">
+        <span class="input-group-btn"><span ng-click="toggleDialog()" class="btn btn-default"><i class="glyphicon glyphicon-folder-open"></i></span></span>
+    </div>
+    <div class="dropdown-menu bbp-uri-select-dropdown" role="menu">
+        <hbp-mini-browser hbp-selectable="selectable" hbp-browsable="browsable" hbp-selection="selectEntity" hbp-current-entity="input.entity"></hbp-mini-browser>
+    </div>
+</div>
