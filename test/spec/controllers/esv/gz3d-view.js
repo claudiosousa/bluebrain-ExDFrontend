@@ -11,6 +11,13 @@ scene.modelManipulator.pickerNames = "";
 var gui = {};
 gui.emitter = {};
 
+// TODO(Patrick, Stefan): Replace global variables by defining a proper injection!
+var iface = {};
+iface.webSocket = {};
+var ROSLIB = {};
+ROSLIB.Topic = function(anonymous) {};
+ROSLIB.Topic.prototype.subscribe = function(callback) {};
+
 describe('Controller: Gz3dViewCtrl', function () {
 
   // load the controller's module
@@ -20,14 +27,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope,
     rootScope,
     bbpConfig,
-    httpBackend;
+    httpBackend,
+    WorldStats;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_, _$httpBackend_) {
+  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_, _$httpBackend_, _WorldStats_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
     httpBackend = _$httpBackend_;
+    WorldStats = _WorldStats_;
     
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally. 
     httpBackend.whenGET('http://bbpce013.epfl.ch:8080/simulation/1/state').respond({ simulationID: 1, experimentID: "fakeExperiment"});

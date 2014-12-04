@@ -11,7 +11,20 @@
      */
 
     angular
-        .module('exdFrontendApp', ['ngAnimate', 'ngCookies', 'ngResource', 'ngSanitize', 'ngTouch', 'ui.router', 'ui.bootstrap', 'ui.codemirror', 'bbpOidcClient', 'hbpCommon', 'bbpConfig', 'hbpDocumentClient', 'gzangular'])
+        .module('exdFrontendApp', ['ngAnimate',
+                                   'ngCookies',
+                                   'ngResource',
+                                   'ngSanitize',
+                                   'ngTouch',
+                                   'ui.router',
+                                   'ui.bootstrap',
+                                   'ui.codemirror',
+                                   'bbpOidcClient',
+                                   'hbpCommon',
+                                   'bbpConfig',
+                                   'hbpDocumentClient',
+                                   'gzangular',
+                                   'gz3dServices'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
