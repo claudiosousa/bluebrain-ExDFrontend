@@ -17,7 +17,7 @@
     "angular-ui-bootstrap-bower": "latest",
     "lodash": "latest",
     "bbp-oidc-client": "latest",
-    "angular-hbp-common": "latest",
+    "angular-hbp-common": "~0.4.2",
     "angular-bbp-config": "latest",
     "angular-hbp-document-client": "latest",
     "xml2json": "latest",
@@ -26,7 +26,12 @@
   },
   "overrides": {
     "codemirror": {
-      "main": ["lib/codemirror.js", "lib/codemirror.css", "mode/python/python.js", "mode/shell/shell.js"]
+      "main": [
+        "lib/codemirror.js",
+        "lib/codemirror.css",
+        "mode/python/python.js",
+        "mode/shell/shell.js"
+      ]
     }
   },
   "devDependencies": {
@@ -36,9 +41,9 @@
   "appPath": "app",
   "private": false,
   "resolutions": {
-    "angular": "~1.2.17",
     "es5-shim": "~3.1.0",
     "json3": "~3.3.1",
-    "angular-bbp-config": "0.2.0"
+    "angular-bbp-config": "0.2.0",
+    "angular-hbp-common": "~0.4.2"
   }
 }

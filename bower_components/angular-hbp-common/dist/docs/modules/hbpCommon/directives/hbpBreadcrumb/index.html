@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  
+  <link rel="stylesheet" href="../../../../bower_components/angular-hbp-common/dist/hbp-common.css" />
+  
+  <link rel="stylesheet" href="../../../../bower_components/google-code-prettify/bin/prettify.min.css" />
+  
+  <link rel="stylesheet" href="../../../../css/dgeni-hbp-angular.css" />
+  
+</head>
+<body>
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../..">Documentation</a>
+      </div>
+
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modules <span class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              
+              <li class="">
+                <a href="../..">hbpCommon</a>
+              </li>
+              
+            </ul>
+          </li>
+          
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Files <span class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              
+              <li class="">
+                <a href="../../../../CHANGELOG.md">CHANGELOG.md</a>
+              </li>
+              
+              <li class="">
+                <a href="../../../..">README.md</a>
+              </li>
+              
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    
+<h2>hbpBreadcrumb</h2>
+<h3>directive in <a href="../..">hbpCommon</a></h3>
+
+<div>
+  <p>hbpBreadcrumb generates a standard looking breadcrumb.</p>
+<p>hbpBreadcrumb generates the breadcrumb from an array
+of items where the first item is the top element and the last item
+the current one. It generates the URL based on the angular-ui-router
+service. It will display each item using a hbp-icon directive and the
+item name. The item will be clickable, the URL being generated using
+angular-ui-router API (state &amp; params).</p>
+<p>Each item of the <code>items</code> array should match the following interface:</p>
+<ul>
+<li>it MUST have a <code>name</code> property which will be this item breadcrumb value</li>
+<li>it MUST have a <code>type</code> property that will be passed to a hbp-icon directive</li>
+<li>it MUST have a <code>state</code> property equals to the ui-router state</li>
+<li>it MIGHT have a <code>params</code> property equals to the ui-router state-params</li>
+<li>it MIGHT have a <code>class</code> property that will be inserted in the dom</li>
+</ul>
+
+</div>
+
+<div>
+
+
+<div class="runnable-example"
+    path="examples/example-example2"
+    module="breadcrumbExample">
+
+ 
+  <div class="runnable-example-file" 
+    name="index.html"
+    language="html"
+    type="html">
+    <pre><code>&lt;div ng-controller=&quot;exampleController&quot;&gt;&#10;   &lt;hbp-breadcrumb items=&quot;items&quot;&gt;&lt;/hbp-breadcrumb&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;script&gt;&#10;angular.module(&#39;breadcrumbExample&#39;, [&#39;hbpCommon&#39;])&#10;.controller(&#39;exampleController&#39;, function($scope) {&#10;   $scope.items = [{&#10;       name: &#39;Home&#39;,&#10;       type: &#39;folder&#39;,&#10;       state: &#39;home&#39;&#10;   }, {&#10;       name: &#39;Project 1&#39;,&#10;       type: &#39;folder&#39;,&#10;       state: &#39;project&#39;,&#10;       params: { id: &#39;334&#39; }&#10;   }, {&#10;       name: &#39;Project Logo&#39;,&#10;       type: &#39;image/png&#39;,&#10;       state: &#39;file&#39;,&#10;       params: { id: &#39;1233325&#39; }&#10;   }];&#10;})&#10;&lt;/script&gt;</code></pre>
+  </div>
+
+  <iframe class="runnable-example-frame" src="../../../../examples/example-example2/index.html" name="example-example2"></iframe>
+</div>
+
+
+</div>
+
+<div class="dependency-list">
+  <div class="dependency-list-header">
+    <h4>Dependencies</h4>
+  </div>
+  <p class="dependency-list-body">
+    
+      <span class="dependency-list-item">$state</span>
+  </p>
+</div>
+
+
+  </div>
+
+  
+  <script src="../../../../bower_components/jquery/dist/jquery.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/es5-shim/es5-shim.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/angular/angular.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/json3/lib/json3.min.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/affix.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/alert.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/button.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/carousel.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/collapse.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/dropdown.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tab.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/transition.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/scrollspy.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/modal.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tooltip.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/popover.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/angular-ui-router/release/angular-ui-router.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/angular-bbp-config/angular-bbp-config.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/bbp-oidc-client/angular-bbp-oidc-client.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/lodash/dist/lodash.compat.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/angular-hbp-common/dist/angular-hbp-common.js" charset="utf-8"></script>
+  
+  <script src="../../../../bower_components/google-code-prettify/bin/prettify.min.js" charset="utf-8"></script>
+  
+  <script charset="utf-8">
+    jQuery(document).ready(function() {
+      jQuery('pre code').addClass('prettyprint');
+      prettyPrint();
+    });
+  </script>
+
+</body>
+</html>
