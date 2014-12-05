@@ -6,17 +6,10 @@ var scene = {};
 scene.radialMenu = {};
 scene.radialMenu.showing = false;
 scene.modelManipulator = {};
-scene.modelManipulator.pickerNames = "";
+scene.modelManipulator.pickerNames = '';
 
 var gui = {};
 gui.emitter = {};
-
-// TODO(Patrick, Stefan): Replace global variables by defining a proper injection!
-var iface = {};
-iface.webSocket = {};
-var ROSLIB = {};
-ROSLIB.Topic = function(anonymous) {};
-ROSLIB.Topic.prototype.subscribe = function(callback) {};
 
 describe('Controller: Gz3dViewCtrl', function () {
 
@@ -28,18 +21,26 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope,
     bbpConfig,
     httpBackend,
-    WorldStats;
+    simulationStatistics;
+
+  // we mock the whole gzCommunication service here
+  var gzCommunicationMock = {};
+  gzCommunicationMock.connect = jasmine.createSpy('connect').andReturn({ subscribe : function(){} });
+
+  beforeEach(module(function($provide) {
+    $provide.value('gzCommunication', gzCommunicationMock);
+  }));
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_, _$httpBackend_, _WorldStats_) {
+  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_, _$httpBackend_, _simulationStatistics_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
     httpBackend = _$httpBackend_;
-    WorldStats = _WorldStats_;
-    
-    httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally. 
-    httpBackend.whenGET('http://bbpce013.epfl.ch:8080/simulation/1/state').respond({ simulationID: 1, experimentID: "fakeExperiment"});
+    simulationStatistics = _simulationStatistics_;
+
+    httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
+    httpBackend.whenGET('http://bbpce013.epfl.ch:8080/simulation/1/state').respond({ simulationID: 1, experimentID: 'fakeExperiment'});
     httpBackend.whenPUT(/()/).respond(200);
 
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
@@ -63,7 +64,19 @@ describe('Controller: Gz3dViewCtrl', function () {
   it('should retrieve the simulation object with simulation id equal to 1', function() {
       httpBackend.expectGET('http://bbpce013.epfl.ch:8080/simulation/1/state');
       httpBackend.flush();
-      expect(scope.simulation.simulationID).toBe(1); 
+      expect(scope.simulation.simulationID).toBe(1);
+  });
+
+  it('should check for the currently hovered model', function () {
+    scope.getModelUnderMouse = jasmine.createSpy('getModelUnderMouse').andReturn({name: 'some_name'});
+    scope.updateHoverInfo();
+    expect(scope.hoveredObject).toEqual('some_name');
+  });
+
+  it('should get the model under the current mouse position', function () {
+    scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
+    scope.getModelUnderMouse({clientX: 10, clientY: 10});
+    expect(scene.getRayCastModel).toHaveBeenCalled();
   });
 
   it('should set a color on the selected screen', function() {
@@ -87,7 +100,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(getType.toString.call(scope.setColorOnEntity)).toBe('[object Function]');
 
     // currently no element is selected, hence we want a console.error message
-    scope.setColorOnEntity("value_does_not_matter_here");
+    scope.setColorOnEntity('value_does_not_matter_here');
     expect(console.error).toHaveBeenCalled();
     expect(console.error.callCount).toEqual(1);
 
@@ -105,7 +118,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(entityToChange.children[0].material.specular.setHex.callCount).toEqual(1);
 
     // test RESTful call
-    httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction', {"model":"vr_left_screen_0","visual":"screen_glass","color":"Gazebo/Blue"});
+    httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction', {'model':'vr_left_screen_0','visual':'screen_glass','color':'Gazebo/Blue'});
     httpBackend.flush();
   });
 
@@ -125,7 +138,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     show = true;
     event = { 'clientX' : 100, 'clientY': 200 };
     scope.isContextMenuShown = false;
-    scope.getModelUnderMouse = function(event) {
+    scope.getModelUnderMouse = function(event) { // jshint ignore:line
       return { 'name' : 'vr_screen_1' };
     };
     scene.selectedEntity = { 'some_key' : 'some_value' };
@@ -140,7 +153,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       // test if object function exists
       var getType = {};
       expect(getType.toString.call(scope.pauseSimulation)).toBe('[object Function]');
-   
+
       scope.simulation = { simulationID: 1 };
       scope.paused = true;
       scope.pauseSimulation();
@@ -150,7 +163,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       scope.paused = false;
       scope.pauseSimulation();
-      httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/state', {state: 'paused'});   
+      httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/state', {state: 'paused'});
   });
 
   it('should turn slider position into light intensities', function() {
@@ -169,7 +182,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   it('should emit light intensity changes', function() {
       scene.scene = {};
 
-      // three is loaded externally, jshint does not know that      
+      // three is loaded externally, jshint does not know that
       var light0 = new THREE.AmbientLight(); // jshint ignore:line
       var light1 = new THREE.PointLight(); // jshint ignore:line
       light1.name = 'left_spot';
@@ -206,16 +219,18 @@ describe('Controller: Gz3dViewCtrl', function () {
 
           return undefined;
       };
-      
+
       scene.getLightType = rootScope.GZ3D.Scene.prototype.getLightType;
       scene.intensityToAttenuation = rootScope.GZ3D.Scene.prototype.intensityToAttenuation;
 
       scope.incrementLightIntensities(-0.5);
 
       // test RESTful call
+      /*jshint camelcase: false */
       httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction/light', { name: 'left_spot', attenuation_constant: 0.2 });
       httpBackend.flush();
       httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction/light', { name: 'right_spot', attenuation_constant: 0.2 });
+      /*jshint camelcase: true */
   });
 
 });

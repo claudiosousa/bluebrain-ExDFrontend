@@ -16,9 +16,9 @@
   /* global console: false */
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'WorldStats', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, WorldStats, simulationControl, simulationGenerator, lightControl, screenControl) {
-      GZ3D.assetsPath = bbpConfig.get("api.neurorobotics.gzweb.development1.assets");
-      GZ3D.webSocketUrl = bbpConfig.get("api.neurorobotics.gzweb.development1.websocket");
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'simulationStatistics', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, simulationStatistics, simulationControl, simulationGenerator, lightControl, screenControl) {
+      GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.gzweb.development1.assets');
+      GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.websocket');
       $rootScope.GZ3D = GZ3D;
       $scope.paused = true;
 
@@ -27,24 +27,23 @@
         if ($scope.simulation === undefined || $scope.simulation.simulationID !== 1) {
           return;
         }
-
         var state = $scope.paused ? 'resumed' : 'paused';
         simulationControl.updateState({state: state});
       };
 
-      WorldStats.setRealTimeCallback(function (realTimeValue) {
+      simulationStatistics.setRealTimeCallback(function (realTimeValue) {
         $scope.$apply(function() {
           $scope.realTimeText = realTimeValue;
         });
       });
 
-      WorldStats.setSimulationTimeCallback(function (simulationTimeValue) {
+      simulationStatistics.setSimulationTimeCallback(function (simulationTimeValue) {
         $scope.$apply(function() {
           $scope.simulationTimeText = simulationTimeValue;
         });
       });
 
-      WorldStats.setPausedCallback(function (paused) {
+      simulationStatistics.setPausedCallback(function (paused) {
         $scope.paused = paused;
       });
 
@@ -55,7 +54,7 @@
       $scope.contextMenuTop = 0;
       $scope.contextMenuLeft = 0;
 
-      $scope.hoveredObject = "";
+      $scope.hoveredObject = '';
 
       $scope.getModelUnderMouse = function(event) {
         var pos = new THREE.Vector2(event.clientX, event.clientY);
@@ -69,14 +68,14 @@
         if (model !== null) {
           $scope.hoveredObject = model.name;
         } else {
-          $scope.hoveredObject = "";
+          $scope.hoveredObject = '';
         }
       };
 
       // for convenience we pass just a string as "red" or "blue" currently, this will be replaced later on
       $scope.setColorOnEntity = function (value) {
         if(!$scope.selectedEntity) {
-          console.error("Could not change screen color since there was no object selected");
+          console.error('Could not change screen color since there was no object selected');
           return;
         }
         var colors = {red: 0xff0000, blue: 0x0000ff};
@@ -85,7 +84,7 @@
         //var entityToChange = scene.getByName(scene.selectedEntity.name + "::link::visual");
 
         // since we currently want restrict ourselves to screens we go with:
-        var entityToChange = scene.getByName($scope.selectedEntity.name + "::body::screen_glass");
+        var entityToChange = scene.getByName($scope.selectedEntity.name + '::body::screen_glass');
 
         if (entityToChange && entityToChange.children[0] && colors[value]) {
           // currently we use .setHex(), because for some reason regRGB() does not respect the

@@ -1,30 +1,46 @@
+/* global console: false */
+
 (function () {
   'use strict';
 
-  /* Services */
-
   var gz3dServices = angular.module('gz3dServices', []);
 
-  gz3dServices.factory('WorldStats', function () {
+  gz3dServices.factory('gzCommunication', function () {
+    return {
+      topic: undefined,
+      connect: function (topic, messageType) {
+        this.topic = new ROSLIB.Topic({ // jshint ignore:line
+          ros: iface.webSocket, // jshint ignore:line
+          name: topic,
+          messageType: messageType
+        });
+        return this;
+      },
+      subscribe: function (callback) {
+        if (this.topic) {
+          this.topic.subscribe(callback);
+        }
+      }
+    };
+  });
+
+  gz3dServices.factory('simulationStatistics', [ 'gzCommunication', function (gzCommunication) {
     var simulationTimeCallback;
     var realTimeCallback;
     var pausedCallback;
 
-    // world stats
-    var worldStatsTopic = new ROSLIB.Topic({
-      ros: iface.webSocket,
-      name: '~/world_stats',
-      messageType: 'world_stats',
-    });
-
+    // we now create the callback function which we will register below
     var worldStatsUpdate = function (stats) {
       try {
         pausedCallback(stats.paused);
       } catch (err) {
-        console.error("Tried to call an undefined callback function! Did you forget to set one?");
+        if (typeof(pausedCallback) !== 'function') {
+          console.error('Tried to call an undefined callback function! Did you forget to set it?');
+        }
         console.error(err.message);
       }
 
+     
       var simSec = stats.sim_time.sec;
       var simNSec = stats.sim_time.nsec;
 
@@ -94,13 +110,19 @@
         realTimeCallback(realTimeValue);
         simulationTimeCallback(simTimeValue);
       } catch (err) {
-        console.error("Tried to call an undefined callback function! Did you forget to set one?");
+        if (typeof(realTimeCallback) !== 'function' || typeof(simulationTimeCallback) !== 'function') {
+          console.error('Tried to call an undefined callback function! Did you forget to set it?');
+        }
         console.error(err.message);
       }
     };
 
-    worldStatsTopic.subscribe(worldStatsUpdate);
+    // connect and subscribe to updates
+    gzCommunication
+      .connect('~/world_stats', 'world_stats')
+      .subscribe(worldStatsUpdate);
 
+    // now expose our public functions
     return {
       setSimulationTimeCallback: function (callback) {
         simulationTimeCallback = callback;
@@ -112,5 +134,6 @@
         pausedCallback = callback;
       }
     };
-  });
+
+  }]);
 }());
