@@ -26,3 +26,37 @@
     text-decoration: none;
   }
 }
+
+.hbp-toolbar-large-tool {
+    display: table-cell;
+    height: 42px;
+    float: left;
+    padding-left: 10px;
+    padding-right: 5px;
+    width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 1px solid #aaaaaa;
+}
+
+.hbp-toolbar-large-tool input[type="range"] {
+    -webkit-appearance: none;
+    display: inline-block;
+    vertical-align: middle;
+    height: 1px;
+    margin: 10px;
+    width: 150px;
+}
+
+.hbp-toolbar-large-tool input[type=range]:focus {
+    outline: none;
+}
+
+.hbp-toolbar-large-tool span {
+    margin-left: 5px;
+}
+
+.hbp-toolbar-large-tool hbp-time-display span {
+    font-size:x-small;
+    font-family: monospace;
+}

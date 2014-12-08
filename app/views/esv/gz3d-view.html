@@ -1108,7 +1108,7 @@
             <div class="hbp-toolbar-action" ng-click="pauseSimulation();"><i id="playLink"
                                                                          ng-class="{'glyphicon': true, 'glyphicon-play': paused, 'glyphicon-pause': !paused}"></i>
             </div>
-            <div class="esv-toolbar-large-tool"
+            <div class="hbp-toolbar-large-tool"
                  style="line-height:13px; padding-top:7px; padding-bottom:7px; display:table;">
               <div style="display: table-row">
                 <div style="display:table-cell">
@@ -1116,17 +1116,17 @@
                   <span style="font-size:x-small">Real time:</span>
                 </div>
                 <div style="display:table-cell">
-                  <span style="font-size:x-small">{{simulationTimeText}}</span><br/>
-                  <span style="font-size:x-small">{{realTimeText}}</span>
+                  <span class="hbp-time-display">{{simulationTimeText}}</span><br/>
+                  <span class="hbp-time-display">{{realTimeText}}</span>
                 </div>
               </div>
             </div>
-            <div class="esv-toolbar-large-tool">
+            <div class="hbp-toolbar-large-tool hidden-xs">
               <i class="fa fa-lightbulb-o"></i>
               <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition"
                      ng-change="updateLightIntensities(sliderPosition)"/>
             </div>
-            <div class="esv-toolbar-large-tool hidden-xs hidden-sm">
+            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen">
               <i class="fa fa-info-circle"></i>
               <span>{{hoveredObject}}</span>
             </div>
