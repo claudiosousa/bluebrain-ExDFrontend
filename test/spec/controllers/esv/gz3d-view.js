@@ -23,12 +23,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     httpBackend,
     simulationStatistics;
 
-  // we mock the whole gzCommunication service here
-  var gzCommunicationMock = {};
-  gzCommunicationMock.connect = jasmine.createSpy('connect').andReturn({ subscribe : function(){} });
+  var simulationStatisticsMock = {};
+  simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
+  simulationStatisticsMock.setRealTimeCallback = jasmine.createSpy('setRealTimeCallback');
+  simulationStatisticsMock.setPausedCallback = jasmine.createSpy('setPausedCallback');
 
-  beforeEach(module(function($provide) {
-    $provide.value('gzCommunication', gzCommunicationMock);
+  beforeEach(module(function ($provide) {
+    $provide.value('simulationStatistics', simulationStatisticsMock);
   }));
 
   // Initialize the controller and a mock scope
@@ -164,6 +165,27 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.paused = false;
       scope.pauseSimulation();
       httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/state', {state: 'paused'});
+  });
+
+  it('should set the real time', function() {
+    var registeredCallbackFunction = simulationStatisticsMock.setRealTimeCallback.mostRecentCall.args[0];
+    registeredCallbackFunction('01 23:45:67');
+    expect(scope.realTimeText).toBe('01 23:45:67');
+  });
+
+  it('should set the simulation time', function() {
+    var registeredCallbackFunction = simulationStatisticsMock.setSimulationTimeCallback.mostRecentCall.args[0];
+    registeredCallbackFunction('98 76:54:32');
+    expect(scope.simulationTimeText).toBe('98 76:54:32');
+  });
+
+  it('should set the paused variable', function() {
+    var registeredCallbackFunction = simulationStatisticsMock.setPausedCallback.mostRecentCall.args[0];
+    scope.paused = true;
+    registeredCallbackFunction(false);
+    expect(scope.paused).toBe(false);
+    registeredCallbackFunction(true);
+    expect(scope.paused).toBe(true);
   });
 
   it('should turn slider position into light intensities', function() {

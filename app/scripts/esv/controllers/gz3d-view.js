@@ -44,7 +44,9 @@
       });
 
       simulationStatistics.setPausedCallback(function (paused) {
-        $scope.paused = paused;
+        $scope.$apply(function() {
+          $scope.paused = paused;
+        });
       });
 
       // stores, whether the context menu should be displayed
