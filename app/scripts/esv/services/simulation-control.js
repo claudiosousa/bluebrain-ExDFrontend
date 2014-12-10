@@ -2,7 +2,7 @@
     'use strict';
 
     var module = angular.module('exdFrontendApp');
-    module.factory('simulationControl', ['$resource', '$location', function($resource, $location) {
+    module.factory('simulationControl', ['$resource', '$location', function($resource) {
         // Public API here
 
         return $resource('http://bbpce013.epfl.ch:8080/simulation/:sim_id/state', {
@@ -17,7 +17,7 @@
         });
     }]);
 
-    module.factory('simulationGenerator', ['$resource', '$location', function($resource, $location) {
+    module.factory('simulationGenerator', ['$resource', '$location', function($resource) {
         // Public API here
 
         return $resource('http://bbpce013.epfl.ch:8080/simulation', {}, {
@@ -27,7 +27,7 @@
         });
     }]);
 
-    module.factory('lightControl', ['$resource', '$location', function($resource, $location) {
+    module.factory('lightControl', ['$resource', '$location', function($resource) {
         // Public API here
 
         return $resource('http://bbpce013.epfl.ch:8080/simulation/:sim_id/interaction/light', {
@@ -39,7 +39,7 @@
         });
     }]);
 
-   module.factory('screenControl', ['$resource', '$location', function($resource, $location) {
+   module.factory('screenControl', ['$resource', '$location', function($resource) {
         // Public API here
 
         return $resource('http://bbpce013.epfl.ch:8080/simulation/:sim_id/interaction', {

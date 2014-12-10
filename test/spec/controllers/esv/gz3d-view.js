@@ -19,9 +19,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   var Gz3dViewCtrl,
     scope,
     rootScope,
-    bbpConfig,
-    httpBackend,
-    simulationStatistics;
+    httpBackend;
 
   var simulationStatisticsMock = {};
   simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
@@ -33,12 +31,10 @@ describe('Controller: Gz3dViewCtrl', function () {
   }));
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _bbpConfig_, _$httpBackend_, _simulationStatistics_) {
+  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
-    bbpConfig = _bbpConfig_;
     httpBackend = _$httpBackend_;
-    simulationStatistics = _simulationStatistics_;
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenGET('http://bbpce013.epfl.ch:8080/simulation/1/state').respond({ simulationID: 1, experimentID: 'fakeExperiment'});
