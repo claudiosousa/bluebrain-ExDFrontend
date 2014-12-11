@@ -102,9 +102,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(console.error.callCount).toEqual(1);
 
     // pretend we selected a screen now
-    scope.selectedEntity = { 'name' : 'vr_left_screen_0' };
+    scope.selectedEntity = { 'name' : 'left_vr_screen' };
     scope.setColorOnEntity('red');
-    expect(scene.getByName).toHaveBeenCalledWith('vr_left_screen_0::body::screen_glass');
+    expect(scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
 
     var redHexValue = 0xff0000;
     expect(entityToChange.children[0].material.color.setHex).toHaveBeenCalledWith(redHexValue);
@@ -115,7 +115,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(entityToChange.children[0].material.specular.setHex.callCount).toEqual(1);
 
     // test RESTful call
-    httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction', {'model':'vr_left_screen_0','visual':'screen_glass','color':'Gazebo/Blue'});
+    httpBackend.expectPUT('http://bbpce013.epfl.ch:8080/simulation/1/interaction', {'name':'LeftScreenToRed'});
     httpBackend.flush();
   });
 

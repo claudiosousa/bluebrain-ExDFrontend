@@ -97,9 +97,24 @@
 
           // send RESTful commands to server
           var screenParams = {};
-          screenParams.model = $scope.selectedEntity.name;
-          screenParams.visual = 'screen_glass';
-          screenParams.color = (value === 0 ? 'Gazebo/Red' : 'Gazebo/Blue');
+
+          if (($scope.selectedEntity.name === 'right_vr_screen') && (value === 'red'))
+          {
+            screenParams.name = 'RightScreenToRed';
+          }
+          else if (($scope.selectedEntity.name === 'left_vr_screen') && (value === 'red'))
+          {
+            screenParams.name = 'LeftScreenToRed';
+          }
+          else if (($scope.selectedEntity.name === 'right_vr_screen') && (value === 'blue'))
+          {
+            screenParams.name = 'RightScreenToBlue';
+          }
+          else if (($scope.selectedEntity.name === 'left_vr_screen') && (value === 'blue'))
+          {
+            screenParams.name = 'LeftScreenToBlue';
+          }
+
           screenControl.updateScreenColor(screenParams);
         }
 
