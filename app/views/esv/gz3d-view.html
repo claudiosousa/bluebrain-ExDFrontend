@@ -1101,7 +1101,7 @@
       <!-- header -->
 
       <!-- container -->
-      <div ng-controller="Gz3dViewCtrl" ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container">
+      <div ng-controller="Gz3dViewCtrl">
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
@@ -1133,6 +1133,10 @@
           </div>
         </div>
         <!-- overlay -->
+
+        <!-- WEBGL-context -->
+        <div ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container"></div>
+        <!-- WEBGL-context -->
 
         <!-- context menu -->
         <div id="contextmenu" class="esv-contextmenu" ng-show="isContextMenuShown" ng-style="{ 'left': contextMenuLeft, 'top': contextMenuTop }">
