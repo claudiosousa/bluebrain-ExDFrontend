@@ -1,7 +1,7 @@
 var GZ3D = GZ3D || {
   REVISION : '1',
-  assetsPath: 'http://localhost:8080/assets',
-  webSocketUrl: 'ws://localhost:7681'
+  assetsPath: 'http://bbpce016.epfl.ch',
+  webSocketUrl: 'ws://bbpce016.epfl.ch:7681'
 };
 
 
@@ -1783,7 +1783,10 @@ GZ3D.Gui.prototype.findModelThumbnail = function(instanceName)
 GZ3D.Gui.prototype.updateStats = function()
 {
   var tree = angular.element($('#treeMenu')).scope();
-  tree.updateStats();
+  if (typeof tree.updateStats != 'undefined')
+  {
+    tree.updateStats();
+  }
 };
 
 /**
@@ -2012,8 +2015,8 @@ GZ3D.Gui.prototype.roundNumber = function(stats, isColor, decimals)
  * @returns stats
  */
 GZ3D.Gui.prototype.roundArray = function(stats, isColor, decimals)
-{ 
-  var result = {}; 
+{
+  var result = {};
   for (var key in stats)
   {
     if (stats.hasOwnProperty(key)) {
@@ -2495,7 +2498,7 @@ GZ3D.GZIface.prototype.onConnected = function()
       entityMsg.direction = entity.direction;
       entityMsg.range = lightObj.distance;
 
-      
+
       var lightType = that.scene.DIRECTIONAL;
       // Adjust according to factor
       if (lightObj instanceof THREE.PointLight)
@@ -4990,7 +4993,7 @@ GZ3D.RadialMenu.prototype.setNumberOfItems = function(number)
  * @constructor
  */
 GZ3D.Scene = function()
-{  
+{
   this.init();
 };
 
@@ -5012,7 +5015,7 @@ GZ3D.Scene.prototype.getLightType = function(lightObj) {
 }
 
 GZ3D.Scene.prototype.attenuationToIntensity = function(attenuationConstant, lightType) {
-  var INTENSITY_FACTOR = [0.05, 0.06, 0.05]; 
+  var INTENSITY_FACTOR = [0.05, 0.06, 0.05];
   return INTENSITY_FACTOR[lightType - 1] / attenuationConstant;
 }
 
@@ -5780,7 +5783,7 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
   {
     return;
   }
-  
+
   var matrixWorld;
   if (light.pose) {
     this.setPose(model, light.pose.position, light.pose.orientation);
@@ -5792,12 +5795,12 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
          light.pose.orientation.y,
          light.pose.orientation.z,
          light.pose.orientation.w);
- 
+
     var translation = new THREE.Vector3(
          light.pose.position.x,
          light.pose.position.y,
          light.pose.position.z);
- 
+
     matrixWorld = new THREE.Matrix4();
     matrixWorld.compose(translation, quaternion, new THREE.Vector3(1,1,1));
   }
@@ -5863,12 +5866,12 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
     // property not relevant in THREE.js
   }
   if (light.range) {
-    // THREE.js's light distance impacts the attenuation factor defined in the shader: 
+    // THREE.js's light distance impacts the attenuation factor defined in the shader:
     // attenuation factor = 1.0 - distance-to-enlighted-point / light.distance
     // Gazebo's range (taken from OGRE 3D API) does not contribute to attenuation; it is a hard limit
     // for light scope.
     // Nevertheless, we identify them for sake of simplicity.
-    lightObj.distance = light.range; 
+    lightObj.distance = light.range;
   }
   if (lightObj instanceof THREE.SpotLight) {
     if (light.spot_inner_angle) {
@@ -6071,7 +6074,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     color.b = diffuse.b;
     diffuse = color.clone();
   }
-  
+
   if (typeof(specular) === 'undefined') {
     specular = 0xffffff;
   }
@@ -6164,10 +6167,10 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     var position = 50.25 * (ratio - 1) + 50.0;
     var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
     scope.sliderPosition = position;
-    scope.$digest(); 
+    scope.$digest();
   }
   // @endif
-  
+
   obj.add(lightObj);
   obj.add(helper);
   return obj;

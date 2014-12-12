@@ -19,6 +19,7 @@
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'simulationStatistics', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, simulationStatistics, simulationControl, simulationGenerator, lightControl, screenControl) {
       GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.gzweb.development1.assets');
       GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.websocket');
+
       $rootScope.GZ3D = GZ3D;
       $scope.paused = true;
 
@@ -150,7 +151,21 @@
       };
 
       // Lights management
-
+      $scope.incrementLightIntensities = function (ratio) {
+        var lights = scene.scene.__lights;
+        var numberOfLights = lights.length;
+        for (var i = 0; i < numberOfLights; i+=1) {
+          if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
+            continue;
+          }
+          var entity = scene.getByName(lights[i].name);
+          var lightObj = entity.children[0];
+          lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
+          scene.emitter.emit('entityChanged', entity);
+        }
+      };
+/*
+      The performances of this are too bad now.
       $scope.incrementLightIntensities = function (ratio) {
         var lights = scene.scene.__lights;
         var numberOfLights = lights.length;
@@ -169,6 +184,7 @@
           lightControl.updateLight(lightParams);
         }
       };
+*/
 
       $scope.sliderPosition = 50;
       $scope.updateLightIntensities = function(sliderPosition) {

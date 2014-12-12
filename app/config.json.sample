@@ -26,8 +26,9 @@
         "neurorobotics": {
             "gzweb": {
                 "development1": {
-                    "websocket": "ws://bbpca030:7681",
-                    "assets": "http://bbpca030"
+                    "websocket": "ws://bbpce016.epfl.ch:7681",
+                    "assets": "http://bbpce016.epfl.ch",
+                    "nrp-services": "http://bbpce016.epfl.ch:8080"
                 }
             }
         }

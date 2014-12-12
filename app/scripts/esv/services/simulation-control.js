@@ -2,11 +2,10 @@
     'use strict';
 
     var module = angular.module('exdFrontendApp');
-    module.factory('simulationControl', ['$resource', '$location', function($resource) {
-        // Public API here
-
-        return $resource('http://bbpce013.epfl.ch:8080/simulation/:sim_id/state', {
-            sim_id: 1
+    module.factory('simulationControl', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+        var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
+        return $resource(baseUrl + '/simulation/:sim_id/state', {
+            sim_id: 0
         }, {
             state: {
                 method: 'GET'
@@ -17,21 +16,19 @@
         });
     }]);
 
-    module.factory('simulationGenerator', ['$resource', '$location', function($resource) {
-        // Public API here
-
-        return $resource('http://bbpce013.epfl.ch:8080/simulation', {}, {
+    module.factory('simulationGenerator', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+        var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
+        return $resource(baseUrl + '/simulation', {}, {
             create: {
                 method: 'POST'
-            },
+            }
         });
     }]);
 
-    module.factory('lightControl', ['$resource', '$location', function($resource) {
-        // Public API here
-
-        return $resource('http://bbpce013.epfl.ch:8080/simulation/:sim_id/interaction/light', {
-            sim_id: 1
+    module.factory('lightControl', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+        var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
+        return $resource(baseUrl + '/simulation/:sim_id/interaction/light', {
+            sim_id: 0
         }, {
             updateLight: {
                 method: 'PUT'
@@ -39,11 +36,10 @@
         });
     }]);
 
-   module.factory('screenControl', ['$resource', '$location', function($resource) {
-        // Public API here
-
-        return $resource('http://bbpce013.epfl.ch:8080/simulation/:sim_id/interaction', {
-            sim_id: 1
+   module.factory('screenControl', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+        var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
+        return $resource(baseUrl + '/simulation/:sim_id/interaction', {
+            sim_id: 0
         }, {
             updateScreenColor: {
                 method: 'PUT'

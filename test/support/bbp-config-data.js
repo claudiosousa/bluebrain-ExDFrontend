@@ -28,11 +28,12 @@ window.bbpConfig = {
       'gzweb': {
           'development1': {
               'websocket': 'ws://localhost:7681',
-              'assets': 'http://localhost:8080/assets'
+              'assets': 'http://localhost:8080/assets',
+              'nrp-services': "http://bbpce016.epfl.ch:8080"
           }
       }
     }
-  }, 
+  },
   'auth': {
     'url': 'https://services-test.humanbrainproject-test.eu/oidc',
     'clientId': 'portal-client'

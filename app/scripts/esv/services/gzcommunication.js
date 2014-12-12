@@ -40,7 +40,7 @@
         console.error(err.message);
       }
 
-     
+
       var simSec = stats.sim_time.sec;
       var simNSec = stats.sim_time.nsec;
 
@@ -117,9 +117,8 @@
       }
     };
 
-    // connect and subscribe to updates
     gzCommunication
-      .connect('~/world_stats', 'world_stats')
+      .connect('~/world_stats', 'worldstatistics')
       .subscribe(worldStatsUpdate);
 
     // now expose our public functions

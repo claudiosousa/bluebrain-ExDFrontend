@@ -20,14 +20,13 @@ describe('setting up the simulation statistics', function () {
   beforeEach(inject(function (_simulationStatistics_, _gzCommunication_) {
     simulationStatistics = _simulationStatistics_;
     gzCommunication = _gzCommunication_;
-
     // create a mock for console
     spyOn(console, 'error');
   }));
 
 
   it('establishes a communication channel to gzbridge\'s world_stats topic', function () {
-    expect(gzCommunication.connect).toHaveBeenCalledWith('~/world_stats', 'world_stats');
+    expect(gzCommunication.connect).toHaveBeenCalledWith('~/world_stats', 'worldstatistics');
   });
 
   it('checks for the calls of the registered callback functions', function () {
@@ -48,7 +47,6 @@ describe('setting up the simulation statistics', function () {
       'iterations': 19394618
     };
 
-    
     var pausedCallback = jasmine.createSpy('pausedCallback');
     var simulationTimeCallback = jasmine.createSpy('simulationTimeCallback');
     var realTimeCallback = jasmine.createSpy('realTimeCallback');
