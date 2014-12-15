@@ -1,7 +1,5 @@
 var GZ3D = GZ3D || {
   REVISION : '1',
-  assetsPath: 'http://bbpce016.epfl.ch',
-  webSocketUrl: 'ws://bbpce016.epfl.ch:7681'
 };
 
 

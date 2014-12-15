@@ -37,7 +37,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     httpBackend = _$httpBackend_;
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
-    httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation/0/state').respond({ simulationID: 1, experimentID: 'fakeExperiment'});
+    httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation/0/state').respond({ simulationID: 0, experimentID: 'fakeExperiment'});
     httpBackend.whenPUT(/()/).respond(200);
 
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
@@ -51,18 +51,11 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(console, 'error');
   }));
 
-  it('should set port for serving the assets directory', function () {
-    expect(rootScope.GZ3D).toBeDefined();
-    expect(rootScope.GZ3D.assetsPath).toMatch('http://');
-    expect(rootScope.GZ3D.assetsPath).toMatch('assets');
-    expect(rootScope.GZ3D.webSocketUrl).toMatch('ws://');
-  });
-
   it('should retrieve the simulation object with simulation id equal to 0', function() {
       httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation/0/state');
 
       httpBackend.flush();
-      expect(scope.simulation.simulationID).toBe(1);
+      expect(scope.simulation.simulationID).toBe(0);
   });
 
   it('should check for the currently hovered model', function () {
@@ -80,14 +73,15 @@ describe('Controller: Gz3dViewCtrl', function () {
   it('should set a color on the selected screen', function() {
     // prepare the test: create mockups
     var entityToChange = { 'children' : [ { 'material' : {} } ] };
-    entityToChange.children[0].material.color = {};
-    entityToChange.children[0].material.color.setHex = jasmine.createSpy('setHex');
+    var material = entityToChange.children[0].material;
+    material.color = {};
+    material.color.setHex = jasmine.createSpy('setHex');
 
-    entityToChange.children[0].material.ambient = {};
-    entityToChange.children[0].material.ambient.setHex = jasmine.createSpy('setHex');
+    material.ambient = {};
+    material.ambient.setHex = jasmine.createSpy('setHex');
 
-    entityToChange.children[0].material.specular = {};
-    entityToChange.children[0].material.specular.setHex = jasmine.createSpy('setHex');
+    material.specular = {};
+    material.specular.setHex = jasmine.createSpy('setHex');
 
     // we are acting on global scope now, since scene is global currently – not a good idea ... :(
     // TODO get rid of global scope ...
@@ -108,12 +102,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
 
     var redHexValue = 0xff0000;
-    expect(entityToChange.children[0].material.color.setHex).toHaveBeenCalledWith(redHexValue);
-    expect(entityToChange.children[0].material.color.setHex.callCount).toEqual(1);
-    expect(entityToChange.children[0].material.ambient.setHex).toHaveBeenCalledWith(redHexValue);
-    expect(entityToChange.children[0].material.ambient.setHex.callCount).toEqual(1);
-    expect(entityToChange.children[0].material.specular.setHex).toHaveBeenCalledWith(redHexValue);
-    expect(entityToChange.children[0].material.specular.setHex.callCount).toEqual(1);
+    expect(material.color.setHex).toHaveBeenCalledWith(redHexValue);
+    expect(material.color.setHex.callCount).toEqual(1);
+    expect(material.ambient.setHex).toHaveBeenCalledWith(redHexValue);
+    expect(material.ambient.setHex.callCount).toEqual(1);
+    expect(material.specular.setHex).toHaveBeenCalledWith(redHexValue);
+    expect(material.specular.setHex.callCount).toEqual(1);
 
     // test RESTful call
     httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation/0/state');
@@ -155,7 +149,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       var getType = {};
       expect(getType.toString.call(scope.pauseSimulation)).toBe('[object Function]');
 
-      scope.simulation = { simulationID: 1 };
+      scope.simulation = { simulationID: 0 };
       scope.paused = true;
       scope.pauseSimulation();
       httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/state', {state: 'resumed'});

@@ -16,16 +16,13 @@
   /* global console: false */
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'simulationStatistics', 'simulationControl', 'simulationGenerator', 'lightControl', 'screenControl', function ($rootScope, $scope, bbpConfig, simulationStatistics, simulationControl, simulationGenerator, lightControl, screenControl) {
-      GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.gzweb.development1.assets');
-      GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.websocket');
-
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'simulationStatistics', 'simulationControl', 'lightControl', 'screenControl', function ($rootScope, $scope, simulationStatistics, simulationControl, lightControl, screenControl) {
       $rootScope.GZ3D = GZ3D;
       $scope.paused = true;
 
       $scope.simulation = simulationControl.state();
       $scope.pauseSimulation = function () {
-        if ($scope.simulation === undefined || $scope.simulation.simulationID !== 1) {
+        if ($scope.simulation === undefined || $scope.simulation.simulationID !== 0) {
           return;
         }
         var state = $scope.paused ? 'resumed' : 'paused';
@@ -88,13 +85,15 @@
 
         // since we currently want restrict ourselves to screens we go with:
         var entityToChange = scene.getByName($scope.selectedEntity.name + '::body::screen_glass');
+        var child = entityToChange.children[0];
+        var material = child ? child.material : undefined;
 
-        if (entityToChange && entityToChange.children[0] && colors[value]) {
+        if (entityToChange && child && material && colors[value]) {
           // currently we use .setHex(), because for some reason regRGB() does not respect the
           // brightness, i.e. when turning the lights down the objects do not get darker
-          entityToChange.children[0].material.color.setHex(colors[value]);
-          entityToChange.children[0].material.ambient.setHex(colors[value]);
-          entityToChange.children[0].material.specular.setHex(colors[value]);
+          material.color.setHex(colors[value]);
+          material.ambient.setHex(colors[value]);
+          material.specular.setHex(colors[value]);
 
           // send RESTful commands to server
           var screenParams = {};

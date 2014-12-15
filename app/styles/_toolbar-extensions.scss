@@ -56,7 +56,26 @@
     margin-left: 5px;
 }
 
-.hbp-toolbar-large-tool hbp-time-display span {
-    font-size:x-small;
+.hbp-time-display {
+    line-height: 13px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    display: table;
+}
+
+.hbp-time-display div {
+    display: table-row;
+}
+
+.hbp-time-display div div {
+     display: table-cell;
+}
+
+.hbp-time-display div div:first-of-type span {
+  font-size:x-small;
+}
+
+.hbp-time-display div div:nth-of-type(2) span {
+    font-size:small;
     font-family: monospace;
 }

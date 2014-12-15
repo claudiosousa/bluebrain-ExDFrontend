@@ -2,7 +2,7 @@
     'use strict';
 
     var module = angular.module('exdFrontendApp');
-    module.factory('simulationControl', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+    module.factory('simulationControl', ['$resource', 'bbpConfig', function($resource, bbpConfig) {
         var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
         return $resource(baseUrl + '/simulation/:sim_id/state', {
             sim_id: 0
@@ -16,7 +16,7 @@
         });
     }]);
 
-    module.factory('simulationGenerator', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+    module.factory('simulationGenerator', ['$resource', 'bbpConfig', function($resource, bbpConfig) {
         var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
         return $resource(baseUrl + '/simulation', {}, {
             create: {
@@ -25,7 +25,7 @@
         });
     }]);
 
-    module.factory('lightControl', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+    module.factory('lightControl', ['$resource', 'bbpConfig', function($resource, bbpConfig) {
         var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
         return $resource(baseUrl + '/simulation/:sim_id/interaction/light', {
             sim_id: 0
@@ -36,7 +36,7 @@
         });
     }]);
 
-   module.factory('screenControl', ['$resource', '$location', 'bbpConfig', function($resource, $location, bbpConfig) {
+   module.factory('screenControl', ['$resource', 'bbpConfig', function($resource, bbpConfig) {
         var baseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
         return $resource(baseUrl + '/simulation/:sim_id/interaction', {
             sim_id: 0

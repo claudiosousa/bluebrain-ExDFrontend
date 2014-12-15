@@ -97,7 +97,6 @@
             });
         };
 
-
         if (window.bbpConfig) {
             boot();
         } else {
@@ -106,6 +105,15 @@
             }).then(boot);
         }
     }]);
+
+    var app = angular.module('exdFrontendApp');
+    app.run(['bbpConfig', function(bbpConfig) {
+      /* global GZ3D: false */
+      GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.gzweb.development1.assets');
+      GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.websocket');
+      app.constant('restServicesBaseUrl', bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services')); // TODO(Luc): inject this wherever needed
+    }]);
+
 }());
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately

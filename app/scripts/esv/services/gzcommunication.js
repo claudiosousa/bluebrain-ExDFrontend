@@ -5,6 +5,7 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
+  // TODO(Luc): make sure connect is called when the websocket is itself connected
   gz3dServices.factory('gzCommunication', function () {
     return {
       topic: undefined,

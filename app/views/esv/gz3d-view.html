@@ -1108,16 +1108,15 @@
             <div class="hbp-toolbar-action" ng-click="pauseSimulation();"><i id="playLink"
                                                                          ng-class="{'glyphicon': true, 'glyphicon-play': paused, 'glyphicon-pause': !paused}"></i>
             </div>
-            <div class="hbp-toolbar-large-tool"
-                 style="line-height:13px; padding-top:7px; padding-bottom:7px; display:table;">
-              <div style="display: table-row">
-                <div style="display:table-cell">
-                  <span style="font-size:x-small">Simulation time:</span><br/>
-                  <span style="font-size:x-small">Real time:</span>
+            <div class="hbp-toolbar-large-tool hbp-time-display">
+              <div>
+                <div>
+                  <span>Simulation time:</span><br/>
+                  <span>Real time:</span>
                 </div>
-                <div style="display:table-cell">
-                  <span class="hbp-time-display">{{simulationTimeText}}</span><br/>
-                  <span class="hbp-time-display">{{realTimeText}}</span>
+                <div>
+                  <span>{{simulationTimeText}}</span><br/>
+                  <span>{{realTimeText}}</span>
                 </div>
               </div>
             </div>
