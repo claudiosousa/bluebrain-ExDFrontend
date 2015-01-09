@@ -1476,14 +1476,13 @@ GZ3D.Gui.prototype.setModelStats = function(stats, action)
     // New model
     if (model.length === 0)
     {
-      var thumbnail = this.findModelThumbnail(modelName);
 
       formatted = this.formatStats(stats);
 
       modelStats.push(
           {
             name: modelName,
-            thumbnail: thumbnail,
+            thumbnail: undefined,
             selected: 'unselectedTreeItem',
             is_static: this.trueOrFalse(stats.is_static),
             position: formatted.pose.position,
@@ -1672,20 +1671,6 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
     if (light.length === 0)
     {
       var type = stats.type;
-
-      var thumbnail;
-      switch(type)
-      {
-        case 2:
-            thumbnail = 'img/gz3d/spotlight.png';
-            break;
-        case 3:
-            thumbnail = 'img/gz3d/directionallight.png';
-            break;
-        default:
-            thumbnail = 'img/gz3d/pointlight.png';
-      }
-
       stats.attenuation = {constant: stats.attenuation_constant,
                            linear: stats.attenuation_linear,
                            quadratic: stats.attenuation_quadratic};
@@ -1701,7 +1686,7 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
       lightStats.push(
           {
             name: name,
-            thumbnail: thumbnail,
+            thumbnail: undefined,
             selected: 'unselectedTreeItem',
             position: formatted.pose.position,
             orientation: formatted.pose.orientation,
@@ -1742,38 +1727,6 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
   this.updateStats();
 };
 
-/**
- * Find thumbnail
- * @param {} instanceName
- * @returns string
- */
-GZ3D.Gui.prototype.findModelThumbnail = function(instanceName)
-{
-  for(var i = 0; i < modelList.length; ++i)
-  {
-    for(var j = 0; j < modelList[i].models.length; ++j)
-    {
-      var path = modelList[i].models[j].modelPath;
-      if(instanceName.indexOf(path) >= 0)
-      {
-        return '/' +this.assetsPath + '/' + path + '/thumbnails/0.png';
-      }
-    }
-  }
-  if(instanceName.indexOf('box') >= 0)
-  {
-    return 'img/gz3d/box.png';
-  }
-  if(instanceName.indexOf('sphere') >= 0)
-  {
-    return 'img/gz3d/sphere.png';
-  }
-  if(instanceName.indexOf('cylinder') >= 0)
-  {
-    return 'img/gz3d/cylinder.png';
-  }
-  return 'img/gz3d/box.png';
-};
 
 /**
  * Update model stats
@@ -1781,7 +1734,7 @@ GZ3D.Gui.prototype.findModelThumbnail = function(instanceName)
 GZ3D.Gui.prototype.updateStats = function()
 {
   var tree = angular.element($('#treeMenu')).scope();
-  if (typeof tree.updateStats != 'undefined')
+  if (typeof(tree) !== 'undefined' && typeof tree.updateStats !== 'undefined')
   {
     tree.updateStats();
   }
@@ -3166,232 +3119,6 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
 };
 
 
-/*GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
-{
-  var obj;
-
-  var uriPath = 'assets';
-  var texture;
-  var normalMap;
-  var textureUri;
-  var mat;
-  if (material)
-  {
-    // get texture from material script
-    var script  = material.script;
-    if (script)
-    {
-      if (script.uri.length > 0)
-      {
-        if (script.name)
-        {
-          mat = this.material[script.name];
-          if (mat)
-          {
-            var textureName = mat['texture'];
-            if (textureName)
-            {
-              for (var i = 0; i < script.uri.length; ++i)
-              {
-                var type = script.uri[i].substring(0,
-                      script.uri[i].indexOf('://'));
-
-                if (type === 'model')
-                {
-                  if (script.uri[i].indexOf('textures') > 0)
-                  {
-                    textureUri = script.uri[i].substring(
-                        script.uri[i].indexOf('://') + 3);
-                    break;
-                  }
-                }
-                else if (type === 'file')
-                {
-                  if (script.uri[i].indexOf('materials') > 0)
-                  {
-                    textureUri = script.uri[i].substring(
-                        script.uri[i].indexOf('://') + 3,
-                        script.uri[i].indexOf('materials') + 9) + '/textures';
-                    break;
-                  }
-                }
-              }
-              if (textureUri)
-              {
-                texture = uriPath + '/' +
-                    textureUri  + '/' + textureName;
-              }
-            }
-          }
-        }
-      }
-    }
-    // normal map
-    if (material.normal_map)
-    {
-      var mapUri;
-      if (material.normal_map.indexOf('://') > 0)
-      {
-        mapUri = material.normal_map.substring(
-            material.normal_map.indexOf('://') + 3,
-            material.normal_map.lastIndexOf('/'));
-      }
-      else
-      {
-        mapUri = textureUri;
-      }
-      if (mapUri)
-      {
-        var startIndex = material.normal_map.lastIndexOf('/') + 1;
-        if (startIndex < 0)
-        {
-          startIndex = 0;
-        }
-        var normalMapName = material.normal_map.substr(startIndex,
-            material.normal_map.lastIndexOf('.') - startIndex);
-        normalMap = uriPath + '/' +
-          mapUri  + '/' + normalMapName + '.png';
-      }
-
-    }
-  }
-
-  if (geom.box)
-  {
-    obj = this.scene.createBox(geom.box.size.x, geom.box.size.y,
-        geom.box.size.z);
-  }
-  else if (geom.cylinder)
-  {
-    obj = this.scene.createCylinder(geom.cylinder.radius,
-        geom.cylinder.length);
-  }
-  else if (geom.sphere)
-  {
-    obj = this.scene.createSphere(geom.sphere.radius);
-  }
-  else if (geom.plane)
-  {
-    obj = this.scene.createPlane(geom.plane.normal.x, geom.plane.normal.y,
-        geom.plane.normal.z, geom.plane.size.x, geom.plane.size.y);
-  }
-  else if (geom.mesh)
-  {
-    // get model name which the mesh is in
-    var rootModel = parent;
-    while (rootModel.parent)
-    {
-      rootModel = rootModel.parent;
-    }
-
-    {
-      var meshUri = geom.mesh.filename;
-      var submesh = geom.mesh.submesh;
-      var centerSubmesh = geom.mesh.center_submesh;
-
-      console.log(geom.mesh.filename + ' ' + submesh);
-
-      var uriType = meshUri.substring(0, meshUri.indexOf('://'));
-      if (uriType === 'file' || uriType === 'model')
-      {
-        var modelName = meshUri.substring(meshUri.indexOf('://') + 3);
-        if (geom.mesh.scale)
-        {
-          parent.scale.x = geom.mesh.scale.x;
-          parent.scale.y = geom.mesh.scale.y;
-          parent.scale.z = geom.mesh.scale.z;
-        }
-
-        this.scene.loadMesh(uriPath + '/' + modelName, submesh, centerSubmesh,
-            texture, normalMap, parent);
-      }
-    }
-  }
-  else if (geom.heightmap)
-  {
-    var that = this;
-    var request = new ROSLIB.ServiceRequest({
-      name : that.scene.name
-    });
-
-    // redirect the texture paths to the assets dir
-    var textures = geom.heightmap.texture;
-    for ( var k = 0; k < textures.length; ++k)
-    {
-      textures[k].diffuse = this.parseUri(textures[k].diffuse);
-      textures[k].normal = this.parseUri(textures[k].normal);
-    }
-
-    var sizes = geom.heightmap.size;
-
-    // send service request and load heightmap on response
-    this.heightmapDataService.callService(request,
-        function(result)
-        {
-          var heightmap = result.heightmap;
-          // gazebo heightmap is always square shaped,
-          // and a dimension of: 2^N + 1
-          that.scene.loadHeightmap(heightmap.heights, heightmap.size.x,
-              heightmap.size.y, heightmap.width, heightmap.height,
-              heightmap.origin, textures,
-              geom.heightmap.blend, parent);
-            //console.log('Result for service call on ' + result);
-        });
-
-    //this.scene.loadHeightmap(parent)
-  }
-
-  // texture mapping for simple shapes and planes only,
-  // not used by mesh and terrain
-  if (obj)
-  {
-
-    if (mat)
-    {
-      obj.material = new THREE.MeshPhongMaterial();
-
-      var ambient = mat['ambient'];
-      if (ambient)
-      {
-        obj.material.ambient.setRGB(ambient[0], ambient[1], ambient[2]);
-      }
-      var diffuse = mat['diffuse'];
-      if (diffuse)
-      {
-        obj.material.color.setRGB(diffuse[0], diffuse[1], diffuse[2]);
-      }
-      var specular = mat['specular'];
-      if (specular)
-      {
-        obj.material.specular.setRGB(specular[0], specular[1], specular[2]);
-      }
-      var opacity = mat['opacity'];
-      if (opacity)
-      {
-        if (opacity < 1)
-        {
-          obj.material.transparent = true;
-          obj.material.opacity = opacity;
-        }
-      }
-
-      //this.scene.setMaterial(obj, texture, normalMap);
-
-      if (texture)
-      {
-        obj.material.map = THREE.ImageUtils.loadTexture(texture);
-      }
-      if (normalMap)
-      {
-        obj.material.normalMap = THREE.ImageUtils.loadTexture(normalMap);
-      }
-    }
-    obj.updateMatrix();
-    parent.add(obj);
-  }
-};
-*/
-
 // Based on TransformControls.js
 // original author: arodic / https://github.com/arodic
 
@@ -4606,8 +4333,6 @@ GZ3D.RadialMenu.prototype.init = function()
   this.bgSizeSelected = 68*scale;
   this.highlightSize = 45*scale;
   this.iconProportion = 0.6;
-  this.bgShape = THREE.ImageUtils.loadTexture(
-      'img/gz3d/icon_background.png' );
   this.layers = {
     ICON: 0,
     BACKGROUND : 1,
@@ -4635,15 +4360,6 @@ GZ3D.RadialMenu.prototype.init = function()
 
   // Object containing all items
   this.menu = new THREE.Object3D();
-
-  // Add items to the menu
-  this.addItem('delete','img/gz3d/trash.png');
-  this.addItem('translate','img/gz3d/translate.png');
-  this.addItem('rotate','img/gz3d/rotate.png');
-  this.addItem('transparent','img/gz3d/transparent.png');
-  this.addItem('wireframe','img/gz3d/wireframe.png');
-  this.addItem('joints','img/gz3d/joints.png');
-
   this.setNumberOfItems(this.menu.children.length);
 
   // Start hidden
