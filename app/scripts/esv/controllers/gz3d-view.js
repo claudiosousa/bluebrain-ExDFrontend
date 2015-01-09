@@ -18,14 +18,23 @@
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'simulationStatistics', 'simulationControl', 'lightControl', 'screenControl', function ($rootScope, $scope, simulationStatistics, simulationControl, lightControl, screenControl) {
       $rootScope.GZ3D = GZ3D;
+      $scope.simulation = simulationControl.state();
+
+      // TODO(Stefan) Set the initial value of $scope.paused to the retrieved value from the server side ...
+      // It may be the case that the simulation is already running.
       $scope.paused = true;
 
-      $scope.simulation = simulationControl.state();
       $scope.pauseSimulation = function () {
         if ($scope.simulation === undefined || $scope.simulation.simulationID !== 0) {
           return;
         }
-        var state = $scope.paused ? 'resumed' : 'paused';
+
+        // There are more states than just 'paused' and 'started' on the server
+        // side (created, initialized etc.). Since we can assume that the simulation
+        // is already in place (was done before entering the ESV), we only have to
+        // deal with those two states.
+        var state = $scope.paused ? 'started' : 'paused';
+
         simulationControl.updateState({state: state});
       };
 

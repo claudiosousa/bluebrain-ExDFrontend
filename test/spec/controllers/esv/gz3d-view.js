@@ -152,7 +152,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.simulation = { simulationID: 0 };
       scope.paused = true;
       scope.pauseSimulation();
-      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/state', {state: 'resumed'});
+      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/state', {state: 'started'});
 
       httpBackend.flush();
 
