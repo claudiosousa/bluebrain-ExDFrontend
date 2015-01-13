@@ -83,7 +83,7 @@
 
       $scope.updateHoverInfo = function (event) {
         var model = $scope.getModelUnderMouse(event);
-        if (model !== null) {
+        if (model !== null && model !== undefined) {
           $scope.hoveredObject = model.name;
         } else {
           $scope.hoveredObject = '';
