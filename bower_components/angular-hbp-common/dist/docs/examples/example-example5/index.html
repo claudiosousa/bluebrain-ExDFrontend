@@ -38,10 +38,9 @@
 
   
 </head>
-<body ng-app="iconExample">
-      <div ng-controller="iconController">
-    this is the icon for a {{entity._entityType}}: <hbp-icon entity="entity"></hbp-icon><br/>
-    this is the icon for a: {{type}} <hbp-icon type="type"></hbp-icon>
-</div>
+<body ng-app="testModule">
+    <div ng-controller="Controller">
+      <hbp-content-icon content="file.contentType"></hbp-content-icon>{{file.name}}
+  </div>
 </body>
 </html>

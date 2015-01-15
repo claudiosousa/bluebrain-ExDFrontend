@@ -38,9 +38,10 @@
 
   
 </head>
-<body ng-app="performActionModule">
-      <div ng-controller="myController">
-        <input class="btn btn-primary" type="submit" hbp-perform-action="doSomething()">
-    </div>
+<body ng-app="iconExample">
+      <div ng-controller="iconController">
+    this is the icon for a {{entity._entityType}}: <hbp-icon entity="entity"></hbp-icon><br/>
+    this is the icon for a: {{type}} <hbp-icon type="type"></hbp-icon>
+</div>
 </body>
 </html>

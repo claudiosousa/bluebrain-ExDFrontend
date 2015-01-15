@@ -33,34 +33,20 @@
   <script src="../../bower_components/google-code-prettify/bin/prettify.min.js"></script>
   <script src="../../dist/dist/angular-hbp-common.js"></script>
   <script src="../../dgeni-hbp-angular/mocks/oidc-mock.js"></script>
+  <script src="script.js"></script>
   
 
   
 </head>
-<body ng-app="breadcrumbExample">
-      <div ng-controller="exampleController">
-       <hbp-breadcrumb items="items"></hbp-breadcrumb>
+<body ng-app="markdownModule">
+      <div ng-controller="MarkdownController">
+        Markdown: <input ng-model="markdownHtml">
+        <p><strong>Unformatted:</strong></p>
+        <p>{{markdownHtml}}</p>
+        <p><strong>Formatted using ng-bind-html:</strong></p>
+        <p ng-bind-html="markdownHtml | hbpMarkdown"></p>
+        <p><strong>Formatted using filter:</strong></p>
+        <p><div>{{markdownHtml | hbpMarkdown}}</div></p>
     </div>
-
-    <script>
-    angular.module('breadcrumbExample', ['hbpCommon'])
-    .controller('exampleController', function($scope) {
-       $scope.items = [{
-           name: 'Home',
-           type: 'folder',
-           state: 'home'
-       }, {
-           name: 'Project 1',
-           type: 'folder',
-           state: 'project',
-           params: { id: '334' }
-       }, {
-           name: 'Project Logo',
-           type: 'image/png',
-           state: 'file',
-           params: { id: '1233325' }
-       }];
-    })
-    </script>
 </body>
 </html>

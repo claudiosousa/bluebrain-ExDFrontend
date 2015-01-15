@@ -62,7 +62,46 @@
 <h3>service in <a href="../..">hbpCommon</a></h3>
 
 <div>
-  <p>This service allows to match a user/group id with it&#39;s information.</p>
+  <p><code>hbpUserDirectory</code> service let you retrieve and edit user and groups.</p>
+<h2 id="-hbpuserdirectory-get-ids-"><code>hbpUserDirectory.get(ids)</code></h2>
+<p>Return a promise that will resolve to a list of groups and users
+based on the given array of <code>ids</code>.</p>
+<p>In case of error, the promise is rejected with a <code>HbpError</code> instance.</p>
+<h2 id="-hbpuserdirectory-getcurrentuser-"><code>hbpUserDirectory.getCurrentUser()</code></h2>
+<p>Return a promise that will resolve to the current user.</p>
+<p>In case of error, the promise is rejected with a <code>HbpError</code> instance.</p>
+<h2 id="-hbpuserdirectory-list-options-"><code>hbpUserDirectory.list(options)</code></h2>
+<p>Retrieves a list of users filtered, sorted and paginated according to the options.</p>
+<p>The returned promise will be resolved with the list of fetched user profiles
+and 2 fuctions (optional) to load next page and/or previous page.
+{{next}} and {{prev}} returns a promise that will be resolved with an object
+like the one returned by the current function.</p>
+<p>Return object example:
+{
+   result: [...],
+   next: function() {},
+   prev: function() {}
+}</p>
+<p>Available options:</p>
+<ul>
+<li>sort: properties to sort on. prepend &#39;-&#39;&#39; to reverse order.</li>
+<li>page: page to be loaded (default: 0)</li>
+<li>pageSize: max number or items to be loaded (default: 10)</li>
+<li>filter: fiter object, wildcard admitted in the values</li>
+<li>managedOnly: returns only the users managed by the current logged in user</li>
+</ul>
+<h2 id="-hbpuserdirectory-create-user-"><code>hbpUserDirectory.create(user)</code></h2>
+<p>Create the given <code>user</code>.</p>
+<p>The method return a promise that will resolve to the created user instance.
+In case of error, a <code>HbpError</code> instance is retrieved.</p>
+<h2 id="-hbpuserdirectory-update-user-data-"><code>hbpUserDirectory.update(user, [data])</code></h2>
+<p>Update the described <code>user</code> with the given <code>data</code>.</p>
+<p>If data is omitted, <code>user</code> is assumed to be the updated user object that
+should be persisted. When data is present, user can be either a <code>User</code>
+instance or the user id.</p>
+<p>The method return a promise that will resolve to the updated user instance.
+Note that this instance is a copy of the user. If you own a user instance
+already, you cannot assume this method will update it.</p>
 
 </div>
 

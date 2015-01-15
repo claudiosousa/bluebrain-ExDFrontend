@@ -5,7 +5,7 @@ angular.module('hbpCommon', [
   'bbpOidcClient',
   'hbp-common-templates'
 ]);
-window.hbpCommonVersion = '0.4.2';
+window.hbpCommonVersion = '0.5.0';
 angular.module('hbpCommon').controller('hbpMetaNavigationCtrl', [
   '$rootScope',
   '$scope',
@@ -119,6 +119,49 @@ angular.module('hbpCommon').directive('hbpPerformAction', [function () {
       }
     };
   }]);
+angular.module('hbpCommon').directive('hbpUpNav', [
+  '$rootScope',
+  '$timeout',
+  'hbpUserDirectory',
+  'bbpOidcSession',
+  function ($rootScope, $timeout, hbpUserDirectory, bbpOidcSession) {
+    'use strict';
+    return {
+      restrict: 'A',
+      scope: { data: '=hbpUpNav' },
+      link: function (scope, element) {
+        var logout = function () {
+          bbpOidcSession.logout().then(function () {
+            $rootScope.$broadcast('user:disconnected');
+          });
+        };
+        // Remove the user info when logged out
+        scope.$on('user:disconnected', function () {
+          element[0].hbpUpNav({
+            user: null,
+            logout: null
+          });
+        });
+        // Update nav configuration
+        if (scope.data) {
+          $timeout(function () {
+            element[0].hbpUpNav(scope.data);
+          }, 0);
+        }
+        // Once logged, display the user
+        hbpUserDirectory.getCurrentUser().then(function (profile) {
+          element[0].hbpUpNav({
+            user: {
+              displayName: profile.displayName,
+              id: profile.id
+            },
+            logout: logout
+          });
+        });
+      }
+    };
+  }
+]);
 angular.module('hbpCommon').factory('hbpDialogFactory', [
   '$modal',
   '$log',
@@ -372,12 +415,19 @@ angular.module('hbpCommon').service('hbpUiUtil', [
       return $filter('date')(date, 'yyyy-MM-dd HH:mm:ss');
     };
   }
-]).filter('hbpCapitalize', [
-  '$filter',
-  function () {
+]).filter('hbpCapitalize', [function () {
     'use strict';
     return function (string) {
       return string.charAt().toUpperCase() + string.substring(1);
+    };
+  }]).filter('hbpMarkdown', [
+  '$sce',
+  function ($sce) {
+    'use strict';
+    return function (string) {
+      if (string !== undefined) {
+        return $sce.trustAsHtml(marked(string, { sanitize: true }));
+      }
     };
   }
 ]).run([
@@ -483,77 +533,96 @@ angular.module('hbpCommon').factory('hbpUserDirectory', [
       }
       return result;
     };
-    return {
-      get: function (ids) {
-        var deferred = $q.defer();
-        var rejectDeferred = function () {
-          deferred.reject.apply(deferred, ids);
-        };
-        var processResponseAndCarryOn = function (data) {
-          if (urls.length > 0) {
-            addToCache(data.data.result, response);
-            return $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
-          } else {
-            addToCache(data.data.result, response);
-            deferred.resolve(response);
-          }
-        };
-        var i;
-        var uncachedUser = [];
-        var uncachedGroup = [];
-        var response = {};
-        var urls = [];
-        for (i = 0; i < ids.length; i++) {
-          var user = userCache.get(ids[i]);
-          if (user) {
-            // The id is already cached
-            response[ids[i]] = user;
-          } else {
-            if (ids[i].indexOf('S') === 0) {
-              // The id is from a group
-              uncachedGroup.push(ids[i]);
-            } else {
-              // The id is from a user
-              uncachedUser.push(ids[i]);
-            }
-          }
-        }
-        if (uncachedUser.length + uncachedGroup.length === 0) {
-          // All ids are already available -> we resolve the promise
-          deferred.resolve(response);
+    // Return a promise with an map of id->userInfo based on the
+    // provided list of IDs.
+    var get = function (ids) {
+      var deferred = $q.defer();
+      var i;
+      var uncachedUser = [];
+      var uncachedGroup = [];
+      var response = {};
+      var urls = [];
+      var rejectDeferred = function () {
+        deferred.reject.apply(deferred, ids);
+      };
+      var processResponseAndCarryOn = function (data) {
+        addToCache(data.data.result, response);
+        if (urls && urls.length > 0) {
+          return $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
         } else {
-          // Get the list of URLs to call
-          splitInURl(uncachedUser, userApiUrl + '/user?filter=id=', urls);
-          splitInURl(uncachedGroup, userApiUrl + '/group?filter=id=', urls);
-          // Async calls and combination of result
-          $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
+          deferred.resolve(response);
         }
-        return deferred.promise;
-      },
+      };
+      for (i = 0; i < ids.length; i++) {
+        var user = userCache.get(ids[i]);
+        if (user) {
+          // The id is already cached
+          response[ids[i]] = user;
+        } else {
+          if (ids[i].indexOf('S') === 0) {
+            // The id is from a group
+            uncachedGroup.push(ids[i]);
+          } else {
+            // The id is from a user
+            uncachedUser.push(ids[i]);
+          }
+        }
+      }
+      if (uncachedUser.length + uncachedGroup.length === 0) {
+        // All ids are already available -> we resolve the promise
+        deferred.resolve(response);
+      } else {
+        // Get the list of URLs to call
+        splitInURl(uncachedUser, userApiUrl + '/user?filter=id=', urls);
+        splitInURl(uncachedGroup, userApiUrl + '/group?filter=id=', urls);
+        // Async calls and combination of result
+        $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
+      }
+      return deferred.promise;
+    };
+    return {
+      get: get,
       getCurrentUser: function () {
-        var deferred = $q.defer();
         var user = userCache.get(currentUserKey);
         if (user) {
-          // loaded from cache
-          deferred.resolve(user);
-        } else {
-          // load it from user profile service
-          $q.all({
-            'user': $http.get(userApiUrl + '/user/me'),
-            'groups': $http.get(userApiUrl + '/user/me/groups')
-          }).then(function (aggregatedData) {
-            // merge groups into user profile
-            var profile = aggregatedData.user.data;
-            profile.groups = aggregatedData.groups.data.result;
-            // add to cache
-            userCache.put(currentUserKey, profile);
-            deferred.resolve(profile);
-          }, deferred.reject);
+          return $q.when(user);
         }
-        return deferred.promise;
+        // load it from user profile service
+        return $q.all({
+          'user': $http.get(userApiUrl + '/user/me'),
+          'groups': $http.get(userApiUrl + '/user/me/groups')
+        }).then(function (aggregatedData) {
+          // merge groups into user profile
+          var profile = aggregatedData.user.data;
+          profile.groups = aggregatedData.groups.data.result;
+          // add to cache
+          userCache.put(currentUserKey, profile);
+          return profile;
+        }, function (response) {
+          return $q.reject(errorService.httpError(response));
+        });
       },
       create: function (user) {
-        return $http.post(userApiUrl + '/user', user);
+        return $http.post(userApiUrl + '/user', user).then(function () {
+          return user;
+        }, function (response) {
+          return $q.reject(errorService.httpError(response));
+        });
+      },
+      update: function (user, data) {
+        data = data || user;
+        var id = typeof user === 'string' ? user : user.id;
+        return $http.put(userApiUrl + '/user/' + id, data).then(function () {
+          userCache.remove(id);
+          if (userCache.get(currentUserKey) && userCache.get(currentUserKey).id === id) {
+            userCache.remove(currentUserKey);
+          }
+          return get([id]).then(function (users) {
+            return _.first(_.values(users));
+          });
+        }, function (response) {
+          return $q.reject(errorService.httpError(response));
+        });
       },
       list: function (options) {
         var defaultOptions = {

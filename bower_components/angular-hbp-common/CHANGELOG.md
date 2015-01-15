@@ -1,3 +1,31 @@
+<a name="0.5.0"></a>
+## 0.5.0 (2015-01-14)
+
+
+#### Features
+
+* **hbp-up-nav:** wrap the Unified Portal javascript menu (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibAngularHbpCommon.git/commit/?id=d44c4fbf81f0d29c3e7e516ddd1b36c4be0a821e)
+
+
+<a name="0.4.4"></a>
+### 0.4.4 (2015-01-09)
+
+
+#### Bug Fixes
+
+* **bower:** Added assets to main key of bower.json (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibAngularHbpCommon.git/commit/?id=84ec3b82dd219c932a5e9d185374e92eed787f80)
+* **userDirectoryService:** fix the cache management on user update (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibAngularHbpCommon.git/commit/?id=d2107578eaad8a010d8b61dcb93b33d7cbb002db)
+
+
+<a name="0.4.3"></a>
+### 0.4.3 (2014-12-16)
+
+
+#### Features
+
+* **userdirectory:** Add hbpUserDirectory.update() (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibAngularHbpCommon.git/commit/?id=906d7a6d590afe180b0b0e0dfc4569d7ae45814b)
+
+
 <a name="0.4.2"></a>
 ### 0.4.2 (2014-12-02)
 

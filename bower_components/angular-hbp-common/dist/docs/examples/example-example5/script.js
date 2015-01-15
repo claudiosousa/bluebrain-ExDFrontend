@@ -1,6 +1,7 @@
-    angular.module('iconExample', ['hbpCommon'])
-        .controller('iconController', function($scope) {
-            $scope.entity = { _entityType: 'project' };
-            $scope.type = 'folder';
-        }
-    );
+  var myApp = angular.module("testModule",['hbpCommon']);
+  myApp.controller('Controller', ['$scope', function($scope) {
+      $scope.file= {
+          name: 'wallpaper.png',
+          contentType: 'image/png'
+      };
+    }]);

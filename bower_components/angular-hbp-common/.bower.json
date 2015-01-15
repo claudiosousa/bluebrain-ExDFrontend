@@ -1,7 +1,7 @@
 {
   "name": "angular-hbp-common",
   "description": "Common components for HBP websites.",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "private": true,
   "repository": {
     "url": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
@@ -17,7 +17,8 @@
     "bbp-oidc-client": "~0.5.0",
     "lodash": "~2.4.1",
     "angular-bootstrap": "~0.12.0",
-    "components-font-awesome": "~4.2.0"
+    "components-font-awesome": "~4.2.0",
+    "marked-hbp": "~0.3.3"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.16",
@@ -26,7 +27,37 @@
   "main": [
     "dist/angular-hbp-common.js",
     "dist/hbp-common.css",
-    "dist/scss/hbp-common.scss"
+    "dist/scss/hbp-common.scss",
+    "dist/assets/Didot.otf",
+    "dist/assets/glyphicons-halflings-regular.eot",
+    "dist/assets/glyphicons-halflings-regular.svg",
+    "dist/assets/glyphicons-halflings-regular.woff",
+    "dist/assets/glyphicons-halflings-regular.ttf",
+    "dist/assets/Gotham-Black.eot",
+    "dist/assets/Gotham-BlackItalic.eot",
+    "dist/assets/Gotham-Bold.eot",
+    "dist/assets/Gotham-BoldItalic.eot",
+    "dist/assets/Gotham-Book.eot",
+    "dist/assets/Gotham-BookItalic.eot",
+    "dist/assets/Gotham-Light.eot",
+    "dist/assets/Gotham-LightItalic.eot",
+    "dist/assets/Gotham-Medium.eot",
+    "dist/assets/Gotham-MediumItalic.eot",
+    "dist/assets/Gotham-Thin.eot",
+    "dist/assets/Gotham-ThinItalic.eot",
+    "dist/assets/Gotham-Ultra.eot",
+    "dist/assets/Gotham-UltraItalic.eot",
+    "dist/assets/Gotham-XLight.eot",
+    "dist/assets/Gotham-XLightItalic.eot",
+    "dist/assets/favicon.ico",
+    "dist/assets/hbp_logo.png",
+    "dist/assets/hbp_diamond.png",
+    "dist/assets/hbp_logo_horizontal.png",
+    "dist/assets/hbp_logo_vertical.png",
+    "dist/assets/hbp_rainbow.png",
+    "dist/assets/hbp_rainbow_black.png",
+    "dist/assets/triangle_wave_background.png",
+    "dist/assets/up-logo.png"
   ],
   "ignore": [
     "test",
@@ -41,13 +72,13 @@
   "resolutions": {
     "angular-bbp-config": "~0.2.0"
   },
-  "_release": "0.4.2",
+  "_release": "0.5.0",
   "_resolution": {
     "type": "version",
-    "tag": "0.4.2",
-    "commit": "53000255b976fb45c7037c659109f5f3dd65f53c"
+    "tag": "0.5.0",
+    "commit": "b2782ced925e36f433285da698cf85216f372369"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon",
-  "_target": "~0.4.2",
+  "_target": "~0.5.0",
   "_originalSource": "angular-hbp-common"
 }

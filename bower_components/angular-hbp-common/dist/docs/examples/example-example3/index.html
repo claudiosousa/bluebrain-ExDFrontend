@@ -33,15 +33,34 @@
   <script src="../../bower_components/google-code-prettify/bin/prettify.min.js"></script>
   <script src="../../dist/dist/angular-hbp-common.js"></script>
   <script src="../../dgeni-hbp-angular/mocks/oidc-mock.js"></script>
-  <script src="script.js"></script>
   
 
   
 </head>
-<body ng-app="testModule">
-    <div ng-controller="Controller">
-      <p>mimeType: <select ng-options="ct for ct in contentTypes" ng-model="selectedContentType"></select></p>
-      <p>description: <hbp-content-description content="selectedContentType"></hbp-content-description></p>
-  </div>
+<body ng-app="breadcrumbExample">
+      <div ng-controller="exampleController">
+       <hbp-breadcrumb items="items"></hbp-breadcrumb>
+    </div>
+
+    <script>
+    angular.module('breadcrumbExample', ['hbpCommon'])
+    .controller('exampleController', function($scope) {
+       $scope.items = [{
+           name: 'Home',
+           type: 'folder',
+           state: 'home'
+       }, {
+           name: 'Project 1',
+           type: 'folder',
+           state: 'project',
+           params: { id: '334' }
+       }, {
+           name: 'Project Logo',
+           type: 'image/png',
+           state: 'file',
+           params: { id: '1233325' }
+       }];
+    })
+    </script>
 </body>
 </html>
