@@ -9,9 +9,15 @@
     <title>Neurorobotics platform</title>
 
     <!-- build:css(.) styles/vendor.css -->
-    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css" />
-    <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
     <!-- endbuild -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="bower_components/angular-hbp-common/dist/hbp-common.css" />
+    <link rel="stylesheet" href="bower_components/angular-hbp-document-client/dist/angular-hbp-document-client.css" />
+    <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
+    <link rel="stylesheet" href="bower_components/neural-circuit-designer/neural-circuit-designer.css" />
+    <!-- endbower -->
 
     <!-- build:css(.tmp) styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
@@ -38,7 +44,7 @@
 
     <!-- this script tag must not be enclosed into a build directive -->
     <script src="https://up-dev.humanbrainproject.eu/upnav/hbp-up-nav.min.js" charset="utf-8"></script>
-    
+
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
@@ -77,6 +83,7 @@
     <script src="bower_components/codemirror/mode/python/python.js"></script>
     <script src="bower_components/codemirror/mode/shell/shell.js"></script>
     <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
+    <script src="bower_components/neural-circuit-designer/neural-circuit-designer.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -99,8 +106,8 @@
     <script>
       var GZ3D = {};
     </script>
-    
-    
+
+
     <!-- build:js({app,.tmp,.}) scripts/app.js -->
     <script src="scripts/app.js"></script>
     <script src="scripts/esv/gz3d/build/gz3d.preprocessed.js"></script>
@@ -113,7 +120,6 @@
     <script src="scripts/esv/services/simulation-control.js"></script>
     <script src="scripts/esv/services/gzcommunication.js"></script>
     <!-- endbuild -->
-
 
 </body>
 

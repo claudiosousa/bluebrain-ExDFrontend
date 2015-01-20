@@ -36,6 +36,7 @@ module.exports = function(config) {
       'bower_components/codemirror/mode/python/python.js',
       'bower_components/codemirror/mode/shell/shell.js',
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
+      'bower_components/neural-circuit-designer/neural-circuit-designer.js',
       'app/scripts/esv/gz3d/client/js/include/jquery-1.9.1.js',
       'app/scripts/esv/gz3d/client/js/include/three.js',
       'app/scripts/esv/gz3d/client/js/include/OrbitControls.js',

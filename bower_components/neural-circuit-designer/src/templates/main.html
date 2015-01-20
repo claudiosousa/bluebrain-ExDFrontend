@@ -1,0 +1,13 @@
+<div class="ncd-tabbar">
+  <span
+    class="ncd-tabitem"
+    ng-class="{'active':(tabs.current == $index)}"
+    ng-repeat="tab in tabs.alltabs"
+    ng-click="tabs.current = $index"
+  >{{tab}}</span>
+</div>
+<div class="ncd-view" ng-switch="tabs.current">
+  <ncd-raw ng-switch-when="0"></ncd-raw>
+  <ncd-neurons ng-switch-when="1"></ncd-neurons>
+  <ncd-layers ng-switch-when="2"></ncd-layers>
+</div>

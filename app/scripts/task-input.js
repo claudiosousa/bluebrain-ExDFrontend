@@ -185,6 +185,9 @@
          */
         module.directive('bbpConfigurationInputUri', ['$compile', '$rootScope', function($compile, $rootScope) {
             return {
+                scope: {
+                    input: '=',
+                },
                 templateUrl: 'partials/task-input/uri.html',
                 restrict: 'E',
                 link: function ($scope, attr, element) {

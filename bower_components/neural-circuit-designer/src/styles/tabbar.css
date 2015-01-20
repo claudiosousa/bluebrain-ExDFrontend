@@ -1,0 +1,32 @@
+.ncd-tabbar {
+  line-height: 2;
+  font-size: 20px;
+  background: rgb(200, 200, 200);
+  width: 100%;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.ncd-tabitem {
+  cursor: default;
+  margin: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.ncd-tabitem.active{
+  background: rgb(240, 240, 240);
+}
+.ncd-tabitem:not(.active):hover{
+  cursor: pointer;
+  color: #2A4D8A;
+  background: rgb(210, 210, 210);
+}

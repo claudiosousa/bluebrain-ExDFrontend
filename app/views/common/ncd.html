@@ -1,16 +1,28 @@
-<div class="container-with-navbar-margin">
-  <div class='hbp-toolbar'>
-    <a
-      class='hbp-toolbar-nav'
-      ng-repeat='curState in $state.get() | filter:{"name":"ncd."}'
-      ng-class='{active: $state.is(curState.name)}'
-      href='{{$state.href(curState)}}'
-    >
-      {{curState.data.displayName}}
-    </a>
-    <div class='hbp-toolbar-item' style='float:right'>
-      <span ng-if='!input.entity' class='glyphicon glyphicon-warning-sign'></span> {{input.entity._name || 'No Blueprint selected!'}}
+<div class="container container-with-navbar-margin">
+  <div class="alert alert-danger" ng-if="!input.blueprint.entity">
+    <strong><span class='glyphicon glyphicon-warning-sign'></span> Important:</strong>
+    No Blueprint selected!
+  </div>
+  <div class="alert alert-warning alter-dismissable" ng-if="!input.pynnscript.entity">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <strong><span class='glyphicon glyphicon-warning-sign'></span> Warning:</strong>
+    No PyNN-script selected!
+  </div>
+  <div class="row ncd-input">
+    <div class="col-md-6 col-xs-12">
+      <p>
+        Select a blueprint file:
+      </p>
+      <bbp-configuration-input-uri input='input.blueprint'></bbp-configuration-input-uri>
+    </div>
+    <div class="col-md-6 col-xs-12">
+      <p>
+        Select a PyNN-script file:
+      </p>
+      <bbp-configuration-input-uri input='input.pynnscript'></bbp-configuration-input-uri>
     </div>
   </div>
-  <div ui-view ></div>
+  <ncd-app blueprint='data.blueprint' pynnscript='data.pynnscript'></ncd-app>
 </div>

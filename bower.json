@@ -22,7 +22,8 @@
     "angular-hbp-document-client": "latest",
     "xml2json": "latest",
     "stats.js": "latest",
-    "angular-ui-codemirror": "latest"
+    "angular-ui-codemirror": "latest",
+    "neural-circuit-designer": "swenzel/neural-circuit-designer#master"
   },
   "overrides": {
     "codemirror": {

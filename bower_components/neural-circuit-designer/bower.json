@@ -1,0 +1,31 @@
+{
+  "name": "neural-circuit-designer",
+  "description": "Directive for designing and creating neuronal networks",
+  "license": "MIT",
+  "version": "0.0.3",
+  "authors": [
+      "Swen Wenzel"
+  ],
+  "moduleType": [
+    "angular"
+  ],
+  "main": [
+      "neural-circuit-designer.js",
+      "neural-circuit-designer.css"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components",
+    "test",
+    "package.json",
+    "Gruntfile.js"
+  ],
+  "private": true,
+  "dependencies": {
+    "angular": "~1.2.9"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.2.9"
+  }
+}

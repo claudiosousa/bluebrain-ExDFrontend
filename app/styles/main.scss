@@ -11,7 +11,7 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 
 // Accounts for the fixed navbar
 .container-with-navbar-margin {
-    margin-top: $hbp-common-navbar-height;
+    margin-top: 10px;
 }
 
 // Footer
@@ -72,6 +72,11 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
   display: block !important;
 }
 
+// padding for the ncd input
+.ncd-input {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
 // Experiment designer selection box directive
 .exd-model-selection-box
 {
