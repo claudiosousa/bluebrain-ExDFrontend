@@ -10,8 +10,6 @@
    */
 
   /* global GZ3D: false */
-  /* global scene: false */
-  /* global gui: false */
   /* global THREE: false */
   /* global console: false */
 
@@ -21,10 +19,8 @@
       STARTED: 'started',
       PAUSED: 'paused'
     })
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'simulationStatistics', 'simulationControl', 'lightControl', 'screenControl', 'STATUS',
-        function ($rootScope, $scope, simulationStatistics, simulationControl, lightControl, screenControl, STATUS) {
-
-      $rootScope.GZ3D = GZ3D;
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization', 'simulationStatistics', 'simulationControl', 'lightControl', 'screenControl', 'STATUS',
+        function ($rootScope, $scope, gzInitialization, simulationStatistics, simulationControl, lightControl, screenControl, STATUS) {
 
       // Initially we set paused to true, but as soon as we have information from
       // the server side we adjust the value accordingly!
@@ -77,7 +73,7 @@
       $scope.getModelUnderMouse = function(event) {
         var pos = new THREE.Vector2(event.clientX, event.clientY);
         var intersect = new THREE.Vector3();
-        var model = scene.getRayCastModel(pos, intersect);
+        var model = $rootScope.scene.getRayCastModel(pos, intersect);
         return model;
       };
 
@@ -102,7 +98,7 @@
         //var entityToChange = scene.getByName(scene.selectedEntity.name + "::link::visual");
 
         // since we currently want restrict ourselves to screens we go with:
-        var entityToChange = scene.getByName($scope.selectedEntity.name + '::body::screen_glass');
+        var entityToChange = $rootScope.scene.getByName($scope.selectedEntity.name + '::body::screen_glass');
         var child = entityToChange.children[0];
         var material = child ? child.material : undefined;
 
@@ -148,37 +144,37 @@
             // scene.radialMenu.showing is a property of GZ3D that was originally used to display a radial menu, We are
             // reusing it for our context menu. The reason is that this variables disables or enables the controls of
             // scene in the render loop.
-            scene.radialMenu.showing = $scope.isContextMenuShown =
+            $rootScope.scene.radialMenu.showing = $scope.isContextMenuShown =
               (model &&
                model.name !== '' &&
                model.name !== 'plane' &&
                model.name.indexOf('screen') !== -1 &&
-               scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
+              $rootScope.scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
 
             $scope.contextMenuTop = event.clientY;
             $scope.contextMenuLeft = event.clientX;
-            $scope.selectedEntity = scene.selectedEntity;
+            $scope.selectedEntity = $rootScope.scene.selectedEntity;
           }
         }
         else
         {
           $scope.isContextMenuShown = false;
-          scene.radialMenu.showing = false;
+          $rootScope.scene.radialMenu.showing = false;
         }
       };
 
       // Lights management
       $scope.incrementLightIntensities = function (ratio) {
-        var lights = scene.scene.__lights;
+        var lights = $rootScope.scene.scene.__lights;
         var numberOfLights = lights.length;
         for (var i = 0; i < numberOfLights; i+=1) {
           if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
             continue;
           }
-          var entity = scene.getByName(lights[i].name);
+          var entity = $rootScope.scene.getByName(lights[i].name);
           var lightObj = entity.children[0];
           lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
-          scene.emitter.emit('entityChanged', entity);
+          $rootScope.scene.emitter.emit('entityChanged', entity);
         }
       };
 /*
@@ -209,6 +205,5 @@
         // we avoid purposedly -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
         $scope.incrementLightIntensities(ratio);
       };
-
-    }]);
+  }]);
 }());

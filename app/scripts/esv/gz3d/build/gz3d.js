@@ -2953,7 +2953,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           allChildren[c].castShadow = false;
           allChildren[c].receiveShadow = false;
 
-          allChildren[c].visible = this.scene.showCollisions;
+          allChildren[c].visible = that.scene.showCollisions;
         }
         break;
       }
@@ -4758,7 +4758,7 @@ GZ3D.Scene.prototype.init = function()
 
   this.renderer = new THREE.WebGLRenderer({antialias: true });
   this.renderer.setClearColor(0xb2b2b2, 1); // Sky
-  this.renderer.setSize( window.innerWidth, window.innerHeight);
+  this.renderer.setSize( document.getElementById('container').offsetWidth, document.getElementById('container').offsetHeight);
   // this.renderer.shadowMapEnabled = true;
   // this.renderer.shadowMapSoft = true;
 
@@ -6414,6 +6414,7 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
   var thatURI = uri;
   var thatSubmesh = submesh;
   var thatCenterSubmesh = centerSubmesh;
+  var that = this;
 
   loader.load(uri, function(collada)
   {
@@ -6426,10 +6427,10 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
 
     dae = collada.scene;
     dae.updateMatrix();
-    this.scene.prepareColladaMesh(dae);
-    this.scene.meshes[thatURI] = dae;
+    that.prepareColladaMesh(dae);
+    that.meshes[thatURI] = dae;
     dae = dae.clone();
-    this.scene.useColladaSubMesh(dae, thatSubmesh, centerSubmesh);
+    that.useColladaSubMesh(dae, thatSubmesh, centerSubmesh);
 
     dae.name = uri;
     callback(dae);
@@ -7730,7 +7731,7 @@ GZ3D.SdfParser.prototype.createGeom = function(geom, mat, parent)
           allChildren[c].castShadow = false;
           allChildren[c].receiveShadow = false;
 
-          allChildren[c].visible = this.scene.showCollisions;
+          allChildren[c].visible = that.scene.showCollisions;
         }
         break;
       }

@@ -1,16 +1,5 @@
 'use strict';
 
-// mocking a global value
-// TODO: get rid of global scoped values in production code!
-var scene = {};
-scene.radialMenu = {};
-scene.radialMenu.showing = false;
-scene.modelManipulator = {};
-scene.modelManipulator.pickerNames = '';
-
-var gui = {};
-gui.emitter = {};
-
 describe('Controller: Gz3dViewCtrl', function () {
 
   // load the controller's module
@@ -26,8 +15,11 @@ describe('Controller: Gz3dViewCtrl', function () {
   simulationStatisticsMock.setRealTimeCallback = jasmine.createSpy('setRealTimeCallback');
   simulationStatisticsMock.setPausedCallback = jasmine.createSpy('setPausedCallback');
 
+  var gzInitializationMock = {};
+
   beforeEach(module(function ($provide) {
     $provide.value('simulationStatistics', simulationStatisticsMock);
+    $provide.value('gzInitialization', gzInitializationMock);
   }));
 
   // Initialize the controller and a mock scope
@@ -36,15 +28,21 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope = $rootScope.$new();
     httpBackend = _$httpBackend_;
 
+    rootScope.scene = {};
+    rootScope.scene.radialMenu = {};
+    rootScope.scene.radialMenu.showing = false;
+    rootScope.scene.modelManipulator = {};
+    rootScope.scene.modelManipulator.pickerNames = '';
+    rootScope.gui = {};
+    rootScope.gui.emitter = {};
+
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation/0/state').respond({ simulationID: 0, experimentID: 'fakeExperiment'});
     httpBackend.whenPUT(/()/).respond(200);
 
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
       $rootScope: rootScope,
-      $scope: scope,
-      scene : scene,
-      gui : gui
+      $scope: scope
     });
 
     // create mock for console
@@ -65,9 +63,9 @@ describe('Controller: Gz3dViewCtrl', function () {
   });
 
   it('should get the model under the current mouse position', function () {
-    scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
+    rootScope.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
     scope.getModelUnderMouse({clientX: 10, clientY: 10});
-    expect(scene.getRayCastModel).toHaveBeenCalled();
+    expect(rootScope.scene.getRayCastModel).toHaveBeenCalled();
   });
 
   it('should set a color on the selected screen', function() {
@@ -83,9 +81,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     material.specular = {};
     material.specular.setHex = jasmine.createSpy('setHex');
 
-    // we are acting on global scope now, since scene is global currently – not a good idea ... :(
-    // TODO get rid of global scope ...
-    scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
+    rootScope.scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
 
     // actual test
     var getType = {};
@@ -99,7 +95,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     // pretend we selected a screen now
     scope.selectedEntity = { 'name' : 'left_vr_screen' };
     scope.setColorOnEntity('red');
-    expect(scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
+    expect(rootScope.scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
 
     var redHexValue = 0xff0000;
     expect(material.color.setHex).toHaveBeenCalledWith(redHexValue);
@@ -127,7 +123,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     var event = {};
     scope.toggleScreenChangeMenu(show, event);
     expect(scope.isContextMenuShown).toBe(false);
-    expect(scene.radialMenu.showing).toBe(false);
+    expect(rootScope.scene.radialMenu.showing).toBe(false);
 
     // now the true case
     show = true;
@@ -136,12 +132,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope.getModelUnderMouse = function(event) { // jshint ignore:line
       return { 'name' : 'vr_screen_1' };
     };
-    scene.selectedEntity = { 'some_key' : 'some_value' };
+    rootScope.scene.selectedEntity = { 'some_key' : 'some_value' };
     scope.toggleScreenChangeMenu(show, event);
 
     expect(scope.contextMenuTop).toEqual(event.clientY);
     expect(scope.contextMenuLeft).toEqual(event.clientX);
-    expect(scope.selectedEntity).toEqual(scene.selectedEntity);
+    expect(scope.selectedEntity).toEqual(rootScope.scene.selectedEntity);
   });
 
   it('should pause or start the simulation', function() {
@@ -196,7 +192,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
 
   it('should emit light intensity changes', function() {
-      scene.scene = {};
+      rootScope.scene.scene = {};
 
       // three is loaded externally, jshint does not know that
       var light0 = new THREE.AmbientLight(); // jshint ignore:line
@@ -207,7 +203,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       light2.name = 'right_spot';
       light2.initialIntensity = 0.5;
 
-      scene.scene.__lights = [light1, light2];
+      rootScope.scene.scene.__lights = [light1, light2];
 
       // helper is defined as 'undefined' for semantical reasons
       var helper = undefined; // jshint ignore:line
@@ -220,7 +216,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       var entity2 = {
           children: [light2, helper]
       };
-      scene.getByName = function(name) {
+      rootScope.scene.getByName = function(name) {
           if (name === 'ambient') {
               return entity0;
           }
@@ -236,8 +232,9 @@ describe('Controller: Gz3dViewCtrl', function () {
           return undefined;
       };
 
-      scene.getLightType = rootScope.GZ3D.Scene.prototype.getLightType;
-      scene.intensityToAttenuation = rootScope.GZ3D.Scene.prototype.intensityToAttenuation;
+      //ToDo: implement Test
+      //rootScope.scene.getLightType = GZ3D.Scene.prototype.getLightType;
+      //rootScope.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
 
       //scope.incrementLightIntensities(-0.5);
       //

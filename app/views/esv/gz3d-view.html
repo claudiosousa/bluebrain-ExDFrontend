@@ -1,4 +1,6 @@
-
+<!-- build:css(app) styles/esv-flexbox.css -->
+<link rel="stylesheet" href="styles/esv/flexbox.css" />
+<!-- endbuild -->
 
   <script id="heightmapVS" type="x-shader/x-vertex">
     varying vec2 vUv;
@@ -80,14 +82,18 @@
     }
   </script>
 
-    <div id="gz3d-body" data-role="page" data-theme="b" data-content-theme="c">
+    <div id="gz3d-body" data-role="page" data-theme="b" data-content-theme="c" class="esv-flex-container esv-flex-greedy-element">
       <!-- container -->
-      <div ng-controller="Gz3dViewCtrl">
+      <div ng-controller="Gz3dViewCtrl" ng-init="init()" class="esv-flex-container esv-flex-greedy-element">
+        <!-- WEBGL-context -->
+        <div ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container" class="esv-flex-greedy-element"></div>
+        <!-- WEBGL-context -->
+
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div class="hbp-toolbar-action" ng-click="pauseSimulation();"><i id="playLink"
-                                                                         ng-class="{'glyphicon': true, 'glyphicon-play': paused, 'glyphicon-pause': !paused}"></i>
+            <div class="hbp-toolbar-action" ng-click="pauseSimulation();">
+              <i id="playLink" ng-class="{'glyphicon': true, 'glyphicon-play': paused, 'glyphicon-pause': !paused}"></i>
             </div>
             <div class="hbp-toolbar-large-tool hbp-time-display">
               <div>
@@ -114,10 +120,6 @@
         </div>
         <!-- overlay -->
 
-        <!-- WEBGL-context -->
-        <div ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container"></div>
-        <!-- WEBGL-context -->
-
         <!-- context menu -->
         <div id="contextmenu" class="esv-contextmenu" ng-show="isContextMenuShown" ng-style="{ 'left': contextMenuLeft, 'top': contextMenuTop }">
           <ul class="hbp-list-tableview hbp-list-tableview-selectable">
@@ -134,53 +136,3 @@
 
     </div>
     <!-- page -->
-
-    <!-- WebGL -->
-    <script>
-      if (!Detector.webgl)
-        Detector.addGetWebGLMessage();
-
-      var container, stats;
-      var scene;
-
-      init();
-      animate();
-
-      function init()
-      {
-        scene = new GZ3D.Scene();
-        gui = new GZ3D.Gui(scene);
-        iface = new GZ3D.GZIface(scene, gui);
-        sdfparser = new GZ3D.SdfParser(scene, gui, iface);
-
-        container = document.getElementById( 'container' );
-        container.appendChild(scene.getDomElement());
-
-        // FPS indicator
-        stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.top = '0px';
-        stats.domElement.style.zIndex = 100;
-        //container.appendChild( stats.domElement );
-
-        window.addEventListener( 'resize', onWindowResize, false);
-      }
-
-      function onWindowResize()
-      {
-        scene.setWindowSize(window.innerWidth, window.innerHeight);
-        $('#clock-touch').popup('close');
-      }
-
-      function animate()
-      {
-        requestAnimationFrame(animate);
-        render();
-      }
-
-      function render()
-      {
-        scene.render();
-        //stats.update();
-      }
-    </script>
