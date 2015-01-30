@@ -36,8 +36,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.gui = {};
     rootScope.gui.emitter = {};
 
+    rootScope.simulations = [
+      { simulationID: 0, experimentID: 'fakeExperiment0', state: 'created'},
+      { simulationID: 1, experimentID: 'fakeExperiment1', state: 'initialized'},
+      { simulationID: 2, experimentID: 'fakeExperiment2', state: 'paused'},
+      { simulationID: 3, experimentID: 'fakeExperiment3', state: 'started'},
+      { simulationID: 4, experimentID: 'fakeExperiment4', state: 'stopped'},
+    ];
+
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
-    httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation/0/state').respond({ simulationID: 0, experimentID: 'fakeExperiment'});
+    httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation').respond(rootScope.simulations);
     httpBackend.whenPUT(/()/).respond(200);
 
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
@@ -49,12 +57,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(console, 'error');
   }));
 
-  it('should retrieve the simulation object with simulation id equal to 0', function() {
-      httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation/0/state');
+  it('should retrieve the simulation list ', function() {
+      httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
 
       httpBackend.flush();
-      expect(scope.simulation.simulationID).toBe(0);
+      expect(scope.simulations.toString()).toEqual(rootScope.simulations.toString());
+      var lastIndex = scope.simulations.length - 1;
+      expect(scope.simulation.simulationID).toBe(lastIndex);
+      expect(scope.paused).toBe(false);
   });
+
 
   it('should check for the currently hovered model', function () {
     scope.getModelUnderMouse = jasmine.createSpy('getModelUnderMouse').andReturn({name: 'some_name'});
@@ -69,6 +81,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   });
 
   it('should set a color on the selected screen', function() {
+    httpBackend.flush();
     // prepare the test: create mockups
     var entityToChange = { 'children' : [ { 'material' : {} } ] };
     var material = entityToChange.children[0].material;
@@ -95,6 +108,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     // pretend we selected a screen now
     scope.selectedEntity = { 'name' : 'left_vr_screen' };
     scope.setColorOnEntity('red');
+    httpBackend.flush();
     expect(rootScope.scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
 
     var redHexValue = 0xff0000;
@@ -106,11 +120,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(material.specular.setHex.callCount).toEqual(1);
 
     // test RESTful call
-    httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation/0/state');
-    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/interaction', {'name':'LeftScreenToRed'});
-
-
-      httpBackend.flush();
+    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + scope.simulation.simulationID + '/interaction', 
+      {'name':'LeftScreenToRed'});
   });
 
   it('should toggle a menu to be able to change the screen color', function() {
@@ -142,13 +153,15 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should pause or start the simulation', function() {
       // test if object function exists
+      httpBackend.flush();
+      
       var getType = {};
       expect(getType.toString.call(scope.pauseSimulation)).toBe('[object Function]');
 
-      scope.simulation = { simulationID: 0 };
       scope.paused = true;
       scope.pauseSimulation();
-      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/state', {state: 'started'});
+      var id = scope.simulation.simulationID;
+      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + id + '/state', {state: 'started'});
 
       httpBackend.flush();
 
