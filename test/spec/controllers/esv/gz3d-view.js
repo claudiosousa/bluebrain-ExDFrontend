@@ -33,6 +33,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.scene.radialMenu.showing = false;
     rootScope.scene.modelManipulator = {};
     rootScope.scene.modelManipulator.pickerNames = '';
+    rootScope.scene.emitter = {};
     rootScope.gui = {};
     rootScope.gui.emitter = {};
 
@@ -181,13 +182,12 @@ describe('Controller: Gz3dViewCtrl', function () {
   it('should turn slider position into light intensities', function() {
       var getType = {};
       expect(getType.toString.call(scope.updateLightIntensities)).toBe('[object Function]');
-      expect(getType.toString.call(scope.incrementLightIntensities)).toBe('[object Function]');
-      scope.incrementLightIntensities = jasmine.createSpy('incrementLightIntensities');
+      rootScope.scene.emitter.emit = jasmine.createSpy('emit');
 
       scope.updateLightIntensities(60.0);
 
-      expect(scope.incrementLightIntensities).toHaveBeenCalledWith((60 - 50) / 50.25);
-      expect(scope.incrementLightIntensities.callCount).toEqual(1);
+      expect(rootScope.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', (60 - 50) / 50.25);
+      expect(rootScope.scene.emitter.emit.callCount).toEqual(1);
   });
 
 

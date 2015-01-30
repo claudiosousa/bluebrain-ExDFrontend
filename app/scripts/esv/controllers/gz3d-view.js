@@ -164,46 +164,11 @@
       };
 
       // Lights management
-      $scope.incrementLightIntensities = function (ratio) {
-        var lights = $rootScope.scene.scene.__lights;
-        var numberOfLights = lights.length;
-        for (var i = 0; i < numberOfLights; i+=1) {
-          if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
-            continue;
-          }
-          var entity = $rootScope.scene.getByName(lights[i].name);
-          var lightObj = entity.children[0];
-          lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
-          $rootScope.scene.emitter.emit('entityChanged', entity);
-        }
-      };
-/*
-      The performances of this are too bad now.
-      $scope.incrementLightIntensities = function (ratio) {
-        var lights = scene.scene.__lights;
-        var numberOfLights = lights.length;
-        for (var i = 0; i < numberOfLights; i+=1) {
-          if (lights[i] instanceof THREE.AmbientLight) { // we don't change ambient lights
-            continue;
-          }
-          var name = lights[i].name;
-          var entity = scene.getByName(name);
-          var lightObj = entity.children[0];
-          lightObj.intensity = (1 + ratio) * lightObj.initialIntensity;
-          var lightParams = {};
-          lightParams.name = name;
-          var lightType = scene.getLightType(lightObj);
-          lightParams.attenuation_constant = scene.intensityToAttenuation(lightObj.intensity, lightType);
-          lightControl.updateLight(lightParams);
-        }
-      };
-*/
-
       $scope.sliderPosition = 50;
       $scope.updateLightIntensities = function(sliderPosition) {
         var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
         // we avoid purposedly -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
-        $scope.incrementLightIntensities(ratio);
+        $rootScope.scene.emitter.emit('lightChanged', ratio);
       };
   }]);
 }());

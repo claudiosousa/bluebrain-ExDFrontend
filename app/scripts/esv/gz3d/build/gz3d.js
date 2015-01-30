@@ -2403,7 +2403,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     messageType : 'light',
   });
 
-  var publishEntityModify = function(entity)
+  var createEntityModifyMessage = function(entity)
   {
     var matrix = entity.matrixWorld;
     var translation = new THREE.Vector3();
@@ -2430,51 +2430,81 @@ GZ3D.GZIface.prototype.onConnected = function()
         z: quaternion.z
       }
     };
+    return entityMsg;
+  };
+
+  var createEntityModifyMessageWithLight = function(entity, lightIntensity)
+  {
+    var entityMsg = createEntityModifyMessage(entity);
+
     var lightObj = entity.children[0];
-    if (lightObj &&
-        lightObj instanceof THREE.Light)
+    entityMsg.diffuse =
     {
-      entityMsg.diffuse =
-      {
-        r: lightObj.color.r,
-        g: lightObj.color.g,
-        b: lightObj.color.b
-      };
-      entityMsg.specular =
-      {
-        r: entity.serverProperties.specular.r,
-        g: entity.serverProperties.specular.g,
-        b: entity.serverProperties.specular.b
-      };
-      entityMsg.direction = entity.direction;
-      entityMsg.range = lightObj.distance;
+      r: lightObj.color.r,
+      g: lightObj.color.g,
+      b: lightObj.color.b
+    };
+    entityMsg.specular =
+    {
+      r: entity.serverProperties.specular.r,
+      g: entity.serverProperties.specular.g,
+      b: entity.serverProperties.specular.b
+    };
+    entityMsg.direction = entity.direction;
+    entityMsg.range = lightObj.distance;
 
 
-      var lightType = that.scene.DIRECTIONAL;
-      // Adjust according to factor
-      if (lightObj instanceof THREE.PointLight)
-      {
-        lightType = that.scene.POINT;
-      }
-      else if (lightObj instanceof THREE.SpotLight)
-      {
-        lightType = that.scene.SPOT;
-      }
+    var lightType = that.scene.DIRECTIONAL;
+    // Adjust according to factor
+    if (lightObj instanceof THREE.PointLight)
+    {
+      lightType = that.scene.POINT;
+    }
+    else if (lightObj instanceof THREE.SpotLight)
+    {
+      lightType = that.scene.SPOT;
+    }
 
-      var attenuation_constant = that.scene.intensityToAttenuation(lightObj.intensity, lightType);
-      entityMsg.attenuation_constant = attenuation_constant;
-      entityMsg.attenuation_linear = entity.serverProperties.attenuation_linear;
-      entityMsg.attenuation_quadratic = entity.serverProperties.attenuation_quadratic;
+    var attenuation_constant = that.scene.intensityToAttenuation(lightIntensity, lightType);
+    entityMsg.attenuation_constant = attenuation_constant;
+    entityMsg.attenuation_linear = entity.serverProperties.attenuation_linear;
+    entityMsg.attenuation_quadratic = entity.serverProperties.attenuation_quadratic;
 
-      that.lightModifyTopic.publish(entityMsg);
+    return entityMsg;
+  };
+
+  var publishEntityModify = function(entity)
+  {
+    var lightObj = entity.children[0];
+    if (lightObj && lightObj instanceof THREE.Light)
+    {
+      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, lightObj.intensity));
     }
     else
     {
-      that.modelModifyTopic.publish(entityMsg);
+      that.modelModifyTopic.publish(createEntityModifyMessage(entity));
     }
   };
 
   this.scene.emitter.on('entityChanged', publishEntityModify);
+
+  var publishLightModify = function(ratio)
+  {
+    var lights = that.scene.scene.__lights;
+    var numberOfLights = lights.length;
+    for (var i = 0; i < numberOfLights; i+=1) {
+      if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
+        continue;
+      }
+      var entity = that.scene.getByName(lights[i].name);
+      var lightObj = entity.children[0];
+      var intensity = (1 + ratio) * lightObj.initialIntensity;
+
+      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, intensity));
+    }
+  };
+
+  this.scene.emitter.on('lightChanged', publishLightModify);
 
   // Link messages - for modifying links
   this.linkModifyTopic = new ROSLIB.Topic({
