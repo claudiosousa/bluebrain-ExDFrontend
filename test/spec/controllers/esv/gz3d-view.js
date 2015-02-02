@@ -43,6 +43,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       { simulationID: 2, experimentID: 'fakeExperiment2', state: 'paused'},
       { simulationID: 3, experimentID: 'fakeExperiment3', state: 'started'},
       { simulationID: 4, experimentID: 'fakeExperiment4', state: 'stopped'},
+      { simulationID: 5, experimentID: 'fakeExperiment5', state: 'initialized'},
+      { simulationID: 6, experimentID: 'fakeExperiment6', state: 'created'},
     ];
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
@@ -58,14 +60,37 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(console, 'error');
   }));
 
-  it('should retrieve the simulation list ', function() {
+
+  it('should retrieve the simulation list and extract the latest active simulation', function() {
       httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
 
       httpBackend.flush();
       expect(scope.simulations.toString()).toEqual(rootScope.simulations.toString());
-      var lastIndex = scope.simulations.length - 1;
-      expect(scope.simulation.simulationID).toBe(lastIndex);
+      expect(scope.activeSimulation.state).toBe('started');
       expect(scope.paused).toBe(false);
+  });
+
+
+  it('should attach a filter function and filter simulations according to state and index in the list', function() {
+      httpBackend.flush();
+      
+      var getType = {};
+      expect(getType.toString.call(scope.filterSimulations)).toBe('[object Function]');
+      
+      scope.filterSimulations('started', 'paused');
+      expect(scope.activeSimulation.state).toBe('started');
+
+      scope.simulations[2].state = 'started';
+      scope.simulations[3].state = 'paused';
+
+      scope.filterSimulations('started', 'paused');
+      expect(scope.activeSimulation.state).toBe('paused');
+
+      scope.filterSimulations('initialized');
+      expect(scope.activeSimulation.simulationID).toBe(5);
+
+      scope.filterSimulations('created');
+      expect(scope.activeSimulation.simulationID).toBe(6);
   });
 
 
@@ -121,7 +146,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(material.specular.setHex.callCount).toEqual(1);
 
     // test RESTful call
-    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + scope.simulation.simulationID + '/interaction', 
+    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + scope.activeSimulation.simulationID + '/interaction', 
       {'name':'LeftScreenToRed'});
   });
 
@@ -161,7 +186,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       scope.paused = true;
       scope.pauseSimulation();
-      var id = scope.simulation.simulationID;
+      var id = scope.activeSimulation.simulationID;
       httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + id + '/state', {state: 'started'});
 
       httpBackend.flush();

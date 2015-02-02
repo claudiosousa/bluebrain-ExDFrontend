@@ -16,16 +16,19 @@
 
   angular.module('exdFrontendApp')
     // constants for the server side status
-    .constant('STATUS', {
+    .constant('STATE', {
+      CREATED: 'created',
       STARTED: 'started',
-      PAUSED: 'paused'
+      PAUSED: 'paused',
+      INITIALIZED: 'initialized',
+      STOPPED: 'stopped'
     })
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization', 
       'simulationStatistics', 'simulationService', 'simulationControl', 'simulationState', 
-      'lightControl', 'screenControl', 'STATUS',
+      'lightControl', 'screenControl', 'STATE',
         function ($rootScope, $scope, gzInitialization, 
           simulationStatistics, simulationService, simulationControl, simulationState, 
-          lightControl, screenControl, STATUS) {
+          lightControl, screenControl, STATE) {
 
 
 
@@ -33,17 +36,41 @@
       // the server side we adjust the value accordingly!
       $scope.paused = true;
 
+
+      // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
+      // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
+      // the active simulation remains undefined 
       simulationService.simulations(function(data) {
         $scope.simulations = data;
-        var length = $scope.simulations.length;
-        if (length > 0) {
-          $scope.simulation = $scope.simulations[length - 1];
-          $scope.paused = $scope.simulation.state === STATUS.PAUSED;
+        $scope.activeSimulation = undefined;
+
+        $scope.filterSimulations(STATE.PAUSED, STATE.STARTED);
+        if ($scope.activeSimulation !== undefined) {
+          return;
         }
+        $scope.filterSimulations(STATE.INITIALIZED);
+        if ($scope.activeSimulation !== undefined) {
+          return;
+        }
+        $scope.filterSimulations(STATE.CREATED);
       });
+       
+      // State filtering for simulations (the second parameter is optional)
+      $scope.filterSimulations = function(state1, state2){
+        var length = $scope.simulations.length;
+        for (var i = length - 1; i >= 0; i-=1) { // the largest indices correspond to the newest objects
+          var simulation = $scope.simulations[i];
+          var state = simulation.state;
+          if (state ===  state1 || (state2 !== undefined && state ===  state2)) {
+            $scope.activeSimulation = simulation;
+            $scope.paused = state === STATE.PAUSED;
+            break;
+          }
+        }
+      };
 
       $scope.pauseSimulation = function () {
-        if ($scope.simulation === undefined || $scope.simulation.simulationID === undefined) {
+        if ($scope.activeSimulation === undefined || $scope.activeSimulation.simulationID === undefined) {
           return;
         }
 
@@ -51,9 +78,9 @@
         // side (created, initialized etc.). Since we can assume that the simulation
         // is already in place (was done before entering the ESV), we only have to
         // deal with those two states.
-        var state = $scope.paused ? STATUS.STARTED : STATUS.PAUSED;
+        var state = $scope.paused ? STATE.STARTED : STATE.PAUSED;
 
-        simulationState.update({sim_id: $scope.simulation.simulationID}, {state: state});
+        simulationState.update({sim_id: $scope.activeSimulation.simulationID}, {state: state});
       };
 
       simulationStatistics.setRealTimeCallback(function (realTimeValue) {
@@ -142,7 +169,7 @@
             screenParams.name = 'LeftScreenToBlue';
           }
 
-          screenControl.updateScreenColor({sim_id: $scope.simulation.simulationID}, screenParams);
+          screenControl.updateScreenColor({sim_id: $scope.activeSimulation.simulationID}, screenParams);
         }
 
         // deactivate the context menu after a color was assigned
