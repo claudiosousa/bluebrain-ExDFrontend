@@ -10,6 +10,7 @@
    */
 
   /* global GZ3D: false */
+
   /* global THREE: false */
   /* global console: false */
 
@@ -19,18 +20,30 @@
       STARTED: 'started',
       PAUSED: 'paused'
     })
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization', 'simulationStatistics', 'simulationControl', 'lightControl', 'screenControl', 'STATUS',
-        function ($rootScope, $scope, gzInitialization, simulationStatistics, simulationControl, lightControl, screenControl, STATUS) {
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization', 
+      'simulationStatistics', 'simulationService', 'simulationControl', 'simulationState', 
+      'lightControl', 'screenControl', 'STATUS',
+        function ($rootScope, $scope, gzInitialization, 
+          simulationStatistics, simulationService, simulationControl, simulationState, 
+          lightControl, screenControl, STATUS) {
+
+
 
       // Initially we set paused to true, but as soon as we have information from
       // the server side we adjust the value accordingly!
       $scope.paused = true;
-      $scope.simulation = simulationControl.state(function() {
-        $scope.paused = $scope.simulation.state === STATUS.PAUSED;
+
+      simulationService.simulations(function(data) {
+        $scope.simulations = data;
+        var length = $scope.simulations.length;
+        if (length > 0) {
+          $scope.simulation = $scope.simulations[length - 1];
+          $scope.paused = $scope.simulation.state === STATUS.PAUSED;
+        }
       });
 
       $scope.pauseSimulation = function () {
-        if ($scope.simulation === undefined || $scope.simulation.simulationID !== 0) {
+        if ($scope.simulation === undefined || $scope.simulation.simulationID === undefined) {
           return;
         }
 
@@ -40,7 +53,7 @@
         // deal with those two states.
         var state = $scope.paused ? STATUS.STARTED : STATUS.PAUSED;
 
-        simulationControl.updateState({state: state});
+        simulationState.update({sim_id: $scope.simulation.simulationID}, {state: state});
       };
 
       simulationStatistics.setRealTimeCallback(function (realTimeValue) {
@@ -129,7 +142,7 @@
             screenParams.name = 'LeftScreenToBlue';
           }
 
-          screenControl.updateScreenColor(screenParams);
+          screenControl.updateScreenColor({sim_id: $scope.simulation.simulationID}, screenParams);
         }
 
         // deactivate the context menu after a color was assigned
