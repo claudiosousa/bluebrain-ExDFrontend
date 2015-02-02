@@ -79,3 +79,41 @@
     font-size:small;
     font-family: monospace;
 }
+
+.hbp-camera-tool-container {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
+
+  justify-content: center;
+  align-items: center;
+
+  font-weight: bold;
+  text-align: center;
+}
+
+.hbp-camera-tool-text {
+  display: flex;
+  flex: 0 0 70%;
+}
+
+.hbp-camera-tool-controls {
+  display: flex;
+  flex: 0 0 30%;
+  flex-flow: row wrap;
+}
+
+.hbp-camera-tool-controls-grid-full {
+  display: inline-block;
+  flex: 0 0 100%;
+}
+
+.hbp-camera-tool-controls-grid-third {
+  display: inline-block;
+  flex: 0 0 33%;
+}

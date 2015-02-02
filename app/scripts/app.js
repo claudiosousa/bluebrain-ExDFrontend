@@ -25,6 +25,7 @@
                                    'hbpDocumentClient',
                                    'gzangular',
                                    'gz3dServices',
+      							   'gz3dCameraModule',
                                    'ncdModule'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {

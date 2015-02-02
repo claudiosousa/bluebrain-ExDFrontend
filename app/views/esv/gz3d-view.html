@@ -116,6 +116,32 @@
               <i class="fa fa-info-circle"></i>
               <span>{{hoveredObject}}</span>
             </div>
+            <!-- camera translation tool -->
+            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+              <div class="hbp-camera-tool-text">Translate Camera</div>
+              <div class="hbp-camera-tool-controls">
+                <div class="hbp-camera-tool-controls-grid-third"></div>
+                <div class="fa fa-caret-up fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, 1);"></div>
+                <div class="fa fa-level-up fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 1, 0);"></div>
+                <div class="fa fa-caret-left fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(-1, 0, 0);"></div>
+                <div class="fa fa-circle fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraResetToInitPose();"></div>
+                <div class="fa fa-caret-right fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(1, 0, 0);"></div>
+                <div class="hbp-camera-tool-controls-grid-third"></div>
+                <div class="fa fa-caret-down fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, -1);"></div>
+                <div class="fa fa-level-down fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, -1, 0);"></div>
+              </div>
+            </div>
+            <!-- camera rotation tool -->
+            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+              <div class="hbp-camera-tool-text">Rotate Camera</div>
+              <div class="hbp-camera-tool-controls">
+                <div class="fa fa-angle-up fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, 5);"></div>
+                <div class="fa fa-angle-left fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(5, 0);"></div>
+                <div class="fa fa-circle fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraLookAtOrigin();"></div>
+                <div class="fa fa-angle-right fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(-5, 0);"></div>
+                <div class="fa fa-angle-down fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, -5);"></div>
+          	  </div>
+            </div>
           </div>
         </div>
         <!-- overlay -->

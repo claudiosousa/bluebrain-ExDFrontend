@@ -8,7 +8,8 @@ describe('Controller: Gz3dViewCtrl', function () {
   var Gz3dViewCtrl,
     scope,
     rootScope,
-    httpBackend;
+    httpBackend,
+    cameraManipulation;
 
   var simulationStatisticsMock = {};
   simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
@@ -17,16 +18,24 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   var gzInitializationMock = {};
 
+  var cameraManipulationMock = {};
+  cameraManipulationMock.firstPersonRotate = jasmine.createSpy('firstPersonRotate');
+  cameraManipulationMock.firstPersonTranslate = jasmine.createSpy('firstPersonTranslate');
+  cameraManipulationMock.lookAtOrigin = jasmine.createSpy('lookAtOrigin');
+  cameraManipulationMock.resetToInitialPose = jasmine.createSpy('resetToInitialPose');
+
   beforeEach(module(function ($provide) {
     $provide.value('simulationStatistics', simulationStatisticsMock);
     $provide.value('gzInitialization', gzInitializationMock);
+    $provide.value('cameraManipulation', cameraManipulationMock);
   }));
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_) {
+  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_, _cameraManipulation_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     httpBackend = _$httpBackend_;
+    cameraManipulation = _cameraManipulation_;
 
     rootScope.scene = {};
     rootScope.scene.radialMenu = {};
@@ -73,10 +82,10 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should attach a filter function and filter simulations according to state and index in the list', function() {
       httpBackend.flush();
-      
+
       var getType = {};
       expect(getType.toString.call(scope.filterSimulations)).toBe('[object Function]');
-      
+
       scope.filterSimulations('started', 'paused');
       expect(scope.activeSimulation.state).toBe('started');
 
@@ -146,7 +155,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(material.specular.setHex.callCount).toEqual(1);
 
     // test RESTful call
-    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + scope.activeSimulation.simulationID + '/interaction', 
+    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + scope.activeSimulation.simulationID + '/interaction',
       {'name':'LeftScreenToRed'});
   });
 
@@ -180,7 +189,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   it('should pause or start the simulation', function() {
       // test if object function exists
       httpBackend.flush();
-      
+
       var getType = {};
       expect(getType.toString.call(scope.pauseSimulation)).toBe('[object Function]');
 
@@ -282,6 +291,22 @@ describe('Controller: Gz3dViewCtrl', function () {
       //httpBackend.flush();
       //httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/interaction/light', { name: 'right_spot', attenuation_constant: 0.2 });
       ///*jshint camelcase: true */
+  });
+
+  it('should call the camera manipulation service methods correctly', function() {
+    var right = 1, up = 2, forward = 3;
+    scope.cameraTranslate(right, up, forward);
+    expect(cameraManipulation.firstPersonTranslate).toHaveBeenCalledWith(right, up, forward);
+
+    var degreeRight = 15, degreeUp = 30;
+    scope.cameraRotate(degreeRight, degreeUp);
+    expect(cameraManipulation.firstPersonRotate).toHaveBeenCalledWith(degreeRight, degreeUp);
+
+    scope.cameraLookAtOrigin();
+    expect(cameraManipulation.lookAtOrigin).toHaveBeenCalled();
+
+    scope.cameraResetToInitPose();
+    expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
   });
 
 });

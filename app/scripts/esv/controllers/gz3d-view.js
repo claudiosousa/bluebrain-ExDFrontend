@@ -23,12 +23,12 @@
       INITIALIZED: 'initialized',
       STOPPED: 'stopped'
     })
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization', 
-      'simulationStatistics', 'simulationService', 'simulationControl', 'simulationState', 
-      'lightControl', 'screenControl', 'STATE',
-        function ($rootScope, $scope, gzInitialization, 
-          simulationStatistics, simulationService, simulationControl, simulationState, 
-          lightControl, screenControl, STATE) {
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization',
+      'simulationStatistics', 'simulationService', 'simulationControl', 'simulationState',
+      'lightControl', 'screenControl', 'cameraManipulation', 'STATE',
+        function ($rootScope, $scope, gzInitialization,
+          simulationStatistics, simulationService, simulationControl, simulationState,
+          lightControl, screenControl, cameraManipulation, STATE) {
 
 
 
@@ -39,7 +39,7 @@
 
       // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
       // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
-      // the active simulation remains undefined 
+      // the active simulation remains undefined
       simulationService.simulations(function(data) {
         $scope.simulations = data;
         $scope.activeSimulation = undefined;
@@ -54,7 +54,7 @@
         }
         $scope.filterSimulations(STATE.CREATED);
       });
-       
+
       // State filtering for simulations (the second parameter is optional)
       $scope.filterSimulations = function(state1, state2){
         var length = $scope.simulations.length;
@@ -209,6 +209,22 @@
         var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
         // we avoid purposedly -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
         $rootScope.scene.emitter.emit('lightChanged', ratio);
+      };
+
+      $scope.cameraTranslate = function (right, up, forward) {
+        cameraManipulation.firstPersonTranslate(right, up, forward);
+      };
+
+      $scope.cameraRotate = function (degreeRight, degreeUp) {
+        cameraManipulation.firstPersonRotate(degreeRight, degreeUp);
+      };
+
+      $scope.cameraLookAtOrigin = function () {
+        cameraManipulation.lookAtOrigin();
+      };
+
+      $scope.cameraResetToInitPose = function () {
+        cameraManipulation.resetToInitialPose();
       };
   }]);
 }());
