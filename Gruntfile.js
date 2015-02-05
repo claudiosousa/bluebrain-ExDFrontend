@@ -446,8 +446,7 @@ module.exports = function(grunt) {
             dist: {
                 options: {
                     message: 'built artefact',
-                    ignoreEmpty: true,
-                    force: true
+                    ignoreEmpty: true
                 },
                 files: {
                     src: ['dist/**/*']
