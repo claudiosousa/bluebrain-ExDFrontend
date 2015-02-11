@@ -72,8 +72,19 @@ describe('setting up the simulation statistics', function () {
 });
 
 describe('testing the gzInitialization service', function () {
-  var gzInitialization;
-  var rootScope;
+  var gzInitialization,
+    rootScope,
+    bbpConfig;
+
+  var stateParams = {
+    serverID : 'bbpce016',
+    simulationID : 'mocked_simulation_id'
+  };
+
+  var bbpConfigMock = {};
+  bbpConfigMock.get = jasmine.createSpy('get').andReturn({
+    'bbpce016' : { gzweb: {assets: 'mock_assets', websocket: 'mock_websocket'}}
+  });
 
   //Mock the javascript document
   document = {};
@@ -103,9 +114,15 @@ describe('testing the gzInitialization service', function () {
   GZ3D.SdfParser = jasmine.createSpy('SdfParser').andReturn(SdfParserObject);
 
   beforeEach(module('gz3dServices'));
-  beforeEach(inject(function ($rootScope, _gzInitialization_) {
+  beforeEach(module(function ($provide) {
+    $provide.value('$stateParams', stateParams);
+    $provide.value('bbpConfig', bbpConfigMock);
+  }));
+  beforeEach(inject(function ($rootScope, _gzInitialization_, _$stateParams_, _bbpConfig_) {
     rootScope = $rootScope;
     gzInitialization = _gzInitialization_;
+    stateParams = _$stateParams_;
+    bbpConfig = _bbpConfig_;
 
     // create a mock for console
     spyOn(console, 'error');

@@ -1,0 +1,70 @@
+<!-- build:css(.tmp) styles/esv/esv-web.css -->
+<link rel="stylesheet" href="styles/esv/esv-web.css" />
+<!-- endbuild -->
+
+<div class="container-with-navbar-margin">
+  <h1 class="nrp-main-title">Experiment Simulation Viewer</h1>
+  <div class="list-container">
+
+    <div class="form-group col-lg-2">
+      <input  ng-model="query" type="text" class="form-control input-sm" placeholder="Experiment Filter...">
+    </div>
+
+    <hr class="list-separator">
+
+    <div ng-repeat="(id, exp) in experiments | name_snippet:query" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(id);">
+      <div class="list-entry-container left-right" ng-class="{selected: (id == selectedIndex) || isHovered}">
+        <div class="list-entry-container left-right list-entry-main">
+          <div class="list-entry-left" ng-class="{selected: id == selectedIndex}">
+            <img ng-src="{{exp.imageUrl}}" >
+          </div>
+          <div class="list-entry-middle list-entry-container up-down">
+            <div class="list-entry-container left-right title-line">
+              <div class="h4">{{exp.name}}</div>
+              <div ng-if="exp.runningExperiments == 1" class="list-entry-running">({{exp.runningExperiments}} experiment running)</div>
+              <div ng-if="exp.runningExperiments > 1" class="list-entry-running">({{exp.runningExperiments}} experiments running)</div>
+            </div>
+            <div ng-if="id == selectedIndex">{{exp.snippet}}</div>
+            <div ng-if="id != selectedIndex">{{exp.snippet | limitTo: 200}}...</div>
+            <div class="list-entry-buttons list-entry-container center" ng-if="id == selectedIndex">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-default" ng-click="setProgressbarVisible(id);startNewExperiment(id);">Start new experiment</button>
+                <button ng-if="exp.runningExperiments > 0" type="button" class="btn btn-default" ng-click="setJoinableVisible(id);">Join existing experiment »</button>
+              </div>
+            </div>
+            <div  collapse="startNewExperimentSelectedIndex != id">
+              <progressbar value="100" class="progress-striped active top-buffer"><i><b>{{progressMessageMain}}</b> {{progressMessageSub}}</i></progressbar>
+            </div>
+            <div  class="table-wrapper" collapse="joinSelectedIndex != id">
+              <table class="table table-striped">
+                <thead>
+                <tr>
+                  <th>Experiment</th>
+                  <th>Server</th>
+                  <th>Creator</th>
+                  <th>Status</th>
+                  <th>&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="simul in exp.simulations">
+                  <td>{{simul.experimentID}}</td>
+                  <td>{{simul.serverID}}</td>
+                  <td>{{simul.owner}}</td>
+                  <td>{{simul.state}}</td>
+                  <td><a ng-click="joinExperiment('#/esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');" type="button" class="btn btn-default">Join »</a></td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="list-entry-right list-entry-container center">
+          <div class="self-center"><button type="button" class="btn btn-primary list-select-buttons" ng-click="setSelected(id);">Select »</button></div>
+        </div>
+      </div>
+
+      <hr class="list-separator">
+    </div>
+  </div>
+</div>
