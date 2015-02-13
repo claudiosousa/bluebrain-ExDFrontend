@@ -9,12 +9,22 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope,
     rootScope,
     httpBackend,
-    cameraManipulation;
+    cameraManipulation,
+    splash;
 
   var simulationStatisticsMock = {};
   simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
   simulationStatisticsMock.setRealTimeCallback = jasmine.createSpy('setRealTimeCallback');
-  simulationStatisticsMock.setPausedCallback = jasmine.createSpy('setPausedCallback');
+
+  var splashInstance = {                    // Create a mock object using spies
+      close: jasmine.createSpy('modalInstance.close'),
+      result: {
+        then: jasmine.createSpy('modalInstance.result.then')
+      }
+    };
+
+  var splashServiceMock = {};
+  splashServiceMock.open = jasmine.createSpy('open').andReturn(splashInstance);
 
   var gzInitializationMock = {};
 
@@ -28,14 +38,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('simulationStatistics', simulationStatisticsMock);
     $provide.value('gzInitialization', gzInitializationMock);
     $provide.value('cameraManipulation', cameraManipulationMock);
+    $provide.value('splash', splashServiceMock);
   }));
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_, _cameraManipulation_) {
+  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_, _cameraManipulation_, _splash_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     httpBackend = _$httpBackend_;
     cameraManipulation = _cameraManipulation_;
+    splash = _splash_;
 
     rootScope.scene = {};
     rootScope.scene.radialMenu = {};
@@ -76,7 +88,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       httpBackend.flush();
       expect(scope.simulations.toString()).toEqual(rootScope.simulations.toString());
       expect(scope.activeSimulation.state).toBe('started');
-      expect(scope.paused).toBe(false);
   });
 
 
@@ -100,6 +111,107 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       scope.filterSimulations('created');
       expect(scope.activeSimulation.simulationID).toBe(6);
+  });
+
+  it('should attach a visiblity checker used for every toolbar item', function() {
+      httpBackend.flush();
+      
+      var getType = {};
+      expect(getType.toString.call(scope.isVisible)).toBe('[object Function]');
+      
+      expect(scope.isVisible('cog')).toBe(false);
+      expect(scope.isVisible('play')).toBe(false);
+      expect(scope.isVisible('pause')).toBe(true);
+      expect(scope.isVisible('stop')).toBe(true);
+      expect(scope.isVisible('display')).toBe(true);
+
+      scope.activeSimulation.state = 'paused';
+      expect(scope.isVisible('cog')).toBe(false);
+      expect(scope.isVisible('play')).toBe(true);
+      expect(scope.isVisible('pause')).toBe(false);
+      expect(scope.isVisible('stop')).toBe(true);
+      expect(scope.isVisible('display')).toBe(true);
+
+      scope.activeSimulation.state = 'initialized';
+      expect(scope.isVisible('cog')).toBe(false);
+      expect(scope.isVisible('play')).toBe(true);
+      expect(scope.isVisible('pause')).toBe(false);
+      expect(scope.isVisible('stop')).toBe(false);
+      expect(scope.isVisible('display')).toBe(false);
+
+      scope.activeSimulation.state = 'created';
+      expect(scope.isVisible('cog')).toBe(false);
+      expect(scope.isVisible('play')).toBe(true);
+      expect(scope.isVisible('pause')).toBe(false);
+      expect(scope.isVisible('stop')).toBe(false);
+      expect(scope.isVisible('display')).toBe(false);
+
+      scope.activeSimulation.state = 'stopped';
+      expect(scope.isVisible('cog')).toBe(false);
+      expect(scope.isVisible('play')).toBe(false);
+      expect(scope.isVisible('pause')).toBe(false);
+      expect(scope.isVisible('stop')).toBe(false);
+      expect(scope.isVisible('display')).toBe(false);
+
+
+      scope.activeSimulation.state = undefined;
+      expect(scope.isVisible('cog')).toBe(false);
+      expect(scope.isVisible('play')).toBe(false);
+      expect(scope.isVisible('pause')).toBe(false);
+      expect(scope.isVisible('stop')).toBe(false);
+      expect(scope.isVisible('display')).toBe(false);
+      expect(console.error.callCount).toEqual(5);
+
+      scope.activeSimulation = undefined;
+      expect(scope.isVisible('cog')).toBe(true);
+      expect(scope.isVisible('play')).toBe(false);
+      expect(scope.isVisible('pause')).toBe(false);
+      expect(scope.isVisible('stop')).toBe(false);
+      expect(scope.isVisible('display')).toBe(false);
+  });
+
+  it('should change the state of the simulation', function() {
+      httpBackend.flush();
+      
+      var getType = {};
+      expect(getType.toString.call(scope.updateSimulation)).toBe('[object Function]');
+      var id = scope.activeSimulation.simulationID;
+
+      scope.updateSimulation('paused');
+      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + id + '/state', {state: 'paused'});
+
+      httpBackend.flush();
+
+      scope.updateSimulation('started');
+      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + id + '/state', {state: 'started'});
+
+      httpBackend.flush();
+
+      scope.activeSimulation.state = undefined;
+      scope.updateSimulation('stopped');
+      expect(console.error.callCount).toEqual(1);
+
+      scope.activeSimulation.simulationID = undefined;
+      scope.updateSimulation('stopped');
+      expect(console.error.callCount).toEqual(2);
+      
+  });
+
+    it('should create a new simulation', function() {
+      httpBackend.flush();
+      
+      var getType = {};
+      expect(getType.toString.call(scope.newSimulation)).toBe('[object Function]');
+
+      var experimentID = 'fakeExperiment';
+      scope.newSimulation(experimentID);
+      scope.activeSimulation = undefined;
+      httpBackend.expectPOST('http://bbpce016.epfl.ch:8080/simulation', {experimentID: experimentID}).
+        respond(201, { simulationID: 7, experimentID: 'fakeExperiment', state: 'created'});
+
+      httpBackend.flush();
+      expect(scope.activeSimulation).toBeDefined();
+      expect(scope.activeSimulation.state).toBe('created');
   });
 
 
@@ -186,25 +298,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.selectedEntity).toEqual(rootScope.scene.selectedEntity);
   });
 
-  it('should pause or start the simulation', function() {
-      // test if object function exists
-      httpBackend.flush();
-
-      var getType = {};
-      expect(getType.toString.call(scope.pauseSimulation)).toBe('[object Function]');
-
-      scope.paused = true;
-      scope.pauseSimulation();
-      var id = scope.activeSimulation.simulationID;
-      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/' + id + '/state', {state: 'started'});
-
-      httpBackend.flush();
-
-      scope.paused = false;
-      scope.pauseSimulation();
-      httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/state', {state: 'paused'});
-  });
-
   it('should set the real time', function() {
     var registeredCallbackFunction = simulationStatisticsMock.setRealTimeCallback.mostRecentCall.args[0];
     registeredCallbackFunction('01 23:45:67');
@@ -215,15 +308,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     var registeredCallbackFunction = simulationStatisticsMock.setSimulationTimeCallback.mostRecentCall.args[0];
     registeredCallbackFunction('98 76:54:32');
     expect(scope.simulationTimeText).toBe('98 76:54:32');
-  });
-
-  it('should set the paused variable', function() {
-    var registeredCallbackFunction = simulationStatisticsMock.setPausedCallback.mostRecentCall.args[0];
-    scope.paused = true;
-    registeredCallbackFunction(false);
-    expect(scope.paused).toBe(false);
-    registeredCallbackFunction(true);
-    expect(scope.paused).toBe(true);
   });
 
   it('should turn slider position into light intensities', function() {
@@ -279,18 +363,10 @@ describe('Controller: Gz3dViewCtrl', function () {
           return undefined;
       };
 
-      //ToDo: implement Test
+      //TODO: complete test implementation
       //rootScope.scene.getLightType = GZ3D.Scene.prototype.getLightType;
       //rootScope.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
-
       //scope.incrementLightIntensities(-0.5);
-      //
-      //// test RESTful call
-      ///*jshint camelcase: false */
-      //httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/interaction/light', { name: 'left_spot', attenuation_constant: 0.2 });
-      //httpBackend.flush();
-      //httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/0/interaction/light', { name: 'right_spot', attenuation_constant: 0.2 });
-      ///*jshint camelcase: true */
   });
 
   it('should call the camera manipulation service methods correctly', function() {
@@ -307,6 +383,22 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     scope.cameraResetToInitPose();
     expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
+  });
+
+  it('should open the splash screen', function() {
+    expect(scope.splashscreen).not.toBeDefined();
+    scope.splashNotify('Testing 1', 'testing 2');
+    expect(rootScope.simulationtask).toBe('Testing 1');
+    expect(rootScope.simulationsubtask).toBe('testing 2');
+    expect(scope.splashscreen).toBeDefined();
+    expect(splash.open).toHaveBeenCalled();
+  });
+
+  it('should close the splash screen', function() {
+    scope.splashscreen = splashInstance;
+    scope.splashClose();
+    expect(splashInstance.close).toHaveBeenCalled();
+    expect(scope.splashscreen).not.toBeDefined();
   });
 
 });

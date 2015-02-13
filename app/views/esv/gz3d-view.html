@@ -92,10 +92,24 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div class="hbp-toolbar-action" ng-click="pauseSimulation();">
-              <i id="playLink" ng-class="{'glyphicon': true, 'glyphicon-play': paused, 'glyphicon-pause': !paused}"></i>
+            <div class="hbp-toolbar-large-action" ng-click="newSimulation('ExDConf/ExDXMLExample.xml')" ng-show="isVisible('cog')">
+              <i class="glyphicon glyphicon-cog"></i>
+              <span>New Virtual Room</span>
             </div>
-            <div class="hbp-toolbar-large-tool hbp-time-display">
+            <!-- Preliminary code : will be replaced by proper monitoring calls -->
+            <div class="hbp-toolbar-action" ng-click="splashNotify('Loading assets', 'vr_left_screen')" ng-show="true">
+              <span>Splash</span>
+            </div>
+            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATUS.STARTED)" ng-show="isVisible('play')">
+              <i class="glyphicon glyphicon-play"></i>
+            </div>
+            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATUS.PAUSED)" ng-show="isVisible('pause')">
+              <i class="glyphicon glyphicon-pause"></i>
+            </div>
+            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATUS.STOPPED)" ng-show="isVisible('stop')">
+              <i class="glyphicon glyphicon-stop"></i>
+            </div>
+            <div class="hbp-toolbar-large-tool hbp-time-display" ng-show="isVisible('display')">
               <div>
                 <div>
                   <span>Simulation time:</span><br/>
@@ -107,17 +121,17 @@
                 </div>
               </div>
             </div>
-            <div class="hbp-toolbar-large-tool hidden-xs">
+            <div class="hbp-toolbar-large-tool hidden-xs" ng-show="isVisible('display')">
               <i class="fa fa-lightbulb-o"></i>
               <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition"
                      ng-change="updateLightIntensities(sliderPosition)"/>
             </div>
-            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen">
+            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen" ng-show="isVisible('display')">
               <i class="fa fa-info-circle"></i>
               <span>{{hoveredObject}}</span>
             </div>
             <!-- camera translation tool -->
-            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container" ng-show="isVisible('display')">
               <div class="hbp-camera-tool-text">Translate Camera</div>
               <div class="hbp-camera-tool-controls">
                 <div class="hbp-camera-tool-controls-grid-third"></div>
@@ -132,7 +146,7 @@
               </div>
             </div>
             <!-- camera rotation tool -->
-            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+            <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container" ng-show="isVisible('display')">
               <div class="hbp-camera-tool-text">Rotate Camera</div>
               <div class="hbp-camera-tool-controls">
                 <div class="fa fa-angle-up fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, 5);"></div>

@@ -56,11 +56,9 @@ describe('setting up the simulation statistics', function () {
       'iterations': 19394618
     };
 
-    var pausedCallback = jasmine.createSpy('pausedCallback');
     var simulationTimeCallback = jasmine.createSpy('simulationTimeCallback');
     var realTimeCallback = jasmine.createSpy('realTimeCallback');
 
-    simulationStatistics.setPausedCallback(pausedCallback);
     simulationStatistics.setSimulationTimeCallback(simulationTimeCallback);
     simulationStatistics.setRealTimeCallback(realTimeCallback);
 
@@ -68,7 +66,6 @@ describe('setting up the simulation statistics', function () {
     var registeredCallbackFunction = gzCommunicationMethodChainMock.subscribe.mostRecentCall.args[0];
     registeredCallbackFunction(message);
 
-    expect(pausedCallback).toHaveBeenCalledWith(message.paused);
     expect(simulationTimeCallback).toHaveBeenCalledWith('00 05:23:14');
     expect(realTimeCallback).toHaveBeenCalledWith('00 05:24:19');
   });

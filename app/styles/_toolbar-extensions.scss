@@ -39,6 +39,23 @@
     border-right: 1px solid #aaaaaa;
 }
 
+.hbp-toolbar-large-action {
+  display: table-cell;
+  height: 42px;
+  float: left;
+  padding-left: 10px;
+  padding-right: 5px;
+  width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 1px solid #aaaaaa;
+  cursor: pointer;
+}
+
+.hbp-toolbar-large-action:hover {
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
 .hbp-toolbar-large-tool input[type="range"] {
     -webkit-appearance: none;
     display: inline-block;

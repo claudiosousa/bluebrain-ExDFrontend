@@ -31,20 +31,9 @@
   gz3dServices.factory('simulationStatistics', [ 'gzInitialization', 'gzCommunication', function (gzInitialization, gzCommunication) {
     var simulationTimeCallback;
     var realTimeCallback;
-    var pausedCallback;
 
     // we now create the callback function which we will register below
     var worldStatsUpdate = function (stats) {
-      try {
-        pausedCallback(stats.paused);
-      } catch (err) {
-        if (typeof(pausedCallback) !== 'function') {
-          console.error('Tried to call an undefined callback function! Did you forget to set it?');
-        }
-        console.error(err.message);
-      }
-
-
       var simSec = stats.sim_time.sec;
       var simNSec = stats.sim_time.nsec;
 
@@ -132,9 +121,6 @@
       },
       setRealTimeCallback: function (callback) {
         realTimeCallback = callback;
-      },
-      setPausedCallback: function (callback) {
-        pausedCallback = callback;
       }
     };
 
