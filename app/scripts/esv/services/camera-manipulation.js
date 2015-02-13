@@ -8,8 +8,16 @@
   cameraModule.factory('cameraManipulation', ['gzInitialization', '$rootScope', function (gzInitialization, $rootScope) {
 
     var camera = $rootScope.scene.camera;
+
     var initPosition = new THREE.Vector3().copy(camera.position);
     var initRotation = new THREE.Quaternion().copy(camera.quaternion);
+
+    /*
+     TODO: when replacing orbit with first person controls here rotation will still happen around focus point
+     TODO: extract all the controls initialization out of gz3d.scene.init()
+     */
+    //$rootScope.scene.controls = new THREE.FirstPersonControls(camera, $rootScope.scene.getDomElement());
+    //$rootScope.scene.scene.add($rootScope.scene.controls.targetIndicator);
 
     function fpTranslate(right, up, forward) {
       camera.translateOnAxis(new THREE.Vector3( 1, 0, 0 ), right);
