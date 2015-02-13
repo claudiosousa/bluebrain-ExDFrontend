@@ -15,6 +15,7 @@ module.exports = function(config) {
     frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
+    // TODO(Stefan) Are those files automatically placed here? If not, how can we achieve it?!
     files: [
       'bower_components/angular/angular.js',
       'bower_components/angular-animate/angular-animate.js',
@@ -37,12 +38,12 @@ module.exports = function(config) {
       'bower_components/codemirror/mode/shell/shell.js',
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
       'bower_components/neural-circuit-designer/neural-circuit-designer.js',
+      'bower_components/eventemitter2/lib/eventemitter2.js',
+      'bower_components/roslibjs/build/roslib.js',
       'app/scripts/esv/gz3d/client/js/include/jquery-1.9.1.js',
       'app/scripts/esv/gz3d/client/js/include/three.js',
       'app/scripts/esv/gz3d/client/js/include/OrbitControls.js',
       'app/scripts/esv/gz3d/client/js/include/Detector.js',
-      'app/scripts/esv/gz3d/client/js/include/eventemitter2.js',
-      'app/scripts/esv/gz3d/client/js/include/roslib.js',
       'app/scripts/esv/gz3d/client/js/include/ColladaLoader.js',
       'app/scripts/esv/gz3d/client/js/include/CopyShader.js',
       'app/scripts/esv/gz3d/client/js/include/SSAOShader.js',
