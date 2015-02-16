@@ -26,11 +26,17 @@ window.bbpConfig = {
     },
     'neurorobotics': {
       'gzweb': {
-          'development1': {
-              'websocket': 'ws://localhost:7681',
-              'assets': 'http://localhost:8080/assets',
-              'nrp-services': "http://bbpce016.epfl.ch:8080"
-          }
+        'development1': {
+          'websocket': 'ws://localhost:7681',
+          'assets': 'http://localhost:8080/assets',
+          'nrp-services': "http://bbpce016.epfl.ch:8080"
+        }
+      },
+      'rosbridge': {
+        'websocket': 'ws://bbpce015.epfl.ch:9090',
+        'topics': {
+          'status': '/ros_cle_simulation/status'
+        }
       }
     }
   },
