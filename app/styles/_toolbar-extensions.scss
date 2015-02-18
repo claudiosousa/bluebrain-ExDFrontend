@@ -69,6 +69,12 @@
     outline: none;
 }
 
+.hbp-toolbar-large-tool input[type='range']::-moz-range-track {
+  border: none;
+}
+.hbp-toolbar-large-tool input[type='range']::-moz-focus-outer {
+  border: 0;
+}
 .hbp-toolbar-large-tool span {
     margin-left: 5px;
 }
