@@ -96,17 +96,16 @@
               <i class="glyphicon glyphicon-cog"></i>
               <span>New Virtual Room</span>
             </div>
-            <!-- Preliminary code : will be replaced by proper monitoring calls -->
-            <div class="hbp-toolbar-action" ng-click="splashNotify('Loading assets', 'vr_left_screen')" ng-show="true">
-              <span>Splash</span>
+            <div class="hbp-toolbar-action" ng-click="updateSimulation('initialized')" ng-show="isVisible('initialize')">
+              <i class="glyphicon glyphicon-cog"></i>
             </div>
-            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATUS.STARTED)" ng-show="isVisible('play')">
+            <div class="hbp-toolbar-action" ng-click="updateSimulation('started')" ng-show="isVisible('play')">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATUS.PAUSED)" ng-show="isVisible('pause')">
+            <div class="hbp-toolbar-action" ng-click="updateSimulation('paused')" ng-show="isVisible('pause')">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATUS.STOPPED)" ng-show="isVisible('stop')">
+            <div class="hbp-toolbar-action" ng-click="updateSimulation('stopped')" ng-show="isVisible('stop')">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div class="hbp-toolbar-large-tool hbp-time-display" ng-show="isVisible('display')">

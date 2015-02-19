@@ -27,19 +27,18 @@
       UNDEFINED_STATE: 'The latest active simulation is corrupted: undefined state.',
       UNDEFINED_ID: 'The latest active simulation is corrupted: undefined id.'
     })
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'gzInitialization', 
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'gzInitialization',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
-      'lightControl', 'screenControl', 'cameraManipulation', 'splash', 'STATE', 'ERROR', 
-        function ($rootScope, $scope, gzInitialization, 
-          simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics, 
-          lightControl, screenControl, cameraManipulation, splash, STATE, ERROR) {
-
+      'lightControl', 'screenControl', 'cameraManipulation', 'splash', 'roslib', 'STATE', 'ERROR',
+        function ($rootScope, $scope, bbpConfig, gzInitialization,
+          simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
+          lightControl, screenControl, cameraManipulation, splash, roslib, STATE, ERROR) {
 
       // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
       // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
       // the active simulation remains undefined
-      simulationService.simulations(function(data) {
-        $scope.simulations = data;
+      $scope.setActiveSimulation = function(simulations) {
+        $scope.simulations = simulations;
         $scope.activeSimulation = undefined;
 
         $scope.filterSimulations(STATE.PAUSED, STATE.STARTED);
@@ -51,6 +50,43 @@
           return;
         }
         $scope.filterSimulations(STATE.CREATED);
+      };
+
+      $scope.registerForStatusInformation = function() {
+
+          var rosbridgeWebsocketUrl = bbpConfig.get('api.neurorobotics.rosbridge.websocket');
+          var statusTopic = bbpConfig.get('api.neurorobotics.rosbridge.topics.status');
+
+          $scope.rosConnection = $scope.rosConnection || roslib.createConnectionTo(rosbridgeWebsocketUrl);
+          $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
+
+          $scope.statusListener.unsubscribe(); // clear old subscriptions
+          $scope.statusListener.subscribe(function (data) {
+            var message = JSON.parse(data.data);
+            if (message !== undefined && message.progress !== undefined) {
+              $scope.splashScreen = $scope.splashScreen || splash.open();
+              if (message.progress.done !== undefined && message.progress.done) {
+                splash.setHeadline('Finished!');
+                splash.setSubHeadline('');
+                $scope.splashScreen.close();
+                $scope.splashScreen = undefined;
+              } else {
+                splash.setHeadline(message.progress.task);
+                splash.setSubHeadline(message.progress.subtask);
+              }
+            }
+          });
+
+      };
+
+      simulationService.simulations(function (data) {
+        $scope.setActiveSimulation(data);
+        if ($scope.activeSimulation !== undefined &&
+          ($scope.activeSimulation.state === STATE.STARTED ||
+          $scope.activeSimulation.state === STATE.INITIALIZED ||
+          $scope.activeSimulation.state === STATE.PAUSED)) {
+          $scope.registerForStatusInformation();
+        }
       });
 
       // State filtering for simulations (the second parameter is optional)
@@ -68,8 +104,7 @@
 
       $scope.newSimulation = function (experimentID) { // triggered by the cog button
         simulationGenerator.create({experimentID: experimentID}, function(data) {
-          $scope.activeSimulation = data; 
-          $scope.updateSimulation(STATE.INITIALIZED);
+          $scope.activeSimulation = data;
         });
       };
 
@@ -77,8 +112,8 @@
         if ($scope.activeSimulation === undefined) {
           return;
         }
-        
-        var id = $scope.activeSimulation.simulationID; 
+
+        var id = $scope.activeSimulation.simulationID;
         if (id === undefined) {
           console.error('Update of simulation state: ' + ERROR.UNDEFINED_ID);
           return;
@@ -89,39 +124,52 @@
           return;
         }
 
-        if (newState === STATE.STARTED && $scope.activeSimulation.state === STATE.CREATED) {
-          simulationState.update({sim_id: id}, {state: STATE.INITIALIZED}, function(){
-            simulationState.update({sim_id: id}, {state: STATE.STARTED});
+        simulationState.update({sim_id: id}, {state: newState}, function(data) {
+          simulationService.simulations(function(data) {
+            $scope.setActiveSimulation(data);
           });
-        } else {
-          simulationState.update({sim_id: id}, {state: newState});
+        });
+        if (newState === STATE.INITIALIZED) {
+          splash.setHeadline('Initializing simulation');
+          $scope.splashScreen = $scope.splashScreen || splash.open();
+          $scope.registerForStatusInformation();
         }
+        // TODO
+        // in case we have STATE.INITIALIZED we subscribe/connect // race condition here?
       };
 
       $scope.isVisible = function(itemName) { // itemName is the name of a toolbar item, i.e. either a button or a display
         if ($scope.activeSimulation === undefined) {
           return itemName === 'cog'; //  "new" is then the only visible toolbar item
         }
-  
+
         var state = $scope.activeSimulation.state;
         if (state === undefined) {
           console.error('State-based visibility check: ' + ERROR.UNDEFINED_STATE);
           return false;
         }
-        
-        if (itemName === 'play') { 
-          return (state === STATE.PAUSED) || (state === STATE.INITIALIZED) || (state === STATE.CREATED); 
-        }
 
-        if (itemName === 'pause') {
-          return state === STATE.STARTED;
+        var result;
+        switch(itemName) {
+          case 'initialize':
+            result = (state === STATE.CREATED);
+            break;
+          case 'play':
+            result = (state === STATE.PAUSED) || (state === STATE.INITIALIZED);
+            break;
+          case 'pause':
+            result = (state === STATE.STARTED);
+            break;
+          case 'display':
+            result = (state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED);
+            break;
+          case 'stop':
+            result = (state === STATE.STARTED) || (state === STATE.PAUSED);
+            break;
+          default:
+            result = false;
         }
-
-        if (itemName === 'display' || itemName === 'stop') {
-          return (state === STATE.STARTED) || (state === STATE.PAUSED);
-        }
-
-        return false;
+        return result;
       };
 
       simulationStatistics.setRealTimeCallback(function (realTimeValue) {
@@ -260,42 +308,6 @@
 
       $scope.cameraResetToInitPose = function () {
         cameraManipulation.resetToInitialPose();
-      };
-
-      // Splash screen
-
-      $scope.splashscreen = undefined;
-
-      $scope.splashClose = function () {
-        if( $scope.splashscreen ) {
-          // explicitly call ui-bootstrap $modal close() function
-          $scope.splashscreen.close();
-          $scope.splashscreen = undefined;
-        }
-      };
-
-      $scope.splashNotify = function (simulationTask, simulationSubtask) {
-        $rootScope.simulationtask = simulationTask;
-        $rootScope.simulationsubtask = simulationSubtask;
-        if( !$scope.splashscreen ) {
-          // call splash service open function
-          $scope.splashscreen = splash.open();
-        }
-        // TODO vonarnim: remove timeouts when regular notification and closing from monitoring push is implemented
-        setTimeout(function() {
-          $rootScope.simulationsubtask = "vr_right_screen";
-        }, 1000); 
-        setTimeout(function() {
-          $rootScope.simulationsubtask = "plant";
-        }, 2000);
-        setTimeout(function() {
-          $rootScope.simulationtask = "Setting lights";
-          $rootScope.simulationsubtask = "light1";
-        }, 3000);
-        setTimeout(function() {
-          $rootScope.simulationsubtask = "light2";
-        }, 4000);
-        setTimeout(function() { $scope.splashClose(); }, 5000);
       };
 
   }]);

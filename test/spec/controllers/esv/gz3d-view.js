@@ -23,6 +23,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       }
     };
 
+  var roslib = {};
+  roslib.createConnectionTo = jasmine.createSpy('createConnectionTo');
+  roslib.createStringTopic = jasmine.createSpy('createStringTopic').andReturn({
+      unsubscribe: function () {},
+      subscribe: function () {}
+  });
+
   var splashServiceMock = {};
   splashServiceMock.open = jasmine.createSpy('open').andReturn(splashInstance);
 
@@ -39,15 +46,17 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('gzInitialization', gzInitializationMock);
     $provide.value('cameraManipulation', cameraManipulationMock);
     $provide.value('splash', splashServiceMock);
+    $provide.value('roslib', roslib);
   }));
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_, _cameraManipulation_, _splash_) {
+  beforeEach(inject(function ($controller, $rootScope, _$httpBackend_, _cameraManipulation_, _splash_, _roslib_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     httpBackend = _$httpBackend_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
+    roslib = _roslib_;
 
     rootScope.scene = {};
     rootScope.scene.radialMenu = {};
@@ -65,7 +74,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       { simulationID: 3, experimentID: 'fakeExperiment3', state: 'started'},
       { simulationID: 4, experimentID: 'fakeExperiment4', state: 'stopped'},
       { simulationID: 5, experimentID: 'fakeExperiment5', state: 'initialized'},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: 'created'},
+      { simulationID: 6, experimentID: 'fakeExperiment6', state: 'created'}
     ];
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
@@ -79,6 +88,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     // create mock for console
     spyOn(console, 'error');
+    spyOn(console, 'log');
   }));
 
 
@@ -115,10 +125,10 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should attach a visiblity checker used for every toolbar item', function() {
       httpBackend.flush();
-      
+
       var getType = {};
       expect(getType.toString.call(scope.isVisible)).toBe('[object Function]');
-      
+
       expect(scope.isVisible('cog')).toBe(false);
       expect(scope.isVisible('play')).toBe(false);
       expect(scope.isVisible('pause')).toBe(true);
@@ -137,11 +147,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.isVisible('play')).toBe(true);
       expect(scope.isVisible('pause')).toBe(false);
       expect(scope.isVisible('stop')).toBe(false);
-      expect(scope.isVisible('display')).toBe(false);
+      expect(scope.isVisible('display')).toBe(true);
 
       scope.activeSimulation.state = 'created';
       expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(true);
+      expect(scope.isVisible('play')).toBe(false);
       expect(scope.isVisible('pause')).toBe(false);
       expect(scope.isVisible('stop')).toBe(false);
       expect(scope.isVisible('display')).toBe(false);
@@ -172,7 +182,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should change the state of the simulation', function() {
       httpBackend.flush();
-      
+
       var getType = {};
       expect(getType.toString.call(scope.updateSimulation)).toBe('[object Function]');
       var id = scope.activeSimulation.simulationID;
@@ -194,12 +204,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.activeSimulation.simulationID = undefined;
       scope.updateSimulation('stopped');
       expect(console.error.callCount).toEqual(2);
-      
+
   });
 
     it('should create a new simulation', function() {
       httpBackend.flush();
-      
+
       var getType = {};
       expect(getType.toString.call(scope.newSimulation)).toBe('[object Function]');
 
@@ -383,22 +393,6 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     scope.cameraResetToInitPose();
     expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
-  });
-
-  it('should open the splash screen', function() {
-    expect(scope.splashscreen).not.toBeDefined();
-    scope.splashNotify('Testing 1', 'testing 2');
-    expect(rootScope.simulationtask).toBe('Testing 1');
-    expect(rootScope.simulationsubtask).toBe('testing 2');
-    expect(scope.splashscreen).toBeDefined();
-    expect(splash.open).toHaveBeenCalled();
-  });
-
-  it('should close the splash screen', function() {
-    scope.splashscreen = splashInstance;
-    scope.splashClose();
-    expect(splashInstance.close).toHaveBeenCalled();
-    expect(scope.splashscreen).not.toBeDefined();
   });
 
 });
