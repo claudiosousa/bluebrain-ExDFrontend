@@ -34,6 +34,9 @@
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
           lightControl, screenControl, cameraManipulation, splash, roslib, STATE, ERROR) {
 
+      //ToDo: For the moment this is hardcoded, but later it will be delivered by the calling entry-page
+      var serverBaseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
+
       // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
       // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
       // the active simulation remains undefined
@@ -79,7 +82,7 @@
 
       };
 
-      simulationService.simulations(function (data) {
+      simulationService(serverBaseUrl).simulations(function (data) {
         $scope.setActiveSimulation(data);
         if ($scope.activeSimulation !== undefined &&
           ($scope.activeSimulation.state === STATE.STARTED ||
@@ -103,7 +106,7 @@
       };
 
       $scope.newSimulation = function (experimentID) { // triggered by the cog button
-        simulationGenerator.create({experimentID: experimentID}, function(data) {
+        simulationGenerator(serverBaseUrl).create({experimentID: experimentID}, function(data) {
           $scope.activeSimulation = data;
         });
       };
@@ -124,8 +127,8 @@
           return;
         }
 
-        simulationState.update({sim_id: id}, {state: newState}, function(data) {
-          simulationService.simulations(function(data) {
+        simulationState(serverBaseUrl).update({sim_id: id}, {state: newState}, function(data) {
+          simulationService(serverBaseUrl).simulations(function(data) {
             $scope.setActiveSimulation(data);
           });
         });
@@ -252,7 +255,7 @@
             screenParams.name = 'LeftScreenToBlue';
           }
 
-          screenControl.updateScreenColor({sim_id: $scope.activeSimulation.simulationID}, screenParams);
+          screenControl(serverBaseUrl).updateScreenColor({sim_id: $scope.activeSimulation.simulationID}, screenParams);
         }
 
         // deactivate the context menu after a color was assigned
