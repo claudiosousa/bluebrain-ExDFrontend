@@ -24,18 +24,44 @@ window.bbpConfig = {
       'v1': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api',
       'v0': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api'
     },
-    'neurorobotics': {
-      'gzweb': {
-        'development1': {
-          'websocket': 'ws://localhost:7681',
-          'assets': 'http://localhost:8080/assets',
-          'nrp-services': "http://bbpce016.epfl.ch:8080"
+    "neurorobotics": {
+      "bbpce014": {
+        "gzweb": {
+          "websocket": "ws://bbpce014.epfl.ch:7681",
+          "assets": "http://bbpce014.epfl.ch",
+          "nrp-services": "http://bbpce014.epfl.ch:8080"
+        },
+        "rosbridge": {
+          "websocket": "ws://bbpce014.epfl.ch:9090",
+          "topics": {
+            "status": "/ros_cle_simulation/status"
+          }
         }
       },
-      'rosbridge': {
-        'websocket': 'ws://bbpce015.epfl.ch:9090',
-        'topics': {
-          'status': '/ros_cle_simulation/status'
+      "bbpce016": {
+        "gzweb": {
+          "websocket": "ws://bbpce016.epfl.ch:7681",
+          "assets": "http://bbpce016.epfl.ch",
+          "nrp-services": "http://bbpce016.epfl.ch:8080"
+        },
+        "rosbridge": {
+          "websocket": "ws://bbpce016.epfl.ch:9090",
+          "topics": {
+            "status": "/ros_cle_simulation/status"
+          }
+        }
+      },
+      "bbpce018": {
+        "gzweb": {
+          "websocket": "ws://bbpce018.epfl.ch:7681",
+          "assets": "http://bbpce018.epfl.ch",
+          "nrp-services": "http://bbpce018.epfl.ch:8080"
+        },
+        "rosbridge": {
+          "websocket": "ws://bbpce018.epfl.ch:9090",
+          "topics": {
+            "status": "/ros_cle_simulation/status"
+          }
         }
       }
     }

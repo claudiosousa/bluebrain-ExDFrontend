@@ -97,9 +97,9 @@
     var app = angular.module('exdFrontendApp');
     app.run(['bbpConfig', function(bbpConfig) {
       /* global GZ3D: false */
-      GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.gzweb.development1.assets');
-      GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.websocket');
-      app.constant('restServicesBaseUrl', bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services')); // TODO(Luc): inject this wherever needed
+      GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.assets');
+      GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.websocket');
+      app.constant('restServicesBaseUrl', bbpConfig.get('api.neurorobotics.bbpce016.gzweb.nrp-services')); // TODO(Luc): inject this wherever needed
     }]);
 
 }());

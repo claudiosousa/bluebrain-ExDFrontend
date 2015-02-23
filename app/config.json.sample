@@ -24,19 +24,45 @@
             "v0": "https://services-dev.humanbrainproject.eu/provenance/v0/api"
         },
         "neurorobotics": {
-            "gzweb": {
-                "development1": {
+            "bbpce014": {
+                "gzweb": {
+                    "websocket": "ws://bbpce014.epfl.ch:7681",
+                    "assets": "http://bbpce014.epfl.ch",
+                    "nrp-services": "http://bbpce014.epfl.ch:8080"
+                },
+                "rosbridge": {
+                    "websocket": "ws://bbpce014.epfl.ch:9090",
+                    "topics": {
+                        "status": "/ros_cle_simulation/status"
+                    }
+                }
+            },
+            "bbpce016": {
+                "gzweb": {
                     "websocket": "ws://bbpce016.epfl.ch:7681",
                     "assets": "http://bbpce016.epfl.ch",
                     "nrp-services": "http://bbpce016.epfl.ch:8080"
+                },
+                "rosbridge": {
+                    "websocket": "ws://bbpce016.epfl.ch:9090",
+                    "topics": {
+                        "status": "/ros_cle_simulation/status"
+                    }
                 }
             },
-          "rosbridge": {
-            "websocket": "ws://bbpce016.epfl.ch:9090",
-            "topics": {
-              "status": "/ros_cle_simulation/status"
+            "bbpce018": {
+                "gzweb": {
+                    "websocket": "ws://bbpce018.epfl.ch:7681",
+                    "assets": "http://bbpce018.epfl.ch",
+                    "nrp-services": "http://bbpce018.epfl.ch:8080"
+                },
+                "rosbridge": {
+                    "websocket": "ws://bbpce018.epfl.ch:9090",
+                    "topics": {
+                        "status": "/ros_cle_simulation/status"
+                    }
+                }
             }
-          }
         }
     },
     "auth": {

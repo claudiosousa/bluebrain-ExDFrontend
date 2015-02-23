@@ -35,7 +35,7 @@
           lightControl, screenControl, cameraManipulation, splash, roslib, STATE, ERROR) {
 
       //ToDo: For the moment this is hardcoded, but later it will be delivered by the calling entry-page
-      var serverBaseUrl = bbpConfig.get('api.neurorobotics.gzweb.development1.nrp-services');
+      var serverBaseUrl = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.nrp-services');
 
       // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
       // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
@@ -57,8 +57,8 @@
 
       $scope.registerForStatusInformation = function() {
 
-          var rosbridgeWebsocketUrl = bbpConfig.get('api.neurorobotics.rosbridge.websocket');
-          var statusTopic = bbpConfig.get('api.neurorobotics.rosbridge.topics.status');
+          var rosbridgeWebsocketUrl = bbpConfig.get('api.neurorobotics.bbpce016.rosbridge.websocket');
+          var statusTopic = bbpConfig.get('api.neurorobotics.bbpce016.rosbridge.topics.status');
 
           $scope.rosConnection = $scope.rosConnection || roslib.createConnectionTo(rosbridgeWebsocketUrl);
           $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
