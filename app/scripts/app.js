@@ -26,7 +26,9 @@
                                    'gzangular',
                                    'gz3dServices',
                                    'gz3dCameraModule',
-                                   'ncdModule'])
+                                   'simulationControlServices',
+                                   'ncdModule',
+                                   'exdFrontendApp.Constants'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.

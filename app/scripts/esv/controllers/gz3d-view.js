@@ -14,7 +14,7 @@
   /* global THREE: false */
   /* global console: false */
 
-  angular.module('exdFrontendApp')
+  angular.module('exdFrontendApp.Constants', [])
     // constants for the server side status
     .constant('STATE', {
       CREATED: 'created',
@@ -26,7 +26,9 @@
     .constant('ERROR', {
       UNDEFINED_STATE: 'The latest active simulation is corrupted: undefined state.',
       UNDEFINED_ID: 'The latest active simulation is corrupted: undefined id.'
-    })
+    });
+
+  angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'gzInitialization',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
       'lightControl', 'screenControl', 'cameraManipulation', 'splash', 'roslib', 'STATE', 'ERROR',
@@ -36,24 +38,6 @@
 
       //ToDo: For the moment this is hardcoded, but later it will be delivered by the calling entry-page
       var serverBaseUrl = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.nrp-services');
-
-      // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
-      // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
-      // the active simulation remains undefined
-      $scope.setActiveSimulation = function(simulations) {
-        $scope.simulations = simulations;
-        $scope.activeSimulation = undefined;
-
-        $scope.filterSimulations(STATE.PAUSED, STATE.STARTED);
-        if ($scope.activeSimulation !== undefined) {
-          return;
-        }
-        $scope.filterSimulations(STATE.INITIALIZED);
-        if ($scope.activeSimulation !== undefined) {
-          return;
-        }
-        $scope.filterSimulations(STATE.CREATED);
-      };
 
       $scope.registerForStatusInformation = function() {
 
@@ -83,7 +67,7 @@
       };
 
       simulationService(serverBaseUrl).simulations(function (data) {
-        $scope.setActiveSimulation(data);
+        $scope.activeSimulation = simulationService().getActiveSimulation(data);
         if ($scope.activeSimulation !== undefined &&
           ($scope.activeSimulation.state === STATE.STARTED ||
           $scope.activeSimulation.state === STATE.INITIALIZED ||
@@ -92,18 +76,6 @@
         }
       });
 
-      // State filtering for simulations (the second parameter is optional)
-      $scope.filterSimulations = function(state1, state2){
-        var length = $scope.simulations.length;
-        for (var i = length - 1; i >= 0; i-=1) { // the largest indices correspond to the newest objects
-          var simulation = $scope.simulations[i];
-          var state = simulation.state;
-          if (state ===  state1 || (state2 !== undefined && state ===  state2)) {
-            $scope.activeSimulation = simulation;
-            break;
-          }
-        }
-      };
 
       $scope.newSimulation = function (experimentID) { // triggered by the cog button
         simulationGenerator(serverBaseUrl).create({experimentID: experimentID}, function(data) {
@@ -113,6 +85,7 @@
 
       $scope.updateSimulation = function (newState) {
         if ($scope.activeSimulation === undefined) {
+          console.error('Cannot update Simulation: activeSimulation is undefined');
           return;
         }
 
@@ -129,7 +102,7 @@
 
         simulationState(serverBaseUrl).update({sim_id: id}, {state: newState}, function(data) {
           simulationService(serverBaseUrl).simulations(function(data) {
-            $scope.setActiveSimulation(data);
+            $scope.activeSimulation = simulationService().getActiveSimulation(data);
           });
         });
         if (newState === STATE.INITIALIZED) {
