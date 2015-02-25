@@ -4759,7 +4759,7 @@ GZ3D.Scene.prototype.getLightType = function(lightObj) {
 }
 
 GZ3D.Scene.prototype.attenuationToIntensity = function(attenuationConstant, lightType) {
-  var INTENSITY_FACTOR = [0.05, 0.06, 0.05];
+  var INTENSITY_FACTOR = [0.35, 0.35, 0.35];
   return INTENSITY_FACTOR[lightType - 1] / attenuationConstant;
 }
 
