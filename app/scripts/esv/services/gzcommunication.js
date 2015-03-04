@@ -126,11 +126,21 @@
 
   }]);
 
-  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', function ($rootScope, $window) {
+  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', '$stateParams', 'bbpConfig', function ($rootScope, $window, $stateParams, bbpConfig) {
     /* moved from the gz3d-view.html*/
     if (!Detector.webgl) {
       Detector.addGetWebGLMessage();
     }
+
+    if (!$stateParams.serverID || !$stateParams.simulationID){
+      throw "No serverID or simulationID given.";
+    }
+    var serverID = $stateParams.serverID;
+    var simulationID = $stateParams.simulationID;
+    var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+
+    GZ3D.assetsPath = serverConfig.gzweb.assets;
+    GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
 
     $rootScope.scene = new GZ3D.Scene();
     $rootScope.gui = new GZ3D.Gui($rootScope.scene);

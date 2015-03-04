@@ -1,0 +1,110 @@
+$hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
+// Dependencies (not injected via wiredep due to some path issues)
+@import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
+@import "angular-hbp-common/dist/scss/hbp-common.scss";
+@import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
+
+
+.top-buffer {
+  margin-top: 20px;
+}
+
+.table-wrapper {
+  margin: 0 auto;
+  padding: 10px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.list-container {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.list-separator {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  clear: both;
+}
+
+@media only screen
+and (min-width : $screen-sm-min)
+{
+  .list-entry-container {
+    display: flex;
+  }
+}
+
+.list-entry-container.selected {
+  background: linear-gradient(to right, #ffffff 0%,#eeeeee 50%,#ffffff 100%);
+}
+
+.list-entry-container.left-right {
+  flex-direction: row;
+}
+
+.list-entry-container.up-down {
+  flex-direction: column;
+}
+
+.list-entry-container.title-line {
+  align-items: baseline;
+}
+
+.list-entry-container.center {
+  align-items: center;
+  justify-content: center;
+}
+
+.list-entry-main {
+  flex: 8;
+}
+
+.list-entry-left {
+  flex: 0 1 200px;
+  padding-right: 15px;
+  padding-left: 15px;
+  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+
+.list-entry-left.selected {
+  flex: 0 1 400px;
+}
+
+.list-entry-left > img {
+  max-width: 100%;
+  width: 100%;
+}
+
+.list-entry-middle {
+  flex: 1;
+}
+
+.list-entry-right {
+  flex: 2;
+}
+
+.list-entry-running {
+  font-size: 12px;
+  font-style: italic;
+  color:#555555;
+  padding-left: 10px;
+}
+
+.list-entry-buttons {
+  padding-top: 10px;
+}
+
+@media only screen
+and (max-width : 768px)
+{
+  .list-select-buttons {
+    margin-top: 10px;
+  }
+}
+
+.self-center {
+  max-width: 30%;
+}

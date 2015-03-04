@@ -21,7 +21,8 @@
       STARTED: 'started',
       PAUSED: 'paused',
       INITIALIZED: 'initialized',
-      STOPPED: 'stopped'
+      STOPPED: 'stopped',
+      UNDEFINED: 'undefined'
     })
     .constant('ERROR', {
       UNDEFINED_STATE: 'The latest active simulation is corrupted: undefined state.',
@@ -29,20 +30,33 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', 'bbpConfig', 'gzInitialization',
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', 'bbpConfig', 'gzInitialization',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
       'lightControl', 'screenControl', 'cameraManipulation', 'splash', 'roslib', 'STATE', 'ERROR',
-        function ($rootScope, $scope, bbpConfig, gzInitialization,
+        function ($rootScope, $scope, $stateParams, bbpConfig, gzInitialization,
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
           lightControl, screenControl, cameraManipulation, splash, roslib, STATE, ERROR) {
 
-      //ToDo: For the moment this is hardcoded, but later it will be delivered by the calling entry-page
-      var serverBaseUrl = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.nrp-services');
+      if (!$stateParams.serverID || !$stateParams.simulationID){
+        throw "No serverID or simulationID given.";
+      }
+      var serverID = $stateParams.serverID;
+      var simulationID = $stateParams.simulationID;
+      var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+      var serverBaseUrl = serverConfig.gzweb['nrp-services'];
+      $scope.state = STATE.UNDEFINED;
+      $scope.STATE = STATE;
+
+      $scope.isInitialized = false;
+
+      simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
+        $scope.state = data.state;
+        $scope.registerForStatusInformation();
+      });
 
       $scope.registerForStatusInformation = function() {
-
-          var rosbridgeWebsocketUrl = bbpConfig.get('api.neurorobotics.bbpce016.rosbridge.websocket');
-          var statusTopic = bbpConfig.get('api.neurorobotics.bbpce016.rosbridge.topics.status');
+          var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
+          var statusTopic = serverConfig.rosbridge.topics.status;
 
           $scope.rosConnection = $scope.rosConnection || roslib.createConnectionTo(rosbridgeWebsocketUrl);
           $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
@@ -63,89 +77,12 @@
               }
             }
           });
-
-      };
-
-      simulationService(serverBaseUrl).simulations(function (data) {
-        $scope.activeSimulation = simulationService().getActiveSimulation(data);
-        if ($scope.activeSimulation !== undefined &&
-          ($scope.activeSimulation.state === STATE.STARTED ||
-          $scope.activeSimulation.state === STATE.INITIALIZED ||
-          $scope.activeSimulation.state === STATE.PAUSED)) {
-          $scope.registerForStatusInformation();
-        }
-      });
-
-
-      $scope.newSimulation = function (experimentID) { // triggered by the cog button
-        simulationGenerator(serverBaseUrl).create({experimentID: experimentID}, function(data) {
-          $scope.activeSimulation = data;
-        });
       };
 
       $scope.updateSimulation = function (newState) {
-        if ($scope.activeSimulation === undefined) {
-          console.error('Cannot update Simulation: activeSimulation is undefined');
-          return;
-        }
-
-        var id = $scope.activeSimulation.simulationID;
-        if (id === undefined) {
-          console.error('Update of simulation state: ' + ERROR.UNDEFINED_ID);
-          return;
-        }
-
-        if ($scope.activeSimulation.state === undefined) {
-          console.error('Update of simulation state: ' + ERROR.UNDEFINED_STATE);
-          return;
-        }
-
-        simulationState(serverBaseUrl).update({sim_id: id}, {state: newState}, function(data) {
-          simulationService(serverBaseUrl).simulations(function(data) {
-            $scope.activeSimulation = simulationService().getActiveSimulation(data);
-          });
+        simulationState(serverBaseUrl).update({sim_id: simulationID}, {state: newState}, function(data) {
+          $scope.state = data.state;
         });
-        if (newState === STATE.INITIALIZED) {
-          splash.setHeadline('Initializing simulation');
-          $scope.splashScreen = $scope.splashScreen || splash.open();
-          $scope.registerForStatusInformation();
-        }
-        // TODO
-        // in case we have STATE.INITIALIZED we subscribe/connect // race condition here?
-      };
-
-      $scope.isVisible = function(itemName) { // itemName is the name of a toolbar item, i.e. either a button or a display
-        if ($scope.activeSimulation === undefined) {
-          return itemName === 'cog'; //  "new" is then the only visible toolbar item
-        }
-
-        var state = $scope.activeSimulation.state;
-        if (state === undefined) {
-          console.error('State-based visibility check: ' + ERROR.UNDEFINED_STATE);
-          return false;
-        }
-
-        var result;
-        switch(itemName) {
-          case 'initialize':
-            result = (state === STATE.CREATED);
-            break;
-          case 'play':
-            result = (state === STATE.PAUSED) || (state === STATE.INITIALIZED);
-            break;
-          case 'pause':
-            result = (state === STATE.STARTED);
-            break;
-          case 'display':
-            result = (state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED);
-            break;
-          case 'stop':
-            result = (state === STATE.STARTED) || (state === STATE.PAUSED);
-            break;
-          default:
-            result = false;
-        }
-        return result;
       };
 
       simulationStatistics.setRealTimeCallback(function (realTimeValue) {
@@ -228,7 +165,7 @@
             screenParams.name = 'LeftScreenToBlue';
           }
 
-          screenControl(serverBaseUrl).updateScreenColor({sim_id: $scope.activeSimulation.simulationID}, screenParams);
+          screenControl(serverBaseUrl).updateScreenColor({sim_id: simulationID}, screenParams);
         }
 
         // deactivate the context menu after a color was assigned

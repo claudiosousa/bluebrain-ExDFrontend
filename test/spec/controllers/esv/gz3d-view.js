@@ -20,22 +20,23 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulations,
     STATE;
 
-    var simulationStatisticsMock = {};
-    simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
-    simulationStatisticsMock.setRealTimeCallback = jasmine.createSpy('setRealTimeCallback');
+  var simulationStatisticsMock = {};
+  simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
+  simulationStatisticsMock.setRealTimeCallback = jasmine.createSpy('setRealTimeCallback');
 
-    // Mock simulationServices
-    var simulationServiceObject = {};
-    simulationServiceObject.simulations = jasmine.createSpy('simulations');
-    var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
+  // Mock simulationServices
+  var simulationServiceObject = {};
+  simulationServiceObject.simulations = jasmine.createSpy('simulations');
+  var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
 
-    var simulationStateObject = {};
-    simulationStateObject.update = jasmine.createSpy('update');
-    var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateObject);
+  var simulationStateObject = {};
+  simulationStateObject.update = jasmine.createSpy('update');
+  simulationStateObject.state = jasmine.createSpy('state');
+  var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateObject);
 
-    var screenControlObject = {};
-    screenControlObject.updateScreenColor = jasmine.createSpy('updateScreenColor');
-    var screenControlMock = jasmine.createSpy('screenControl').andReturn(screenControlObject);
+  var screenControlObject = {};
+  screenControlObject.updateScreenColor = jasmine.createSpy('updateScreenColor');
+  var screenControlMock = jasmine.createSpy('screenControl').andReturn(screenControlObject);
 
   var splashServiceMock = {};
 
@@ -47,6 +48,11 @@ describe('Controller: Gz3dViewCtrl', function () {
   cameraManipulationMock.lookAtOrigin = jasmine.createSpy('lookAtOrigin');
   cameraManipulationMock.resetToInitialPose = jasmine.createSpy('resetToInitialPose');
 
+  var stateParams = {
+    serverID : 'bbpce016',
+    simulationID : 'mocked_simulation_id'
+  };
+
   beforeEach(module(function ($provide) {
     $provide.value('simulationStatistics', simulationStatisticsMock);
     $provide.value('gzInitialization', gzInitializationMock);
@@ -56,6 +62,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('simulationState', simulationStateMock);
     $provide.value('screenControl', screenControlMock);
+    $provide.value('$stateParams', stateParams);
   }));
 
   // Initialize the controller and a mock scope
@@ -68,6 +75,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _simulationService_,
                               _simulationState_,
                               _screenControl_,
+                              _$stateParams_,
                               _STATE_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
@@ -78,6 +86,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationService = _simulationService_;
     simulationState = _simulationState_;
     screenControl = _screenControl_;
+    stateParams = _$stateParams_;
     STATE = _STATE_;
 
     rootScope.scene = {};
@@ -133,185 +142,172 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(console, 'log');
   }));
 
+  //it('should retrieve the simulation list and extract the latest active simulation (1)', function() {
+  //    expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
+  //    expect(simulationServiceObject.simulations).toHaveBeenCalled();
+  //
+  //    spyOn(scope, 'registerForStatusInformation');
+  //    var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+  //    argumentFunction(simulations);
+  //    //expect(scope.activeSimulation.state).toBe(STATE.STARTED);
+  //    expect(scope.registerForStatusInformation).toHaveBeenCalled();
+  //});
 
-  it('should retrieve the simulation list and extract the latest active simulation (1)', function() {
-      expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
-      expect(simulationServiceObject.simulations).toHaveBeenCalled();
+  //it('should retrieve the simulation list and extract the latest active simulation (2)', function() {
+  //  expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
+  //  expect(simulationServiceObject.simulations).toHaveBeenCalled();
+  //
+  //  spyOn(scope, 'registerForStatusInformation');
+  //
+  //  simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
+  //  var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+  //  argumentFunction([{ simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED}]);
+  //  expect(scope.activeSimulation).toBe(undefined);
+  //  expect(scope.registerForStatusInformation).not.toHaveBeenCalled();
+  //});
 
-      spyOn(scope, 'registerForStatusInformation');
-      var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
-      argumentFunction(simulations);
-      expect(scope.activeSimulation.state).toBe(STATE.STARTED);
-      expect(scope.registerForStatusInformation).toHaveBeenCalled();
+  // TODO(Stefan) This can be removed since the method isVisible() does not exist anymore!
+  //it('should attach a visiblity checker used for every toolbar item', function() {
+  //    scope.activeSimulation = undefined;
+  //    var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+  //    argumentFunction(simulations);
+  //    expect(scope.activeSimulation).toEqual(simulations[3]);
+  //
+  //    expect(scope.isVisible).toEqual(jasmine.any(Function));
+  //
+  //    expect(scope.isVisible('cog')).toBe(false);
+  //    expect(scope.isVisible('play')).toBe(false);
+  //    expect(scope.isVisible('pause')).toBe(true);
+  //    expect(scope.isVisible('stop')).toBe(true);
+  //    expect(scope.isVisible('display')).toBe(true);
+  //
+  //    scope.activeSimulation.state = STATE.PAUSED;
+  //    expect(scope.isVisible('cog')).toBe(false);
+  //    expect(scope.isVisible('play')).toBe(true);
+  //    expect(scope.isVisible('pause')).toBe(false);
+  //    expect(scope.isVisible('stop')).toBe(true);
+  //    expect(scope.isVisible('display')).toBe(true);
+  //
+  //    scope.activeSimulation.state = STATE.INITIALIZED;
+  //    expect(scope.isVisible('cog')).toBe(false);
+  //    expect(scope.isVisible('play')).toBe(true);
+  //    expect(scope.isVisible('pause')).toBe(false);
+  //    expect(scope.isVisible('stop')).toBe(false);
+  //    expect(scope.isVisible('display')).toBe(true);
+  //
+  //    scope.activeSimulation.state = STATE.CREATED;
+  //    expect(scope.isVisible('cog')).toBe(false);
+  //    expect(scope.isVisible('play')).toBe(false);
+  //    expect(scope.isVisible('pause')).toBe(false);
+  //    expect(scope.isVisible('stop')).toBe(false);
+  //    expect(scope.isVisible('display')).toBe(false);
+  //
+  //    scope.activeSimulation.state = STATE.STOPPED;
+  //    expect(scope.isVisible('cog')).toBe(false);
+  //    expect(scope.isVisible('play')).toBe(false);
+  //    expect(scope.isVisible('pause')).toBe(false);
+  //    expect(scope.isVisible('stop')).toBe(false);
+  //    expect(scope.isVisible('display')).toBe(false);
+  //
+  //
+  //    scope.activeSimulation.state = undefined;
+  //    expect(scope.isVisible('cog')).toBe(false);
+  //    expect(scope.isVisible('play')).toBe(false);
+  //    expect(scope.isVisible('pause')).toBe(false);
+  //    expect(scope.isVisible('stop')).toBe(false);
+  //    expect(scope.isVisible('display')).toBe(false);
+  //    expect(console.error.callCount).toEqual(5);
+  //
+  //    scope.activeSimulation = undefined;
+  //    expect(scope.isVisible('cog')).toBe(true);
+  //    expect(scope.isVisible('play')).toBe(false);
+  //    expect(scope.isVisible('pause')).toBe(false);
+  //    expect(scope.isVisible('stop')).toBe(false);
+  //    expect(scope.isVisible('display')).toBe(false);
+  //});
+
+  it('should check that updateSimulation sets the scope\'s state', function () {
+    //Ignore this warning because of the sim_id
+    /*jshint camelcase: false */
+
+    // first test whether the state given as a parameter is passed
+    scope.updateSimulation(STATE.STARTED);
+    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {state: STATE.STARTED}, jasmine.any(Function));
+
+    // second test whether the callback function does what it should do
+    scope.state = STATE.UNDEFINED;
+    simulationStateObject.update.mostRecentCall.args[2]({state: STATE.PAUSED});
+    expect(scope.state).toBe(STATE.PAUSED);
   });
 
-  it('should retrieve the simulation list and extract the latest active simulation (2)', function() {
-    expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
-    expect(simulationServiceObject.simulations).toHaveBeenCalled();
+  //it('should change the state of the simulation', function() {
+  //    //Ignore this warning because of the sim_id
+  //    /*jshint camelcase: false */
+  //    scope.activeSimulation = simulations[3];
+  //    var id = scope.activeSimulation.simulationID;
+  //
+  //    scope.updateSimulation(STATE.PAUSED);
+  //    expect(simulationState).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
+  //    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: id}, {state: STATE.PAUSED}, jasmine.any(Function));
+  //    var argumentFunction = simulationStateObject.update.mostRecentCall.args[2];
+  //    argumentFunction(simulations);
+  //    expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
+  //    expect(simulationServiceObject.simulations).toHaveBeenCalledWith(jasmine.any(Function));
+  //
+  //    scope.activeSimulation = undefined;
+  //    argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+  //    argumentFunction(simulations);
+  //    expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(simulations);
+  //    expect(scope.activeSimulation).toEqual(simulations[3]);
+  //});
 
-    spyOn(scope, 'registerForStatusInformation');
+  //it('should test the splash screen settings of updateSimulation (1)', function() {
+  //    //Ignore this warning because of the sim_id
+  //    /*jshint camelcase: false */
+  //    scope.activeSimulation = simulations[3];
+  //    var id = scope.activeSimulation.simulationID;
+  //
+  //    scope.updateSimulation(STATE.STARTED);
+  //    expect(simulationState).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
+  //    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: id}, {state: STATE.STARTED}, jasmine.any(Function));
+  //
+  //    scope.updateSimulation(STATE.PAUSED);
+  //    expect(splash.setHeadline).not.toHaveBeenCalled();
+  //
+  //    spyOn(scope, 'registerForStatusInformation');
+  //    scope.splashScreen = undefined;
+  //    scope.updateSimulation(STATE.INITIALIZED);
+  //    expect(splash.setHeadline).toHaveBeenCalledWith('Initializing simulation');
+  //    expect(splash.open).toHaveBeenCalled();
+  //    expect(scope.splashScreen).toEqual(splashInstance);
+  //    expect(scope.registerForStatusInformation).toHaveBeenCalled();
+  //});
 
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
-    var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
-    argumentFunction([{ simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED}]);
-    expect(scope.activeSimulation).toBe(undefined);
-    expect(scope.registerForStatusInformation).not.toHaveBeenCalled();
-  });
+  //it('should test the splash screen settings of updateSimulation (2)', function() {
+  //    spyOn(scope, 'registerForStatusInformation');
+  //    scope.activeSimulation = simulations[3];
+  //    scope.splashScreen = splashInstance2;
+  //    scope.updateSimulation(STATE.INITIALIZED);
+  //    expect(splash.setHeadline).toHaveBeenCalledWith('Initializing simulation');
+  //    expect(splash.open).not.toHaveBeenCalled();
+  //    expect(scope.splashScreen).toEqual(splashInstance2);
+  //    expect(scope.registerForStatusInformation).toHaveBeenCalled();
+  //});
 
-  it('should attach a visiblity checker used for every toolbar item', function() {
-      scope.activeSimulation = undefined;
-      var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
-      argumentFunction(simulations);
-      expect(scope.activeSimulation).toEqual(simulations[3]);
-
-      expect(scope.isVisible).toEqual(jasmine.any(Function));
-
-      expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(false);
-      expect(scope.isVisible('pause')).toBe(true);
-      expect(scope.isVisible('stop')).toBe(true);
-      expect(scope.isVisible('display')).toBe(true);
-
-      scope.activeSimulation.state = STATE.PAUSED;
-      expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(true);
-      expect(scope.isVisible('pause')).toBe(false);
-      expect(scope.isVisible('stop')).toBe(true);
-      expect(scope.isVisible('display')).toBe(true);
-
-      scope.activeSimulation.state = STATE.INITIALIZED;
-      expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(true);
-      expect(scope.isVisible('pause')).toBe(false);
-      expect(scope.isVisible('stop')).toBe(false);
-      expect(scope.isVisible('display')).toBe(true);
-
-      scope.activeSimulation.state = STATE.CREATED;
-      expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(false);
-      expect(scope.isVisible('pause')).toBe(false);
-      expect(scope.isVisible('stop')).toBe(false);
-      expect(scope.isVisible('display')).toBe(false);
-
-      scope.activeSimulation.state = STATE.STOPPED;
-      expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(false);
-      expect(scope.isVisible('pause')).toBe(false);
-      expect(scope.isVisible('stop')).toBe(false);
-      expect(scope.isVisible('display')).toBe(false);
-
-
-      scope.activeSimulation.state = undefined;
-      expect(scope.isVisible('cog')).toBe(false);
-      expect(scope.isVisible('play')).toBe(false);
-      expect(scope.isVisible('pause')).toBe(false);
-      expect(scope.isVisible('stop')).toBe(false);
-      expect(scope.isVisible('display')).toBe(false);
-      expect(console.error.callCount).toEqual(5);
-
-      scope.activeSimulation = undefined;
-      expect(scope.isVisible('cog')).toBe(true);
-      expect(scope.isVisible('play')).toBe(false);
-      expect(scope.isVisible('pause')).toBe(false);
-      expect(scope.isVisible('stop')).toBe(false);
-      expect(scope.isVisible('display')).toBe(false);
-  });
-
-  it('should check updateSimulation to be a function', function() {
-    expect(scope.updateSimulation).toEqual(jasmine.any(Function));
-  });
-
-  it('should check for undefined activeSimulation in updateSimulation', function() {
-      scope.activeSimulation = undefined;
-      scope.updateSimulation(STATE.PAUSED);
-      expect(console.error.callCount).toEqual(1);
-  });
-
-  it('should check for undefined id in updateSimulation', function() {
-      scope.activeSimulation = simulations[3];
-      scope.activeSimulation.simulationID = undefined;
-      scope.updateSimulation(STATE.PAUSED);
-      expect(console.error.callCount).toEqual(1);
-  });
-
-  it('should check for undefined state in updateSimulation', function() {
-      scope.activeSimulation = simulations[3];
-      scope.activeSimulation.state = undefined;
-      scope.updateSimulation(STATE.PAUSED);
-      expect(console.error.callCount).toEqual(1);
-  });
-
-  it('should change the state of the simulation', function() {
-      //Ignore this warning because of the sim_id
-      /*jshint camelcase: false */
-      scope.activeSimulation = simulations[3];
-      var id = scope.activeSimulation.simulationID;
-
-      scope.updateSimulation(STATE.PAUSED);
-      expect(simulationState).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
-      expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: id}, {state: STATE.PAUSED}, jasmine.any(Function));
-      var argumentFunction = simulationStateObject.update.mostRecentCall.args[2];
-      argumentFunction(simulations);
-      expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
-      expect(simulationServiceObject.simulations).toHaveBeenCalledWith(jasmine.any(Function));
-
-      scope.activeSimulation = undefined;
-      argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
-      argumentFunction(simulations);
-      expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(simulations);
-      expect(scope.activeSimulation).toEqual(simulations[3]);
-  });
-
-  it('should test the splash screen settings of updateSimulation (1)', function() {
-      //Ignore this warning because of the sim_id
-      /*jshint camelcase: false */
-      scope.activeSimulation = simulations[3];
-      var id = scope.activeSimulation.simulationID;
-
-      scope.updateSimulation(STATE.STARTED);
-      expect(simulationState).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
-      expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: id}, {state: STATE.STARTED}, jasmine.any(Function));
-
-      scope.updateSimulation(STATE.PAUSED);
-      expect(splash.setHeadline).not.toHaveBeenCalled();
-
-      spyOn(scope, 'registerForStatusInformation');
-      scope.splashScreen = undefined;
-      scope.updateSimulation(STATE.INITIALIZED);
-      expect(splash.setHeadline).toHaveBeenCalledWith('Initializing simulation');
-      expect(splash.open).toHaveBeenCalled();
-      expect(scope.splashScreen).toEqual(splashInstance);
-      expect(scope.registerForStatusInformation).toHaveBeenCalled();
-  });
-
-  it('should test the splash screen settings of updateSimulation (2)', function() {
-      spyOn(scope, 'registerForStatusInformation');
-      scope.activeSimulation = simulations[3];
-      scope.splashScreen = splashInstance2;
-      scope.updateSimulation(STATE.INITIALIZED);
-      expect(splash.setHeadline).toHaveBeenCalledWith('Initializing simulation');
-      expect(splash.open).not.toHaveBeenCalled();
-      expect(scope.splashScreen).toEqual(splashInstance2);
-      expect(scope.registerForStatusInformation).toHaveBeenCalled();
-  });
-
-    it('should create a new simulation', function() {
-      var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
-      argumentFunction(simulations);
-
-      expect(scope.newSimulation).toEqual(jasmine.any(Function));
-
-      var experimentID = 'fakeExperiment';
-      scope.newSimulation(experimentID);
-      scope.activeSimulation = undefined;
-      httpBackend.expectPOST('http://bbpce016.epfl.ch:8080/simulation', {experimentID: experimentID}).
-        respond(201, { simulationID: 7, experimentID: 'fakeExperiment', state: STATE.CREATED});
-
-      httpBackend.flush();
-      expect(scope.activeSimulation).toBeDefined();
-      expect(scope.activeSimulation.state).toBe(STATE.CREATED);
-  });
-
+  //  it('should create a new simulation', function() {
+  //    var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+  //    argumentFunction(simulations);
+  //
+  //    var experimentID = 'fakeExperiment';
+  //    scope.newSimulation(experimentID);
+  //    scope.activeSimulation = undefined;
+  //    httpBackend.expectPOST('http://bbpce016.epfl.ch:8080/simulation', {experimentID: experimentID}).
+  //      respond(201, { simulationID: 7, experimentID: 'fakeExperiment', state: STATE.CREATED});
+  //
+  //    httpBackend.flush();
+  //    expect(scope.activeSimulation).toBeDefined();
+  //    expect(scope.activeSimulation.state).toBe(STATE.CREATED);
+  //});
 
   it('should check for the currently hovered model', function () {
     scope.getModelUnderMouse = jasmine.createSpy('getModelUnderMouse').andReturn({name: 'some_name'});
@@ -366,7 +362,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(material.specular.setHex.callCount).toEqual(1);
 
     expect(screenControl).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
-    expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: scope.activeSimulation.simulationID}, {'name':'LeftScreenToRed'});
+    expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToRed'});
   });
 
   it('should toggle a menu to be able to change the screen color', function() {

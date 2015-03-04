@@ -3,14 +3,14 @@
     <div ng-show="hoveredEntity!==undefined && dialogOpen" class="exd-model-description-box">
         <div ng-show="hoveredEntity!==undefined && dialogOpen" class="hbp-sidebar hbp-sidebar-yscroll fadein fadeout">
             <div class="hbp-sidebar-panel">
-                <div class="hbp-sidebar-title">{{input.title}}: {{hoveredEntity.nrpName}} 
+                <div class="hbp-sidebar-title">{{input.title}}: {{hoveredEntity.nrpName}}
                     <span class="text-success pull-right">
-                        <span class="glyphicon glyphicon-ok"></span>         
+                        <span class="glyphicon glyphicon-ok"></span>
                     </span>
                 </div>
                 <div class="hbp-sidebar-panel-content">
                     <p>{{hoveredEntity.nrpDescription}}</p>
-                    <img src={{hoveredEntity.thumbnailUrl}} class="img-thumbnail exd-model-img-thumbnail">
+                    <img ng-src={{hoveredEntity.thumbnailUrl}} class="img-thumbnail exd-model-img-thumbnail">
                 </div>
             </div>
         </div>
@@ -20,15 +20,15 @@
     <div ng-show="(hoveredEntity===undefined  && dialogOpen) || (!dialogOpen && input.selectedEntity===undefined)" class="exd-model-description-box">
         <div ng-show="(hoveredEntity===undefined && dialogOpen) || (!dialogOpen && input.selectedEntity===undefined)" class="hbp-sidebar hbp-sidebar-yscroll fadein fadeout" >
             <div class="hbp-sidebar-panel">
-                <div class="hbp-sidebar-title text-muted">{{input.title}} 
+                <div class="hbp-sidebar-title text-muted">{{input.title}}
                     <span class="text-warning pull-right">
-                        <span class="glyphicon glyphicon-warning-sign text-warning"></span> 
+                        <span class="glyphicon glyphicon-warning-sign text-warning"></span>
                         Select one !
                     </span>
                 </div>
                 <div class="hbp-sidebar-panel-content text-muted">
                     <p>{{input.description}}</p>
-                    <img src="{{imageDefaultThumbnail}}" class="img-thumbnail exd-model-img-thumbnail">
+                    <img ng-src="{{imageDefaultThumbnail}}" class="img-thumbnail exd-model-img-thumbnail">
                 </div>
             </div>
         </div>
@@ -37,14 +37,14 @@
     <div ng-show="!dialogOpen && input.selectedEntity!==undefined" class="exd-model-description-box">
         <div ng-show="!dialogOpen && input.selectedEntity!==undefined" class="hbp-sidebar hbp-sidebar-yscroll fadein fadeout">
             <div class="hbp-sidebar-panel">
-                <div class="hbp-sidebar-title">{{input.title}}: {{input.selectedEntity.nrpName}} 
+                <div class="hbp-sidebar-title">{{input.title}}: {{input.selectedEntity.nrpName}}
                     <span class="text-success pull-right">
-                        <span class="glyphicon glyphicon-ok"></span>         
+                        <span class="glyphicon glyphicon-ok"></span>
                     </span>
                 </div>
                 <div class="hbp-sidebar-panel-content">
                     <p>{{input.selectedEntity.nrpDescription}}</p>
-                    <img src={{input.selectedEntity.thumbnailUrl}} class="img-thumbnail exd-model-img-thumbnail">
+                    <img ng-src={{input.selectedEntity.thumbnailUrl}} class="img-thumbnail exd-model-img-thumbnail">
                 </div>
             </div>
         </div>

@@ -42,7 +42,7 @@
                 templateUrl: 'views/exd/new.html',
                 controller: 'NewCtrl'
             }).state('gz3d-view', {
-                url: '/gz3d-view',
+                url: '/esv-web/gz3d-view/:serverID/:simulationID',
                 templateUrl: 'views/esv/gz3d-view.html',
                 controller: 'Gz3dViewCtrl'
             }).state('rd', {
@@ -57,6 +57,10 @@
             }).state('esv-wall', {
               url: '/esv-wall',
               templateUrl: 'views/common/esv-display-wall.html'
+            }).state('esv-web', {
+              url: '/esv-web',
+              templateUrl: 'views/esv/esv-web.html',
+              controller: 'experimentCtrl'
             }).state('ncd', {
               url: '/ncd',
               controller: 'NcdCtrl',
@@ -95,15 +99,6 @@
             }).then(boot);
         }
     }]);
-
-    var app = angular.module('exdFrontendApp');
-    app.run(['bbpConfig', function(bbpConfig) {
-      /* global GZ3D: false */
-      GZ3D.assetsPath = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.assets');
-      GZ3D.webSocketUrl = bbpConfig.get('api.neurorobotics.bbpce016.gzweb.websocket');
-      app.constant('restServicesBaseUrl', bbpConfig.get('api.neurorobotics.bbpce016.gzweb.nrp-services')); // TODO(Luc): inject this wherever needed
-    }]);
-
 }());
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately
