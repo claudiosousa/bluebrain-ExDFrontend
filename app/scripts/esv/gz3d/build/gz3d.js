@@ -4854,7 +4854,7 @@ GZ3D.Scene.prototype.init = function()
 
   this.timeDown = null;
 
-  this.controls = new THREE.OrbitControls(this.camera, this.getDomElement());
+  this.controls = new THREE.FirstPersonControls(this.camera, this.getDomElement());
   this.scene.add(this.controls.targetIndicator);
 
   this.emitter = new EventEmitter2({ verbose: true });
@@ -5277,11 +5277,11 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
 
       if (event.keyCode === 187)
       {
-        this.controls.dollyOut();
+        //this.controls.dollyOut();
       }
       else
       {
-        this.controls.dollyIn();
+        //this.controls.dollyIn();
       }
     }
   }
