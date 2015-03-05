@@ -4,6 +4,10 @@ html {
   height: 100%;
 }
 
+/* http://stackoverflow.com/questions/26895349/how-can-i-get-ff-33-x-flexbox-behavior-in-ff-34-x */
+* { min-height:0 }
+* { min-width:0 }
+
 body {
   display: flex;
   flex-direction: column;
