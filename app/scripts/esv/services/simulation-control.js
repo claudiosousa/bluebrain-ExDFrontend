@@ -5,7 +5,11 @@
 
   var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants']);
 
-  module.factory('simulationService', ['$resource', '$http', 'STATE', function($resource, $http, STATE) {
+  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', function($resource, $http, hbpUserDirectory, STATE) {
+
+    // Keeps track of the owner of experiments in a map (id -> display name)
+    var owners = {};
+
     // transform the response data
     function transform(http, serverID) {
       var defaults = http.defaults.transformResponse;
@@ -15,6 +19,10 @@
       return defaults.concat(function(data) {
         angular.forEach(data, function(element, index){
           element.serverID = serverID;
+          hbpUserDirectory.get([element.owner]).then(function (profile)
+          {
+            owners[Object.keys(profile)[0]] = profile[Object.keys(profile)[0]].displayName;
+          });
         });
         return data;
       });
@@ -65,6 +73,7 @@
       functions.getActiveSimulation = getActiveSimulation;
       functions.filterSimulations = filterSimulations;
       functions.transformResponse = transform;
+      functions.owners = owners;
 
       return functions;
     };

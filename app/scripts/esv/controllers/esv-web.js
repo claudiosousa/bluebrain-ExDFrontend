@@ -16,7 +16,7 @@
       return output;
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', 'experimentSimulationService', function ($scope, $rootScope, $timeout, $window, experimentSimulationService) {
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', 'simulationService', 'experimentSimulationService', function ($scope, $rootScope, $timeout, $window, simulationService,experimentSimulationService) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
@@ -68,6 +68,7 @@
 
     experimentSimulationService.getExperiments($scope.setProgressMessage, function (data) {
       $scope.experiments = data;
+      $scope.owners = simulationService().owners;
     });
   }]);
 }());
