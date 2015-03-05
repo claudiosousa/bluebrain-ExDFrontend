@@ -50,7 +50,7 @@
                 <tr ng-repeat="simul in exp.simulations">
                   <td>{{simul.experimentID}}</td>
                   <td>{{simul.serverID}}</td>
-                  <td>{{simul.owner}}</td>
+                  <td>{{owners[simul.owner]}}</td>
                   <td>{{simul.state}}</td>
                   <td><a ng-click="joinExperiment('#/esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');" type="button" class="btn btn-default">Join »</a></td>
                 </tr>

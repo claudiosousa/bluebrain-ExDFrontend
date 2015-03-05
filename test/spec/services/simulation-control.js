@@ -1,7 +1,9 @@
 'use strict';
 
 describe('Services: simulation-services', function () {
-  var simulationService,
+  var hbpUserDirectory,
+      bbpStubFactory,
+      simulationService,
       simulationControl,
       simulationState,
       simulationGenerator,
@@ -12,13 +14,17 @@ describe('Services: simulation-services', function () {
 
   // load the service to test and mock the necessary service
   beforeEach(module('simulationControlServices'));
+  beforeEach(module('hbpCommon'));
+  beforeEach(module('bbpStubFactory'));
 
   var httpBackend;
   var simulations, returnSimulations, experimentTemplates, experimentTemplatesAugmented;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_, _lightControl_, _screenControl_, _STATE_) {
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_, _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_, _lightControl_, _screenControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
+    hbpUserDirectory = _hbpUserDirectory_;
+    bbpStubFactory = _bbpStubFactory_;
     simulationService = _simulationService_;
     simulationControl = _simulationControl_;
     simulationState = _simulationState_;
@@ -71,6 +77,12 @@ describe('Services: simulation-services', function () {
     httpBackend.whenPUT(/()/).respond(200);
     httpBackend.whenPOST(/()/).respond(200);
     spyOn(console, 'error');
+    var user = {
+      displayName: 'John Doe'
+    };
+    spyOn(hbpUserDirectory, 'get').andReturn(bbpStubFactory.promise({
+      args: [{'john': user}]
+    }));
   }));
 
 
@@ -82,6 +94,16 @@ describe('Services: simulation-services', function () {
     httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
     httpBackend.flush();
     expect(angular.toJson(mySimulations)).toBe(angular.toJson(returnSimulations));
+  });
+
+  it('should retrieve the owner of simulations map', function() {
+    var mySimulations;
+    simulationService({ serverURL: 'http://bbpce016.epfl.ch:8080', serverID : 'bbpce016' }).simulations(function(data) {
+      mySimulations = data;
+    });
+    httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
+    httpBackend.flush();
+    expect(simulationService().owners.john).toBe('John Doe');
   });
 
   it('should attach a filter function and filter simulations according to state and index in the list', function() {
