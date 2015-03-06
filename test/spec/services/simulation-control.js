@@ -305,7 +305,7 @@ describe('Services: experimentSimulationService', function () {
     httpBackend.whenGET('views/esv/experiment_templates.json').respond(experimentTemplates);
     spyOn(console, 'error');
 
-    roslibMock.createConnectionTo = jasmine.createSpy('createConnectionTo').andReturn(rosConnectionMock);
+    roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionMock);
     statusListenerMock = { subscribe : jasmine.createSpy('subscribe')};
     roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(statusListenerMock);
   }));
@@ -347,7 +347,7 @@ describe('Services: experimentSimulationService', function () {
 
     experimentSimulationService.registerForStatusInformation(serverID, simulationID);
 
-    expect(roslib.createConnectionTo).toHaveBeenCalledWith('ws://bbpce016.epfl.ch:9090');
+    expect(roslib.getOrCreateConnectionTo).toHaveBeenCalledWith('ws://bbpce016.epfl.ch:9090');
     expect(roslib.createStringTopic).toHaveBeenCalledWith(rosConnectionMock, '/ros_cle_simulation/status');
 
     expect(statusListenerMock.subscribe).toHaveBeenCalled();

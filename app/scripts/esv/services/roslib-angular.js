@@ -20,12 +20,22 @@
     // throw an error (since the core library is globally accessible).
     // delete($window.ROSLIB); // Unfortunately we cannot delete it, since gz3d.js is relying on it :(
 
-    // custom ROSLIB methods
-    ROSLIB.createConnectionTo = function (url) {
+    var connections = {};
 
-      var ros = new ROSLIB.Ros({
-        url: url
-      });
+    // custom ROSLIB methods
+    ROSLIB.getOrCreateConnectionTo = function (url) {
+
+      var ros;
+
+      if (! connections[url]) {
+        ros = new ROSLIB.Ros({
+          url: url
+        });
+        connections[url] = ros;
+      } else {
+        ros = connections[url];
+        console.log('Reusing already established connection to ' + url);
+      }
 
       ros.on('connection', function () {
         console.log('Connected to websocket server: ' + url);

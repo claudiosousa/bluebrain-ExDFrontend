@@ -180,7 +180,7 @@
       var rosbridgeWebsocketUrl = servers[serverID].rosbridge.websocket;
       var statusTopic = servers[serverID].rosbridge.topics.status;
 
-      rosConnection = roslib.createConnectionTo(rosbridgeWebsocketUrl);
+      rosConnection = roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
       statusListener = roslib.createStringTopic(rosConnection, statusTopic);
 
       statusListener.subscribe(function (data) {

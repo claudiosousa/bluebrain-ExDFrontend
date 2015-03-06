@@ -129,7 +129,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     splashServiceMock.setHeadline = jasmine.createSpy('setHeadline');
 
     roslib = {};
-    roslib.createConnectionTo = jasmine.createSpy('createConnectionTo');
+    roslib.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo');
     roslib.createStringTopic = jasmine.createSpy('createStringTopic').andReturn({
       unsubscribe: function () {},
       subscribe: function () {}

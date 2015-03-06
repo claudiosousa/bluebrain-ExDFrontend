@@ -58,7 +58,7 @@
           var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
           var statusTopic = serverConfig.rosbridge.topics.status;
 
-          $scope.rosConnection = $scope.rosConnection || roslib.createConnectionTo(rosbridgeWebsocketUrl);
+          $scope.rosConnection = $scope.rosConnection || roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
           $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
 
           $scope.statusListener.unsubscribe(); // clear old subscriptions
