@@ -32,10 +32,10 @@
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', 'bbpConfig', 'gzInitialization',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
-      'lightControl', 'screenControl', 'cameraManipulation', 'splash', 'roslib', 'STATE', 'ERROR',
+      'lightControl', 'screenControl', 'cameraManipulation', 'timeDDHHMMSSFilter', 'splash', 'roslib', 'STATE', 'ERROR',
         function ($rootScope, $scope, $stateParams, $timeout, bbpConfig, gzInitialization,
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
-          lightControl, screenControl, cameraManipulation, splash, roslib, STATE, ERROR) {
+          lightControl, screenControl, cameraManipulation, timeDDHHMMSSFilter, splash, roslib, STATE, ERROR) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -48,6 +48,8 @@
       $scope.STATE = STATE;
 
       $scope.isInitialized = false;
+
+      $scope.simTimeoutText = '';
 
       simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
         $scope.state = data.state;
@@ -75,6 +77,9 @@
                 splash.setHeadline(message.progress.task);
                 splash.setSubHeadline(message.progress.subtask);
               }
+            }
+            if (message !== undefined && message.timeout !== undefined) {
+              $scope.simTimeoutText = message.timeout;
             }
           });
       };

@@ -108,11 +108,13 @@
                 <div>
                   <div>
                     <span>Simulation time:</span><br/>
-                    <span>Real time:</span>
+                    <span>Real time:</span><br/>
+                    <span>Timeout:</span>
                   </div>
                   <div>
-                    <span>{{simulationTimeText}}</span><br/>
-                    <span>{{realTimeText}}</span>
+                    <span>{{simulationTimeText | timeDDHHMMSS}}</span><br/>
+                    <span>{{realTimeText | timeDDHHMMSS}}</span><br/>
+                    <span>{{simTimeoutText | timeDDHHMMSS}}</span>
                   </div>
                 </div>
               </div>

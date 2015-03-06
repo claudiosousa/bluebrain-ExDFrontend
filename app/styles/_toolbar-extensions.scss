@@ -80,9 +80,9 @@
 }
 
 .hbp-time-display {
-    line-height: 13px;
-    padding-top: 7px;
-    padding-bottom: 7px;
+    line-height: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     display: table;
 }
 
@@ -95,11 +95,11 @@
 }
 
 .hbp-time-display div div:first-of-type span {
-  font-size:x-small;
+  font-size:xx-small;
 }
 
 .hbp-time-display div div:nth-of-type(2) span {
-    font-size:small;
+    font-size:xx-small;
     font-family: monospace;
 }
 

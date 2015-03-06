@@ -66,8 +66,8 @@ describe('setting up the simulation statistics', function () {
     var registeredCallbackFunction = gzCommunicationMethodChainMock.subscribe.mostRecentCall.args[0];
     registeredCallbackFunction(message);
 
-    expect(simulationTimeCallback).toHaveBeenCalledWith('00 05:23:14');
-    expect(realTimeCallback).toHaveBeenCalledWith('00 05:24:19');
+    expect(simulationTimeCallback).toHaveBeenCalledWith(19394);
+    expect(realTimeCallback).toHaveBeenCalledWith(19459);
   });
 });
 
