@@ -35,3 +35,25 @@ body > div {
 .esv-flex-greedy-element {
   flex: 1;
 }
+
+.keyboard-control-info {
+  position: absolute;
+  top: 100px;
+  right: 50px;
+  background:rgba(61, 235, 242, 0.5);
+  background-image: url('../../img/esv/keyboard-control.svg');
+  background-size: 95% 95%;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 400px;
+  height: 175px;
+  border-radius: 8px;
+  border-color: black;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+}
+
+.keyboard-control-info.ng-hide {
+  opacity: 0;
+}

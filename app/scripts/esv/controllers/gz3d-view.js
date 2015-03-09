@@ -30,10 +30,10 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', 'bbpConfig', 'gzInitialization',
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', 'bbpConfig', 'gzInitialization',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
       'lightControl', 'screenControl', 'cameraManipulation', 'splash', 'roslib', 'STATE', 'ERROR',
-        function ($rootScope, $scope, $stateParams, bbpConfig, gzInitialization,
+        function ($rootScope, $scope, $stateParams, $timeout, bbpConfig, gzInitialization,
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
           lightControl, screenControl, cameraManipulation, splash, roslib, STATE, ERROR) {
 
@@ -207,7 +207,25 @@
         $rootScope.scene.emitter.emit('lightChanged', ratio);
       };
 
+      // Camera manipulation
+      var hasNavigationAlreadyBeenClicked = false;
+      $scope.showKeyboardControlInfoDiv = false;
+
+      // This should be integrated to the tutorial story when
+      // it will be implemented !
+      function showKeyboardControlInfo() {
+        if (!hasNavigationAlreadyBeenClicked)
+        {
+          hasNavigationAlreadyBeenClicked = true;
+          $scope.showKeyboardControlInfoDiv = true;
+          $timeout(function () {
+            $scope.showKeyboardControlInfoDiv = false;
+          }, 20000);
+        }
+      }
+
       $scope.cameraTranslate = function (right, up, forward) {
+        showKeyboardControlInfo();
         cameraManipulation.firstPersonTranslate(right, up, forward);
       };
 

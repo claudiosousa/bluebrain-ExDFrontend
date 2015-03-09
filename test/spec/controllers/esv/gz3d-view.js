@@ -9,6 +9,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope,
     rootScope,
     httpBackend,
+    timeout,
     cameraManipulation,
     splash,
     simulationService,
@@ -68,6 +69,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
+                              $timeout,
                               _$httpBackend_,
                               _cameraManipulation_,
                               _splash_,
@@ -79,6 +81,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _STATE_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
+    timeout = $timeout;
     httpBackend = _$httpBackend_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
@@ -141,6 +144,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(console, 'error');
     spyOn(console, 'log');
   }));
+
+
+  it('should show the camera translate help div correctly', function() {
+    expect(scope.showKeyboardControlInfoDiv).toBe(false);
+    var right = 1, up = 2, forward = 3;
+    scope.cameraTranslate(right, up, forward);
+    expect(scope.showKeyboardControlInfoDiv).toBe(true);
+    timeout.flush();
+    expect(scope.showKeyboardControlInfoDiv).toBe(false);
+  });
 
   //it('should retrieve the simulation list and extract the latest active simulation (1)', function() {
   //    expect(simulationService).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
@@ -475,5 +488,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope.cameraResetToInitPose();
     expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
   });
+
 
 });
