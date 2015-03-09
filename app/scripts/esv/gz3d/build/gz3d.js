@@ -2032,6 +2032,9 @@ GZ3D.GZIface = function(scene, gui)
   this.init();
   this.visualsToAdd = [];
 
+  this.assetProgressData = [];
+  this.assetProgressCallback = undefined;
+
   this.numConnectionTrials = 0;
   this.maxConnectionTrials = 30; // try to connect 30 times
   this.timeToSleepBtwTrials = 1000; // wait 1 second between connection trials
@@ -2043,6 +2046,11 @@ GZ3D.GZIface.prototype.init = function()
   this.entityMaterial = {};
 
   this.connect();
+};
+
+GZ3D.GZIface.prototype.setAssetProgressCallback = function(callback)
+{
+  this.assetProgressCallback = callback;
 };
 
 GZ3D.GZIface.prototype.connect = function()
@@ -2868,7 +2876,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           parent.scale.z = geom.mesh.scale.z;
         }
 
-        var modelUri = uriPath + '/' + modelName; 
+        var modelUri = uriPath + '/' + modelName;
         if (modelUri.indexOf('.dae') !== -1) // Modified for HBP, we do use coarse models all the time
         {
           modelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
@@ -2889,25 +2897,41 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         var materialName = parent.name + '::' + modelUri;
         this.entityMaterial[materialName] = mat;
 
+        // Progress update: Add this asset to the assetProgressArray
+        var element = {};
+        element.id = parent.name;
+        element.url = modelUri;
+        element.progress = 0;
+        element.totalSize = 0;
+        element.done = false;
+        this.assetProgressData.push(element);
+
         this.scene.loadMesh(modelUri, submesh,
-            centerSubmesh, function(dae) {
-              if (that.entityMaterial[materialName])
+          centerSubmesh, function(dae) {
+            if (that.entityMaterial[materialName])
+            {
+              var allChildren = [];
+              dae.getDescendants(allChildren);
+              for (var c = 0; c < allChildren.length; ++c)
               {
-                var allChildren = [];
-                dae.getDescendants(allChildren);
-                for (var c = 0; c < allChildren.length; ++c)
+                if (allChildren[c] instanceof THREE.Mesh)
                 {
-                  if (allChildren[c] instanceof THREE.Mesh)
-                  {
-                    that.scene.setMaterial(allChildren[c],
-                        that.entityMaterial[materialName]);
-                    break;
-                  }
+                  that.scene.setMaterial(allChildren[c],
+                      that.entityMaterial[materialName]);
+                  break;
                 }
               }
-              parent.add(dae);
-              loadGeom(parent);
-            });
+            }
+            parent.add(dae);
+            loadGeom(parent);
+            // Progress update: execute callback
+            element.done = true;
+            that.assetProgressCallback(that.assetProgressData);
+          }, function(progress){
+            element.progress = progress.loaded;
+            element.totalSize = progress.total;
+            that.assetProgressCallback(that.assetProgressData);
+          });
       }
     }
   }
@@ -6367,7 +6391,7 @@ GZ3D.Scene.prototype.loadHeightmap = function(heights, width, height,
  * @param {function} callback
  */
 GZ3D.Scene.prototype.loadMesh = function(uri, submesh, centerSubmesh,
-    callback)
+    callback, progressCalback)
 {
   var uriPath = uri.substring(0, uri.lastIndexOf('/'));
   var uriFile = uri.substring(uri.lastIndexOf('/') + 1);
@@ -6375,7 +6399,7 @@ GZ3D.Scene.prototype.loadMesh = function(uri, submesh, centerSubmesh,
   // load urdf model
   if (uriFile.substr(-4).toLowerCase() === '.dae')
   {
-    return this.loadCollada(uri, submesh, centerSubmesh, callback);
+    return this.loadCollada(uri, submesh, centerSubmesh, callback, progressCalback);
   }
   else if (uriFile.substr(-5).toLowerCase() === '.urdf')
   {
@@ -6421,7 +6445,7 @@ GZ3D.Scene.prototype.loadMesh = function(uri, submesh, centerSubmesh,
  * @param {function} callback
  */
 GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
-    callback)
+    callback, progressCallback)
 {
   var dae;
   var mesh = null;
@@ -6463,6 +6487,10 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
 
     dae.name = uri;
     callback(dae);
+  }, function(progress){
+    if (progressCallback !== undefined) {
+      progressCallback(progress);
+    }
   });
 };
 

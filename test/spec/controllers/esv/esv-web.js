@@ -15,6 +15,7 @@ describe('Controller: experimentCtrl', function () {
     experimentTemplates,
     experimentTemplatesAugmented,
     filteredExperimentTemplatesAugmented,
+    sortedExperimentTemplatesArray,
     STATE;
 
   var experimentSimulationServiceMock = {};
@@ -52,9 +53,14 @@ describe('Controller: experimentCtrl', function () {
 
     experimentTemplates = {
       '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'}
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
     };
+    sortedExperimentTemplatesArray = [
+      {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
+      {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'},
+      {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'}
+    ];
     experimentTemplatesAugmented = {
       '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
       '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', runningExperiments: 1, simulations: [
@@ -180,6 +186,13 @@ describe('Controller: experimentCtrl', function () {
       expect(name_snippetFilter(experimentTemplatesAugmented, 'dog')).toEqual(filteredExperimentTemplatesAugmented);
     }
   ));
+
+  it('should reverse-sort the entries',
+    inject(function(orderObjectByFilter) {
+        expect(orderObjectByFilter(experimentTemplates, 'name', false)).toEqual(sortedExperimentTemplatesArray);
+        expect(orderObjectByFilter(experimentTemplates, 'name', true)).toEqual(sortedExperimentTemplatesArray.reverse());
+      }
+    ));
 
   it('should set isServerAvailable to true', function() {
     rootScope.isServerAvailable = false;

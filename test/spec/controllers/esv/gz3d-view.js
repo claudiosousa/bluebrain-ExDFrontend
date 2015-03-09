@@ -17,6 +17,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     screenControl,
     roslib,
     splashInstance,
+    exampleProgressData,
+    assetLoadingSplash,
     simulations,
     STATE;
 
@@ -48,13 +50,16 @@ describe('Controller: Gz3dViewCtrl', function () {
   cameraManipulationMock.lookAtOrigin = jasmine.createSpy('lookAtOrigin');
   cameraManipulationMock.resetToInitialPose = jasmine.createSpy('resetToInitialPose');
 
+  var assetLoadingSplashMock = {};
+  var assetLoadingSplashInstance = {};
+  assetLoadingSplashMock.open = jasmine.createSpy('open').andReturn(assetLoadingSplashInstance);
+
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
-
 
   var stateParams = {
     serverID : 'bbpce016',
@@ -66,6 +71,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('gzInitialization', gzInitializationMock);
     $provide.value('cameraManipulation', cameraManipulationMock);
     $provide.value('splash', splashServiceMock);
+    $provide.value('assetLoadingSplash', assetLoadingSplashMock);
     $provide.value('roslib', roslibMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('simulationState', simulationStateMock);
@@ -80,6 +86,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _$httpBackend_,
                               _cameraManipulation_,
                               _splash_,
+                              _assetLoadingSplash_,
                               _roslib_,
                               _simulationService_,
                               _simulationState_,
@@ -92,6 +99,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     httpBackend = _$httpBackend_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
+    assetLoadingSplash = _assetLoadingSplash_;
     roslib = _roslib_;
     simulationService = _simulationService_;
     simulationState = _simulationState_;
@@ -107,6 +115,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.scene.emitter = {};
     rootScope.gui = {};
     rootScope.gui.emitter = {};
+    rootScope.iface = {};
+    rootScope.iface.setAssetProgressCallback = jasmine.createSpy('setAssetProgressCallback');
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenPUT(/()/).respond(200);
@@ -127,6 +137,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     ];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(simulations[3]);
 
+    exampleProgressData = [
+      {id: 'test::id::mesh1', url: 'http://some_fake_url.com:1234/bla1.mesh', progress: 0, total: 1, done: false},
+      {id: 'test::id::mesh2', url: 'http://some_fake_url.com:1234/bla2.mesh', progress: 700, total: 1000, done: false},
+      {id: 'test::id::mesh3', url: 'http://some_fake_url.com:1234/bla3.mesh', progress: 200, total: 200, done: true}
+    ];
+    assetLoadingSplash.setProgress = jasmine.createSpy('setProgress');
+    assetLoadingSplashInstance = {};
+
     splashInstance = {                    // Create a mock object using spies
       close: jasmine.createSpy('modalInstance.close'),
       result: {
@@ -145,6 +163,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(console, 'log');
   }));
 
+  it('should set the assetLoadingSplash callback in gz3d', function(){
+    expect(scope.assetLoadingSplashScreen).toEqual(assetLoadingSplashInstance);
+    expect(assetLoadingSplash.open).toHaveBeenCalled();
+    expect(rootScope.iface.setAssetProgressCallback).toHaveBeenCalled();
+    rootScope.iface.setAssetProgressCallback.mostRecentCall.args[0](exampleProgressData);
+    expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
+  });
 
   it('should show the camera translate help div correctly', function() {
     expect(scope.showKeyboardControlInfoDiv).toBe(false);

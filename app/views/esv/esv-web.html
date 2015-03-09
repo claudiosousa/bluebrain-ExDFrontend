@@ -12,7 +12,7 @@
 
     <hr class="list-separator">
 
-    <div ng-repeat="(id, exp) in experiments | name_snippet:query" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(id);">
+    <div ng-repeat="(id, exp) in experiments | name_snippet:query | orderObjectBy:'name':false" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(id);">
       <div class="list-entry-container left-right" ng-class="{selected: (id == selectedIndex) || isHovered}">
         <div class="list-entry-container left-right list-entry-main">
           <div class="list-entry-left" ng-class="{selected: id == selectedIndex}">
@@ -52,7 +52,7 @@
                   <td>{{simul.serverID}}</td>
                   <td>{{owners[simul.owner]}}</td>
                   <td>{{simul.state}}</td>
-                  <td><a ng-click="joinExperiment('#/esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');" type="button" class="btn btn-default">Join »</a></td>
+                  <td><a ng-click="joinExperiment('#/esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');" type="button" class="btn btn-default" ng-disabled="simul.state === STATE.CREATED">Join »</a></td>
                 </tr>
                 </tbody>
               </table>

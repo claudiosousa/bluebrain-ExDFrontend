@@ -16,11 +16,27 @@
       return output;
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', 'simulationService', 'experimentSimulationService', function ($scope, $rootScope, $timeout, $window, simulationService,experimentSimulationService) {
+  .filter('orderObjectBy', function() {
+    return function(items, field, reverse) {
+      var filtered = [];
+      angular.forEach(items, function(item) {
+        filtered.push(item);
+      });
+      filtered.sort(function (a, b) {
+        return (a[field] > b[field] ? 1 : -1);
+      });
+      if(reverse) {
+        filtered.reverse();
+      }
+      return filtered;
+    };
+  })
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', 'simulationService', 'experimentSimulationService', 'STATE', function ($scope, $rootScope, $timeout, $window, simulationService,experimentSimulationService, STATE) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
     $rootScope.isServerAvailable = false;
+    $rootScope.STATE = STATE;
 
     $scope.setSelected = function(index) {
       if ($rootScope.startNewExperimentSelectedIndex !== -1) {

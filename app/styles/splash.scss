@@ -1,4 +1,4 @@
-  
+
 // Splash screen
 .splash {
     position: fixed;
@@ -16,7 +16,7 @@
     transition: opacity 0.5s, visibility 0s 0.5s;
     -webkit-transition: opacity 0.5s, visibility 0s 0.5s;
 }
- 
+
 .splash-open.splash {
     opacity: 1;
     visibility: visible;
@@ -34,13 +34,13 @@
     -webkit-transition: -webkit-transform 0.5s;
     transition: transform 0.5s;
 }
- 
- 
+
+
 .splash-open.splash .splash-inner {
     -webkit-transform: translate3d(0,0,0);
     transform: translate3d(0,0,0);
 }
- 
+
 .splash .splash-content {
     width: 660px;
     height: 350px;
@@ -50,6 +50,11 @@
     margin: -175px 0 0 -330px;
     color: #fff;
     font-size: 18px;
+}
+
+.splash .assetLoadingSplash-content {
+    @extend .splash-content;
+    top: 20%;
 }
 
 // splash spinning icon

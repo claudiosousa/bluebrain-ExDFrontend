@@ -93,7 +93,7 @@ THREE.ColladaLoader = function () {
 
 						if ( length == 0 ) {
 
-							length = request.getResponseHeader( "Content-Length" );
+							length = parseInt(request.getResponseHeader( "Content-Length" ));
 
 						}
 
