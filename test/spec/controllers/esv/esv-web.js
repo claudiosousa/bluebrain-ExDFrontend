@@ -21,6 +21,7 @@ describe('Controller: experimentCtrl', function () {
   experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
   experimentSimulationServiceMock.setInitializedCallback = jasmine.createSpy('setInitializedCallback');
   experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
+  experimentSimulationServiceMock.existsAvailableServer = jasmine.createSpy('existsAvailableServer');
 
   var timeoutMock = jasmine.createSpy('$timeout');
 
@@ -179,4 +180,10 @@ describe('Controller: experimentCtrl', function () {
       expect(name_snippetFilter(experimentTemplatesAugmented, 'dog')).toEqual(filteredExperimentTemplatesAugmented);
     }
   ));
+
+  it('should set isServerAvailable to true', function() {
+    rootScope.isServerAvailable = false;
+    experimentSimulationService.existsAvailableServer.mostRecentCall.args[0]();
+    expect(rootScope.isServerAvailable).toEqual(true);
+  });
 });
