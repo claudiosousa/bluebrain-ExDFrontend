@@ -7,6 +7,10 @@ describe('filters', function () {
 
     it('should convert seconds values to DD HH:MM:SS string',
       inject(function(timeDDHHMMSSFilter) {
+      /* true negative tests */
+      expect(timeDDHHMMSSFilter('')).toBe('-- --:--:--');
+      expect(timeDDHHMMSSFilter('invalid_value')).toBe('-- --:--:--');
+      /* true positive tests */
       expect(timeDDHHMMSSFilter(0)).toBe('00 00:00:00');
       expect(timeDDHHMMSSFilter(5)).toBe('00 00:00:05');
       expect(timeDDHHMMSSFilter(28)).toBe('00 00:00:28');

@@ -30,10 +30,10 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', 'bbpConfig', 'gzInitialization',
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 'gzInitialization',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
       'lightControl', 'screenControl', 'cameraManipulation', 'timeDDHHMMSSFilter', 'splash', 'roslib', 'STATE', 'ERROR',
-        function ($rootScope, $scope, $stateParams, $timeout, bbpConfig, gzInitialization,
+        function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, gzInitialization,
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
           lightControl, screenControl, cameraManipulation, timeDDHHMMSSFilter, splash, roslib, STATE, ERROR) {
 
@@ -56,9 +56,22 @@
         $scope.registerForStatusInformation();
       });
 
+      /* status messages are listened to here. A splash screen is opened to display progress messages. */
+      /* This is the case when closing an simulation for example. Loading is taken take of */
+      /* by a progressbar somewhere else. */
+      /* Timeout messages are displayed in the toolbar. */
       $scope.registerForStatusInformation = function() {
           var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
           var statusTopic = serverConfig.rosbridge.topics.status;
+          var callbackOnClose = function() {
+            /* avoid "$apply already in progress" error */
+            _.defer(function() { // jshint ignore:line
+              $scope.$apply(function() {
+                $scope.splashScreen = undefined;
+                $location.path("/");
+              });
+            });
+          };
 
           $scope.rosConnection = $scope.rosConnection || roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
           $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
@@ -66,18 +79,24 @@
           $scope.statusListener.unsubscribe(); // clear old subscriptions
           $scope.statusListener.subscribe(function (data) {
             var message = JSON.parse(data.data);
+            /* Progress messages */
             if (message !== undefined && message.progress !== undefined) {
-              $scope.splashScreen = $scope.splashScreen || splash.open();
+              $scope.splashScreen = $scope.splashScreen || splash.open(
+                  !message.progress.block_ui,
+                  (($scope.state === STATE.STOPPED) ? callbackOnClose : undefined));
               if (message.progress.done !== undefined && message.progress.done) {
-                splash.setHeadline('Finished!');
-                splash.setSubHeadline('');
-                $scope.splashScreen.close();
-                $scope.splashScreen = undefined;
+                splash.setMessage({ headline: 'Finished' });
+                /* if splash is a blocking modal (no button), then close it */
+                /* (else it is closed by the user on button click) */
+                if (!splash.showButton) {
+                  $scope.splashScreen.close();
+                  $scope.splashScreen = undefined;
+                }
               } else {
-                splash.setHeadline(message.progress.task);
-                splash.setSubHeadline(message.progress.subtask);
+                splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
               }
             }
+            /* Timeout messages */
             if (message !== undefined && message.timeout !== undefined) {
               $scope.simTimeoutText = message.timeout;
             }

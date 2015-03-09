@@ -8,6 +8,9 @@
   var module = angular.module('exdFrontendApp');
   module.service('splash', ['$modal', function ($modal) {
 
+    this.showButton = false;
+    this.callbackOnClose = undefined;
+
     // We have to work around a bit here: The controller of the HTML will register
     // a function as a callback. This function will then update the contents of the
     // HTML.
@@ -22,7 +25,9 @@
       }
     };
 
-    this.open = function () {
+    this.open = function (showButton, callbackOnClose) {
+      this.showButton = showButton;
+      this.callbackOnClose = callbackOnClose;
       this.modal = this.modal || $modal.open({
         backdrop: false,
         controller: 'ModalInstanceCtrl',
@@ -34,6 +39,10 @@
 
     this.close = function() {
       this.modal.close();
+      if (this.callbackOnClose !== undefined) {
+        this.callbackOnClose();
+      }
+      this.callbackOnClose = undefined;
     };
 
   }]);
@@ -42,6 +51,7 @@
     $scope.headline = '';
     $scope.subHeadline = '';
     $scope.progressInformation = '';
+    $scope.showButton = splash.showButton;
 
     splash.setObserver(function (message) {
       if (!message.headline && !message.subHeadline) {
@@ -51,7 +61,7 @@
 
       // Unfortunately we have to use _.defer and $apply here, but otherwise the contents in
       // the HTML do not get updated correctly. (We get a "digest already in progress" error.)
-      _.defer(function(){ // jshint ignore:line
+      _.defer(function() { // jshint ignore:line
         $scope.$apply(function () {
           $scope.headline = message.headline ? message.headline : '';
           $scope.subHeadline = message.subHeadline ? message.subHeadline : '';
@@ -60,6 +70,10 @@
       });
 
     });
+
+    $scope.close = function() {
+      splash.close();
+    };
 
   });
 

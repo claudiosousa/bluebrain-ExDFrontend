@@ -7,6 +7,9 @@
 
   module.filter('timeDDHHMMSS', function() {
     return function(input) {
+      if (typeof input != 'number') {
+        return '-- --:--:--';
+      }
       var timeValue = '';
       var timeSec = input;
       var timeDay = Math.floor(timeSec / 86400);
