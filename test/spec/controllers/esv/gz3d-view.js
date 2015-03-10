@@ -14,12 +14,15 @@ describe('Controller: Gz3dViewCtrl', function () {
     splash,
     simulationService,
     simulationState,
+    simulationControl,
     screenControl,
     roslib,
     splashInstance,
     exampleProgressData,
     assetLoadingSplash,
     simulations,
+    hbpUserDirectory,
+    fakeSimulationData,
     STATE;
 
   var simulationStatisticsMock = {};
@@ -35,6 +38,10 @@ describe('Controller: Gz3dViewCtrl', function () {
   simulationStateObject.update = jasmine.createSpy('update');
   simulationStateObject.state = jasmine.createSpy('state');
   var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateObject);
+
+  var simulationControlObject = {};
+  simulationControlObject.simulation = jasmine.createSpy('simulation');
+  var simulationControlMock = jasmine.createSpy('simulationControl').andReturn(simulationControlObject);
 
   var screenControlObject = {};
   screenControlObject.updateScreenColor = jasmine.createSpy('updateScreenColor');
@@ -61,6 +68,30 @@ describe('Controller: Gz3dViewCtrl', function () {
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
 
+  var hbpUserDirectoryPromiseObject = {};
+  hbpUserDirectoryPromiseObject.then = jasmine.createSpy('then');
+  var hbpUserDirectoryPromiseObject2 = {};
+  hbpUserDirectoryPromiseObject2.then = jasmine.createSpy('then');
+  var hbpUserDirectoryMock = {};
+  hbpUserDirectoryMock.getCurrentUser = jasmine.createSpy('getCurrentUser').andReturn(hbpUserDirectoryPromiseObject);
+  hbpUserDirectoryMock.get = jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2);
+
+  var currentUserInfo1234 = {
+    displayName: 'John Does',
+    id: '1234'
+  };
+
+  var currentUserInfo1234Hash = {
+    '1234': {
+      displayName: 'John Does'
+    }
+  };
+
+  var otherUserInfo4321 = {
+    displayName: 'John Dont',
+    id: '4321'
+  };
+
   var stateParams = {
     serverID : 'bbpce016',
     simulationID : 'mocked_simulation_id'
@@ -75,13 +106,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('roslib', roslibMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('simulationState', simulationStateMock);
+    $provide.value('simulationControl', simulationControlMock);
     $provide.value('screenControl', screenControlMock);
     $provide.value('$stateParams', stateParams);
+    $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
   }));
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
+                              _hbpUserDirectory_,
                               $timeout,
                               _$httpBackend_,
                               _cameraManipulation_,
@@ -90,11 +124,13 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _roslib_,
                               _simulationService_,
                               _simulationState_,
+                              _simulationControl_,
                               _screenControl_,
                               _$stateParams_,
                               _STATE_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
+    hbpUserDirectory = _hbpUserDirectory_;
     timeout = $timeout;
     httpBackend = _$httpBackend_;
     cameraManipulation = _cameraManipulation_;
@@ -103,6 +139,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     roslib = _roslib_;
     simulationService = _simulationService_;
     simulationState = _simulationState_;
+    simulationControl = _simulationControl_;
     screenControl = _screenControl_;
     stateParams = _$stateParams_;
     STATE = _STATE_;
@@ -158,6 +195,13 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     scope.activeSimulation = undefined;
 
+    fakeSimulationData = {
+      owner: '1234',
+      state: STATE.INITIALIZED,
+      simulationID: 1,
+      experimentID: 'FakeExperiment'
+    };
+
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
@@ -169,6 +213,29 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(rootScope.iface.setAssetProgressCallback).toHaveBeenCalled();
     rootScope.iface.setAssetProgressCallback.mostRecentCall.args[0](exampleProgressData);
     expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
+  });
+
+  it('should set the current User and checks if isOwner (1)', function() {
+    scope.isOwner = false;
+    hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
+    expect(scope.userName).toEqual(currentUserInfo1234.displayName);
+    expect(scope.userID).toEqual(currentUserInfo1234.id);
+    simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+    expect(scope.ownerID).toEqual(fakeSimulationData.owner);
+    expect(scope.isOwner).toBe(true);
+
+    hbpUserDirectoryPromiseObject2.then.mostRecentCall.args[0](currentUserInfo1234Hash);
+    expect(scope.owner).toEqual(currentUserInfo1234.displayName);
+  });
+
+  it('should set the current User and checks if isOwner (2)', function() {
+    scope.isOwner = true;
+    hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](otherUserInfo4321);
+    expect(scope.userName).toEqual(otherUserInfo4321.displayName);
+    expect(scope.userID).toEqual(otherUserInfo4321.id);
+    simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+    expect(scope.ownerID).toEqual(fakeSimulationData.owner);
+    expect(scope.isOwner).toBe(false);
   });
 
   it('should show the camera translate help div correctly', function() {
@@ -309,6 +376,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     // first the false case
     var show = false;
     var event = {};
+    scope.isOwner = true;
     scope.toggleScreenChangeMenu(show, event);
     expect(scope.isContextMenuShown).toBe(false);
     expect(rootScope.scene.radialMenu.showing).toBe(false);
@@ -326,6 +394,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.contextMenuTop).toEqual(event.clientY);
     expect(scope.contextMenuLeft).toEqual(event.clientX);
     expect(scope.selectedEntity).toEqual(rootScope.scene.selectedEntity);
+
+    // now if you are not the owner
+    scope.isOwner = false;
+    scope.show = true;
+    scope.isContextMenuShown = false;
+    spyOn(scope, 'getModelUnderMouse');
+    scope.toggleScreenChangeMenu(show, event);
+    expect(scope.getModelUnderMouse).not.toHaveBeenCalled();
   });
 
   it('should set the real time', function() {

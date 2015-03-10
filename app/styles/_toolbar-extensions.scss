@@ -28,15 +28,24 @@
 }
 
 .hbp-toolbar-large-tool {
-    display: table-cell;
-    height: 42px;
-    float: left;
-    padding-left: 10px;
-    padding-right: 5px;
-    width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    border-right: 1px solid #aaaaaa;
+  display: table-cell;
+  height: 42px;
+  float: left;
+  padding-left: 10px;
+  padding-right: 5px;
+  width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 1px solid #aaaaaa;
+ }
+
+.hbp-toolbar-large-tool-two-lines {
+  @extend .hbp-toolbar-large-tool;
+  line-height: 15px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: smaller;
+  font-weight: bold;
 }
 
 .hbp-toolbar-large-action {

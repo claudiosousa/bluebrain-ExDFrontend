@@ -30,11 +30,15 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 'gzInitialization',
+
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 'gzInitialization', 'hbpUserDirectory',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
+
       'lightControl', 'screenControl', 'cameraManipulation', 'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, gzInitialization,
+
+        function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, gzInitialization, hbpUserDirectory,
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
+
           lightControl, screenControl, cameraManipulation, timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
@@ -50,6 +54,21 @@
 
       $scope.state = STATE.UNDEFINED;
       $scope.STATE = STATE;
+      $scope.isOwner = false;
+
+      hbpUserDirectory.getCurrentUser().then(function (profile) {
+        $scope.userName = profile.displayName;
+        $scope.userID = profile.id;
+        simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
+          $scope.ownerID = data.owner;
+          hbpUserDirectory.get([data.owner]).then(function (profile)
+          {
+            $scope.owner = profile[Object.keys(profile)[0]].displayName;
+          });
+          $scope.isOwner = ($scope.ownerID === $scope.userID);
+        });
+      });
+
 
       $scope.isInitialized = false;
 
@@ -72,6 +91,7 @@
             /* avoid "$apply already in progress" error */
             _.defer(function() { // jshint ignore:line
               $scope.$apply(function() {
+
                 $location.path("/");
               });
             });
@@ -100,6 +120,7 @@
                 /* if splash is a blocking modal (no button), then close it */
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {
+
                   splash.close();
                   $scope.splashScreen = undefined;
                 }
@@ -214,29 +235,32 @@
 
       // this menu is currently only displayed if the model name contains "screen"
       $scope.toggleScreenChangeMenu = function (show, event) {
-        if (show) {
-          if (!$scope.isContextMenuShown) {
-            var model = $scope.getModelUnderMouse(event);
-            // scene.radialMenu.showing is a property of GZ3D that was originally used to display a radial menu, We are
-            // reusing it for our context menu. The reason is that this variables disables or enables the controls of
-            // scene in the render loop.
-            $rootScope.scene.radialMenu.showing = $scope.isContextMenuShown =
-              (model &&
-               model.name !== '' &&
-               model.name !== 'plane' &&
-               model.name.indexOf('screen') !== -1 &&
-              $rootScope.scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
+        if($scope.isOwner) {
+          if (show) {
+            if (!$scope.isContextMenuShown) {
+              var model = $scope.getModelUnderMouse(event);
+              // scene.radialMenu.showing is a property of GZ3D that was originally used to display a radial menu, We are
+              // reusing it for our context menu. The reason is that this variables disables or enables the controls of
+              // scene in the render loop.
+              $rootScope.scene.radialMenu.showing = $scope.isContextMenuShown =
+                (model &&
+                model.name !== '' &&
+                model.name !== 'plane' &&
+                model.name.indexOf('screen') !== -1 &&
+                $rootScope.scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
 
-            $scope.contextMenuTop = event.clientY;
-            $scope.contextMenuLeft = event.clientX;
-            $scope.selectedEntity = $rootScope.scene.selectedEntity;
+
+              $scope.contextMenuTop = event.clientY;
+              $scope.contextMenuLeft = event.clientX;
+              $scope.selectedEntity = $rootScope.scene.selectedEntity;
+            }
+          }
+          else {
+            $scope.isContextMenuShown = false;
+            $rootScope.scene.radialMenu.showing = false;
           }
         }
-        else
-        {
-          $scope.isContextMenuShown = false;
-          $rootScope.scene.radialMenu.showing = false;
-        }
+
       };
 
       // Lights management

@@ -95,13 +95,13 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATE.STARTED)" ng-show="(state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" ng-click="updateSimulation(STATE.STARTED)" ng-show="(state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATE.PAUSED)" ng-show="(state === STATE.STARTED)">
+            <div ng-if="isOwner"class="hbp-toolbar-action" ng-click="updateSimulation(STATE.PAUSED)" ng-show="(state === STATE.STARTED)">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div class="hbp-toolbar-action" ng-click="updateSimulation(STATE.STOPPED)" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED)">
+            <div ng-if="isOwner"class="hbp-toolbar-action" ng-click="updateSimulation(STATE.STOPPED)" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div ng-show="(state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED)">
@@ -119,7 +119,7 @@
                   </div>
                 </div>
               </div>
-              <div class="hbp-toolbar-large-tool hidden-xs">
+              <div ng-if="isOwner" class="hbp-toolbar-large-tool hidden-xs">
                 <i class="fa fa-lightbulb-o"></i>
                 <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition"
                        ng-change="updateLightIntensities(sliderPosition)"/>
@@ -155,9 +155,10 @@
                 </div>
               </div>
               <div class="hbp-toolbar-action" ng-click="toggleSpikeTrain()" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
-                <img src="img/esv/spiketrain_logo.png"></img>
+                <img src="img/esv/spiketrain_logo.png">
               </div>
             </div>
+            <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines">View-Only Mode<br/>Owner: {{owner}}</div>
           </div>
         </div>
         <!-- overlay -->
