@@ -53,9 +53,9 @@ var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({}); 
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
-  
+
 
   var stateParams = {
     serverID : 'bbpce016',
@@ -169,6 +169,14 @@ var roslibMock = {};
     scope.state = STATE.UNDEFINED;
     simulationStateObject.update.mostRecentCall.args[2]({state: STATE.PAUSED});
     expect(scope.state).toBe(STATE.PAUSED);
+  });
+
+  it('should make the current state available and call registerForStatusInformation', function() {
+    spyOn(scope, 'registerForStatusInformation');
+    scope.state = STATE.UNDEFINED;
+    simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
+    expect(scope.state).toEqual(STATE.STARTED);
+    expect(scope.registerForStatusInformation).toHaveBeenCalled();
   });
 
   it('should test registerForStatusInformation', function() {

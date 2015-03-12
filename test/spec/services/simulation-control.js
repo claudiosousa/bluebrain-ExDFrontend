@@ -256,7 +256,6 @@ describe('Services: experimentSimulationService', function () {
 
   // Mock simulationServices
   var simulationServiceObject = {};
-  simulationServiceObject.simulations = jasmine.createSpy('simulations');
   var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
 
   var roslibMock = {};
@@ -296,6 +295,7 @@ describe('Services: experimentSimulationService', function () {
       { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, serverID : 'bbpce016'}
     ];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[3]);
+    simulationServiceObject.simulations = jasmine.createSpy('simulations');
 
     experimentTemplates = {
       '1': {
@@ -429,4 +429,26 @@ describe('Services: experimentSimulationService', function () {
     expect(messageCallback).not.toHaveBeenCalled();
   });
 
+  it('should check for an available Server', function(){
+    simulationService.reset();
+    var isAvailableCallback = jasmine.createSpy('isAvailableCallback');
+    experimentSimulationService.existsAvailableServer(isAvailableCallback);
+
+    expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
+    expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
+
+    expect(simulationServiceObject.simulations).toHaveBeenCalled();
+
+    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
+    simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
+    expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
+    expect(isAvailableCallback).toHaveBeenCalled();
+
+
+    isAvailableCallback.reset();
+    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STARTED, serverID : 'bbpce016'});
+    simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
+    expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
+    expect(isAvailableCallback).not.toHaveBeenCalled();
+  });
 });

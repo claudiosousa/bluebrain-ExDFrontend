@@ -222,7 +222,8 @@ module.exports = function(grunt) {
                     '<%= yeoman.dist %>/styles/**/*.css',
                     '<%= yeoman.dist %>/img/**/*.{png,jpg,jpeg,gif,webp,svg}',
                     '<%= yeoman.dist %>/styles/fonts/*',
-                    '!<%= yeoman.dist %>/img/common/preview*.png'
+                    '!<%= yeoman.dist %>/img/common/preview*.png',
+                    '!<%= yeoman.dist %>/img/esv/keyboard-control.svg'
                 ]
             }
         },

@@ -20,6 +20,7 @@
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
+    $rootScope.isServerAvailable = false;
 
     $scope.setSelected = function(index) {
       if ($rootScope.startNewExperimentSelectedIndex !== -1) {
@@ -70,5 +71,11 @@
       $scope.experiments = data;
       $scope.owners = simulationService().owners;
     });
+
+    var setIsServerAvailable = function(){
+      $rootScope.isServerAvailable = true;
+    };
+    experimentSimulationService.existsAvailableServer(setIsServerAvailable);
+
   }]);
 }());

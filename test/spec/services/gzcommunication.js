@@ -68,6 +68,18 @@ describe('setting up the simulation statistics', function () {
 
     expect(simulationTimeCallback).toHaveBeenCalledWith(19394);
     expect(realTimeCallback).toHaveBeenCalledWith(19459);
+
+    // Check for error handling
+    simulationStatistics.setSimulationTimeCallback(undefined);
+    console.error.reset();
+    registeredCallbackFunction(message);
+    expect(console.error.callCount).toBe(2);
+
+    // Check for error handling
+    simulationStatistics.setRealTimeCallback(undefined);
+    console.error.reset();
+    registeredCallbackFunction(message);
+    expect(console.error.callCount).toBe(2);
   });
 });
 

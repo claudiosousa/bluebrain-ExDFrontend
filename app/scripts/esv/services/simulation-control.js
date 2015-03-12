@@ -198,6 +198,20 @@
       });
     };
 
+    // Checks if there is an available Server.
+    var existsAvailableServer = function(isAvailableCallback){
+      var serverIDs = Object.keys(servers);
+      angular.forEach(serverIDs, function(serverID, index){
+        var serverURL = servers[serverID].gzweb['nrp-services'];
+        simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
+          var activeSimulation = simulationService().getActiveSimulation(data);
+          if (activeSimulation === undefined) {
+            isAvailableCallback();
+          }
+        });
+      });
+    };
+
     // TODO improve this code (keyword: semaphore!)
     var startNewExperiments = function(id){
       var serverIDs = Object.keys(servers);
@@ -247,10 +261,11 @@
     return {
       getExperiments: getExperiments,
       augmentExperiments: augmentExperiments,
-      startNewExperiments: startNewExperiments,
-      setInitializedCallback: setInitializedCallback,
       registerForStatusInformation: registerForStatusInformation,
-      launchExperimentOnServer: launchExperimentOnServer
+      existsAvailableServer: existsAvailableServer,
+      startNewExperiments: startNewExperiments,
+      launchExperimentOnServer: launchExperimentOnServer,
+      setInitializedCallback: setInitializedCallback
     };
 
   }]);
