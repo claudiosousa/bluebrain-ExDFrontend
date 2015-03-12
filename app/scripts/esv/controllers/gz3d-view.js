@@ -64,10 +64,10 @@
           var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
           var statusTopic = serverConfig.rosbridge.topics.status;
           var callbackOnClose = function() {
+            $scope.splashScreen = undefined;
             /* avoid "$apply already in progress" error */
             _.defer(function() { // jshint ignore:line
               $scope.$apply(function() {
-                $scope.splashScreen = undefined;
                 $location.path("/");
               });
             });
@@ -79,6 +79,11 @@
           $scope.statusListener.unsubscribe(); // clear old subscriptions
           $scope.statusListener.subscribe(function (data) {
             var message = JSON.parse(data.data);
+            /* State messages */
+            /* Manage before other since others may depend on state changes */
+            if (message !== undefined && message.state !== undefined) {
+              $scope.state = message.state;
+            }
             /* Progress messages */
             if (message !== undefined && message.progress !== undefined) {
               $scope.splashScreen = $scope.splashScreen || splash.open(
@@ -89,7 +94,7 @@
                 /* if splash is a blocking modal (no button), then close it */
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {
-                  $scope.splashScreen.close();
+                  splash.close();
                   $scope.splashScreen = undefined;
                 }
               } else {

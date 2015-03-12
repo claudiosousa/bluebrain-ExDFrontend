@@ -17,7 +17,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     screenControl,
     roslib,
     splashInstance,
-    splashInstance2,
     simulations,
     STATE;
 
@@ -49,7 +48,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   cameraManipulationMock.lookAtOrigin = jasmine.createSpy('lookAtOrigin');
   cameraManipulationMock.resetToInitialPose = jasmine.createSpy('resetToInitialPose');
 
-var roslibMock = {};
+  var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
@@ -135,7 +134,6 @@ var roslibMock = {};
       }
     };
 
-    splashInstance2 = {};
     splashServiceMock.open = jasmine.createSpy('open').andReturn(splashInstance);
     splashServiceMock.setMessage = jasmine.createSpy('setMessage');
     splashServiceMock.close = jasmine.createSpy('close');
@@ -183,21 +181,39 @@ var roslibMock = {};
     scope.registerForStatusInformation();
     expect(roslib.getOrCreateConnectionTo).toHaveBeenCalled();
     expect(roslib.createStringTopic).toHaveBeenCalled();
-    expect(scope.rosConnection).not.toBe(undefined);
-    expect(scope.statusListener).not.toBe(undefined);
+    expect(scope.rosConnection).toBeDefined();
+    expect(scope.statusListener).toBeDefined();
     expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
     var callbackFunction = returnedConnectionObject.subscribe.mostRecentCall.args[0];
-    // test open splash screen
+    // test state change
+    scope.state = STATE.STARTED;
+    callbackFunction({ data: '{"state": "'+STATE.STOPPED+'"}'});
+    expect(scope.state).toBe(STATE.STOPPED);
+    // test open splash screen with callbackOnClose
     scope.state = STATE.STOPPED;
     callbackFunction({ data: '{"progress": { "block_ui": "False", "task":"Task1", "subtask":"Subtask1"}}'});
     expect(splash.open).toHaveBeenCalled();
     var callbackOnClose = splash.open.mostRecentCall.args[1];
     expect(callbackOnClose).toBeDefined();
     expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Task1', subHeadline: 'Subtask1' });
-    // test "done"
+    // test open splash screen without callbackOnClose
+    scope.splashScreen = undefined;
+    scope.state = STATE.INITIALIZED;
+    callbackFunction({ data: '{"progress": { "block_ui": "False", "task":"Task1", "subtask":"Subtask1"}}'});
+    callbackOnClose = splash.open.mostRecentCall.args[1];
+    expect(callbackOnClose).not.toBeDefined();
+    // test "done" without close
+    splash.showButton = true;
     callbackFunction({ data: '{"progress": { "block_ui": "False", "done":"True" }}'});
     expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Finished' });
-    splash.close.andCallThrough();
+    expect(splash.close).not.toHaveBeenCalled();
+    // test "done" in IF path (with close)
+    scope.state = STATE.STOPPED;
+    scope.splashScreen = undefined;
+    splash.close.reset();
+    splash.showButton = false;
+    callbackFunction({ data: '{"progress": { "block_ui": "True", "done":"True" }}'});
+    expect(splash.close).toHaveBeenCalled();
     // test "timeout"
     callbackFunction({ data: '{"timeout": 264}'});
     expect(scope.simTimeoutText).toBe(264);
