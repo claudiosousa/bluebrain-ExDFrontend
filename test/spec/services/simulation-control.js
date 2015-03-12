@@ -34,23 +34,23 @@ describe('Services: simulation-services', function () {
     STATE = _STATE_;
 
     simulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED},
+      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, owner: '1234'},
       { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED},
-      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED},
-      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED},
+      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner'},
+      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321'},
       { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED},
       { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED}
+      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, owner: 'invalid-id'}
     ];
 
     returnSimulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, serverID : 'bbpce016'},
+      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, owner: '1234', serverID : 'bbpce016'},
       { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, serverID : 'bbpce016'},
-      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, serverID : 'bbpce016'},
+      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner', serverID : 'bbpce016'},
+      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321', serverID : 'bbpce016'},
       { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED, serverID : 'bbpce016'},
       { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, serverID : 'bbpce016'}
+      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, owner: 'invalid-id', serverID : 'bbpce016'}
     ];
 
     experimentTemplates = {
@@ -77,12 +77,29 @@ describe('Services: simulation-services', function () {
     httpBackend.whenPUT(/()/).respond(200);
     httpBackend.whenPOST(/()/).respond(200);
     spyOn(console, 'error');
-    var user = {
-      displayName: 'John Doe'
+    var userInfo1234 = {
+      displayName: 'John Does'
     };
-    spyOn(hbpUserDirectory, 'get').andReturn(bbpStubFactory.promise({
-      args: [{'john': user}]
-    }));
+    var userInfo4321 = {
+      displayName: 'John Dont'
+    };
+    spyOn(hbpUserDirectory, 'get').andCallFake(function(ownerID) {
+      var returnedPromise;
+      switch(ownerID[0]) {
+        case 'default-owner':
+          returnedPromise = bbpStubFactory.promise({args: [{}]});
+          break;
+        case '1234':
+          returnedPromise = bbpStubFactory.promise({args: [{'1234': userInfo1234}]});
+          break;
+        case '4321':
+          returnedPromise = bbpStubFactory.promise({args: [{'4321': userInfo4321}]});
+          break;
+        default:
+          returnedPromise = bbpStubFactory.promise({args: [{}]});
+      }
+      return returnedPromise;
+    });
   }));
 
 
@@ -103,7 +120,10 @@ describe('Services: simulation-services', function () {
     });
     httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
     httpBackend.flush();
-    expect(simulationService().owners.john).toBe('John Doe');
+    expect(simulationService().owners['1234']).toBe('John Does');
+    expect(simulationService().owners['4321']).toBe('John Dont');
+    expect(simulationService().owners['default-owner']).toBe('Unknown');
+    expect(simulationService().owners['invalid-id']).toBe('Unknown');
   });
 
   it('should attach a filter function and filter simulations according to state and index in the list', function() {

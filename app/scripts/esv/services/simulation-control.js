@@ -21,7 +21,9 @@
           element.serverID = serverID;
           hbpUserDirectory.get([element.owner]).then(function (profile)
           {
-            owners[Object.keys(profile)[0]] = profile[Object.keys(profile)[0]].displayName;
+            var validOwnerID = Object.keys(profile)[0];// Should be element.owner if it is a valid ID, undefined otherwise
+            var userName = validOwnerID !== undefined ? profile[validOwnerID].displayName : 'Unknown';
+            owners[element.owner] = userName;
           });
         });
         return data;
