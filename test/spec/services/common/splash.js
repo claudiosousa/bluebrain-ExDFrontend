@@ -44,8 +44,20 @@
     });
 
     it('should test that close is not throwing an exception when open was called', function() {
-      splash.open();
+      var callbackHasBeenCalled = false;
+      splash.open(false, function() {
+        callbackHasBeenCalled = true;
+      });
       splash.close();
+      // test that the callback has been called
+      expect(callbackHasBeenCalled).toBe(true);
+
+      callbackHasBeenCalled = false;
+      splash.open(true, function() {
+        callbackHasBeenCalled = true;
+      });
+      splash.close();
+      expect(callbackHasBeenCalled).toBe(true);
     });
 
   });
@@ -121,6 +133,13 @@
       expect(scope.progressInformation).toEqual('');
 
     });
+
+    it('should call the splash close function on close', function () {
+      spyOn(splash, 'close');
+      scope.close();
+      expect(splash.close).toHaveBeenCalled();
+    });
+
 
   });
 }());
