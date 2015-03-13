@@ -253,7 +253,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     // first test whether the state given as a parameter is passed
     scope.updateSimulation(STATE.STARTED);
-    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {state: STATE.STARTED}, jasmine.any(Function));
+    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, 
+      {state: STATE.STARTED}, jasmine.any(Function), jasmine.any(Function));
 
     // second test whether the callback function does what it should do
     scope.state = STATE.UNDEFINED;

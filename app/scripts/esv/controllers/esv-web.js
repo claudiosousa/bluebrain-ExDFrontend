@@ -54,6 +54,11 @@
       $rootScope.startNewExperimentSelectedIndex = index;
     };
 
+    $scope.setProgressbarInvisible = function() {
+      $rootScope.joinSelectedIndex = -1;
+      $rootScope.startNewExperimentSelectedIndex = -1;
+    };
+
     $scope.setProgressMessage = function(msg){
       // $timeout is used to use apply() even if apply is already in progress
       $timeout(function(){
@@ -65,7 +70,7 @@
     };
 
     $scope.startNewExperiment = function(id) {
-      experimentSimulationService.startNewExperiments(id);
+      experimentSimulationService.startNewExperiments(id, $scope.setProgressbarInvisible);
     };
 
     $scope.joinExperiment = function(url) {
@@ -73,7 +78,6 @@
       // Due to reconnection issues in gz3d, we do force a reload here.
       $window.location.href = url;
       $window.location.reload();
-
     };
 
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);

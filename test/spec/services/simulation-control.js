@@ -20,7 +20,9 @@ describe('Services: simulation-services', function () {
   var httpBackend;
   var simulations, returnSimulations, experimentTemplates, experimentTemplatesAugmented;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_, _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_, _lightControl_, _screenControl_, _STATE_) {
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_, 
+      _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_, 
+      _lightControl_, _screenControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
     hbpUserDirectory = _hbpUserDirectory_;
@@ -148,10 +150,6 @@ describe('Services: simulation-services', function () {
 
     simulations[1].state = STATE.STOPPED;
     simulations[5].state = STATE.STOPPED;
-    expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[6]);
-
-    simulations[0].state = STATE.STOPPED;
-    simulations[6].state = STATE.STOPPED;
     expect(simulationService().getActiveSimulation(simulations)).toBe(undefined);
   });
 
@@ -225,12 +223,14 @@ describe('Services: experimentSimulationService', function () {
     roslib,
     STATE;
 
+
   // load the service to test and mock the necessary service
   beforeEach(module('simulationControlServices'));
 
   var httpBackend;
   var returnSimulations, experimentTemplates, experimentTemplatesAugmented;
 
+  var bbpConfigMock = {};
   var bbpConfigString =
   {
     'bbpce014': {
@@ -250,8 +250,6 @@ describe('Services: experimentSimulationService', function () {
       }
     }
   };
-
-  var bbpConfigMock = {};
   bbpConfigMock.get = jasmine.createSpy('get').andReturn(bbpConfigString);
 
   // Mock simulationServices
@@ -267,20 +265,21 @@ describe('Services: experimentSimulationService', function () {
   var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateMockObject);
 
   beforeEach(module(function ($provide) {
-    $provide.value('bbpConfig', bbpConfigMock);
+    $provide.constant('bbpConfig', bbpConfigMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('roslib', roslibMock);
     $provide.value('simulationGenerator', simulationGeneratorMock);
     $provide.value('simulationState', simulationStateMock);
   }));
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationState_, _simulationService_, _simulationGenerator_, _experimentSimulationService_, _bbpConfig_, _roslib_, _STATE_) {
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_, 
+      _simulationState_, _experimentSimulationService_, _bbpConfig_, _roslib_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
-    simulationState = _simulationState_;
     simulationService = _simulationService_;
     simulationGenerator = _simulationGenerator_;
     experimentSimulationService = _experimentSimulationService_;
+    simulationState = _simulationState_;
     bbpConfig = _bbpConfig_;
     roslib = _roslib_;
     STATE = _STATE_;
@@ -451,4 +450,115 @@ describe('Services: experimentSimulationService', function () {
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
     expect(isAvailableCallback).not.toHaveBeenCalled();
   });
+});
+
+
+describe('Services: error handling', function () {
+  var httpBackend;
+  var serverError, simulationService, simulationControl;
+  var simulationGenerator, simulationState, experimentSimulationService;
+  var lightControl, screenControl;
+
+  beforeEach(module('simulationControlServices'));
+
+  var roslibMock = {};
+  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn({ subscribe: function(){} });
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+
+  var serverErrorMock = jasmine.createSpy('serverError');
+  beforeEach(module(function ($provide) {
+    $provide.value('serverError', serverErrorMock);
+    $provide.value('roslib', roslibMock);
+  }));
+
+  beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_, 
+     _simulationGenerator_, _simulationState_, _experimentSimulationService_, _lightControl_, _screenControl_, _serverError_){
+
+    httpBackend = $httpBackend;
+    serverError = _serverError_;
+    simulationService = _simulationService_;
+    simulationControl = _simulationControl_;
+    simulationGenerator = _simulationGenerator_;
+    simulationState = _simulationState_;
+    experimentSimulationService = _experimentSimulationService_;
+    lightControl = _lightControl_;
+    screenControl = _screenControl_;
+    httpBackend.whenPUT(/\/simulation/).respond(500);
+  }));
+
+  afterEach(function() {
+     httpBackend.verifyNoOutstandingExpectation();
+     httpBackend.verifyNoOutstandingRequest();
+   });
+
+  it('should call once serverError for every failing service', function() {
+    var serverURL = 'http://bbpce014.epfl.ch:8080';
+    var serverID = 'bbpce014';
+    var response;
+    httpBackend.whenGET(/\/simulation/).respond(400);
+
+    simulationService({serverURL: serverURL, serverID: serverID}).simulations();
+    httpBackend.expectGET(serverURL + '/simulation');
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(1);
+    response = serverError.mostRecentCall.args[0];
+    expect(response.status).toBe(400);
+    serverError.reset();
+
+    //Ignore this warning because of the sim_id
+    /*jshint camelcase: false */
+    var simulationID = { sim_id: '0'};
+    simulationControl(serverURL).simulation(simulationID);
+    httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id);
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(1);
+    response = serverError.mostRecentCall.args[0];
+    expect(response.status).toBe(400);
+    serverError.reset();
+
+    simulationState(serverURL).state(simulationID);
+    httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id + '/state');
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(1);
+    response = serverError.mostRecentCall.args[0];
+    expect(response.status).toBe(400);
+    serverError.reset();
+
+    simulationGenerator(serverURL).create();
+    httpBackend.expectPOST(serverURL + '/simulation').respond(500);
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(1);
+    response = serverError.mostRecentCall.args[0];
+    expect(response.status).toBe(500);
+    serverError.reset();
+
+    lightControl(serverURL).updateLight(simulationID, {});
+    httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/light', {});
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(1);
+    response = serverError.mostRecentCall.args[0];
+    expect(response.status).toBe(500);
+    serverError.reset();
+
+    screenControl(serverURL).updateScreenColor(simulationID, {});
+    httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction', {});
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(1);
+    response = serverError.mostRecentCall.args[0];
+    expect(response.status).toBe(500);
+    serverError.reset();
+  });
+ 
+  it('should test the error callback when launching an experiment fails', function() {
+    var errorCallback = jasmine.createSpy('errorCallback');
+    httpBackend.whenPOST(/()/).respond({simulationID: '0'}, 200);
+    httpBackend.whenGET(/()/).respond(200);
+    experimentSimulationService.getExperiments(function(){}, function(){});
+    httpBackend.flush();
+    experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014', errorCallback);
+    httpBackend.flush();
+    expect(errorCallback.callCount).toBe(1);
+    expect(serverError.callCount).toBe(1);
+  });
+
 });

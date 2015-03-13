@@ -136,7 +136,7 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
     var newExperimentString = 'fubar';
     scope.startNewExperiment(newExperimentString);
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString);
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, scope.setProgressbarInvisible);
   });
 
   it('should join an experiment', function(){

@@ -29,7 +29,8 @@
                                    'simulationControlServices',
                                    'ncdModule',
                                    'exdFrontendApp.Constants',
-                                   'exdFrontendFilters'])
+                                   'exdFrontendFilters',
+                                   'nrpErrorHandlers'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
