@@ -90,7 +90,9 @@
                   !message.progress.block_ui,
                   (($scope.state === STATE.STOPPED) ? callbackOnClose : undefined));
               if (message.progress.done !== undefined && message.progress.done) {
+                splash.spin = false;
                 splash.setMessage({ headline: 'Finished' });
+                
                 /* if splash is a blocking modal (no button), then close it */
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {

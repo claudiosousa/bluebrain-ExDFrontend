@@ -10,6 +10,7 @@
 
     this.showButton = false;
     this.callbackOnClose = undefined;
+    this.spin = true;
 
     // We have to work around a bit here: The controller of the HTML will register
     // a function as a callback. This function will then update the contents of the
@@ -53,6 +54,7 @@
     $scope.progressInformation = '';
     $scope.showButton = splash.showButton;
 
+
     splash.setObserver(function (message) {
       if (!message.headline && !message.subHeadline) {
         $log.error('Wrong message format!');
@@ -66,6 +68,7 @@
           $scope.headline = message.headline ? message.headline : '';
           $scope.subHeadline = message.subHeadline ? message.subHeadline : '';
           $scope.progressInformation = message.progressInformation ? message.progressInformation : '';
+          $scope.spin = splash.spin;
         });
       });
 

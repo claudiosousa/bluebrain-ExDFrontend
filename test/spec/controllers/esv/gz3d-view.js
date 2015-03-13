@@ -204,9 +204,11 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(callbackOnClose).not.toBeDefined();
     // test "done" without close
     splash.showButton = true;
+    splash.spin = true;
     callbackFunction({ data: '{"progress": { "block_ui": "False", "done":"True" }}'});
     expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Finished' });
     expect(splash.close).not.toHaveBeenCalled();
+    expect(splash.spin).toBe(false);
     // test "done" in IF path (with close)
     scope.state = STATE.STOPPED;
     scope.splashScreen = undefined;
