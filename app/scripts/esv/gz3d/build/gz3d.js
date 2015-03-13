@@ -2868,9 +2868,8 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           parent.scale.z = geom.mesh.scale.z;
         }
 
-        var modelUri = uriPath + '/' + modelName;
-        // Use coarse version on touch devices
-        if (modelUri.indexOf('.dae') !== -1 && isTouchDevice)
+        var modelUri = uriPath + '/' + modelName; 
+        if (modelUri.indexOf('.dae') !== -1) // Modified for HBP, we do use coarse models all the time
         {
           modelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
 
