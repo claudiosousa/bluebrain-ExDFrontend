@@ -22,6 +22,10 @@
       modal = _$modal_;
     }));
 
+    it('should set spin to true', function () {
+      expect(splash.spin).toBe(true);
+    });
+
     it('should call modal open', function () {
       spyOn(modal, 'open');
       splash.open();
@@ -29,13 +33,11 @@
     });
 
     it('should call the observer when setting a message', function () {
-      var observerHasBeenCalled = false;
+      var callbackOnMessage = jasmine.createSpy('callbackOnMessage');
       splash.open();
-      splash.setObserver(function () {
-        observerHasBeenCalled = true;
-      });
+      splash.setObserver(callbackOnMessage);
       splash.setMessage(exampleMessage);
-      expect(observerHasBeenCalled).toBe(true);
+      expect(callbackOnMessage).toHaveBeenCalled();
     });
 
     it('should do nothing without an observer when setting a message', function () {
@@ -44,20 +46,14 @@
     });
 
     it('should test that close is not throwing an exception when open was called', function() {
-      var callbackHasBeenCalled = false;
-      splash.open(false, function() {
-        callbackHasBeenCalled = true;
-      });
+      var callbackOnClose = jasmine.createSpy('callbackOnClose');
+      splash.open(false, callbackOnClose);
       splash.close();
-      // test that the callback has been called
-      expect(callbackHasBeenCalled).toBe(true);
-
-      callbackHasBeenCalled = false;
-      splash.open(true, function() {
-        callbackHasBeenCalled = true;
-      });
+      expect(callbackOnClose).toHaveBeenCalled();
+            
+      splash.open(true, callbackOnClose);
       splash.close();
-      expect(callbackHasBeenCalled).toBe(true);
+      expect(callbackOnClose.calls.length).toBe(2);
     });
 
   });
@@ -118,13 +114,16 @@
       expect(scope.headline).toEqual(exampleMessage.headline);
       expect(scope.subHeadline).toEqual(exampleMessage.subHeadline);
       expect(scope.progressInformation).toEqual(exampleMessage.progressInformation);
+      expect(scope.spin).toBe(true);
 
       var shortButWellDefinedMessageWithHeadline = { headline: 'some_fake_headline'};
+      splash.spin = false;
       prepareSpiesAndSetUpTest(shortButWellDefinedMessageWithHeadline);
 
       expect(scope.headline).toEqual(shortButWellDefinedMessageWithHeadline.headline);
       expect(scope.subHeadline).toEqual('');
       expect(scope.progressInformation).toEqual('');
+      expect(scope.spin).toBe(false);
 
       var shortButWellDefinedMessageWithSubHeadline = { subHeadline: 'some_fake_sub_headline'};
       prepareSpiesAndSetUpTest(shortButWellDefinedMessageWithSubHeadline);
