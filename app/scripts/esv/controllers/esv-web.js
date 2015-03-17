@@ -6,29 +6,24 @@
   angular.module('exdFrontendApp')
   .filter('name_snippet', function() {
     return function (input, filter) {
-      var output = {};
+      var output = [];
       var reFilter = new RegExp(filter, 'i');
-      angular.forEach(input, function (exp, id) {
+      angular.forEach(input, function (exp) {
         if (exp.name.search(reFilter) !== -1 || exp.snippet.search(reFilter) !== -1 ) {
-          output[id] = exp;
+          output.push(exp);
         }
       });
       return output;
     };
   })
-  .filter('orderObjectBy', function() {
-    return function(items, field, reverse) {
-      var filtered = [];
-      angular.forEach(items, function(item) {
-        filtered.push(item);
+  .filter('convertToArray', function() {
+    return function(items) {
+      var output = [];
+      angular.forEach(items, function(item, id) {
+        item.id = id;
+        output.push(item);
       });
-      filtered.sort(function (a, b) {
-        return (a[field] > b[field] ? 1 : -1);
-      });
-      if(reverse) {
-        filtered.reverse();
-      }
-      return filtered;
+      return output;
     };
   })
   .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', 'simulationService', 'experimentSimulationService', 'STATE', function ($scope, $rootScope, $timeout, $window, simulationService,experimentSimulationService, STATE) {

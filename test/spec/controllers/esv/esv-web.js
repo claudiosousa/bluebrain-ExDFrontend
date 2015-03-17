@@ -14,8 +14,9 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationService,
     experimentTemplates,
     experimentTemplatesAugmented,
-    filteredExperimentTemplatesAugmented,
+    experimentTemplatesArray,
     sortedExperimentTemplatesArray,
+    filteredExperimentTemplatesArray,
     STATE;
 
   var experimentSimulationServiceMock = {};
@@ -56,23 +57,22 @@ describe('Controller: experimentCtrl', function () {
       '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
       '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
     };
+    experimentTemplatesArray = [
+      {id: '1', imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
+      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
+    ];
     sortedExperimentTemplatesArray = [
-      {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'},
-      {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'}
+      {id: '1', imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'},
+      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'}
+    ];
+    filteredExperimentTemplatesArray = [
+      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
     ];
     experimentTemplatesAugmented = {
       '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', runningExperiments: 1, simulations: [
-        {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
-      ]},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', runningExperiments: 3, simulations: [
-        { simulationID: 2, experimentID: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
-        { simulationID: 0, experimentID: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
-        { simulationID: 2, experimentID: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
-      ]}
-    };
-    filteredExperimentTemplatesAugmented = {
       '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', runningExperiments: 1, simulations: [
         {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
       ]},
@@ -183,14 +183,13 @@ describe('Controller: experimentCtrl', function () {
     //Ignore this warning because of the name_nippetFilter
     /*jshint camelcase: false */
     inject(function(name_snippetFilter) {
-      expect(name_snippetFilter(experimentTemplatesAugmented, 'dog')).toEqual(filteredExperimentTemplatesAugmented);
+      expect(name_snippetFilter(experimentTemplatesArray, 'dog')).toEqual(filteredExperimentTemplatesArray);
     }
   ));
 
-  it('should reverse-sort the entries',
-    inject(function(orderObjectByFilter) {
-        expect(orderObjectByFilter(experimentTemplates, 'name', false)).toEqual(sortedExperimentTemplatesArray);
-        expect(orderObjectByFilter(experimentTemplates, 'name', true)).toEqual(sortedExperimentTemplatesArray.reverse());
+  it('should convert the hash to an array',
+    inject(function(convertToArrayFilter) {
+        expect(convertToArrayFilter(experimentTemplates)).toEqual(experimentTemplatesArray);
       }
     ));
 

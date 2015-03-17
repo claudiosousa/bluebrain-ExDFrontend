@@ -12,10 +12,10 @@
 
     <hr class="list-separator">
 
-    <div ng-repeat="(id, exp) in experiments | name_snippet:query | orderObjectBy:'name':false" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(id);">
-      <div class="list-entry-container left-right" ng-class="{selected: (id == selectedIndex) || isHovered}">
+    <div ng-repeat="exp in experiments | convertToArray | name_snippet:query | orderBy:'name':false" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
+      <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
         <div class="list-entry-container left-right list-entry-main">
-          <div class="list-entry-left" ng-class="{selected: id == selectedIndex}">
+          <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
             <img ng-src="{{exp.imageUrl}}" >
           </div>
           <div class="list-entry-middle list-entry-container up-down">
@@ -24,18 +24,18 @@
               <div ng-if="exp.runningExperiments == 1" class="list-entry-running">({{exp.runningExperiments}} experiment running)</div>
               <div ng-if="exp.runningExperiments > 1" class="list-entry-running">({{exp.runningExperiments}} experiments running)</div>
             </div>
-            <div ng-if="id == selectedIndex">{{exp.snippet}}</div>
-            <div ng-if="id != selectedIndex">{{exp.snippet | limitTo: 200}}...</div>
-            <div class="list-entry-buttons list-entry-container center" ng-if="id == selectedIndex">
+            <div ng-if="exp.id == selectedIndex">{{exp.snippet}}</div>
+            <div ng-if="exp.id != selectedIndex">{{exp.snippet | limitTo: 200}}...</div>
+            <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
               <div class="btn-group" role="group">
-                <button type="button" class="btn btn-default" ng-click="setProgressbarVisible(id);startNewExperiment(id);" ng-disabled="!isServerAvailable">Start new experiment</button>
-                <button ng-if="exp.runningExperiments > 0" type="button" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(id);">Join existing experiment »</button>
+                <button type="button" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.id);" ng-disabled="!isServerAvailable">Start new experiment</button>
+                <button ng-if="exp.runningExperiments > 0" type="button" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);">Join existing experiment »</button>
               </div>
             </div>
-            <div  collapse="startNewExperimentSelectedIndex != id">
+            <div  collapse="startNewExperimentSelectedIndex != exp.id">
               <progressbar value="100" class="progress-striped active top-buffer"><i><b>{{progressMessageMain}}</b> {{progressMessageSub}}</i></progressbar>
             </div>
-            <div  class="table-wrapper" collapse="joinSelectedIndex != id">
+            <div  class="table-wrapper" collapse="joinSelectedIndex != exp.id">
               <table class="table table-striped">
                 <thead>
                 <tr>
@@ -60,7 +60,7 @@
           </div>
         </div>
         <div class="list-entry-right list-entry-container center">
-          <div class="self-center"><button type="button" class="btn btn-primary list-select-buttons" ng-click="setSelected(id);" ng-if="id !== selectedIndex" ng-disabled="startNewExperimentSelectedIndex !== -1">Select »</button></div>
+          <div class="self-center"><button type="button" class="btn btn-primary list-select-buttons" ng-click="setSelected(exp.id);" ng-if="exp.id !== selectedIndex" ng-disabled="startNewExperimentSelectedIndex !== -1">Select »</button></div>
         </div>
       </div>
 
