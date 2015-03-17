@@ -33,7 +33,8 @@
                 "rosbridge": {
                     "websocket": "ws://bbpce014.epfl.ch:9090",
                     "topics": {
-                        "status": "/ros_cle_simulation/status"
+                        "status": "/ros_cle_simulation/status",
+                        "spikes": "/ros_cle_simulation/spikes"
                     }
                 }
             },
@@ -46,7 +47,8 @@
                 "rosbridge": {
                     "websocket": "ws://bbpce016.epfl.ch:9090",
                     "topics": {
-                        "status": "/ros_cle_simulation/status"
+                        "status": "/ros_cle_simulation/status",
+                        "spikes": "/ros_cle_simulation/spikes"
                     }
                 }
             },
@@ -59,7 +61,8 @@
                 "rosbridge": {
                     "websocket": "ws://bbpce018.epfl.ch:9090",
                     "topics": {
-                        "status": "/ros_cle_simulation/status"
+                        "status": "/ros_cle_simulation/status",
+                        "spikes": "/ros_cle_simulation/spikes"
                     }
                 }
             }

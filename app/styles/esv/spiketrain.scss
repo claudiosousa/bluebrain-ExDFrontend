@@ -1,0 +1,26 @@
+.spiketrain {
+  position: absolute;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+  bottom: 65px;
+  background:rgba(255, 255, 255, 0.8);
+  width: 90%;
+  height: 175px;
+  border-radius: 8px;
+  border-color: black;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+}
+
+.spiketrain.ng-hide {
+  opacity: 0;
+}
+
+.spiketrain canvas {
+  width: 100%;
+  height: 100%;
+  padding: 10px 15px 10px 15px;
+}
