@@ -1,32 +1,12 @@
 {
-  "1":{
-    "imageUrl": "img/common/preview_1.png",
-    "name": "Experiment 1",
-    "snippet": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,.."
-  },
   "ExDConf/ExDXMLExample.xml":{
-    "imageUrl": "img/common/preview_1.png",
-    "name": "Braitenberg Experiment",
-    "snippet": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,.."
+    "imageUrl": "img/common/preview_Braitenberg_Husky.png",
+    "name": "Husky Braitenberg experiment",
+    "snippet": "This experiment loads the Husky robot from Clearpath Robotics and the virtual room environment. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place, until the camera detects a red color. Then, the robot will move towards the colored object. In this experiment, the user can interact and change the color of both screens by clicking on them with the right mouse botton."
   },
-  "3":{
-    "imageUrl": "img/common/preview_1.png",
-    "name": "Experiment 3",
-    "snippet": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,.."
-  },
-  "4":{
-    "imageUrl": "img/common/preview_1.png",
-    "name": "Experiment 4",
-    "snippet": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,.."
-  },
-  "5":{
-    "imageUrl": "img/common/preview_1.png",
-    "name": "Experiment 5",
-    "snippet": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,.."
-  },
-  "6":{
-    "imageUrl": "img/common/preview_1.png",
-    "name": "Experiment 6",
-    "snippet": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,.."
+  "ExDConf/ExDBraitenbergLauron.xml":{
+    "imageUrl": "img/common/preview_Braitenberg_Lauron.png",
+    "name": "LAURON V Braitenberg experiment",
+    "snippet": "This experiment loads the six-legged walking robot LAURON V (developed at FZI) and the virtual room environment. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place, until the camera detects a red color. Then, the robot will move towards the colored object. In this experiment, the user can interact and change the color of both screens by clicking on them with the right mouse botton."
   }
 }
