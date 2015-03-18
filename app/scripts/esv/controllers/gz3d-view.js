@@ -44,6 +44,10 @@
       var simulationID = $stateParams.simulationID;
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
       var serverBaseUrl = serverConfig.gzweb['nrp-services'];
+
+      $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
+      $scope.spikeTopic = serverConfig.rosbridge.topics.spikes;
+
       $scope.state = STATE.UNDEFINED;
       $scope.STATE = STATE;
 
@@ -61,7 +65,7 @@
       /* by a progressbar somewhere else. */
       /* Timeout messages are displayed in the toolbar. */
       $scope.registerForStatusInformation = function() {
-          var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
+          var rosbridgeWebsocketUrl = $scope.rosbridgeWebsocketUrl;
           var statusTopic = serverConfig.rosbridge.topics.status;
           var callbackOnClose = function() {
             $scope.splashScreen = undefined;
@@ -92,7 +96,7 @@
               if (message.progress.done !== undefined && message.progress.done) {
                 splash.spin = false;
                 splash.setMessage({ headline: 'Finished' });
-                
+
                 /* if splash is a blocking modal (no button), then close it */
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {
@@ -275,6 +279,12 @@
 
       $scope.cameraResetToInitPose = function () {
         cameraManipulation.resetToInitialPose();
+      };
+
+      // Spiketrain
+      $scope.showSpikeTrain = false;
+      $scope.toggleSpikeTrain = function() {
+        $scope.showSpikeTrain = !$scope.showSpikeTrain;
       };
 
   }]);

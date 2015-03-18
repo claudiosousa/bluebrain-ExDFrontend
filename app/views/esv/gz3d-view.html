@@ -1,5 +1,6 @@
 <!-- build:css(.tmp) styles/esv/gz3d-view.css -->
 <link rel="stylesheet" href="styles/esv/gz3d-view.css" />
+<link rel="stylesheet" href="styles/esv/spiketrain.css" />
 <!-- endbuild -->
 
   <script id="heightmapVS" type="x-shader/x-vertex">
@@ -90,7 +91,7 @@
         <!-- WEBGL-context -->
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
-
+        <spiketrain server={{rosbridgeWebsocketUrl}} topic={{spikeTopic}} ng-show="showSpikeTrain"/>
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
@@ -152,6 +153,9 @@
                   <div class="fa fa-angle-right fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(-5, 0);"></div>
                   <div class="fa fa-angle-down fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, -5);"></div>
                 </div>
+              </div>
+              <div class="hbp-toolbar-action" ng-click="toggleSpikeTrain()" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
+                <img src="img/esv/spiketrain_logo.png"></img>
               </div>
             </div>
           </div>
