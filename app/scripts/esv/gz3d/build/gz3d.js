@@ -2880,9 +2880,15 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         if (modelUri.indexOf('.dae') !== -1) // Modified for HBP, we do use coarse models all the time
         {
           modelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
-
           var checkModel = new XMLHttpRequest();
-          checkModel.open('HEAD', modelUri+'_coarse.dae', false);
+          // We use a double technique to disable the cache for these requests:
+          // 1. We create a custom url by adding the time as a parameter.
+          // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
+          // Since browsers and servers vary in their behaviour, we use both of these tricks.
+          // PS: These requests do not load the dae files, they just verify if they exist on the server
+          // so that we can choose between coarse or reqular models.
+          checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
+          checkModel.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2026 00:00:00 GMT");
           checkModel.send();
           if (checkModel.status === 404)
           {
@@ -2893,7 +2899,6 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
             modelUri = modelUri+'_coarse.dae';
           }
         }
-
         var materialName = parent.name + '::' + modelUri;
         this.entityMaterial[materialName] = mat;
 
