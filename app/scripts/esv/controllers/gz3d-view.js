@@ -30,15 +30,13 @@
     });
 
   angular.module('exdFrontendApp')
-
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 'gzInitialization', 'hbpUserDirectory',
-      'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics',
+      'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics', 'serverError',
 
       'lightControl', 'screenControl', 'cameraManipulation', 'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR',
 
         function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, gzInitialization, hbpUserDirectory,
-          simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics,
-
+          simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics, serverError,
           lightControl, screenControl, cameraManipulation, timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
@@ -143,7 +141,10 @@
       $scope.updateSimulation = function (newState) {
         simulationState(serverBaseUrl).update({sim_id: simulationID}, {state: newState}, function(data) {
           $scope.state = data.state;
-        });
+        }, function(data) {
+          serverError(data);
+        }
+        );
       };
 
       simulationStatistics.setRealTimeCallback(function (realTimeValue) {

@@ -3,9 +3,9 @@
 
   /* global console: false */
 
-  var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants']);
+  var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants', 'nrpErrorHandlers', 'bbpConfig', 'hbpCommon']);
 
-  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', function($resource, $http, hbpUserDirectory, STATE) {
+  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', 'serverError', function($resource, $http, hbpUserDirectory, STATE, serverError) {
 
     // Keeps track of the owner of experiments in a map (id -> display name)
     var owners = {};
@@ -51,11 +51,7 @@
       if (activeSimulation !== undefined) {
         return activeSimulation;
       }
-      activeSimulation = filterSimulations(simulations, STATE.INITIALIZED);
-      if (activeSimulation !== undefined) {
-        return activeSimulation;
-      }
-      return filterSimulations(simulations, STATE.CREATED);
+      return filterSimulations(simulations, STATE.INITIALIZED);
     };
 
     // Public methods of the service
@@ -69,6 +65,7 @@
         simulations: {
           method: 'GET',
           isArray: true,
+          interceptor : {responseError : serverError},
           transformResponse: transform($http, params.serverID)
         }
       });
@@ -81,21 +78,23 @@
     };
   }]);
 
-  module.factory('simulationControl', ['$resource', function($resource) {
+  module.factory('simulationControl', ['$resource', 'serverError', function($resource, serverError) {
     return function(baseUrl) {
       return $resource(baseUrl + '/simulation/:sim_id', {}, {
         simulation: {
-          method: 'GET'
+          method: 'GET',
+          interceptor : {responseError : serverError}
         }
       });
     };
   }]);
 
-  module.factory('simulationState', ['$resource', function($resource) {
+  module.factory('simulationState', ['$resource', 'serverError', function($resource, serverError) {
     return function(baseUrl) {
       return $resource(baseUrl + '/simulation/:sim_id/state', {}, {
         state: {
-          method: 'GET'
+          method: 'GET',
+          interceptor : {responseError : serverError}
         },
         update: { // this method initializes, starts, stops, or pauses the simulation
           method: 'PUT'
@@ -104,38 +103,41 @@
     };
   }]);
 
-  module.factory('simulationGenerator', ['$resource', function($resource) {
+  module.factory('simulationGenerator', ['$resource', 'serverError', function($resource, serverError) {
     return function(baseUrl) {
       return $resource(baseUrl + '/simulation', {}, {
         create: {
-          method: 'POST'
+          method: 'POST',
+          interceptor : {responseError : serverError}
         }
       });
     };
   }]);
 
-  module.factory('lightControl', ['$resource', function($resource) {
+  module.factory('lightControl', ['$resource', 'serverError', function($resource, serverError) {
     return function(baseUrl) {
       return $resource(baseUrl + '/simulation/:sim_id/interaction/light', {}, {
         updateLight: {
-          method: 'PUT'
+          method: 'PUT',
+          interceptor : {responseError : serverError}
         }
       });
     };
   }]);
 
-  module.factory('screenControl', ['$resource', function($resource) {
+  module.factory('screenControl', ['$resource', 'serverError', function($resource, serverError) {
    return function(baseUrl) {
        return $resource(baseUrl + '/simulation/:sim_id/interaction', {}, {
          updateScreenColor: {
-           method: 'PUT'
+           method: 'PUT',
+           interceptor : {responseError : serverError}
          }
        });
    };
   }]);
 
-  module.factory('experimentSimulationService', ['$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE',
-    function ($http, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE) {
+  module.factory('experimentSimulationService', ['$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'serverError',
+    function ($http, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE, serverError) {
     var getExperimentsCallback;
     var setProgressMessageCallback;
     var initializedCallback;
@@ -176,6 +178,7 @@
       $http.get('views/esv/experiment_templates.json').success(function (data) {
         augmentExperiments(data);
       });
+
     };
 
     var registerForStatusInformation = function(serverID, simulationID) {
@@ -213,7 +216,7 @@
     };
 
     // TODO improve this code (keyword: semaphore!)
-    var startNewExperiments = function(id){
+    var startNewExperiments = function(id, errorCallback){
       var serverIDs = Object.keys(servers);
       var keepGoing = true;
       angular.forEach(serverIDs, function(serverID, index){
@@ -222,9 +225,9 @@
           simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
             var activeSimulation = simulationService().getActiveSimulation(data);
             if (activeSimulation === undefined) {
-              if(keepGoing) {
+              if (keepGoing) {
                 keepGoing = false;
-                launchExperimentOnServer(id, serverID);
+                launchExperimentOnServer(id, serverID, errorCallback);
               }
             }
           });
@@ -232,15 +235,12 @@
       });
     };
 
-    var launchExperimentOnServer = function(experimentID, freeServerID){
+    var launchExperimentOnServer = function(experimentID, freeServerID, errorCallback){
       setProgressMessageCallback({main: 'Create new Simulation...'});
-      //var freeServerID = getFreeServerID();
       var serverURL = servers[freeServerID].gzweb['nrp-services'];
       // create new simulation
       simulationGenerator(serverURL).create({experimentID: experimentID}, function(createData){
         setProgressMessageCallback({main: 'Initialize Simulation...'});
-
-
         // register for messages during initialization
         registerForStatusInformation(freeServerID, createData.simulationID);
 
@@ -248,8 +248,7 @@
         simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED}, function(updateData) {
           setProgressMessageCallback({main: 'Simulation initialized.'});
           initializedCallback('#/esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID);
-        });
-
+        }, function(updateData) { serverError(updateData); errorCallback(); });
       });
     };
 
