@@ -50,7 +50,8 @@ describe('Directive: exdModelSelector', function () {
         selectedEntity: undefined
     };
 
-    var element = $compile('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>')($scope);
+    // The "data:image/gif..." is an inline base64 encoded gif with one transparent pixel
+    var element = $compile('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/></exd-model-selector>')($scope);
     // fire all the watches, so the scope expression {{1 + 1}} will be evaluated
     $scope.$digest();
     // Check that the title is replaced properly
@@ -67,7 +68,8 @@ describe('Directive: exdModelSelector', function () {
         description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
         selectedEntity: undefined
     };
-    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
+    // The "data:image/gif..." is an inline base64 encoded gif with one transparent pixel
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -85,7 +87,7 @@ describe('Directive: exdModelSelector', function () {
         description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
         selectedEntity: undefined
     };
-    
+
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
@@ -96,7 +98,8 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/other',
     };
 
-    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
+    // The "data:image/gif..." is an inline base64 encoded gif with one transparent pixel
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -126,7 +129,8 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/other',
     };
 
-    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
+    // The "data:image/gif..." is an inline base64 encoded gif with one transparent pixel
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -142,7 +146,7 @@ describe('Directive: exdModelSelector', function () {
         description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
         selectedEntity: undefined
     };
-    
+
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
@@ -153,7 +157,8 @@ describe('Directive: exdModelSelector', function () {
         _contentType: 'nrp/other',
     };
 
-    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
+    // The "data:image/gif..." is an inline base64 encoded gif with one transparent pixel
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
@@ -173,13 +178,14 @@ describe('Directive: exdModelSelector', function () {
         description: 'The brain model to link the robot to a neural simulation. A brain description consists in an XML file.',
         selectedEntity: undefined
     };
-    
+
     var testValidEntity = {
         metadataLoaded: true,
         _contentType: 'nrp/brain',
     };
 
-    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="/img/brain.png"/></exd-model-selector>');
+    // The "data:image/gif..." is an inline base64 encoded gif with one transparent pixel
+    var element = angular.element('<exd-model-selector exd-input="testInput" exd-image-default-thumbnail="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/></exd-model-selector>');
     $compile(element)($scope);
     $scope.$digest();
 
