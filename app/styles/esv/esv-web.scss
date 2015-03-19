@@ -108,3 +108,7 @@ and (max-width : 768px)
 .self-center {
   max-width: 30%;
 }
+
+.btn.disabled.enable-tooltip {
+  pointer-events: all;
+}
