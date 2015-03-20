@@ -484,5 +484,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
   });
 
+  it('should toggle the showSpikeTrain variable', function() {
+    expect(scope.showSpikeTrain).toBe(false);
+    scope.toggleSpikeTrain();
+    expect(scope.showSpikeTrain).toBe(true);
+  });
+
+  it('should toggle the help mode variable', function() {
+    expect(scope.helpModeActivated).toBe(false);
+    scope.toggleHelpMode();
+    expect(scope.helpModeActivated).toBe(true);
+  });
 
 });
