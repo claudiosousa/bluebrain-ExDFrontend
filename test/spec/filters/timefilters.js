@@ -18,5 +18,21 @@ describe('filters', function () {
       expect(timeDDHHMMSSFilter(1654892)).toBe('19 03:41:32');
       expect(timeDDHHMMSSFilter(16548923)).toBe('191 12:55:23');
     }));
+
+    it('should convert an ISO date to uptime (seconds up to now)',
+      inject(function(uptimeFilter) {
+      var now = new Date();
+      var nows = now.toISOString();
+      /* true negative tests */
+      expect(uptimeFilter(undefined)).toBe(0);
+      expect(uptimeFilter('')).not.toBe(jasmine.any(Number));
+      /* true positive tests */
+      expect(uptimeFilter(nows)).toBeLessThan(10); // uptime from nows should be 0 but could be a little more is tests delayed
+      expect(uptimeFilter(nows) >= 0).toBeTruthy();
+      var yesterdays = new Date(now.getTime()-86400000).toISOString();
+      expect(uptimeFilter(yesterdays)).toBeLessThan(86410);
+      expect(uptimeFilter(yesterdays) >= 86400).toBeTruthy();
+    }));
+
   });
 });

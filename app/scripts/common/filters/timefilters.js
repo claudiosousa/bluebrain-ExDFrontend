@@ -37,6 +37,16 @@
 
       return timeValue;
     };
+  })
+  .filter('uptime', function() {
+    return function (input) {
+      if (input === undefined) {
+        return 0;
+      }
+      var now = new Date().getTime();
+      var creationDate = new Date(input).getTime();
+      return (now - creationDate)/1000;
+    }
   });
 
 }());

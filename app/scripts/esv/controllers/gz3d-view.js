@@ -84,10 +84,7 @@
             $scope.splashScreen = undefined;
             /* avoid "$apply already in progress" error */
             _.defer(function() { // jshint ignore:line
-              $scope.$apply(function() {
-
-                $location.path("/");
-              });
+              $scope.$apply(function() { $location.path("/"); });
             });
           };
 
@@ -100,7 +97,7 @@
             /* State messages */
             /* Manage before other since others may depend on state changes */
             if (message !== undefined && message.state !== undefined) {
-              $scope.state = message.state;
+              $scope.$apply(function() { $scope.state = message.state; });
             }
             /* Progress messages (apart start state progress messages which are handled by another progress bar) */
             if (message !== undefined && message.progress !== undefined && $scope.state !== STATE.STARTED ) {
@@ -123,7 +120,7 @@
             }
             /* Timeout messages */
             if (message !== undefined && message.timeout !== undefined) {
-              $scope.simTimeoutText = message.timeout;
+              $scope.$apply(function() { $scope.simTimeoutText = message.timeout; });
             }
           });
       };

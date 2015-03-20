@@ -45,6 +45,7 @@
                   <th>Experiment</th>
                   <th>Server</th>
                   <th>Creator</th>
+                  <th>Uptime</th>
                   <th>Status</th>
                   <th>&nbsp;</th>
                 </tr>
@@ -54,6 +55,7 @@
                   <td>{{simul.experimentID}}</td>
                   <td>{{simul.serverID}}</td>
                   <td>{{owners[simul.owner]}}</td>
+                  <td>{{simul.creationDate | uptime | timeDDHHMMSS}}</td>
                   <td>{{simul.state}}</td>
                   <td><a ng-click="joinExperiment('#/esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');" type="button" class="btn btn-default" ng-disabled="simul.state === STATE.CREATED">Join »</a></td>
                 </tr>
