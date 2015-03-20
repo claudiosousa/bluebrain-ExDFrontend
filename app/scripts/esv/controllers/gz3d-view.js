@@ -32,9 +32,7 @@
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 'gzInitialization', 'hbpUserDirectory',
       'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics', 'serverError',
-
       'lightControl', 'screenControl', 'cameraManipulation', 'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR',
-
         function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, gzInitialization, hbpUserDirectory,
           simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics, serverError,
           lightControl, screenControl, cameraManipulation, timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR) {
