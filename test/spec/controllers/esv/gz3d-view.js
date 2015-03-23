@@ -253,7 +253,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     // first test whether the state given as a parameter is passed
     scope.updateSimulation(STATE.STARTED);
-    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, 
+    expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'},
       {state: STATE.STARTED}, jasmine.any(Function), jasmine.any(Function));
 
     // second test whether the callback function does what it should do
@@ -312,12 +312,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     // test "timeout"
     callbackFunction({ data: '{"timeout": 264}'});
     expect(scope.simTimeoutText).toBe(264);
-  });
-
-  it('should check for the currently hovered model', function () {
-    scope.getModelUnderMouse = jasmine.createSpy('getModelUnderMouse').andReturn({name: 'some_name'});
-    scope.updateHoverInfo();
-    expect(scope.hoveredObject).toEqual('some_name');
   });
 
   it('should get the model under the current mouse position', function () {

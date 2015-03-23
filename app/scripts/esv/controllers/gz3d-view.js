@@ -164,22 +164,11 @@
       $scope.contextMenuTop = 0;
       $scope.contextMenuLeft = 0;
 
-      $scope.hoveredObject = '';
-
       $scope.getModelUnderMouse = function(event) {
         var pos = new THREE.Vector2(event.clientX, event.clientY);
         var intersect = new THREE.Vector3();
         var model = $rootScope.scene.getRayCastModel(pos, intersect);
         return model;
-      };
-
-      $scope.updateHoverInfo = function (event) {
-        var model = $scope.getModelUnderMouse(event);
-        if (model !== null && model !== undefined) {
-          $scope.hoveredObject = model.name;
-        } else {
-          $scope.hoveredObject = '';
-        }
       };
 
       // for convenience we pass just a string as "red" or "blue" currently, this will be replaced later on
