@@ -68,8 +68,6 @@
 
       $scope.isInitialized = false;
 
-      $scope.simTimeoutText = '';
-
       simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
         $scope.state = data.state;
         $scope.registerForStatusInformation();
@@ -104,8 +102,8 @@
             if (message !== undefined && message.state !== undefined) {
               $scope.state = message.state;
             }
-            /* Progress messages */
-            if (message !== undefined && message.progress !== undefined) {
+            /* Progress messages (apart start state progress messages which are handled by another progress bar) */
+            if (message !== undefined && message.progress !== undefined && $scope.state !== STATE.STARTED ) {
               $scope.splashScreen = $scope.splashScreen || splash.open(
                   !message.progress.block_ui,
                   (($scope.state === STATE.STOPPED) ? callbackOnClose : undefined));
@@ -116,7 +114,6 @@
                 /* if splash is a blocking modal (no button), then close it */
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {
-
                   splash.close();
                   $scope.splashScreen = undefined;
                 }
