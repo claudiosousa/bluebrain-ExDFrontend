@@ -92,6 +92,7 @@
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
         <spiketrain server={{rosbridgeWebsocketUrl}} topic={{spikeTopic}} ng-show="showSpikeTrain"></spiketrain>
+
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
@@ -127,8 +128,8 @@
                        ng-change="updateLightIntensities(sliderPosition)"/>
               </div>
               <!-- camera translation tool -->
-              <div tooltip="With those controls, you can change the viewpoint of your local camera. By clicking on the arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/down/right. The angled arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
-                <div class="hbp-camera-tool-text">Translate Camera</div>
+              <div tooltip="With those controls, you can change the viewpoint of your local camera. By clicking on the arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/down/right. The angled arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position." tooltip-enable="helpModeActivated" class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+                <div class="hbp-camera-tool-text"><img src="img/esv/translation_icon.png"></div>
                 <div class="hbp-camera-tool-controls">
                   <div class="hbp-camera-tool-controls-grid-third"></div>
                   <div class="fa fa-caret-up fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, 1);"></div>
@@ -142,8 +143,8 @@
                 </div>
               </div>
               <!-- camera rotation tool -->
-              <div tooltip="With those controls, you can change the orientation of your local camera. The center circle lets you reset the orientation. You also can look around by draging the mouse in the 3d-scene." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
-                <div class="hbp-camera-tool-text">Rotate Camera</div>
+              <div tooltip="With those controls, you can change the orientation of your local camera. The center circle lets you reset the orientation. You also can look around by draging the mouse in the 3d-scene." tooltip-enable="helpModeActivated" class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+                <div class="hbp-camera-tool-text"><img src="img/esv/rotation_icon.png"></div>
                 <div class="hbp-camera-tool-controls">
                   <div class="fa fa-angle-up fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, 5);"></div>
                   <div class="fa fa-angle-left fa-1 hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(5, 0);"></div>
@@ -195,8 +196,17 @@
         </div>
         <!-- back-end versions -->
 
+        <!-- Description -->
+        <div class="help-window" ng-show="helpModeActivated">
+          <div>
+            <div class="help-title">General User Interface Help:</div>
+            <div class="help-text">A tooltip appears when you let the mouse pointer hover over the corresponding user interface element.</div>
+            <div class="help-title">Experiment Description:</div>
+            <div class="help-text">{{ExperimentDescription}}</div>
+          </div>
+        </div>
+        <!-- Description -->
       </div>
       <!-- container -->
-
     </div>
     <!-- page -->

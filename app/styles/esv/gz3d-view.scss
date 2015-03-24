@@ -90,3 +90,39 @@ body > div {
   right: 10px;
   color: white;
 }
+
+.help-window {
+  position: absolute;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+  top: 100px;
+  background:rgba(150, 220, 150, 0.95);
+  width: 80%;
+  border-radius: 8px;
+  border-color: green;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+
+  div {
+    margin-left: 20px;
+    margin-right: 50px;
+    margin-bottom: 10px;
+  }
+}
+
+.help-window.ng-hide {
+  opacity: 0;
+}
+
+.help-title {
+  margin-top: 10px;
+  font-size: large;
+  font-weight: bold;
+}
+
+.help-text {
+  font-size: medium;
+}

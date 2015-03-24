@@ -118,26 +118,24 @@
 
 .hbp-camera-tool-container {
   display: flex;
-
   flex-flow: row wrap;
-
   justify-content: center;
   align-items: center;
-
+  padding-right: 0px;
   font-weight: bold;
   text-align: center;
 }
 
 .hbp-camera-tool-text {
   display: flex;
-  flex: 0 0 70%;
+  margin-right: 10px;
 }
 
 .hbp-camera-tool-controls {
   display: flex;
-  flex: 0 0 30%;
+  min-width: 50px;
   flex-flow: row wrap;
-  cursor: default;
+  cursor: pointer;
 }
 
 .hbp-camera-tool-controls-grid-full {
