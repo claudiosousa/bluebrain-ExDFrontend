@@ -95,19 +95,19 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-click="updateSimulation(STATE.STARTED)" ng-show="(state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" tooltip="Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named 'Timeout'." tooltip-enable="helpModeActivated" ng-click="updateSimulation(STATE.STARTED)" ng-show="(state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div ng-if="isOwner"class="hbp-toolbar-action" ng-click="updateSimulation(STATE.PAUSED)" ng-show="(state === STATE.STARTED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" tooltip="Here you can pause the simulation on the server." tooltip-enable="helpModeActivated" ng-click="updateSimulation(STATE.PAUSED)" ng-show="(state === STATE.STARTED)">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div ng-if="isOwner"class="hbp-toolbar-action" ng-click="updateSimulation(STATE.STOPPED)" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" tooltip="Here you can stop the simulation on the server." tooltip-enable="helpModeActivated" ng-click="updateSimulation(STATE.STOPPED)" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div ng-show="(state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED)">
               <!-- For tooltip-enable, see: https://github.com/angular-ui/bootstrap/issues/3372 -->
               <!-- Since this feature is not documented. -->
-              <div tooltip="Proof of concept tooltip text" tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hbp-time-display">
+              <div tooltip="This shows the simulated time of the experiment on the server 'Simulation time', the actual elapsed time 'Real time' and the 'Timeout', after which the simulation is terminated." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hbp-time-display">
                 <div>
                   <div>
                     <span>Simulation time:</span><br/>
@@ -121,13 +121,13 @@
                   </div>
                 </div>
               </div>
-              <div ng-if="isOwner" class="hbp-toolbar-large-tool hidden-xs">
+              <div ng-if="isOwner" tooltip="With this slider, you can change the global brightness of the lights in the simulation." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hidden-xs">
                 <i class="fa fa-lightbulb-o"></i>
                 <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition"
                        ng-change="updateLightIntensities(sliderPosition)"/>
               </div>
               <!-- camera translation tool -->
-              <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+              <div tooltip="With those controls, you can change the viewpoint of your local camera. By clicking on the arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/down/right. The angled arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
                 <div class="hbp-camera-tool-text">Translate Camera</div>
                 <div class="hbp-camera-tool-controls">
                   <div class="hbp-camera-tool-controls-grid-third"></div>
@@ -142,7 +142,7 @@
                 </div>
               </div>
               <!-- camera rotation tool -->
-              <div class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
+              <div tooltip="With those controls, you can change the orientation of your local camera. The center circle lets you reset the orientation. You also can look around by draging the mouse in the 3d-scene." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
                 <div class="hbp-camera-tool-text">Rotate Camera</div>
                 <div class="hbp-camera-tool-controls">
                   <div class="fa fa-angle-up fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, 5);"></div>
@@ -152,11 +152,11 @@
                   <div class="fa fa-angle-down fa-1 hbp-camera-tool-controls-grid-full" ng-click="cameraRotate(0, -5);"></div>
                 </div>
               </div>
-              <div class="hbp-toolbar-action" ng-click="toggleSpikeTrain()" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
+              <div tooltip="This button toggles the view for the spike-train visualization." tooltip-enable="helpModeActivated" class="hbp-toolbar-action" ng-click="toggleSpikeTrain()" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
                 <img src="img/esv/spiketrain_logo.png">
               </div>
             </div>
-            <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines">View-Only Mode<br/>Owner: {{owner}}</div>
+            <div ng-if="isOwner === false" tooltip="This information appears when you are not the displayed owner of the experiment and thus you are in a view-only mode." tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool-two-lines">View-Only Mode<br/>Owner: {{owner}}</div>
             <!-- toolbar help icon -->
             <div class="hbp-toolbar-action right-align hide-overflow" ng-click="toggleHelpMode()">
               <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}" tooltip="Help mode" tooltip-placement="left"></i>
