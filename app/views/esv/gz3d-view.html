@@ -181,6 +181,19 @@
         <div ng-if="helpModeActivated" class="fa fa-question-circle fa-5x help-icon active" ng-click="toggleHelpMode()"></div>
         <div ng-if="helpModeActivated" class="fa fa-question fa-4x help-icon-inner" ng-click="toggleHelpMode()"></div>
         <!-- large top-right help icon -->
+        <!-- back-end versions -->
+        <div ng-if="helpModeActivated" class="nrp-versions">
+          <div class="text-right">
+            <b>Versions</b><br/>
+            <b>ESV</b>
+            <span> {{versions.hbp_nrp_esv}}</span><br/>
+            <b>CLE</b>
+            <span> {{versions.hbp_nrp_cle}}</span><br/>
+            <b>ExD</b>
+            <span> {{versions.hbp_nrp_backend}}</span>
+          </div>
+        </div>
+        <!-- back-end versions -->
 
       </div>
       <!-- container -->

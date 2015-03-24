@@ -30,12 +30,15 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 'gzInitialization', 'hbpUserDirectory',
-      'simulationGenerator', 'simulationService', 'simulationControl', 'simulationState', 'simulationStatistics', 'serverError',
-      'lightControl', 'screenControl', 'cameraManipulation', 'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, gzInitialization, hbpUserDirectory,
-          simulationGenerator, simulationService, simulationControl, simulationState, simulationStatistics, serverError,
-          lightControl, screenControl, cameraManipulation, timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR) {
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 
+      'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl', 
+      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation', 
+      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'VERSION', 'nrpVersions',
+        function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, 
+          gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl, 
+          simulationState, simulationStatistics, serverError,
+          lightControl, screenControl, cameraManipulation, 
+          timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, VERSION, nrpVersions) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -75,6 +78,10 @@
         $scope.registerForStatusInformation();
       });
 
+      nrpVersions(serverBaseUrl).get(function(data) {
+        $scope.versions = data;
+        $scope.versions.hbp_nrp_esv = VERSION;
+      });
       /* status messages are listened to here. A splash screen is opened to display progress messages. */
       /* This is the case when closing an simulation for example. Loading is taken take of */
       /* by a progressbar somewhere else. */
