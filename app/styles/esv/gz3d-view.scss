@@ -57,3 +57,29 @@ body > div {
 .keyboard-control-info.ng-hide {
   opacity: 0;
 }
+
+.help-icon {
+  color: darkgray;
+  position: fixed;
+  top: 60px;
+  right: 10px;
+}
+
+.help-icon-inner {
+  color: white;
+  position: fixed;
+  top: 67px;
+  right: 25px;
+}
+
+.fa-question-circle.active {
+  color: #006400;
+}
+
+.vertcenter {
+  line-height: 42px;
+}
+
+.hide-overflow {
+  overflow: hidden;
+}

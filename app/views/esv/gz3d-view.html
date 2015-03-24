@@ -105,7 +105,9 @@
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div ng-show="(state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED)">
-              <div class="hbp-toolbar-large-tool hbp-time-display">
+              <!-- For tooltip-enable, see: https://github.com/angular-ui/bootstrap/issues/3372 -->
+              <!-- Since this feature is not documented. -->
+              <div tooltip="Proof of concept tooltip text" tooltip-enable="helpModeActivated" class="hbp-toolbar-large-tool hbp-time-display">
                 <div>
                   <div>
                     <span>Simulation time:</span><br/>
@@ -155,6 +157,11 @@
               </div>
             </div>
             <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines">View-Only Mode<br/>Owner: {{owner}}</div>
+            <!-- toolbar help icon -->
+            <div class="hbp-toolbar-action right-align hide-overflow" ng-click="toggleHelpMode()">
+              <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}" tooltip="Help mode" tooltip-placement="left"></i>
+            </div>
+            <!-- toolbar help icon -->
           </div>
         </div>
         <!-- overlay -->
@@ -169,6 +176,11 @@
           </ul>
         </div>
         <!-- context menu -->
+
+        <!-- large top-right help icon -->
+        <div ng-if="helpModeActivated" class="fa fa-question-circle fa-5x help-icon active" ng-click="toggleHelpMode()"></div>
+        <div ng-if="helpModeActivated" class="fa fa-question fa-4x help-icon-inner" ng-click="toggleHelpMode()"></div>
+        <!-- large top-right help icon -->
 
       </div>
       <!-- container -->

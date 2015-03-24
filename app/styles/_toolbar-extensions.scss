@@ -27,9 +27,13 @@
   }
 }
 
+.right-align {
+  float: right;
+}
+
 .hbp-toolbar-large-tool {
   display: table-cell;
-  height: 42px;
+  height: $hbp-toolbar-height;
   float: left;
   padding-left: 10px;
   padding-right: 5px;
@@ -50,7 +54,7 @@
 
 .hbp-toolbar-large-action {
   display: table-cell;
-  height: 42px;
+  height: $hbp-toolbar-height;
   float: left;
   padding-left: 10px;
   padding-right: 5px;

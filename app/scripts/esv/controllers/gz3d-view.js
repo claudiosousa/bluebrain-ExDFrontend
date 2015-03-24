@@ -45,6 +45,8 @@
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
       var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
+      $scope.helpModeActivated = false;
+
       $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
       $scope.spikeTopic = serverConfig.rosbridge.topics.spikes;
 
@@ -291,6 +293,11 @@
       $scope.showSpikeTrain = false;
       $scope.toggleSpikeTrain = function() {
         $scope.showSpikeTrain = !$scope.showSpikeTrain;
+      };
+
+      // help mode
+      $scope.toggleHelpMode = function() {
+        $scope.helpModeActivated = !$scope.helpModeActivated;
       };
 
   }]);
