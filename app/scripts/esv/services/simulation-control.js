@@ -3,12 +3,22 @@
 
   /* global console: false */
 
-  var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants', 'nrpErrorHandlers', 'bbpConfig', 'hbpCommon']);
+  var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants', 'exdFrontendFilters', 'nrpErrorHandlers', 'bbpConfig', 'hbpCommon']);
 
-  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', 'serverError', function($resource, $http, hbpUserDirectory, STATE, serverError) {
+  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', 'serverError', 'uptimeFilter',
+      function($resource, $http, hbpUserDirectory, STATE, serverError, uptimeFilter) {
 
     // Keeps track of the owner of experiments in a map (id -> display name)
     var owners = {};
+    var creationDate = [];
+    var uptime = [];
+    
+    // update simulation uptimes every second (uptime is accessed in the html directly)
+    var updateUptime = function() {
+      for (var i = 0; i < creationDate.length; i += 1) {
+        uptime[i] = uptimeFilter(creationDate[i]);
+      }
+    };
 
     // transform the response data
     function transform(http, serverID) {
@@ -19,6 +29,8 @@
       return defaults.concat(function(data) {
         angular.forEach(data, function(element, index){
           element.serverID = serverID;
+          // keep a copy of creation dates in an array (will be used to calculate uptime array)
+          creationDate[element.simulationID] = element.creationDate;
           hbpUserDirectory.get([element.owner]).then(function (profile)
           {
             owners[element.owner] = getUserName(profile);
@@ -75,7 +87,9 @@
       functions.getActiveSimulation = getActiveSimulation;
       functions.filterSimulations = filterSimulations;
       functions.transformResponse = transform;
+      functions.updateUptime = updateUptime;
       functions.owners = owners;
+      functions.uptime = uptime;
       functions.getUserName = getUserName;
 
       return functions;

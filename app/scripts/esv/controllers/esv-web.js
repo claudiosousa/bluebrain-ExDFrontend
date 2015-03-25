@@ -26,7 +26,8 @@
       return output;
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', 'simulationService', 'experimentSimulationService', 'STATE', function ($scope, $rootScope, $timeout, $window, simulationService,experimentSimulationService, STATE) {
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', '$interval', 'simulationService', 'experimentSimulationService', 'STATE',
+      function ($scope, $rootScope, $timeout, $window, $interval, simulationService,experimentSimulationService, STATE) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
@@ -83,8 +84,10 @@
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
     experimentSimulationService.getExperiments($scope.setProgressMessage, function (data) {
+      $interval(simulationService().updateUptime, 1000);
       $scope.experiments = data;
       $scope.owners = simulationService().owners;
+      $scope.uptime = simulationService().uptime;
     });
 
     var setIsServerAvailable = function(){

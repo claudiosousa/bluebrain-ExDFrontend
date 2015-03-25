@@ -8,15 +8,15 @@ describe('filters', function () {
     it('should convert seconds values to DD HH:MM:SS string',
       inject(function(timeDDHHMMSSFilter) {
       /* true negative tests */
-      expect(timeDDHHMMSSFilter('')).toBe('-- --:--:--');
-      expect(timeDDHHMMSSFilter('invalid_value')).toBe('-- --:--:--');
+      expect(timeDDHHMMSSFilter('')).toBe('--\u00A0--:--:--');
+      expect(timeDDHHMMSSFilter('invalid_value')).toBe('--\u00A0--:--:--');
       /* true positive tests */
-      expect(timeDDHHMMSSFilter(0)).toBe('00 00:00:00');
-      expect(timeDDHHMMSSFilter(5)).toBe('00 00:00:05');
-      expect(timeDDHHMMSSFilter(28)).toBe('00 00:00:28');
-      expect(timeDDHHMMSSFilter(95623)).toBe('01 02:33:43');
-      expect(timeDDHHMMSSFilter(1654892)).toBe('19 03:41:32');
-      expect(timeDDHHMMSSFilter(16548923)).toBe('191 12:55:23');
+      expect(timeDDHHMMSSFilter(0)).toBe('00\u00A000:00:00');
+      expect(timeDDHHMMSSFilter(5)).toBe('00\u00A000:00:05');
+      expect(timeDDHHMMSSFilter(28)).toBe('00\u00A000:00:28');
+      expect(timeDDHHMMSSFilter(95623)).toBe('01\u00A002:33:43');
+      expect(timeDDHHMMSSFilter(1654892)).toBe('19\u00A003:41:32');
+      expect(timeDDHHMMSSFilter(16548923)).toBe('191\u00A012:55:23');
     }));
 
     it('should convert an ISO date to uptime (seconds up to now)',

@@ -8,7 +8,7 @@
   module.filter('timeDDHHMMSS', function() {
     return function(input) {
       if (typeof input != 'number') {
-        return '-- --:--:--';
+        return '--\u00A0--:--:--';
       }
       var timeValue = '';
       var timeSec = input;
@@ -21,7 +21,7 @@
       if (timeDay < 10) {
       timeValue += '0';
       }
-      timeValue += timeDay.toFixed(0) + ' ';
+      timeValue += timeDay.toFixed(0) + '\u00A0';
       if (timeHour < 10) {
       timeValue += '0';
       }

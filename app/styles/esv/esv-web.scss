@@ -112,3 +112,7 @@ and (max-width : 768px)
 .btn.disabled.enable-tooltip {
   pointer-events: all;
 }
+
+.table tbody tr td:nth-of-type(4) {
+    font-family: Courier, monospace;
+}

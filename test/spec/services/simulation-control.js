@@ -35,8 +35,9 @@ describe('Services: simulation-services', function () {
     screenControl = _screenControl_;
     STATE = _STATE_;
 
+    var now = new Date();
     simulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, owner: '1234'},
+      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, creationDate: now.toISOString(), owner: '1234'},
       { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED},
       { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner'},
       { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321'},
@@ -46,7 +47,7 @@ describe('Services: simulation-services', function () {
     ];
 
     returnSimulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, owner: '1234', serverID : 'bbpce016'},
+      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, creationDate: now.toISOString(), owner: '1234', serverID : 'bbpce016'},
       { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED, serverID : 'bbpce016'},
       { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner', serverID : 'bbpce016'},
       { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321', serverID : 'bbpce016'},
@@ -126,6 +127,18 @@ describe('Services: simulation-services', function () {
     expect(simulationService().owners['4321']).toBe('John Dont');
     expect(simulationService().owners['default-owner']).toBe('Unknown');
     expect(simulationService().owners['invalid-id']).toBe('Unknown');
+  });
+
+  it('should retrieve the uptime of a simulation', function() {
+    var mySimulations;
+    simulationService({ serverURL: 'http://bbpce016.epfl.ch:8080', serverID : 'bbpce016' }).simulations(function(data) {
+      mySimulations = data;
+    });
+    httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
+    httpBackend.flush();
+    simulationService().updateUptime();
+    expect(simulationService().uptime[0]).toBeGreaterThan(0);
+    expect(simulationService().uptime[0]).toBeLessThan(1); // uptime should be around 0.001s, depending on machine.
   });
 
   it('should attach a filter function and filter simulations according to state and index in the list', function() {
