@@ -61,7 +61,7 @@
           $scope.ownerID = data.owner;
           hbpUserDirectory.get([data.owner]).then(function (profile)
           {
-            $scope.owner = profile[Object.keys(profile)[0]].displayName;
+            $scope.owner = simulationService().getUserName(profile);
           });
           $scope.isOwner = ($scope.ownerID === $scope.userID);
         });

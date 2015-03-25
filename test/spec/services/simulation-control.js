@@ -211,6 +211,14 @@ describe('Services: simulation-services', function () {
     expect(simulationService().transformResponse(httpMock, 'test').length).toBe(2);
   });
 
+  it('should return "Unknown" if the authentication is turned off, the user name otherwise', function() {
+     var profile = {};
+     expect(simulationService().getUserName(profile)).toBe('Unknown');
+     var userName = 'johndoe';
+     profile = { key: { displayName: userName} };
+     expect(simulationService().getUserName(profile)).toBe(userName);
+  });
+
 });
 
 describe('Services: experimentSimulationService', function () {

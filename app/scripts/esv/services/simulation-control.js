@@ -21,14 +21,17 @@
           element.serverID = serverID;
           hbpUserDirectory.get([element.owner]).then(function (profile)
           {
-            var validOwnerID = Object.keys(profile)[0];// Should be element.owner if it is a valid ID, undefined otherwise
-            var userName = validOwnerID !== undefined ? profile[validOwnerID].displayName : 'Unknown';
-            owners[element.owner] = userName;
+            owners[element.owner] = getUserName(profile);
           });
         });
         return data;
       });
     }
+
+    var getUserName = function(profile) {
+      var validOwnerID = Object.keys(profile)[0];// Should be element.owner if it is a valid ID, undefined otherwise
+      return validOwnerID !== undefined ? profile[validOwnerID].displayName : 'Unknown';
+    };
 
     // State filtering for simulations (the second parameter is optional)
     var filterSimulations = function(simulations, state1, state2){
@@ -73,6 +76,7 @@
       functions.filterSimulations = filterSimulations;
       functions.transformResponse = transform;
       functions.owners = owners;
+      functions.getUserName = getUserName;
 
       return functions;
     };

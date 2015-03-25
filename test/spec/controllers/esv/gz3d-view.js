@@ -32,7 +32,10 @@ describe('Controller: Gz3dViewCtrl', function () {
   // Mock simulationServices
   var simulationServiceObject = {};
   simulationServiceObject.simulations = jasmine.createSpy('simulations');
+  simulationServiceObject.getUserName = jasmine.createSpy('getUserName').andCallFake(function(profile) { 
+    return profile[Object.keys(profile)[0]].displayName; });
   var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
+
 
   var simulationStateObject = {};
   simulationStateObject.update = jasmine.createSpy('update');
