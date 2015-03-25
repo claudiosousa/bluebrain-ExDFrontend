@@ -53,7 +53,8 @@ module.exports = function(config) {
       'app/scripts/esv/gz3d/client/js/include/ShaderPass.js',
       'app/scripts/esv/gz3d/build/gz3d.preprocessed.js',
       'test/support/**/*.js',
-      'app/scripts/*.js',
+      'app/scripts/app.preprocessed.js',
+      'app/scripts/task-input.js',
       'test/mock/**/*.js',
       'test/spec/**/*.js',
       'app/scripts/ncd/**/*.js',
@@ -72,7 +73,7 @@ module.exports = function(config) {
         // source files, that you want to generate coverage for
         // do not include tests or libraries
         // (these files will be instrumented by Istanbul)
-        'app/scripts/app.js': ['coverage'],
+        'app/scripts/app.preprocessed.js': ['coverage'],
         'app/scripts/ncd/**/*.js': ['coverage'],
         'app/scripts/exd/**/*.js': ['coverage'],
         'app/scripts/common/**/*.js': ['coverage'],

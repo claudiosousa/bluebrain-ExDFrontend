@@ -83,7 +83,9 @@
             // Set to true if you want to check for the existance of
             // a token while loading.
             bbpOidcSessionProvider.ensureToken(true);
-        });
+        })
+         // Versionning
+        .value('VERSION', '/* @echo VERSION */');
 
     // load the configuration used by bbpConfig
     // and then bootstrap the application.
