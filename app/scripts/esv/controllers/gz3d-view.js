@@ -30,11 +30,11 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', 'bbpConfig', 
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig', 
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl', 
       'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation', 
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'VERSION', 'nrpVersions',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, bbpConfig, 
+        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig, 
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl, 
           simulationState, simulationStatistics, serverError,
           lightControl, screenControl, cameraManipulation, 
@@ -62,6 +62,10 @@
         $scope.userID = profile.id;
         simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
           $scope.ownerID = data.owner;
+          var experimentID = data.experimentID;
+          $http.get('views/esv/experiment_templates.json').success(function (experimentData) {
+            $scope.ExperimentDescription = experimentData[experimentID].snippet;
+          });
           hbpUserDirectory.get([data.owner]).then(function (profile)
           {
             $scope.owner = simulationService().getUserName(profile);
