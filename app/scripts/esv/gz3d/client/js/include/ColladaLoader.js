@@ -66,7 +66,6 @@ THREE.ColladaLoader = function () {
 
 					if( request.status == 0 || request.status == 200 ) {
 
-
 						if ( request.responseXML ) {
 
 							readyCallbackFunc = readyCallback;
@@ -82,9 +81,15 @@ THREE.ColladaLoader = function () {
 						} else {
 
 							console.error( "ColladaLoader: Empty or non-existing file (" + url + ")" );
-
+							progressCallback( { total: 0, loaded: 0, error: true } );
+					
 						}
 
+					} else { // request.status != 0 && request.status != 200
+
+						console.error( "ColladaLoader: Empty or non-existing file (" + url + ")" );
+						progressCallback( { total: 0, loaded: 0, error: true } );
+						
 					}
 
 				} else if ( request.readyState == 3 ) {
@@ -97,13 +102,13 @@ THREE.ColladaLoader = function () {
 
 						}
 
-						progressCallback( { total: length, loaded: request.responseText.length } );
+						progressCallback( { total: length, loaded: request.responseText.length, error: false } );
 
 					}
 
 				}
 
-			}
+			};
 
 			request.open( "GET", url, true );
 			request.send( null );

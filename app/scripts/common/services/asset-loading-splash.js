@@ -17,7 +17,7 @@
       progressObserver = callback;
     };
 
-    var setProgress = function(data){
+    var setProgress = function(data) {
       // Notify our controller that we have an update!
       if (progressObserver) {
         progressObserver(data);
@@ -25,10 +25,10 @@
     };
 
     var open = function () {
-      myModal = myModal || $modal.open({
+      myModal = myModal || $modal.open( {
         backdrop: false,
         controller: 'AssetLoadingSplashCtrl',
-        templateUrl: 'views/splash/assetLoadingSplash.html',
+        templateUrl: 'views/splash/asset-loading-splash.html',
         windowTemplateUrl: 'views/splash/index.html'
       });
       return myModal;
@@ -50,21 +50,28 @@
   module.controller('AssetLoadingSplashCtrl', ['$scope', '$log', '$filter', '$timeout', 'assetLoadingSplash', function ($scope, $log, $filter, $timeout, assetLoadingSplash) {
     $scope.progressData = [];
     $scope.percentage = 0;
+    $scope.isError = false;
 
-    assetLoadingSplash.setProgressObserver(function(data){
+    $scope.close = function() {
+      assetLoadingSplash.close();
+    };
+    
+    assetLoadingSplash.setProgressObserver(function(data) {
       var totalSize = 0;
       var progress = 0;
       var isDone = true;
-      angular.forEach(data, function(element, index){
+      var isError = false;
+      angular.forEach(data, function(element, index) {
         totalSize = totalSize + element.totalSize;
         progress = progress + element.progress;
         isDone = isDone && element.done;
+        $scope.isError = $scope.isError || element.error;
       });
-      if (isDone){
-        assetLoadingSplash.close();
+      if (isDone && !$scope.isError ) { // if there were errors, a button is showed for the user to explicitly close the splash
+          assetLoadingSplash.close();
       }
       // We use $timeout to prevent "digest already in progress" error.
-      $timeout(function(){
+      $timeout(function() {
         $scope.$apply(function () {
           $scope.progressData = data;
           $scope.percentage = $filter('number')((progress*100/totalSize),0);

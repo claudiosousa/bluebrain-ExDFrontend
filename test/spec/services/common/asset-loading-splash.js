@@ -90,7 +90,7 @@
 
       assetLoadingSplashMock.setProgressObserver = jasmine.createSpy('setProgressObserver');
       assetLoadingSplashMock.close = jasmine.createSpy('close');
-
+      
       scope.$apply = jasmine.createSpy('$apply');
 
       spyOn(log, 'error');
@@ -110,12 +110,42 @@
       assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
 
-
       timeout.mostRecentCall.args[0]();
       scope.$apply.mostRecentCall.args[0]();
 
       expect(scope.progressData).toBe(exampleData);
       expect(scope.percentage).toEqual('75');
+    });
+
+    it('should close the splash close', function () {
+      scope.close();
+      expect(assetLoadingSplash.close).toHaveBeenCalled();
+    });
+
+    it('should close the splash when done without error', function () {
+      exampleData[0].progress = 1;
+      exampleData[0].done = true;
+      exampleData[1].progress = 1000;
+      exampleData[1].done = true;
+      assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
+      expect(assetLoadingSplash.close).toHaveBeenCalled();
+
+      timeout.mostRecentCall.args[0]();
+      scope.$apply.mostRecentCall.args[0]();
+
+      expect(scope.percentage).toEqual('100');
+    });
+
+    it('should not close the splash and set isError when done with error', function () {
+      exampleData[0].progress = 0;
+      exampleData[0].done = true;
+      exampleData[0].error = true;
+      exampleData[1].progress = 1000;
+      exampleData[1].done = true;
+      assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
+      expect(assetLoadingSplash.close).not.toHaveBeenCalled();
+      
+      expect(scope.isError).toBeTruthy();
     });
   });
 }());

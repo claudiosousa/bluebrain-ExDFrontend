@@ -2889,7 +2889,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           // so that we can choose between coarse or reqular models.
           checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
           checkModel.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2026 00:00:00 GMT");
-          checkModel.send();
+          try { checkModel.send(); } catch(err) { console.log(modelUri + ': no coarse version'); }
           if (checkModel.status === 404)
           {
             modelUri = modelUri+'.dae';
@@ -2935,6 +2935,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           }, function(progress){
             element.progress = progress.loaded;
             element.totalSize = progress.total;
+            element.error = progress.error;
             that.assetProgressCallback(that.assetProgressData);
           });
       }
@@ -6492,7 +6493,7 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
 
     dae.name = uri;
     callback(dae);
-  }, function(progress){
+  },function(progress){
     if (progressCallback !== undefined) {
       progressCallback(progress);
     }

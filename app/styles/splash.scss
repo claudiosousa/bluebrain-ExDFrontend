@@ -35,10 +35,17 @@
     transition: transform 0.5s;
 }
 
-
 .splash-open.splash .splash-inner {
     -webkit-transform: translate3d(0,0,0);
     transform: translate3d(0,0,0);
+}
+
+.splashbar-error {
+    background-color: #ff4444;
+}
+
+.splashbar {
+    background-color: #c0c0c0;
 }
 
 .splash .splash-content {
@@ -52,7 +59,7 @@
     font-size: 18px;
 }
 
-.splash .assetLoadingSplash-content {
+.splash .asset-loading-splash-content {
     @extend .splash-content;
     top: 20%;
 }

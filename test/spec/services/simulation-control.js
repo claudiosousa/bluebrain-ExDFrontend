@@ -137,7 +137,7 @@ describe('Services: simulation-services', function () {
     httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
     httpBackend.flush();
     simulationService().updateUptime();
-    expect(simulationService().uptime[0]).toBeGreaterThan(0);
+    expect(simulationService().uptime[0] >= 0).toBeTruthy();
     expect(simulationService().uptime[0]).toBeLessThan(1); // uptime should be around 0.001s, depending on machine.
   });
 
