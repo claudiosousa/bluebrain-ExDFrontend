@@ -4,7 +4,7 @@ describe('Directive: spiketrain', function () {
 
   beforeEach(module('exdFrontendApp'));
 
-  var $scope, element, roslib;
+  var $scope, element, roslib, window;
   var SERVER_URL = 'ws://localhost:1234';
   var SPIKE_TOPIC = '/cle_sim/spike';
 
@@ -19,128 +19,142 @@ describe('Directive: spiketrain', function () {
     $provide.value('roslib', roslibMock);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, _roslib_) {
+  beforeEach(inject(function ($rootScope, $compile, $window, _roslib_) {
     $scope = $rootScope.$new();
-    element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '"></spiketrain>')($scope);
+    element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')($scope);
     $scope.$digest();
     roslib = _roslib_;
+    window = $window;
   }));
 
   it('replaces the element with the appropriate content', function () {
     // Compile a piece of HTML containing the directive
-    expect(element.prop('outerHTML')).toContain('<div class="spiketrain ng-scope" server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '"><canvas></canvas></div>');
-  });
-
-  it('draw single pixels properly', function () {
-    var x = 45;
-    var y = 76;
-    $scope.drawPixel(x, y, 11, 22, 33, 44);
-    var index = (x + y * $scope.canvas.width) * 4;
-    expect($scope.canvasData.data[index + 0]).toBe(11);
-    expect($scope.canvasData.data[index + 1]).toBe(22);
-    expect($scope.canvasData.data[index + 2]).toBe(33);
-    expect($scope.canvasData.data[index + 3]).toBe(44);
-    for (var i = 0; i < $scope.canvasData.data.length; i = i + 1) {
-      if (i < index || i > index + 3) {
-        expect($scope.canvasData.data[i]).toBe(0);
-      }
-    }
-
-    // Make sure that the data is not actually put on the screen
-    // (onNewSpikesMessageReceived is actually responsible for that)
-    var ctx = $scope.canvas.getContext('2d');
-    var canvasData = ctx.getImageData(0, 0, $scope.canvas.width, $scope.canvas.height);
-    expect(canvasData.data[index + 0]).toBe(0);
-    expect(canvasData.data[index + 1]).toBe(0);
-    expect(canvasData.data[index + 2]).toBe(0);
-    expect(canvasData.data[index + 3]).toBe(0);
-  });
-
-  it('draw spike properly', function () {
-    var x = 26;
-    var y = 13;
-    var ysize = 5;
-    var color = { r: 11, g: 22, b: 33, a: 44 };
-    $scope.drawSpike(x, y, ysize, color);
-    for (var s = 0; s < ysize; s = s + 1) {
-      var index = (x + ((y + s) * $scope.canvas.width)) * 4;
-      expect($scope.canvasData.data[index + 0]).toBe(color.r);
-      expect($scope.canvasData.data[index + 1]).toBe(color.g);
-      expect($scope.canvasData.data[index + 2]).toBe(color.b);
-      expect($scope.canvasData.data[index + 3]).toBe(color.a);
-    }
-  });
-
-  it('should register neurons properly', function () {
-    var oneNeuronSizeAndIndex = $scope.getNeuronYIndexAndSize('neuron A');
-    var twoNeuronsSizeAndIndexB = $scope.getNeuronYIndexAndSize('neuron B');
-    var twoNeuronsSizeAndIndexA = $scope.getNeuronYIndexAndSize('neuron A');
-    expect(oneNeuronSizeAndIndex[0]).toBe(0);
-    expect(twoNeuronsSizeAndIndexA[0]).toBe(0);
-    expect(twoNeuronsSizeAndIndexA[1]).toBe(twoNeuronsSizeAndIndexB[1]);
-    expect(twoNeuronsSizeAndIndexA[1] - (oneNeuronSizeAndIndex[1] / 2)).toBeLessThan(1);
+    expect(element.prop('outerHTML')).toContain('<div class="spikegraph ng-scope ng-hide" server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div></div>');
   });
 
   it('should display spike message properly', function () {
-    var fakeMessage1 = {};
-    fakeMessage1.data = JSON.stringify({'simulation_interval': 10, spikes: [{neuron: 'A', time: 9}]});
-    $scope.onNewSpikesMessageReceived(fakeMessage1);
-    var ctx = $scope.canvas.getContext('2d');
-    var canvasData = ctx.getImageData(0, 0, $scope.canvas.width, $scope.canvas.height);
-    for (var i = 0; i < $scope.canvasData.data.length; i = i + 1) {
-      if (i >= $scope.canvasData.data.length - 4) { // Last pixel is not set (margin)
-        expect(canvasData.data[i]).toBe(0);
-      }
-      else if ((i - 1196) % 1200 === 0) {
-        // "r" value of our spike
-        expect(canvasData.data[i]).toBe(0);
-      }
-      else if ((i - 1197) % 1200 === 0) {
-        // "g" value of our spike
-        expect(canvasData.data[i]).toBe(0);
-      }
-      else if ((i - 1198) % 1200 === 0) {
-        // "b" value of our spike
-        expect(canvasData.data[i]).toBe(0);
-      }
-      else if ((i - 1199) % 1200 === 0) {
-        // "a" value of our spike
-        expect(canvasData.data[i]).toBe(255);
-      }
-      else {
-        expect(canvasData.data[i]).toBe(0);
-      }
+    var fakeMessage = {};
+    fakeMessage.data = JSON.stringify({'neuronCount': 1, 'simulationTime': 123456, spikes: [{neuron: 0, time: 9}]});
+    $scope.onNewSpikesMessageReceived(fakeMessage);
+    expect($scope.xPosition).toBe(1);
+
+    // canvas size is 300x150 as default
+    // The first column is black except of the last pixel
+    var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
+    for (var i = 0; i < canvasData.length - 4; i = i + 4) {
+      // "r" value of our spike
+      expect(canvasData[i]).toBe(0);
+      // "g" value of our spike
+      expect(canvasData[i + 1]).toBe(0);
+      // "b" value of our spike
+      expect(canvasData[i + 2]).toBe(0);
+      // "a" value of our spike
+      expect(canvasData[i + 3]).toBe(128);
+    }
+    // The last pixel is black-transparent (0,0,0,0)
+    for (i = 1; i <= 4; i += 1) {
+      expect(canvasData[canvasData.length - i]).toBe(0);
     }
 
-    // Send an empty message to shift the whole thing.
-    $scope.onNewSpikesMessageReceived();
-
-    canvasData = ctx.getImageData(0, 0, $scope.canvas.width, $scope.canvas.height);
-    for (i = 0; i < $scope.canvasData.data.length; i = i + 1) {
-      if (i >= $scope.canvasData.data.length - 8) { // Last 2 pixels are not set (margin)
-        expect(canvasData.data[i]).toBe(0);
-      }
-      else if ((i - 1192) % 1200 === 0) {
-        // "r" value of our spike
-        expect(canvasData.data[i]).toBe(0, ' at index: ' + i);
-      }
-      else if ((i - 1193) % 1200 === 0) {
-        // "g" value of our spike
-        expect(canvasData.data[i]).toBe(0, ' at index: ' + i);
-      }
-      else if ((i - 1194) % 1200 === 0) {
-        // "b" value of our spike
-        expect(canvasData.data[i]).toBe(0, ' at index: ' + i);
-      }
-      else if ((i - 1195) % 1200 === 0) {
-        // "a" value of our spike
-        expect(canvasData.data[i]).toBe(255, ' at index: ' + i);
-      }
-      else {
-        expect(canvasData.data[i]).toBe(0, ' at index: ' + i);
-      }
+    // The rest of the canvas is black-transparent (0,0,0,0)
+    canvasData = $scope.ctx[1].getImageData(1, 0, $scope.canvas[1].width - 1, $scope.canvas[1].height).data;
+    expect(canvasData.length).toBe(($scope.canvas[1].width - 1) * $scope.canvas[1].height * 4);
+    for (i = 0; i < canvasData.length; i = i + 1) {
+      expect(canvasData[i]).toBe(0);
     }
 
+    // Simulate canvas switch
+    $scope.xPosition = $scope.canvas[1].width;
+    $scope.onNewSpikesMessageReceived(fakeMessage);
+    expect($scope.xPosition).toBe(1);
+    expect($scope.currentCanvas).toBe(0);
+
+    // canvas size is 300x150 as default
+    // The first column is black except of the last pixel
+    canvasData = $scope.ctx[$scope.currentCanvas].getImageData(0, 0, 1, $scope.canvas[$scope.currentCanvas].height).data;
+    for (i = 0; i < canvasData.length - 4; i = i + 4) {
+      // "r" value of our spike
+      expect(canvasData[i]).toBe(0);
+      // "g" value of our spike
+      expect(canvasData[i + 1]).toBe(0);
+      // "b" value of our spike
+      expect(canvasData[i + 2]).toBe(0);
+      // "a" value of our spike
+      expect(canvasData[i + 3]).toBe(128);
+    }
+    // The last pixel is black-transparent (0,0,0,0)
+    for (i = 1; i <= 4; i += 1) {
+      expect(canvasData[canvasData.length - i]).toBe(0);
+    }
+  });
+
+  it('should display red bar at multiples of 100 properly', function () {
+    var fakeMessage = {};
+    fakeMessage.data = JSON.stringify({'neuronCount': 1, 'simulationTime': 200, spikes: []});
+    $scope.onNewSpikesMessageReceived(fakeMessage);
+    expect($scope.xPosition).toBe(1);
+
+    // canvas size is 300x150 as default
+    // The first column is red
+    var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
+    for (var i = 0; i < canvasData.length - 4; i = i + 4) {
+      // "r" value of our spike
+      expect(canvasData[i]).toBe(255);
+      // "g" value of our spike
+      expect(canvasData[i + 1]).toBe(0);
+      // "b" value of our spike
+      expect(canvasData[i + 2]).toBe(0);
+      // "a" value of our spike
+      expect(canvasData[i + 3]).toBe(128);
+    }
+  });
+
+  it('should skip message if undefined', function () {
+    $scope.xPosition = 1;
+    $scope.onNewSpikesMessageReceived(undefined);
+    expect($scope.xPosition).toBe(1);
+  });
+
+  it('should update the canvas size on resize', function () {
+    //Default size of the canvas
+    expect($scope.canvas[0].width).toBe(300);
+    expect($scope.canvas[0].height).toBe(150);
+    expect($scope.canvas[1].width).toBe(300);
+    expect($scope.canvas[1].height).toBe(150);
+
+
+    // Mock this DIV, because offsetWidth is not available in this test
+    $scope.directiveDiv = {};
+    $scope.directiveDiv.offsetWidth = 400;
+    $scope.directiveDiv.offsetHeight = 200;
+
+    $scope.onScreenSizeChanged();
+    expect($scope.directiveDiv.offsetWidth).toBe(400);
+    expect($scope.canvas[0].width).toBe(400);
+    expect($scope.canvas[0].height).toBe(200);
+    expect($scope.canvas[1].width).toBe(400);
+    expect($scope.canvas[1].height).toBe(200);
+  });
+
+  it('should call the resize function (1)', function () {
+    spyOn($scope, 'onScreenSizeChanged');
+    /*global $: false */
+    $(window).resize();
+    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
+  });
+
+  it('should call the resize function (2)', function () {
+    spyOn($scope, 'onScreenSizeChanged');
+    element.css('display', 'block');
+    $scope.$digest();
+    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
+  });
+
+  it('should call the startSpikeDisplay function', function () {
+    spyOn($scope, 'startSpikeDisplay');
+    $scope.showSpikeTrain = true;
+    $scope.$digest();
+    expect($scope.startSpikeDisplay).toHaveBeenCalled();
   });
 
   it('should connect to roslib when calling startSpikeDisplay', function () {

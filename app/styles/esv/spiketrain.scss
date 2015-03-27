@@ -1,26 +1,77 @@
-.spiketrain {
+$spikeTrainBottom: 65px;
+$spikeTrainHeight: 175px;
+$spikeTrainBorder: 2px;
+$spikeTrainMargin: 5px;
+
+.spikegraph {
   position: absolute;
   left:0;
   right:0;
   margin-left:auto;
   margin-right:auto;
-  bottom: 65px;
   background:rgba(255, 255, 255, 0.8);
   width: 90%;
-  height: 175px;
   border-radius: 8px;
   border-color: black;
-  border: 2px solid;
+  border: $spikeTrainBorder solid;
   transition: 0.5s linear all;
   opacity: 1;
+  bottom: $spikeTrainBottom;
+  height: $spikeTrainHeight;
 }
 
-.spiketrain.ng-hide {
+.spikegraph.ng-hide {
   opacity: 0;
 }
 
+.spiketrain {
+  position: relative;
+  margin: $spikeTrainMargin $spikeTrainMargin $spikeTrainMargin 35px;
+  width: auto;
+  height: $spikeTrainHeight - 2 * $spikeTrainMargin - 2 * $spikeTrainBorder;
+  overflow: hidden;
+}
+
+.spikerate {
+  bottom: $spikeTrainBottom + $spikeTrainHeight + 10px;
+  height: 120px;
+}
+
 .spiketrain canvas {
-  width: 100%;
+  position: absolute;
+}
+
+.spikegraph .leftaxis {
+  width: 35px;
+  float: left;
   height: 100%;
-  padding: 10px 15px 10px 15px;
+}
+
+.spikegraph .leftaxis .arrow {
+  margin: 15px auto 10px;
+  height: $spikeTrainHeight - 25;
+  background: black;
+  width: 4px;
+}
+
+.spikegraph .leftaxis .arrow:after {
+  content: "";
+  border-left: 8px solid rgba(0, 0, 0, 0);
+  border-right: 8px solid rgba(0, 0, 0, 0);
+  border-bottom: 8px solid black;
+  float: right;
+  margin-top: -7px;
+  margin-right: -6px;
+}
+
+.spikegraph .leftaxis .arrow .legend {
+  position: absolute;
+  transform: rotate(270deg);
+  transform-origin: left 10px 0px;
+  top: 125px;
+  background-color: rgb(219, 219, 219);
+  border-style: solid;
+  border-width: 2px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
