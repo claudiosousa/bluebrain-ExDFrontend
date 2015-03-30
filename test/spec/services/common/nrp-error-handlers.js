@@ -21,4 +21,10 @@ describe('Services: nrp-error-handlers', function () {
     expect(hbpErrorService.httpError.callCount).toBe(1);
   });
 
+  it('should call neither hbpErrorService.httpError nor hbpDialogFactory.error', function() {
+    var response = { data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, status: 0 };
+    serverError(response);
+    expect(hbpDialogFactory.error).not.toHaveBeenCalled();
+    expect(hbpErrorService.httpError).not.toHaveBeenCalled();
+  });
 });

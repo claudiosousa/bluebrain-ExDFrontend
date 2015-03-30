@@ -27,15 +27,17 @@
       defaults = angular.isArray(defaults) ? defaults : [defaults];
       // Append the new transformation to the defaults
       return defaults.concat(function(data) {
-        angular.forEach(data, function(element, index){
-          element.serverID = serverID;
-          // keep a copy of creation dates in an array (will be used to calculate uptime array)
-          creationDate[element.simulationID] = element.creationDate;
-          hbpUserDirectory.get([element.owner]).then(function (profile)
-          {
-            owners[element.owner] = getUserName(profile);
+        if (angular.isArray(data)) { // false in case of a Bad Gateway Error 502
+          angular.forEach(data, function(element, index){
+            element.serverID = serverID;
+            // keep a copy of creation dates in an array (will be used to calculate uptime array)
+            creationDate[element.simulationID] = element.creationDate;
+            hbpUserDirectory.get([element.owner]).then(function (profile)
+            {
+              owners[element.owner] = getUserName(profile);
+            });
           });
-        });
+        }
         return data;
       });
     }
