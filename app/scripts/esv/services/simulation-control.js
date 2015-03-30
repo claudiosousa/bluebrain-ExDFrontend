@@ -10,14 +10,14 @@
 
     // Keeps track of the owner of experiments in a map (id -> display name)
     var owners = {};
-    var creationDate = [];
-    var uptime = [];
+    var creationDate = {};
+    var uptime = {};
     
     // update simulation uptimes every second (uptime is accessed in the html directly)
     var updateUptime = function() {
-      for (var i = 0; i < creationDate.length; i += 1) {
-        uptime[i] = uptimeFilter(creationDate[i]);
-      }
+      angular.forEach(creationDate, function(element, key) {
+        uptime[key] = uptimeFilter(element);
+      });
     };
 
     // transform the response data
@@ -28,10 +28,10 @@
       // Append the new transformation to the defaults
       return defaults.concat(function(data) {
         if (angular.isArray(data)) { // false in case of a Bad Gateway Error 502
-          angular.forEach(data, function(element, index){
+          angular.forEach(data, function(element, index) {
             element.serverID = serverID;
             // keep a copy of creation dates in an array (will be used to calculate uptime array)
-            creationDate[element.simulationID] = element.creationDate;
+            creationDate[serverID + '-' + element.simulationID] = element.creationDate;
             hbpUserDirectory.get([element.owner]).then(function (profile)
             {
               owners[element.owner] = getUserName(profile);
