@@ -34,7 +34,7 @@
                     "websocket": "ws://bbpce014.epfl.ch:9090",
                     "topics": {
                         "status": "/ros_cle_simulation/status",
-                        "spikes": "/ros_cle_simulation/spikes"
+                        "spikes": "/monitor/spike_recorder"
                     }
                 }
             },
@@ -48,7 +48,7 @@
                     "websocket": "ws://bbpce016.epfl.ch:9090",
                     "topics": {
                         "status": "/ros_cle_simulation/status",
-                        "spikes": "/ros_cle_simulation/spikes"
+                        "spikes": "/monitor/spike_recorder"
                     }
                 }
             },
@@ -62,7 +62,7 @@
                     "websocket": "ws://bbpce018.epfl.ch:9090",
                     "topics": {
                         "status": "/ros_cle_simulation/status",
-                        "spikes": "/ros_cle_simulation/spikes"
+                        "spikes": "/monitor/spike_recorder"
                     }
                 }
             }
