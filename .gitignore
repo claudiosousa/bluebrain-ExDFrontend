@@ -21,6 +21,7 @@
 /coverage
 /npm-debug.log
 /reports
+/app/version.json
 
 # Temp Folders #
 ################

@@ -2155,13 +2155,6 @@ GZ3D.GZIface.prototype.onConnected = function()
       this.scene.name = message.name;
     }
 
-    // @ifdef NRP_GRID_ON
-    if (message.grid === true)
-    {
-      this.gui.guiEvents.emit('show_grid', 'show');
-    }
-    //@endif
-
     if (message.ambient)
     {
       var ambient = new THREE.Color();
@@ -4828,7 +4821,7 @@ GZ3D.Scene.prototype.init = function()
   // camera
   this.camera = new THREE.PerspectiveCamera(
       60, window.innerWidth / window.innerHeight, 0.1, 1000 );
-  this.defaultCameraPosition = new THREE.Vector3(/* @echo NRP_CAMERA_INITPOS */);
+  this.defaultCameraPosition = new THREE.Vector3(5.0, 0.0, 1.0);
   this.resetView();
 
   // Grid
@@ -5582,22 +5575,6 @@ GZ3D.Scene.prototype.updateLight = function(model, light)
   {
     direction = null;
     lightType = this.POINT;
-    // @ifdef NRP_SYNC_SLIDER_ON
-    if (light.name === 'left_spot') {
-        var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
-        if (scope.lightChangeTriggered === false) {
-            var ratio = this.attenuationToIntensity(light.attenuation_constant, spot) / lightObj.initialIntensity;
-            var position = Math.round(50.25 * (ratio - 1) + 50.0);
-
-            if (position !== Math.round(scope.sliderPosition)) {
-                scope.sliderPosition = position;
-                scope.$digest();
-            }
-        } else {
-          scope.lightChangeTriggered = false;
-        }
-    }
-    // @endif
   }
   else if (lightObj instanceof THREE.SpotLight)
   {
@@ -5927,22 +5904,8 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   obj.serverProperties.attenuation_linear = attenuation_linear;
   obj.serverProperties.attenuation_quadratic = attenuation_quadratic;
 
-  // @ifndef NRP_LIGHTS_WIREFRAME_ON
   helper.visible = false;
-  // @endif
-
   lightObj.initialIntensity = lightObj.intensity; //TODO(Luc): retrieve initial intensity from .sdf by means of a service
-
-  // @ifdef NRP_SYNC_SLIDER_ON
-  if (lightObj.name === 'left_spot') {
-    var originalLeftSpotConstants = new THREE.Vector3(/* @echo NRP_REF_LEFT_SPOT_CONSTANTS */);
-    var ratio = (lightObj.initialIntensity) / (originalLeftSpotConstants.x * 1.5);
-    var position = 50.25 * (ratio - 1) + 50.0;
-    var scope = angular.element('[ng-controller=Gz3dViewCtrl]').scope();
-    scope.sliderPosition = position;
-    scope.$digest();
-  }
-  // @endif
 
   obj.add(lightObj);
   obj.add(helper);

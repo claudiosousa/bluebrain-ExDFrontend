@@ -23,9 +23,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulations,
     hbpUserDirectory,
     fakeSimulationData,
-    nrpVersions,
-    STATE,
-    VERSION;
+    nrpBackendVersions,
+    nrpFrontendVersion,
+    STATE;
 
   var simulationStatisticsMock = {};
   simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
@@ -81,9 +81,11 @@ describe('Controller: Gz3dViewCtrl', function () {
   hbpUserDirectoryMock.getCurrentUser = jasmine.createSpy('getCurrentUser').andReturn(hbpUserDirectoryPromiseObject);
   hbpUserDirectoryMock.get = jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2);
 
-  var nrpVersionsObject = {};
-  nrpVersionsObject.get = jasmine.createSpy('get');
-  var nrpVersionsMock = jasmine.createSpy('nrpVersions').andReturn(nrpVersionsObject);
+  var nrpBackendVersionsObject = {};
+  nrpBackendVersionsObject.get = jasmine.createSpy('get');
+  var nrpBackendVersionsMock = jasmine.createSpy('nrpBackendVersions').andReturn(nrpBackendVersionsObject);
+  var nrpFrontendVersionMock = {};
+  nrpFrontendVersionMock.get = jasmine.createSpy('get');
 
   var currentUserInfo1234 = {
     displayName: 'John Does',
@@ -119,9 +121,10 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('screenControl', screenControlMock);
     $provide.value('$stateParams', stateParams);
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
-    $provide.value('nrpVersions', nrpVersionsMock);
-    nrpVersionsMock.reset();
-    nrpVersionsObject.get.reset();
+    $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
+    $provide.value('nrpFrontendVersion', nrpFrontendVersionMock);
+    nrpBackendVersionsMock.reset();
+    nrpBackendVersionsObject.get.reset();
   }));
 
   // Initialize the controller and a mock scope
@@ -139,9 +142,9 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _simulationControl_,
                               _screenControl_,
                               _$stateParams_,
-                              _nrpVersions_,
-                              _STATE_,
-                              _VERSION_) {
+                              _nrpBackendVersions_,
+                              _nrpFrontendVersion_,
+                              _STATE_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     hbpUserDirectory = _hbpUserDirectory_;
@@ -156,9 +159,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationControl = _simulationControl_;
     screenControl = _screenControl_;
     stateParams = _$stateParams_;
-    nrpVersions = _nrpVersions_;
+    nrpBackendVersions = _nrpBackendVersions_;
+    nrpFrontendVersion = _nrpFrontendVersion_;
     STATE = _STATE_;
-    VERSION = _VERSION_;
 
     rootScope.scene = {};
     rootScope.scene.radialMenu = {};
@@ -512,18 +515,19 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.helpModeActivated).toBe(true);
   });
 
-  it('should call nrpVersions.get and set scope.versions with retrieved back-end versions', function() {
-    expect(nrpVersions.callCount).toBe(1);
-    expect(nrpVersions.mostRecentCall.args[0].indexOf(stateParams.serverID) > -1).toBe(true);
-    expect(nrpVersionsObject.get.mostRecentCall.args[0]).toEqual(jasmine.any(Function));
-    expect(nrpVersionsObject.get.callCount).toBe(1);
+  it('should call nrpBackendVersions.get and set scope.versions with retrieved back-end versions', function() {
+    expect(nrpBackendVersions.callCount).toBe(1);
+    expect(nrpBackendVersions.mostRecentCall.args[0].indexOf(stateParams.serverID) > -1).toBe(true);
+    expect(nrpBackendVersionsObject.get.mostRecentCall.args[0]).toEqual(jasmine.any(Function));
+    expect(nrpBackendVersionsObject.get.callCount).toBe(1);
     //Ignore this warning because of hbp_nrp_cle and hbp_nrp_backend
     /*jshint camelcase: false */
     
-    var data = {hbp_nrp_cle: '0.0.5.dev0', hbp_nrp_backend: '0.0.4'};
-    /* global jQuery: false */
-    var dataResult = jQuery.extend({hbp_nrp_esv: VERSION}, data);
-    nrpVersionsObject.get.mostRecentCall.args[0](data);
+    var backendData = {hbp_nrp_cle: '0.0.5.dev0', hbp_nrp_backend: '0.0.4'};
+    var frontendData = { hbp_nrp_esv: '0.0.1' };
+    var dataResult = angular.extend(frontendData, backendData);
+    nrpFrontendVersion.get.mostRecentCall.args[0](frontendData);
+    nrpBackendVersionsObject.get.mostRecentCall.args[0](backendData);
     expect(scope.versions).toEqual(dataResult);
   });
 
