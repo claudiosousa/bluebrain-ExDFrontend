@@ -12,8 +12,9 @@ describe('Directive: spiketrain', function () {
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
+  returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
-  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
+  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
 
   beforeEach(module(function ($provide) {
     $provide.value('roslib', roslibMock);
@@ -33,15 +34,14 @@ describe('Directive: spiketrain', function () {
   });
 
   it('should display spike message properly', function () {
-    var fakeMessage = {};
-    fakeMessage.data = JSON.stringify({'neuronCount': 1, 'simulationTime': 123456, spikes: [{neuron: 0, time: 9}]});
+    var fakeMessage = {'neuronCount': 1, 'simulationTime': 0.01, spikes: [{neuron: 0, time: 9}]};
     $scope.onNewSpikesMessageReceived(fakeMessage);
     expect($scope.xPosition).toBe(1);
 
     // canvas size is 300x150 as default
-    // The first column is black except of the last pixel
+    // The first column is black except of the last 16 pixel
     var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
-    for (var i = 0; i < canvasData.length - 4; i = i + 4) {
+    for (var i = 0; i < canvasData.length - (4 * 17); i = i + 4) {
       // "r" value of our spike
       expect(canvasData[i]).toBe(0);
       // "g" value of our spike
@@ -52,7 +52,7 @@ describe('Directive: spiketrain', function () {
       expect(canvasData[i + 3]).toBe(128);
     }
     // The last pixel is black-transparent (0,0,0,0)
-    for (i = 1; i <= 4; i += 1) {
+    for (i = 1; i <= 4 * 16; i += 1) {
       expect(canvasData[canvasData.length - i]).toBe(0);
     }
 
@@ -67,12 +67,12 @@ describe('Directive: spiketrain', function () {
     $scope.xPosition = $scope.canvas[1].width;
     $scope.onNewSpikesMessageReceived(fakeMessage);
     expect($scope.xPosition).toBe(1);
-    expect($scope.currentCanvas).toBe(0);
+    expect($scope.currentCanvasIndex).toBe(0);
 
     // canvas size is 300x150 as default
-    // The first column is black except of the last pixel
-    canvasData = $scope.ctx[$scope.currentCanvas].getImageData(0, 0, 1, $scope.canvas[$scope.currentCanvas].height).data;
-    for (i = 0; i < canvasData.length - 4; i = i + 4) {
+    // The first column is black except of the last 16 pixel
+    canvasData = $scope.ctx[$scope.currentCanvasIndex].getImageData(0, 0, 1, $scope.canvas[$scope.currentCanvasIndex].height).data;
+    for (i = 0; i < canvasData.length - (4 * 17); i = i + 4) {
       // "r" value of our spike
       expect(canvasData[i]).toBe(0);
       // "g" value of our spike
@@ -83,29 +83,71 @@ describe('Directive: spiketrain', function () {
       expect(canvasData[i + 3]).toBe(128);
     }
     // The last pixel is black-transparent (0,0,0,0)
-    for (i = 1; i <= 4; i += 1) {
+    for (i = 1; i <= (4 * 16); i += 1) {
       expect(canvasData[canvasData.length - i]).toBe(0);
     }
   });
 
   it('should display red bar at multiples of 100 properly', function () {
-    var fakeMessage = {};
-    fakeMessage.data = JSON.stringify({'neuronCount': 1, 'simulationTime': 200, spikes: []});
+    var fakeMessage = {'neuronCount': 1, 'simulationTime': 1.00, spikes: []};
     $scope.onNewSpikesMessageReceived(fakeMessage);
     expect($scope.xPosition).toBe(1);
 
     // canvas size is 300x150 as default
-    // The first column is red
+    // The first column is red except for the last 15 pixel
     var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
-    for (var i = 0; i < canvasData.length - 4; i = i + 4) {
-      // "r" value of our spike
+    for (var i = 0; i < canvasData.length - (4 * 16); i = i + 4) {
+      // "r" value
       expect(canvasData[i]).toBe(255);
-      // "g" value of our spike
+      // "g" value
       expect(canvasData[i + 1]).toBe(0);
-      // "b" value of our spike
+      // "b" value
       expect(canvasData[i + 2]).toBe(0);
-      // "a" value of our spike
+      // "a" value
       expect(canvasData[i + 3]).toBe(128);
+    }
+  });
+
+  it('should display black separation bar on re-showing the monitor (not the first one)', function () {
+    spyOn($scope, 'startSpikeDisplay').andCallThrough();
+    spyOn($scope, 'drawSeparator').andCallThrough();
+    $scope.showSpikeTrain = true;
+    $scope.$digest();
+    expect($scope.startSpikeDisplay).toHaveBeenCalledWith(true);
+    expect($scope.drawSeparator).not.toHaveBeenCalled();
+
+    // canvas size is 300x150 as default
+    // no separation bar should have been drawn
+    var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
+    for (var i = 0; i < canvasData.length ; i = i + 1) {
+      expect(canvasData[i]).toBe(0);
+    }
+
+    $scope.showSpikeTrain = false;
+    $scope.$digest();
+
+    $scope.startSpikeDisplay.reset();
+    $scope.drawSeparator.reset();
+    $scope.xPosition = 10;
+
+    $scope.showSpikeTrain = true;
+    $scope.$digest();
+    expect($scope.startSpikeDisplay).toHaveBeenCalledWith(false);
+    expect($scope.drawSeparator).toHaveBeenCalled();
+
+    // canvas size is 300x150 as default
+    // The first column is black except for the last 15 pixel
+    canvasData = $scope.ctx[1].getImageData($scope.xPosition, 0, 1, $scope.canvas[1].height).data;
+    for (i = 0; i < canvasData.length - (4 * 16); i = i + 4) {
+      // "r" value
+      expect(canvasData[i]).toBe(0);
+      // "g" value
+      expect(canvasData[i + 1]).toBe(0);
+      // "b" value
+      expect(canvasData[i + 2]).toBe(0);
+      // "a" value
+      // normally half transparent (128) but in between more in the direction to opaque because of the double ~ sign
+      expect(canvasData[i + 3]).toBeGreaterThan(0);
     }
   });
 
@@ -159,14 +201,14 @@ describe('Directive: spiketrain', function () {
 
   it('should connect to roslib when calling startSpikeDisplay', function () {
     roslibMock.getOrCreateConnectionTo.reset();
-    roslibMock.createStringTopic.reset();
+    roslibMock.createTopic.reset();
     returnedConnectionObject.subscribe.reset();
 
     $scope.spikeTopicSubscriber = undefined;
     $scope.startSpikeDisplay();
 
     expect(roslibMock.getOrCreateConnectionTo).toHaveBeenCalled();
-    expect(roslibMock.createStringTopic).toHaveBeenCalled();
+    expect(roslibMock.createTopic).toHaveBeenCalled();
     expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
   });
 
