@@ -105,6 +105,9 @@
             <div ng-if="isOwner" class="hbp-toolbar-action" tooltip="Here you can stop the simulation on the server." tooltip-enable="helpModeActivated" ng-click="updateSimulation(STATE.STOPPED)" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
+            <div ng-if="isOwner" class="hbp-toolbar-action" tooltip="Here you can reset the simulation on the server. The robot will return to its initial position and the simulation will be paused." tooltip-enable="helpModeActivated" ng-click="updateSimulation(STATE.INITIALIZED)" ng-show="(state === STATE.PAUSED)">
+              <i class="glyphicon glyphicon glyphicon-repeat"></i>
+            </div>
             <div ng-show="(state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED)">
               <!-- For tooltip-enable, see: https://github.com/angular-ui/bootstrap/issues/3372 -->
               <!-- Since this feature is not documented. -->
