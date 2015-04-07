@@ -46,10 +46,6 @@ module.exports = function(grunt) {
                     livereload: '<%= connect.options.livereload %>'
                 }
             },
-            jspreprocessed: {
-                files: ['<%= yeoman.app %>/scripts/esv/gz3d/build/gz3d.js'],
-                tasks: ['preprocess']
-            },
             jsTest: {
                 files: ['test/spec/**/*.js'],
                 tasks: ['newer:jshint:test', 'karma']
@@ -504,24 +500,17 @@ module.exports = function(grunt) {
           }
         },
 
-        preprocess : {
+        version: {
           options: {
-            context : {
-              NRP_LIGHTS_WIREFRAME_ON: undefined, // set to true if wanted
-              NRP_GRID_ON: undefined, // set to true if wanted
-              NRP_CAMERA_INITPOS: '5, 0, 1', // initial camera position = 'X, Y, Z',
-              NRP_SYNC_SLIDER_ON: undefined, // activate temporary hack to synchronize sliders when multiple clients are used
-              NRP_REF_LEFT_SPOT_CONSTANTS: '0.3, 0.04, 0.03', // temporary hack to set initial slider position
-              VERSION: '<%= pkg.version %>'
-            }
+             version: '<%= pkg.version %>'                
           },
-          multifile : {
-           files : {
-             '<%= yeoman.app %>/scripts/esv/gz3d/build/gz3d.preprocessed.js' : '<%= yeoman.app %>/scripts/esv/gz3d/build/gz3d.js',
-             '<%= yeoman.app %>/scripts/app.preprocessed.js' : '<%= yeoman.app %>/scripts/app.js'
-            }
+          dist: {
+            file: '<%= yeoman.dist %>/version.json'
+          },
+          test: {
+            file: '<%= yeoman.app %>/version.json',
           }
-        }
+        },
     });
 
 
@@ -531,7 +520,7 @@ module.exports = function(grunt) {
         }
 
         grunt.task.run([
-            'preprocess',
+        	'version:test',
             'clean:server',
             'wiredep',
             'concurrent:server',
@@ -541,13 +530,19 @@ module.exports = function(grunt) {
         ]);
     });
 
+
+    grunt.registerMultiTask('version', 'Retrieve the version of the application and put it in version.json', function(){
+       grunt.file.write(this.data.file, '{ \"hbp_nrp_esv\" : \"' + this.options().version + '\" }');
+    });
+
+
     grunt.registerTask('server', 'DEPRECATED TASK. Use the "serve" task instead', function(target) {
         grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
         grunt.task.run(['serve:' + target]);
     });
 
     grunt.registerTask('test', [
-        'preprocess',
+    	'version:test',
         'clean:server',
         'concurrent:test',
         'autoprefixer',
@@ -557,8 +552,8 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask('build', [
-        'preprocess',
         'clean:dist',
+        'version:dist',
         'wiredep',
         'compass:dist',
         'useminPrepare',
@@ -601,6 +596,4 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('doc', ['clean', 'jsdoc']);
-
-    grunt.loadNpmTasks('grunt-preprocess');
 };

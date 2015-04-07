@@ -10,7 +10,6 @@
    */
 
   /* global GZ3D: false */
-
   /* global THREE: false */
   /* global console: false */
 
@@ -33,12 +32,14 @@
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig', 
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl', 
       'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation', 
-      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'VERSION', 'nrpVersions',
+      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
+      'nrpFrontendVersion',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig, 
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl, 
           simulationState, simulationStatistics, serverError,
           lightControl, screenControl, cameraManipulation, 
-          timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, VERSION, nrpVersions) {
+          timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
+          nrpFrontendVersion) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -81,10 +82,11 @@
         $scope.state = data.state;
         $scope.registerForStatusInformation();
       });
-
-      nrpVersions(serverBaseUrl).get(function(data) {
-        $scope.versions = data;
-        $scope.versions.hbp_nrp_esv = VERSION;
+      
+      $scope.versions = {};
+      nrpFrontendVersion.get(function(data) { $scope.versions.hbp_nrp_esv = data.hbp_nrp_esv; });
+      nrpBackendVersions(serverBaseUrl).get(function(data) {
+        $scope.versions = angular.extend($scope.versions, data);
       });
       /* status messages are listened to here. A splash screen is opened to display progress messages. */
       /* This is the case when closing an simulation for example. Loading is taken take of */
