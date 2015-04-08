@@ -134,30 +134,31 @@
               <div tooltip="With those controls, you can change the viewpoint of your local camera. By clicking on the left/right/diagonal arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/backward/right. The up/down arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position." tooltip-enable="helpModeActivated" class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
                 <div class="hbp-camera-tool-controls">
                   <div class="hbp-camera-tool-controls-overlay"><img src="img/esv/translation_icon.png" width=32 height=32></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 1, 0);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, 1);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(-1, 0, 0);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraResetToInitPose();"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(1, 0, 0);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, -1);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, -1, 0);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third"><img/></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 1, 0);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, 1);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(-1, 0, 0);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraResetToInitPose();"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(1, 0, 0);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, 0, -1);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraTranslate(0, -1, 0);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                 </div>
               </div>
               <!-- camera rotation tool -->
               <div tooltip="With those controls, you can change the orientation of your local camera. The center circle lets you reset the orientation. You also can look around by draging the mouse in the 3d-scene." tooltip-enable="helpModeActivated" class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container">
                 <div class="hbp-camera-tool-controls">
                   <div class="hbp-camera-tool-controls-overlay"><img src="img/esv/rotation_icon.png" width=32 height=32></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(0, 5);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(5, 0);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraLookAtOrigin();"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(-5, 0);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(0, -5);"><img/></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third"><img/></div>
+                  <!-- in each flex little box, we put an 1 pixel image, else the box has a null size. And on Firefox, <img/> is not working -->
+                  <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(0, 5);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(5, 0);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraLookAtOrigin();"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(-5, 0);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-click="cameraRotate(0, -5);"><img src="img/esv/empty.png"></div>
+                  <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                 </div>
               </div>
               <div tooltip="This button toggles the view for the spike-train visualization." tooltip-enable="helpModeActivated" class="hbp-toolbar-action" ng-click="toggleSpikeTrain()" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
