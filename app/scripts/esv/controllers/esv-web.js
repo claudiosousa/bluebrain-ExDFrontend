@@ -75,7 +75,8 @@
     };
 
     $scope.joinExperiment = function(url) {
-      $scope.setProgressMessage({main: url});
+      var message = 'Joining experiment ' + url;
+      $scope.setProgressMessage({main: message});
       // Due to reconnection issues in gz3d, we do force a reload here.
       $window.location.href = url;
       $window.location.reload();

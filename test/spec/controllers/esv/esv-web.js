@@ -143,7 +143,8 @@ describe('Controller: experimentCtrl', function () {
     scope.setProgressMessage = jasmine.createSpy('setProgressMessage');
 
     scope.joinExperiment('fake_url');
-    expect(scope.setProgressMessage).toHaveBeenCalledWith({main: 'fake_url'});
+    var message = 'Joining experiment ' + 'fake_url';
+    expect(scope.setProgressMessage).toHaveBeenCalledWith({main: message});
     expect(window.location.href).toEqual('fake_url');
     expect(window.location.reload).toHaveBeenCalled();
   });
