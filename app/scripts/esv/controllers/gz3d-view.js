@@ -29,15 +29,15 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig', 
-      'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl', 
-      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation', 
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig',
+      'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
+      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig, 
-          gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl, 
+        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig,
+          gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, simulationStatistics, serverError,
-          lightControl, screenControl, cameraManipulation, 
+          lightControl, screenControl, cameraManipulation,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion) {
 
@@ -82,7 +82,7 @@
         $scope.state = data.state;
         $scope.registerForStatusInformation();
       });
-      
+
       $scope.versions = {};
       nrpFrontendVersion.get(function(data) { $scope.versions.hbp_nrp_esv = data.hbp_nrp_esv; });
       nrpBackendVersions(serverBaseUrl).get(function(data) {
@@ -197,12 +197,6 @@
         var material = child ? child.material : undefined;
 
         if (entityToChange && child && material && colors[value]) {
-          // currently we use .setHex(), because for some reason regRGB() does not respect the
-          // brightness, i.e. when turning the lights down the objects do not get darker
-          material.color.setHex(colors[value]);
-          material.ambient.setHex(colors[value]);
-          material.specular.setHex(colors[value]);
-
           // send RESTful commands to server
           var screenParams = {};
 

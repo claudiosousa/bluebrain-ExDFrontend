@@ -2300,6 +2300,8 @@ GZ3D.GZIface.prototype.onConnected = function()
         }
         i++;
       }
+    } else {
+      this.updateModelFromMsg(this.scene.getByName(message.name), message);
     }
     this.gui.setModelStats(message, 'update');
   };
@@ -2647,6 +2649,23 @@ GZ3D.GZIface.prototype.onConnected = function()
   );
 };
 
+// This method uses code also to be found at GZ3D.GZIface.prototype.createModelFromMsg.
+// Currently not everything is handled for an update, but this method was introduced to handle
+// the updates of colors of objects; if there should be more functionality one could consider
+// merging the two methods and extracting the different things to parameters (or any other means
+// of configuration).
+GZ3D.GZIface.prototype.updateModelFromMsg = function (modelObj, modelMsg) {
+  for (var j = 0; j < modelMsg.link.length; ++j) {
+    var link = modelMsg.link[j];
+    var linkObj = modelObj.children[j];
+
+    for (var k = 0; k < link.visual.length; ++k) {
+      var visual = link.visual[k];
+      var visualObj = linkObj.getObjectByName(visual.name);
+      this.updateVisualFromMsg(visualObj, visual);
+    }
+  }
+};
 
 GZ3D.GZIface.prototype.createModelFromMsg = function(model)
 {
@@ -2706,6 +2725,17 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   }
 
   return modelObj;
+};
+
+GZ3D.GZIface.prototype.updateVisualFromMsg = function (visualObj, visual) {
+  if (visual.geometry) {
+    var obj = visualObj.children[0];
+    var mat = this.parseMaterial(visual.material);
+
+    if (obj && mat) {
+      this.scene.setMaterial(obj, mat);
+    }
+  }
 };
 
 GZ3D.GZIface.prototype.createVisualFromMsg = function(visual)
