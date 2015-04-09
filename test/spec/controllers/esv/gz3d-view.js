@@ -34,7 +34,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   // Mock simulationServices
   var simulationServiceObject = {};
   simulationServiceObject.simulations = jasmine.createSpy('simulations');
-  simulationServiceObject.getUserName = jasmine.createSpy('getUserName').andCallFake(function(profile) { 
+  simulationServiceObject.getUserName = jasmine.createSpy('getUserName').andCallFake(function(profile) {
     return profile[Object.keys(profile)[0]].displayName; });
   var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
 
@@ -64,13 +64,16 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   var assetLoadingSplashMock = {};
   var assetLoadingSplashInstance = {};
+  assetLoadingSplashInstance.close = jasmine.createSpy('close');
   assetLoadingSplashMock.open = jasmine.createSpy('open').andReturn(assetLoadingSplashInstance);
 
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+  var rosConnectionObject = {};
+  rosConnectionObject.close = jasmine.createSpy('close');
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject);
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
 
   var hbpUserDirectoryPromiseObject = {};
@@ -173,6 +176,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.gui.emitter = {};
     rootScope.iface = {};
     rootScope.iface.setAssetProgressCallback = jasmine.createSpy('setAssetProgressCallback');
+    rootScope.iface.webSocket = {};
+    rootScope.iface.webSocket.close = jasmine.createSpy('close');
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenPUT(/()/).respond(200);
@@ -199,7 +204,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       {id: 'test::id::mesh3', url: 'http://some_fake_url.com:1234/bla3.mesh', progress: 200, total: 200, done: true}
     ];
     assetLoadingSplash.setProgress = jasmine.createSpy('setProgress');
-    assetLoadingSplashInstance = {};
 
     splashInstance = {                    // Create a mock object using spies
       close: jasmine.createSpy('modalInstance.close'),
@@ -522,7 +526,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(nrpBackendVersionsObject.get.callCount).toBe(1);
     //Ignore this warning because of hbp_nrp_cle and hbp_nrp_backend
     /*jshint camelcase: false */
-    
+
     var backendData = {hbp_nrp_cle: '0.0.5.dev0', hbp_nrp_backend: '0.0.4'};
     var frontendData = { hbp_nrp_esv: '0.0.1' };
     var dataResult = angular.extend(frontendData, backendData);
@@ -531,4 +535,29 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.versions).toEqual(dataResult);
   });
 
+  it('should close all connections and splash screens on $destroy', function() {
+    scope.registerForStatusInformation();
+    scope.splashScreen = splashInstance;
+
+    scope.$destroy();
+
+    expect(scope.splashScreen.close).toHaveBeenCalled();
+    expect(scope.assetLoadingSplashScreen.close).toHaveBeenCalled();
+    expect(scope.statusListener.unsubscribe).toHaveBeenCalled();
+    expect(scope.rosConnection.close).toHaveBeenCalled();
+    expect(scope.iface.webSocket.close).toHaveBeenCalled();
+  });
+
+  it('should do nothing on $destroy when all is undefined', function() {
+    scope.assetLoadingSplashScreen = undefined;
+    scope.iface.webSocket = undefined;
+
+    scope.$destroy();
+
+    expect(scope.splashScreen).not.toBeDefined();
+    expect(scope.assetLoadingSplashScreen).not.toBeDefined();
+    expect(scope.statusListener).not.toBeDefined();
+    expect(scope.rosConnection).not.toBeDefined();
+    expect(scope.iface.webSocket).not.toBeDefined();
+  });
 });

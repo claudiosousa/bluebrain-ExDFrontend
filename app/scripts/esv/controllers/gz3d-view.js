@@ -29,15 +29,15 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig', 
-      'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl', 
-      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation', 
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig',
+      'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
+      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig, 
-          gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl, 
+        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig,
+          gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, simulationStatistics, serverError,
-          lightControl, screenControl, cameraManipulation, 
+          lightControl, screenControl, cameraManipulation,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion) {
 
@@ -82,7 +82,7 @@
         $scope.state = data.state;
         $scope.registerForStatusInformation();
       });
-      
+
       $scope.versions = {};
       nrpFrontendVersion.get(function(data) { $scope.versions.hbp_nrp_esv = data.hbp_nrp_esv; });
       nrpBackendVersions(serverBaseUrl).get(function(data) {
@@ -313,5 +313,16 @@
         $scope.helpModeActivated = !$scope.helpModeActivated;
       };
 
-  }]);
+      // clean up on leaving
+      $scope.$on("$destroy", function() {
+        // Close the splash screens
+        if ($scope.splashScreen) {$scope.splashScreen.close();}
+        if ($scope.assetLoadingSplashScreen) {$scope.assetLoadingSplashScreen.close();}
+        // unregister to the statustopic
+        if ($scope.statusListener) {$scope.statusListener.unsubscribe();}
+        // Close the roslib connections
+        if ($scope.rosConnection) {$scope.rosConnection.close();}
+        if ($rootScope.iface && $rootScope.iface.webSocket) {$rootScope.iface.webSocket.close();}
+      });
+    }]);
 }());
