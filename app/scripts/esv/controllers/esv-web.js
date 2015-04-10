@@ -32,6 +32,7 @@
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
     $rootScope.isServerAvailable = false;
+    $rootScope.isQueryingServersFinished = false;
     $rootScope.STATE = STATE;
 
     $scope.setSelected = function(index) {
@@ -84,11 +85,16 @@
 
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
-    experimentSimulationService.getExperiments($scope.setProgressMessage, function (data) {
-      $interval(simulationService().updateUptime, 1000);
-      $scope.experiments = data;
-      $scope.owners = simulationService().owners;
-      $scope.uptime = simulationService().uptime;
+    experimentSimulationService.getExperiments(
+      $scope.setProgressMessage,
+      function (data) {
+        $interval(simulationService().updateUptime, 1000);
+        $scope.experiments = data;
+        $scope.owners = simulationService().owners;
+        $scope.uptime = simulationService().uptime;
+      },
+      function() {
+        $rootScope.isQueryingServersFinished = true;
     });
 
     var setIsServerAvailable = function(){

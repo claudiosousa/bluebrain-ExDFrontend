@@ -12,7 +12,7 @@
     var owners = {};
     var creationDate = {};
     var uptime = {};
-    
+
     // update simulation uptimes every second (uptime is accessed in the html directly)
     var updateUptime = function() {
       angular.forEach(creationDate, function(element, key) {
@@ -156,10 +156,11 @@
    };
   }]);
 
-  module.factory('experimentSimulationService', ['$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'serverError',
-    function ($http, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE, serverError) {
+  module.factory('experimentSimulationService', ['$http', '$q', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'serverError',
+    function ($http, $q, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE, serverError) {
     var getExperimentsCallback;
     var setProgressMessageCallback;
+    var queryingServersFinishedCallback;
     var initializedCallback;
     var servers = bbpConfig.get('api.neurorobotics');
     var rosConnection;
@@ -170,10 +171,18 @@
       var serverIDs = Object.keys(servers);
       var experiment;
 
-      angular.forEach(serverIDs, function(serverID, index){
+      // We will use this array to collect promises. Those can then be used in the
+      // end for indicating when all loading is done.
+      var requests = [];
+
+      angular.forEach(serverIDs, function (serverID, index) {
         var serverNRPServicesURL = servers[serverID].gzweb['nrp-services'];
 
-        simulationService({serverURL: serverNRPServicesURL, serverID: serverID}).simulations( function (data) {
+        // Create a deferred and store its promise.
+        var deferred = $q.defer();
+        requests.push(deferred.promise);
+
+        simulationService({serverURL: serverNRPServicesURL, serverID: serverID}).simulations(function (data) {
           var activeSimulation = simulationService().getActiveSimulation(data);
           if (activeSimulation !== undefined) {
             experiment = experimentTemplates[activeSimulation.experimentID];
@@ -185,15 +194,26 @@
               experiment.simulations.push(activeSimulation);
             }
           }
-        });
+        }).$promise.then(function(data) {
+            // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
+            // is offline), we resolve the respective deferred.
+            deferred.resolve();
+          });
       });
       getExperimentsCallback(experimentTemplates);
+
+      // After all promises are "fulfilled" we know that all requests have been processed.
+      // Hence we callback then ...
+      $q.all(requests).then(function () {
+        queryingServersFinishedCallback();
+      });
     };
 
     // Fetches the Experiments
-    var getExperiments = function(progressMessageCallback, callback) {
+    var getExperiments = function(progressMessageCallback, callback, queryingServersFinishedCb) {
       setProgressMessageCallback = progressMessageCallback;
       getExperimentsCallback = callback;
+      queryingServersFinishedCallback = queryingServersFinishedCb;
 
       $http.get('views/esv/experiment_templates.json').success(function (data) {
         augmentExperiments(data);

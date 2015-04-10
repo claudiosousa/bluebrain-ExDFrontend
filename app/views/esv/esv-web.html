@@ -28,6 +28,9 @@
               <i ng-if="exp.timeout != undefined">Timeout: {{exp.timeout | timeDDHHMMSS}}</i>
             </div>
             <div ng-if="exp.id != selectedIndex">{{exp.snippet | limitTo: 200}}...</div>
+            <div collapse="isQueryingServersFinished" ng-if="exp.id == selectedIndex">
+              <div class="list-entry-container center"><i class="fa fa-spinner fa-spin"></i>&nbsp;<i>Querying available servers...</i></div>
+            </div>
             <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
               <div class="btn-group" role="group">
                 <button ng-if="!isServerAvailable" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter">Start new experiment</button>

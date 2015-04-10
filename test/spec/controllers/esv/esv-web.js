@@ -93,13 +93,14 @@ describe('Controller: experimentCtrl', function () {
     spyOn(console, 'log');
   }));
 
-  it('should init the global variables', function() {
+  it('should init the global variables', function () {
     expect(rootScope.selectedIndex).toEqual(-1);
     expect(rootScope.joinSelectedIndex).toEqual(-1);
+    expect(rootScope.isQueryingServersFinished).toEqual(false);
     expect(scope.setSelected).toEqual(jasmine.any(Function));
     expect(scope.setJoinableVisible).toEqual(jasmine.any(Function));
     expect(experimentSimulationService.setInitializedCallback).toHaveBeenCalledWith(scope.joinExperiment);
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function));
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
   });
 
   it('should set the progressbar visible', function() {
@@ -174,14 +175,18 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should get the experiments', function() {
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function));
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
     var argumentFunction = experimentSimulationService.getExperiments.mostRecentCall.args[1];
+    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
     argumentFunction(experimentTemplatesAugmented);
+    queryingServersFinishedCallback();
+
     expect(scope.experiments).toEqual(experimentTemplatesAugmented);
+    expect(rootScope.isQueryingServersFinished).toBe(true);
   });
 
   it('should filter the experiments',
-    //Ignore this warning because of the name_nippetFilter
+    //Ignore this warning because of the name_snippetFilter
     /*jshint camelcase: false */
     inject(function(name_snippetFilter) {
       expect(name_snippetFilter(experimentTemplatesArray, 'dog')).toEqual(filteredExperimentTemplatesArray);
@@ -199,4 +204,5 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationService.existsAvailableServer.mostRecentCall.args[0]();
     expect(rootScope.isServerAvailable).toEqual(true);
   });
+
 });

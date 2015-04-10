@@ -20,8 +20,8 @@ describe('Services: simulation-services', function () {
   var httpBackend;
   var simulations, returnSimulations, experimentTemplates, experimentTemplatesAugmented;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_, 
-      _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_, 
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_,
+      _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_,
       _lightControl_, _screenControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
@@ -293,7 +293,7 @@ describe('Services: experimentSimulationService', function () {
     $provide.value('simulationState', simulationStateMock);
   }));
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_, 
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_,
       _simulationState_, _experimentSimulationService_, _bbpConfig_, _roslib_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
@@ -315,7 +315,7 @@ describe('Services: experimentSimulationService', function () {
       { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, serverID : 'bbpce016'}
     ];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[3]);
-    simulationServiceObject.simulations = jasmine.createSpy('simulations');
+    simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn({$promise: {then: function(){}}});
 
     experimentTemplates = {
       '1': {
@@ -373,6 +373,34 @@ describe('Services: experimentSimulationService', function () {
     argumentFunction(returnSimulations);
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(returnSimulations);
     expect(callback).toHaveBeenCalledWith(experimentTemplatesAugmented);
+  });
+
+  it('should callback when all servers have answered to the query', function() {
+    var mockedThen = jasmine.createSpy('then');
+    simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn(
+      {
+        $promise: {then: mockedThen}
+      });
+
+    var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
+    var emptyCallback = function(){};
+    experimentSimulationService.getExperiments(emptyCallback, emptyCallback, queryingServersFinishedCallback);
+
+    // Now flush the backend (because the experiment templates are queried)
+    httpBackend.flush();
+
+    // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
+    expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
+
+    // Hence we have to call those explicitly.
+    mockedThen.argsForCall.forEach(function (argument) {
+      argument[0]();
+    });
+
+    // We have to use scope.$digest() here, since otherwise the used promises would not be resolved,
+    // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
+    scope.$digest();
+    expect(queryingServersFinishedCallback).toHaveBeenCalled();
   });
 
   it('should register for status information', function() {
@@ -492,7 +520,7 @@ describe('Services: error handling', function () {
     $provide.value('roslib', roslibMock);
   }));
 
-  beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_, 
+  beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_,
      _simulationGenerator_, _simulationState_, _experimentSimulationService_, _lightControl_, _screenControl_, _serverError_){
 
     httpBackend = $httpBackend;
@@ -569,12 +597,12 @@ describe('Services: error handling', function () {
     expect(response.status).toBe(500);
     serverError.reset();
   });
- 
+
   it('should test the error callback when launching an experiment fails', function() {
     var errorCallback = jasmine.createSpy('errorCallback');
     httpBackend.whenPOST(/()/).respond({simulationID: '0'}, 200);
     httpBackend.whenGET(/()/).respond(200);
-    experimentSimulationService.getExperiments(function(){}, function(){});
+    experimentSimulationService.getExperiments(function(){}, function(){}, function(){});
     httpBackend.flush();
     experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014', errorCallback);
     httpBackend.flush();
