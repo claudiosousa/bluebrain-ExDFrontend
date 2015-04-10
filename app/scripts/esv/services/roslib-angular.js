@@ -52,6 +52,14 @@
       return ros;
     };
 
+    ROSLIB.createTopic = function (connection, topicName, messageType) {
+      return new ROSLIB.Topic({
+        ros: connection,
+        name: topicName,
+        messageType: messageType
+      });
+    };
+
     ROSLIB.createStringTopic = function (connection, topicName) {
       return new ROSLIB.Topic({
         ros: connection,
