@@ -64,13 +64,16 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   var assetLoadingSplashMock = {};
   var assetLoadingSplashInstance = {};
+  assetLoadingSplashInstance.close = jasmine.createSpy('close');
   assetLoadingSplashMock.open = jasmine.createSpy('open').andReturn(assetLoadingSplashInstance);
 
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+  var rosConnectionObject = {};
+  rosConnectionObject.close = jasmine.createSpy('close');
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject);
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
 
   var hbpUserDirectoryPromiseObject = {};
@@ -173,6 +176,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.gui.emitter = {};
     rootScope.iface = {};
     rootScope.iface.setAssetProgressCallback = jasmine.createSpy('setAssetProgressCallback');
+    rootScope.iface.webSocket = {};
+    rootScope.iface.webSocket.close = jasmine.createSpy('close');
 
     httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenPUT(/()/).respond(200);
@@ -199,7 +204,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       {id: 'test::id::mesh3', url: 'http://some_fake_url.com:1234/bla3.mesh', progress: 200, total: 200, done: true}
     ];
     assetLoadingSplash.setProgress = jasmine.createSpy('setProgress');
-    assetLoadingSplashInstance = {};
 
     splashInstance = {                    // Create a mock object using spies
       close: jasmine.createSpy('modalInstance.close'),
@@ -511,4 +515,29 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.versions).toEqual(dataResult);
   });
 
+  it('should close all connections and splash screens on $destroy', function() {
+    scope.registerForStatusInformation();
+    scope.splashScreen = splashInstance;
+
+    scope.$destroy();
+
+    expect(scope.splashScreen.close).toHaveBeenCalled();
+    expect(scope.assetLoadingSplashScreen.close).toHaveBeenCalled();
+    expect(scope.statusListener.unsubscribe).toHaveBeenCalled();
+    expect(scope.rosConnection.close).toHaveBeenCalled();
+    expect(scope.iface.webSocket.close).toHaveBeenCalled();
+  });
+
+  it('should do nothing on $destroy when all is undefined', function() {
+    scope.assetLoadingSplashScreen = undefined;
+    scope.iface.webSocket = undefined;
+
+    scope.$destroy();
+
+    expect(scope.splashScreen).not.toBeDefined();
+    expect(scope.assetLoadingSplashScreen).not.toBeDefined();
+    expect(scope.statusListener).not.toBeDefined();
+    expect(scope.rosConnection).not.toBeDefined();
+    expect(scope.iface.webSocket).not.toBeDefined();
+  });
 });

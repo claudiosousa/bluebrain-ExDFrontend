@@ -307,5 +307,16 @@
         $scope.helpModeActivated = !$scope.helpModeActivated;
       };
 
-  }]);
+      // clean up on leaving
+      $scope.$on("$destroy", function() {
+        // Close the splash screens
+        if ($scope.splashScreen) {$scope.splashScreen.close();}
+        if ($scope.assetLoadingSplashScreen) {$scope.assetLoadingSplashScreen.close();}
+        // unregister to the statustopic
+        if ($scope.statusListener) {$scope.statusListener.unsubscribe();}
+        // Close the roslib connections
+        if ($scope.rosConnection) {$scope.rosConnection.close();}
+        if ($rootScope.iface && $rootScope.iface.webSocket) {$rootScope.iface.webSocket.close();}
+      });
+    }]);
 }());
