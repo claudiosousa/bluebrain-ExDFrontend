@@ -34,7 +34,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   // Mock simulationServices
   var simulationServiceObject = {};
   simulationServiceObject.simulations = jasmine.createSpy('simulations');
-  simulationServiceObject.getUserName = jasmine.createSpy('getUserName').andCallFake(function(profile) { 
+  simulationServiceObject.getUserName = jasmine.createSpy('getUserName').andCallFake(function(profile) {
     return profile[Object.keys(profile)[0]].displayName; });
   var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
 
@@ -346,21 +346,9 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     // prepare the test: create mockups
     var entityToChange = { 'children' : [ { 'material' : {} } ] };
-    var material = entityToChange.children[0].material;
-    material.color = {};
-    material.color.setHex = jasmine.createSpy('setHex');
-
-    material.ambient = {};
-    material.ambient.setHex = jasmine.createSpy('setHex');
-
-    material.specular = {};
-    material.specular.setHex = jasmine.createSpy('setHex');
-
     rootScope.scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
 
     // actual test
-    expect(scope.setColorOnEntity).toEqual(jasmine.any(Function));
-
     // currently no element is selected, hence we want a console.error message
     scope.setColorOnEntity('value_does_not_matter_here');
     expect(console.error).toHaveBeenCalled();
@@ -370,14 +358,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope.selectedEntity = { 'name' : 'left_vr_screen' };
     scope.setColorOnEntity('red');
     expect(rootScope.scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
-
-    var redHexValue = 0xff0000;
-    expect(material.color.setHex).toHaveBeenCalledWith(redHexValue);
-    expect(material.color.setHex.callCount).toEqual(1);
-    expect(material.ambient.setHex).toHaveBeenCalledWith(redHexValue);
-    expect(material.ambient.setHex.callCount).toEqual(1);
-    expect(material.specular.setHex).toHaveBeenCalledWith(redHexValue);
-    expect(material.specular.setHex.callCount).toEqual(1);
 
     expect(screenControl).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
     expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToRed'});
@@ -522,7 +502,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(nrpBackendVersionsObject.get.callCount).toBe(1);
     //Ignore this warning because of hbp_nrp_cle and hbp_nrp_backend
     /*jshint camelcase: false */
-    
+
     var backendData = {hbp_nrp_cle: '0.0.5.dev0', hbp_nrp_backend: '0.0.4'};
     var frontendData = { hbp_nrp_esv: '0.0.1' };
     var dataResult = angular.extend(frontendData, backendData);
