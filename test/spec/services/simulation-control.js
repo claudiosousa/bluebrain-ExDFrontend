@@ -308,7 +308,7 @@ describe('Services: experimentSimulationService', function () {
     returnSimulations = [
       { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, serverID : 'bbpce016'},
       { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, serverID : 'bbpce016'},
+      { simulationID: 2, experimentID: 'fakeExperiment3', state: STATE.PAUSED, serverID : 'bbpce016'},
       { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, serverID : 'bbpce016'},
       { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED, serverID : 'bbpce016'},
       { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED, serverID : 'bbpce016'},
@@ -335,7 +335,7 @@ describe('Services: experimentSimulationService', function () {
       },
       'fakeExperiment3': {
         imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 2', runningExperiments: 1, simulations: [
-          { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, serverID : 'bbpce016' }
+          returnSimulations[3]
       ]},
       '3': {
         imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 3'
@@ -349,6 +349,55 @@ describe('Services: experimentSimulationService', function () {
     statusListenerMock = { subscribe : jasmine.createSpy('subscribe')};
     roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(statusListenerMock);
   }));
+
+  it('should add a simulation to the templates', function() {
+    experimentSimulationService.addSimulationToTemplate(experimentTemplates, returnSimulations[3]);
+    expect(experimentTemplates).toEqual(experimentTemplatesAugmented);
+    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(1);
+
+    experimentSimulationService.addSimulationToTemplate(experimentTemplates, returnSimulations[3]);
+    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(2);
+  });
+
+  it('should not add nonexisting simulations to the templates', function() {
+    var experimentTemplatesCopy = angular.copy(experimentTemplates);
+    experimentSimulationService.addSimulationToTemplate(experimentTemplates, returnSimulations[0]);
+    expect(experimentTemplates).toEqual(experimentTemplatesCopy);
+  });
+
+  it('should refresh the experiment template data structure', function() {
+    simulationService = simulationServiceMock;
+
+    // the simulation should be added to the experimentTemplates
+    experimentSimulationService.refreshExperiments(experimentTemplates);
+    var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+    argumentFunction(returnSimulations);
+    expect(experimentTemplates).toEqual(experimentTemplatesAugmented);
+
+    // There should be no change
+    var savedExperimentTemplates = angular.copy(experimentTemplates);
+    experimentSimulationService.refreshExperiments(experimentTemplates);
+    argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+    argumentFunction(returnSimulations);
+    expect(experimentTemplates).toEqual(savedExperimentTemplates);
+
+    // The simulation should be updated
+    experimentSimulationService.refreshExperiments(experimentTemplates);
+    argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[2]);
+    argumentFunction(returnSimulations);
+    expect(returnSimulations[2].experimentID).toBe(returnSimulations[3].experimentID);
+    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(1);
+    expect(experimentTemplates[returnSimulations[3].experimentID].simulations).toEqual([returnSimulations[2]]);
+
+    // Simulation should be removed when no simulation is running on the server
+    experimentSimulationService.refreshExperiments(experimentTemplates);
+    argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
+    argumentFunction([]);
+    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(0);
+    expect(experimentTemplates[returnSimulations[3].experimentID].simulations).toEqual([]);
+  });
 
   it('should retrieve the augmented experiments', function() {
     simulationService = simulationServiceMock;

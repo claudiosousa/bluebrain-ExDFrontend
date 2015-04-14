@@ -11,12 +11,14 @@ describe('Controller: experimentCtrl', function () {
     window,
     httpBackend,
     timeout,
+    interval,
     experimentSimulationService,
     experimentTemplates,
     experimentTemplatesAugmented,
     experimentTemplatesArray,
     sortedExperimentTemplatesArray,
     filteredExperimentTemplatesArray,
+    REFRESH_UPDATE_RATE,
     STATE;
 
   var experimentSimulationServiceMock = {};
@@ -24,6 +26,7 @@ describe('Controller: experimentCtrl', function () {
   experimentSimulationServiceMock.setInitializedCallback = jasmine.createSpy('setInitializedCallback');
   experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
   experimentSimulationServiceMock.existsAvailableServer = jasmine.createSpy('existsAvailableServer');
+  experimentSimulationServiceMock.refreshExperiments = jasmine.createSpy('refreshExperiments');
 
   var timeoutMock = jasmine.createSpy('$timeout');
 
@@ -42,6 +45,7 @@ describe('Controller: experimentCtrl', function () {
                               _$window_,
                               _$httpBackend_,
                               _$timeout_,
+                              _$interval_,
                               _experimentSimulationService_,
                               _STATE_) {
     rootScope = $rootScope;
@@ -49,8 +53,15 @@ describe('Controller: experimentCtrl', function () {
     window = _$window_;
     httpBackend = _$httpBackend_;
     timeout = _$timeout_;
+    interval = _$interval_;
     experimentSimulationService = _experimentSimulationService_;
     STATE = _STATE_;
+
+    experimentSimulationService.getExperiments.reset();
+    experimentSimulationService.setInitializedCallback.reset();
+    experimentSimulationService.getExperiments.reset();
+    experimentSimulationService.existsAvailableServer.reset();
+    experimentSimulationService.refreshExperiments.reset();
 
     experimentTemplates = {
       '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
@@ -88,6 +99,10 @@ describe('Controller: experimentCtrl', function () {
       $scope: scope
     });
 
+    REFRESH_UPDATE_RATE = 30 * 1000; // 30 seconds
+
+    httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
+
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
@@ -109,6 +124,14 @@ describe('Controller: experimentCtrl', function () {
     scope.setProgressbarVisible(2);
     expect(rootScope.joinSelectedIndex).toEqual(-1);
     expect(rootScope.startNewExperimentSelectedIndex).toEqual(2);
+  });
+
+  it('should set the progressbar invisible', function() {
+    rootScope.joinSelectedIndex = 3;
+    rootScope.startNewExperimentSelectedIndex = 2;
+    scope.setProgressbarInvisible();
+    expect(rootScope.joinSelectedIndex).toEqual(-1);
+    expect(rootScope.startNewExperimentSelectedIndex).toEqual(-1);
   });
 
   it('should set the progress message', function() {
@@ -201,8 +224,46 @@ describe('Controller: experimentCtrl', function () {
 
   it('should set isServerAvailable to true', function() {
     rootScope.isServerAvailable = false;
-    experimentSimulationService.existsAvailableServer.mostRecentCall.args[0]();
+    experimentSimulationService.existsAvailableServer.mostRecentCall.args[0](true);
     expect(rootScope.isServerAvailable).toEqual(true);
   });
+
+  it('should create the updatePromise and call refresh experiments after 30 seconds', function() {
+    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
+    rootScope.updatePromise = undefined;
+    queryingServersFinishedCallback();
+
+    expect(rootScope.updatePromise).toBeDefined();
+    // Should not have been called 1 second before REFRESH_UPDATE_RATE
+    interval.flush(REFRESH_UPDATE_RATE - 1000);
+    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+
+    // called after in total REFRESH_UPDATE_RATE seconds
+    interval.flush(1000);
+    expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+  });
+
+  it('should stop updating after on $destroy', function() {
+    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
+    queryingServersFinishedCallback();
+
+    scope.$destroy();
+
+    // Should do nothing after 30 seconds
+    interval.flush(REFRESH_UPDATE_RATE);
+    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+    expect(rootScope.updatePromise).not.toBeDefined();
+  });
+
+  it('should do nothing on $destroy', function() {
+    rootScope.updatePromise = undefined;
+    scope.$destroy();
+
+    // Should do nothing after 30 seconds
+    interval.flush(REFRESH_UPDATE_RATE);
+    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+    expect(rootScope.updatePromise).not.toBeDefined();
+  });
+
 
 });
