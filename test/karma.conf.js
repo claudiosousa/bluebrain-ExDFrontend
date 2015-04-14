@@ -53,6 +53,7 @@ module.exports = function(config) {
       'app/scripts/esv/gz3d/client/js/include/ShaderPass.js',
       'app/scripts/esv/gz3d/build/gz3d.js',
       'test/support/**/*.js',
+      'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
       'app/scripts/**/*.js',
       'test/mock/**/*.js',
       'test/spec/**/*.js',
