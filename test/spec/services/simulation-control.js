@@ -20,8 +20,8 @@ describe('Services: simulation-services', function () {
   var httpBackend;
   var simulations, returnSimulations, experimentTemplates, experimentTemplatesAugmented;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_, 
-      _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_, 
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_,
+      _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_,
       _lightControl_, _screenControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
@@ -260,7 +260,8 @@ describe('Services: experimentSimulationService', function () {
       },
       'rosbridge': {
         'websocket': 'ws://bbpce014.epfl.ch:9090', 'topics': { 'status': '/ros_cle_simulation/status' }
-      }
+      },
+      'serverJobLocation' : 'remote'
     },
     'bbpce016': {
       'gzweb': {
@@ -293,7 +294,7 @@ describe('Services: experimentSimulationService', function () {
     $provide.value('simulationState', simulationStateMock);
   }));
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_, 
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_,
       _simulationState_, _experimentSimulationService_, _bbpConfig_, _roslib_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
@@ -411,6 +412,11 @@ describe('Services: experimentSimulationService', function () {
     expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
 
     messageCallback.reset();
+    expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
+      experimentID: 'mocked_experiment_id',
+      /* jshint camelcase: false */
+      gzserver_host: 'remote'
+    }, jasmine.any(Function));
     simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
     expect(messageCallback).toHaveBeenCalled();
 
@@ -492,7 +498,7 @@ describe('Services: error handling', function () {
     $provide.value('roslib', roslibMock);
   }));
 
-  beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_, 
+  beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_,
      _simulationGenerator_, _simulationState_, _experimentSimulationService_, _lightControl_, _screenControl_, _serverError_){
 
     httpBackend = $httpBackend;
@@ -569,7 +575,7 @@ describe('Services: error handling', function () {
     expect(response.status).toBe(500);
     serverError.reset();
   });
- 
+
   it('should test the error callback when launching an experiment fails', function() {
     var errorCallback = jasmine.createSpy('errorCallback');
     httpBackend.whenPOST(/()/).respond({simulationID: '0'}, 200);

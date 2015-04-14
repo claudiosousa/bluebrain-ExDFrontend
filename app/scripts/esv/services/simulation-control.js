@@ -12,7 +12,7 @@
     var owners = {};
     var creationDate = {};
     var uptime = {};
-    
+
     // update simulation uptimes every second (uptime is accessed in the html directly)
     var updateUptime = function() {
       angular.forEach(creationDate, function(element, key) {
@@ -255,20 +255,31 @@
       });
     };
 
-    var launchExperimentOnServer = function(experimentID, freeServerID, errorCallback){
+    var launchExperimentOnServer = function (experimentID, freeServerID, errorCallback) {
       setProgressMessageCallback({main: 'Create new Simulation...'});
       var serverURL = servers[freeServerID].gzweb['nrp-services'];
-      // create new simulation
-      simulationGenerator(serverURL).create({experimentID: experimentID}, function(createData){
-        setProgressMessageCallback({main: 'Initialize Simulation...'});
-        // register for messages during initialization
-        registerForStatusInformation(freeServerID, createData.simulationID);
 
-        // initialize the newly created simulation
-        simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED}, function(updateData) {
-          setProgressMessageCallback({main: 'Simulation initialized.'});
-          initializedCallback('#/esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID);
-        }, function(updateData) { serverError(updateData); errorCallback(); });
+      // In case the config does specify where to run, we take the value from the config file. If there is no hint,
+      // we fallback to "local".
+      var serverJobLocation = servers[freeServerID].serverJobLocation ? servers[freeServerID].serverJobLocation : 'local';
+
+      // Create a new simulation.
+      simulationGenerator(serverURL).create({
+          experimentID: experimentID,
+          gzserver_host: serverJobLocation
+        }, function (createData) {
+          setProgressMessageCallback({main: 'Initialize Simulation...'});
+          // register for messages during initialization
+          registerForStatusInformation(freeServerID, createData.simulationID);
+
+          // initialize the newly created simulation
+          simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED}, function (updateData) {
+            setProgressMessageCallback({main: 'Simulation initialized.'});
+            initializedCallback('#/esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID);
+          }, function (updateData) {
+            serverError(updateData);
+            errorCallback();
+          });
       });
     };
 
