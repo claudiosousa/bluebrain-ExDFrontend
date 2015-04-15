@@ -180,6 +180,7 @@ describe('Directive: spiketrain', function () {
 
   it('should call the resize function (1)', function () {
     spyOn($scope, 'onScreenSizeChanged');
+    $scope.showSpikeTrain = true;
     /*global $: false */
     $(window).resize();
     expect($scope.onScreenSizeChanged).toHaveBeenCalled();
