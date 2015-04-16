@@ -26,20 +26,34 @@
     .constant('ERROR', {
       UNDEFINED_STATE: 'The latest active simulation is corrupted: undefined state.',
       UNDEFINED_ID: 'The latest active simulation is corrupted: undefined id.'
+    })
+    .constant('UI', {
+      UNDEFINED: -1,
+      PLAY_BUTTON: 0,
+      PAUSE_BUTTON: 1,
+      STOP_BUTTON: 2,
+      RESET_BUTTON: 3,
+      TIME_DISPLAY: 4,
+      LIGHT_SLIDER: 5,
+      CAMERA_TRANSLATION: 6,
+      CAMERA_ROTATION: 7,
+      SPIKETRAIN: 8,
+      OWNER_DISPLAY: 9
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', '$window', '$document', 'bbpConfig',
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', 
+      '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
-      'nrpFrontendVersion',
+      'nrpFrontendVersion', 'UI',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, simulationStatistics, serverError,
           lightControl, screenControl,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
-          nrpFrontendVersion) {
+          nrpFrontendVersion, UI) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -52,12 +66,16 @@
       gzInitialization.Initialize($stateParams.serverID, $stateParams.simulationID);
 
       $scope.helpModeActivated = false;
+      $scope.helpDescription="";
+      $scope.helpText = {};
+      $scope.currentSelectedUIElement = UI.UNDEFINED;
 
       $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
       $scope.spikeTopic = serverConfig.rosbridge.topics.spikes;
 
       $scope.state = STATE.UNDEFINED;
       $scope.STATE = STATE;
+      $scope.UI = UI;
       $scope.isOwner = false;
 
       hbpUserDirectory.getCurrentUser().then(function (profile) {
@@ -147,8 +165,8 @@
       // by another client connected earlier to the same simulation.
       // This is a fix for Bug [NRRPLT-1899] that should be addressed properly on Gazebo's side:
       // https://bitbucket.org/osrf/gazebo/issue/1573/scene_info-does-not-reflect-older-changes
-      // The lines enclosed by the LCOV_EXCL comments will be removed once the Gazebo bug is fixed.
-      //LCOV_EXCL_START
+      // The lines following the /* istanbul ignore next */ comments will be removed once the Gazebo bug is fixed.
+      /* istanbul ignore next */
       $scope.updateScreenColor = function(simulation, screenString) { // screenString must be either 'left' or 'right'
         var colors = {'Gazebo/Red': 0xff0000, 'Gazebo/Blue': 0x0000ff};
         var scene = $rootScope.scene;// scene is undefined when closing and destroying the asset-loading splah screen
@@ -165,13 +183,13 @@
           }
         }        
       };
+      /* istanbul ignore next */
       var callbackOnCloseLoading = function() {
         simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
           $scope.updateScreenColor(data, 'left');
           $scope.updateScreenColor(data, 'right');
         });
       };
-      //LCOV_EXCL_STOP
       $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(callbackOnCloseLoading);
       $rootScope.iface.setAssetProgressCallback(function(data){
         assetLoadingSplash.setProgress(data);
@@ -319,6 +337,8 @@
       // help mode
       $scope.toggleHelpMode = function() {
         $scope.helpModeActivated = !$scope.helpModeActivated;
+        $scope.helpDescription = "";
+        $scope.currentSelectedUIElement = UI.UNDEFINED;
       };
 
       // clean up on leaving
@@ -355,5 +375,16 @@
           $document.execCommand("Stop", false);
         }
       });
+
+       $scope.help = function(uiElement){
+         if($scope.currentSelectedUIElement === uiElement){
+           $scope.helpDescription = "";
+           $scope.currentSelectedUIElement = UI.UNDEFINED;
+         }
+         else {
+           $scope.helpDescription = $scope.helpText[uiElement];
+           $scope.currentSelectedUIElement = uiElement;
+         }
+       };
     }]);
 }());

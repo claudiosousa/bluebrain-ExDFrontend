@@ -27,7 +27,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     fakeSimulationData,
     nrpBackendVersions,
     nrpFrontendVersion,
-    STATE;
+    STATE,
+    UI;
 
   var simulationStatisticsMock = {};
   simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
@@ -187,7 +188,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _$stateParams_,
                               _nrpBackendVersions_,
                               _nrpFrontendVersion_,
-                              _STATE_) {
+                              _STATE_,
+                              _UI_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     hbpUserDirectory = _hbpUserDirectory_;
@@ -207,6 +209,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     nrpBackendVersions = _nrpBackendVersions_;
     nrpFrontendVersion = _nrpFrontendVersion_;
     STATE = _STATE_;
+    UI = _UI_;
 
     rootScope.scene = {};
     rootScope.scene.radialMenu = {};
@@ -606,4 +609,24 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.rosConnection).not.toBeDefined();
     expect(scope.iface.webSocket).not.toBeDefined();
   });
-});
+
+  it('should show the help text correctly', function() {
+    scope.helpText[UI.PLAY_BUTTON] = 'FakeText';
+    scope.helpModeActivated = false;
+    scope.toggleHelpMode();
+
+    expect(scope.helpModeActivated).toBe(true);
+    expect(scope.helpDescription).toBe('');
+    expect(scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
+
+    scope.help(UI.PLAY_BUTTON);
+
+    expect(scope.currentSelectedUIElement).toBe(UI.PLAY_BUTTON);
+    expect(scope.helpDescription).toBe('FakeText');
+
+    scope.help(UI.PLAY_BUTTON);
+    expect(scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
+    expect(scope.helpDescription).toBe('');
+  });
+
+  });
