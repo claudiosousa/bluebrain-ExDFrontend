@@ -34,6 +34,10 @@
     $rootScope.isServerAvailable = false;
     $rootScope.isQueryingServersFinished = false;
     $rootScope.STATE = STATE;
+    $rootScope.updatePromise = undefined;
+
+    var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
+    var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
 
     $scope.setSelected = function(index) {
       if ($rootScope.startNewExperimentSelectedIndex !== -1) {
@@ -85,22 +89,34 @@
 
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
+    var setIsServerAvailable = function(isAvailable){
+      $rootScope.isServerAvailable = isAvailable;
+    };
+
     experimentSimulationService.getExperiments(
       $scope.setProgressMessage,
       function (data) {
-        $interval(simulationService().updateUptime, 1000);
+        $interval(simulationService().updateUptime, UPTIME_UPDATE_RATE);
         $scope.experiments = data;
         $scope.owners = simulationService().owners;
         $scope.uptime = simulationService().uptime;
       },
       function() {
         $rootScope.isQueryingServersFinished = true;
+        $rootScope.updatePromise = $interval(function(){
+          experimentSimulationService.refreshExperiments($scope.experiments, setIsServerAvailable);
+        }, ESV_UPDATE_RATE);
     });
 
-    var setIsServerAvailable = function(){
-      $rootScope.isServerAvailable = true;
-    };
     experimentSimulationService.existsAvailableServer(setIsServerAvailable);
+
+    // clean up on leaving
+    $scope.$on("$destroy", function() {
+      if (angular.isDefined($rootScope.updatePromise)) {
+        $interval.cancel($rootScope.updatePromise);
+        $rootScope.updatePromise = undefined;
+      }
+    });
 
   }]);
 }());

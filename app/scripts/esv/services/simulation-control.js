@@ -166,16 +166,64 @@
     var rosConnection;
     var statusListener;
 
-    // Augments the experimentTemplates with the running experiments
-    var augmentExperiments = function(experimentTemplates){
+    var addSimulationToTemplate = function(experimentTemplates, activeSimulation) {
+      var experiment = experimentTemplates[activeSimulation.experimentID];
+      if (experiment !== undefined) {
+        experiment.runningExperiments = ('runningExperiments' in experiment) ? experiment.runningExperiments + 1 : 1;
+        if (!('simulations' in experiment)) {
+          experiment.simulations = [];
+        }
+        experiment.simulations.push(activeSimulation);
+      }
+    };
+
+    var deleteSimulationFromTemplate = function(experimentTemplates, serverID) {
+      angular.forEach(experimentTemplates, function(experimentTemplate, templateIndex) {
+        angular.forEach(experimentTemplate.simulations, function (simulation, simulationIndex) {
+          if(simulation.serverID === serverID) {
+            // delete the outdated entry
+            experimentTemplate.simulations.splice(simulationIndex, 1);
+            experimentTemplate.runningExperiments -= 1;
+          }
+        });
+      });
+    };
+
+    var searchAndUpdateExperimentTemplates = function(experimentTemplates, activeSimulation) {
+      var found = false;
+      angular.forEach(experimentTemplates, function(experimentTemplate, templateIndex){
+        angular.forEach(experimentTemplate.simulations, function(simulation, simulationIndex){
+          if(simulation.serverID === activeSimulation.serverID) {
+            found = true;
+            // Found the entry which is running on this server
+            if((simulation.experimentID !== activeSimulation.experimentID) ||
+              (simulation.simulationID !== activeSimulation.simulationID) ||
+              (simulation.state !== activeSimulation.state)) {
+              // The simulation on this server changed:
+              // delete the outdated entry
+              experimentTemplate.simulations.splice(simulationIndex, 1);
+              experimentTemplate.runningExperiments -= 1;
+
+              // add the new entry to the right experimentTemplate
+              addSimulationToTemplate(experimentTemplates, activeSimulation);
+            }
+          }
+        });
+      });
+      return found;
+    };
+
+    // Refresh the experiment data structure
+    var refreshExperiments = function(experimentTemplates, isServerAvailableCallback) {
       var serverIDs = Object.keys(servers);
-      var experiment;
+      var availableServers = [];
 
       // We will use this array to collect promises. Those can then be used in the
       // end for indicating when all loading is done.
       var requests = [];
 
-      angular.forEach(serverIDs, function (serverID, index) {
+      // Query each server to get the updated data
+      angular.forEach(serverIDs, function(serverID, index) {
         var serverNRPServicesURL = servers[serverID].gzweb['nrp-services'];
 
         // Create a deferred and store its promise.
@@ -185,20 +233,59 @@
         simulationService({serverURL: serverNRPServicesURL, serverID: serverID}).simulations(function (data) {
           var activeSimulation = simulationService().getActiveSimulation(data);
           if (activeSimulation !== undefined) {
-            experiment = experimentTemplates[activeSimulation.experimentID];
-            if (experiment !== undefined) {
-              experiment.runningExperiments = ('runningExperiments' in experiment) ? experiment.runningExperiments + 1 : 1;
-              if (!('simulations' in experiment)) {
-                experiment.simulations = [];
-              }
-              experiment.simulations.push(activeSimulation);
+            // There is an active Simulation on this server:
+            // Search the data structure for an entry with this server
+            var found = searchAndUpdateExperimentTemplates(experimentTemplates, activeSimulation);
+            // Add simulation if it was not found
+            if(!found) {
+              addSimulationToTemplate(experimentTemplates, activeSimulation);
             }
+          }
+          else {
+            // On this server no experiment is running:
+            availableServers.push(serverID);
+            // Delete all elements in the data structure with this serverID
+            deleteSimulationFromTemplate(experimentTemplates, serverID);
           }
         }).$promise.then(function(data) {
             // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
             // is offline), we resolve the respective deferred.
             deferred.resolve();
           });
+      });
+
+      // After all promises are "fulfilled" we know that all requests have been processed.
+      // Now we can see if there is a available Server
+      $q.all(requests).then(function () {
+        isServerAvailableCallback(availableServers.length > 0);
+      });
+    };
+
+    // Augments the experimentTemplates with the running experiments
+    var augmentExperiments = function(experimentTemplates) {
+      var serverIDs = Object.keys(servers);
+
+      // We will use this array to collect promises. Those can then be used in the
+      // end for indicating when all loading is done.
+      var requests = [];
+
+      angular.forEach(serverIDs, function(serverID, index) {
+        var serverNRPServicesURL = servers[serverID].gzweb['nrp-services'];
+
+        // Create a deferred and store its promise.
+        var deferred = $q.defer();
+        requests.push(deferred.promise);
+
+        simulationService({serverURL: serverNRPServicesURL, serverID: serverID}).simulations(function (data) {
+          var activeSimulation = simulationService().getActiveSimulation(data);
+          if (activeSimulation !== undefined) {
+            addSimulationToTemplate(experimentTemplates, activeSimulation);
+          }
+        }).$promise.then(function(data) {
+          // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
+          // is offline), we resolve the respective deferred.
+          deferred.resolve();
+        });
       });
       getExperimentsCallback(experimentTemplates);
 
@@ -249,7 +336,7 @@
         simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
           var activeSimulation = simulationService().getActiveSimulation(data);
           if (activeSimulation === undefined) {
-            isAvailableCallback();
+            isAvailableCallback(true);
           }
         });
       });
@@ -310,6 +397,8 @@
     // Public methods of the service
     return {
       getExperiments: getExperiments,
+      addSimulationToTemplate: addSimulationToTemplate,
+      refreshExperiments: refreshExperiments,
       augmentExperiments: augmentExperiments,
       registerForStatusInformation: registerForStatusInformation,
       existsAvailableServer: existsAvailableServer,
