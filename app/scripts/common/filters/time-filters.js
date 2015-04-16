@@ -4,7 +4,6 @@
   // This file contains filters to display times and dates
 
   var module = angular.module('exdFrontendFilters', []);
-
   module.filter('timeDDHHMMSS', function() {
     return function(input) {
       if (typeof input != 'number') {

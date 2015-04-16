@@ -31,7 +31,8 @@
                                    'exdFrontendApp.Constants',
                                    'exdFrontendFilters',
                                    'nrpErrorHandlers',
-                                   'nrpBackendAbout'])
+                                   'nrpBackendAbout',
+                                   'nrpBrowserDetection'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
