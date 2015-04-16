@@ -29,12 +29,12 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', 'bbpConfig',
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, bbpConfig,
+        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, simulationStatistics, serverError,
           lightControl, screenControl, cameraManipulation,
@@ -48,6 +48,8 @@
       var simulationID = $stateParams.simulationID;
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
       var serverBaseUrl = serverConfig.gzweb['nrp-services'];
+
+      gzInitialization.Initialize($stateParams.serverID, $stateParams.simulationID);
 
       $scope.helpModeActivated = false;
 
@@ -310,13 +312,36 @@
       // clean up on leaving
       $scope.$on("$destroy", function() {
         // Close the splash screens
-        if ($scope.splashScreen) {$scope.splashScreen.close();}
-        if ($scope.assetLoadingSplashScreen) {$scope.assetLoadingSplashScreen.close();}
+        if (angular.isDefined($scope.splashScreen)) {
+          splash.close();
+          delete $scope.splashScreen;
+        }
+        if (angular.isDefined($scope.assetLoadingSplashScreen)) {
+          assetLoadingSplash.close();
+          delete $scope.assetLoadingSplashScreen;
+        }
         // unregister to the statustopic
-        if ($scope.statusListener) {$scope.statusListener.unsubscribe();}
+        if (angular.isDefined($scope.statusListener)) {
+          $scope.statusListener.unsubscribe();
+        }
         // Close the roslib connections
-        if ($scope.rosConnection) {$scope.rosConnection.close();}
-        if ($rootScope.iface && $rootScope.iface.webSocket) {$rootScope.iface.webSocket.close();}
+        if (angular.isDefined($scope.rosConnection)) {
+          $scope.rosConnection.close();
+        }
+        if (angular.isDefined($rootScope.iface) && angular.isDefined($rootScope.iface.webSocket)) {
+          $rootScope.iface.webSocket.close();
+        }
+        gzInitialization.deInitialize();
+
+        // Stop/Cancel loading assets
+        // The window.stop() method is not supported by Internet Explorer
+        // https://developer.mozilla.org/de/docs/Web/API/Window/stop
+        if(angular.isDefined($window.stop)) {
+          $window.stop();
+        }
+        else if(angular.isDefined($document.execCommand)) {
+          $document.execCommand("Stop", false);
+        }
       });
     }]);
 }());

@@ -13,7 +13,7 @@
       modal;
 
     var modalMock = {};
-    var modalInstance = {};
+    var modalInstance;
 
     // Load the service and the (mocked) service it depends upon
     beforeEach(module('exdFrontendApp'));
@@ -24,24 +24,34 @@
       assetLoadingSplash = _assetLoadingSplash_;
       modal = _$modal_;
 
+      modalInstance = {};
       modalInstance.close = jasmine.createSpy('close');
       modal.open = jasmine.createSpy('open').andReturn(modalInstance);
     }));
 
     it('should call modal open', function () {
       modal.open.reset();
+      modalInstance.close.reset();
       assetLoadingSplash.open();
       expect(modal.open).toHaveBeenCalled();
+      expect(modalInstance.close).not.toHaveBeenCalled();
 
       modal.open.reset();
+      modalInstance.close.reset();
       assetLoadingSplash.open();
-      expect(modal.open).not.toHaveBeenCalled();
+      expect(modal.open).toHaveBeenCalled();
+      expect(modalInstance.close).toHaveBeenCalled();
     });
 
     it('should call modal close', function () {
+      spyOn(console, 'error');
       assetLoadingSplash.open();
       assetLoadingSplash.close();
       expect(modalInstance.close).toHaveBeenCalled();
+
+      modalInstance = undefined;
+      assetLoadingSplash.close();
+      expect(console.error).not.toHaveBeenCalled();
     });
 
     it('should set the observer callback', function () {
@@ -90,7 +100,7 @@
 
       assetLoadingSplashMock.setProgressObserver = jasmine.createSpy('setProgressObserver');
       assetLoadingSplashMock.close = jasmine.createSpy('close');
-      
+
       scope.$apply = jasmine.createSpy('$apply');
 
       spyOn(log, 'error');
@@ -144,7 +154,7 @@
       exampleData[1].done = true;
       assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
-      
+
       expect(scope.isError).toBeTruthy();
     });
   });

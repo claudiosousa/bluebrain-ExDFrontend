@@ -25,7 +25,8 @@
     };
 
     var open = function () {
-      myModal = myModal || $modal.open( {
+      if(angular.isDefined(myModal)){ myModal.close(); }
+      myModal = $modal.open( {
         backdrop: false,
         controller: 'AssetLoadingSplashCtrl',
         templateUrl: 'views/splash/asset-loading-splash.html',
@@ -35,7 +36,8 @@
     };
 
     var close = function() {
-      myModal.close();
+      if (angular.isDefined(myModal)) { myModal.close(); }
+      myModal = undefined;
     };
 
     return {
@@ -55,7 +57,7 @@
     $scope.close = function() {
       assetLoadingSplash.close();
     };
-    
+
     assetLoadingSplash.setProgressObserver(function(data) {
       var totalSize = 0;
       var progress = 0;

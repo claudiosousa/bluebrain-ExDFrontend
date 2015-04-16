@@ -504,7 +504,7 @@ describe('Services: experimentSimulationService', function () {
     simulationStateMockObject.update.mostRecentCall.args[2]();
     expect(messageCallback).toHaveBeenCalled();
     var freeServerID = 'bbpce014';
-    expect(initCallback).toHaveBeenCalledWith('#/esv-web/gz3d-view/' + freeServerID + '/' + 'mocked_sim_id');
+    expect(initCallback).toHaveBeenCalledWith('/esv-web/gz3d-view/' + freeServerID + '/' + 'mocked_sim_id');
   });
 
   it('should start a new experiment', function(){

@@ -26,8 +26,8 @@
       return output;
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$window', '$interval', 'simulationService', 'experimentSimulationService', 'STATE',
-      function ($scope, $rootScope, $timeout, $window, $interval, simulationService,experimentSimulationService, STATE) {
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$interval', 'simulationService', 'experimentSimulationService', 'STATE',
+      function ($scope, $rootScope, $timeout, $location, $interval, simulationService,experimentSimulationService, STATE) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
@@ -35,6 +35,7 @@
     $rootScope.isQueryingServersFinished = false;
     $rootScope.STATE = STATE;
     $rootScope.updatePromise = undefined;
+    $rootScope.updateUptimePromise = undefined;
 
     var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
     var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -82,9 +83,7 @@
     $scope.joinExperiment = function(url) {
       var message = 'Joining experiment ' + url;
       $scope.setProgressMessage({main: message});
-      // Due to reconnection issues in gz3d, we do force a reload here.
-      $window.location.href = url;
-      $window.location.reload();
+      $location.path(url);
     };
 
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);
@@ -96,7 +95,7 @@
     experimentSimulationService.getExperiments(
       $scope.setProgressMessage,
       function (data) {
-        $interval(simulationService().updateUptime, UPTIME_UPDATE_RATE);
+        $rootScope.updateUptimePromise = $interval(simulationService().updateUptime, UPTIME_UPDATE_RATE);
         $scope.experiments = data;
         $scope.owners = simulationService().owners;
         $scope.uptime = simulationService().uptime;
@@ -115,6 +114,10 @@
       if (angular.isDefined($rootScope.updatePromise)) {
         $interval.cancel($rootScope.updatePromise);
         $rootScope.updatePromise = undefined;
+      }
+      if (angular.isDefined($rootScope.updateUptimePromise)) {
+        $interval.cancel($rootScope.updateUptimePromise);
+        $rootScope.updateUptimePromise = undefined;
       }
     });
 

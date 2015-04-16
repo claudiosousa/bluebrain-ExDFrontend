@@ -382,7 +382,7 @@
           // initialize the newly created simulation
           simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED}, function (updateData) {
             setProgressMessageCallback({main: 'Simulation initialized.'});
-            initializedCallback('#/esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID);
+            initializedCallback('/esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID);
           }, function (updateData) {
             serverError(updateData);
             errorCallback();
