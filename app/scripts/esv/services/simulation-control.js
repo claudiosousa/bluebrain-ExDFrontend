@@ -373,7 +373,7 @@
       // Create a new simulation.
       simulationGenerator(serverURL).create({
           experimentID: experimentID,
-          gzserver_host: serverJobLocation
+          gzserverHost: serverJobLocation
         }, function (createData) {
           setProgressMessageCallback({main: 'Initialize Simulation...'});
           // register for messages during initialization
