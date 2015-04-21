@@ -15,11 +15,20 @@
     var splash,
       modal;
 
+    var modalMock = {};
+    var modalInstance = {};
+
     // Load the service and the (mocked) service it depends upon
     beforeEach(module('exdFrontendApp'));
+    beforeEach(module(function ($provide) {
+      $provide.value('$modal', modalMock);
+    }));
     beforeEach(inject(function (_splash_, _$modal_) {
       splash = _splash_;
       modal = _$modal_;
+
+      modalInstance.close = jasmine.createSpy('close');
+      modal.open = jasmine.createSpy('open').andReturn(modalInstance);
     }));
 
     it('should set spin to true', function () {
@@ -27,9 +36,16 @@
     });
 
     it('should call modal open', function () {
-      spyOn(modal, 'open');
       splash.open();
       expect(modal.open).toHaveBeenCalled();
+      expect(modalInstance.close).not.toHaveBeenCalled();
+
+      modal.open.reset();
+      modalInstance.close.reset();
+
+      splash.open();
+      expect(modal.open).toHaveBeenCalled();
+      expect(modalInstance.close).toHaveBeenCalled();
     });
 
     it('should call the observer when setting a message', function () {
@@ -47,13 +63,18 @@
 
     it('should test that close is not throwing an exception when open was called', function() {
       var callbackOnClose = jasmine.createSpy('callbackOnClose');
+      spyOn(console, 'error');
       splash.open(false, callbackOnClose);
       splash.close();
       expect(callbackOnClose).toHaveBeenCalled();
-            
+
       splash.open(true, callbackOnClose);
       splash.close();
       expect(callbackOnClose.calls.length).toBe(2);
+
+      splash.open(true, undefined);
+      splash.close();
+      expect(console.error).not.toHaveBeenCalled();
     });
 
   });

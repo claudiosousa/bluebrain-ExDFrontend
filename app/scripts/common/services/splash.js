@@ -21,7 +21,7 @@
 
     this.setMessage = function (message) {
       // Notify our controller that we have an update!
-      if (this.observer) {
+      if (angular.isDefined(this.observer)) {
         this.observer(message);
       }
     };
@@ -29,7 +29,8 @@
     this.open = function (showButton, callbackOnClose) {
       this.showButton = showButton;
       this.callbackOnClose = callbackOnClose;
-      this.modal = this.modal || $modal.open({
+      if (angular.isDefined(this.modal)) { this.modal.close(); }
+      this.modal = $modal.open({
         backdrop: false,
         controller: 'ModalInstanceCtrl',
         templateUrl: 'views/splash/content.html',
@@ -40,10 +41,11 @@
 
     this.close = function() {
       this.modal.close();
-      if (this.callbackOnClose !== undefined) {
+      if (angular.isDefined(this.callbackOnClose)) {
         this.callbackOnClose();
       }
       this.callbackOnClose = undefined;
+      this.modal = undefined;
     };
 
   }]);

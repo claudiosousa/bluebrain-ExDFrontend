@@ -67,52 +67,86 @@
       Detector.addGetWebGLMessage();
     }
 
-    if (!$stateParams.serverID || !$stateParams.simulationID){
-      throw "No serverID or simulationID given.";
-    }
-    var serverID = $stateParams.serverID;
-    var simulationID = $stateParams.simulationID;
-    var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+    var requestId;
+    var isInitialized = false;
+    var offsetHeightListenerUnregister;
 
-    GZ3D.assetsPath = serverConfig.gzweb.assets;
-    GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
-
-    $rootScope.scene = new GZ3D.Scene();
-    $rootScope.gui = new GZ3D.Gui($rootScope.scene);
-    $rootScope.iface = new GZ3D.GZIface($rootScope.scene, $rootScope.gui);
-    $rootScope.sdfparser = new GZ3D.SdfParser($rootScope.scene, $rootScope.gui, $rootScope.iface);
-
-    $rootScope.container = document.getElementById( 'container' );
-    $rootScope.container.appendChild($rootScope.scene.getDomElement());
-
-    // FPS indicator
-    $rootScope.stats = new Stats();
-    $rootScope.stats.domElement.style.position = 'absolute';
-    $rootScope.stats.domElement.style.top = '0px';
-    $rootScope.stats.domElement.style.zIndex = 100;
-    //container.appendChild( stats.domElement );
-
-    $rootScope.animate = function() {
-      requestAnimationFrame($rootScope.animate);
-      $rootScope.render();
-    };
-
-    $rootScope.render = function() {
-      $rootScope.scene.render();
-      //$rootScope.stats.update();
-    };
-
-    $rootScope.animate();
-    $window.addEventListener( 'resize', function(){
+    var resizeGZ3D = function() {
       $rootScope.scene.setWindowSize($rootScope.container.offsetWidth, $rootScope.container.offsetHeight);
-    }, false);
+    };
 
-    $rootScope.$watch(function() {
-      return $rootScope.container.offsetHeight;
-    }, function(newValue, oldValue) {
-      if (newValue !== oldValue) {
-        $rootScope.scene.setWindowSize($rootScope.container.offsetWidth, $rootScope.container.offsetHeight);
+    var initialize = function(serverID, simulationID) {
+      if(isInitialized) {
+        return;
       }
-    }, true);
+      isInitialized = true;
+      if (!serverID || !simulationID){
+        throw "No serverID or simulationID given.";
+      }
+      var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+
+      GZ3D.assetsPath = serverConfig.gzweb.assets;
+      GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
+
+      $rootScope.scene = new GZ3D.Scene();
+      $rootScope.gui = new GZ3D.Gui($rootScope.scene);
+      $rootScope.iface = new GZ3D.GZIface($rootScope.scene, $rootScope.gui);
+      $rootScope.sdfparser = new GZ3D.SdfParser($rootScope.scene, $rootScope.gui, $rootScope.iface);
+
+      $rootScope.container = document.getElementById( 'container' );
+      $rootScope.container.appendChild($rootScope.scene.getDomElement());
+
+      // FPS indicator
+      $rootScope.stats = new Stats();
+      $rootScope.stats.domElement.style.position = 'absolute';
+      $rootScope.stats.domElement.style.top = '0px';
+      $rootScope.stats.domElement.style.zIndex = 100;
+
+      $rootScope.animate = function() {
+        requestId = requestAnimationFrame($rootScope.animate);
+        $rootScope.render();
+      };
+
+      $rootScope.render = function() {
+        $rootScope.scene.render();
+      };
+
+      $rootScope.animate();
+      $window.addEventListener('resize', resizeGZ3D, false);
+
+      offsetHeightListenerUnregister = $rootScope.$watch(function() {
+        return $rootScope.container.offsetHeight;
+      }, function(newValue, oldValue) {
+        if ((newValue !== oldValue) && angular.isDefined($rootScope.scene)) {
+          resizeGZ3D();
+        }
+      }, true);
+    };
+
+    var deInitialize = function() {
+      offsetHeightListenerUnregister();
+      $window.removeEventListener('resize', resizeGZ3D);
+      $window.cancelAnimationFrame(requestId);
+
+      isInitialized = false;
+
+      delete $rootScope.sdfparser;
+      delete $rootScope.iface;
+      delete $rootScope.gui;
+      delete $rootScope.scene;
+
+      delete $rootScope.container;
+      delete $rootScope.stats;
+      delete $rootScope.animate;
+      delete $rootScope.render;
+    };
+
+    initialize($stateParams.serverID, $stateParams.simulationID);
+
+    // now expose our public functions
+    return {
+      Initialize: initialize,
+      deInitialize: deInitialize
+    };
   }]);
 }());

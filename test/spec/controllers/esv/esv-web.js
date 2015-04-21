@@ -8,7 +8,7 @@ describe('Controller: experimentCtrl', function () {
   var experimentCtrl,
     scope,
     rootScope,
-    window,
+    location,
     httpBackend,
     timeout,
     interval,
@@ -30,19 +30,15 @@ describe('Controller: experimentCtrl', function () {
 
   var timeoutMock = jasmine.createSpy('$timeout');
 
-  var windowMock = {};
-  windowMock.location = {href : '', reload : jasmine.createSpy('reload')};
-
   beforeEach(module(function ($provide) {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
     $provide.value('$timeout', timeoutMock);
-    $provide.value('$window', windowMock);
   }));
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
-                              _$window_,
+                              _$location_,
                               _$httpBackend_,
                               _$timeout_,
                               _$interval_,
@@ -50,7 +46,7 @@ describe('Controller: experimentCtrl', function () {
                               _STATE_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
-    window = _$window_;
+    location = _$location_;
     httpBackend = _$httpBackend_;
     timeout = _$timeout_;
     interval = _$interval_;
@@ -169,8 +165,7 @@ describe('Controller: experimentCtrl', function () {
     scope.joinExperiment('fake_url');
     var message = 'Joining experiment ' + 'fake_url';
     expect(scope.setProgressMessage).toHaveBeenCalledWith({main: message});
-    expect(window.location.href).toEqual('fake_url');
-    expect(window.location.reload).toHaveBeenCalled();
+    expect(location.path()).toEqual('/fake_url');
   });
 
   it('should select the correct entry', function() {
@@ -244,8 +239,10 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should stop updating after on $destroy', function() {
-    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
-    queryingServersFinishedCallback();
+    // Querying servers result
+    experimentSimulationService.getExperiments.mostRecentCall.args[1]();
+    // Querying servers finished
+    experimentSimulationService.getExperiments.mostRecentCall.args[2]();
 
     scope.$destroy();
 
@@ -253,6 +250,7 @@ describe('Controller: experimentCtrl', function () {
     interval.flush(REFRESH_UPDATE_RATE);
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
     expect(rootScope.updatePromise).not.toBeDefined();
+    expect(rootScope.updateUptimePromise).not.toBeDefined();
   });
 
   it('should do nothing on $destroy', function() {

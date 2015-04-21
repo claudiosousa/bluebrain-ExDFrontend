@@ -10,6 +10,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope,
     httpBackend,
     timeout,
+    window,
+    document,
     cameraManipulation,
     splash,
     simulationService,
@@ -53,8 +55,11 @@ describe('Controller: Gz3dViewCtrl', function () {
   var screenControlMock = jasmine.createSpy('screenControl').andReturn(screenControlObject);
 
   var splashServiceMock = {};
+  splashServiceMock.close = jasmine.createSpy('close');
 
   var gzInitializationMock = {};
+  gzInitializationMock.Initialize = jasmine.createSpy('Initialize');
+  gzInitializationMock.deInitialize = jasmine.createSpy('deInitialize');
 
   var cameraManipulationMock = {};
   cameraManipulationMock.firstPersonRotate = jasmine.createSpy('firstPersonRotate');
@@ -66,6 +71,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   var assetLoadingSplashInstance = {};
   assetLoadingSplashInstance.close = jasmine.createSpy('close');
   assetLoadingSplashMock.open = jasmine.createSpy('open').andReturn(assetLoadingSplashInstance);
+  assetLoadingSplashMock.close = jasmine.createSpy('close');
 
   var roslibMock = {};
   var returnedConnectionObject = {};
@@ -126,8 +132,40 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
     $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
     $provide.value('nrpFrontendVersion', nrpFrontendVersionMock);
-    nrpBackendVersionsMock.reset();
+    simulationStatisticsMock.setSimulationTimeCallback.reset();
+    simulationStatisticsMock.setRealTimeCallback.reset();
+    simulationServiceObject.simulations.reset();
+    simulationServiceObject.getUserName.reset();
+    simulationServiceMock.reset();
+    simulationStateObject.update.reset();
+    simulationStateObject.state.reset();
+    simulationStateMock.reset();
+    simulationControlObject.simulation.reset();
+    simulationControlMock.reset();
+    screenControlObject.updateScreenColor.reset();
+    screenControlMock.reset();
+    splashServiceMock.close.reset();
+    gzInitializationMock.Initialize.reset();
+    gzInitializationMock.deInitialize.reset();
+    cameraManipulationMock.firstPersonRotate.reset();
+    cameraManipulationMock.firstPersonTranslate.reset();
+    cameraManipulationMock.lookAtOrigin.reset();
+    cameraManipulationMock.resetToInitialPose.reset();
+    assetLoadingSplashInstance.close.reset();
+    assetLoadingSplashMock.open.reset();
+    assetLoadingSplashMock.close.reset();
+    returnedConnectionObject.unsubscribe.reset();
+    returnedConnectionObject.subscribe.reset();
+    rosConnectionObject.close.reset();
+    roslibMock.getOrCreateConnectionTo.reset();
+    roslibMock.createStringTopic.reset();
+    hbpUserDirectoryPromiseObject.then.reset();
+    hbpUserDirectoryPromiseObject2.then.reset();
+    hbpUserDirectoryMock.getCurrentUser.reset();
+    hbpUserDirectoryMock.get.reset();
     nrpBackendVersionsObject.get.reset();
+    nrpBackendVersionsMock.reset();
+    nrpFrontendVersionMock.get.reset();
   }));
 
   // Initialize the controller and a mock scope
@@ -136,6 +174,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _hbpUserDirectory_,
                               $timeout,
                               _$httpBackend_,
+                              _$window_,
+                              _$document_,
                               _cameraManipulation_,
                               _splash_,
                               _assetLoadingSplash_,
@@ -153,6 +193,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     hbpUserDirectory = _hbpUserDirectory_;
     timeout = $timeout;
     httpBackend = _$httpBackend_;
+    window = _$window_;
+    document = _$document_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
     assetLoadingSplash = _assetLoadingSplash_;
@@ -516,16 +558,29 @@ describe('Controller: Gz3dViewCtrl', function () {
   });
 
   it('should close all connections and splash screens on $destroy', function() {
+    spyOn(window, 'stop');
     scope.registerForStatusInformation();
     scope.splashScreen = splashInstance;
 
     scope.$destroy();
 
-    expect(scope.splashScreen.close).toHaveBeenCalled();
-    expect(scope.assetLoadingSplashScreen.close).toHaveBeenCalled();
+    expect(splash.close).toHaveBeenCalled();
+    expect(assetLoadingSplash.close).toHaveBeenCalled();
     expect(scope.statusListener.unsubscribe).toHaveBeenCalled();
     expect(scope.rosConnection.close).toHaveBeenCalled();
     expect(scope.iface.webSocket.close).toHaveBeenCalled();
+    expect(gzInitializationMock.deInitialize).toHaveBeenCalled();
+    expect(window.stop).toHaveBeenCalled();
+  });
+
+  it('should call execCommand on destroy', function() {
+    // Fake IE browser behavior
+    // The stop() method is not supported by Internet Explorer
+    // https://developer.mozilla.org/de/docs/Web/API/Window/stop
+    document.execCommand = jasmine.createSpy('execCommand');
+    window.stop = undefined;
+    scope.$destroy();
+    expect(document.execCommand).toHaveBeenCalled();
   });
 
   it('should do nothing on $destroy when all is undefined', function() {

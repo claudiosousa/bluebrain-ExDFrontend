@@ -46,6 +46,7 @@
       });
 
       ros.on('close', function () {
+        delete connections[url];
         console.log('Connection closed to websocket server: ' + url);
       });
 

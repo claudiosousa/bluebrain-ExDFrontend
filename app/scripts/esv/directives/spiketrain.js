@@ -177,7 +177,7 @@
 
         // When resizing the window, we have to take care of resizing the canvas
         angular.element($window).bind('resize', function() {
-          if(scope.showSpikeTrain) {
+          if(scope.showSpikeTrain === true) {
             scope.onScreenSizeChanged();
           }
         });

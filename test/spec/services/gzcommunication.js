@@ -159,4 +159,23 @@ describe('testing the gzInitialization service', function () {
     rootScope.$digest();
     expect(SceneObject.setWindowSize).toHaveBeenCalledWith(210, 100);
   });
+
+  it('should not initialize when already initialized', function() {
+    rootScope.sdfParser = undefined;
+    // initialize a second time
+    gzInitialization.Initialize('fakeserverID', 'fakeSimID');
+    expect(rootScope.sdfParser).not.toBeDefined();
+  });
+
+  it('should deinitialize', function() {
+    gzInitialization.deInitialize();
+    expect(rootScope.sdfParser).not.toBeDefined();
+    expect(rootScope.iface).not.toBeDefined();
+    expect(rootScope.gui).not.toBeDefined();
+    expect(rootScope.scene).not.toBeDefined();
+    expect(rootScope.container).not.toBeDefined();
+    expect(rootScope.stats).not.toBeDefined();
+    expect(rootScope.animate).not.toBeDefined();
+    expect(rootScope.renderer).not.toBeDefined();
+  });
 });
