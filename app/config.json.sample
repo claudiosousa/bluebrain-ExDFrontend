@@ -36,7 +36,8 @@
                         "status": "/ros_cle_simulation/status",
                         "spikes": "/monitor/spike_recorder"
                     }
-                }
+                },
+                "serverJobLocation" : "local"
             },
             "bbpce016": {
                 "gzweb": {
@@ -50,7 +51,8 @@
                         "status": "/ros_cle_simulation/status",
                         "spikes": "/monitor/spike_recorder"
                     }
-                }
+                },
+                "serverJobLocation" : "local"
             },
             "bbpce018": {
                 "gzweb": {
@@ -64,7 +66,8 @@
                         "status": "/ros_cle_simulation/status",
                         "spikes": "/monitor/spike_recorder"
                     }
-                }
+                },
+                "serverJobLocation" : "local"
             }
         }
     },

@@ -261,7 +261,7 @@ describe('Services: experimentSimulationService', function () {
       'rosbridge': {
         'websocket': 'ws://bbpce014.epfl.ch:9090', 'topics': { 'status': '/ros_cle_simulation/status' }
       },
-      'serverJobLocation' : 'remote'
+      'serverJobLocation' : 'lugano'
     },
     'bbpce016': {
       'gzweb': {
@@ -492,7 +492,7 @@ describe('Services: experimentSimulationService', function () {
     expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
       experimentID: 'mocked_experiment_id',
       /* jshint camelcase: false */
-      gzserver_host: 'remote'
+      gzserverHost: 'lugano'
     }, jasmine.any(Function));
     simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
     expect(messageCallback).toHaveBeenCalled();
