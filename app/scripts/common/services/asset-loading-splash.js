@@ -24,8 +24,9 @@
       }
     };
 
-    var open = function () {
-      if(angular.isDefined(myModal)){ myModal.close(); }
+    var open = function (callbackOnClose) {
+      this.callbackOnClose = callbackOnClose;
+      if (angular.isDefined(myModal)){ myModal.close(); }
       myModal = $modal.open( {
         backdrop: false,
         controller: 'AssetLoadingSplashCtrl',
@@ -36,7 +37,12 @@
     };
 
     var close = function() {
-      if (angular.isDefined(myModal)) { myModal.close(); }
+      if (angular.isDefined(myModal)) { 
+        myModal.close(); 
+      }
+      if (angular.isDefined(this.callbackOnClose)) {
+        this.callbackOnClose();
+      }
       myModal = undefined;
     };
 

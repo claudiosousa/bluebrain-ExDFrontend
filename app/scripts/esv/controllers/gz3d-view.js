@@ -142,7 +142,37 @@
           });
       };
 
-      $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open();
+      // The following lines allow the joining client to retrieve the actual screen color stored by the server.
+      // The method below gets the 'server' color for each screen since it might have been changed
+      // by another client connected earlier to the same simulation.
+      // This is a fix for Bug [NRRPLT-1899] that should be addressed properly on Gazebo's side:
+      // https://bitbucket.org/osrf/gazebo/issue/1573/scene_info-does-not-reflect-older-changes
+      // The lines enclosed by the LCOV_EXCL comments will be removed once the Gazebo bug is fixed.
+      //LCOV_EXCL_START
+      $scope.updateScreenColor = function(simulation, screenString) { // screenString must be either 'left' or 'right'
+        var colors = {'Gazebo/Red': 0xff0000, 'Gazebo/Blue': 0x0000ff};
+        var scene = $rootScope.scene;// scene is undefined when closing and destroying the asset-loading splah screen
+        var entity = scene ? scene.getByName(screenString + '_vr_screen::body::screen_glass') : undefined;
+        if (entity) {
+          var child = entity.children ? entity.children[0] : undefined;
+          var material = child ? child.material : undefined;
+          var value = simulation[screenString + '_screen_color'];
+          var color = colors[value];
+          if (angular.isDefined(material) && angular.isDefined(color)) {
+            material.color.setHex(color);
+            material.ambient.setHex(color);
+            material.specular.setHex(color);
+          }
+        }        
+      };
+      var callbackOnCloseLoading = function() {
+        simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
+          $scope.updateScreenColor(data, 'left');
+          $scope.updateScreenColor(data, 'right');
+        });
+      };
+      //LCOV_EXCL_STOP
+      $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(callbackOnCloseLoading);
       $rootScope.iface.setAssetProgressCallback(function(data){
         assetLoadingSplash.setProgress(data);
       });
@@ -182,45 +212,35 @@
         return model;
       };
 
-      // for convenience we pass just a string as "red" or "blue" currently, this will be replaced later on
+      // for convenience we pass just a string as 'red' or 'blue' currently, this will be replaced later on
       $scope.setColorOnEntity = function (value) {
         if(!$scope.selectedEntity) {
           console.error('Could not change screen color since there was no object selected');
           return;
         }
-        var colors = {red: 0xff0000, blue: 0x0000ff};
+        // send RESTful commands to server
+        var screenParams = {};
+        var name = $scope.selectedEntity.name; 
 
-        // the following line would change the color for a simple box
-        //var entityToChange = scene.getByName(scene.selectedEntity.name + "::link::visual");
-
-        // since we currently want restrict ourselves to screens we go with:
-        var entityToChange = $rootScope.scene.getByName($scope.selectedEntity.name + '::body::screen_glass');
-        var child = entityToChange.children[0];
-        var material = child ? child.material : undefined;
-
-        if (entityToChange && child && material && colors[value]) {
-          // send RESTful commands to server
-          var screenParams = {};
-
-          if (($scope.selectedEntity.name === 'right_vr_screen') && (value === 'red'))
-          {
-            screenParams.name = 'RightScreenToRed';
-          }
-          else if (($scope.selectedEntity.name === 'left_vr_screen') && (value === 'red'))
-          {
-            screenParams.name = 'LeftScreenToRed';
-          }
-          else if (($scope.selectedEntity.name === 'right_vr_screen') && (value === 'blue'))
-          {
-            screenParams.name = 'RightScreenToBlue';
-          }
-          else if (($scope.selectedEntity.name === 'left_vr_screen') && (value === 'blue'))
-          {
-            screenParams.name = 'LeftScreenToBlue';
-          }
-
-          screenControl(serverBaseUrl).updateScreenColor({sim_id: simulationID}, screenParams);
+        if ((name === 'right_vr_screen') && (value === 'red'))
+        {
+          screenParams.name = 'RightScreenToRed';
         }
+        else if ((name === 'left_vr_screen') && (value === 'red'))
+        {
+          screenParams.name = 'LeftScreenToRed';
+        }
+        else if ((name === 'right_vr_screen') && (value === 'blue'))
+        {
+          screenParams.name = 'RightScreenToBlue';
+        }
+        else if ((name === 'left_vr_screen') && (value === 'blue'))
+        {
+          screenParams.name = 'LeftScreenToBlue';
+        }
+
+        screenControl(serverBaseUrl).updateScreenColor({sim_id: simulationID}, screenParams);
+
 
         // deactivate the context menu after a color was assigned
         $scope.toggleScreenChangeMenu(false);

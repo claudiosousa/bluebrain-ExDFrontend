@@ -403,7 +403,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     // pretend we selected a screen now
     scope.selectedEntity = { 'name' : 'left_vr_screen' };
     scope.setColorOnEntity('red');
-    expect(rootScope.scene.getByName).toHaveBeenCalledWith('left_vr_screen::body::screen_glass');
 
     expect(screenControl).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
     expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToRed'});
