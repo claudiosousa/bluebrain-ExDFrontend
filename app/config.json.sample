@@ -1,110 +1,189 @@
-{
-    "api": {
-        "task": {
-            "v1": "https://services-dev.humanbrainproject.eu/task/v0/api",
-            "v0": "https://services-dev.humanbrainproject.eu/task/v0/api"
-        },
-        "bluepy": {
-            "v0": "https://services-dev.humanbrainproject.eu/bluepy/v0/api"
-        },
-        "simconfig": {
-            "v0": "https://services-dev.humanbrainproject.eu/bluepy/v0/api"
-        },
-        "user": {
-            "v1": "https://services-dev.humanbrainproject.eu/oidc/v0/api",
-            "v0": "https://services-dev.humanbrainproject.eu/oidc/v0/api"
-        },
-        "document": {
-            "v1": "https://services-dev.humanbrainproject.eu/document/v0/api",
-            "v0": "https://services-dev.humanbrainproject.eu/document/v0/api"
-        },
-        "provenance": {
-            "v2": "https://services-dev.humanbrainproject.eu/provenance/v0/api",
-            "v1": "https://services-dev.humanbrainproject.eu/provenance/v0/api",
-            "v0": "https://services-dev.humanbrainproject.eu/provenance/v0/api"
-        },
-        "neurorobotics": {
-            "bbpce014": {
-                "gzweb": {
-                    "websocket": "ws://bbpce014.epfl.ch:7681",
-                    "assets": "http://bbpce014.epfl.ch",
-                    "nrp-services": "http://bbpce014.epfl.ch:8080"
-                },
-                "rosbridge": {
-                    "websocket": "ws://bbpce014.epfl.ch:9090",
-                    "topics": {
-                        "status": "/ros_cle_simulation/status",
-                        "spikes": "/monitor/spike_recorder"
-                    }
-                },
-                "serverJobLocation" : "local"
+{  
+   "api":{  
+      "bluepy":{  
+         "v0":"https://services.humanbrainproject.eu/bluepy/v0/api"
+      },
+      "collab":{  
+         "v0":"https://services.humanbrainproject.eu/collab/v0"
+      },
+      "document":{  
+         "v0":"https://services.humanbrainproject.eu/document/v0/api"
+      },
+      "image":{  
+         "v0":"https://services.humanbrainproject.eu/image/v0/api"
+      },
+      "mimetype":{  
+         "v0":"https://services.humanbrainproject.eu/mimetype/v0"
+      },
+      "neurorobotics":{  
+         "bbpce014":{  
+            "gzweb":{  
+               "assets":"http://bbpce014.epfl.ch",
+               "nrp-services":"http://bbpce014.epfl.ch:8080",
+               "websocket":"ws://bbpce014.epfl.ch:7681"
             },
-            "bbpce016": {
-                "gzweb": {
-                    "websocket": "ws://bbpce016.epfl.ch:7681",
-                    "assets": "http://bbpce016.epfl.ch",
-                    "nrp-services": "http://bbpce016.epfl.ch:8080"
-                },
-                "rosbridge": {
-                    "websocket": "ws://bbpce016.epfl.ch:9090",
-                    "topics": {
-                        "status": "/ros_cle_simulation/status",
-                        "spikes": "/monitor/spike_recorder"
-                    }
-                },
-                "serverJobLocation" : "local"
-            },
-            "bbpce018": {
-                "gzweb": {
-                    "websocket": "ws://bbpce018.epfl.ch:7681",
-                    "assets": "http://bbpce018.epfl.ch",
-                    "nrp-services": "http://bbpce018.epfl.ch:8080"
-                },
-                "rosbridge": {
-                    "websocket": "ws://bbpce018.epfl.ch:9090",
-                    "topics": {
-                        "status": "/ros_cle_simulation/status",
-                        "spikes": "/monitor/spike_recorder"
-                    }
-                },
-                "serverJobLocation" : "local"
+            "rosbridge":{  
+               "topics":{  
+                  "spikes":"/monitor/spike_recorder",
+                  "status":"/ros_cle_simulation/status"
+               },
+               "websocket":"ws://bbpce014.epfl.ch:9090",
+               "serverJobLocation":"local"
             }
-        }
-    },
-    "auth": {
-        "url": "https://services-dev.humanbrainproject.eu/oidc",
-        "clientId": "portal-client"
-    },
-    "oidc": {
-        "debug": false
-    },
-    "up": {
-        "sites": [{
-            "name": "Public",
-            "url": "https://humanbrainproject.eu"
-        }, {
-            "name": "Unified Platform",
-            "url": "http://localhost:9999"
-        }, {
-            "name": "Collaboration",
-            "url": "https://collaboration.humanbrainproject.eu"
-        }, {
-            "name": "Education",
-            "url": "https://education.humanbrainproject.eu"
-        }],
-        "apps": [{
-            "name": "Different Domain",
-            "type": "external",
-            "url": "http://localhost:9880"
-        }, {
-            "name": "Same Domain",
-            "type": "external",
-            "url": "http://localhost:9999"
-        }],
-        "resourceUrlWhitelist": [
-            "https://humanbrainproject.eu/**",
-            "https://*.humanbrainproject.eu/**",
-            "http://localhost:*/"
-        ]
-    }
+         },
+         "bbpce015":{  
+            "gzweb":{  
+               "assets":"http://bbpce015.epfl.ch",
+               "nrp-services":"http://bbpce015.epfl.ch:8080",
+               "websocket":"ws://bbpce015.epfl.ch:7681"
+            },
+            "rosbridge":{  
+               "topics":{  
+                  "spikes":"/monitor/spike_recorder",
+                  "status":"/ros_cle_simulation/status"
+               },
+               "websocket":"ws://bbpce015.epfl.ch:9090",
+               "serverJobLocation":"local"
+            }
+         },
+         "bbpce016":{  
+            "gzweb":{  
+               "assets":"http://bbpce016.epfl.ch",
+               "nrp-services":"http://bbpce016.epfl.ch:8080",
+               "websocket":"ws://bbpce016.epfl.ch:7681"
+            },
+            "rosbridge":{  
+               "topics":{  
+                  "spikes":"/monitor/spike_recorder",
+                  "status":"/ros_cle_simulation/status"
+               },
+               "websocket":"ws://bbpce016.epfl.ch:9090",
+               "serverJobLocation":"local"
+            }
+         },
+         "bbpce018":{  
+            "gzweb":{  
+               "assets":"http://bbpce018.epfl.ch",
+               "nrp-services":"http://bbpce018.epfl.ch:8080",
+               "websocket":"ws://bbpce018.epfl.ch:7681"
+            },
+            "rosbridge":{  
+               "topics":{  
+                  "spikes":"/monitor/spike_recorder",
+                  "status":"/ros_cle_simulation/status"
+               },
+               "websocket":"ws://bbpce018.epfl.ch:9090",
+               "serverJobLocation":"local"
+            }
+         }
+      },
+      "provenance":{  
+         "v0":"https://services.humanbrainproject.eu/provenance/v0/api",
+         "v1":"https://services.humanbrainproject.eu/provenance/v1/api"
+      },
+      "s3":{  
+         "v0":"https://storage.humanbrainproject.eu"
+      },
+      "simconfig":{  
+         "v0":"https://services.humanbrainproject.eu/bluepy/v0/api"
+      },
+      "task":{  
+         "v0":"https://services.humanbrainproject.eu/task/v0/api"
+      },
+      "user":{  
+         "v0":"https://services.humanbrainproject.eu/oidc/v0/api"
+      }
+   },
+   "auth":{  
+      "clientId":"neurorobotics-ui",
+      "url":"https://services.humanbrainproject.eu/oidc"
+   },
+   "bbpBrowser":{  
+      "features":{  
+         "releaseApi":false
+      }
+   },
+   "hbpFileStore":{  
+      "maxFileUploadSize":41943040
+   },
+   "oidc":{  
+      "debug":false
+   },
+   "up":{  
+      "baseUrl":"https://up.humanbrainproject.eu/#",
+      "config":"https://up.humanbrainproject.eu/upnav/data-production.json",
+      "extensions":{  
+         "ui":{  
+            "apps":[  
+               {  
+                  "name":"Documentation",
+                  "type":"external",
+                  "url":"https://developer.humanbrainproject.eu/docs/"
+               },
+               {  
+                  "name":"NMPI",
+                  "type":"external",
+                  "url":"https://neuromorphic.humanbrainproject.eu/app/"
+               }
+            ],
+            "settings":[  
+               {  
+                  "category":"User Management",
+                  "name":"Manage Users",
+                  "type":"external",
+                  "url":"https://up.humanbrainproject.eu/apps/usermanagement/#/user/"
+               },
+               {  
+                  "category":"User Management",
+                  "name":"Create User",
+                  "type":"external",
+                  "url":"https://up.humanbrainproject.eu/apps/usermanagement/#/create-user/"
+               },
+               {  
+                  "category":"User Management",
+                  "name":"Manage Account Requests",
+                  "type":"external",
+                  "url":"https://up.humanbrainproject.eu/apps/usermanagement/#/account-request/"
+               }
+            ],
+            "user":[  
+               {  
+                  "name":"profile",
+                  "title":"Profile",
+                  "type":"external",
+                  "url":"https://up.humanbrainproject.eu/apps/userprofile/#/me"
+               },
+               {  
+                  "name":"editProfile",
+                  "title":"Edit Profile",
+                  "type":"external",
+                  "url":"https://up.humanbrainproject.eu/apps/userprofile/#/me/edit"
+               }
+            ]
+         }
+      },
+      "resourceUrlWhitelist":[  
+         "https://up.humanbrainproject.eu/apps/**",
+         "https://developer.humanbrainproject.eu/**",
+         "https://neuromorphic.humanbrainproject.eu/**"
+      ],
+      "sites":[  
+         {  
+            "name":"Public",
+            "url":"https://humanbrainproject.eu"
+         },
+         {  
+            "name":"Unified Portal",
+            "url":"https://up.humanbrainproject.eu"
+         },
+         {  
+            "name":"Collaboration",
+            "url":"https://collaboration.humanbrainproject.eu"
+         },
+         {  
+            "name":"Education",
+            "url":"https://education.humanbrainproject.eu"
+         }
+      ]
+   }
 }
