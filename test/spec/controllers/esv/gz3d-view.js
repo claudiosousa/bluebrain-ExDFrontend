@@ -214,6 +214,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.scene.modelManipulator = {};
     rootScope.scene.modelManipulator.pickerNames = '';
     rootScope.scene.emitter = {};
+    rootScope.scene.controls = {};
+    rootScope.scene.controls.onMouseDownManipulator = jasmine.createSpy('onMouseDownManipulator');
+    rootScope.scene.controls.onMouseUpManipulator = jasmine.createSpy('onMouseUpManipulator');
     rootScope.gui = {};
     rootScope.gui.emitter = {};
     rootScope.iface = {};
@@ -303,14 +306,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.isOwner).toBe(false);
   });
 
-  it('should show the camera translate help div correctly', function() {
-    expect(scope.showKeyboardControlInfoDiv).toBe(false);
-    var right = 1, up = 2, forward = 3;
-    scope.cameraTranslate(right, up, forward);
-    expect(scope.showKeyboardControlInfoDiv).toBe(true);
-    timeout.flush();
-    expect(scope.showKeyboardControlInfoDiv).toBe(false);
-  });
+  //it('should show the camera translate help div correctly', function() {
+  //  expect(scope.showKeyboardControlInfoDiv).toBe(false);
+  //  //var right = 1, up = 2, forward = 3;
+  //  //scope.cameraTranslate(right, up, forward);
+  //  expect(scope.showKeyboardControlInfoDiv).toBe(true);
+  //  timeout.flush();
+  //  expect(scope.showKeyboardControlInfoDiv).toBe(false);
+  //});
 
   it('should check that updateSimulation sets the scope\'s state', function () {
     //Ignore this warning because of the sim_id
@@ -513,21 +516,30 @@ describe('Controller: Gz3dViewCtrl', function () {
       //scope.incrementLightIntensities(-0.5);
   });
 
-  it('should call the camera manipulation service methods correctly', function() {
-    var right = 1, up = 2, forward = 3;
-    scope.cameraTranslate(right, up, forward);
-    expect(cameraManipulation.firstPersonTranslate).toHaveBeenCalledWith(right, up, forward);
+  // Commented out for the moment. This will be redesigned in the next sprint
+  //it('should call the camera manipulation service methods correctly', function() {
+  //  var right = 1, up = 2, forward = 3;
+  //  scope.cameraTranslate(right, up, forward);
+  //  expect(cameraManipulation.firstPersonTranslate).toHaveBeenCalledWith(right, up, forward);
+  //
+  //  var degreeRight = 15, degreeUp = 30;
+  //  scope.cameraRotate(degreeRight, degreeUp);
+  //  expect(cameraManipulation.firstPersonRotate).toHaveBeenCalledWith(degreeRight, degreeUp);
+  //
+  //  scope.cameraLookAtOrigin();
+  //  expect(cameraManipulation.lookAtOrigin).toHaveBeenCalled();
+  //
+  //  scope.cameraResetToInitPose();
+  //  expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
+  //});
 
-    var degreeRight = 15, degreeUp = 30;
-    scope.cameraRotate(degreeRight, degreeUp);
-    expect(cameraManipulation.firstPersonRotate).toHaveBeenCalledWith(degreeRight, degreeUp);
-
-    scope.cameraLookAtOrigin();
-    expect(cameraManipulation.lookAtOrigin).toHaveBeenCalled();
-
-    scope.cameraResetToInitPose();
-    expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
+  it('should change the camera pose correctly', function() {
+    scope.requestMove('moveForward');
+    expect(rootScope.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
+    scope.releaseMove('moveForward');
+    expect(rootScope.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
   });
+
 
   it('should toggle the showSpikeTrain variable', function() {
     expect(scope.showSpikeTrain).toBe(false);

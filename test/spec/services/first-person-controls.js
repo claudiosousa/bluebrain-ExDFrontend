@@ -195,6 +195,50 @@ describe('FirstPersonControls', function () {
     expect(posEnd.y - posStart.y < 0).toBe(true);
   }));
 
+  it('should rotate according to the inputs', inject(function() {
+    camera.position.set(0, 0, 10);
+    camera.lookAt(new THREE.Vector3(0,0,0));
+    var rotStart = new THREE.Euler(), rotEnd = new THREE.Euler();
+
+    expect(firstPersonControls.enabled).toBe(true);
+
+    rotStart.copy(camera.rotation);
+    firstPersonControls.rotateUp = true;
+    firstPersonControls.update();
+    firstPersonControls.rotateUp = false;
+    rotEnd.copy(camera.rotation);
+    expect(rotEnd.x - rotStart.x > 0).toBe(true);
+
+    rotStart.copy(camera.rotation);
+    firstPersonControls.rotateDown = true;
+    firstPersonControls.update();
+    firstPersonControls.rotateDown = false;
+    rotEnd.copy(camera.rotation);
+    expect(rotEnd.x - rotStart.x < 0).toBe(true);
+
+    rotStart.copy(camera.rotation);
+    firstPersonControls.rotateRight = true;
+    firstPersonControls.update();
+    firstPersonControls.rotateRight = false;
+    rotEnd.copy(camera.rotation);
+    expect(rotEnd.z - rotStart.z > 0).toBe(true);
+
+    rotStart.copy(camera.rotation);
+    firstPersonControls.rotateLeft = true;
+    firstPersonControls.update();
+    firstPersonControls.rotateLeft = false;
+    rotEnd.copy(camera.rotation);
+    expect(rotEnd.z - rotStart.z < 0).toBe(true);
+  }));
+
+  it('should set direction variables accordingly', inject(function() {
+    firstPersonControls.rotateLeft = false;
+    firstPersonControls.onMouseDownManipulator('rotateLeft');
+    expect(firstPersonControls.rotateLeft).toBe(true);
+    firstPersonControls.onMouseUpManipulator('rotateLeft');
+    expect(firstPersonControls.rotateLeft).toBe(false);
+  }));
+
   it('should handle mousedown events', inject(function() {
     spyOn(firstPersonControls, 'updateSphericalAngles').andCallThrough();
 

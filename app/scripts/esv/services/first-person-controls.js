@@ -5,46 +5,34 @@
 
 /* global THREE: true */
 
-THREE.FirstPersonControls = function (object, domElement)
+THREE.FirstPersonControls = function(object, domElement)
 {
   'use strict';
 
   this.object = object;
-  this.domElement = (domElement !== undefined) ? domElement : document;
+  this.domElement = angular.isDefined(domElement) ? domElement : document;
 
-  if ( this.domElement !== document ) {
-    this.domElement.setAttribute( 'tabindex', -1 );
+  if (this.domElement !== document) {
+    this.domElement.setAttribute('tabindex', -1);
   }
 
   // Set to false to disable this control
   this.enabled = true;
 
-  this.target = new THREE.Vector3();
-  this.targetIndicator = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 20),
-      new THREE.MeshPhongMaterial({emissive: 0x333300,
-      ambient: 0xffff00,
-      shading: THREE.SmoothShading}));
-  this.targetIndicator.visible = false;
-  this.showTargetIndicator = false;
-
-  this.object.lookAt(this.target);
-
-  this.movementSpeed = 0.2;
+  this.movementSpeed = 0.05;
   this.lookSpeed = 0.01;
 
+  this.target = new THREE.Vector3();
   this.lookVertical = true;
-  this.autoForward = false;
 
   this.activeLook = true;
 
-  this.autoSpeedFactor = 0.0;
-
-  this.azimuth = 0;
-  this.zenith = 0;
-  this.zenithMin = 0;
+  this.azimuth = 0.0;
+  this.zenith = 0.0;
+  this.zenithMin = 0.0;
   this.zenithMax = Math.PI;
-  this.azimuthOnMouseDown = 0;
-  this.zenithOnMouseDown = 0;
+  this.azimuthOnMouseDown = 0.0;
+  this.zenithOnMouseDown = 0.0;
 
   this.moveForward = false;
   this.moveBackward = false;
@@ -52,23 +40,33 @@ THREE.FirstPersonControls = function (object, domElement)
   this.moveRight = false;
   this.moveUp = false;
   this.moveDown = false;
+  this.initPosition = false;
+
+  this.rotateLeft = false;
+  this.rotateRight = false;
+  this.rotateUp = false;
+  this.rotateDown = false;
+  this.initRotation = false;
+
   this.freeze = false;
 
   this.mouseDragOn = false;
   this.mousePosOnKeyDown = new THREE.Vector2();
   this.mousePosCurrent = new THREE.Vector2();
 
-  this.onMouseDown = function ( event ) {
+  this.initialPosition = new THREE.Vector3().copy(this.object.position);
+  this.initialRotation = new THREE.Quaternion().copy(this.object.quaternion);
 
-    if ( this.domElement !== document ) {
+  this.onMouseDown = function (event) {
+    if (this.domElement !== document) {
       this.domElement.focus();
     }
 
     event.preventDefault();
     event.stopPropagation();
 
-    if ( this.activeLook ) {
-      switch ( event.button ) {
+    if (this.activeLook) {
+      switch (event.button) {
         case 0:
           this.updateSphericalAngles();
           this.mousePosOnKeyDown.set(event.pageX, event.pageY);
@@ -79,16 +77,14 @@ THREE.FirstPersonControls = function (object, domElement)
         case 2:
       }
     }
-
   };
 
-  this.onMouseUp = function ( event ) {
-
+  this.onMouseUp = function (event) {
     event.preventDefault();
     event.stopPropagation();
 
-    if ( this.activeLook ) {
-      switch ( event.button ) {
+    if (this.activeLook) {
+      switch (event.button) {
         case 0:
           this.mouseDragOn = false;
           this.azimuthOnMouseDown = this.azimuth;
@@ -97,19 +93,14 @@ THREE.FirstPersonControls = function (object, domElement)
         case 2:
       }
     }
-
   };
 
-  this.onMouseMove = function ( event ) {
-
+  this.onMouseMove = function (event) {
     this.mousePosCurrent.set(event.pageX, event.pageY);
-
   };
 
-  this.onKeyDown = function ( event ) {
-
-    switch( event.keyCode ) {
-
+  this.onKeyDown = function (event) {
+    switch(event.keyCode) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break;
 
@@ -127,15 +118,11 @@ THREE.FirstPersonControls = function (object, domElement)
 
       case 34: /*page down*/
       case 70: /*F*/ this.moveDown = true; break;
-
     }
-
   };
 
-  this.onKeyUp = function ( event ) {
-
-    switch( event.keyCode ) {
-
+  this.onKeyUp = function (event) {
+    switch(event.keyCode) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
 
@@ -154,55 +141,79 @@ THREE.FirstPersonControls = function (object, domElement)
       case 34: /*page down*/
       case 70: /*F*/ this.moveDown = false; break;
 
-      case 81: /*Q*/ this.freeze = !this.freeze; break;
-
+      case 81: /*Q*/ this.freeze = !this.freeze; break;// TODO(Luc): handles this from gz3d-view.js with some visual indication that the scene is frozen
     }
-
   };
 
-  this.update = function( delta ) {
+  this.fpRotate = function(rightAmount, upAmount) {
+    // rotate left/right
+    // rotation happens around the world up axis so up remains up (no upside-down)
+    var camera = this.object;
+    var q = new THREE.Quaternion();
+    q.setFromAxisAngle(new THREE.Vector3(0.0, 0.0, 1.0), rightAmount);
+    camera.quaternion.multiplyQuaternions(q, camera.quaternion);
+    // rotate up/down
+    camera.rotateX(upAmount);
+  };
 
+  this.update = function(delta) {
     if (!this.enabled) {
       return;
     }
 
     if (delta === undefined) {
-      delta = 1;
+      delta = 1.0;
     }
 
-    var actualMoveSpeed = 0;
+    var speed = 0.0;
 
-    if ( !this.freeze ) {
-
+    if (!this.freeze) {
       /* --- translation --- */
-
-      actualMoveSpeed = delta * this.movementSpeed;
-
-      if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) {
-        this.object.translateOnAxis(new THREE.Vector3(0,0,1), -(actualMoveSpeed + this.autoSpeedFactor));
-      }
-      if ( this.moveBackward ) {
-        this.object.translateOnAxis(new THREE.Vector3(0,0,1), actualMoveSpeed );
-      }
-      if ( this.moveLeft ) {
-        this.object.translateOnAxis(new THREE.Vector3(1,0,0), - actualMoveSpeed );
-      }
-      if ( this.moveRight ) {
-        this.object.translateOnAxis(new THREE.Vector3(1,0,0), actualMoveSpeed );
-      }
-      if ( this.moveUp ) {
-        this.object.translateOnAxis(new THREE.Vector3(0,1,0), actualMoveSpeed );
-      }
-      if ( this.moveDown ) {
-        this.object.translateOnAxis(new THREE.Vector3(0,1,0), - actualMoveSpeed );
+      if (this.initPosition) {
+        this.object.position.copy(this.initialPosition);
       }
 
-      /* --- rotation --- */
+      speed = delta * this.movementSpeed;
 
+      if (this.moveForward) {
+        this.object.translateZ(-speed);
+      }
+      if (this.moveBackward) {
+        this.object.translateZ(speed);
+      }
+      if (this.moveLeft) {
+        this.object.translateX(-speed);
+      }
+      if (this.moveRight) {
+        this.object.translateX(speed);
+      }
+      if (this.moveUp) {
+        this.object.translateY(speed);
+      }
+      if (this.moveDown) {
+        this.object.translateY(-speed);
+      }
+
+      /* --- rotation by means of a manipulator --- */
+      var ROTATION_SPEED_FACTOR = 0.1;
+      if (this.rotateUp || this.rotateDown) {
+        var sign = this.rotateUp ? 1.0 : -1.0;
+        this.fpRotate(0.0, sign * ROTATION_SPEED_FACTOR * speed);
+      }
+      if (this.rotateRight) {
+        this.fpRotate(ROTATION_SPEED_FACTOR * speed, 0.0);
+      }
+      if (this.rotateLeft) {
+        this.fpRotate(-ROTATION_SPEED_FACTOR * speed, 0.0);
+      }
+      if (this.initRotation) {
+        this.object.quaternion.copy(this.initialRotation);
+      }
+
+      /* --- rotation by means of a mouse drag --- */
       if (this.mouseDragOn) {
-
         var actualLookSpeed = delta * this.lookSpeed;
-        if ( !this.activeLook ) {
+        if (!this.activeLook) {
           actualLookSpeed = 0;
         }
 
@@ -213,9 +224,9 @@ THREE.FirstPersonControls = function (object, domElement)
         this.azimuth = this.azimuthOnMouseDown - mouseDelta.x * actualLookSpeed;
         this.azimuth = this.azimuth % (2 * Math.PI);
 
-        if( this.lookVertical ) {
+        if (this.lookVertical) {
           this.zenith = this.zenithOnMouseDown + mouseDelta.y * actualLookSpeed;
-          this.zenith = Math.max( this.zenithMin, Math.min( this.zenithMax, this.zenith ) );
+          this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith));
         } else {
           this.zenith = Math.PI / 2;
         }
@@ -226,10 +237,17 @@ THREE.FirstPersonControls = function (object, domElement)
         targetPosition.y = position.y + Math.sin(this.zenith) * Math.sin(this.azimuth);
         targetPosition.z = position.z + Math.cos(this.zenith);
 
-        this.object.lookAt( targetPosition );
+        this.object.lookAt(targetPosition);
       }
     }
+  };
 
+  this.onMouseDownManipulator = function(action) {
+    this[action] = true;
+  };
+
+  this.onMouseUpManipulator = function(action) {
+    this[action] = false;
   };
 
   this.updateSphericalAngles = function() {
@@ -241,20 +259,18 @@ THREE.FirstPersonControls = function (object, domElement)
     this.azimuth = Math.atan(vecForward.y / vecForward.x) + Math.PI;
   };
 
-  function bind( scope, fn ) {
-
+  function bind(scope, fn) {
     return function () {
-      fn.apply( scope, arguments );
+      fn.apply(scope, arguments);
     };
-
   }
 
-  this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-  this.domElement.addEventListener( 'mousemove', bind( this, this.onMouseMove ), false );
-  this.domElement.addEventListener( 'mousedown', bind( this, this.onMouseDown ), false );
-  this.domElement.addEventListener( 'mouseup', bind( this, this.onMouseUp ), false );
-  this.domElement.addEventListener( 'keydown', bind( this, this.onKeyDown ), false );
-  this.domElement.addEventListener( 'keyup', bind( this, this.onKeyUp ), false );
+  this.domElement.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+  this.domElement.addEventListener('mousemove', bind(this, this.onMouseMove), false);
+  this.domElement.addEventListener('mousedown', bind(this, this.onMouseDown), false);
+  this.domElement.addEventListener('mouseup', bind(this, this.onMouseUp), false);
+  this.domElement.addEventListener('keydown', bind(this, this.onKeyDown), false);
+  this.domElement.addEventListener('keyup', bind(this, this.onKeyUp), false);
 };
 
 THREE.FirstPersonControls.prototype = Object.create(THREE.EventDispatcher.prototype);
