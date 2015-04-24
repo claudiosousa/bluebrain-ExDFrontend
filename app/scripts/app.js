@@ -41,9 +41,9 @@
                 url: '/',
                 templateUrl: 'views/common/main.html',
                 controller: 'MainCtrl'
-            }).state('new', {
-                url: '/new',
-                templateUrl: 'views/exd/new.html',
+            }).state('exd', {
+                url: '/exd',
+                templateUrl: 'views/common/exd.html',
                 controller: 'NewCtrl'
             }).state('gz3d-view', {
                 url: '/esv-web/gz3d-view/:serverID/:simulationID',
