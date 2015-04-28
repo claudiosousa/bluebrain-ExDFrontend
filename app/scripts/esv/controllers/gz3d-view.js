@@ -31,13 +31,13 @@
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
-      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl', 'cameraManipulation',
+      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, simulationStatistics, serverError,
-          lightControl, screenControl, cameraManipulation,
+          lightControl, screenControl,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion) {
 
@@ -281,22 +281,14 @@
         }
       }
 
-      $scope.cameraTranslate = function (right, up, forward) {
-        showKeyboardControlInfo();
-        cameraManipulation.firstPersonTranslate(right, up, forward);
+      $scope.requestMove = function (action) {
+        $rootScope.scene.controls.onMouseDownManipulator(action);
       };
 
-      $scope.cameraRotate = function (degreeRight, degreeUp) {
-        cameraManipulation.firstPersonRotate(degreeRight, degreeUp);
+      $scope.releaseMove = function (action) {
+        $rootScope.scene.controls.onMouseUpManipulator(action);
       };
 
-      $scope.cameraLookAtOrigin = function () {
-        cameraManipulation.lookAtOrigin();
-      };
-
-      $scope.cameraResetToInitPose = function () {
-        cameraManipulation.resetToInitialPose();
-      };
 
       // Spiketrain
       $scope.showSpikeTrain = false;

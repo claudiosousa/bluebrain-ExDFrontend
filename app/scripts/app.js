@@ -25,7 +25,6 @@
                                    'hbpDocumentClient',
                                    'gzangular',
                                    'gz3dServices',
-                                   'gz3dCameraModule',
                                    'simulationControlServices',
                                    'ncdModule',
                                    'exdFrontendApp.Constants',
