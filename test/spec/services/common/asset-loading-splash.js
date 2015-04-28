@@ -45,9 +45,11 @@
 
     it('should call modal close', function () {
       spyOn(console, 'error');
-      assetLoadingSplash.open();
+      var callbackOnClose = jasmine.createSpy('callbackOnClose');
+      assetLoadingSplash.open(callbackOnClose);
       assetLoadingSplash.close();
       expect(modalInstance.close).toHaveBeenCalled();
+      expect(callbackOnClose).toHaveBeenCalled();
 
       modalInstance = undefined;
       assetLoadingSplash.close();
