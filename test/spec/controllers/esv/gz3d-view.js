@@ -97,6 +97,8 @@ describe('Controller: Gz3dViewCtrl', function () {
   var nrpFrontendVersionMock = {};
   nrpFrontendVersionMock.get = jasmine.createSpy('get');
 
+  var timeoutMock = jasmine.createSpy('$timeout');
+
   var currentUserInfo1234 = {
     displayName: 'John Does',
     id: '1234'
@@ -133,6 +135,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
     $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
     $provide.value('nrpFrontendVersion', nrpFrontendVersionMock);
+    $provide.value('$timeout', timeoutMock);
     simulationStatisticsMock.setSimulationTimeCallback.reset();
     simulationStatisticsMock.setRealTimeCallback.reset();
     simulationServiceObject.simulations.reset();
@@ -276,6 +279,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
+
+    timeout.reset();
   }));
 
   it('should set the assetLoadingSplash callback in gz3d', function(){
@@ -308,15 +313,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.ownerID).toEqual(fakeSimulationData.owner);
     expect(scope.isOwner).toBe(false);
   });
-
-  //it('should show the camera translate help div correctly', function() {
-  //  expect(scope.showKeyboardControlInfoDiv).toBe(false);
-  //  //var right = 1, up = 2, forward = 3;
-  //  //scope.cameraTranslate(right, up, forward);
-  //  expect(scope.showKeyboardControlInfoDiv).toBe(true);
-  //  timeout.flush();
-  //  expect(scope.showKeyboardControlInfoDiv).toBe(false);
-  //});
 
   it('should check that updateSimulation sets the scope\'s state', function () {
     //Ignore this warning because of the sim_id
@@ -627,6 +623,18 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope.help(UI.PLAY_BUTTON);
     expect(scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
     expect(scope.helpDescription).toBe('');
+  });
+
+
+  it('should set the visibility state of the keyboard info panel properly', function() {
+    expect(scope.showKeyboardControlInfoDiv).toBe(false);
+    scope.showKeyboardControlInfo();
+    expect(scope.showKeyboardControlInfoDiv).toBe(true);
+    timeout.mostRecentCall.args[0]();
+    expect(scope.showKeyboardControlInfoDiv).toBe(false);
+    timeout.reset();
+    scope.showKeyboardControlInfo();
+    expect(timeout).not.toHaveBeenCalled();
   });
 
   });

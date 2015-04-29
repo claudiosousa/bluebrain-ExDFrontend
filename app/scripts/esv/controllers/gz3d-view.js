@@ -308,7 +308,7 @@
 
       // This should be integrated to the tutorial story when
       // it will be implemented !
-      function showKeyboardControlInfo() {
+     $scope.showKeyboardControlInfo = function() {
         if (!hasNavigationAlreadyBeenClicked)
         {
           hasNavigationAlreadyBeenClicked = true;
@@ -317,7 +317,7 @@
             $scope.showKeyboardControlInfoDiv = false;
           }, 20000);
         }
-      }
+      };
 
       $scope.requestMove = function (action) {
         $rootScope.scene.controls.onMouseDownManipulator(action);
