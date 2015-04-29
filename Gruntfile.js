@@ -219,7 +219,9 @@ module.exports = function(grunt) {
                     '<%= yeoman.dist %>/img/**/*.{png,jpg,jpeg,gif,webp,svg}',
                     '<%= yeoman.dist %>/styles/fonts/*',
                     '!<%= yeoman.dist %>/img/common/preview*.png',
-                    '!<%= yeoman.dist %>/img/esv/keyboard-control.svg'
+                    '!<%= yeoman.dist %>/img/esv/keyboard-control.svg',
+                    '!<%= yeoman.dist %>/img/common/intro-get-started.png',
+                    '!<%= yeoman.dist %>/img/common/intro-bg.jpg'
                 ]
             }
         },
@@ -245,7 +247,7 @@ module.exports = function(grunt) {
         // Performs rewrites based on rev and the useminPrepare configuration
         usemin: {
             html: ['<%= yeoman.dist %>/**/*.html'],
-            css: ['<%= yeoman.dist %>/css/**/*.css'],
+            css: ['<%= yeoman.dist %>/styles/**/*.css'],
             htmlCustomImageDirectives: ['<%= yeoman.dist %>/**/*.html'],
             options: {
                 assetsDirs: ['<%= yeoman.dist %>'],
