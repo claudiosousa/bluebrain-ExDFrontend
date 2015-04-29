@@ -355,6 +355,7 @@ module.exports = function(grunt) {
                         '*.{ico,png,txt}',
                         '.htaccess',
                         '*.html',
+                        'data-neurorobotics.json',
                         'views/**/*.{html,json}',
                         'img/**/*.{webp}',
                         'partials/**/*.html',
@@ -502,7 +503,7 @@ module.exports = function(grunt) {
 
         version: {
           options: {
-             version: '<%= pkg.version %>'                
+             version: '<%= pkg.version %>'
           },
           dist: {
             file: '<%= yeoman.dist %>/version.json'
