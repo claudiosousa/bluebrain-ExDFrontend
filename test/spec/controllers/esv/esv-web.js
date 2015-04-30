@@ -97,7 +97,7 @@ describe('Controller: experimentCtrl', function () {
 
     REFRESH_UPDATE_RATE = 30 * 1000; // 30 seconds
 
-    httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
+    httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
 
     // create mock for console
     spyOn(console, 'error');

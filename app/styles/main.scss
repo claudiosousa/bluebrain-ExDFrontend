@@ -160,3 +160,10 @@ and (max-device-width : 1024px) {
         width: 20%;
     }
 }
+
+.foreground {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 100%;
+}

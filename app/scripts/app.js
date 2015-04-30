@@ -36,8 +36,8 @@
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
             // (See https://github.com/angular-ui/ui-router/wiki)
-            $stateProvider.state('home', {
-                url: '/',
+            $stateProvider.state('main', {
+                url: '/main',
                 templateUrl: 'views/common/main.html',
                 controller: 'MainCtrl'
             }).state('exd', {
@@ -64,10 +64,9 @@
               url: '/esv-web',
               templateUrl: 'views/esv/esv-web.html',
               controller: 'experimentCtrl'
-            }).state('ncd', {
-              url: '/ncd',
-              controller: 'NcdCtrl',
-              templateUrl: 'views/common/ncd.html'
+            }).state('home', {
+              url: '/',
+              templateUrl: 'views/common/home.html'
             });
 
             // Provide a default route.

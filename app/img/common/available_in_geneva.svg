@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="304.53125"
+   height="321.75"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="available_in_geneva.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="40.174034"
+     inkscape:cy="79.162199"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1176"
+     inkscape:window-x="1920"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-267.40625,-282.53125)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.47397816px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 428.14391,604.05376 c 56.87738,0 56.87738,0 56.87738,0 l 86.67029,-86.67029 0,-65.00272 z"
+       id="path2985"
+       inkscape:connector-curvature="0" />
+    <path
+       style="opacity:1;fill:#9ded9d;fill-opacity:1;stroke:none"
+       d="m 429.7939,602.94612 c 0.32122,-0.39642 32.27025,-34.19116 70.99783,-75.09941 l 70.41379,-74.37865 0.0639,31.90686 0.0639,31.90686 -43.19202,43.19255 -43.192,43.19256 -27.86967,0 -27.86967,0 0.58405,-0.72077 z"
+       id="path3802"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:14.54834843px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Trebuchet MS;-inkscape-font-specification:Trebuchet MS"
+       x="-96.533028"
+       y="754.12177"
+       id="text2991"
+       sodipodi:linespacing="125%"
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan2993"
+         x="-96.533028"
+         y="754.12177"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Gotham;-inkscape-font-specification:Gotham">Available in Geneva</tspan></text>
+  </g>
+</svg>

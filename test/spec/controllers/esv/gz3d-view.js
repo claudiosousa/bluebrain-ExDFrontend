@@ -230,7 +230,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.iface.webSocket = {};
     rootScope.iface.webSocket.close = jasmine.createSpy('close');
 
-    httpBackend.whenGET('views/common/main.html').respond({}); // Templates are requested via HTTP and processed locally.
+    httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenPUT(/()/).respond(200);
 
     Gz3dViewCtrl = $controller('Gz3dViewCtrl', {
