@@ -135,29 +135,29 @@
                   </div>
                 </div>
               </div>
-              <div ng-if="isOwner" class="hbp-toolbar-large-tool hidden-xs" ng-class="{'highlighted': currentSelectedUIElement === UI.LIGHT_SLIDER}" ng-click="(!helpModeActivated) ? null : help(UI.LIGHT_SLIDER)">
+              <div ng-if="isOwner" class="hbp-toolbar-large-tool hidden-xs" ng-class="{'highlighted': currentSelectedUIElement === UI.LIGHT_SLIDER}" ng-click="helpModeActivated && help(UI.LIGHT_SLIDER);">
                 <i class="fa fa-lightbulb-o"></i>
                 <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition" ng-disabled="helpModeActivated"
                        ng-change="updateLightIntensities(sliderPosition)"/>
               </div>
               <!-- camera translation tool -->
-              <div class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container" ng-class="{'highlighted': currentSelectedUIElement === UI.CAMERA_TRANSLATION}" ng-click="helpModeActivated && help(UI.CAMERA_TRANSLATION);">
+              <div class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container" ng-class="{'highlighted': currentSelectedUIElement === UI.CAMERA_TRANSLATION}" ng-click="showKeyboardControlInfo() && helpModeActivated && help(UI.CAMERA_TRANSLATION);">
                 <div class="hbp-camera-tool-controls">
                   <div class="hbp-camera-tool-controls-overlay"><img src="img/esv/translation_icon.png" width=32 height=32></div>
                   <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('moveUp');" 
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('moveUp');" 
                     ng-mouseup="releaseMove('moveUp')"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('moveForward');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('moveForward');"
                     ng-mouseup="releaseMove('moveForward');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('moveLeft');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('moveLeft');"
                     ng-mouseup="releaseMove('moveLeft');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('initPosition');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('initPosition');"
                     ng-mouseup="releaseMove('initPosition');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('moveRight');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('moveRight');"
                     ng-mouseup="releaseMove('moveRight');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('moveBackward');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('moveBackward');"
                     ng-mouseup="releaseMove('moveBackward');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('moveDown');" 
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('moveDown');" 
                     ng-mouseup="releaseMove('moveDown');"><img src="img/esv/empty.png"></div>
                   <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                 </div>
@@ -168,17 +168,17 @@
                   <div class="hbp-camera-tool-controls-overlay"><img src="img/esv/rotation_icon.png" width=32 height=32></div>
                   <!-- in each flex little box, we put an 1 pixel image, else the box has a null size. And on Firefox, <img/> is not working -->
                   <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('rotateUp');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('rotateUp');"
                     ng-mouseup="releaseMove('rotateUp');"><img src="img/esv/empty.png"></div>
                   <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('rotateRight');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('rotateRight');"
                     ng-mouseup="releaseMove('rotateRight');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('initRotation');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('initRotation');"
                     ng-mouseup="releaseMove('initRotation');"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('rotateLeft');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('rotateLeft');"
                     ng-mouseup="releaseMove('rotateLeft');"><img src="img/esv/empty.png"></div>
                   <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
-                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="requestMove('rotateDown');"
+                  <div class="fa hbp-camera-tool-controls-grid-third" ng-mousedown="!helpModeActivated && requestMove('rotateDown');"
                     ng-mouseup="releaseMove('rotateDown');"><img src="img/esv/empty.png"></div>
                   <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                 </div>
@@ -190,7 +190,7 @@
             <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>
             <!-- toolbar help icon -->
             <div class="hbp-toolbar-action right-align hide-overflow" ng-click="toggleHelpMode()">
-              <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}" tooltip="Help mode" tooltip-placement="left"></i>
+              <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}"></i>
             </div>
             <!-- toolbar help icon -->
           </div>
