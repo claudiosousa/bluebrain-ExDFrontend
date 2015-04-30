@@ -42,7 +42,7 @@
     });
 
   angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout', 
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl',
@@ -63,8 +63,6 @@
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
       var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
-      gzInitialization.Initialize($stateParams.serverID, $stateParams.simulationID);
-
       $scope.helpModeActivated = false;
       $scope.helpDescription="";
       $scope.helpText = {};
@@ -77,6 +75,29 @@
       $scope.STATE = STATE;
       $scope.UI = UI;
       $scope.isOwner = false;
+      $scope.isInitialized = false;
+      $scope.isJoiningStoppedSimulation = false;
+
+      // Query the state of the simulation
+      simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
+        $scope.state = data.state;
+        if ($scope.state === STATE.STOPPED) {
+          // The Simulation is already Stopped, so do nothing more but show the alert popup
+          $scope.isJoiningStoppedSimulation = true;
+        } else {
+          // Initialize GZ3D and so on...
+          gzInitialization.Initialize($stateParams.serverID, $stateParams.simulationID);
+
+          // Register for the Status Updates
+          $scope.registerForStatusInformation();
+
+          // Show the splash screen for the progress of the asset loading
+          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(callbackOnCloseLoading);
+          $rootScope.iface.setAssetProgressCallback(function(data){
+            assetLoadingSplash.setProgress(data);
+          });
+        }
+      });
 
       hbpUserDirectory.getCurrentUser().then(function (profile) {
         $scope.userName = profile.displayName;
@@ -93,14 +114,6 @@
           });
           $scope.isOwner = ($scope.ownerID === $scope.userID);
         });
-      });
-
-
-      $scope.isInitialized = false;
-
-      simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
-        $scope.state = data.state;
-        $scope.registerForStatusInformation();
       });
 
       $scope.versions = {};
@@ -181,7 +194,7 @@
             material.ambient.setHex(color);
             material.specular.setHex(color);
           }
-        }        
+        }
       };
       /* istanbul ignore next */
       var callbackOnCloseLoading = function() {
@@ -190,10 +203,6 @@
           $scope.updateScreenColor(data, 'right');
         });
       };
-      $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(callbackOnCloseLoading);
-      $rootScope.iface.setAssetProgressCallback(function(data){
-        assetLoadingSplash.setProgress(data);
-      });
 
       $scope.updateSimulation = function (newState) {
         simulationState(serverBaseUrl).update({sim_id: simulationID}, {state: newState}, function(data) {
@@ -238,7 +247,7 @@
         }
         // send RESTful commands to server
         var screenParams = {};
-        var name = $scope.selectedEntity.name; 
+        var name = $scope.selectedEntity.name;
 
         if ((name === 'right_vr_screen') && (value === 'red'))
         {

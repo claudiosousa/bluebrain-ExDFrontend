@@ -84,6 +84,12 @@
   </script>
 
     <div id="gz3d-body" data-role="page" data-theme="b" data-content-theme="c" class="esv-flex-container esv-flex-greedy-element">
+      <!-- Alert popup --->
+      <div class="alert alert-warning" ng-show="isJoiningStoppedSimulation">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        Sorry, the simulation you just wanted to join is already stopped.
+        <button class="btn btn-warning btn-xs pull-right" ui-sref="esv-web">&times;</button>
+      </div>
       <!-- container -->
       <div class="esv-flex-container esv-flex-greedy-element">
         <!-- WEBGL-context -->

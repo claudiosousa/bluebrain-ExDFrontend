@@ -13,11 +13,13 @@
     return {
       topic: undefined,
       connect: function (topic, messageType) {
-        this.topic = new ROSLIB.Topic({ // jshint ignore:line
-          ros: $rootScope.iface.webSocket, // jshint ignore:line
-          name: topic,
-          messageType: messageType
-        });
+        if (angular.isDefined($rootScope.iface)) {
+          this.topic = new ROSLIB.Topic({ // jshint ignore:line
+            ros        : $rootScope.iface.webSocket, // jshint ignore:line
+            name       : topic,
+            messageType: messageType
+          });
+        }
         return this;
       },
       subscribe: function (callback) {
@@ -140,8 +142,6 @@
       delete $rootScope.animate;
       delete $rootScope.render;
     };
-
-    initialize($stateParams.serverID, $stateParams.simulationID);
 
     // now expose our public functions
     return {

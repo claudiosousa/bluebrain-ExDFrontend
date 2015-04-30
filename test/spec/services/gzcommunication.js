@@ -138,6 +138,9 @@ describe('testing the gzInitialization service', function () {
 
     // create a mock for console
     spyOn(console, 'error');
+
+    // Always initialize first
+    gzInitialization.Initialize('bbpce016', 'fakeSimID');
   }));
 
   it('checks if all the GZ3D constructors have been called', function() {

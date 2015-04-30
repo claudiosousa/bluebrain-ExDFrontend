@@ -283,7 +283,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     timeout.reset();
   }));
 
+  it('should set isJoiningStoppedSimulation to true when already stopped', function(){
+    expect(scope.isJoiningStoppedSimulation).toBe(false);
+    simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STOPPED});
+    expect(scope.isJoiningStoppedSimulation).toBe(true);
+  });
+
   it('should set the assetLoadingSplash callback in gz3d', function(){
+    simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
     expect(scope.assetLoadingSplashScreen).toEqual(assetLoadingSplashInstance);
     expect(assetLoadingSplash.open).toHaveBeenCalled();
     expect(rootScope.iface.setAssetProgressCallback).toHaveBeenCalled();
@@ -538,7 +545,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(rootScope.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
   });
 
-
   it('should toggle the showSpikeTrain variable', function() {
     expect(scope.showSpikeTrain).toBe(false);
     scope.toggleSpikeTrain();
@@ -569,7 +575,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   it('should close all connections and splash screens on $destroy', function() {
     spyOn(window, 'stop');
-    scope.registerForStatusInformation();
+    simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
     scope.splashScreen = splashInstance;
 
     scope.$destroy();
