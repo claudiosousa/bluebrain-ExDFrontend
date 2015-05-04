@@ -132,7 +132,7 @@
             $scope.splashScreen = undefined;
             /* avoid "$apply already in progress" error */
             _.defer(function() { // jshint ignore:line
-              $scope.$apply(function() { $location.path("/"); });
+              $scope.$apply(function() { $location.path("esv-web"); });
             });
           };
 
