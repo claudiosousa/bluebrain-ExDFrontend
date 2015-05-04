@@ -10,20 +10,44 @@
     provide the user with pre-assembled robots from a "robot library", or from imported files for quick
     customisation.</p>
 
-  <p>The team is currently implementing two robots for the platform: The Clearpath Husky robot and a biologically
-    inspired mouse model. The Husky is a realistic model of a mobile robot distributed by a company called Clearpath. It
+  <p>The team is currently implementing three robots for the platform: The Clearpath Husky robot,
+    the <a href="http://www.fzi.de/en/research/projekt-details/lauron/">LAURON</a>, a bio-inspired,
+    six-legged walking robot which was developed at the FZI in Karlsruhe as well as
+    a biologically inspired mouse model.</p>
+
+  <p>
+    The Husky is a realistic model of a mobile robot distributed by a company called Clearpath. It
     will therefore be a good demonstrator for the transition from simulated to physical robotics experiments, which are
-    planned for the FPA phase of HBP. The mouse model caters to the needs of neuroscientists and the plans to run
+    planned for the FPA phase of HBP.</p>
+
+  <p>
+    The LAURON robot is targeted at testing and enhancing statically stable walking in difficult and rough terrain.
+    Present work on LAURON deals with bio-inspired gait analysis, navigation strategies, robot autonomy,
+    manipulation with its front legs, and energy-efficient walking.
+    The mechanical design of this walking robot is biologically-inspired by the stick insect.
+    It has 6 legs fixed to a central body with an inner aluminium skeleton,
+    which holds the necessary electronics. Each of the 6 legs is actuated by 4 joints.
+    Additionally, the head can be moved in 2 directions (roll, pitch) giving LAURON an overall
+    amount of 26 degrees of freedom.</p>
+
+  <p>
+    The mouse model caters to the needs of neuroscientists and the plans to run
     behavioural experiments in simulation.</p>
+
   <h4>Meanwhile...</h4>
 
-  <p>The neurorobotics platform is built on top of <a href="http://gazebosim.org/">Gazebo</a> <img
-    src="img/common/gazebo-logo.png"/>. Any robots created for Gazebo is therefore compatible with the platform. Gazebo
-    uses the SDF format. If you want your robots to be available, you need to upload the corresponding SDF file(s) and
-    assets through the portal document browser (<img
-      src="img/common/document-browser.png" alt="Document browser"/>). In order for it to be recognised by the platform,
-    the
-    main sdf file needs to be edited:
+  <p>The Neurorobotics Platform is built on top of <a href="http://gazebosim.org/">Gazebo</a>
+    <img src="img/common/gazebo-logo.png"/>.
+    Any robot created for Gazebo is therefore compatible with the platform.
+    Gazebo uses the <a href="http://sdformat.org/">SDF format</a>.
+    If you want your robots to be available, <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the corresponding SDF file(s) and
+    assets).
+  </p>
+
+  <!-- The following lines can be uncommented (and edited) as soon as it is clear how the document uploading will work.
+  <p>
+  In order for it to be recognised by the platform, the main sdf file needs to be edited:
+  </p>
   <ul>
     <li>The content type should be changed to <b>nrp/robot</b></li>
     <li>A custom attribute <b>nrpDescription</b> with a string containing the description of the robot needs to be
@@ -34,10 +58,6 @@
       robot can be added.
     </li>
   </ul>
-  </p>
-  <p>The husky robot main file (model.sdf) properties:<br>
-    <img class="img-thumbnail" src="img/common/document-browser-nrp-robot-properties.png"
-         alt="Husky robot SDF file properties"/>
-  </p>
-  </p>
+  -->
+
 </div>
