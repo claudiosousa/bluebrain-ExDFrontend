@@ -476,8 +476,8 @@ describe('Services: experimentSimulationService', function () {
     messageCallback.reset();
     var dataDone = { data : '{"progress": {"done": "true"}}'};
     statusListenerMock.subscribe.mostRecentCall.args[0](dataDone);
-    expect(messageCallback).toHaveBeenCalledWith({ main: 'Finished!' });
-    expect(initializedCallback).toHaveBeenCalledWith('#/esv-web/gz3d-view/' + serverID + '/' + simulationID);
+    expect(messageCallback).toHaveBeenCalledWith({ main: 'Simulation initialized.' });
+    expect(initializedCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + serverID + '/' + simulationID);
   });
 
   it('should test the launch of an experiment on a given server', function() {
@@ -498,13 +498,7 @@ describe('Services: experimentSimulationService', function () {
     expect(messageCallback).toHaveBeenCalled();
 
     messageCallback.reset();
-    var initCallback = jasmine.createSpy('initCallback');
-    experimentSimulationService.setInitializedCallback(initCallback);
     expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080');
-    simulationStateMockObject.update.mostRecentCall.args[2]();
-    expect(messageCallback).toHaveBeenCalled();
-    var freeServerID = 'bbpce014';
-    expect(initCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + freeServerID + '/' + 'mocked_sim_id');
   });
 
   it('should start a new experiment', function(){
