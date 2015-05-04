@@ -10,7 +10,7 @@
      * Main module of the application.
      */
 
-    angular
+    var app = angular
         .module('exdFrontendApp', ['ngAnimate',
                                    'ngCookies',
                                    'ngResource',
@@ -100,6 +100,18 @@
                 window.bbpConfig = res.data;
             }).then(boot);
         }
+    }]);
+
+    // Since angular is a "single page" application (navigating never trigger a reload of index.html),
+    // we have to notify Google Analytics when the page change. For that, we register on
+    // $stateChangeSuccess which is an UI router event.
+    app.run(['$rootScope', '$location', '$window', function($rootScope, $location, $window){
+      $rootScope.$on('$stateChangeSuccess',
+        function(event){
+          if ($window.ga) {
+            $window.ga('send', 'pageview', {page: $location.path()});
+          }
+        });
     }]);
 }());
 
