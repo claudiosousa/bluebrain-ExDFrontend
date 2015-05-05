@@ -205,10 +205,15 @@
       };
 
       $scope.updateSimulation = function (newState) {
+        if (newState === $scope.previousState) {
+          return; // avoid duplicated update requests
+        }
+        $scope.previousState = newState;
         simulationState(serverBaseUrl).update({sim_id: simulationID}, {state: newState}, function(data) {
           $scope.state = data.state;
         }, function(data) {
           serverError(data);
+          $scope.previousState = undefined;
         }
         );
       };
