@@ -28,7 +28,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     nrpBackendVersions,
     nrpFrontendVersion,
     STATE,
-    UI;
+    UI,
+    serverError;
 
   var simulationStatisticsMock = {};
   simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
@@ -98,6 +99,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   nrpFrontendVersionMock.get = jasmine.createSpy('get');
 
   var timeoutMock = jasmine.createSpy('$timeout');
+  var serverErrorMock = jasmine.createSpy('serverError');
 
   var currentUserInfo1234 = {
     displayName: 'John Does',
@@ -136,6 +138,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
     $provide.value('nrpFrontendVersion', nrpFrontendVersionMock);
     $provide.value('$timeout', timeoutMock);
+    $provide.value('serverError', serverErrorMock);
     simulationStatisticsMock.setSimulationTimeCallback.reset();
     simulationStatisticsMock.setRealTimeCallback.reset();
     simulationServiceObject.simulations.reset();
@@ -170,6 +173,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     nrpBackendVersionsObject.get.reset();
     nrpBackendVersionsMock.reset();
     nrpFrontendVersionMock.get.reset();
+    serverErrorMock.reset();
   }));
 
   // Initialize the controller and a mock scope
@@ -192,7 +196,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _nrpBackendVersions_,
                               _nrpFrontendVersion_,
                               _STATE_,
-                              _UI_) {
+                              _UI_,
+                              _serverError_) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     hbpUserDirectory = _hbpUserDirectory_;
@@ -213,6 +218,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     nrpFrontendVersion = _nrpFrontendVersion_;
     STATE = _STATE_;
     UI = _UI_;
+    serverError = _serverError_;
 
     rootScope.scene = {};
     rootScope.scene.radialMenu = {};
@@ -334,6 +340,23 @@ describe('Controller: Gz3dViewCtrl', function () {
     scope.state = STATE.UNDEFINED;
     simulationStateObject.update.mostRecentCall.args[2]({state: STATE.PAUSED});
     expect(scope.state).toBe(STATE.PAUSED);
+
+    // third, test whether duplicate requests are skipped
+    simulationStateObject.update.reset();
+    scope.previousState = undefined;
+    scope.updateSimulation(STATE.STARTED);
+    expect(simulationStateObject.update).toHaveBeenCalled();
+    simulationStateObject.update.reset();
+    expect(scope.previousState).toBe(STATE.STARTED);
+    scope.updateSimulation(STATE.STARTED);
+    expect(simulationStateObject.update).not.toHaveBeenCalled();
+
+    // fourth, test whether the error callback reset $scope.previousState to undefined
+    scope.previousState = STATE.STARTED;
+    scope.updateSimulation(STATE.PAUSED);
+    simulationStateObject.update.mostRecentCall.args[3](); // call the error callback
+    expect(serverError.callCount).toBe(1); // test whether the error callback handles server error messages
+    expect(scope.previousState).not.toBeDefined();
   });
 
   it('should make the current state available and call registerForStatusInformation', function() {
