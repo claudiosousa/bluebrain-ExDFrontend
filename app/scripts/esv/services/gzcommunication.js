@@ -8,62 +8,8 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
-  // TODO(Luc): make sure connect is called when the websocket is itself connected
-  gz3dServices.factory('gzCommunication', ['$rootScope', function ($rootScope) {
-    return {
-      topic: undefined,
-      connect: function (topic, messageType) {
-        if (angular.isDefined($rootScope.iface)) {
-          this.topic = new ROSLIB.Topic({ // jshint ignore:line
-            ros        : $rootScope.iface.webSocket, // jshint ignore:line
-            name       : topic,
-            messageType: messageType
-          });
-        }
-        return this;
-      },
-      subscribe: function (callback) {
-        if (this.topic) {
-          this.topic.subscribe(callback);
-        }
-      }
-    };
-  }]);
-
-  gz3dServices.factory('simulationStatistics', [ 'gzInitialization', 'gzCommunication', function (gzInitialization, gzCommunication) {
-    var simulationTimeCallback;
-    var realTimeCallback;
-
-    // we now create the callback function which we will register below
-    var worldStatsUpdate = function (stats) {
-      try {
-        realTimeCallback(stats.real_time.sec);
-        simulationTimeCallback(stats.sim_time.sec);
-      } catch (err) {
-        if (typeof(realTimeCallback) !== 'function' || typeof(simulationTimeCallback) !== 'function') {
-          console.error('Tried to call an undefined callback function! Did you forget to set it?');
-        }
-        console.error(err.message);
-      }
-    };
-
-    gzCommunication
-      .connect('~/world_stats', 'worldstatistics')
-      .subscribe(worldStatsUpdate);
-
-    // now expose our public functions
-    return {
-      setSimulationTimeCallback: function (callback) {
-        simulationTimeCallback = callback;
-      },
-      setRealTimeCallback: function (callback) {
-        realTimeCallback = callback;
-      }
-    };
-
-  }]);
-
-  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', '$stateParams', 'bbpConfig', function ($rootScope, $window, $stateParams, bbpConfig) {
+  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', '$stateParams', 'bbpConfig',
+    function ($rootScope, $window, $stateParams, bbpConfig) {
     /* moved from the gz3d-view.html*/
     if (!Detector.webgl) {
       Detector.addGetWebGLMessage();

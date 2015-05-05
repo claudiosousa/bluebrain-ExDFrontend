@@ -31,10 +31,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     UI,
     serverError;
 
-  var simulationStatisticsMock = {};
-  simulationStatisticsMock.setSimulationTimeCallback = jasmine.createSpy('setSimulationTimeCallback');
-  simulationStatisticsMock.setRealTimeCallback = jasmine.createSpy('setRealTimeCallback');
-
   // Mock simulationServices
   var simulationServiceObject = {};
   simulationServiceObject.simulations = jasmine.createSpy('simulations');
@@ -78,11 +74,13 @@ describe('Controller: Gz3dViewCtrl', function () {
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
+  returnedConnectionObject.removeAllListeners = jasmine.createSpy('removeAllListeners');
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
   var rosConnectionObject = {};
   rosConnectionObject.close = jasmine.createSpy('close');
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject);
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
+  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
 
   var hbpUserDirectoryPromiseObject = {};
   hbpUserDirectoryPromiseObject.then = jasmine.createSpy('then');
@@ -123,7 +121,6 @@ describe('Controller: Gz3dViewCtrl', function () {
   };
 
   beforeEach(module(function ($provide) {
-    $provide.value('simulationStatistics', simulationStatisticsMock);
     $provide.value('gzInitialization', gzInitializationMock);
     $provide.value('cameraManipulation', cameraManipulationMock);
     $provide.value('splash', splashServiceMock);
@@ -139,8 +136,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('nrpFrontendVersion', nrpFrontendVersionMock);
     $provide.value('$timeout', timeoutMock);
     $provide.value('serverError', serverErrorMock);
-    simulationStatisticsMock.setSimulationTimeCallback.reset();
-    simulationStatisticsMock.setRealTimeCallback.reset();
     simulationServiceObject.simulations.reset();
     simulationServiceObject.getUserName.reset();
     simulationServiceMock.reset();
@@ -162,6 +157,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     assetLoadingSplashMock.open.reset();
     assetLoadingSplashMock.close.reset();
     returnedConnectionObject.unsubscribe.reset();
+    returnedConnectionObject.removeAllListeners.reset();
     returnedConnectionObject.subscribe.reset();
     rosConnectionObject.close.reset();
     roslibMock.getOrCreateConnectionTo.reset();
@@ -233,6 +229,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope.gui.emitter = {};
     rootScope.iface = {};
     rootScope.iface.setAssetProgressCallback = jasmine.createSpy('setAssetProgressCallback');
+    rootScope.iface.registerWebSocketConnectionCallback = jasmine.createSpy('registerWebSocketConnectionCallback');
     rootScope.iface.webSocket = {};
     rootScope.iface.webSocket.close = jasmine.createSpy('close');
 
@@ -359,12 +356,35 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.previousState).not.toBeDefined();
   });
 
-  it('should make the current state available and call registerForStatusInformation', function() {
+  it('should make the current state available and call registerForTimingStats and registerForStatusInformation', function() {
     spyOn(scope, 'registerForStatusInformation');
+    spyOn(scope, 'registerForTimingStats');
+
     scope.state = STATE.UNDEFINED;
     simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
     expect(scope.state).toEqual(STATE.STARTED);
+
+    rootScope.iface.registerWebSocketConnectionCallback.mostRecentCall.args[0]();
+
+    expect(scope.registerForTimingStats).toHaveBeenCalled();
     expect(scope.registerForStatusInformation).toHaveBeenCalled();
+  });
+
+  it('should test registerForTimingStats', function() {
+    spyOn(scope, '$apply');
+    scope.registerForTimingStats();
+
+    expect(scope.worldStatsListener).toBeDefined();
+    expect(roslib.createTopic).toHaveBeenCalledWith(jasmine.any(Object), '~/world_stats', 'worldstatistics');
+    expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
+
+    /*jshint camelcase: false */
+    var data = { real_time : { sec : 1234 } , sim_time : { sec : 7654 } };
+    returnedConnectionObject.subscribe.mostRecentCall.args[0](data);
+
+    scope.$apply.mostRecentCall.args[0]();
+    expect(scope.realTimeText).toEqual(data.real_time.sec);
+    expect(scope.simulationTimeText).toEqual(data.sim_time.sec);
   });
 
   it('should test registerForStatusInformation', function() {
@@ -473,18 +493,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(scope, 'getModelUnderMouse');
     scope.toggleScreenChangeMenu(show, event);
     expect(scope.getModelUnderMouse).not.toHaveBeenCalled();
-  });
-
-  it('should set the real time', function() {
-    var registeredCallbackFunction = simulationStatisticsMock.setRealTimeCallback.mostRecentCall.args[0];
-    registeredCallbackFunction('01 23:45:67');
-    expect(scope.realTimeText).toBe('01 23:45:67');
-  });
-
-  it('should set the simulation time', function() {
-    var registeredCallbackFunction = simulationStatisticsMock.setSimulationTimeCallback.mostRecentCall.args[0];
-    registeredCallbackFunction('98 76:54:32');
-    expect(scope.simulationTimeText).toBe('98 76:54:32');
   });
 
   it('should turn slider position into light intensities', function() {
@@ -600,12 +608,17 @@ describe('Controller: Gz3dViewCtrl', function () {
     spyOn(window, 'stop');
     simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
     scope.splashScreen = splashInstance;
+    scope.worldStatsListener = returnedConnectionObject;
 
+    // call the method under test
     scope.$destroy();
 
     expect(splash.close).toHaveBeenCalled();
     expect(assetLoadingSplash.close).toHaveBeenCalled();
     expect(scope.statusListener.unsubscribe).toHaveBeenCalled();
+    expect(scope.statusListener.removeAllListeners).toHaveBeenCalled();
+    expect(scope.worldStatsListener.unsubscribe).toHaveBeenCalled();
+    expect(scope.worldStatsListener.removeAllListeners).toHaveBeenCalled();
     expect(scope.rosConnection.close).toHaveBeenCalled();
     expect(scope.iface.webSocket.close).toHaveBeenCalled();
     expect(gzInitializationMock.deInitialize).toHaveBeenCalled();
@@ -631,6 +644,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.splashScreen).not.toBeDefined();
     expect(scope.assetLoadingSplashScreen).not.toBeDefined();
     expect(scope.statusListener).not.toBeDefined();
+    expect(scope.worldStatsListener).not.toBeDefined();
     expect(scope.rosConnection).not.toBeDefined();
     expect(scope.iface.webSocket).not.toBeDefined();
   });

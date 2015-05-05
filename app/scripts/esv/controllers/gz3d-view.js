@@ -45,12 +45,12 @@
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
-      'simulationState', 'simulationStatistics', 'serverError','lightControl', 'screenControl',
+      'simulationState', 'serverError','lightControl', 'screenControl',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
-          simulationState, simulationStatistics, serverError,
+          simulationState, serverError,
           lightControl, screenControl,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion, UI) {
@@ -88,7 +88,12 @@
           // Initialize GZ3D and so on...
           gzInitialization.Initialize($stateParams.serverID, $stateParams.simulationID);
 
-          // Register for the Status Updates
+          // Register for the status updates as well as the timing stats
+          // Note that we have two different connections here, hence we only put one as a callback for
+          // $rootScope.iface and the other one not!
+          $rootScope.iface.registerWebSocketConnectionCallback(function() {
+            $scope.registerForTimingStats();
+          });
           $scope.registerForStatusInformation();
 
           // Show the splash screen for the progress of the asset loading
@@ -173,6 +178,21 @@
           });
       };
 
+      $scope.registerForTimingStats = function () {
+        $scope.worldStatsListener = $scope.worldStatsListener || roslib.createTopic($rootScope.iface.webSocket,
+          '~/world_stats',
+          'worldstatistics');
+
+        $scope.worldStatsListener.subscribe(function (data) {
+          // On chrome browsers there may be a problem with updating the time correctly when navigating in the
+          // 3D scene, see [NRRPLT-1992], although $scope.$apply() is used here.
+          $scope.$apply(function () {
+            $scope.realTimeText = data.real_time.sec;
+            $scope.simulationTimeText = data.sim_time.sec;
+          });
+        });
+      };
+
       // The following lines allow the joining client to retrieve the actual screen color stored by the server.
       // The method below gets the 'server' color for each screen since it might have been changed
       // by another client connected earlier to the same simulation.
@@ -217,18 +237,6 @@
         }
         );
       };
-
-      simulationStatistics.setRealTimeCallback(function (realTimeValue) {
-        $scope.$apply(function() {
-          $scope.realTimeText = realTimeValue;
-        });
-      });
-
-      simulationStatistics.setSimulationTimeCallback(function (simulationTimeValue) {
-        $scope.$apply(function() {
-          $scope.simulationTimeText = simulationTimeValue;
-        });
-      });
 
       // stores, whether the context menu should be displayed
       $scope.isContextMenuShown = false;
@@ -369,7 +377,13 @@
         // unregister to the statustopic
         if (angular.isDefined($scope.statusListener)) {
           $scope.statusListener.unsubscribe();
+          $scope.statusListener.removeAllListeners();
         }
+        if(angular.isDefined($scope.worldStatsListener)) {
+          $scope.worldStatsListener.unsubscribe();
+          $scope.worldStatsListener.removeAllListeners();
+        }
+
         // Close the roslib connections
         if (angular.isDefined($scope.rosConnection)) {
           $scope.rosConnection.close();

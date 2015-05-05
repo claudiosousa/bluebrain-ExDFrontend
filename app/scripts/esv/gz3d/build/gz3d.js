@@ -2038,6 +2038,8 @@ GZ3D.GZIface = function(scene, gui)
   this.numConnectionTrials = 0;
   this.maxConnectionTrials = 30; // try to connect 30 times
   this.timeToSleepBtwTrials = 1000; // wait 1 second between connection trials
+
+  this.webSocketConnectionCallbacks = [];
 };
 
 GZ3D.GZIface.prototype.init = function()
@@ -2089,6 +2091,10 @@ GZ3D.GZIface.prototype.onError = function()
   }
 };
 
+GZ3D.GZIface.prototype.registerWebSocketConnectionCallback = function(callback) {
+  this.webSocketConnectionCallbacks.push(callback);
+};
+
 GZ3D.GZIface.prototype.onConnected = function()
 {
   this.isConnected = true;
@@ -2111,6 +2117,11 @@ GZ3D.GZIface.prototype.onConnected = function()
   };
 
   setInterval(publishHeartbeat, 5000);
+
+  // call all the registered callbacks since we are connected now
+  this.webSocketConnectionCallbacks.forEach(function(callback) {
+    callback();
+  });
 
   var statusTopic = new ROSLIB.Topic({
     ros: this.webSocket,
