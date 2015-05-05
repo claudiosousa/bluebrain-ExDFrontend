@@ -38,7 +38,8 @@
       CAMERA_TRANSLATION: 6,
       CAMERA_ROTATION: 7,
       SPIKETRAIN: 8,
-      OWNER_DISPLAY: 9
+      OWNER_DISPLAY: 9,
+      EXIT_BUTTON: 10
     });
 
   angular.module('exdFrontendApp')
@@ -419,5 +420,10 @@
            $scope.currentSelectedUIElement = uiElement;
          }
        };
+
+        $scope.exit = function (path) {
+          $location.path(path);
+        };
+
     }]);
 }());

@@ -12,6 +12,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     timeout,
     window,
     document,
+    location,
     cameraManipulation,
     splash,
     simulationService,
@@ -180,6 +181,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _$httpBackend_,
                               _$window_,
                               _$document_,
+                              _$location_,
                               _cameraManipulation_,
                               _splash_,
                               _assetLoadingSplash_,
@@ -201,6 +203,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     httpBackend = _$httpBackend_;
     window = _$window_;
     document = _$document_;
+    location = _$location_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
     assetLoadingSplash = _assetLoadingSplash_;
@@ -668,7 +671,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.helpDescription).toBe('');
   });
 
-
   it('should set the visibility state of the keyboard info panel properly', function() {
     expect(scope.showKeyboardControlInfoDiv).toBe(false);
     scope.showKeyboardControlInfo();
@@ -680,4 +682,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(timeout).not.toHaveBeenCalled();
   });
 
+  it('should go back to the esv-web page', function() {
+    scope.exit('/fake_url');
+    expect(location.path()).toEqual('/fake_url');
   });
+});
