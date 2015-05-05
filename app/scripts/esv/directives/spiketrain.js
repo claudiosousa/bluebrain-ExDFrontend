@@ -120,6 +120,7 @@
       var signWidth = currentContext.measureText(sign).width;
       currentContext.textAlign = 'center';
       otherContext.textAlign = 'center';
+      var savedFont = currentContext.font;
       currentContext.font = '30px sans-serif';
       otherContext.font = '30px sans-serif';
       currentContext.fillStyle = 'black';
@@ -131,6 +132,8 @@
       } else if (scope.xPosition + signWidth / 2 > drawingAreaWidth){
         otherContext.fillText(sign, scope.xPosition - drawingAreaWidth, yPosition);
       }
+      currentContext.font = savedFont;
+      otherContext.font = savedFont;
     };
 
     // Subscribe to the ROS topic
