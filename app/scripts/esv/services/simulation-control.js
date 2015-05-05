@@ -319,8 +319,8 @@
         var message = JSON.parse(data.data);
         if (message !== undefined && message.progress !== undefined) {
           if (message.progress.done !== undefined && message.progress.done) {
-            setProgressMessageCallback({main: 'Finished!'});
-            initializedCallback('#/esv-web/gz3d-view/' + serverID + '/' + simulationID);
+            setProgressMessageCallback({main: 'Simulation initialized.'});
+            initializedCallback('esv-web/gz3d-view/' + serverID + '/' + simulationID);
           } else {
             setProgressMessageCallback({main: message.progress.task, sub: message.progress.subtask});
           }
@@ -380,13 +380,17 @@
           registerForStatusInformation(freeServerID, createData.simulationID);
 
           // initialize the newly created simulation
-          simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED}, function (updateData) {
-            setProgressMessageCallback({main: 'Simulation initialized.'});
-            initializedCallback('esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID);
-          }, function (updateData) {
-            serverError(updateData);
-            errorCallback();
-          });
+          simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED},
+            /* istanbul ignore next */
+            function () {
+              // This function is just a dummy and not used
+              // Going to the GZ3D-Page is done in the "registerForStatusInformation" function on success
+            },
+            function (updateData) {
+              serverError(updateData);
+              errorCallback();
+            }
+          );
       });
     };
 
