@@ -20,11 +20,11 @@
 
   <h4>Meanwhile...</h4>
 
-  <p>The first neural simulator that the platform will support is <a href="http://nest-initiative.org/">NEST</a> (<img
-    src="img/common/nest-logo.png" alt="NEST"/>). The platform will support <a href="http://neuralensemble.org/PyNN/">PyNN</a>
+  <p>The platform supports <a href="http://neuralensemble.org/PyNN/">PyNN</a>
     (<img
-      src="img/common/pynn-logo.png" alt="PyNN"/>) as another way to write your simulation scripts. You can start
-    writing these scripts.</p>
+      src="img/common/pynn-logo.png" alt="PyNN"/>) as interface to the neuronal simulator. Behind PyNN,
+    we are currently using <a href="http://nest-initiative.org/">NEST</a> (<img
+    src="img/common/nest-logo.png" alt="NEST"/>) as simulation backend.</p>
 
   <p>The transfer functions describe how spikes from the neuronal simulation are to be translated into commands for a
     robot and how the sensor data from the robot should be translated back to spikes. This translation is specified by
@@ -39,26 +39,37 @@
             lineNumbers: true,
             mode: 'text/x-python',
             readOnly: true
-        }">__author__ = 'GeorgHinkel'
+        }">import hbp_nrp_cle.tf_framework as nrp
+import geometry_msgs.msg
 
-import NeuroboticsFramework as nrp
-from husky import Husky
+@nrp.MapSpikeSink("left_wheel_neuron", nrp.brain.actors[1], nrp.leaky_integrator_alpha)
+@nrp.MapSpikeSink("right_wheel_neuron", nrp.brain.actors[2], nrp.leaky_integrator_alpha)
+@nrp.Neuron2Robot(Topic('/husky/cmd_vel', geometry_msgs.msg.Twist))
+def linear_twist(t, left_wheel_neuron, right_wheel_neuron):
+    linear = geometry_msgs.msg.Vector3(x=20.0 * min(left_wheel_neuron.voltage, right_wheel_neuron.voltage), y=0.0, z=0.0)
+    angular = geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=100.0 * (right_wheel_neuron.voltage - left_wheel_neuron.voltage))
+    return geometry_msgs.msg.Twist(linear=linear, angular=angular)</textarea>
 
-# Transfer functions may in general have some state
-# in this case, we reserve memory for a global double variable
-right_arm_v = 0
+    <p>The first line of the above short listing simply imports the TF framework into the current script. Below that in lines 4-10 is an example of a transfer
+      function translating the voltage of actor neurons into robot commands. This is done by a Python function with a set
+      of decorators. The most important decorator is <i>@nrp.Neuron2Robot</i> in line 6 which marks the function as a transfer function
+      from the neuronal network towards the robot and automatically registers it. Furthermore, the decorator specifies what the platform should do with the functions
+      return value. In the example, the return value is sent to the robot on the topic <i>/husky/cmd_vel</i>. The other
+      decorators in lines 4 and 5 specify how the parameters of the function should be mapped to the neuronal network. In this case, the
+      parameters should be connected to two single neurons of the <i>actors</i> population through leaky integration,
+      i.e. the parameters should hold the neurons current voltages. The first parameter <i>t</i> is always the current simulation
+      time and cannot be remapped, whereas all other parameters can be mapped to both robot parts or neurons.</p>
 
-# The annotation Neuron2Robot registers this function as a transfer function
-# As the parameter neuron0 is not explicitly mapped, the framework will assume a mapping
-# to the neuron with the GID neuron0
-# The structure of the imported Husky module is generated from the robot model
-@nrp.Neuron2Robot(Husky.RightArm.pose)
-def right_arm(t, neuron0):
-global right_arm_v
-if neuron0:
-right_arm_v = 1
-else:
-right_arm_v /= 2
-return right_arm_v</textarea>
+    <p>The NRP platform calls these transfer functions at each simulation step, makes sure that they are called with the correct parameters and that
+      the return value is handled correctly. The parameters may be connected to either the neuronal simulator through spike sources or spike sinks or to
+      the robot through topic publishers or topic subscribers. These topic messages are then transmitted to the (simulated) robot currently through the
+      Robot Operating System (ROS).</p>
+
+    <h4>Current status</h4>
+
+    <p>To further simplify the development of BIBI connections, we have designed an XML Schema capable to describe many transfer functions
+      such as the one you have seen above. Since the XML format is formally defined by a Schema, such BIBI configurations may be created
+      by various designers, including the graphical designer we are going to implement but also possibly designers by third-party vendors.
+      Transfer functions can thus be specified either using the XML format or in Python and both kinds can be mixed in a single experiment.</p>
 
 </div>

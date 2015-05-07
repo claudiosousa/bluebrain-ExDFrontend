@@ -167,3 +167,9 @@ and (max-device-width : 1024px) {
   right: 0px;
   height: 100%;
 }
+
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+  margin-bottom: 13px;
+}
