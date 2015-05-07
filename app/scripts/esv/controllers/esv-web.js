@@ -31,7 +31,7 @@
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
-    $rootScope.isServerAvailable = false;
+    $rootScope.isServerAvailable = {};
     $rootScope.isQueryingServersFinished = false;
     $rootScope.STATE = STATE;
     $rootScope.updatePromise = undefined;
@@ -76,8 +76,8 @@
       });
     };
 
-    $scope.startNewExperiment = function(id) {
-      experimentSimulationService.startNewExperiments(id, $scope.setProgressbarInvisible);
+    $scope.startNewExperiment = function(configuration, serverPattern) {
+      experimentSimulationService.startNewExperiments(configuration, serverPattern, $scope.setProgressbarInvisible);
     };
 
     $scope.joinExperiment = function(url) {
@@ -88,8 +88,8 @@
 
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
-    var setIsServerAvailable = function(isAvailable){
-      $rootScope.isServerAvailable = isAvailable;
+    var setIsServerAvailable = function(id, isAvailable){
+      $rootScope.isServerAvailable[id] = isAvailable;
     };
 
     experimentSimulationService.getExperiments(
@@ -105,9 +105,8 @@
         $rootScope.updatePromise = $interval(function(){
           experimentSimulationService.refreshExperiments($scope.experiments, setIsServerAvailable);
         }, ESV_UPDATE_RATE);
-    });
-
-    experimentSimulationService.existsAvailableServer(setIsServerAvailable);
+      },
+      setIsServerAvailable);
 
     // clean up on leaving
     $scope.$on("$destroy", function() {
