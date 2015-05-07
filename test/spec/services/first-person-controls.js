@@ -22,7 +22,6 @@ function createMouseEvent(eventType, button, pageX, pageY) {
 
 function triggerKeyEvent(targetElement, eventType, key) {
   var event = createKeyEvent(eventType, key);
-  //console.log('triggerKeyEvent: type=' + event.type + ' keyCode=' + event.keyCode);
   targetElement.dispatchEvent(event);
 }
 
@@ -35,15 +34,19 @@ describe('FirstPersonControls', function () {
 
   var camera;
   var domElement;
+  var domElementForKeyBindings;
   var firstPersonControls;
 
   beforeEach(function() {
     camera = new THREE.PerspectiveCamera();
 
     domElement = document.createElement('dummyElement');
+    domElementForKeyBindings = document.createElement('keyBindingDummyElement');
     spyOn(domElement, 'addEventListener').andCallThrough();
+    spyOn(domElement, 'setAttribute').andCallThrough();
+    spyOn(domElementForKeyBindings, 'addEventListener').andCallThrough();
 
-    firstPersonControls = new THREE.FirstPersonControls(camera, domElement);
+    firstPersonControls = new THREE.FirstPersonControls(camera, domElement, domElementForKeyBindings);
     spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
     spyOn(firstPersonControls, 'onKeyUp').andCallThrough();
     spyOn(firstPersonControls, 'onMouseDown').andCallThrough();
@@ -57,11 +60,8 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.domElement).toEqual(domElement);
 
     /* some element !== document */
-    var domElementMock = {};
-    domElementMock.setAttribute = jasmine.createSpy('setAttribute');
-    domElementMock.addEventListener = jasmine.createSpy('addEventListener');
-    firstPersonControls = new THREE.FirstPersonControls(camera, domElementMock);
-    expect(domElementMock.setAttribute).toHaveBeenCalledWith( 'tabindex', -1 );
+    firstPersonControls = new THREE.FirstPersonControls(camera, domElement, domElementForKeyBindings);
+    expect(domElement.setAttribute).toHaveBeenCalledWith( 'tabindex', -1 );
 
     /* undefined element */
     firstPersonControls = new THREE.FirstPersonControls(camera);
@@ -73,17 +73,17 @@ describe('FirstPersonControls', function () {
     expect(domElement.addEventListener.argsForCall[1][0]).toMatch(/mousemove/);
     expect(domElement.addEventListener.argsForCall[2][0]).toMatch(/mousedown/);
     expect(domElement.addEventListener.argsForCall[3][0]).toMatch(/mouseup/);
-    expect(domElement.addEventListener.argsForCall[4][0]).toMatch(/keydown/);
-    expect(domElement.addEventListener.argsForCall[5][0]).toMatch(/keyup/);
+    expect(domElementForKeyBindings.addEventListener.argsForCall[0][0]).toMatch(/keydown/);
+    expect(domElementForKeyBindings.addEventListener.argsForCall[1][0]).toMatch(/keyup/);
   }));
 
   it('should handle key events for W/A/S/D/R/F/Q', inject(function() {
-    triggerKeyEvent(domElement, 'keydown', 87/*W*/);
-    triggerKeyEvent(domElement, 'keydown', 65/*A*/);
-    triggerKeyEvent(domElement, 'keydown', 83/*S*/);
-    triggerKeyEvent(domElement, 'keydown', 68/*D*/);
-    triggerKeyEvent(domElement, 'keydown', 82/*R*/);
-    triggerKeyEvent(domElement, 'keydown', 70/*F*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 87/*W*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 65/*A*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 83/*S*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 68/*D*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 82/*R*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 70/*F*/);
 
     //expect(firstPersonControls.onKeyDown.callCount).toEqual(7);
     expect(firstPersonControls.moveForward).toBe(true);
@@ -93,12 +93,12 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toBe(true);
     expect(firstPersonControls.moveDown).toBe(true);
 
-    triggerKeyEvent(domElement, 'keyup', 87/*W*/);
-    triggerKeyEvent(domElement, 'keyup', 65/*A*/);
-    triggerKeyEvent(domElement, 'keyup', 83/*S*/);
-    triggerKeyEvent(domElement, 'keyup', 68/*D*/);
-    triggerKeyEvent(domElement, 'keyup', 82/*R*/);
-    triggerKeyEvent(domElement, 'keyup', 70/*F*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 87/*W*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 65/*A*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 83/*S*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 68/*D*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 82/*R*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 70/*F*/);
 
     expect(firstPersonControls.moveForward).toBe(false);
     expect(firstPersonControls.moveLeft).toBe(false);
@@ -107,21 +107,21 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toBe(false);
     expect(firstPersonControls.moveDown).toBe(false);
 
-    triggerKeyEvent(domElement, 'keyup', 81/*Q*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 81/*Q*/);
     expect(firstPersonControls.freeze).toBe(true);
-    triggerKeyEvent(domElement, 'keyup', 81/*Q*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 81/*Q*/);
     expect(firstPersonControls.freeze).toBe(false);
   }));
 
   it('should handle key events for up/left/down/right/pageup/pagedown', inject(function() {
     //spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
 
-    triggerKeyEvent(domElement, 'keydown', 38/*up*/);
-    triggerKeyEvent(domElement, 'keydown', 37/*left*/);
-    triggerKeyEvent(domElement, 'keydown', 40/*down*/);
-    triggerKeyEvent(domElement, 'keydown', 39/*right*/);
-    triggerKeyEvent(domElement, 'keydown', 33/*pageup*/);
-    triggerKeyEvent(domElement, 'keydown', 34/*pagedown*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 38/*up*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 37/*left*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 40/*down*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 39/*right*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 33/*pageup*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 34/*pagedown*/);
 
     expect(firstPersonControls.moveForward).toEqual(true);
     expect(firstPersonControls.moveLeft).toEqual(true);
@@ -130,12 +130,12 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toEqual(true);
     expect(firstPersonControls.moveDown).toEqual(true);
 
-    triggerKeyEvent(domElement, 'keyup', 38/*up*/);
-    triggerKeyEvent(domElement, 'keyup', 37/*left*/);
-    triggerKeyEvent(domElement, 'keyup', 40/*down*/);
-    triggerKeyEvent(domElement, 'keyup', 39/*right*/);
-    triggerKeyEvent(domElement, 'keyup', 33/*pageup*/);
-    triggerKeyEvent(domElement, 'keyup', 34/*pagedown*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 38/*up*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 37/*left*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 40/*down*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 39/*right*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 33/*pageup*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 34/*pagedown*/);
 
     expect(firstPersonControls.moveForward).toEqual(false);
     expect(firstPersonControls.moveLeft).toEqual(false);

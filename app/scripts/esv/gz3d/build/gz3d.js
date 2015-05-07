@@ -4917,7 +4917,8 @@ GZ3D.Scene.prototype.init = function()
 
   this.timeDown = null;
 
-  this.controls = new THREE.FirstPersonControls(this.camera, this.getDomElement());
+  var domElementForKeyBindings = document.getElementsByTagName('body')[0];
+  this.controls = new THREE.FirstPersonControls(this.camera, this.getDomElement(), domElementForKeyBindings);
   this.scene.add(this.controls.targetIndicator);
 
   this.emitter = new EventEmitter2({ verbose: true });

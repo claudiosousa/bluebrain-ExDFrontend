@@ -1,16 +1,20 @@
 /**
  * First person controls for the gz3d camera/scene.
  * Adapted from https://threejsdoc.appspot.com/doc/three.js/src.source/extras/controls/FirstPersonControls.js.html.
+ *
+ * Note that there is a third parameter now, called 'domElementForKeyBindings' which specifies to which element in
+ * the DOM the key strokes are bound. (Before they were automatically bound to the parameter 'domElement').
  */
 
 /* global THREE: true */
 
-THREE.FirstPersonControls = function(object, domElement)
+THREE.FirstPersonControls = function(object, domElement, domElementForKeyBindings)
 {
   'use strict';
 
   this.object = object;
   this.domElement = angular.isDefined(domElement) ? domElement : document;
+  domElementForKeyBindings = angular.isDefined(domElementForKeyBindings) ? domElementForKeyBindings : document;
 
   if (this.domElement !== document) {
     this.domElement.setAttribute('tabindex', -1);
@@ -58,9 +62,11 @@ THREE.FirstPersonControls = function(object, domElement)
   this.initialRotation = new THREE.Quaternion().copy(this.object.quaternion);
 
   this.onMouseDown = function (event) {
-    if (this.domElement !== document) {
-      this.domElement.focus();
-    }
+    // HBP-NRP: The next three lines are commented since this leads to problems in chrome with respect
+    // to AngularJS, also see: [NRRPLT-1992]
+    //if (this.domElement !== document) {
+    //  this.domElement.focus();
+    //}
 
     event.preventDefault();
     event.stopPropagation();
@@ -269,8 +275,10 @@ THREE.FirstPersonControls = function(object, domElement)
   this.domElement.addEventListener('mousemove', bind(this, this.onMouseMove), false);
   this.domElement.addEventListener('mousedown', bind(this, this.onMouseDown), false);
   this.domElement.addEventListener('mouseup', bind(this, this.onMouseUp), false);
-  this.domElement.addEventListener('keydown', bind(this, this.onKeyDown), false);
-  this.domElement.addEventListener('keyup', bind(this, this.onKeyUp), false);
+
+  domElementForKeyBindings.addEventListener('keydown', bind(this, this.onKeyDown), false);
+  domElementForKeyBindings.addEventListener('keyup', bind(this, this.onKeyUp), false);
+
 };
 
 THREE.FirstPersonControls.prototype = Object.create(THREE.EventDispatcher.prototype);
