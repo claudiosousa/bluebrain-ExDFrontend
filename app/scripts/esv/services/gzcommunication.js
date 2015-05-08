@@ -72,7 +72,9 @@
     };
 
     var deInitialize = function() {
-      offsetHeightListenerUnregister();
+      if (angular.isFunction(offsetHeightListenerUnregister)) {
+        offsetHeightListenerUnregister();
+      }
       $window.removeEventListener('resize', resizeGZ3D);
       $window.cancelAnimationFrame(requestId);
 

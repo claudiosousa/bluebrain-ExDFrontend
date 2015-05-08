@@ -4,8 +4,12 @@
   <small ng-if="isError">Error while loading some assets!</small><br/>
   <small ng-if="!isError">{{loadedAssets}}/{{totalAssets}} assets loaded.</small><br/>
   <span class="fa fa-spinner fa-4x margin-30" ng-class="{'fa-spin': !isError}"></span>
-  <div ng-repeat="element in progressData.assets | filter:{done: false} | orderBy:'totalSize':true | limitTo:10">
-    <progressbar ng-class="element.error ? 'splashbar-error' : 'splashbar'" value="element.progress" max="element.totalSize" animate="true"><span style="color:black; white-space:nowrap; font-weight:bold;">{{element.id}}</span></progressbar>
+  <div class="row" ng-repeat="element in progressData.assets | filter:{done: false} | orderBy:'totalSize':true | limitTo:10">
+    <div class="col-xs-offset-1 col-xs-10 col-md-offset-2 col-md-8">
+      <progressbar ng-class="element.error ? 'splashbar-error' : 'splashbar'" value="element.progress" max="element.totalSize" animate="true">
+        <span style="color:black; white-space:nowrap; font-weight:bold;">{{element.id}}</span>
+      </progressbar>
+    </div>
   </div>
   <br/>
   <p ng-show="isError">Some assets have not been found!</p>
