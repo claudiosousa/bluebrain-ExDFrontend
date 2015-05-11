@@ -1,9 +1,10 @@
 <div class="asset-loading-splash-content text-center">
   <h1 ng-bind="title"></h1>
   <p class="lead">Loading Experiment...</p>
-  <small>{{isError ? 100 : percentage}}%</small><br/>
+  <small ng-if="isError">Error while loading some assets!</small><br/>
+  <small ng-if="!isError">{{loadedAssets}}/{{totalAssets}} assets loaded.</small><br/>
   <span class="fa fa-spinner fa-4x margin-30" ng-class="{'fa-spin': !isError}"></span>
-  <div ng-repeat="element in progressData | filter:{done: false} | orderBy:'totalSize':true | limitTo:10">
+  <div ng-repeat="element in progressData.assets | filter:{done: false} | orderBy:'totalSize':true | limitTo:10">
     <progressbar ng-class="element.error ? 'splashbar-error' : 'splashbar'" value="element.progress" max="element.totalSize" animate="true"><span style="color:black; white-space:nowrap; font-weight:bold;">{{element.id}}</span></progressbar>
   </div>
   <br/>

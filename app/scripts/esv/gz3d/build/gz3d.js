@@ -2032,7 +2032,9 @@ GZ3D.GZIface = function(scene, gui)
   this.init();
   this.visualsToAdd = [];
 
-  this.assetProgressData = [];
+  this.assetProgressData = {};
+  this.assetProgressData.assets = [];
+  this.assetProgressData.prepared = false;
   this.assetProgressCallback = undefined;
 
   this.numConnectionTrials = 0;
@@ -2203,6 +2205,8 @@ GZ3D.GZIface.prototype.onConnected = function()
       this.gui.setModelStats(model, 'update');
     }
 
+    this.assetProgressData.prepared = true;
+    this.assetProgressCallback(this.assetProgressData);
     this.gui.setSceneStats(message);
     this.sceneTopic.unsubscribe();
   };
@@ -2943,7 +2947,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         element.progress = 0;
         element.totalSize = 0;
         element.done = false;
-        this.assetProgressData.push(element);
+        this.assetProgressData.assets.push(element);
 
         this.scene.loadMesh(modelUri, submesh,
           centerSubmesh, function(dae) {

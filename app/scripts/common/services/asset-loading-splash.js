@@ -37,8 +37,8 @@
     };
 
     var close = function() {
-      if (angular.isDefined(myModal)) { 
-        myModal.close(); 
+      if (angular.isDefined(myModal)) {
+        myModal.close();
       }
       if (angular.isDefined(this.callbackOnClose)) {
         this.callbackOnClose();
@@ -56,33 +56,34 @@
   }]);
 
   module.controller('AssetLoadingSplashCtrl', ['$scope', '$log', '$filter', '$timeout', 'assetLoadingSplash', function ($scope, $log, $filter, $timeout, assetLoadingSplash) {
-    $scope.progressData = [];
+    $scope.progressData = {};
     $scope.percentage = 0;
     $scope.isError = false;
+    $scope.loadedAssets = 0;
+    $scope.totalAssets = 0;
 
     $scope.close = function() {
       assetLoadingSplash.close();
     };
 
     assetLoadingSplash.setProgressObserver(function(data) {
-      var totalSize = 0;
-      var progress = 0;
       var isDone = true;
-      var isError = false;
-      angular.forEach(data, function(element, index) {
-        totalSize = totalSize + element.totalSize;
-        progress = progress + element.progress;
+      var loadedAssets = 0;
+
+      angular.forEach(data.assets, function(element, index) {
+        loadedAssets += element.done ? 1 : 0;
         isDone = isDone && element.done;
         $scope.isError = $scope.isError || element.error;
       });
-      if (isDone && !$scope.isError ) { // if there were errors, a button is showed for the user to explicitly close the splash
+      if (data.prepared && isDone && !$scope.isError ) { // if there were errors, a button is showed for the user to explicitly close the splash
           assetLoadingSplash.close();
       }
       // We use $timeout to prevent "digest already in progress" error.
       $timeout(function() {
         $scope.$apply(function () {
           $scope.progressData = data;
-          $scope.percentage = $filter('number')((progress*100/totalSize),0);
+          $scope.loadedAssets = loadedAssets;
+          $scope.totalAssets = data.assets.length;
         });
       });
     });

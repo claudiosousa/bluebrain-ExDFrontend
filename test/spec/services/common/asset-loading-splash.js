@@ -2,7 +2,9 @@
   'use strict';
 
   // Define test data which we want to share across the tests
-  var exampleData = [
+  var exampleData = {};
+  exampleData.prepared = true;
+  exampleData.assets = [
     {id: 'test::id::mesh1', url: 'http://some_fake_url.com:1234/bla1.mesh', progress: 0, totalSize: 1, done: false},
     {id: 'test::id::mesh2', url: 'http://some_fake_url.com:1234/bla2.mesh', progress: 700, totalSize: 1000, done: false},
     {id: 'test::id::mesh3', url: 'http://some_fake_url.com:1234/bla3.mesh', progress: 200, totalSize: 200, done: true}
@@ -126,7 +128,8 @@
       scope.$apply.mostRecentCall.args[0]();
 
       expect(scope.progressData).toBe(exampleData);
-      expect(scope.percentage).toEqual('75');
+      expect(scope.loadedAssets).toEqual(1);
+      expect(scope.totalAssets).toEqual(3);
     });
 
     it('should close the splash close', function () {
@@ -135,25 +138,26 @@
     });
 
     it('should close the splash when done without error', function () {
-      exampleData[0].progress = 1;
-      exampleData[0].done = true;
-      exampleData[1].progress = 1000;
-      exampleData[1].done = true;
+      exampleData.assets[0].progress = 1;
+      exampleData.assets[0].done = true;
+      exampleData.assets[1].progress = 1000;
+      exampleData.assets[1].done = true;
       assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
       expect(assetLoadingSplash.close).toHaveBeenCalled();
 
       timeout.mostRecentCall.args[0]();
       scope.$apply.mostRecentCall.args[0]();
 
-      expect(scope.percentage).toEqual('100');
+      expect(scope.loadedAssets).toEqual(3);
+      expect(scope.totalAssets).toEqual(3);
     });
 
     it('should not close the splash and set isError when done with error', function () {
-      exampleData[0].progress = 0;
-      exampleData[0].done = true;
-      exampleData[0].error = true;
-      exampleData[1].progress = 1000;
-      exampleData[1].done = true;
+      exampleData.assets[0].progress = 0;
+      exampleData.assets[0].done = true;
+      exampleData.assets[0].error = true;
+      exampleData.assets[1].progress = 1000;
+      exampleData.assets[1].done = true;
       assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
 
