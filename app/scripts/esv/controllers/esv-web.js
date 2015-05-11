@@ -26,6 +26,16 @@
       return output;
     };
   })
+  .filter('byLocation', function($filter) {
+    return function(input, pattern, doApply) {
+      if (!doApply) {
+        return input;
+      }
+      else {
+        return $filter('filter')(input, { serverPattern: pattern}, true);
+      }
+    };
+  })
   .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$interval', 'simulationService', 'experimentSimulationService', 'STATE',
       function ($scope, $rootScope, $timeout, $location, $interval, simulationService,experimentSimulationService, STATE) {
     $rootScope.selectedIndex = -1;

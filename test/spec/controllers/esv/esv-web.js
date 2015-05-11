@@ -18,6 +18,7 @@ describe('Controller: experimentCtrl', function () {
     experimentTemplatesArray,
     sortedExperimentTemplatesArray,
     filteredExperimentTemplatesArray,
+    serverPatternFilteredExperimentTemplatesArray,
     REFRESH_UPDATE_RATE,
     STATE;
 
@@ -76,6 +77,9 @@ describe('Controller: experimentCtrl', function () {
     ];
     filteredExperimentTemplatesArray = [
       {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fake configuration 3', serverPattern:'c', timeout: 300},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200}
+    ];
+    serverPatternFilteredExperimentTemplatesArray = [
       {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200}
     ];
     experimentTemplatesAugmented = {
@@ -209,6 +213,15 @@ describe('Controller: experimentCtrl', function () {
     /*jshint camelcase: false */
     inject(function(name_snippetFilter) {
       expect(name_snippetFilter(experimentTemplatesArray, 'dog')).toEqual(filteredExperimentTemplatesArray);
+    }
+  ));
+
+  it('should filter the experiments in user view',
+    //Ignore this warning because of the name_snippetFilter
+    /*jshint camelcase: false */
+    inject(function(byLocationFilter) {
+      expect(byLocationFilter(experimentTemplatesArray, 'b', false)).toEqual(experimentTemplatesArray);
+      expect(byLocationFilter(experimentTemplatesArray, 'b', true)).toEqual(serverPatternFilteredExperimentTemplatesArray);
     }
   ));
 
