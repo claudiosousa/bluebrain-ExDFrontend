@@ -12,7 +12,9 @@
 
     <hr class="list-separator">
 
-    <div ng-repeat="exp in experiments | convertToArray | name_snippet:query | orderBy:'name':false" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
+    <a ng-show="!showAll" style="position: absolute; bottom: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=true">developers</a>
+    <a ng-show="showAll" style="position: absolute; bottom: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=false">users</a>
+    <div ng-repeat="exp in experiments | convertToArray | name_snippet:query | orderBy:'name':false | byLocation:'bbpsrvc':!showAll" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
         <div class="list-entry-container left-right list-entry-main">
           <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
