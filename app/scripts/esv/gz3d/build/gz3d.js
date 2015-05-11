@@ -2206,7 +2206,6 @@ GZ3D.GZIface.prototype.onConnected = function()
     }
 
     this.assetProgressData.prepared = true;
-    this.assetProgressCallback(this.assetProgressData);
     this.gui.setSceneStats(message);
     this.sceneTopic.unsubscribe();
   };
