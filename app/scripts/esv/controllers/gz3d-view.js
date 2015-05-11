@@ -111,7 +111,12 @@
           $scope.ownerID = data.owner;
           var experimentID = data.experimentID;
           $http.get('views/esv/experiment_templates.json').success(function (experimentData) {
-            $scope.ExperimentDescription = experimentData[experimentID].snippet;
+            angular.forEach(experimentData, function(experimentTemplate) {
+              if (experimentTemplate.experimentConfiguration === experimentID &&
+                (serverBaseUrl.indexOf(experimentTemplate.serverPattern) > -1 )) {
+                $scope.ExperimentDescription = experimentTemplate.snippet;
+              }
+            });
           });
           hbpUserDirectory.get([data.owner]).then(function (profile)
           {

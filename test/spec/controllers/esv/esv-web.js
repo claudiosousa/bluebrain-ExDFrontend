@@ -60,30 +60,30 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationService.refreshExperiments.reset();
 
     experimentTemplates = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fake configuration 1', serverPattern:'a', timeout: 100},
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fake configuration 3', serverPattern:'c', timeout: 300},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200}
     };
     experimentTemplatesArray = [
-      {id: '1', imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
-      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
+      {id: '1', imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fake configuration 1', serverPattern:'a', timeout: 100},
+      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fake configuration 3', serverPattern:'c', timeout: 300},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200}
     ];
     sortedExperimentTemplatesArray = [
-      {id: '1', imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'},
-      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'}
+      {id: '1', imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fake configuration 1', serverPattern:'a', timeout: 100},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200},
+      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fake configuration 3', serverPattern:'c', timeout: 300}
     ];
     filteredExperimentTemplatesArray = [
-      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'},
-      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'}
+      {id: '3', imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fake configuration 3', serverPattern:'c', timeout: 300},
+      {id: '2', imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200}
     ];
     experimentTemplatesAugmented = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', runningExperiments: 1, simulations: [
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fake configuration 1', serverPattern:'a', timeout: 100},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fake configuration 2', serverPattern:'b', timeout: 200, runningExperiments: 1, simulations: [
         {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
       ]},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', runningExperiments: 3, simulations: [
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fake configuration 3', serverPattern:'c', timeout: 300, runningExperiments: 3, simulations: [
         { simulationID: 2, experimentID: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
         { simulationID: 0, experimentID: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
         { simulationID: 2, experimentID: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
@@ -98,7 +98,7 @@ describe('Controller: experimentCtrl', function () {
     REFRESH_UPDATE_RATE = 30 * 1000; // 30 seconds
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
-
+    httpBackend.whenGET('views/esv/experiment_templates.json').respond(experimentTemplates);
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
@@ -111,7 +111,7 @@ describe('Controller: experimentCtrl', function () {
     expect(scope.setSelected).toEqual(jasmine.any(Function));
     expect(scope.setJoinableVisible).toEqual(jasmine.any(Function));
     expect(experimentSimulationService.setInitializedCallback).toHaveBeenCalledWith(scope.joinExperiment);
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
   });
 
   it('should set the progressbar visible', function() {
@@ -155,8 +155,9 @@ describe('Controller: experimentCtrl', function () {
   it('should start a new experiment', function(){
     experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
     var newExperimentString = 'fubar';
-    scope.startNewExperiment(newExperimentString);
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, scope.setProgressbarInvisible);
+    var newExperimentServerPattern = 'toto';
+    scope.startNewExperiment(newExperimentString, newExperimentServerPattern);
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, newExperimentServerPattern, scope.setProgressbarInvisible);
   });
 
   it('should join an experiment', function(){
@@ -193,7 +194,7 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should get the experiments', function() {
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function) , jasmine.any(Function));
     var argumentFunction = experimentSimulationService.getExperiments.mostRecentCall.args[1];
     var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
     argumentFunction(experimentTemplatesAugmented);
@@ -216,12 +217,6 @@ describe('Controller: experimentCtrl', function () {
         expect(convertToArrayFilter(experimentTemplates)).toEqual(experimentTemplatesArray);
       }
     ));
-
-  it('should set isServerAvailable to true', function() {
-    rootScope.isServerAvailable = false;
-    experimentSimulationService.existsAvailableServer.mostRecentCall.args[0](true);
-    expect(rootScope.isServerAvailable).toEqual(true);
-  });
 
   it('should create the updatePromise and call refresh experiments after 30 seconds', function() {
     var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];

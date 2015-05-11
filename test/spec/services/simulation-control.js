@@ -57,17 +57,17 @@ describe('Services: simulation-services', function () {
     ];
 
     experimentTemplates = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy'},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog'}
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 200},
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 300}
     };
 
     experimentTemplatesAugmented = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx'},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', runningExperiments: 1, simulations: [
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 200, runningExperiments: 1, simulations: [
         {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
       ]},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', runningExperiments: 3, simulations: [
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 300, runningExperiments: 3, simulations: [
         { simulationID: 2, experimentID: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
         { simulationID: 0, experimentID: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
         { simulationID: 2, experimentID: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
@@ -320,26 +320,26 @@ describe('Services: experimentSimulationService', function () {
 
     experimentTemplates = {
       '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1'
+        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100
       },
       'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 2'
+        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200
       },
       '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 3'
+        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300
       }
     };
 
     experimentTemplatesAugmented = {
       '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1'
+        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100
       },
       'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 2', runningExperiments: 1, simulations: [
+        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, runningExperiments: 1, simulations: [
           returnSimulations[3]
       ]},
       '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 3'
+        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300
       }
     };
 
@@ -417,9 +417,9 @@ describe('Services: experimentSimulationService', function () {
     expect(simulationService).toHaveBeenCalledWith({ serverURL: bbpConfigString.bbpce014.gzweb['nrp-services'], serverID: 'bbpce014'});
     expect(simulationService).toHaveBeenCalledWith({ serverURL: bbpConfigString.bbpce016.gzweb['nrp-services'], serverID: 'bbpce016'});
 
-    expect(simulationServiceObject.simulations.callCount).toEqual(2);
+    expect(simulationServiceObject.simulations.callCount).toEqual(8);
 
-    var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
+    var argumentFunction = simulationServiceObject.simulations.calls[1].args[0];
     argumentFunction(returnSimulations);
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(returnSimulations);
     expect(callback).toHaveBeenCalledWith(experimentTemplatesAugmented);
@@ -506,7 +506,7 @@ describe('Services: experimentSimulationService', function () {
     var messageCallback = jasmine.createSpy('messageCallback');
     experimentSimulationService.getExperiments(messageCallback, function(){});
 
-    experimentSimulationService.startNewExperiments('experiment_id');
+    experimentSimulationService.startNewExperiments('experiment_id', 'bbpce');
 
     expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
     expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
@@ -529,7 +529,7 @@ describe('Services: experimentSimulationService', function () {
   it('should check for an available Server', function(){
     simulationService.reset();
     var isAvailableCallback = jasmine.createSpy('isAvailableCallback');
-    experimentSimulationService.existsAvailableServer(isAvailableCallback);
+    experimentSimulationService.existsAvailableServer(experimentTemplates, isAvailableCallback);
 
     expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
     expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});

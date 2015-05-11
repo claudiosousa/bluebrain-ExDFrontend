@@ -167,18 +167,20 @@
     var statusListener;
 
     var addSimulationToTemplate = function(experimentTemplates, activeSimulation) {
-      var experiment = experimentTemplates[activeSimulation.experimentID];
-      if (experiment !== undefined) {
-        experiment.runningExperiments = ('runningExperiments' in experiment) ? experiment.runningExperiments + 1 : 1;
-        if (!('simulations' in experiment)) {
-          experiment.simulations = [];
+      angular.forEach(experimentTemplates, function(experimentTemplate) {
+        if (experimentTemplate.experimentConfiguration === activeSimulation.experimentID &&
+            (activeSimulation.serverID.indexOf(experimentTemplate.serverPattern) > -1 )) {
+          experimentTemplate.runningExperiments = ('runningExperiments' in experimentTemplate) ? experimentTemplate.runningExperiments + 1 : 1;
+          if (!('simulations' in experimentTemplate)) {
+            experimentTemplate.simulations = [];
+          }
+          experimentTemplate.simulations.push(activeSimulation);
         }
-        experiment.simulations.push(activeSimulation);
-      }
+      });
     };
 
     var deleteSimulationFromTemplate = function(experimentTemplates, serverID) {
-      angular.forEach(experimentTemplates, function(experimentTemplate, templateIndex) {
+      angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
         angular.forEach(experimentTemplate.simulations, function (simulation, simulationIndex) {
           if(simulation.serverID === serverID) {
             // delete the outdated entry
@@ -191,7 +193,7 @@
 
     var searchAndUpdateExperimentTemplates = function(experimentTemplates, activeSimulation) {
       var found = false;
-      angular.forEach(experimentTemplates, function(experimentTemplate, templateIndex){
+      angular.forEach(experimentTemplates, function(experimentTemplate, templateName){
         angular.forEach(experimentTemplate.simulations, function(simulation, simulationIndex){
           if(simulation.serverID === activeSimulation.serverID) {
             found = true;
@@ -257,7 +259,13 @@
       // After all promises are "fulfilled" we know that all requests have been processed.
       // Now we can see if there is a available Server
       $q.all(requests).then(function () {
-        isServerAvailableCallback(availableServers.length > 0);
+        angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
+          angular.forEach(availableServers, function (server, index) {
+            if (server.indexOf(experimentTemplate.serverPattern) > -1) {
+              isServerAvailableCallback(templateName, true);
+            }
+          });
+        });
       });
     };
 
@@ -297,15 +305,15 @@
     };
 
     // Fetches the Experiments
-    var getExperiments = function(progressMessageCallback, callback, queryingServersFinishedCb) {
+    var getExperiments = function(progressMessageCallback, callback, queryingServersFinishedCb, setIsServerAvailable) {
       setProgressMessageCallback = progressMessageCallback;
       getExperimentsCallback = callback;
       queryingServersFinishedCallback = queryingServersFinishedCb;
 
       $http.get('views/esv/experiment_templates.json').success(function (data) {
         augmentExperiments(data);
+        existsAvailableServer(data, setIsServerAvailable);
       });
-
     };
 
     var registerForStatusInformation = function(serverID, simulationID) {
@@ -329,35 +337,41 @@
     };
 
     // Checks if there is an available Server.
-    var existsAvailableServer = function(isAvailableCallback){
-      var serverIDs = Object.keys(servers);
-      angular.forEach(serverIDs, function(serverID, index){
-        var serverURL = servers[serverID].gzweb['nrp-services'];
-        simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
-          var activeSimulation = simulationService().getActiveSimulation(data);
-          if (activeSimulation === undefined) {
-            isAvailableCallback(true);
+    var existsAvailableServer = function(experimentTemplates, isAvailableCallback){
+      angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
+        var serverIDs = Object.keys(servers);
+        angular.forEach(serverIDs, function (serverID, index) {
+          if (serverID.indexOf(experimentTemplate.serverPattern) > -1) {
+            var serverURL = servers[serverID].gzweb['nrp-services'];
+            simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
+              var activeSimulation = simulationService().getActiveSimulation(data);
+              if (activeSimulation === undefined) {
+                isAvailableCallback(templateName, true);
+              }
+            });
           }
         });
       });
     };
 
     // TODO improve this code (keyword: semaphore!)
-    var startNewExperiments = function(id, errorCallback){
+    var startNewExperiments = function(id, serverPattern, errorCallback){
       var serverIDs = Object.keys(servers);
       var keepGoing = true;
       angular.forEach(serverIDs, function(serverID, index){
         if(keepGoing) {
-          var serverURL = servers[serverID].gzweb['nrp-services'];
-          simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
-            var activeSimulation = simulationService().getActiveSimulation(data);
-            if (activeSimulation === undefined) {
-              if (keepGoing) {
-                keepGoing = false;
-                launchExperimentOnServer(id, serverID, errorCallback);
+          if (serverID.indexOf(serverPattern) > -1) {
+            var serverURL = servers[serverID].gzweb['nrp-services'];
+            simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
+              var activeSimulation = simulationService().getActiveSimulation(data);
+              if (activeSimulation === undefined) {
+                if (keepGoing) {
+                  keepGoing = false;
+                  launchExperimentOnServer(id, serverID, errorCallback);
+                }
               }
-            }
-          });
+            });
+          }
         }
       });
     };
