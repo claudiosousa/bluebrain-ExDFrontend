@@ -2071,6 +2071,9 @@ GZ3D.GZIface.prototype.connect = function()
   this.webSocket.on('error', function() {
     that.onError();
   });
+  this.webSocket.on('close', function() {
+    console.log('Connection closed to websocket server: ' + this.webSocket.socket.url);
+  })
 
   this.numConnectionTrials++;
 };
@@ -2099,6 +2102,7 @@ GZ3D.GZIface.prototype.registerWebSocketConnectionCallback = function(callback) 
 
 GZ3D.GZIface.prototype.onConnected = function()
 {
+  console.log('Connected to websocket server: ' + this.webSocket.socket.url);
   this.isConnected = true;
   this.emitter.emit('connection');
 
