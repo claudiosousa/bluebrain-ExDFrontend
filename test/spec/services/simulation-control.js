@@ -574,6 +574,7 @@ describe('Services: error handling', function () {
 
     httpBackend = $httpBackend;
     serverError = _serverError_;
+    serverError.reset();
     simulationService = _simulationService_;
     simulationControl = _simulationControl_;
     simulationGenerator = _simulationGenerator_;
@@ -644,7 +645,6 @@ describe('Services: error handling', function () {
     expect(serverError.callCount).toBe(1);
     response = serverError.mostRecentCall.args[0];
     expect(response.status).toBe(500);
-    serverError.reset();
   });
 
   it('should test the error callback when launching an experiment fails', function() {
@@ -657,6 +657,16 @@ describe('Services: error handling', function () {
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
     expect(serverError.callCount).toBe(1);
+  });
+
+  it('should not call serverError for a failing GET /simulation request with 504 status', function() {
+    var serverURL = 'http://bbpce014.epfl.ch:8080';
+    var serverID = 'bbpce014';
+    httpBackend.whenGET(/\/simulation/).respond(504);
+    simulationService({serverURL: serverURL, serverID: serverID}).simulations();
+    httpBackend.expectGET(serverURL + '/simulation');
+    httpBackend.flush();
+    expect(serverError.callCount).toBe(0);
   });
 
 });
