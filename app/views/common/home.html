@@ -1,7 +1,7 @@
 <div class="container-with-navbar-margin container-fluid">
   <a name="about"></a>
 
-  <div class="intro-header">
+  <div id="intro-header" class="intro-header">
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
@@ -29,6 +29,9 @@
                   class="fa fa-envelope-o fa-fw"></i> <span class="network-name">Contact-us</span></a>
               </li>
             </ul>
+            <a scroll-on-click href="#nrp-section" class="btn btn-circle">
+              <i class="fa fa-angle-double-down animated"></i>
+            </a>
           </div>
         </div>
       </div>
@@ -36,7 +39,7 @@
   </div>
   <a name="services"></a>
 
-  <div class="content-section-b">
+  <div id="nrp-section" class="content-section-b">
     <div class="container">
       <div class="row">
         <div class="col-lg-6 col-sm-6">
@@ -54,13 +57,58 @@
       </div>
     </div>
   </div>
-  <div class="content-section-a">
+  <div id="targeted-audience" class="content-section-a">
     <div class="container">
       <div class="row">
         <div class="col-lg-6 col-sm-6">
-          <img class="img-responsive" src="img/common/cscs.png"
-               alt="BlueGeneQ (IBM) cluster @CSCS Lugano.">
+          <img class="img-responsive" src="img/common/intro-team.png"
+               alt="The neurorobotics Team (from EPFL, TUM and SSSA)">
         </div>
+        <div class="col-lg-6 col-sm-6">
+          <div class="clearfix"></div>
+          <h2 class="section-heading">Targeted Audience</h2>
+
+          <p class="lead">The NRP platform targets researchers of multiple fields. Prospected users include but are not
+            limited to:
+          <ul class="lead">
+            <li>Neuroscientists validating their brain models</li>
+            <li>Neuro-physiologists trying to understand the human cortex</li>
+            <li>Neuroroboticists implementing neuro-inspired controllers</li>
+          </ul>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-section-b">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 col-sm-12">
+          <div class="clearfix"></div>
+          <h2 class="section-heading">What to expect?</h2>
+
+          <p class="lead">This is the <i>first internal release</i> of the NRP targeted at the HBP consortium. This
+            release represents the current state of development. It provides a first glance upon how the NRP will
+            contribute to active research in the Human Brain Project. It marks also the first time
+            that the platform is presented to its users.</p>
+
+          <p>Please keep in mind that the NRP is still <b>under active development</b>.
+            As a consequence, although internally arbitrary experiment configurations are supported,
+            we currently limit the platform to the execution of a single exemplary experiment for security reasons.
+            This experiment can be performed with two different robots, a four-wheeled Husky robot and a six-legged
+            walking machine (LAURON V). In this experiment, the robots act as <a
+              href='http://en.wikipedia.org/wiki/Braitenberg_vehicle'>Braitenberg vehicles</a>. That is, their behavior
+            is
+            controlled by a simplistic brain consisting of only eight neurons that steer the robots towards
+            red stimuli. This happens in a virtual environment with screens attached to opposite walls that can switch a
+            displayed color upon user interaction.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-section-a">
+    <div class="container">
+      <div class="row">
         <div class="col-lg-6 col-sm-6">
           <div class="clearfix"></div>
           <h2 class="section-heading">From your browser!</h2>
@@ -74,6 +122,75 @@
             <a href="https://spinnaker.cs.manchester.ac.uk/tiki-index.php"><b>neuromorphic hardware</b></a> in the near
             future.
           </p>
+        </div>
+        <div class="col-lg-6 col-sm-6">
+          <img class="img-responsive" src="img/common/browser-capture.png"
+               alt="BlueGeneQ (IBM) cluster @CSCS Lugano.">
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="content-section-b">
+      <div class="container">
+        <div class="row intro-vertical-align-row">
+          <div class="col-lg-6 col-sm-6 intro-vertical-align-cell">
+            <!-- Constructed with http://embedresponsively.com/ -->
+            <style>.embed-container {
+              position: relative;
+              padding-bottom: 56.25%;
+              height: 0;
+              overflow: hidden;
+              max-width: 100%;
+            }
+
+            .embed-container iframe, .embed-container object, .embed-container embed {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+            }</style>
+            <div class='embed-container'>
+              <iframe src='http://www.youtube.com/embed/Dt6-fBL384E' frameborder='0' allowfullscreen></iframe>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-6 intro-vertical-align-cell">
+            <div class="clearfix"></div>
+            <p class="lead">This experiment, while simple, shows very well the interplay of the neural simulator and the
+              physical robot simulations which is the core of the NRP activities.</p>
+
+            <p>In addition, the NRP lets multiple users observe experiments that have been
+              started by other experimenters. This is transparent since still only the experiment owner may interact with
+              the experiment.</p>
+
+            <p>Altogether, this first internal release shows that the core functionality of Neurorobotics Platform has
+              already reached an initial operational status.</p>
+          </div>
+        </div>
+      </div>
+  </div>
+  <div class="content-section-b">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 col-sm-12">
+          <div class="clearfix"></div>
+          <h2 class="section-heading">Your role in the NRP</h2>
+
+          <p class="lead">We invite you to give us your feedback by answering this
+            <a href="https://docs.google.com/forms/d/1rKHSpf_yG0FQgKdfn5Vs__BFfWpd3-F2X8mEi9LH_Dc/viewform">survey</a>
+            and report any encountered issues (e.g., glitches, bugs or missing documentation)
+            by filling out a <a
+              href="https://docs.google.com/forms/d/1OWN-IMXlqSZWbDHNBVsTqydudI8UXn-ztJETHUTa0kQ/viewform">
+              bug report</a>
+            so that we can improve the NRP to fit your needs. The survey contains 40 short questions and will take about
+            10-15 minutes to complete. In addition, the mailing list can be used to discuss further details of the software.
+            There, we would like to discuss the aspects of further development based on your requirements
+            such as e.g. what kind of experiments should be conducted and what requirements arise.</p>
+
+          <p>Looking for greater influence on the NRP development? Then apply for becoming a <i>co-development user</i>.
+            As such, we will allocate development resources to help you run your experiments on the NRP!
+            For application, please use the survey or contact the NRP team directly by
+            <a href="mailto:neurorobotics@humanbrainproject.eu">email</a>. </p>
         </div>
       </div>
     </div>
@@ -107,174 +224,7 @@
       </div>
     </div>
   </div>
-  <div class="content-section-b">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="clearfix"></div>
-          <h2 class="section-heading">The Neurororobotics platform is brought to you by:</h2>
-          <ul class="lead">
-            <li>The Human Brain Project (<a href="https://www.humanbrainproject.eu/"><b>HBP</b></a>)</li>
-            <li>Ecole Polytechnique F&eacute;d&eacute;ral de Lausanne (<a href="http://epfl.ch/"><b>EPFL</b></a>)</li>
-            <li>Technische Universit&auml;t M&uuml;nchen (<a href="https://www.tum.de/"><b>TUM</b></a> - <a
-              href="http://www6.in.tum.de/">Robotics and Embedded Systems</a>)
-            </li>
-            <li>Fortiss, an-Institut der Technischen Universit&auml;t M&uuml;nchen (<a
-              href="http://www.fortiss.org/home/"><b>Fortiss</b></a>)
-            </li>
-            <li>Forschungszentrum Informatik am Karlsruher Institut f&uuml;r Technologie (<a
-              href="https://www.fzi.de/startseite/"><b>FZI</b></a>)
-            </li>
-            <li>Scuola Superiore Sant'Anna (<a href="http://www.sssup.it/"><b>SSSUP</b></a> - <a
-              href="http://www.sssup.it/ist_home.jsp?ID_LINK=10458&area=199">Istituto di BioRobotica</a>)
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="row intro-vertical-align-row">
-        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="https://www.humanbrainproject.eu/"><img class="img-responsive" src="img/common/hbp-logo.png"></a>
-        </div>
-        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="http://epfl.ch/"><img class="img-responsive" src="img/common/Logo_EPFL.png"></a>
-        </div>
-        <div class="col-md-1 col-sm-2 col-xs-2 intro-vertical-align-cell">
-          <a href="https://www.tum.de/"><img class="img-responsive" src="img/common/Tum_logo.gif"></a>
-        </div>
-        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="http://www.fortiss.org/home/"><img class="img-responsive" src="img/common/fortiss-logo.png"></a>
-        </div>
-        <div class="col-md-1 col-sm-2 col-xs-2 intro-vertical-align-cell">
-          <a href="https://www.fzi.de/startseite/"><img class="img-responsive" src="img/common/Fzi_logo.png"></a>
-        </div>
-        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="http://www.sssup.it/"><img class="img-responsive" src="img/common/SSSA_logo_eng.png"></a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="content-section-a">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 col-sm-6">
-          <div class="clearfix"></div>
-          <h2 class="section-heading">Targeted Audience</h2>
-
-          <p class="lead">The NRP platform targets researchers of multiple fields. Prospected users include but are not
-            limited to:
-          <ul class="lead">
-            <li>Neuroscientists validating their brain models</li>
-            <li>Neuro-physiologists trying to understand the human cortex</li>
-            <li>Neuroroboticists implementing neuro-inspired controllers</li>
-          </ul>
-          </p>
-        </div>
-        <div class="col-lg-6 col-sm-6">
-          <img class="img-responsive" src="img/common/intro-team.png"
-               alt="The neurorobotics Team (from EPFL, TUM and SSSA)">
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="content-section-b">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-sm-12">
-          <div class="clearfix"></div>
-          <h2 class="section-heading">What to expect?</h2>
-
-          <p class="lead">This is the <i>first internal release</i> of the NRP targeted at the HBP consortium. This
-            release represents the current state of development. It provides a first glance upon how the NRP will
-            contribute to active research in the Human Brain Project. It marks also the first time
-            that the platform is presented to its users.</p>
-
-          <p>Please keep in mind that the NRP is still <b>under active development</b>.
-            As a consequence, although internally arbitrary experiment configurations are supported,
-            we currently limit the platform to the execution of a single exemplary experiment for security reasons.
-            This experiment can be performed with two different robots, a four-wheeled Husky robot and a six-legged
-            walking machine (LAURON V). In this experiment, the robots act as <a
-              href='http://en.wikipedia.org/wiki/Braitenberg_vehicle'>Braitenberg vehicles</a>. That is, their behavior
-            is
-            controlled by a simplistic brain consisting of only eight neurons that steer the robots towards
-            red stimuli. This happens in a virtual environment with screens attached to opposite walls that can switch a
-            displayed color upon user interaction.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="content-section-a">
-    <div class="container">
-      <div class="row intro-vertical-align-row">
-        <div class="col-lg-6 col-sm-6 intro-vertical-align-cell">
-          <!-- Constructed with http://embedresponsively.com/ -->
-          <style>.embed-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-          }
-
-          .embed-container iframe, .embed-container object, .embed-container embed {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-          }</style>
-          <div class='embed-container'>
-            <iframe src='http://www.youtube.com/embed/Dt6-fBL384E' frameborder='0' allowfullscreen></iframe>
-          </div>
-        </div>
-        <div class="col-lg-6 col-sm-6 intro-vertical-align-cell">
-          <div class="clearfix"></div>
-          <p class="lead">This experiment, while simple, shows very well the interplay of the neural simulator and the
-            physical robot simulations which is the core of the NRP activities.</p>
-
-          <p>In addition, the NRP lets multiple users observe experiments that have been
-            started by other experimenters. This is transparent since still only the experiment owner may interact with
-            the experiment.</p>
-
-          <p>Altogether, this first internal release shows that the core functionality of Neurorobotics Platform has
-            already reached an initial operational status.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="content-section-b">
-    <div class="container">
-      <div class="row intro-vertical-align-row">
-        <div class="col-lg-12">
-          <h2 class="section-heading">The Neurorobotics platform is powered by:</h2>
-        </div>
-      </div>
-      <div class="row intro-vertical-align-row">
-        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="https://angularjs.org/"><img class="img-responsive" src="img/common/angular.png"></a>
-        </div>
-        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="http://getbootstrap.com/"><img class="img-responsive" src="img/common/bootstrap-logo.png"></a>
-        </div>
-        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="http://flask.pocoo.org/"><img class="img-responsive" src="img/common/flask.png"></a>
-        </div>
-        <div class="col-md-2 col-sm-8 col-xs-8 intro-vertical-align-cell">
-          <a href="http://www.ros.org/"><img class="img-responsive" src="img/common/ros.png"></a>
-        </div>
-        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="http://gazebosim.org/"><img class="img-responsive" src="img/common/gazebo_logo.png"></a>
-        </div>
-        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
-          <a href="https://www.openstack.org/"><img class="img-responsive" src="img/common/openstack-logo.png"></a>
-        </div>
-        <div class="col-md-2 col-sm-8 col-xs-8 intro-vertical-align-cell">
-          <a href="http://www.nest-initiative.org/"><img class="img-responsive"
-                                                         src="img/common/nest-initiative_logo.png"></a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="content-section-a">
+    <div class="content-section-a">
     <div class="container">
       <div class="row intro-vertical-align-row">
         <div class="col-lg-6 col-sm-6 intro-vertical-align-cell">
@@ -351,34 +301,85 @@
       </div>
     </div>
   </div>
-
   <div class="content-section-b">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-sm-12">
-          <div class="clearfix"></div>
-          <h2 class="section-heading">Your role in the NRP</h2>
-
-          <p class="lead">We invite you to give us your feedback by answering this
-            <a href="https://docs.google.com/forms/d/1rKHSpf_yG0FQgKdfn5Vs__BFfWpd3-F2X8mEi9LH_Dc/viewform">survey</a>
-            and report any encountered issues (e.g., glitches, bugs or missing documentation)
-            by filling out a <a
-              href="https://docs.google.com/forms/d/1OWN-IMXlqSZWbDHNBVsTqydudI8UXn-ztJETHUTa0kQ/viewform">
-              bug report</a>
-            so that we can improve the NRP to fit your needs. The survey contains 40 short questions and will take about
-            10-15 minutes to complete. In addition, the mailing list can be used to discuss further details of the software.
-            There, we would like to discuss the aspects of further development based on your requirements
-            such as e.g. what kind of experiments should be conducted and what requirements arise.</p>
-
-          <p>Looking for greater influence on the NRP development? Then apply for becoming a <i>co-development user</i>.
-            As such, we will allocate development resources to help you run your experiments on the NRP!
-            For application, please use the survey or contact the NRP team directly by
-            <a href="mailto:neurorobotics@humanbrainproject.eu">email</a>. </p>
+      <div class="row intro-vertical-align-row">
+        <div class="col-lg-12">
+          <h2 class="section-heading">The Neurorobotics platform is powered by:</h2>
+        </div>
+      </div>
+      <div class="row intro-vertical-align-row">
+        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="https://angularjs.org/"><img class="img-responsive" src="img/common/angular.png"></a>
+        </div>
+        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="http://getbootstrap.com/"><img class="img-responsive" src="img/common/bootstrap-logo.png"></a>
+        </div>
+        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="http://flask.pocoo.org/"><img class="img-responsive" src="img/common/flask.png"></a>
+        </div>
+        <div class="col-md-2 col-sm-8 col-xs-8 intro-vertical-align-cell">
+          <a href="http://www.ros.org/"><img class="img-responsive" src="img/common/ros.png"></a>
+        </div>
+        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="http://gazebosim.org/"><img class="img-responsive" src="img/common/gazebo_logo.png"></a>
+        </div>
+        <div class="col-md-1 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="https://www.openstack.org/"><img class="img-responsive" src="img/common/openstack-logo.png"></a>
+        </div>
+        <div class="col-md-2 col-sm-8 col-xs-8 intro-vertical-align-cell">
+          <a href="http://www.nest-initiative.org/"><img class="img-responsive"
+                                                         src="img/common/nest-initiative_logo.png"></a>
         </div>
       </div>
     </div>
   </div>
-
+  <div class="content-section-a">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="clearfix"></div>
+          <h2 class="section-heading">The Neurororobotics platform is brought to you by:</h2>
+          <ul class="lead">
+            <li>The Human Brain Project (<a href="https://www.humanbrainproject.eu/"><b>HBP</b></a>)</li>
+            <li>Ecole Polytechnique F&eacute;d&eacute;ral de Lausanne (<a href="http://epfl.ch/"><b>EPFL</b></a>)</li>
+            <li>Technische Universit&auml;t M&uuml;nchen (<a href="https://www.tum.de/"><b>TUM</b></a> - <a
+              href="http://www6.in.tum.de/">Robotics and Embedded Systems</a>)
+            </li>
+            <li>Fortiss, an-Institut der Technischen Universit&auml;t M&uuml;nchen (<a
+              href="http://www.fortiss.org/home/"><b>Fortiss</b></a>)
+            </li>
+            <li>Forschungszentrum Informatik am Karlsruher Institut f&uuml;r Technologie (<a
+              href="https://www.fzi.de/startseite/"><b>FZI</b></a>)
+            </li>
+            <li>Scuola Superiore Sant'Anna (<a href="http://www.sssup.it/"><b>SSSUP</b></a> - <a
+              href="http://www.sssup.it/ist_home.jsp?ID_LINK=10458&area=199">Istituto di BioRobotica</a>)
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="row intro-vertical-align-row">
+        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="https://www.humanbrainproject.eu/"><img class="img-responsive" src="img/common/hbp-logo.png"></a>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="http://epfl.ch/"><img class="img-responsive" src="img/common/Logo_EPFL.png"></a>
+        </div>
+        <div class="col-md-1 col-sm-2 col-xs-2 intro-vertical-align-cell">
+          <a href="https://www.tum.de/"><img class="img-responsive" src="img/common/Tum_logo.gif"></a>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="http://www.fortiss.org/home/"><img class="img-responsive" src="img/common/fortiss-logo.png"></a>
+        </div>
+        <div class="col-md-1 col-sm-2 col-xs-2 intro-vertical-align-cell">
+          <a href="https://www.fzi.de/startseite/"><img class="img-responsive" src="img/common/Fzi_logo.png"></a>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-4 intro-vertical-align-cell">
+          <a href="http://www.sssup.it/"><img class="img-responsive" src="img/common/SSSA_logo_eng.png"></a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
