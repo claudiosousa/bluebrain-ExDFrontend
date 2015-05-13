@@ -82,7 +82,12 @@
         simulations: {
           method: 'GET',
           isArray: true,
-          interceptor : {responseError : serverError},
+          interceptor : {responseError : function(response) {
+            // Prevent 504 Gateway Timeout errors to be displayed
+            if (response.status !== 504) {
+              serverError(response);
+            }
+          }},
           transformResponse: transform($http, params.serverID)
         }
       });
