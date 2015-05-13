@@ -2,16 +2,16 @@
   "BraitenbregHuskyGeneva":{
     "experimentConfiguration": "ExDConf/ExDXMLExample.xml",
     "imageUrl": "img/common/preview_Braitenberg_Husky.png",
-    "name": "Husky Braitenberg experiment (Geneva, no camera)",
-    "snippet": "This experiment loads the Husky robot from Clearpath Robotics and the virtual room environment. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place.",
+    "name": "Husky Braitenberg experiment (Geneva, no colour detection)",
+    "snippet": "This experiment loads the Husky robot from Clearpath Robotics and the virtual room environment. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place. For now, the red screen detection is disabled, but will be available shortly.",
     "timeout": 600,
     "serverPattern": "bbpce"
   },
   "BraitenbregLauronGeneva":{
     "experimentConfiguration": "ExDConf/ExDBraitenbergLauron.xml",
     "imageUrl": "img/common/preview_Braitenberg_Lauron.png",
-    "name": "LAURON V Braitenberg experiment (Geneva, no camera)",
-    "snippet": "This experiment loads the six-legged walking robot LAURON V (developed at FZI) and the virtual room environment. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place.",
+    "name": "LAURON V Braitenberg experiment (Geneva, no colour detection)",
+    "snippet": "This experiment loads the six-legged walking robot LAURON V (developed at FZI) and the virtual room environment. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place. For now, the red screen detection is disabled, but will be available shortly.",
     "timeout": 600,
     "serverPattern": "bbpce"
   },
