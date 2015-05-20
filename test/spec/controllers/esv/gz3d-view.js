@@ -359,35 +359,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     expect(scope.previousState).not.toBeDefined();
   });
 
-  it('should make the current state available and call registerForTimingStats and registerForStatusInformation', function() {
+  it('should make the current state available and call registerForStatusInformation', function() {
     spyOn(scope, 'registerForStatusInformation');
-    spyOn(scope, 'registerForTimingStats');
 
     scope.state = STATE.UNDEFINED;
     simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
     expect(scope.state).toEqual(STATE.STARTED);
-
-    rootScope.iface.registerWebSocketConnectionCallback.mostRecentCall.args[0]();
-
-    expect(scope.registerForTimingStats).toHaveBeenCalled();
+    
     expect(scope.registerForStatusInformation).toHaveBeenCalled();
-  });
-
-  it('should test registerForTimingStats', function() {
-    spyOn(scope, '$apply');
-    scope.registerForTimingStats();
-
-    expect(scope.worldStatsListener).toBeDefined();
-    expect(roslib.createTopic).toHaveBeenCalledWith(jasmine.any(Object), '~/world_stats', 'worldstatistics');
-    expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
-
-    /*jshint camelcase: false */
-    var data = { real_time : { sec : 1234 } , sim_time : { sec : 7654 } };
-    returnedConnectionObject.subscribe.mostRecentCall.args[0](data);
-
-    scope.$apply.mostRecentCall.args[0]();
-    expect(scope.realTimeText).toEqual(data.real_time.sec);
-    expect(scope.simulationTimeText).toEqual(data.sim_time.sec);
   });
 
   it('should test registerForStatusInformation', function() {
@@ -430,8 +409,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     callbackFunction({ data: '{"progress": { "block_ui": "True", "done":"True" }}'});
     expect(splash.close).toHaveBeenCalled();
     // test "timeout"
-    callbackFunction({ data: '{"timeout": 264}'});
+    callbackFunction({ data: '{"timeout": 264, "simulationTime": 1, "realTime": 2}'});
     expect(scope.simTimeoutText).toBe(264);
+    // test "simulationTime"
+    expect(scope.simulationTimeText).toBe(1);
+    // test "realTime"
+    expect(scope.realTimeText).toBe(2);
   });
 
   it('should get the model under the current mouse position', function () {

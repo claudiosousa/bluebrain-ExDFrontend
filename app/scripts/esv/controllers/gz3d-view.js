@@ -92,9 +92,6 @@
           // Register for the status updates as well as the timing stats
           // Note that we have two different connections here, hence we only put one as a callback for
           // $rootScope.iface and the other one not!
-          $rootScope.iface.registerWebSocketConnectionCallback(function() {
-            $scope.registerForTimingStats();
-          });
           $scope.registerForStatusInformation();
 
           // Show the splash screen for the progress of the asset loading
@@ -177,26 +174,26 @@
                 splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
               }
             }
-            /* Timeout messages */
-            if (message !== undefined && message.timeout !== undefined) {
-              $scope.$apply(function() { $scope.simTimeoutText = message.timeout; });
+            /* Time messages */
+            if (angular.isDefined(message)) {
+              var to = angular.isDefined(message.timeout);
+              var st = angular.isDefined(message.simulationTime);
+              var rt = angular.isDefined(message.realTime);
+              if (to || st || rt) {
+                $scope.$apply(function() {
+                  if (to) {
+                    $scope.simTimeoutText = message.timeout; 
+                  }
+                  if (st) {
+                    $scope.simulationTimeText = message.simulationTime;
+                  }
+                  if (rt) {
+                    $scope.realTimeText = message.realTime;
+                  }
+                });
+              }
             }
           });
-      };
-
-      $scope.registerForTimingStats = function () {
-        $scope.worldStatsListener = $scope.worldStatsListener || roslib.createTopic($rootScope.iface.webSocket,
-          '~/world_stats',
-          'worldstatistics');
-
-        $scope.worldStatsListener.subscribe(function (data) {
-          // On chrome browsers there may be a problem with updating the time correctly when navigating in the
-          // 3D scene, see [NRRPLT-1992], although $scope.$apply() is used here.
-          $scope.$apply(function () {
-            $scope.realTimeText = data.real_time.sec;
-            $scope.simulationTimeText = data.sim_time.sec;
-          });
-        });
       };
 
       // The following lines allow the joining client to retrieve the actual screen color stored by the server.
@@ -331,7 +328,7 @@
       $scope.sliderPosition = 50;
       $scope.updateLightIntensities = function(sliderPosition) {
         var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
-        // we avoid purposedly -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
+        // we avoid purposely -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
         $rootScope.scene.emitter.emit('lightChanged', ratio);
       };
 
@@ -393,10 +390,6 @@
         if (angular.isDefined($scope.statusListener)) {
           $scope.statusListener.unsubscribe();
           $scope.statusListener.removeAllListeners();
-        }
-        if(angular.isDefined($scope.worldStatsListener)) {
-          $scope.worldStatsListener.unsubscribe();
-          $scope.worldStatsListener.removeAllListeners();
         }
 
         // Close the roslib connections
