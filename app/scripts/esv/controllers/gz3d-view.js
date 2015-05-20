@@ -98,7 +98,7 @@
           $scope.registerForStatusInformation();
 
           // Show the splash screen for the progress of the asset loading
-          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(callbackOnCloseLoading);
+          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(resetScreenColors);
           $rootScope.iface.setAssetProgressCallback(function(data){
             assetLoadingSplash.setProgress(data);
           });
@@ -223,7 +223,7 @@
         }
       };
       /* istanbul ignore next */
-      var callbackOnCloseLoading = function() {
+      var resetScreenColors = function() {
         simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
           $scope.updateScreenColor(data, 'left');
           $scope.updateScreenColor(data, 'right');
@@ -237,6 +237,11 @@
         $scope.previousState = newState;
         simulationState(serverBaseUrl).update({sim_id: simulationID}, {state: newState}, function(data) {
           $scope.state = data.state;
+          // Temporary fix for screen color update on reset event, see comments above
+          /* istanbul ignore next */
+          if (newState === STATE.INITIALIZED) {
+            resetScreenColors();
+          }
         }, function(data) {
           serverError(data);
           $scope.previousState = undefined;
@@ -347,12 +352,16 @@
         }
       };
 
-      $scope.requestMove = function (action) {
-        $rootScope.scene.controls.onMouseDownManipulator(action);
+      $scope.requestMove = function(event, action) {
+        if (!$scope.helpModeActivated && event.which === 1) { // camera control uses left button only
+          $rootScope.scene.controls.onMouseDownManipulator(action);
+        }
       };
 
-      $scope.releaseMove = function (action) {
-        $rootScope.scene.controls.onMouseUpManipulator(action);
+      $scope.releaseMove = function(event, action) {
+        if (!$scope.helpModeActivated && event.which === 1) { // camera control uses left button only
+          $rootScope.scene.controls.onMouseUpManipulator(action);
+        }
       };
 
 
@@ -421,7 +430,7 @@
          }
        };
 
-        $scope.exit = function (path) {
+        $scope.exit = function(path) {
           $location.path(path);
         };
 

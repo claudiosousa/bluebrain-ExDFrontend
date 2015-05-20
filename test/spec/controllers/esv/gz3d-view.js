@@ -572,11 +572,31 @@ describe('Controller: Gz3dViewCtrl', function () {
   //  expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
   //});
 
-  it('should change the camera pose correctly', function() {
-    scope.requestMove('moveForward');
+  it('should call or skip camera controls according to mouse events and help mode status', function() {
+    var e = { which: 1 }; // 1 for left mouse button
+    scope.helpModeActivated = false;
+    scope.requestMove(e, 'moveForward');
     expect(rootScope.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
-    scope.releaseMove('moveForward');
+    scope.releaseMove(e, 'moveForward');
     expect(rootScope.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
+
+    e.which = 2; // 2 for right mouse button
+    scope.helpModeActivated = false;
+    rootScope.scene.controls.onMouseDownManipulator.reset();
+    rootScope.scene.controls.onMouseUpManipulator.reset();
+    scope.requestMove(e, 'moveBackward');
+    expect(rootScope.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
+    scope.releaseMove(e, 'moveBackward');
+    expect(rootScope.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
+
+    e.which = 1;
+    scope.helpModeActivated = true;
+    rootScope.scene.controls.onMouseDownManipulator.reset();
+    rootScope.scene.controls.onMouseUpManipulator.reset();
+    scope.requestMove(e, 'rotateRight');
+    expect(rootScope.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
+    scope.releaseMove(e, 'rotateRight');
+    expect(rootScope.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
   });
 
   it('should toggle the showSpikeTrain variable', function() {
