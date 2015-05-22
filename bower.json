@@ -23,7 +23,6 @@
     "xml2json": "latest",
     "stats.js": "latest",
     "angular-ui-codemirror": "latest",
-    "neural-circuit-designer": "swenzel/neural-circuit-designer#master",
     "roslibjs": "~0.12.0"
   },
   "overrides": {

@@ -26,7 +26,6 @@
                                    'gzangular',
                                    'gz3dServices',
                                    'simulationControlServices',
-                                   'ncdModule',
                                    'exdFrontendApp.Constants',
                                    'exdFrontendFilters',
                                    'nrpErrorHandlers',

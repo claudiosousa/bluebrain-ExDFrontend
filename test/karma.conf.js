@@ -38,7 +38,6 @@ module.exports = function(config) {
       'bower_components/codemirror/mode/python/python.js',
       'bower_components/codemirror/mode/shell/shell.js',
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
-      'bower_components/neural-circuit-designer/neural-circuit-designer.js',
       'bower_components/eventemitter2/lib/eventemitter2.js',
       'bower_components/roslibjs/build/roslib.js',
       'app/scripts/esv/gz3d/client/js/include/three.js',
