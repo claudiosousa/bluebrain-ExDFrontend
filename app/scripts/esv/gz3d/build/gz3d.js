@@ -2072,7 +2072,7 @@ GZ3D.GZIface.prototype.connect = function()
     that.onError();
   });
   this.webSocket.on('close', function() {
-    console.log('Connection closed to websocket server: ' + this.webSocket.socket.url);
+    console.log('Connection closed to websocket server: ' + that.webSocket.socket.url);
   })
 
   this.numConnectionTrials++;
