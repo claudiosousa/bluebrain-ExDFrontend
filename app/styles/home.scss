@@ -137,13 +137,13 @@
 .top-buffer { margin-top:20px; }
 
 @media only screen and (min-width: 768px) {
-  .intro-vertical-align-row {
+  .vertical-align-row {
     width: 100%; // Firefox bug workaround
     display: table !important;
     table-layout: fixed;
   }
 
-  .intro-vertical-align-cell {
+  .vertical-align-cell {
     display: table-cell;
     vertical-align: middle;
     float: none;
