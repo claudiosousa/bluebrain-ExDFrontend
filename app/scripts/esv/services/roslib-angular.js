@@ -26,7 +26,19 @@
     ROSLIB.getOrCreateConnectionTo = function (url) {
 
       var ros;
-
+      var token = [];
+      if (localStorage.getItem('tokens-bbp')) {
+        try {
+          token = JSON.parse(localStorage.getItem('tokens-bbp'));
+        } catch(e) {
+          // this token will be rejected by the server and the client will get a proper auth error
+          token[0] = { access_token : 'malformed-token' };
+        }
+      } else {
+        // this token will be rejected by the server and the client will get a proper auth error
+        token[0] = { access_token : 'no-token' };
+      }
+      url = url + '/?token=' + token[0].access_token;
       if (! connections[url]) {
         ros = new ROSLIB.Ros({
           url: url

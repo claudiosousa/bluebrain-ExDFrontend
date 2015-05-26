@@ -2060,8 +2060,20 @@ GZ3D.GZIface.prototype.setAssetProgressCallback = function(callback)
 GZ3D.GZIface.prototype.connect = function()
 {
   // connect to websocket
+
+  var token = [];
+  var url = GZ3D.webSocketUrl;
+  if (localStorage.getItem('tokens-bbp')) {
+    try {
+      token = JSON.parse(localStorage.getItem('tokens-bbp'));
+    } catch(e) {
+      token[0] = { access_token : 'notoken' };
+    }
+    url = url + '/?token=' + token[0].access_token;
+  }
+
   this.webSocket = new ROSLIB.Ros({
-    url : GZ3D.webSocketUrl
+    url : url
   });
 
   var that = this;
