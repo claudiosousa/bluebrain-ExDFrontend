@@ -10,6 +10,11 @@
         var MIN_WIDTH = 100;
         var MIN_HEIGHT = 60;
 
+        element.css({
+          'display': 'flex',
+          'flex-direction': 'row'
+        });
+
         var buttons = angular.element('<div/>');
         buttons.addClass('resize-buttons');
         var btn_width_larger = angular.element('<div/>');
