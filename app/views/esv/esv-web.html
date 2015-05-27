@@ -42,8 +42,8 @@
             </div>
             <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
               <div class="btn-group" role="group">
-                <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter">Start new simulation</button>
-                <button ng-if="isServerAvailable[exp.id]" ng-disabled="startNewExperimentSelectedIndex !== -1" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);">Start new simulation</button>
+                <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter">Create new simulation</button>
+                <button ng-if="isServerAvailable[exp.id]" ng-disabled="startNewExperimentSelectedIndex !== -1" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);">Create new simulation</button>
                 <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);">Join existing simulation »</button>
               </div>
             </div>
