@@ -9,7 +9,7 @@
     scope.currentCanvasIndex = 1;
     scope.xPosition = 0;
     var SECONDS_TO_MS_FACTOR = 1000;
-    var MARK_INTERVAL = 1000; // time lapse (ms) between two consecutive time marks
+    var MARK_INTERVAL = 2000; // time lapse (ms) between two consecutive time marks
     var TIMELABEL_SPACE = 15; // Vertical space in the canvas reserved for the time label
 
     scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);

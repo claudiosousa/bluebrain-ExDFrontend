@@ -88,8 +88,8 @@ describe('Directive: spiketrain', function () {
     }
   });
 
-  it('should display red bar at multiples of 100 properly', function () {
-    var fakeMessage = {'neuronCount': 1, 'simulationTime': 1.00, spikes: []};
+  it('should display red bar at multiples of 100 * dt properly. (dt is 20ms, specified in the experiment template)', function () {
+    var fakeMessage = {'neuronCount': 1, 'simulationTime': 2.00, spikes: []};
     $scope.onNewSpikesMessageReceived(fakeMessage);
     expect($scope.xPosition).toBe(1);
 
