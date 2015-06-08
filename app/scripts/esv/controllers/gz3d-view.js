@@ -374,6 +374,16 @@
         $scope.showSpikeTrain = !$scope.showSpikeTrain;
       };
 
+      // robot view
+      $scope.toggleRobotView = function() {
+        $rootScope.scene.views.forEach(function(view) {
+          if (view.name === 'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
+            view.active = !view.active;
+            view.container.style.visibility = view.active ? 'visible' : 'hidden';
+          }
+        });
+      };
+
       // help mode
       $scope.toggleHelpMode = function() {
         $scope.helpModeActivated = !$scope.helpModeActivated;

@@ -8,8 +8,8 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
-  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', '$stateParams', 'bbpConfig',
-    function ($rootScope, $window, $stateParams, bbpConfig) {
+  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', '$stateParams', '$compile', 'bbpConfig',
+    function ($rootScope, $window, $stateParams, $compile, bbpConfig) {
     /* moved from the gz3d-view.html*/
     if (!Detector.webgl) {
       Detector.addGetWebGLMessage();
@@ -36,13 +36,12 @@
       GZ3D.assetsPath = serverConfig.gzweb.assets;
       GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
 
-      $rootScope.scene = new GZ3D.Scene();
+      $rootScope.container = document.getElementById( 'container' );
+
+      $rootScope.scene = new GZ3D.Scene($rootScope.container, $rootScope, $compile);
       $rootScope.gui = new GZ3D.Gui($rootScope.scene);
       $rootScope.iface = new GZ3D.GZIface($rootScope.scene, $rootScope.gui);
       $rootScope.sdfparser = new GZ3D.SdfParser($rootScope.scene, $rootScope.gui, $rootScope.iface);
-
-      $rootScope.container = document.getElementById( 'container' );
-      $rootScope.container.appendChild($rootScope.scene.getDomElement());
 
       // FPS indicator
       $rootScope.stats = new Stats();

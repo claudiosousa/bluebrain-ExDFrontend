@@ -94,7 +94,9 @@
       <!-- container -->
       <div class="esv-flex-container esv-flex-greedy-element">
         <!-- WEBGL-context -->
-        <div ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" data-role="content" id="container" class="esv-flex-greedy-element"></div>
+        <div data-role="content" id="container" class="esv-flex-greedy-element" style="position: relative">
+          <div ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" id="container_MainView"></div>
+        </div>
         <!-- WEBGL-context -->
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
@@ -110,6 +112,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CAMERA_TRANSLATION]='With those controls, you can change the viewpoint of your local camera. By clicking on the left/right/diagonal arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/backward/right. The up/down arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CAMERA_ROTATION]='With those controls, you can change the orientation of your local camera. The center circle lets you reset the orientation. You also can look around by draging the mouse in the 3d-scene.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.SPIKETRAIN]='This button toggles the view for the spike-train visualization.'">
+        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.ROBOT_VIEW]='This button toggles the view from the robot camera.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.OWNER_DISPLAY]='This information appears when you are not the displayed owner of the experiment and thus you are in a view-only mode.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EXIT_BUTTON]='Here you can leave the simulation.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EDIT_BUTTON]='A click on this button lets you enter the edit mode such that you can change the experiment configuration.'">
@@ -218,6 +221,10 @@
               </div>
               <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN}" ng-click="(!helpModeActivated) ? toggleSpikeTrain() : help(UI.SPIKETRAIN);" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
                 <img src="img/esv/spiketrain_logo.png">
+              </div>
+              <!-- toggle robot camera view -->
+              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW}" ng-click="(!helpModeActivated) ? toggleRobotView() : help(UI.ROBOT_VIEW);" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
+                <img src="img/esv/robot_view_icon.png" width=32 height=32>
               </div>
             </div>
             <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>

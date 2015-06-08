@@ -69,7 +69,6 @@ describe('testing the gzInitialization service', function () {
     expect(GZ3D.Gui).toHaveBeenCalledWith(SceneObject);
     expect(GZ3D.GZIface).toHaveBeenCalledWith(SceneObject, GuiObject);
     expect(GZ3D.SdfParser).toHaveBeenCalledWith(SceneObject, GuiObject , GZIfaceObject);
-    expect(SceneObject.getDomElement).toHaveBeenCalled();
     expect(SceneObject.render).toHaveBeenCalled();
   });
 
