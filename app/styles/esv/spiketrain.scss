@@ -14,10 +14,11 @@ $spikeTrainMargin: 5px;
   border-radius: 8px;
   border-color: black;
   border: $spikeTrainBorder solid;
-  transition: 0.5s linear all;
   opacity: 1;
   bottom: $spikeTrainBottom;
   height: $spikeTrainHeight;
+  display: flex;
+  flex-direction: row;
 }
 
 .spikegraph.ng-hide {
@@ -26,9 +27,8 @@ $spikeTrainMargin: 5px;
 
 .spiketrain {
   position: relative;
-  margin: $spikeTrainMargin $spikeTrainMargin $spikeTrainMargin 35px;
-  width: auto;
-  height: $spikeTrainHeight - 2 * $spikeTrainMargin - 2 * $spikeTrainBorder;
+  margin: $spikeTrainMargin 0px $spikeTrainMargin 0px;
+  flex: 1 0 0;
   overflow: hidden;
 }
 
@@ -43,21 +43,20 @@ $spikeTrainMargin: 5px;
 
 .spikegraph .leftaxis {
   width: 35px;
-  float: left;
   height: 100%;
+  display: flex;
 }
 
 .spikegraph .leftaxis .arrow {
   margin: 15px auto 10px;
-  height: $spikeTrainHeight - 25;
   background: black;
   width: 4px;
 }
 
-.spikegraph .leftaxis .arrow:after {
+.spikegraph .leftaxis .arrow:before {
   content: "";
-  border-left: 8px solid rgba(0, 0, 0, 0);
-  border-right: 8px solid rgba(0, 0, 0, 0);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
   border-bottom: 8px solid black;
   float: right;
   margin-top: -7px;
@@ -74,4 +73,39 @@ $spikeTrainMargin: 5px;
   border-width: 2px;
   padding-left: 15px;
   padding-right: 15px;
+}
+
+.resize-buttons {
+  width: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.resize-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: solid;
+  border-top: solid;
+  border-width: 1px;
+  border-color: black;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.resize-button.first-element {
+  border-top: none;
+}
+
+.rotate-45-clockwise {
+  transform: rotate(45deg);
+}
+
+.rotate-45-counterclockwise {
+  transform: rotate(-45deg);
 }
