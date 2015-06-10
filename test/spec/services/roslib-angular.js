@@ -18,14 +18,32 @@ describe('Services: roslib-angular', function () {
     mockedOn.reset();
     spyOn(console, 'log');
     spyOn(console, 'error');
+    var mockToken = '[{"access_token":"mockaccesstoken","token_type":"Bearer","state":"mockstate","expires_in":"172799","id_token":"mockidtoken","expires":1432803024,"scopes":["openid"]}]';
+    window.localStorage = {};
+    window.localStorage.getItem = jasmine.createSpy('getItem').andReturn(mockToken);
   }));
 
   it('should create a connection if there is none for this URL currently', function() {
     roslib.getOrCreateConnectionTo(testURL);
-    expect(window.ROSLIB.Ros).toHaveBeenCalled();
+    expect(localStorage.getItem).toHaveBeenCalledWith('tokens-bbp');
+    expect(window.ROSLIB.Ros).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=mockaccesstoken'});
     expect(mockedOn).toHaveBeenCalled();
     expect(mockedOn.callCount).toBe(3);
     expect(console.log).not.toHaveBeenCalled();
+  });
+
+  it('should create a dummy token if localStorage token is malformed or absent', function() {
+    window.localStorage.getItem.reset();
+    window.ROSLIB.Ros.reset();
+    window.localStorage.getItem = jasmine.createSpy('getItem').andReturn(undefined);
+    roslib.getOrCreateConnectionTo(testURL);
+    expect(localStorage.getItem).toHaveBeenCalledWith('tokens-bbp');
+    expect(window.ROSLIB.Ros).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=no-token'});
+    window.localStorage.getItem.reset();
+    window.localStorage.getItem = jasmine.createSpy('getItem').andReturn([{}]);
+    roslib.getOrCreateConnectionTo(testURL);
+    expect(localStorage.getItem).toHaveBeenCalledWith('tokens-bbp');
+    expect(window.ROSLIB.Ros).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=malformed-token'});
   });
 
   it('should reuse an already existing connection', function () {

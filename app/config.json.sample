@@ -20,14 +20,14 @@
             "gzweb":{
                "assets":"http://bbpce014.epfl.ch",
                "nrp-services":"http://bbpce014.epfl.ch:8080",
-               "websocket":"ws://bbpce014.epfl.ch:7681"
+               "websocket":"ws://bbpce014.epfl.ch:9091/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce014.epfl.ch:9090"
+               "websocket":"ws://bbpce014.epfl.ch:9091"
             },
             "serverJobLocation":"local"
          },
@@ -35,14 +35,14 @@
             "gzweb":{
                "assets":"http://bbpce015.epfl.ch",
                "nrp-services":"http://bbpce015.epfl.ch:8080",
-               "websocket":"ws://bbpce015.epfl.ch:7681"
+               "websocket":"ws://bbpce015.epfl.ch:9091/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce015.epfl.ch:9090"
+               "websocket":"ws://bbpce015.epfl.ch:9091"
             },
             "serverJobLocation":"local"
          },
@@ -50,14 +50,14 @@
             "gzweb":{
                "assets":"http://bbpce016.epfl.ch",
                "nrp-services":"http://bbpce016.epfl.ch:8080",
-               "websocket":"ws://bbpce016.epfl.ch:7681"
+               "websocket":"ws://bbpce016.epfl.ch:9091/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce016.epfl.ch:9090"
+               "websocket":"ws://bbpce016.epfl.ch:9091"
             },
             "serverJobLocation":"local"
          }
