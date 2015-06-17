@@ -16,48 +16,48 @@
          "v0":"https://services.humanbrainproject.eu/mimetype/v0"
       },
       "neurorobotics":{
-         "bbpce014":{
+         "bbpce021":{
             "gzweb":{
-               "assets":"http://bbpce014.epfl.ch",
-               "nrp-services":"http://bbpce014.epfl.ch:8080",
-               "websocket":"ws://bbpce014.epfl.ch:9091/gzbridge"
+               "assets":"http://bbpce021.epfl.ch",
+               "nrp-services":"http://bbpce021.epfl.ch:8080",
+               "websocket":"ws://bbpce021.epfl.ch:9091/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce014.epfl.ch:9091"
+               "websocket":"ws://bbpce021.epfl.ch:9091"
             },
             "serverJobLocation":"local"
          },
-         "bbpce015":{
+         "bbpce022":{
             "gzweb":{
-               "assets":"http://bbpce015.epfl.ch",
-               "nrp-services":"http://bbpce015.epfl.ch:8080",
-               "websocket":"ws://bbpce015.epfl.ch:9091/gzbridge"
+               "assets":"http://bbpce022.epfl.ch",
+               "nrp-services":"http://bbpce022.epfl.ch:8080",
+               "websocket":"ws://bbpce022.epfl.ch:9091/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce015.epfl.ch:9091"
+               "websocket":"ws://bbpce022.epfl.ch:9091"
             },
             "serverJobLocation":"local"
          },
-         "bbpce016":{
+         "bbpce023":{
             "gzweb":{
-               "assets":"http://bbpce016.epfl.ch",
-               "nrp-services":"http://bbpce016.epfl.ch:8080",
-               "websocket":"ws://bbpce016.epfl.ch:9091/gzbridge"
+               "assets":"http://bbpce023.epfl.ch",
+               "nrp-services":"http://bbpce023.epfl.ch:8080",
+               "websocket":"ws://bbpce023.epfl.ch:9091/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce016.epfl.ch:9091"
+               "websocket":"ws://bbpce023.epfl.ch:9091"
             },
             "serverJobLocation":"local"
          }
