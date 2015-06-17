@@ -34,7 +34,8 @@
               <div ng-if="exp.runningExperiments > 1" class="list-entry-running">({{exp.runningExperiments}} simulations running)</div>
             </div>
             <div ng-if="exp.id == selectedIndex">{{exp.snippet}}<br/>
-              <i ng-if="exp.timeout != undefined">Timeout: {{exp.timeout | timeDDHHMMSS}}</i>
+              <i ng-if="exp.timeout != undefined">Timeout: {{exp.timeout | timeDDHHMMSS}}</i><br/>
+              <i ng-if="exp.numSupportingServers != undefined">Available servers: {{exp.numSupportingServers - exp.runningExperiments}} / {{exp.numSupportingServers}}</i>
             </div>
             <div ng-if="exp.id != selectedIndex">{{exp.snippet | limitTo: 200}}...</div>
             <div collapse="isQueryingServersFinished" ng-if="exp.id == selectedIndex">

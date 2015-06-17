@@ -317,7 +317,7 @@
 
       $http.get('views/esv/experiment_templates.json').success(function (data) {
         augmentExperiments(data);
-        existsAvailableServer(data, setIsServerAvailable);
+        checkServerAvailability(data, setIsServerAvailable);
       });
     };
 
@@ -342,16 +342,31 @@
     };
 
     // Checks if there is an available Server.
-    var existsAvailableServer = function(experimentTemplates, isAvailableCallback){
+    var checkServerAvailability = function(experimentTemplates, isAvailableCallback){
+      // for each experiment
       angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
+        experimentTemplate.numSupportingServers = 0;
         var serverIDs = Object.keys(servers);
+
+        // for each server
         angular.forEach(serverIDs, function (serverID, index) {
+          // check if server can run experiment
           if (serverID.indexOf(experimentTemplate.serverPattern) > -1) {
             var serverURL = servers[serverID].gzweb['nrp-services'];
+            
+            experimentTemplate.numSupportingServers = experimentTemplate.numSupportingServers + 1;
+            console.log('Server ' + serverURL + ' can host experiment ' + templateName);
+
             simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
               var activeSimulation = simulationService().getActiveSimulation(data);
-              if (activeSimulation === undefined) {
+              if (!angular.isDefined(activeSimulation)) {
+                // server is free
                 isAvailableCallback(templateName, true);
+              } else {
+                // server is running simulation
+                if (experimentTemplate.experimentConfiguration === activeSimulation.experimentID) {
+                  console.log('Server ' + serverURL + ' is running experiment ' + templateName);
+                }
               }
             });
           }
@@ -424,7 +439,7 @@
       refreshExperiments: refreshExperiments,
       augmentExperiments: augmentExperiments,
       registerForStatusInformation: registerForStatusInformation,
-      existsAvailableServer: existsAvailableServer,
+      existsAvailableServer: checkServerAvailability,
       startNewExperiments: startNewExperiments,
       launchExperimentOnServer: launchExperimentOnServer,
       setInitializedCallback: setInitializedCallback
