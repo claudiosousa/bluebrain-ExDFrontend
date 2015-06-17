@@ -1,5 +1,5 @@
 {
-  "BraitenbregHuskyGeneva":{
+  "BraitenbergHuskyGeneva":{
     "experimentConfiguration": "ExDConf/ExDXMLExample.xml",
     "imageUrl": "img/common/preview_Braitenberg_Husky.png",
     "name": "Husky Braitenberg experiment (Geneva, no colour detection)",
@@ -7,7 +7,7 @@
     "timeout": 600,
     "serverPattern": "bbpce"
   },
-  "BraitenbregLauronGeneva":{
+  "BraitenbergLauronGeneva":{
     "experimentConfiguration": "ExDConf/ExDBraitenbergLauron.xml",
     "imageUrl": "img/common/preview_Braitenberg_Lauron.png",
     "name": "LAURON V Braitenberg experiment (Geneva, no colour detection)",
@@ -15,7 +15,23 @@
     "timeout": 600,
     "serverPattern": "bbpce"
   },
-  "BraitenbregHuskyLugano":{
+  "BraitenbergHuskySBCGeneva":{
+    "experimentConfiguration": "ExDConf/ExDBraitenbergHuskySBC.xml",
+    "imageUrl": "img/common/preview_Braitenberg_Husky_SBC.png",
+    "name": "Husky Braitenberg experiment in the SpaceBotCup 2013 arena (Geneva, no colour detection)",
+    "snippet": "This experiment loads the Husky robot from Clearpath Robotics and the arena from the SpaceBotCup 2013. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place. For now, the red screen detection is disabled, but will be available shortly.",
+    "timeout": 600,
+    "serverPattern": "bbpce"
+  },
+  "BraitenbergLauronSBCGeneva":{
+    "experimentConfiguration": "ExDConf/ExDBraitenbergLauronSBC.xml",
+    "imageUrl": "img/common/preview_Braitenberg_Lauron_SBC.png",
+    "name": "LAURON V Braitenberg experiment in the SpaceBotCup 2013 arena (Geneva, no colour detection)",
+    "snippet": "This experiment loads the six-legged walking robot LAURON V (developed at FZI) and the arena from the SpaceBotCup 2013. If the user starts the experiment, the Braitenberg vehicle network is executed and the robot will turn around itself in place. For now, the red screen detection is disabled, but will be available shortly.",
+    "timeout": 600,
+    "serverPattern": "bbpce"
+  },
+  "BraitenbergHuskyLugano":{
     "experimentConfiguration": "ExDConf/ExDXMLExample.xml",
     "imageUrl": "img/common/preview_Braitenberg_Husky.png",
     "name": "Husky Braitenberg experiment (Lugano)",
@@ -23,7 +39,7 @@
     "timeout": 600,
     "serverPattern": "bbpsrvc"
   },
-  "BraitenbregLauronLugano":{
+  "BraitenbergLauronLugano":{
     "experimentConfiguration": "ExDConf/ExDBraitenbergLauron.xml",
     "imageUrl": "img/common/preview_Braitenberg_Lauron.png",
     "name": "LAURON V Braitenberg experiment (Lugano)",
