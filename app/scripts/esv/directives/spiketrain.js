@@ -76,27 +76,34 @@
 
     // Unfortunately, this is mandatory. The canvas size can't be set to 100% of its container,
     scope.onScreenSizeChanged = function(){
-      // In order to have a smooth transition, we take a snapshot of what is currently drawn.
-      // A few lines after, we redraw that to the new position (since the size did change)
+      // Ignore zero width or height in order to prevent errors
+      if(scope.directiveDiv.offsetWidth === 0 || scope.directiveDiv.offsetHeight === 0){
+        return;
+      }
+
       var canvas = scope.canvas[scope.currentCanvasIndex];
       var context = scope.ctx[scope.currentCanvasIndex];
 
+      // In order to have a smooth transition, we take a snapshot of what is currently drawn.
+      // A few lines after, we redraw that to the new position (since the size did change)
+      var oldHeight = canvas.height;
       var canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
       canvas.width = scope.directiveDiv.offsetWidth;
       canvas.height = scope.directiveDiv.offsetHeight;
       canvas.style.left = canvas.width - scope.xPosition;
-      context.putImageData(canvasData, 0, 0);
+      context.putImageData(canvasData, 0, canvas.height - oldHeight);
 
       var otherCanvas = 1 - scope.currentCanvasIndex;
       canvas = scope.canvas[otherCanvas];
       context = scope.ctx[otherCanvas];
-      var oldWidth = scope.canvas[otherCanvas].width;
+      var oldWidth = canvas.width;
+      oldHeight = canvas.height;
 
       canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
       canvas.width = scope.directiveDiv.offsetWidth;
       canvas.height = scope.directiveDiv.offsetHeight;
       canvas.style.left = -scope.xPosition;
-      context.putImageData(canvasData, canvas.width - oldWidth, 0);
+      context.putImageData(canvasData, canvas.width - oldWidth, canvas.height - oldHeight);
     };
 
     // Draw a separator line to visualize that there is data missing during the closed state of the visualization
@@ -138,6 +145,7 @@
 
     // Subscribe to the ROS topic
     scope.startSpikeDisplay = function (firstTimeRun) {
+      scope.onScreenSizeChanged();
       var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
       scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.topic, 'cle_ros_msgs/SpikeEvent');
       scope.spikeTopicSubscriber.subscribe(scope.onNewSpikesMessageReceived);
@@ -190,7 +198,7 @@
           return element.css('display');
         };
         scope.$watch(scope.getDisplayed, function(display) {
-          if (display === 'block')
+          if (display !== 'none')
           {
             scope.onScreenSizeChanged();
           }

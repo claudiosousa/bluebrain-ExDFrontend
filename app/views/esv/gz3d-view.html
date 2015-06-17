@@ -97,7 +97,7 @@
         <!-- WEBGL-context -->
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
-        <spiketrain server={{rosbridgeWebsocketUrl}} topic={{spikeTopic}} ng-show="showSpikeTrain"></spiketrain>
+        <spiketrain server={{rosbridgeWebsocketUrl}} topic={{spikeTopic}} resizeable ng-show="showSpikeTrain"></spiketrain>
 
         <!-- HelpText -->
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
