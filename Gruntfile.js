@@ -32,6 +32,7 @@ module.exports = function(grunt) {
         yeoman: appConfig,
         bbpConfig: bbpConfig,
         pkg: grunt.file.readJSON('package.json'),
+        gerritBranch: process.env.GERRIT_BRANCH,
 
         // Watches files for changes and runs tasks based on the changed files
         watch: {
@@ -434,11 +435,32 @@ module.exports = function(grunt) {
             }
         },
 
+        gitadd: {
+            bump: {
+                options: {
+                  force: true
+                },
+                files: {
+                    src: ['package.json', 'bower.json']
+                }
+            },
+            dist: {
+                options: {
+                  force: true,
+                  message: 'add artefact',
+                  ignoreEmpty: true
+                },
+                files: {
+                    src: ['dist/**/*']
+                }
+            }
+        },
+
         gitcommit: {
             bump: {
                 options: {
                     message: 'bump to <%= pkg.version %>',
-                    ignoreEmpty: true
+                    ignoreEmpty: true,
                 },
                 files: {
                     src: ['package.json', 'bower.json']
@@ -469,7 +491,7 @@ module.exports = function(grunt) {
                 options: {
                     verbose: true, // for debug purpose
                     remote: 'origin',
-                    branch: 'HEAD:master'
+                    branch: 'HEAD:<%= gerritBranch %>'
                 }
             },
             dist: {
@@ -512,6 +534,12 @@ module.exports = function(grunt) {
           },
           test: {
             file: '<%= yeoman.app %>/version.json',
+          }
+        },
+
+        ci: {
+          options: {
+             gerritBranch: '<%= gerritBranch %>'
           }
         },
     });
@@ -582,18 +610,24 @@ module.exports = function(grunt) {
 
     grunt.registerTask('ci', 'Run all the build steps on the CI server', function(target) {
         var tasks = ['test', 'build'];
+        var branch = this.options().gerritBranch;
+        grunt.log.writeln('[grunt ci:' + target + '] GERRIT_BRANCH is: ' + branch);
         if (target === 'patch' || target === 'minor' || target === 'major') {
             tasks.unshift('bump:' + target);
-
+            tasks.push('gitadd:bump');
             tasks.push('gitcommit:bump');
             tasks.push('gitpush:bump');
 
+            tasks.push('gitadd:dist');
             tasks.push('gitcommit:dist');
             tasks.push('gittag:dist');
             tasks.push('gitpush:dist');
 
             tasks.push('publish:dist');
-            tasks.push('exec:tag_latest_npm');
+            // We don't update the npm description of the latest package for an actual release branch
+            if ('master' === branch) {
+                tasks.push('exec:tag_latest_npm');
+            }
         }
         grunt.task.run(tasks);
     });
