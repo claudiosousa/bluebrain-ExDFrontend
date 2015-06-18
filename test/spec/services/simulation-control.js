@@ -320,26 +320,26 @@ describe('Services: experimentSimulationService', function () {
 
     experimentTemplates = {
       '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100
+        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2
       },
       'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200
+        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2
       },
       '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300
+        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2
       }
     };
 
     experimentTemplatesAugmented = {
       '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100
+        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2
       },
       'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, runningExperiments: 1, simulations: [
+        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2, runningExperiments: 1, simulations: [
           returnSimulations[3]
       ]},
       '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300
+        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2
       }
     };
 
@@ -422,6 +422,7 @@ describe('Services: experimentSimulationService', function () {
     var argumentFunction = simulationServiceObject.simulations.calls[1].args[0];
     argumentFunction(returnSimulations);
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(returnSimulations);
+
     expect(callback).toHaveBeenCalledWith(experimentTemplatesAugmented);
   });
 
