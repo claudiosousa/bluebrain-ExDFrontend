@@ -16,7 +16,7 @@
     "angular-ui-router": "latest",
     "angular-ui-bootstrap-bower": "latest",
     "lodash": "latest",
-    "bbp-oidc-client": "latest",
+    "bbp-oidc-client": "~0.7.0",
     "angular-hbp-common": "~0.5.0",
     "angular-bbp-config": "latest",
     "angular-hbp-document-client": "latest",
