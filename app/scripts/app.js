@@ -44,7 +44,7 @@
                 templateUrl: 'views/common/exd.html',
                 controller: 'NewCtrl'
             }).state('gz3d-view', {
-                url: '/esv-web/gz3d-view/:serverID/:simulationID',
+                url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode',
                 templateUrl: 'views/esv/gz3d-view.html',
                 controller: 'Gz3dViewCtrl'
             }).state('rd', {

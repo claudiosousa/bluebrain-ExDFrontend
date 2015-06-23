@@ -150,8 +150,8 @@
    };
   }]);
 
-  module.factory('experimentSimulationService', ['$http', '$q', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'serverError',
-    function ($http, $q, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE, serverError) {
+  module.factory('experimentSimulationService', ['$http', '$q', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
+    function ($http, $q, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE, OPERATION_MODE, serverError) {
     var getExperimentsCallback;
     var setProgressMessageCallback;
     var queryingServersFinishedCallback;
@@ -159,6 +159,11 @@
     var servers = bbpConfig.get('api.neurorobotics');
     var rosConnection;
     var statusListener;
+    var shouldLaunchInEditMode = false;
+
+    var setShouldLaunchInEditMode = function(value) {
+      shouldLaunchInEditMode = value;
+    };
 
     var addSimulationToTemplate = function(experimentTemplates, activeSimulation) {
       angular.forEach(experimentTemplates, function(experimentTemplate) {
@@ -322,7 +327,9 @@
         if (message !== undefined && message.progress !== undefined) {
           if (message.progress.done !== undefined && message.progress.done) {
             setProgressMessageCallback({main: 'Simulation initialized.'});
-            initializedCallback('esv-web/gz3d-view/' + serverID + '/' + simulationID);
+            var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
+            var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + operationMode;
+            initializedCallback(url);
           } else {
             setProgressMessageCallback({main: message.progress.task, sub: message.progress.subtask});
           }
@@ -433,7 +440,8 @@
       existsAvailableServer: checkServerAvailability,
       startNewExperiments: startNewExperiments,
       launchExperimentOnServer: launchExperimentOnServer,
-      setInitializedCallback: setInitializedCallback
+      setInitializedCallback: setInitializedCallback,
+      setShouldLaunchInEditMode : setShouldLaunchInEditMode
     };
 
   }]);

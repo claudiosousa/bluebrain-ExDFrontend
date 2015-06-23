@@ -27,6 +27,10 @@
       UNDEFINED_STATE: 'The latest active simulation is corrupted: undefined state.',
       UNDEFINED_ID: 'The latest active simulation is corrupted: undefined id.'
     })
+    .constant('OPERATION_MODE', {
+      VIEW : 'view',
+      EDIT : 'edit'
+    })
     .constant('UI', {
       UNDEFINED: -1,
       PLAY_BUTTON: 0,
@@ -39,7 +43,8 @@
       CAMERA_ROTATION: 7,
       SPIKETRAIN: 8,
       OWNER_DISPLAY: 9,
-      EXIT_BUTTON: 10
+      EXIT_BUTTON: 10,
+      EDIT_BUTTON: 11
     });
 
   angular.module('exdFrontendApp')
@@ -48,12 +53,12 @@
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'UI',
+      'nrpFrontendVersion', 'UI', 'OPERATION_MODE',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, serverError, screenControl,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
-          nrpFrontendVersion, UI) {
+          nrpFrontendVersion, UI, OPERATION_MODE) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -63,6 +68,7 @@
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
       var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
+      $scope.operationMode = $stateParams.mode;
       $scope.helpModeActivated = false;
       $scope.helpDescription="";
       $scope.helpText = {};
@@ -73,6 +79,7 @@
 
       $scope.state = STATE.UNDEFINED;
       $scope.STATE = STATE;
+      $scope.OPERATION_MODE = OPERATION_MODE;
       $scope.UI = UI;
       $scope.isOwner = false;
       $scope.isInitialized = false;
@@ -181,7 +188,7 @@
               if (to || st || rt) {
                 $scope.$apply(function() {
                   if (to) {
-                    $scope.simTimeoutText = message.timeout; 
+                    $scope.simTimeoutText = message.timeout;
                   }
                   if (st) {
                     $scope.simulationTimeText = message.simulationTime;

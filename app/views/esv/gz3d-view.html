@@ -112,6 +112,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.SPIKETRAIN]='This button toggles the view for the spike-train visualization.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.OWNER_DISPLAY]='This information appears when you are not the displayed owner of the experiment and thus you are in a view-only mode.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EXIT_BUTTON]='Here you can leave the simulation.'">
+        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EDIT_BUTTON]='A click on this button lets you enter the edit mode such that you can change the experiment configuration.'">
 
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
@@ -220,6 +221,7 @@
               </div>
             </div>
             <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>
+
             <!-- toolbar help icon -->
             <div class="hbp-toolbar-action right-align hide-overflow" ng-click="toggleHelpMode()">
               <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}"></i>
@@ -231,6 +233,14 @@
               <i class="fa fa-sign-out fa-2x vertcenter"></i>
             </div>
             <!-- exit -->
+
+            <!-- indicating the operating mode -->
+            <!-- TODO We have yet to decide how this button should actually behave. The current operation mode can
+                      easily be retrieved through OPERATION_MODE (options are .VIEW or .EDIT). As of now we simply
+                      display the edit button whenever we are in view mode. -->
+            <div ng-if="operationMode === OPERATION_MODE.VIEW" ng-class="{'highlighted': currentSelectedUIElement === UI.EDIT_BUTTON}" class="hbp-toolbar-action right-align hide-overflow" ng-click="(!helpModeActivated) ? null : help(UI.EDIT_BUTTON)">
+              <i class="fa fa-pencil fa-2x vertcenter"></i>
+            </div>
           </div>
         </div>
         <!-- overlay -->

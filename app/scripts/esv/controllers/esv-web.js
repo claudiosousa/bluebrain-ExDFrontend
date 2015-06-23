@@ -36,14 +36,15 @@
       }
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$interval', 'simulationService', 'experimentSimulationService', 'STATE',
-      function ($scope, $rootScope, $timeout, $location, $interval, simulationService,experimentSimulationService, STATE) {
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$interval', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
+      function ($scope, $rootScope, $timeout, $location, $interval, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
     $rootScope.isServerAvailable = {};
     $rootScope.isQueryingServersFinished = false;
     $rootScope.STATE = STATE;
+    $scope.OPERATION_MODE = OPERATION_MODE;
     $rootScope.updatePromise = undefined;
     $rootScope.updateUptimePromise = undefined;
 
@@ -87,6 +88,12 @@
     };
 
     $scope.startNewExperiment = function(configuration, serverPattern) {
+      experimentSimulationService.setShouldLaunchInEditMode(false);
+      experimentSimulationService.startNewExperiments(configuration, serverPattern, $scope.setProgressbarInvisible);
+    };
+
+    $scope.enterEditMode = function(configuration, serverPattern) {
+      experimentSimulationService.setShouldLaunchInEditMode(true);
       experimentSimulationService.startNewExperiments(configuration, serverPattern, $scope.setProgressbarInvisible);
     };
 

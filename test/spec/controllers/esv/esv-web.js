@@ -158,9 +158,11 @@ describe('Controller: experimentCtrl', function () {
 
   it('should start a new experiment', function(){
     experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
+    experimentSimulationService.setShouldLaunchInEditMode = jasmine.createSpy('setShouldLaunchInEditMode');
     var newExperimentString = 'fubar';
     var newExperimentServerPattern = 'toto';
     scope.startNewExperiment(newExperimentString, newExperimentServerPattern);
+    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(false);
     expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, newExperimentServerPattern, scope.setProgressbarInvisible);
   });
 

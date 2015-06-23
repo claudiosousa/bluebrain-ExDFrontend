@@ -447,6 +447,7 @@ describe('Services: experimentSimulationService', function () {
   it('should register for status information', function() {
     var simulationID = 0;
     var serverID = 'bbpce016';
+    var expectedOperatingMode = 'view';
 
     // register our callback for progress messages
     var messageCallback = jasmine.createSpy('messageCallback');
@@ -468,7 +469,7 @@ describe('Services: experimentSimulationService', function () {
     var dataDone = { data : '{"progress": {"done": "true"}}'};
     statusListenerMock.subscribe.mostRecentCall.args[0](dataDone);
     expect(messageCallback).toHaveBeenCalledWith({ main: 'Simulation initialized.' });
-    expect(initializedCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + serverID + '/' + simulationID);
+    expect(initializedCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode);
   });
 
   it('should test the launch of an experiment on a given server', function() {
