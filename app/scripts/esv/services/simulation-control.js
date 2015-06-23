@@ -346,6 +346,7 @@
       // for each experiment
       angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
         experimentTemplate.numSupportingServers = 0;
+        experimentTemplate.numAvailableServers = 0;
         var serverIDs = Object.keys(servers);
 
         // for each server
@@ -353,7 +354,7 @@
           // check if server can run experiment
           if (serverID.indexOf(experimentTemplate.serverPattern) > -1) {
             var serverURL = servers[serverID].gzweb['nrp-services'];
-            
+
             experimentTemplate.numSupportingServers = experimentTemplate.numSupportingServers + 1;
             console.log('Server ' + serverURL + ' can host experiment ' + templateName);
 
@@ -361,6 +362,7 @@
               var activeSimulation = simulationService().getActiveSimulation(data);
               if (!angular.isDefined(activeSimulation)) {
                 // server is free
+                experimentTemplate.numAvailableServers = experimentTemplate.numAvailableServers + 1;
                 isAvailableCallback(templateName, true);
               } else {
                 // server is running simulation

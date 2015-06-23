@@ -63,8 +63,8 @@ describe('Services: simulation-services', function () {
     };
 
     experimentTemplatesAugmented = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 200, runningExperiments: 1, simulations: [
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers : 2},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 200, numSupportingServers : 2, runningExperiments: 1, simulations: [
         {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
       ]},
       '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 300, runningExperiments: 3, simulations: [
@@ -320,26 +320,26 @@ describe('Services: experimentSimulationService', function () {
 
     experimentTemplates = {
       '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2
+        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2
+        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2, numAvailableServers : 0
       },
       '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2
+        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
     experimentTemplatesAugmented = {
       '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2
+        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2, runningExperiments: 1, simulations: [
+        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1, simulations: [
           returnSimulations[3]
       ]},
       '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2
+        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
