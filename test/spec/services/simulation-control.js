@@ -7,7 +7,6 @@ describe('Services: simulation-services', function () {
       simulationControl,
       simulationState,
       simulationGenerator,
-      lightControl,
       screenControl,
       scope,
       STATE;
@@ -22,7 +21,7 @@ describe('Services: simulation-services', function () {
 
   beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_,
       _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_,
-      _lightControl_, _screenControl_, _STATE_) {
+      _screenControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
     hbpUserDirectory = _hbpUserDirectory_;
@@ -31,7 +30,6 @@ describe('Services: simulation-services', function () {
     simulationControl = _simulationControl_;
     simulationState = _simulationState_;
     simulationGenerator = _simulationGenerator_;
-    lightControl = _lightControl_;
     screenControl = _screenControl_;
     STATE = _STATE_;
 
@@ -198,14 +196,6 @@ describe('Services: simulation-services', function () {
     simulationGenerator('http://bbpce016.epfl.ch:8080').create(function(){});
     httpBackend.flush();
     httpBackend.expectPOST('http://bbpce016.epfl.ch:8080/simulation');
-  });
-
-  it('should control the light of a simulation', function() {
-    //Ignore this warning because of the sim_id
-    /*jshint camelcase: false */
-    lightControl('http://bbpce016.epfl.ch:8080').updateLight({sim_id:1}, {state: STATE.PAUSED}, function(){});
-    httpBackend.flush();
-    httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/1/interaction/light', {state: STATE.PAUSED});
   });
 
   it('should control the screen color', function() {
@@ -556,7 +546,7 @@ describe('Services: error handling', function () {
   var httpBackend;
   var serverError, simulationService, simulationControl;
   var simulationGenerator, simulationState, experimentSimulationService;
-  var lightControl, screenControl;
+  var screenControl;
 
   beforeEach(module('simulationControlServices'));
 
@@ -571,7 +561,7 @@ describe('Services: error handling', function () {
   }));
 
   beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_,
-     _simulationGenerator_, _simulationState_, _experimentSimulationService_, _lightControl_, _screenControl_, _serverError_){
+     _simulationGenerator_, _simulationState_, _experimentSimulationService_, _screenControl_, _serverError_){
 
     httpBackend = $httpBackend;
     serverError = _serverError_;
@@ -581,7 +571,6 @@ describe('Services: error handling', function () {
     simulationGenerator = _simulationGenerator_;
     simulationState = _simulationState_;
     experimentSimulationService = _experimentSimulationService_;
-    lightControl = _lightControl_;
     screenControl = _screenControl_;
     httpBackend.whenPUT(/\/simulation/).respond(500);
   }));
@@ -626,14 +615,6 @@ describe('Services: error handling', function () {
 
     simulationGenerator(serverURL).create();
     httpBackend.expectPOST(serverURL + '/simulation').respond(500);
-    httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
-    expect(response.status).toBe(500);
-    serverError.reset();
-
-    lightControl(serverURL).updateLight(simulationID, {});
-    httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/light', {});
     httpBackend.flush();
     expect(serverError.callCount).toBe(1);
     response = serverError.mostRecentCall.args[0];

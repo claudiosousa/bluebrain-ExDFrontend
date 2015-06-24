@@ -139,17 +139,6 @@
     };
   }]);
 
-  module.factory('lightControl', ['$resource', 'serverError', function($resource, serverError) {
-    return function(baseUrl) {
-      return $resource(baseUrl + '/simulation/:sim_id/interaction/light', {}, {
-        updateLight: {
-          method: 'PUT',
-          interceptor : {responseError : serverError}
-        }
-      });
-    };
-  }]);
-
   module.factory('screenControl', ['$resource', 'serverError', function($resource, serverError) {
    return function(baseUrl) {
        return $resource(baseUrl + '/simulation/:sim_id/interaction', {}, {

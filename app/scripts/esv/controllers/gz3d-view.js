@@ -46,13 +46,12 @@
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
-      'simulationState', 'serverError','lightControl', 'screenControl',
+      'simulationState', 'serverError', 'screenControl',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
-          simulationState, serverError,
-          lightControl, screenControl,
+          simulationState, serverError, screenControl,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion, UI) {
 
