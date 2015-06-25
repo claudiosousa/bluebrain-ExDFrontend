@@ -178,7 +178,7 @@ module.exports = function(grunt) {
             },
             test: {
               src: 'test/karma.conf.js',
-              exclude: [ 'bootstrap\-sass\-official', 'angular\-scenario' ],
+              exclude: [ 'bootstrap-sass-official', 'angular-scenario' ],
               devDependencies: true,
               // We have to use a small hack here: We match also for the first 'b' in the ignorePath. This pattern will
               // then be removed in the {{filePath}} below on replace and we add it again there. This is necessary due

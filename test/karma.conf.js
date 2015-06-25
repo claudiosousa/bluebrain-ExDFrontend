@@ -45,6 +45,7 @@ module.exports = function(config) {
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
       'bower_components/eventemitter2/lib/eventemitter2.js',
       'bower_components/roslibjs/build/roslib.js',
+      'bower_components/angular.panels/dist/angular.panels.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'app/scripts/esv/gz3d/client/js/include/three.js',

@@ -1,0 +1,17 @@
+<div class="panel-heading">
+  <button type="button" class="close" data-ng-click="panels.close();">×</button>
+</div>
+<div class="panel-body">
+  <tabset>
+    <tab heading="Transfer Functions">
+      <transfer-function-editor server={{serverBaseUrl}} simulation={{simulationID}}></transfer-function-editor>
+    </tab>
+    <tab heading="SMACH Editor">
+      <h3>SMACH Editor</h3>
+      <smach-editor></smach-editor>
+    </tab>
+    <tab heading="Event Editor">
+      <h3>Event Editor</h3>
+    </tab>
+  </tabset>
+</div>

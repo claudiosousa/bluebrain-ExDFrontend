@@ -23,7 +23,8 @@
     "xml2json": "latest",
     "stats.js": "latest",
     "angular-ui-codemirror": "latest",
-    "roslibjs": "~0.12.0"
+    "roslibjs": "~0.12.0",
+    "angular.panels": "*"
   },
   "overrides": {
     "codemirror": {

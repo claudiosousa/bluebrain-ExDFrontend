@@ -48,17 +48,29 @@
     });
 
   angular.module('exdFrontendApp')
+    // Panels
+    .config(['panelsProvider', function (panelsProvider) {
+      panelsProvider
+        .add({
+          id: 'code-editor',
+          position: 'left',
+          size: '80%',
+          templateUrl: 'views/esv/editor-panel.html',
+          controller: 'editorPanelCtrl',
+          openCallbackFunction: 'openCallback'
+        });
+    }])
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'UI', 'OPERATION_MODE',
+      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, serverError, screenControl,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
-          nrpFrontendVersion, UI, OPERATION_MODE) {
+          nrpFrontendVersion, panels, UI, OPERATION_MODE) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -428,6 +440,18 @@
            $scope.currentSelectedUIElement = uiElement;
          }
        };
+
+        $scope.toggleOperationMode = function() {
+          if($scope.operationMode === OPERATION_MODE.VIEW){
+            $scope.operationMode = OPERATION_MODE.EDIT;
+          } else {
+            $scope.operationMode = OPERATION_MODE.VIEW;
+          }
+        };
+
+        $scope.edit = function() {
+          panels.open('code-editor');
+        };
 
         $scope.exit = function(path) {
           $location.path(path);
