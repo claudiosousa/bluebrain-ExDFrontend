@@ -341,21 +341,6 @@ describe('Services: experimentSimulationService', function () {
     roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(statusListenerMock);
   }));
 
-  it('should add a simulation to the templates', function() {
-    experimentSimulationService.addSimulationToTemplate(experimentTemplates, returnSimulations[3]);
-    expect(experimentTemplates).toEqual(experimentTemplatesAugmented);
-    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(1);
-
-    experimentSimulationService.addSimulationToTemplate(experimentTemplates, returnSimulations[3]);
-    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(2);
-  });
-
-  it('should not add nonexisting simulations to the templates', function() {
-    var experimentTemplatesCopy = angular.copy(experimentTemplates);
-    experimentSimulationService.addSimulationToTemplate(experimentTemplates, returnSimulations[0]);
-    expect(experimentTemplates).toEqual(experimentTemplatesCopy);
-  });
-
   it('should refresh the experiment template data structure', function() {
     simulationService = simulationServiceMock;
 
@@ -390,132 +375,124 @@ describe('Services: experimentSimulationService', function () {
     expect(experimentTemplates[returnSimulations[3].experimentID].simulations).toEqual([]);
   });
 
-  it('should retrieve the augmented experiments', function() {
-    simulationService = simulationServiceMock;
-    var messageCallback = jasmine.createSpy('messageCallback');
-    var callback = jasmine.createSpy('callback');
+  describe('Tests involving getExperiments method', function() {
+    var messageCallback;
+    var mockedThen;
+    var emptyCallback = function() {};
 
-    spyOn(experimentSimulationService, 'augmentExperiments');
-    experimentSimulationService.getExperiments(messageCallback, callback);
-
-    httpBackend.expectGET('views/esv/experiment_templates.json');
-    httpBackend.flush();
-
-    experimentSimulationService.augmentExperiments(experimentTemplates);
-    expect(bbpConfig.get).toHaveBeenCalledWith('api.neurorobotics');
-
-    expect(simulationService).toHaveBeenCalledWith({ serverURL: bbpConfigString.bbpce014.gzweb['nrp-services'], serverID: 'bbpce014'});
-    expect(simulationService).toHaveBeenCalledWith({ serverURL: bbpConfigString.bbpce016.gzweb['nrp-services'], serverID: 'bbpce016'});
-
-    expect(simulationServiceObject.simulations.callCount).toEqual(8);
-
-    var argumentFunction = simulationServiceObject.simulations.calls[1].args[0];
-    argumentFunction(returnSimulations);
-    expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(returnSimulations);
-
-    expect(callback).toHaveBeenCalledWith(experimentTemplatesAugmented);
-  });
-
-  it('should callback when all servers have answered to the query', function() {
-    var mockedThen = jasmine.createSpy('then');
-    simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn(
-      {
-        $promise: {then: mockedThen}
-      });
-
-    var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
-    var emptyCallback = function(){};
-    experimentSimulationService.getExperiments(emptyCallback, emptyCallback, queryingServersFinishedCallback);
-
-    // Now flush the backend (because the experiment templates are queried)
-    httpBackend.flush();
-
-    // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
-    expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
-
-    // Hence we have to call those explicitly.
-    mockedThen.argsForCall.forEach(function (argument) {
-      argument[0]();
+    beforeEach(function(){
+      messageCallback = jasmine.createSpy('messageCallback');
+      mockedThen = jasmine.createSpy('then');
+      simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn(
+        {
+          $promise: {then: mockedThen}
+        });
+      simulationService.reset();
     });
 
-    // We have to use scope.$digest() here, since otherwise the used promises would not be resolved,
-    // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
-    scope.$digest();
-    expect(queryingServersFinishedCallback).toHaveBeenCalled();
-  });
+    it('should callback when all servers have answered to the query', function() {
+      var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
+      experimentSimulationService.getExperiments(emptyCallback, emptyCallback, queryingServersFinishedCallback);
 
-  it('should register for status information', function() {
-    var simulationID = 0;
-    var serverID = 'bbpce016';
-    var expectedOperatingMode = 'view';
+      // Now flush the backend (because the experiment templates are queried)
+      httpBackend.flush();
 
-    // register our callback for progress messages
-    var messageCallback = jasmine.createSpy('messageCallback');
-    var initializedCallback = jasmine.createSpy('initializedCallback');
-    experimentSimulationService.getExperiments(messageCallback, function(){});
-    experimentSimulationService.setInitializedCallback(initializedCallback);
+      // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
+      expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
 
-    experimentSimulationService.registerForStatusInformation(serverID, simulationID);
+      // Hence we have to call those explicitly.
+      mockedThen.argsForCall.forEach(function (argument) {
+        argument[0]();
+      });
 
-    expect(roslib.getOrCreateConnectionTo).toHaveBeenCalledWith('ws://bbpce016.epfl.ch:9090');
-    expect(roslib.createStringTopic).toHaveBeenCalledWith(rosConnectionMock, '/ros_cle_simulation/status');
+      // We have to use scope.$digest() here, since otherwise the used promises would not be resolved,
+      // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
+      scope.$digest();
+      expect(queryingServersFinishedCallback).toHaveBeenCalled();
+    });
 
-    expect(statusListenerMock.subscribe).toHaveBeenCalled();
-    var dataNotDone = { data : '{"progress": {"task": "mock_task", "subtask": "mock_subtask"}}'};
-    statusListenerMock.subscribe.mostRecentCall.args[0](dataNotDone);
-    expect(messageCallback).toHaveBeenCalledWith({ main: 'mock_task', sub: 'mock_subtask'});
+    it('should retrieve the augmented experiments', function() {
+      var callback = jasmine.createSpy('callback');
+      experimentSimulationService.getExperiments(messageCallback, callback);
 
-    messageCallback.reset();
-    var dataDone = { data : '{"progress": {"done": "true"}}'};
-    statusListenerMock.subscribe.mostRecentCall.args[0](dataDone);
-    expect(messageCallback).toHaveBeenCalledWith({ main: 'Simulation initialized.' });
-    expect(initializedCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode);
-  });
+      // Now flush the backend (because the experiment templates are queried)
+      httpBackend.flush();
 
-  it('should test the launch of an experiment on a given server', function() {
-    var messageCallback = jasmine.createSpy('messageCallback');
-    experimentSimulationService.getExperiments(messageCallback, function(){});
+      var argumentFunction = simulationServiceObject.simulations.calls[1].args[0];
+      argumentFunction(returnSimulations);
 
-    experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014');
-    expect(messageCallback).toHaveBeenCalled();
-    expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
+      expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(returnSimulations);
+      expect(callback).toHaveBeenCalledWith(experimentTemplatesAugmented);
+    });
 
-    messageCallback.reset();
-    expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
-      experimentID: 'mocked_experiment_id',
-      /* jshint camelcase: false */
-      gzserverHost: 'lugano'
-    }, jasmine.any(Function));
-    simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
-    expect(messageCallback).toHaveBeenCalled();
+    it('should register for status information', function() {
+      var simulationID = 0;
+      var serverID = 'bbpce016';
+      var expectedOperatingMode = 'view';
 
-    messageCallback.reset();
-    expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080');
-  });
+      // register our callback for progress messages
+      var initializedCallback = jasmine.createSpy('initializedCallback');
+      experimentSimulationService.getExperiments(messageCallback, emptyCallback);
+      experimentSimulationService.setInitializedCallback(initializedCallback);
 
-  it('should start a new experiment', function(){
-    simulationService.reset();
-    var messageCallback = jasmine.createSpy('messageCallback');
-    experimentSimulationService.getExperiments(messageCallback, function(){});
+      experimentSimulationService.registerForStatusInformation(serverID, simulationID);
 
-    experimentSimulationService.startNewExperiments('experiment_id', 'bbpce');
+      expect(roslib.getOrCreateConnectionTo).toHaveBeenCalledWith('ws://bbpce016.epfl.ch:9090');
+      expect(roslib.createStringTopic).toHaveBeenCalledWith(rosConnectionMock, '/ros_cle_simulation/status');
 
-    expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
-    expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
+      expect(statusListenerMock.subscribe).toHaveBeenCalled();
+      var dataNotDone = { data : '{"progress": {"task": "mock_task", "subtask": "mock_subtask"}}'};
+      statusListenerMock.subscribe.mostRecentCall.args[0](dataNotDone);
+      expect(messageCallback).toHaveBeenCalledWith({ main: 'mock_task', sub: 'mock_subtask'});
 
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
-    simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
-    expect(messageCallback).toHaveBeenCalled();
+      messageCallback.reset();
+      var dataDone = { data : '{"progress": {"done": "true"}}'};
+      statusListenerMock.subscribe.mostRecentCall.args[0](dataDone);
+      expect(messageCallback).toHaveBeenCalledWith({ main: 'Simulation initialized.' });
+      expect(initializedCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode);
+    });
 
-    var returnSimulations2 = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STOPPED, serverID : 'bbpce016'},
-      { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.STOPPED, serverID : 'bbpce016'}
-    ];
+    it('should test the launch of an experiment on a given server', function() {
+      experimentSimulationService.getExperiments(messageCallback, emptyCallback);
 
-    messageCallback.reset();
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STARTED, serverID : 'bbpce016'});
-    simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations2);
-    expect(messageCallback).not.toHaveBeenCalled();
+      experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014');
+      expect(messageCallback).toHaveBeenCalled();
+      expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
+
+      expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
+        experimentID: 'mocked_experiment_id',
+        /* jshint camelcase: false */
+        gzserverHost: 'lugano'
+      }, jasmine.any(Function));
+      simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
+
+      expect(messageCallback).toHaveBeenCalled();
+      expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080');
+    });
+
+    it('should start a new experiment', function(){
+      experimentSimulationService.getExperiments(messageCallback, emptyCallback);
+
+      experimentSimulationService.startNewExperiments('experiment_id', 'bbpce');
+
+      expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
+      expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
+
+      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
+      simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
+      expect(messageCallback).toHaveBeenCalled();
+
+      var returnSimulations2 = [
+        { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STOPPED, serverID : 'bbpce016'},
+        { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.STOPPED, serverID : 'bbpce016'}
+      ];
+
+      messageCallback.reset();
+      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STARTED, serverID : 'bbpce016'});
+      simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations2);
+      expect(messageCallback).not.toHaveBeenCalled();
+    });
+
   });
 
   it('should check for an available Server', function(){

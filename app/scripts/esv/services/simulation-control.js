@@ -269,6 +269,7 @@
     };
 
     // Augments the experimentTemplates with the running experiments
+    // (This is really a private method, it is not used anywhere else.)
     var augmentExperiments = function(experimentTemplates) {
       var serverIDs = Object.keys(servers);
 
@@ -433,9 +434,7 @@
     // Public methods of the service
     return {
       getExperiments: getExperiments,
-      addSimulationToTemplate: addSimulationToTemplate,
       refreshExperiments: refreshExperiments,
-      augmentExperiments: augmentExperiments,
       registerForStatusInformation: registerForStatusInformation,
       existsAvailableServer: checkServerAvailability,
       startNewExperiments: startNewExperiments,
