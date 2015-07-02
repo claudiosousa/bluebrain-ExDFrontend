@@ -36,8 +36,8 @@
       }
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$interval', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
-      function ($scope, $rootScope, $timeout, $location, $interval, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
+      function ($scope, $rootScope, $timeout, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
@@ -47,6 +47,7 @@
     $scope.OPERATION_MODE = OPERATION_MODE;
     $rootScope.updatePromise = undefined;
     $rootScope.updateUptimePromise = undefined;
+    $scope.experiments = {};
 
     var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
     var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -110,16 +111,18 @@
     };
 
     experimentSimulationService.getExperiments(
+      // This is the datastructure where all the templates and running experiments are stored
+      $scope.experiments,
+      // Pass function to display the progress messages
       $scope.setProgressMessage,
-      function (data) {
-        $rootScope.updateUptimePromise = $interval(simulationService().updateUptime, UPTIME_UPDATE_RATE);
-        $scope.experiments = data;
+      // This function is called when all servers responded to the query of running experiments
+      function() {
+        $rootScope.updateUptimePromise = $timeout(simulationService().updateUptime, UPTIME_UPDATE_RATE);
         $scope.owners = simulationService().owners;
         $scope.uptime = simulationService().uptime;
-      },
-      function() {
         $rootScope.isQueryingServersFinished = true;
-        $rootScope.updatePromise = $interval(function(){
+        // Start to update the datastructure in regular intervals
+        $rootScope.updatePromise = $timeout(function(){
           experimentSimulationService.refreshExperiments($scope.experiments, setIsServerAvailable);
         }, ESV_UPDATE_RATE);
       },
@@ -128,13 +131,15 @@
     // clean up on leaving
     $scope.$on("$destroy", function() {
       if (angular.isDefined($rootScope.updatePromise)) {
-        $interval.cancel($rootScope.updatePromise);
+        $timeout.cancel($rootScope.updatePromise);
         $rootScope.updatePromise = undefined;
       }
       if (angular.isDefined($rootScope.updateUptimePromise)) {
-        $interval.cancel($rootScope.updateUptimePromise);
+        $timeout.cancel($rootScope.updateUptimePromise);
         $rootScope.updateUptimePromise = undefined;
       }
+      // Deregister the initialized callback
+      experimentSimulationService.setInitializedCallback(undefined);
     });
 
   }]);

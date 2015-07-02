@@ -392,10 +392,12 @@ describe('Services: experimentSimulationService', function () {
 
     it('should callback when all servers have answered to the query', function() {
       var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
-      experimentSimulationService.getExperiments(emptyCallback, emptyCallback, queryingServersFinishedCallback);
+      var templates = {};
+      experimentSimulationService.getExperiments(templates, emptyCallback, queryingServersFinishedCallback, emptyCallback);
 
       // Now flush the backend (because the experiment templates are queried)
       httpBackend.flush();
+      expect(templates).toEqual(experimentTemplates);
 
       // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
       expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
@@ -408,21 +410,15 @@ describe('Services: experimentSimulationService', function () {
       // We have to use scope.$digest() here, since otherwise the used promises would not be resolved,
       // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
       scope.$digest();
+
+      // At this place "checkServerAvailability" should have been called which as well queries servers.
+      // So we again have to resolve the promises and do a $digest()
+      mockedThen.argsForCall.forEach(function (argument) {
+        argument[0]();
+      });
+      scope.$digest();
+
       expect(queryingServersFinishedCallback).toHaveBeenCalled();
-    });
-
-    it('should retrieve the augmented experiments', function() {
-      var callback = jasmine.createSpy('callback');
-      experimentSimulationService.getExperiments(messageCallback, callback);
-
-      // Now flush the backend (because the experiment templates are queried)
-      httpBackend.flush();
-
-      var argumentFunction = simulationServiceObject.simulations.calls[1].args[0];
-      argumentFunction(returnSimulations);
-
-      expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalledWith(returnSimulations);
-      expect(callback).toHaveBeenCalledWith(experimentTemplatesAugmented);
     });
 
     it('should register for status information', function() {
@@ -432,7 +428,7 @@ describe('Services: experimentSimulationService', function () {
 
       // register our callback for progress messages
       var initializedCallback = jasmine.createSpy('initializedCallback');
-      experimentSimulationService.getExperiments(messageCallback, emptyCallback);
+      experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
       experimentSimulationService.setInitializedCallback(initializedCallback);
 
       experimentSimulationService.registerForStatusInformation(serverID, simulationID);
@@ -453,7 +449,7 @@ describe('Services: experimentSimulationService', function () {
     });
 
     it('should test the launch of an experiment on a given server', function() {
-      experimentSimulationService.getExperiments(messageCallback, emptyCallback);
+      experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
 
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014');
       expect(messageCallback).toHaveBeenCalled();
@@ -471,7 +467,7 @@ describe('Services: experimentSimulationService', function () {
     });
 
     it('should start a new experiment', function(){
-      experimentSimulationService.getExperiments(messageCallback, emptyCallback);
+      experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
 
       experimentSimulationService.startNewExperiments('experiment_id', 'bbpce');
 
