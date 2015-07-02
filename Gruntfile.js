@@ -359,6 +359,7 @@ module.exports = function(grunt) {
                         '.htaccess',
                         '*.html',
                         'data-neurorobotics.json',
+                        'config.json',
                         'views/**/*.{html,json}',
                         'img/**/*.{webp}',
                         'partials/**/*.html',
@@ -503,7 +504,8 @@ module.exports = function(grunt) {
 
         publish: {
             options: {
-                registry: 'http://bbpteam.epfl.ch/repository/npm'
+                registry: 'http://bbpteam.epfl.ch/repository/npm',
+                ignore: ['config.json']
             },
             dist: {
                 src: ['.']
@@ -606,6 +608,10 @@ module.exports = function(grunt) {
         'newer:jshint',
         'test',
         'build'
+    ]);
+
+    grunt.registerTask('serve-dist', [
+      'serve:dist'
     ]);
 
     grunt.registerTask('ci', 'Run all the build steps on the CI server', function(target) {
