@@ -176,6 +176,27 @@ module.exports = function(grunt) {
                 src: ['<%= yeoman.app %>/index.html'],
                 ignorePath: /\.\.\//
             },
+            test: {
+              src: 'test/karma.conf.js',
+              exclude: [ 'bootstrap\-sass\-official', 'angular\-scenario' ],
+              devDependencies: true,
+              // We have to use a small hack here: We match also for the first 'b' in the ignorePath. This pattern will
+              // then be removed in the {{filePath}} below on replace and we add it again there. This is necessary due
+              // to the fact that the pattern without the 'b' does exclude jquery (at least). Still we considered this
+              // hack a better solution than doing the dependency handling in karma.conf.js manually!
+              ignorePath: /\.\.\/b/,
+              fileTypes: {
+                js: {
+                  block: /(([\s\t]*)\/\/\s*bower:*(\S*))(\n|\r|.)*?(\/\/\s*endbower)/gi,
+                  detect: {
+                    js: /'(.*\.js')/gi
+                  },
+                  replace: {
+                    js: '\'b{{filePath}}\','
+                  }
+                }
+              }
+            },
             sass: {
                 src: ['<%= yeoman.app %>/styles/**/*.{scss,sass}'],
                 ignorePath: /(\.\.\/){1,2}bower_components\//
@@ -577,6 +598,7 @@ module.exports = function(grunt) {
     grunt.registerTask('test', [
     	'version:test',
         'clean:server',
+        'wiredep:test',
         'concurrent:test',
         'autoprefixer',
         'connect:test',

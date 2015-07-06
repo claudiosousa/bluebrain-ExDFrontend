@@ -15,22 +15,27 @@ module.exports = function(config) {
     frameworks: ['jasmine'],
 
     // list of files / patterns to load in the browser
-    // TODO(Stefan) Are those files automatically placed here? If not, how can we achieve it?!
     files: [
+      // The lines between 'bower:' and 'endbower' are filled automagically with the respective bower components.
+      // Note though that several packages are excluded (as described in the Gruntfile.js).
+      // bower:
       'bower_components/jquery/dist/jquery.js',
+      'bower_components/es5-shim/es5-shim.js',
       'bower_components/angular/angular.js',
-      'bower_components/angular-animate/angular-animate.js',
-      'bower_components/angular-cookies/angular-cookies.js',
+      'bower_components/json3/lib/json3.js',
       'bower_components/angular-resource/angular-resource.js',
+      'bower_components/angular-cookies/angular-cookies.js',
       'bower_components/angular-sanitize/angular-sanitize.js',
+      'bower_components/angular-animate/angular-animate.js',
       'bower_components/angular-touch/angular-touch.js',
       'bower_components/angular-ui-router/release/angular-ui-router.js',
       'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
-      'bower_components/lodash/dist/lodash.js',
-      'bower_components/bbp-oidc-client/angular-bbp-oidc-client.js',
-      'bower_components/angular-hbp-common/dist/angular-hbp-common.js',
+      'bower_components/lodash/dist/lodash.compat.js',
       'bower_components/angular-bbp-config/angular-bbp-config.js',
-      'bower_components/angular-mocks/angular-mocks.js',
+      'bower_components/bbp-oidc-client/angular-bbp-oidc-client.js',
+      'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+      'bower_components/marked-hbp/lib/marked.js',
+      'bower_components/angular-hbp-common/dist/angular-hbp-common.js',
       'bower_components/angular-hbp-document-client/dist/angular-hbp-document-client.js',
       'bower_components/xml2json/xml2json.js',
       'bower_components/stats.js/build/stats.min.js',
@@ -40,6 +45,8 @@ module.exports = function(config) {
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
       'bower_components/eventemitter2/lib/eventemitter2.js',
       'bower_components/roslibjs/build/roslib.js',
+      'bower_components/angular-mocks/angular-mocks.js',
+      // endbower
       'app/scripts/esv/gz3d/client/js/include/three.js',
       'app/scripts/esv/gz3d/client/js/include/OrbitControls.js',
       'app/scripts/esv/gz3d/client/js/include/Detector.js',
