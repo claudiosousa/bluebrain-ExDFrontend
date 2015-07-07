@@ -18,46 +18,46 @@
       "neurorobotics":{
          "bbpce021":{
             "gzweb":{
-               "assets":"http://bbpce021.epfl.ch",
-               "nrp-services":"http://bbpce021.epfl.ch:8080",
-               "websocket":"ws://bbpce021.epfl.ch:9091/gzbridge"
+               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/1/assets",
+               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/1/api",
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce021.epfl.ch:9091"
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
             },
             "serverJobLocation":"local"
          },
          "bbpce022":{
             "gzweb":{
-               "assets":"http://bbpce022.epfl.ch",
-               "nrp-services":"http://bbpce022.epfl.ch:8080",
-               "websocket":"ws://bbpce022.epfl.ch:9091/gzbridge"
+               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/2/assets",
+               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/2/api",
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce022.epfl.ch:9091"
+               "websocket":"https://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
             },
             "serverJobLocation":"local"
          },
          "bbpce023":{
             "gzweb":{
-               "assets":"http://bbpce023.epfl.ch",
-               "nrp-services":"http://bbpce023.epfl.ch:8080",
-               "websocket":"ws://bbpce023.epfl.ch:9091/gzbridge"
+               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/3/assets",
+               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/3/api",
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpce023.epfl.ch:9091"
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
             },
             "serverJobLocation":"local"
          }
