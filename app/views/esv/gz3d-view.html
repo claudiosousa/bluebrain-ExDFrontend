@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="styles/esv/gz3d-view.css" />
 <link rel="stylesheet" href="styles/esv/spiketrain.css" />
 <link rel="stylesheet" href="styles/esv/resizeable.css" />
+<link rel="stylesheet" href="bower_components/angular.panels/dist/angular.panels.min.css" />
 <!-- endbuild -->
 
   <script id="heightmapVS" type="x-shader/x-vertex">
@@ -234,7 +235,10 @@
               <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}"></i>
             </div>
             <!-- toolbar help icon -->
-
+            <!-- code editor -->
+            <div ng-if="operationMode === OPERATION_MODE.EDIT" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR}" ng-click="(!helpModeActivated) ? edit() : help(UI.CODE_EDITOR)">
+              <i class="glyphicon glyphicon-edit"></i>
+            </div>
             <!-- exit -->
             <div class="hbp-toolbar-action right-align hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.EXIT_BUTTON}" ng-click="(!helpModeActivated) ? exit('/esv-web') : help(UI.EXIT_BUTTON)">
               <i class="fa fa-sign-out fa-2x vertcenter"></i>
@@ -245,7 +249,7 @@
             <!-- TODO We have yet to decide how this button should actually behave. The current operation mode can
                       easily be retrieved through OPERATION_MODE (options are .VIEW or .EDIT). As of now we simply
                       display the edit button whenever we are in view mode. -->
-            <div ng-if="operationMode === OPERATION_MODE.VIEW" ng-class="{'highlighted': currentSelectedUIElement === UI.EDIT_BUTTON}" class="hbp-toolbar-action right-align hide-overflow" ng-click="(!helpModeActivated) ? null : help(UI.EDIT_BUTTON)">
+            <div ng-if="operationMode === OPERATION_MODE.VIEW" ng-class="{'highlighted': currentSelectedUIElement === UI.EDIT_BUTTON}" class="hbp-toolbar-action right-align hide-overflow" ng-click="(!helpModeActivated) ? toggleOperationMode() : help(UI.EDIT_BUTTON)">
               <i class="fa fa-pencil fa-2x vertcenter"></i>
             </div>
           </div>
@@ -296,6 +300,9 @@
           </div>
         </div>
         <!-- Description -->
+        <!-- Code editor panel --->
+        <div data-panels="true"></div>
+        <!-- Code editor panel --->
       </div>
       <!-- container -->
     </div>

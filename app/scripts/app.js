@@ -19,6 +19,7 @@
                                    'ui.router',
                                    'ui.bootstrap',
                                    'ui.codemirror',
+                                   'angular.panels',
                                    'bbpOidcClient',
                                    'hbpCommon',
                                    'bbpConfig',
