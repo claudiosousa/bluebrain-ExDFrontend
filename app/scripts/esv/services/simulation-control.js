@@ -128,6 +128,17 @@
     };
   }]);
 
+  module.factory('simulationTransferFunctions', ['$resource', 'serverError', function($resource, serverError) {
+    return function(baseUrl) {
+      return $resource(baseUrl + '/simulation/:sim_id/transferfunctions', {}, {
+        transferFunctions: {
+          method: 'GET',
+          interceptor : {responseError : serverError}
+        }
+      });
+    };
+  }]);
+
   module.factory('simulationGenerator', ['$resource', 'serverError', function($resource, serverError) {
     return function(baseUrl) {
       return $resource(baseUrl + '/simulation', {}, {

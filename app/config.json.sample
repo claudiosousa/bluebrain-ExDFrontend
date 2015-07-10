@@ -42,7 +42,7 @@
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"https://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
             },
             "serverJobLocation":"local"
          },
@@ -60,6 +60,21 @@
                "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
             },
             "serverJobLocation":"local"
+         },
+         "bbpsrvc20":{
+            "gzweb":{
+               "assets":"ws://bbpsrvc20.cscs.ch",
+               "nrp-services":"http://bbpsrvc20.cscs.ch:8080",
+               "websocket":"ws://bbpsrvc20.cscs.ch:9091/gzbridge"
+            },
+            "rosbridge":{
+               "topics":{
+                  "spikes":"/monitor/spike_recorder",
+                  "status":"/ros_cle_simulation/status"
+               },
+               "websocket":"ws://bbpsrvc20.cscs.ch:9091"
+            },
+            "serverJobLocation":"lugano"
          }
       },
       "provenance":{

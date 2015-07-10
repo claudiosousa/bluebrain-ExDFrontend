@@ -5,6 +5,7 @@ describe('Directive: transferFunctionEditor', function () {
   beforeEach(module('exdFrontendApp'));
 
   var $rootScope, $compile, $httpBackend, $log, $scope, element;
+
   var SERVER_URL = 'http://bbpce014.epfl.ch:8080';
   var SIMULATION_ID = 1;
 
@@ -22,6 +23,9 @@ describe('Directive: transferFunctionEditor', function () {
     $templateCache.put('views/esv/transfer-function-editor.html', '<h3>Test</h3>');
     $httpBackend.expectGET('views/esv/transfer-function-editor.html');
     spyOn($log, 'error');
+
+    var transferFunctionsReturned = {'transfer_functions': ['some code', 'more code']};
+    $httpBackend.whenGET(SERVER_URL + '/simulation/1/transferfunctions').respond(transferFunctionsReturned);
 
     element = $compile('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '"></transfer-function-editor>')($scope);
     $scope.$digest();
@@ -43,7 +47,50 @@ describe('Directive: transferFunctionEditor', function () {
     expect(element.prop('outerHTML')).toContain('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '" class="ng-scope"><h3>Test</h3></transfer-function-editor>');
   });
 
+});
+
+describe('Directive: transferFunctionEditor', function () {
+
+  beforeEach(module('exdFrontendApp'));
+
+  var $rootScope, $compile, $httpBackend, $log, $scope, element, simulationTransferFunctions;
+
+  var transferFunctionsMock = jasmine.createSpy('transferFunctions');
+  var simulationTransferFunctionsMock = jasmine.createSpy('simulationTransferFunctions').andReturn({transferFunctions: transferFunctionsMock});
+  var transferFunctionsReturned = {'transfer_functions': ['some code', 'more code']};
+
+  var SERVER_URL = 'https://neurorobotics-dev.humanbrainproject.eu/cle/1/api';
+  var SIMULATION_ID = 1;
+
+  beforeEach(module(function ($provide) {
+    $provide.value('simulationTransferFunctions', simulationTransferFunctionsMock);
+  }));
+  beforeEach(inject(function (_$rootScope_,
+                              _$compile_,
+                              _$httpBackend_,
+                              _$log_,
+                              _simulationTransferFunctions_,
+                              $templateCache) {
+    $rootScope = _$rootScope_;
+    $compile = _$compile_;
+    $httpBackend = _$httpBackend_;
+    $log = _$log_;
+    simulationTransferFunctions = _simulationTransferFunctions_;
+
+    $scope = $rootScope.$new();
+    $templateCache.put('views/esv/transfer-function-editor.html', '<h3>Test</h3>');
+
+    element = $compile('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '"></transfer-function-editor>')($scope);
+    $scope.$digest();
+  }));
+
   it('should init the transferFunctions variable', function () {
     expect($scope.transferFunctions).toBeDefined();
+    expect(simulationTransferFunctionsMock).toHaveBeenCalled();
+    transferFunctionsMock.mostRecentCall.args[1](transferFunctionsReturned);
+    // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "tranferFunctions"
+    // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
+    expect($scope.transferFunctions).toEqual(transferFunctionsReturned.transfer_functions); // jshint ignore:line
   });
+
 });

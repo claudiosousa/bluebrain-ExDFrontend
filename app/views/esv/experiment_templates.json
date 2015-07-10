@@ -39,6 +39,14 @@
     "timeout": 600,
     "serverPattern": "bbpsrvc"
   },
+  "BraitenbergHuskySBCLugano":{
+    "experimentConfiguration": "ExDConf/ExDBraitenbergHuskySBC.xml",
+    "imageUrl": "img/common/preview_Braitenberg_Husky_SBC.png",
+    "name": "Husky Braitenberg experiment in the SpaceBotCup 2013 arena (Lugano)",
+    "snippet": "This experiment loads the Husky robot from Clearpath Robotics and the arena from the SpaceBotCup 2013.",
+    "timeout": 600,
+    "serverPattern": "bbpsrvc"
+  },
   "BraitenbergLauronLugano":{
     "experimentConfiguration": "ExDConf/ExDBraitenbergLauron.xml",
     "imageUrl": "img/common/preview_Braitenberg_Lauron.png",
