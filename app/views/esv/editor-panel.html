@@ -6,9 +6,8 @@
     <tab heading="Transfer Functions">
       <transfer-function-editor server={{serverBaseUrl}} simulation={{simulationID}}></transfer-function-editor>
     </tab>
-    <tab heading="SMACH Editor">
-      <h3>SMACH Editor</h3>
-      <smach-editor></smach-editor>
+    <tab heading="SMACH Editor" select="smachEditorRefresh();">
+      <smach-editor server={{serverBaseUrl}} simulation={{simulationID}}></smach-editor>
     </tab>
     <tab heading="Event Editor">
       <h3>Event Editor</h3>
