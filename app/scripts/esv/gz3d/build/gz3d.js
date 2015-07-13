@@ -2861,7 +2861,7 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
     var fov = 30;
     var near = 0.1;
     var far = 100;
-    var zIndex = -this.scene.MAX_VIEW_COUNT + this.scene.views.length;
+    var zIndex = this.scene.views.length;
     var left = 0.01; //(0.1 * (zIndex + this.scene.MAX_VIEW_COUNT)) % (1.0 - width);
     var top = 0.02; //(0.1 * (zIndex + this.scene.MAX_VIEW_COUNT)) % (1.0 - height);
     var width = 0.2;
@@ -4936,7 +4936,7 @@ GZ3D.Scene.prototype.init = function()
   this.MAX_VIEW_COUNT = 5;
   this.views = [];
 
-  var zIndex = -this.MAX_VIEW_COUNT;
+  var zIndex = 0;
   var fov = 45;
   var near = 1;
   var far = 10000;
@@ -5300,26 +5300,24 @@ GZ3D.Scene.prototype.createView = function(name, left, top, width, height, zInde
   if (isMainView) {
     viewContainer = document.getElementById('container_MainView');
   } else {
-    //viewContainer = this.$compile('<div movable resizeable></div>')(this.$rootScope)[0];
-    viewContainer = document.createElement('div');
+    viewContainer = this.$compile('<div movable></div>')(this.$rootScope)[0];
+    viewContainer.style.position = 'absolute';
+    viewContainer.style.left = left * 100 + '%';
+    viewContainer.style.top = top * 100 + '%';
+    viewContainer.style.width = width * 100 + '%';
+    viewContainer.style.height = height * 100 + '%';
     this.container.appendChild(viewContainer);
   }
 
-  viewContainer.style.position = 'absolute';
-  viewContainer.style.left = left * 100 + '%';
-  viewContainer.style.top = top * 100 + '%';
-  viewContainer.style.width = width * 100 + '%';
-  viewContainer.style.height = height * 100 + '%';
   if (angular.isDefined(zIndex)) {
     viewContainer.style.zIndex = zIndex;
   } else {
-    viewContainer.style.zIndex = -this.MAX_VIEW_COUNT + this.views.length;
+    viewContainer.style.zIndex = this.views.length;
   }
 
   // canvas
   var canvas = document.createElement('canvas');
   viewContainer.appendChild( canvas );
-  canvas.style.position = 'absolute';
   canvas.style.width = '100%';
   canvas.style.height = '100%';
 

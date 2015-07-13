@@ -23,9 +23,9 @@ describe('Directive: Movable', function () {
     $log = _$log_;
     $document = _$document_;
     element.css({
-      top   : '100px',
-      left  : '100px',
-      width : '100px',
+      top:    '100px',
+      left:   '100px',
+      width:  '100px',
       height: '100px'
     });
     $scope.$digest();
@@ -77,6 +77,36 @@ describe('Directive: Movable', function () {
     expect(element.css('left')).toBe(originalLeft);
 
     $document.triggerHandler({type: 'mouseup', pageX: endX, pageY: endY});
+  });
+
+  it('should move the element with a touch gesture', function () {
+    var endX = 115;
+    var endY = 130;
+    var originalTop = element.offset().top;
+    var originalLeft = element.offset().left;
+    element.triggerHandler({type: 'touchstart', originalEvent : {
+      touches : [ { pageX : startX, pageY: startY } ]
+    }});
+    $scope.$digest();
+    $document.triggerHandler({type: 'touchmove', originalEvent : {
+      touches : [ { pageX : endX, pageY: endY } ]
+    }});
+    $scope.$digest();
+    expect(element.css('top')).toBe(originalTop + (endY - startY) + 'px');
+    expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
+
+    $document.triggerHandler({type: 'touchend', originalEvent : {
+      touches : [ { pageX : endX, pageY: endY } ]
+    }});
+
+    // Should not trigger any more
+    $document.triggerHandler({type: 'touchmove', originalEvent : {
+      touches : [ { pageX : 120, pageY: 140 } ]
+    }});
+    $scope.$digest();
+    // should still be the same as above
+    expect(element.css('top')).toBe(originalTop + (endY - startY) + 'px');
+    expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
   });
 
 });

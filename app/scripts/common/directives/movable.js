@@ -1,10 +1,10 @@
-(function() {
+(function () {
   'use strict';
 
-  angular.module('exdFrontendApp').directive('movable', ['$document', function($document) {
+  angular.module('exdFrontendApp').directive('movable', ['$document', function ($document) {
     return {
       restrict: 'A',
-      link: function(scope, element, attr) {
+      link: function (scope, element, attr) {
         var startX = 0, startY = 0, x = 0, y = 0;
 
         element.css({
@@ -12,20 +12,28 @@
           position: 'absolute'
         });
 
-        element.on('mousedown', function(event) {
+        element.on('mousedown touchstart', function (event) {
           // Prevent default dragging of selected content
           event.preventDefault();
-          startX = event.pageX;
-          startY = event.pageY;
-          x = element.offset().left;
-          y = element.offset().top;
-          $document.on('mousemove', mousemove);
-          $document.on('mouseup', mouseup);
+          event.stopPropagation();
+
+          var coordinates = getEventCoordinates(event);
+          startX = coordinates.x;
+          startY = coordinates.y;
+
+          x = element.position().left;
+          y = element.position().top;
+
+          $document.on('mousemove touchmove', mousemove);
+          $document.on('mouseup touchend', mouseup);
         });
 
         function mousemove(event) {
-          var dX = event.pageX - startX;
-          var dY = event.pageY - startY;
+          event.stopPropagation();
+
+          var coordinates = getEventCoordinates(event);
+          var dX = coordinates.x - startX;
+          var dY = coordinates.y - startY;
 
           // "-1" is needed to prevent the scrollbars to appear
           if ((y + dY < window.innerHeight - element.outerHeight() - 1) && (y + dY > 0)) {
@@ -40,10 +48,19 @@
           }
         }
 
-        function mouseup() {
-          $document.off('mousemove', mousemove);
-          $document.off('mouseup', mouseup);
+        function mouseup(event) {
+          event.stopPropagation();
+          $document.off('mousemove touchmove', mousemove);
+          $document.off('mouseup touchend', mouseup);
         }
+
+        function getEventCoordinates(event) {
+          var isTouchEvent = event.originalEvent && event.originalEvent.touches;
+          var eventX = isTouchEvent ? event.originalEvent.touches[0].pageX : event.pageX;
+          var eventY = isTouchEvent ? event.originalEvent.touches[0].pageY : event.pageY;
+          return {x: eventX, y: eventY};
+        }
+
       }
     };
   }]);
