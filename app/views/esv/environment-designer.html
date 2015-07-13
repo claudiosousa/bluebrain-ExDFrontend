@@ -1,0 +1,20 @@
+<!-- TEST: Environment Designer loaded correctly -->
+<h3>Environment Editor</h3>
+<hr>
+<h4>View, Move or Rotate objects on the scene:</h4>
+<div class="btn-group" role="group">
+  <button type="button" class="btn btn-default" ng-class="{active:mode==EDIT_MODE.VIEW}" ng-click="setEditMode(EDIT_MODE.VIEW)">
+    <i class="glyphicon glyphicon-eye-open"></i>
+    <span>View mode</span>
+  </button>
+  <button type="button" class="btn btn-default" ng-class="{active:mode==EDIT_MODE.TRANSLATE}" ng-click="setEditMode(EDIT_MODE.TRANSLATE)">
+    <i class="glyphicon glyphicon-move"></i>
+    <span>Move objects</span>
+  </button>
+  <button type="button" class="btn btn-default" ng-class="{active:mode==EDIT_MODE.ROTATE}" ng-click="setEditMode(EDIT_MODE.ROTATE)">
+    <i class="glyphicon glyphicon-repeat"></i>
+    <span>Rotate objects</span>
+  </button>
+</div>
+<hr>
+

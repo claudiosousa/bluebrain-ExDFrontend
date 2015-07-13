@@ -87,7 +87,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.onMouseUp = function (event) {
     event.preventDefault();
-
+    
     // We do not stop the event propagation here, since there may be other
     // components sitting on top, which also may have registered a handler
     // and expect the event to be fired.

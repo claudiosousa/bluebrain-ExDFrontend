@@ -150,6 +150,20 @@
     };
   }]);
 
+  module.factory('simulationSDFWorld', ['$resource', 'serverError', function ($resource, serverError) {
+    return function(baseUrl) {
+      return $resource(baseUrl + '/simulation/sdf_world', {}, {
+        export: {
+          method: 'GET',
+          interceptor: {responseError: serverError}
+        },
+        import: {
+          method: 'PUT'
+        }
+      });
+    };
+  }]);
+
   module.factory('screenControl', ['$resource', 'serverError', function($resource, serverError) {
    return function(baseUrl) {
        return $resource(baseUrl + '/simulation/:sim_id/interaction', {}, {

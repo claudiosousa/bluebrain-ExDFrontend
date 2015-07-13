@@ -13,7 +13,7 @@
   /* global THREE: false */
   /* global console: false */
 
-  angular.module('exdFrontendApp.Constants', [])
+  angular.module('exdFrontendApp.Constants')
     // constants for the server side status
     .constant('STATE', {
       CREATED: 'created',
@@ -60,7 +60,7 @@
           openCallbackFunction: 'openCallback'
         });
     }])
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
+      .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl',
@@ -466,6 +466,5 @@
         $scope.exit = function(path) {
           $location.path(path);
         };
-
     }]);
 }());

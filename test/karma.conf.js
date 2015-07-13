@@ -73,6 +73,8 @@ module.exports = function(config) {
       'app/scripts/esv/directives/*.js',
       'app/scripts/esv/services/*.js',
       'app/partials/**/*.html',
+      'app/views/esv/*.html',
+      'app/views/common/*.html',
       {pattern: 'app/views/*.*', included: false, served: true}
     ],
 
@@ -87,7 +89,9 @@ module.exports = function(config) {
         'app/scripts/esv/controllers/*.js': ['coverage'],
         'app/scripts/esv/directives/*.js': ['coverage'],
         'app/scripts/esv/services/*.js': ['coverage'],
-        'app/partials/**/*.html': ['ng-html2js']
+        'app/partials/**/*.html': ['ng-html2js'],
+        'app/views/esv/*.html': ['ng-html2js'],
+        'app/views/common/*.html': ['ng-html2js'],
     },
 
     ngHtml2JsPreprocessor: {

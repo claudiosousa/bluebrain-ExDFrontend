@@ -102,6 +102,10 @@
         }
     }]);
 
+  // Create the constant modules at the beginning so everyone can access it and
+  // use it to define its own constants.
+  angular.module('exdFrontendApp.Constants', []);
+
     // Since angular is a "single page" application (navigating never trigger a reload of index.html),
     // we have to notify Google Analytics when the page change. For that, we register on
     // $stateChangeSuccess which is an UI router event.
