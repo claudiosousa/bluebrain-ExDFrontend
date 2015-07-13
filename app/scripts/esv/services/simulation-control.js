@@ -161,8 +161,19 @@
    };
   }]);
 
-  module.factory('experimentSimulationService', ['$http', '$q', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
-    function ($http, $q, bbpConfig, simulationService, simulationState, simulationGenerator, roslib, STATE, OPERATION_MODE, serverError) {
+  module.factory('experimentList', ['$resource', 'serverError', function($resource, serverError) {
+    return function(baseUrl) {
+      return $resource(baseUrl + '/experiment', {}, {
+        experiments: {
+          method: 'GET',
+          interceptor : {responseError : serverError}
+        }
+      });
+    };
+  }]);
+
+  module.factory('experimentSimulationService', ['$q', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
+    function ($q, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError) {
     var getExperimentsCallback;
     var setProgressMessageCallback;
     var queryingServersFinishedCallback;
@@ -178,8 +189,9 @@
 
     var addSimulationToTemplate = function(experimentTemplates, activeSimulation) {
       angular.forEach(experimentTemplates, function(experimentTemplate) {
+        //ToDo: Should not take the experimentConfiguration, but the ExperimentID of the template
         if (experimentTemplate.experimentConfiguration === activeSimulation.experimentID &&
-            (activeSimulation.serverID.indexOf(experimentTemplate.serverPattern) > -1 )) {
+            (experimentTemplate.serverPattern.indexOf(activeSimulation.serverID) > -1 )) {
           // Increase the number of running experiments for this template
           experimentTemplate.runningExperiments = ('runningExperiments' in experimentTemplate) ? experimentTemplate.runningExperiments + 1 : 1;
           // Add the 'simulations' variable to the template and create it if it does not exist
@@ -263,7 +275,7 @@
             // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
             // is offline), we resolve the respective deferred.
             deferred.resolve();
-          });
+        });
       });
 
       // After all promises are "fulfilled" we know that all requests have been processed.
@@ -278,10 +290,40 @@
       setProgressMessageCallback = progressMessageCallback;
       queryingServersFinishedCallback = queryingServersFinishedCb;
 
-      $http.get('views/esv/experiment_templates.json').success(function (data) {
-        // Assign the templates to the experimentTemplates data model of the controller
-        // that is the place where all the data is stored
-        angular.copy(data, experimentTemplates);
+      var serverIDs = Object.keys(servers);
+
+      // We will use this array to collect promises. Those can then be used in the
+      // end for indicating when all loading is done.
+      var requests = [];
+
+      angular.forEach(serverIDs, function(serverID, index) {
+        var serverNRPServicesURL = servers[serverID].gzweb['nrp-services'];
+
+        // Create a deferred and store its promise.
+        var deferred = $q.defer();
+        requests.push(deferred.promise);
+
+        // get experiment list from server and push into experimentTemplates
+        experimentList(serverNRPServicesURL).experiments(function (data) {
+          angular.forEach(data.data, function(experiment, index) {
+            if (angular.isDefined(experimentTemplates[index])) {
+              experimentTemplates[index].serverPattern.push(serverID);
+            } else {
+              experimentTemplates[index] = experiment;
+              experimentTemplates[index].serverPattern = [serverID];
+              experimentTemplates[index].imageUrl = serverNRPServicesURL + '/experiment/' + index + '/preview';
+            }
+          });
+        }).$promise.then(function(data) {
+            // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
+            // is offline), we resolve the respective deferred.
+            deferred.resolve();
+        });
+      });
+
+      // After all promises are "fulfilled" we know that all requests have been processed.
+      // Now we can see if there is a available Server
+      $q.all(requests).then(function () {
         refreshExperiments(experimentTemplates, setIsServerAvailable);
       });
     };
@@ -325,7 +367,7 @@
         // for each server
         angular.forEach(serverIDs, function (serverID, index) {
           // check if server can run experiment
-          if (serverID.indexOf(experimentTemplate.serverPattern) > -1) {
+          if (experimentTemplate.serverPattern.indexOf(serverID) > -1) {
             var serverURL = servers[serverID].gzweb['nrp-services'];
 
             experimentTemplate.numSupportingServers = experimentTemplate.numSupportingServers + 1;
@@ -369,7 +411,7 @@
       var keepGoing = true;
       angular.forEach(serverIDs, function(serverID, index){
         if(keepGoing) {
-          if (serverID.indexOf(serverPattern) > -1) {
+          if (serverPattern.indexOf(serverID) > -1) {
             var serverURL = servers[serverID].gzweb['nrp-services'];
             simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
               var activeSimulation = simulationService().getActiveSimulation(data);

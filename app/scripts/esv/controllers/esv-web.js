@@ -9,7 +9,7 @@
       var output = [];
       var reFilter = new RegExp(filter, 'i');
       angular.forEach(input, function (exp) {
-        if (exp.name.search(reFilter) !== -1 || exp.snippet.search(reFilter) !== -1 ) {
+        if (exp.name.search(reFilter) !== -1 || exp.description.search(reFilter) !== -1 ) {
           output.push(exp);
         }
       });
@@ -26,13 +26,25 @@
       return output;
     };
   })
-  .filter('byLocation', function($filter) {
+  .filter('byLocation', function() {
     return function(input, pattern, doApply) {
       if (!doApply) {
         return input;
       }
       else {
-        return $filter('filter')(input, { serverPattern: pattern}, true);
+        var output = [];
+        angular.forEach(input, function (exp) {
+          var found = false;
+          angular.forEach(exp.serverPattern, function(server) {
+            if (server.indexOf(pattern) > -1 ) {
+              found = true;
+            }
+          });
+          if (found) {
+            output.push(exp);
+          }
+        });
+        return output;
       }
     };
   })
