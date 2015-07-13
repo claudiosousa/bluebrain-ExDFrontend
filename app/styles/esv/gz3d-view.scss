@@ -126,3 +126,11 @@ body > div {
 .help-text {
   font-size: medium;
 }
+
+.panels {
+  opacity: 0.95;
+}
+
+.dimming.open {
+  opacity: 0.2 !important;
+}
