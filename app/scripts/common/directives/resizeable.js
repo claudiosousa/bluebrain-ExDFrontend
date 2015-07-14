@@ -1,83 +1,116 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp').directive('resizeable', ['$window', function ($window) {
+  // Code inspirations from:
+  // http://jsfiddle.net/zzxz3my9/5/
+  // http://jsfiddle.net/julian_weinert/xUAZ5/30/
+  // http://stackoverflow.com/questions/14611736/javascript-div-resizing-with-aspect-ratio
+  angular.module('exdFrontendApp').directive('resizeable', ['$window', '$document', function ($window, $document) {
     return {
       restrict: 'A',
       link: function (scope, element, attrs) {
-        var HORIZONTAL_STEP = 50;
-        var VERTICAL_STEP = 25;
-        var MIN_WIDTH = 100;
-        var MIN_HEIGHT = 60;
 
-        element.css({
-          'display': 'flex',
-          'flex-direction': 'row'
-        });
+        // We check whether an attribute is present in this HTML element, i.e. if it looks like this for instance:
+        // <div moveable resizeable keep-aspect-ratio>...</div>
+        var keepAspectRatio = angular.isDefined(attrs.keepAspectRatio);
 
-        var buttons = angular.element('<div/>');
-        buttons.addClass('resize-buttons');
-        var btn_width_larger = angular.element('<div/>');
-        var btn_width_smaller = angular.element('<div/>');
-        var btn_height_larger = angular.element('<div/>');
-        var btn_height_smaller = angular.element('<div/>');
+        // This amount of pixels is used in order to avoid scrollbars to appear on the right / on the bottom.
+        var SAFETY_PAD = 4;
 
-        var icn_width_larger = angular.element('<i/>');
-        var icn_width_smaller = angular.element('<i/>');
-        var icn_height_larger = angular.element('<i/>');
-        var icn_height_smaller = angular.element('<i/>');
+        // The little handle that the user drags around for resizing. It will be appended to the element that
+        // should be resizeable and is only visible through a small image that visually indicates its resizeability.
+        var resizeDiv = angular.element('<div class="resizeable"></div>');
+        element.append(resizeDiv);
 
-        btn_height_larger.addClass('resize-button first-element');
-        btn_height_smaller.addClass('resize-button');
-        btn_width_larger.addClass('resize-button');
-        btn_width_smaller.addClass('resize-button');
+        var currentX, currentY, currentHeight, currentWidth;
 
-        var resizeHeightLarger = function() {
-          if (element.outerHeight() + VERTICAL_STEP < $window.innerHeight) {
-            element.css('height', element.outerHeight() + VERTICAL_STEP + 'px');
-            scope.onScreenSizeChanged();
+        function calculateNewSize(size) {
+          var newWidth = size.currWidth;
+          var newHeight = size.currHeight;
+
+          // We already calculate the new sizes, but we do not yet apply them since in case we have to preserve
+          // the aspect ratio we have to check first if we are still within the viewport. If we are outside the
+          // viewport we will get scrollbars – which we want to avoid.
+          var preliminaryNewWidth = size.currWidth + size.offsetX;
+          var preliminaryNewHeight = size.currHeight + size.offsetY;
+
+          if (!keepAspectRatio) {
+            newWidth = preliminaryNewWidth;
+            newHeight = preliminaryNewHeight;
+          } else {
+            // In case we want to keep the aspect ratio, we adapt either the height or the width
+            if (Math.abs(size.offsetX) > Math.abs(size.offsetY)) {
+              preliminaryNewHeight = preliminaryNewWidth * (size.currHeight / size.currWidth);
+            } else {
+              preliminaryNewWidth = preliminaryNewHeight * (size.currWidth / size.currHeight);
+            }
+
+            // Only apply changes if we are inside the viewport after applying the keep-aspect-ratio-scaling
+            var isTooHigh = element.offset().top + preliminaryNewHeight > ($window.innerHeight - SAFETY_PAD);
+            var isTooWide = element.offset().left + preliminaryNewWidth > ($window.innerWidth - SAFETY_PAD);
+
+            if (!isTooHigh && !isTooWide) {
+              newWidth = preliminaryNewWidth;
+              newHeight = preliminaryNewHeight;
+            }
           }
-        };
-        var resizeHeightSmaller = function() {
-          if (element.outerHeight() - VERTICAL_STEP > MIN_HEIGHT) {
-            element.css('height', element.outerHeight() - VERTICAL_STEP + 'px');
-            scope.onScreenSizeChanged();
+
+          return {
+            "height": newHeight,
+            "width": newWidth
+          };
+        }
+
+        function mousedown(event) {
+          event.stopPropagation();
+          event.preventDefault();
+
+          if (angular.isFunction(scope.onResizeBegin)) {
+            scope.onResizeBegin();
           }
-        };
-        var resizeWidthLarger = function() {
-          if (element.outerWidth() + HORIZONTAL_STEP < $window.innerWidth) {
-            element.css('width', element.outerWidth() + HORIZONTAL_STEP + 'px');
-            scope.onScreenSizeChanged();
+
+          currentX = event.pageX;
+          currentY = event.pageY;
+
+          currentHeight = element.height();
+          currentWidth = element.width();
+
+          function mouseup() {
+            if (angular.isFunction(scope.onResizeEnd)) {
+              scope.onResizeEnd();
+            }
+            $document.off('mousemove', mousemove);
+            $document.off('mouseup', mouseup);
           }
-        };
-        var resizeWidthSmaller = function() {
-          if (element.outerWidth() - HORIZONTAL_STEP > MIN_WIDTH) {
-            element.css('width', element.outerWidth() - HORIZONTAL_STEP + 'px');
-            scope.onScreenSizeChanged();
-          }
-        };
 
-        btn_height_larger.bind('click', resizeHeightLarger);
-        btn_height_smaller.bind('click', resizeHeightSmaller);
-        btn_width_larger.bind('click', resizeWidthLarger);
-        btn_width_smaller.bind('click', resizeWidthSmaller);
+          $document.on('mousemove', mousemove);
+          $document.on('mouseup', mouseup);
+        }
 
-        icn_height_larger.addClass('fa fa-expand rotate-45-counterclockwise');
-        icn_height_smaller.addClass('fa fa-compress rotate-45-counterclockwise');
-        icn_width_larger.addClass('fa fa-expand rotate-45-clockwise');
-        icn_width_smaller.addClass('fa fa-compress rotate-45-clockwise');
+        function mousemove(event) {
+          // Don't let the resizing happen outside the viewport.
+          // We also introduce a small "safety pad" in order to prevent the scrollbars from appearing.
+          var adjustedPageX = (event.pageX >= ($window.innerWidth - SAFETY_PAD)) ? ($window.innerWidth - SAFETY_PAD) : event.pageX;
+          var adjustedPageY = (event.pageY >= ($window.innerHeight - SAFETY_PAD)) ? ($window.innerHeight - SAFETY_PAD) : event.pageY;
 
-        btn_height_larger.append(icn_height_larger);
-        btn_height_smaller.append(icn_height_smaller);
-        btn_width_larger.append(icn_width_larger);
-        btn_width_smaller.append(icn_width_smaller);
+          var newSize = calculateNewSize({
+            "currHeight": currentHeight,
+            "currWidth": currentWidth,
+            "offsetX": adjustedPageX - currentX,
+            "offsetY": adjustedPageY - currentY
+          });
 
-        buttons.append(btn_height_larger);
-        buttons.append(btn_height_smaller);
-        buttons.append(btn_width_larger);
-        buttons.append(btn_width_smaller);
+          element.css("height", newSize.height + "px");
+          element.css("width", newSize.width + "px");
 
-        element.append(buttons);
+          // Adjust all non local variables.
+          currentHeight = newSize.height;
+          currentWidth = newSize.width;
+          currentX = adjustedPageX;
+          currentY = adjustedPageY;
+        }
+
+        resizeDiv.on('mousedown', mousedown);
       }
     };
   }]);

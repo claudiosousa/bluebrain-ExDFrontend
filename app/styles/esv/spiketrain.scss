@@ -2,8 +2,11 @@ $spikeTrainBottom: 65px;
 $spikeTrainHeight: 175px;
 $spikeTrainBorder: 2px;
 $spikeTrainMargin: 5px;
+$spikeTrainMinWidth: 50px;
+$spikeTrainMinHeight: 140px;
 
 .spikegraph {
+  display: flex;
   position: absolute;
   left:5%;
   background:rgba(255, 255, 255, 0.8);
@@ -12,8 +15,10 @@ $spikeTrainMargin: 5px;
   border-color: black;
   border: $spikeTrainBorder solid;
   opacity: 1;
-  bottom: $spikeTrainBottom;
+  top: calc(100% - #{$spikeTrainBottom + $spikeTrainHeight});
   height: $spikeTrainHeight;
+  min-width: $spikeTrainMinWidth;
+  min-height: $spikeTrainMinHeight;
 }
 
 .spikegraph.ng-hide {

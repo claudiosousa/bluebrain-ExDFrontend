@@ -2,159 +2,147 @@
 
 describe('Directive: resizeable', function () {
 
+  var scope, compile, element, document, window, resizeDiv;
+  var mockedMouseDownEventStopPropagation;
+
+  // Note that we set those two values to '0'. This is mainly due to the problem that phantomjs
+  // does not eat these values for 'top' and 'left' in the CSS – they are always set to '0'.
+  // So in principal this test should also work with non zero values, but due to phantomjs it does not.
+  var elementToResize = {top: 0, left: 0, initialWidth: 100, initialHeight: 45};
+
   beforeEach(module('exdFrontendApp'));
-
-  var $scope, element, window;
-  var resizeButtons;
-
-  var HORIZONTAL_STEP = 50;
-  var VERTICAL_STEP = 25;
-  var MIN_WIDTH = 100;
-  var MIN_HEIGHT = 60;
-
-  beforeEach(inject(function ($rootScope, $compile, $window) {
-    $scope = $rootScope.$new();
-    element = $compile('<div resizeable></div>')($scope);
-    $scope.$digest();
+  beforeEach(inject(function ($rootScope, $compile, $document, $window) {
+    scope = $rootScope.$new();
+    compile = $compile;
+    document = $document;
     window = $window;
-    $scope.onScreenSizeChanged = jasmine.createSpy('onScreenSizeChanged');
-
-    resizeButtons = angular.element(element.children()[0]).children();
-
+    scope.onResizeEnd = jasmine.createSpy('onResizeEnd');
+    mockedMouseDownEventStopPropagation = jasmine.createSpy('stopPropagation');
   }));
 
-  it('replaces the element with the appropriate content', function () {
-    // Compile a piece of HTML containing the directive
-    expect(element.prop('outerHTML')).toContain('<div resizeable="" class="ng-scope"><div class="resize-buttons"><div class="resize-button first-element"><i class="fa fa-expand rotate-45-counterclockwise"></i></div><div class="resize-button"><i class="fa fa-compress rotate-45-counterclockwise"></i></div><div class="resize-button"><i class="fa fa-expand rotate-45-clockwise"></i></div><div class="resize-button"><i class="fa fa-compress rotate-45-clockwise"></i></div></div></div>');
+  describe('Resizing divs with the aspect ratio not taken into consideration', function () {
+
+    beforeEach(function () {
+      element = compile('<div resizeable></div>')(scope);
+      resizeDiv = angular.element(element.children()[0]);
+    });
+
+    it('should replace the element with the appropriate content', function () {
+      // Compile a piece of HTML containing the directive
+      expect(element.prop('outerHTML')).toContain('<div resizeable="" class="ng-scope"><div class="resizeable"></div></div>');
+    });
+
+    it('should check for the default window height and width', function () {
+      // Default height and width
+      expect(window.innerHeight).toBe(300);
+      expect(window.innerWidth).toBe(400);
+    });
+
+    it('should call the onResizeEnd method', function () {
+      resizeElement(elementToResize, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+      expect(scope.onResizeEnd).toHaveBeenCalled();
+    });
+
+    it('should stop event propagation on the mousedown event', function () {
+      resizeElement(elementToResize, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+      expect(mockedMouseDownEventStopPropagation).toHaveBeenCalled();
+    });
+
+    it('should handle the resize correctly', function () {
+      var resizeAction = resizeElement(elementToResize, {dx: 60, dy: 30});
+      expect(resizeAction.newWidth).toBe(resizeAction.mouseMoveEvent.pageX - elementToResize.top);
+      expect(resizeAction.newHeight).toBe(resizeAction.mouseMoveEvent.pageY - elementToResize.left);
+    });
   });
 
-  it('checks for the default window height and width', function () {
-    //default height and width
-    expect(window.innerHeight).toBe(300);
-    expect(window.innerWidth).toBe(400);
+  describe('Using the keep aspect ratio attribute', function () {
+
+    beforeEach(function () {
+      element = compile('<div resizeable keep-aspect-ratio></div>')(scope);
+      resizeDiv = angular.element(element.children()[0]);
+    });
+
+    it('it should handle the resize correctly', function () {
+      elementToResize.initialWidth = 100;
+      elementToResize.initialHeight = 120;
+      var deltas = {dx: 50, dy: 60};
+      var resizeAction = resizeElement(elementToResize, deltas);
+      expect(resizeAction.newWidth).toBe(resizeAction.mouseMoveEvent.pageX - elementToResize.top);
+      expect(resizeAction.newHeight).toBe(resizeAction.mouseMoveEvent.pageY - elementToResize.left);
+    });
+
   });
 
-  /***
-   * Test the enlarge Height function
-   */
-  it('should make the element higher', function () {
-    element.css('height', window.innerHeight - VERTICAL_STEP - 1);
-    element.css('width', 120);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+  function randomInt(lowerBound, upperBound) {
+    return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
+  }
 
-    var oldHeight = element.outerHeight();
-    var enlargeHeight = angular.element(resizeButtons[0]);
-    enlargeHeight.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
-    expect(element.outerHeight()).toBe(oldHeight + VERTICAL_STEP);
-  });
+  // Helper function that emulates a whole cycle of a resizing action.
+  //
+  // Pass in an element which you want to resize. It will then "perform" a mousedown event on the lower right corner
+  // of the element, where the handle is. Then a mousemove event with the dx, dt specified in the "mouseMove" object
+  // and finally it creates a mouseup event at exactly this position.
+  function resizeElement(movedElement, mouseMove) {
+    var mouseDownPageX = elementToResize.initialWidth + elementToResize.left;
+    var mouseDownPageY = elementToResize.initialHeight + elementToResize.top;
 
-  it('should NOT make the element higher', function () {
-    element.css('height', window.innerHeight - 1);
-    element.css('width', 120);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+    var mouseDownEvent = {
+      pageX: mouseDownPageX,
+      pageY: mouseDownPageY
+    };
 
-    var oldHeight = element.outerHeight();
-    var enlargeHeight = angular.element(resizeButtons[0]);
-    enlargeHeight.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).not.toHaveBeenCalled();
-    expect(element.outerHeight()).toBe(oldHeight);
-  });
+    var mouseMoveEvent = {
+      pageX: mouseDownPageX + mouseMove.dx,
+      pageY: mouseDownPageY + mouseMove.dy
+    };
 
-  /***
-   * Test the compress Height function
-   */
-  it('should make the element smaller in height', function () {
-    element.css('height', MIN_HEIGHT + VERTICAL_STEP + 1);
-    element.css('width', 120);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+    var mouseUpEvent = {
+      pageX: mouseMoveEvent.pageX,
+      pageY: mouseMoveEvent.pageY
+    };
 
-    var oldHeight = element.outerHeight();
-    var compressHeight = angular.element(resizeButtons[1]);
-    compressHeight.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
-    expect(element.outerHeight()).toBe(oldHeight - VERTICAL_STEP);
-  });
+    element.css({
+      'position': 'absolute',
+      'top': movedElement.top,
+      'left': movedElement.left,
+      'width': movedElement.initialWidth,
+      'height': movedElement.initialHeight
+    });
 
-  it('should NOT make the element smaller in height', function () {
-    element.css('height', MIN_HEIGHT + 1);
-    element.css('width', 120);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+    // Ensure we have the right width before we do the resizing!
+    expect(element.outerWidth()).toBe(movedElement.initialWidth);
+    expect(element.outerHeight()).toBe(movedElement.initialHeight);
 
-    var oldHeight = element.outerHeight();
-    var compressHeight = angular.element(resizeButtons[1]);
-    compressHeight.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).not.toHaveBeenCalled();
-    expect(element.outerHeight()).toBe(oldHeight);
-  });
+    // Resize by doing mousedown, mousemove and mouseup.
+    resizeDiv.triggerHandler({
+      type: 'mousedown',
+      pageX: mouseDownEvent.pageX,
+      pageY: mouseDownEvent.pageY,
+      stopPropagation: mockedMouseDownEventStopPropagation
+    });
 
-  /***
-   * Test the enlarge Width function
-   */
-  it('should make the element wider', function () {
-    element.css('height', 70);
-    element.css('width', MIN_WIDTH + 1);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+    document.triggerHandler({
+      type: 'mousemove',
+      pageX: mouseMoveEvent.pageX,
+      pageY: mouseMoveEvent.pageY
+    });
 
-    var oldWidth = element.outerWidth();
-    var enlargeWidth = angular.element(resizeButtons[2]);
-    enlargeWidth.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
-    expect(element.outerWidth()).toBe(oldWidth + HORIZONTAL_STEP);
-  });
+    document.triggerHandler({
+      type: 'mouseup',
+      pageX: mouseUpEvent.pageX,
+      pageY: mouseUpEvent.pageY
+    });
 
-  it('should NOT make the element wider', function () {
-    element.css('height', 70);
-    element.css('width', window.innerWidth - 1);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+    scope.$digest();
 
-    var oldWidth = element.outerWidth();
-    var enlargeWidth = angular.element(resizeButtons[2]);
-    enlargeWidth.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).not.toHaveBeenCalled();
-    expect(element.outerWidth()).toBe(oldWidth);
-  });
+    return {
+      mouseDownEvent: mouseDownEvent,
+      mouseMoveEvent: mouseMoveEvent,
+      mouseUpEvent: mouseUpEvent,
+      newWidth: element.outerWidth(),
+      newHeight: element.outerHeight()
+    };
 
-  /***
-   * Test the compress Width function
-   */
-  it('should make the element smaller in width', function () {
-    element.css('height', 70);
-    element.css('width', MIN_WIDTH + HORIZONTAL_STEP + 1);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
+  }
 
-    var oldWidth = element.outerWidth();
-    var compressWidth = angular.element(resizeButtons[3]);
-    compressWidth.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
-    expect(element.outerWidth()).toBe(oldWidth - HORIZONTAL_STEP);
-  });
-
-  it('should NOT make the element smaller in width', function () {
-    element.css('height', 70);
-    element.css('width', MIN_WIDTH + 1);
-    $scope.$digest();
-    $scope.onScreenSizeChanged.reset();
-
-    var oldWidth = element.outerWidth();
-    var compressWidth = angular.element(resizeButtons[3]);
-    compressWidth.trigger('click');
-    $scope.$digest();
-    expect($scope.onScreenSizeChanged).not.toHaveBeenCalled();
-    expect(element.outerWidth()).toBe(oldWidth);
-  });
 });

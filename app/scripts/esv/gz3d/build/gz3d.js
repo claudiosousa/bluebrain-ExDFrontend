@@ -2864,8 +2864,12 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
     var zIndex = this.scene.views.length;
     var left = 0.01; //(0.1 * (zIndex + this.scene.MAX_VIEW_COUNT)) % (1.0 - width);
     var top = 0.02; //(0.1 * (zIndex + this.scene.MAX_VIEW_COUNT)) % (1.0 - height);
+
+    // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
+    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
     var width = 0.2;
     var height = 0.3;
+
     var isMainView = false;
     var view = this.scene.createView(sensor.name, left, top, width, height, zIndex, fov, near, far, isMainView);
 
@@ -2880,7 +2884,7 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
     this.scene.views.push(view);
 
     // visualization - Deactivated since it causes the robot to be very big and the user
-    // can't barely select other objects on the scene. Reactivate for debug purposes ! 
+    // can't barely select other objects on the scene. Reactivate for debug purposes !
     // var cameraHelper = new THREE.CameraHelper(view.camera);
     // view.camera.add( cameraHelper );
 
@@ -5301,12 +5305,21 @@ GZ3D.Scene.prototype.createView = function(name, left, top, width, height, zInde
   if (isMainView) {
     viewContainer = document.getElementById('container_MainView');
   } else {
-    viewContainer = this.$compile('<div movable></div>')(this.$rootScope)[0];
+    viewContainer = this.$compile('<div movable resizeable keep-aspect-ratio></div>')(this.$rootScope)[0];
     viewContainer.style.position = 'absolute';
     viewContainer.style.left = left * 100 + '%';
     viewContainer.style.top = top * 100 + '%';
+
+    // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
+    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
+    // Here we use (preliminary) percentual width.
     viewContainer.style.width = width * 100 + '%';
     viewContainer.style.height = height * 100 + '%';
+
+    // We set 50px as a min-width for now and set the min height accordingly
+    viewContainer.style.minWidth = "50px";
+    viewContainer.style.minHeight = (50 * (width/height)) + "px";
+
     this.container.appendChild(viewContainer);
   }
 

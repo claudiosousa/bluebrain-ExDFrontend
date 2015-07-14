@@ -84,14 +84,21 @@
       var canvas = scope.canvas[scope.currentCanvasIndex];
       var context = scope.ctx[scope.currentCanvasIndex];
 
+      var oldHeight, canvasData;
+
       // In order to have a smooth transition, we take a snapshot of what is currently drawn.
       // A few lines after, we redraw that to the new position (since the size did change)
-      var oldHeight = canvas.height;
-      var canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
+      oldHeight = canvas.height;
+      canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
       canvas.width = scope.directiveDiv.offsetWidth;
       canvas.height = scope.directiveDiv.offsetHeight;
       canvas.style.left = canvas.width - scope.xPosition;
-      context.putImageData(canvasData, 0, canvas.height - oldHeight);
+      //
+      // The following line is uncommented, since we do not want a "smooth transition" but rather a
+      // complete new drawing of the canvas. But it may be the case that we re-activate it later, hence
+      // it is not removed.
+      //
+      //context.putImageData(canvasData, 0, canvas.height - oldHeight);
 
       var otherCanvas = 1 - scope.currentCanvasIndex;
       canvas = scope.canvas[otherCanvas];
@@ -104,6 +111,19 @@
       canvas.height = scope.directiveDiv.offsetHeight;
       canvas.style.left = -scope.xPosition;
       context.putImageData(canvasData, canvas.width - oldWidth, canvas.height - oldHeight);
+    };
+
+    scope.onResizeBegin = function() {
+      // Hide the canvas while we resize
+      scope.canvas[0].style.visibility = 'hidden';
+      scope.canvas[1].style.visibility = 'hidden';
+    };
+
+    scope.onResizeEnd = function() {
+      // Show the canvas again after recalculating
+      scope.onScreenSizeChanged();
+      scope.canvas[0].style.visibility = 'visible';
+      scope.canvas[1].style.visibility = 'visible';
     };
 
     // Draw a separator line to visualize that there is data missing during the closed state of the visualization
