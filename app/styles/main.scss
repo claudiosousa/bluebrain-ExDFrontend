@@ -106,6 +106,12 @@ canvas {
   display: block;
 }
 
+// Let the toolbar overlay be "at the top" such that other elements (like moveable objects)
+// will not cover the toolbar.
+#overlay {
+  z-index: 1000;
+}
+
 .esv-overlay {
   width: 100%
 }
