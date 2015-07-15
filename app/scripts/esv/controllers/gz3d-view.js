@@ -63,12 +63,12 @@
       .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
-      'simulationState', 'serverError', 'screenControl',
+      'simulationState', 'serverError', 'screenControl', 'experimentList',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
-          simulationState, serverError, screenControl,
+          simulationState, serverError, screenControl, experimentList,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion, panels, UI, OPERATION_MODE) {
 
@@ -126,11 +126,11 @@
         simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
           $scope.ownerID = data.owner;
           var experimentID = data.experimentID;
-          $http.get('views/esv/experiment_templates.json').success(function (experimentData) {
-            angular.forEach(experimentData, function(experimentTemplate) {
-              if (experimentTemplate.experimentConfiguration === experimentID &&
-                (serverBaseUrl.indexOf(experimentTemplate.serverPattern) > -1 )) {
-                $scope.ExperimentDescription = experimentTemplate.snippet;
+          // get experiment list from current server
+          experimentList(serverBaseUrl).experiments(function (data) {
+            angular.forEach(data.data, function(experimentTemplate) {
+              if (experimentTemplate.experimentConfiguration === experimentID) {
+                $scope.ExperimentDescription = experimentTemplate.description;
               }
             });
           });

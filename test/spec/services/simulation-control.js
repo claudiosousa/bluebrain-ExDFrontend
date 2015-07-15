@@ -55,17 +55,17 @@ describe('Services: simulation-services', function () {
     ];
 
     experimentTemplates = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 200},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 300}
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:['bbpce016'], timeout: 100},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:['bbpce016'], timeout: 200},
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:['bbpce016'], timeout: 300}
     };
 
     experimentTemplatesAugmented = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', snippet: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers : 2},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', snippet: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 200, numSupportingServers : 2, runningExperiments: 1, simulations: [
+      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:['bbpce016'], timeout: 100, numSupportingServers : 2},
+      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:['bbpce016'], timeout: 200, numSupportingServers : 2, runningExperiments: 1, simulations: [
         {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
       ]},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', snippet: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 300, runningExperiments: 3, simulations: [
+      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:['bbpce016'], timeout: 300, runningExperiments: 3, simulations: [
         { simulationID: 2, experimentID: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
         { simulationID: 0, experimentID: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
         { simulationID: 2, experimentID: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
@@ -229,6 +229,7 @@ describe('Services: experimentSimulationService', function () {
     experimentSimulationService,
     simulationGenerator,
     simulationState,
+    experimentList,
     scope,
     bbpConfig,
     roslib,
@@ -239,7 +240,7 @@ describe('Services: experimentSimulationService', function () {
   beforeEach(module('simulationControlServices'));
 
   var httpBackend;
-  var returnSimulations, experimentTemplates, experimentTemplatesAugmented;
+  var returnSimulations, experimentListCallBbpce016, experimentListCallBbpce014, experimentTemplates, experimentTemplatesAugmented;
 
   var bbpConfigMock = {};
   var bbpConfigString =
@@ -275,6 +276,8 @@ describe('Services: experimentSimulationService', function () {
   var simulationGeneratorMock = jasmine.createSpy('simulationGenerator').andReturn(simulationGeneratorMockObject);
   var simulationStateMockObject = { update: jasmine.createSpy('update')};
   var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateMockObject);
+  var experimentListMockObject = { experiments: jasmine.createSpy('experiments')};
+  var experimentListMock = jasmine.createSpy('experimentList').andReturn(experimentListMockObject);
 
   beforeEach(module(function ($provide) {
     $provide.constant('bbpConfig', bbpConfigMock);
@@ -282,59 +285,85 @@ describe('Services: experimentSimulationService', function () {
     $provide.value('roslib', roslibMock);
     $provide.value('simulationGenerator', simulationGeneratorMock);
     $provide.value('simulationState', simulationStateMock);
+    $provide.value('experimentList', experimentListMock);
   }));
 
   beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_,
-      _simulationState_, _experimentSimulationService_, _bbpConfig_, _roslib_, _STATE_) {
+      _simulationState_, _experimentSimulationService_, _experimentList_, _bbpConfig_, _roslib_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
     simulationService = _simulationService_;
     simulationGenerator = _simulationGenerator_;
     experimentSimulationService = _experimentSimulationService_;
     simulationState = _simulationState_;
+    experimentList = _experimentList_;
     bbpConfig = _bbpConfig_;
     roslib = _roslib_;
     STATE = _STATE_;
 
     returnSimulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, serverID : 'bbpce016'},
-      { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 2, experimentID: 'fakeExperiment3', state: STATE.PAUSED, serverID : 'bbpce016'},
-      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, serverID : 'bbpce016'},
-      { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED, serverID : 'bbpce016'},
-      { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, serverID : 'bbpce016'}
+      { simulationID: 0, experimentID: 'fakeExperiment0.xml', state: STATE.CREATED, serverID : 'bbpce016'},
+      { simulationID: 1, experimentID: 'fakeExperiment1.xml', state: STATE.INITIALIZED, serverID : 'bbpce016'},
+      { simulationID: 2, experimentID: 'fakeExperiment2.xml', state: STATE.PAUSED, serverID : 'bbpce016'},
+      { simulationID: 3, experimentID: 'fakeExperiment2.xml', state: STATE.STARTED, serverID : 'bbpce016'},
+      { simulationID: 4, experimentID: 'fakeExperiment4.xml', state: STATE.STOPPED, serverID : 'bbpce016'},
+      { simulationID: 5, experimentID: 'fakeExperiment5.xml', state: STATE.INITIALIZED, serverID : 'bbpce016'},
+      { simulationID: 6, experimentID: 'fakeExperiment6.xml', state: STATE.CREATED, serverID : 'bbpce016'}
     ];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[3]);
     simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn({$promise: {then: function(){}}});
 
+    experimentListCallBbpce016 = {
+      data : {
+        'fakeExperiment1.xml': {
+          name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', timeout: 100
+        },
+        'fakeExperiment2.xml': {
+          name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', timeout: 200
+        },
+        'fakeExperiment3.xml': {
+          name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', timeout: 300
+        }
+      }
+    };
+
+    // introduce same '1' experiment on other server to pass through if branch in getExperiments
+    experimentListCallBbpce014 = {
+      data : {
+        'fakeExperiment1.xml': {
+          name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', timeout: 100
+        }
+      }
+    };
+
     experimentTemplates = {
-      '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2, numAvailableServers : 0
+      'fakeExperiment1.xml': {
+        imageUrl: 'http://bbpce014.epfl.ch:8080/experiment/fakeExperiment1.xml/preview', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
-      'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2, numAvailableServers : 0
+      'fakeExperiment2.xml': {
+        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment2.xml/preview', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0
       },
-      '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2, numAvailableServers : 0
+      'fakeExperiment3.xml': {
+        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment3.xml/preview', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
     experimentTemplatesAugmented = {
-      '1': {
-        imageUrl: 'img/someFakeUrl1.png', name: 'FakeName 1', snippet: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1', serverPattern:'bbpce', timeout: 100, numSupportingServers: 2, numAvailableServers : 0
+      'fakeExperiment1.xml': {
+        imageUrl: 'http://bbpce014.epfl.ch:8080/experiment/fakeExperiment1.xml/preview', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
-      'fakeExperiment3': {
-        imageUrl: 'img/someFakeUrl2.png', name: 'FakeName 2', snippet: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3', serverPattern:'bbpce', timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1, simulations: [
+      'fakeExperiment2.xml': {
+        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment2.xml/preview', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1, simulations: [
           returnSimulations[3]
       ]},
-      '3': {
-        imageUrl: 'img/someFakeUrl3.png', name: 'FakeName 3', snippet: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2', serverPattern:'bbpce', timeout: 300, numSupportingServers: 2, numAvailableServers : 0
+      'fakeExperiment3.xml': {
+        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment3.xml/preview', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
-    httpBackend.whenGET('views/esv/experiment_templates.json').respond(experimentTemplates);
+    httpBackend.whenGET('http://bbpce014.epfl.ch:8080/experiment').respond(experimentTemplates);
     spyOn(console, 'error');
+    spyOn(console, 'log');
 
     roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionMock);
     statusListenerMock = { subscribe : jasmine.createSpy('subscribe')};
@@ -342,8 +371,6 @@ describe('Services: experimentSimulationService', function () {
   }));
 
   it('should refresh the experiment template data structure', function() {
-    simulationService = simulationServiceMock;
-
     // the simulation should be added to the experimentTemplates
     experimentSimulationService.refreshExperiments(experimentTemplates);
     var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
@@ -387,34 +414,56 @@ describe('Services: experimentSimulationService', function () {
         {
           $promise: {then: mockedThen}
         });
+      experimentListMockObject.experiments = jasmine.createSpy('experiments').andReturn(
+        {
+          $promise: {then: mockedThen}
+        });
       simulationService.reset();
+      console.log.reset();
     });
 
     it('should callback when all servers have answered to the query', function() {
       var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
       var templates = {};
-      experimentSimulationService.getExperiments(templates, emptyCallback, queryingServersFinishedCallback, emptyCallback);
 
-      // Now flush the backend (because the experiment templates are queried)
-      httpBackend.flush();
+      experimentSimulationService.getExperiments(templates, emptyCallback, queryingServersFinishedCallback, emptyCallback);
+      // Resolve the deferred variables
+      mockedThen.argsForCall.forEach(function (argument) {
+        argument[0]();
+      });
+      // We have to use scope.$digest() here, since otherwise the used promises would not be resolved,
+      // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
+      scope.$digest();
+
+      expect(experimentList().experiments.callCount).toBe(2);
+      experimentList().experiments.argsForCall[0][0](experimentListCallBbpce014);
+      experimentList().experiments.mostRecentCall.args[0](experimentListCallBbpce016);
+
+      // perform refreshExperiment work by hand:
+      templates['fakeExperiment1.xml'].numSupportingServers = 2;
+      templates['fakeExperiment1.xml'].numAvailableServers = 0;
+      templates['fakeExperiment2.xml'].numSupportingServers = 2;
+      templates['fakeExperiment2.xml'].numAvailableServers = 0;
+      templates['fakeExperiment3.xml'].numSupportingServers = 2;
+      templates['fakeExperiment3.xml'].numAvailableServers = 0;
+
       expect(templates).toEqual(experimentTemplates);
+
 
       // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
       expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
 
       // Hence we have to call those explicitly.
+      // And call $digest to proceed
       mockedThen.argsForCall.forEach(function (argument) {
-        argument[0]();
+       argument[0]();
       });
-
-      // We have to use scope.$digest() here, since otherwise the used promises would not be resolved,
-      // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
       scope.$digest();
 
       // At this place "checkServerAvailability" should have been called which as well queries servers.
       // So we again have to resolve the promises and do a $digest()
       mockedThen.argsForCall.forEach(function (argument) {
-        argument[0]();
+       argument[0]();
       });
       scope.$digest();
 
@@ -469,7 +518,8 @@ describe('Services: experimentSimulationService', function () {
     it('should start a new experiment', function(){
       experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
 
-      experimentSimulationService.startNewExperiments('experiment_id', 'bbpce');
+      simulationService.reset();
+      experimentSimulationService.startNewExperiments('experiment_id', 'bbpce014 bbpce016', emptyCallback);
 
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
@@ -479,12 +529,12 @@ describe('Services: experimentSimulationService', function () {
       expect(messageCallback).toHaveBeenCalled();
 
       var returnSimulations2 = [
-        { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STOPPED, serverID : 'bbpce016'},
-        { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.STOPPED, serverID : 'bbpce016'}
+        { simulationID: 0, experimentID: '0', state: STATE.STOPPED, serverID : 'bbpce016'},
+        { simulationID: 1, experimentID: '1', state: STATE.STOPPED, serverID : 'bbpce016'}
       ];
 
       messageCallback.reset();
-      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STARTED, serverID : 'bbpce016'});
+      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: '0', state: STATE.STARTED, serverID : 'bbpce016'});
       simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations2);
       expect(messageCallback).not.toHaveBeenCalled();
     });
@@ -496,7 +546,6 @@ describe('Services: experimentSimulationService', function () {
     var isAvailableCallback = jasmine.createSpy('isAvailableCallback');
     experimentSimulationService.existsAvailableServer(experimentTemplates, isAvailableCallback);
 
-    expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
     expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
 
     expect(simulationServiceObject.simulations).toHaveBeenCalled();
@@ -508,10 +557,12 @@ describe('Services: experimentSimulationService', function () {
 
 
     isAvailableCallback.reset();
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.STARTED, serverID : 'bbpce016'});
+    console.log.reset();
+    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment3.xml', state: STATE.STARTED, serverID : 'bbpce016'});
     simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
     expect(isAvailableCallback).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledWith('Server http://bbpce016.epfl.ch:8080 is running experiment fakeExperiment3.xml');
   });
 });
 
