@@ -2879,9 +2879,10 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
 
     this.scene.views.push(view);
 
-    // visualization
-    var cameraHelper = new THREE.CameraHelper(view.camera);
-    view.camera.add( cameraHelper );
+    // visualization - Deactivated since it causes the robot to be very big and the user
+    // can't barely select other objects on the scene. Reactivate for debug purposes ! 
+    // var cameraHelper = new THREE.CameraHelper(view.camera);
+    // view.camera.add( cameraHelper );
 
     sensorObj.add(view.camera);
   }
