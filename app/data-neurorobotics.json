@@ -1,41 +1,41 @@
 {
-  "homeUrl": "http://bbpce011.epfl.ch",
+  "homeUrl": "https://neurorobotics-dev.humanbrainproject.eu",
   "profileUrl": "https://up.humanbrainproject.eu/#/user/profile",
   "apps": [{
     "id": "robotdesigner",
     "title": "Robot Designer",
     "platforms": ["neurorobotics"],
-    "url": "http://bbpce011.epfl.ch/#/rd",
+    "url": "https://neurorobotics-dev.humanbrainproject.eu/#/rd",
     "description": "Create or modify Robots"
   }, {
     "id": "environmentdesigner",
     "title": "Environment Designer",
     "platforms": ["neurorobotics"],
-    "url": "http://bbpce011.epfl.ch/#/ed",
+    "url": "https://neurorobotics-dev.humanbrainproject.eu/#/ed",
     "description": "Create or modify Environments"
   }, {
     "id": "braininterfacesandbodyintegrator",
     "title": "Brain Interfaces & Body Integrator",
     "platforms": ["neurorobotics"],
-    "url": "http://bbpce011.epfl.ch/#/bibi",
+    "url": "https://neurorobotics-dev.humanbrainproject.eu/#/bibi",
     "description": "Link neural simulations to Robots"
   }, {
     "id": "experimentdesigner",
     "title": "Experiment Designer",
     "platforms": ["neurorobotics"],
-    "url": "http://bbpce011.epfl.ch/#/new",
+    "url": "https://neurorobotics-dev.humanbrainproject.eu/#/new",
     "description": "Define full Experiments"
   }, {
     "id": "experimentsimulationviewerdisplaywall",
     "title": "Experiment Simulation Viewer Display Wall",
     "platforms": ["neurorobotics"],
-    "url": "http://bbpce011.epfl.ch/#/esv-wall",
+    "url": "https://neurorobotics-dev.humanbrainproject.eu/#/esv-wall",
     "description": "Run and view Experiments on the display wall"
   }, {
     "id": "experimentsimualtionviewerwebbrowser",
     "title": "Experiment Simulation Viewer Web Browser",
     "platforms": ["neurorobotics"],
-    "url": "http://bbpce011.epfl.ch/#/gz3d-view",
+    "url": "https://neurorobotics-dev.humanbrainproject.eu/#/gz3d-view",
     "description": "Run and view Experiments in your browser"
   }],
   "platforms": [{
