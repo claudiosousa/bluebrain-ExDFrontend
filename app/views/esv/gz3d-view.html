@@ -133,7 +133,7 @@
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
             <div ng-show="(state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED)">
-              <div class="hbp-toolbar-large-tool hbp-time-display" ng-class="{'highlighted': currentSelectedUIElement === UI.TIME_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.TIME_DISPLAY)">
+              <div class="hbp-toolbar-large-tool hbp-time-display default-cursor" ng-class="{'highlighted': currentSelectedUIElement === UI.TIME_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.TIME_DISPLAY)">
                 <div>
                   <div>
                     <span>Simulation time:</span><br/>
@@ -241,7 +241,7 @@
             </div>
 
             <!-- owner information -->
-            <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>
+            <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines default-cursor" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>
             <!-- owner information -->
 
             <!-- #### The following will be aligned on the right side (in reverse order) #### -->
