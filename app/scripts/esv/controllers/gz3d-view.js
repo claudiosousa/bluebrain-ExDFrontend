@@ -44,7 +44,8 @@
       SPIKETRAIN: 8,
       OWNER_DISPLAY: 9,
       EXIT_BUTTON: 10,
-      EDIT_BUTTON: 11
+      ROBOT_VIEW: 11,
+      CODE_EDITOR: 12
     });
 
   angular.module('exdFrontendApp')
@@ -60,7 +61,7 @@
           openCallbackFunction: 'openCallback'
         });
     }])
-      .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
+    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl', 'experimentList',
@@ -152,66 +153,66 @@
       /* by a progressbar somewhere else. */
       /* Timeout messages are displayed in the toolbar. */
       $scope.registerForStatusInformation = function() {
-          var rosbridgeWebsocketUrl = $scope.rosbridgeWebsocketUrl;
-          var statusTopic = serverConfig.rosbridge.topics.status;
-          var callbackOnClose = function() {
-            $scope.splashScreen = undefined;
-            /* avoid "$apply already in progress" error */
-            _.defer(function() { // jshint ignore:line
-              $scope.$apply(function() { $location.path("esv-web"); });
-            });
-          };
-
-          $scope.rosConnection = $scope.rosConnection || roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
-          $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
-
-          $scope.statusListener.unsubscribe(); // clear old subscriptions
-          $scope.statusListener.subscribe(function (data) {
-            var message = JSON.parse(data.data);
-            /* State messages */
-            /* Manage before other since others may depend on state changes */
-            if (message !== undefined && message.state !== undefined) {
-              $scope.$apply(function() { $scope.state = message.state; });
-            }
-            /* Progress messages (apart start state progress messages which are handled by another progress bar) */
-            if (message !== undefined && message.progress !== undefined && $scope.state !== STATE.STARTED ) {
-              $scope.splashScreen = $scope.splashScreen || splash.open(
-                  !message.progress.block_ui,
-                  (($scope.state === STATE.STOPPED) ? callbackOnClose : undefined));
-              if (message.progress.done !== undefined && message.progress.done) {
-                splash.spin = false;
-                splash.setMessage({ headline: 'Finished' });
-
-                /* if splash is a blocking modal (no button), then close it */
-                /* (else it is closed by the user on button click) */
-                if (!splash.showButton) {
-                  splash.close();
-                  $scope.splashScreen = undefined;
-                }
-              } else {
-                splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
-              }
-            }
-            /* Time messages */
-            if (angular.isDefined(message)) {
-              var to = angular.isDefined(message.timeout);
-              var st = angular.isDefined(message.simulationTime);
-              var rt = angular.isDefined(message.realTime);
-              if (to || st || rt) {
-                $scope.$apply(function() {
-                  if (to) {
-                    $scope.simTimeoutText = message.timeout;
-                  }
-                  if (st) {
-                    $scope.simulationTimeText = message.simulationTime;
-                  }
-                  if (rt) {
-                    $scope.realTimeText = message.realTime;
-                  }
-                });
-              }
-            }
+        var rosbridgeWebsocketUrl = $scope.rosbridgeWebsocketUrl;
+        var statusTopic = serverConfig.rosbridge.topics.status;
+        var callbackOnClose = function() {
+          $scope.splashScreen = undefined;
+          /* avoid "$apply already in progress" error */
+          _.defer(function() { // jshint ignore:line
+            $scope.$apply(function() { $location.path("esv-web"); });
           });
+        };
+
+        $scope.rosConnection = $scope.rosConnection || roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
+        $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
+
+        $scope.statusListener.unsubscribe(); // clear old subscriptions
+        $scope.statusListener.subscribe(function (data) {
+          var message = JSON.parse(data.data);
+          /* State messages */
+          /* Manage before other since others may depend on state changes */
+          if (message !== undefined && message.state !== undefined) {
+            $scope.$apply(function() { $scope.state = message.state; });
+          }
+          /* Progress messages (apart start state progress messages which are handled by another progress bar) */
+          if (message !== undefined && message.progress !== undefined && $scope.state !== STATE.STARTED ) {
+            $scope.splashScreen = $scope.splashScreen || splash.open(
+                !message.progress.block_ui,
+                (($scope.state === STATE.STOPPED) ? callbackOnClose : undefined));
+            if (message.progress.done !== undefined && message.progress.done) {
+              splash.spin = false;
+              splash.setMessage({ headline: 'Finished' });
+
+              /* if splash is a blocking modal (no button), then close it */
+              /* (else it is closed by the user on button click) */
+              if (!splash.showButton) {
+                splash.close();
+                $scope.splashScreen = undefined;
+              }
+            } else {
+              splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
+            }
+          }
+          /* Time messages */
+          if (angular.isDefined(message)) {
+            var to = angular.isDefined(message.timeout);
+            var st = angular.isDefined(message.simulationTime);
+            var rt = angular.isDefined(message.realTime);
+            if (to || st || rt) {
+              $scope.$apply(function() {
+                if (to) {
+                  $scope.simTimeoutText = message.timeout;
+                }
+                if (st) {
+                  $scope.simulationTimeText = message.simulationTime;
+                }
+                if (rt) {
+                  $scope.realTimeText = message.realTime;
+                }
+              });
+            }
+          }
+        });
       };
 
       // The following lines allow the joining client to retrieve the actual screen color stored by the server.
@@ -356,7 +357,7 @@
 
       // This should be integrated to the tutorial story when
       // it will be implemented !
-     $scope.showKeyboardControlInfo = function() {
+      $scope.showKeyboardControlInfo = function() {
         if (!hasNavigationAlreadyBeenClicked)
         {
           hasNavigationAlreadyBeenClicked = true;
@@ -440,31 +441,23 @@
         }
       });
 
-       $scope.help = function(uiElement){
-         if($scope.currentSelectedUIElement === uiElement){
-           $scope.helpDescription = "";
-           $scope.currentSelectedUIElement = UI.UNDEFINED;
-         }
-         else {
-           $scope.helpDescription = $scope.helpText[uiElement];
-           $scope.currentSelectedUIElement = uiElement;
-         }
-       };
+      $scope.help = function(uiElement){
+        if($scope.currentSelectedUIElement === uiElement){
+          $scope.helpDescription = "";
+          $scope.currentSelectedUIElement = UI.UNDEFINED;
+        }
+        else {
+          $scope.helpDescription = $scope.helpText[uiElement];
+          $scope.currentSelectedUIElement = uiElement;
+        }
+      };
 
-        $scope.toggleOperationMode = function() {
-          if($scope.operationMode === OPERATION_MODE.VIEW){
-            $scope.operationMode = OPERATION_MODE.EDIT;
-          } else {
-            $scope.operationMode = OPERATION_MODE.VIEW;
-          }
-        };
+      $scope.edit = function() {
+        panels.open('code-editor');
+      };
 
-        $scope.edit = function() {
-          panels.open('code-editor');
-        };
-
-        $scope.exit = function(path) {
-          $location.path(path);
-        };
+      $scope.exit = function(path) {
+        $location.path(path);
+      };
     }]);
 }());

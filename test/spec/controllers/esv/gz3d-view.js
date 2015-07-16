@@ -725,14 +725,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.operationMode).toBe(OPERATION_MODE.EDIT);
     });
 
-    it('can toggle the operation mode', function(){
-      expect(scope.operationMode).toBe(OPERATION_MODE.EDIT);
-      scope.toggleOperationMode();
-      expect(scope.operationMode).toBe(OPERATION_MODE.VIEW);
-      scope.toggleOperationMode();
-      expect(scope.operationMode).toBe(OPERATION_MODE.EDIT);
-    });
-
     it('should call the panels.open() function', function() {
       scope.edit();
       expect(panels.open).toHaveBeenCalledWith('code-editor');
