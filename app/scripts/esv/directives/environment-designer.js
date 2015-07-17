@@ -9,7 +9,8 @@
   });
 
   angular.module('exdFrontendApp')
-  .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', function ($log, EDIT_MODE, panels) {
+  .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', 'simulationSDFWorld',
+  function ($log, EDIT_MODE, panels, simulationSDFWorld) {
     return {
       templateUrl: 'views/esv/environment-designer.html',
       restrict: 'E',
@@ -18,13 +19,15 @@
         scope.mode = EDIT_MODE.view;
 
         scope.setEditMode = function (mode) {
+          $log.debug('ED: Setting mode to ' + mode + '.');
           scope.mode = mode;
           scope.$root.scene.setManipulationMode(mode);
           panels.close();
         };
 
-        /* scope.save_sdf = function () {
-          simulationSDFWorld($scope.serverBaseUrl).sdf_world({}, function (data) {
+        scope.exportSDFWorld = function () {
+          $log.debug('ED: Querying server for SDF world export.');
+          simulationSDFWorld(scope.serverBaseUrl).export({}, function (data) {
             var $q = data.sdf_dump;
             var $el = document.createElement('a');
             $el.setAttribute('href', 'data:text/xml;charset=utf-8,' + encodeURIComponent($q));
@@ -34,7 +37,7 @@
             $el.click();
             document.body.removeChild($el);
           });
-        }; */
+        };
       }
     };
   }]);

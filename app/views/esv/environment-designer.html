@@ -1,5 +1,12 @@
 <!-- TEST: Environment Designer loaded correctly -->
 <h3>Environment Editor</h3>
+<p>The Neurorobotics Platform is built on top of <a href="http://gazebosim.org/">Gazebo</a> <img
+  src="img/common/gazebo-logo.png"/>. Any environment created for Gazebo (and made of simple primitives or Collada
+  objects) is therefore compatible with the platform.
+  Gazebo uses the <a href="http://sdformat.org/">SDF format</a>.
+  If you want your environments to be
+  available,  <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the corresponding SDF file(s) and
+  assets).
 <hr>
 <h4>View, Move or Rotate objects on the scene:</h4>
 <div class="btn-group" role="group">
@@ -16,5 +23,11 @@
     <span>Rotate objects</span>
   </button>
 </div>
+<hr>
+<h4>Save or Load environment definition file to and from your computer</h4>
+<button type="button" class="btn btn-default" ng-click="exportSDFWorld()">
+  <i class="glyphicon glyphicon-save"></i>
+  <span>Save SDF locally</span>
+</button>
 <hr>
 
