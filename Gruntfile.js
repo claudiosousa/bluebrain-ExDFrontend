@@ -33,6 +33,7 @@ module.exports = function(grunt) {
         bbpConfig: bbpConfig,
         pkg: grunt.file.readJSON('package.json'),
         gerritBranch: process.env.GERRIT_BRANCH,
+        noImagemin: false,
 
         // Watches files for changes and runs tasks based on the changed files
         watch: {
@@ -421,6 +422,12 @@ module.exports = function(grunt) {
                 cwd: '<%= yeoman.app %>/styles',
                 dest: '.tmp/styles/',
                 src: '**/*.css'
+            },
+            images: {
+                expand: true,
+                cwd: '<%= yeoman.app %>/img',
+                dest: '<%= yeoman.dist %>/img',
+                src: '**/*.{png,jpg,jpeg,gif,webp}'
             }
         },
 
@@ -565,6 +572,13 @@ module.exports = function(grunt) {
              gerritBranch: '<%= gerritBranch %>'
           }
         },
+
+        build: {
+          options: {
+             noImagemin: '<%= noImagemin %>'
+          }
+        },
+
     });
 
 
@@ -606,25 +620,38 @@ module.exports = function(grunt) {
         'jshint'
     ]);
 
-    grunt.registerTask('build', [
-        'clean:dist',
-        'version:dist',
-        'wiredep',
-        'compass:dist',
-        'useminPrepare',
-        'imagemin',
-        'svgmin',
-        'autoprefixer',
-        'concat',
-        'ngAnnotate',
-        'copy:dist',
-        'cdnify',
-        'cssmin',
-        'uglify',
-        'filerev',
-        'usemin',
-        'htmlmin'
-    ]);
+    grunt.registerTask('build', function() {
+        var tasks = [
+            'clean:dist',
+            'version:dist',
+            'wiredep',
+            'compass:dist',
+            'useminPrepare'
+        ];
+        grunt.log.writeln("Option to avoid using imagemin is " + this.options().noImagemin);
+        if (this.options().noImagemin === true)
+        {
+            tasks.push('copy:images');
+        }
+        else
+        {
+            tasks.push('imagemin');
+        }
+        var followingTasks = [ 'svgmin',
+            'autoprefixer',
+            'concat',
+            'ngAnnotate',
+            'copy:dist',
+            'cdnify',
+            'cssmin',
+            'uglify',
+            'filerev',
+            'usemin',
+            'htmlmin'
+        ];
+        tasks.push.apply(tasks, followingTasks);
+        grunt.task.run(tasks);
+    });
 
     grunt.registerTask('default', [
         'newer:jshint',
