@@ -56,8 +56,14 @@ describe('Directive: transferFunctionEditor', function () {
   var $rootScope, $compile, $httpBackend, $log, $scope, element, simulationTransferFunctions;
 
   var transferFunctionsMock = jasmine.createSpy('transferFunctions');
-  var simulationTransferFunctionsMock = jasmine.createSpy('simulationTransferFunctions').andReturn({transferFunctions: transferFunctionsMock});
-  var transferFunctionsReturned = {'transfer_functions': ['some code', 'more code']};
+  var patchMock = jasmine.createSpy('patch');
+  var simulationTransferFunctionsMock = jasmine.createSpy('simulationTransferFunctions').andReturn({transferFunctions: transferFunctionsMock, patch: patchMock});
+  var tf1Name = 'tf1';
+  var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
+  var tf2Name = 'tf2';
+  var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + ' (varx):\n\t#put your code here';
+  var tf3Code = '#I am not valid';
+  var transferFunctionsReturned = {'transfer_functions': [tf1Code, tf2Code, tf3Code]};
 
   var SERVER_URL = 'https://neurorobotics-dev.humanbrainproject.eu/cle/1/api';
   var SIMULATION_ID = 1;
@@ -88,9 +94,25 @@ describe('Directive: transferFunctionEditor', function () {
     expect($scope.transferFunctions).toBeDefined();
     expect(simulationTransferFunctionsMock).toHaveBeenCalled();
     transferFunctionsMock.mostRecentCall.args[1](transferFunctionsReturned);
+    var expected = {};
+    var expectedTf1 = {code: tf1Code};
+    var expectedTf2 = {code: tf2Code};
+    expected[tf1Name] = expectedTf1;
+    expected[tf2Name] = expectedTf2;
+    expect($scope.transferFunctions).toEqual(expected);
+  });
+
+  it('should save back the tf properly', function () {
+    expect($scope.transferFunctions).toBeDefined();
+    expect(simulationTransferFunctionsMock).toHaveBeenCalled();
+    transferFunctionsMock.mostRecentCall.args[1](transferFunctionsReturned);
+    var newCode = 'New code';
+    $scope.transferFunctions[tf1Name].code = newCode;
+    $scope.update(tf1Name);
     // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "tranferFunctions"
     // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
-    expect($scope.transferFunctions).toEqual(transferFunctionsReturned.transfer_functions); // jshint ignore:line
+    expect(patchMock).toHaveBeenCalledWith({ sim_id : '1', tranferfunction_name : 'tf1' }, newCode); // jshint ignore:line
   });
+
 
 });

@@ -134,6 +134,11 @@
         transferFunctions: {
           method: 'GET',
           interceptor : {responseError : serverError}
+        },
+        patch: {
+          method: 'PUT',
+          url: baseUrl + '/simulation/:sim_id/transferfunctions/:tranferfunction_name',
+          interceptor : {responseError : serverError}
         }
       });
     };

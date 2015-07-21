@@ -1,18 +1,15 @@
 <h3>Transfer Functions Editor</h3>
-<div ng-repeat="transferFunction in transferFunctions">
+<div ng-repeat="(name, transferFunction) in transferFunctions">
   <hr>
-  <h4>Transfer function</h4>
+  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{name}}</span></code></h4>
   <div ui-codemirror="{
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,
           mode: 'text/x-python'
-      }" ng-model="transferFunction" ui-refresh="transferFunction">
+      }" ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
-  <button type="button" class="btn btn-default btn-md" ng-click="save($index)">
-    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save
-  </button>
-  <button type="button" class="btn btn-default btn-md" >
-    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Reset
+  <button type="button" class="btn btn-default btn-md" ng-click="update(name)">
+    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Update
   </button>
 </div>
