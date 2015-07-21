@@ -24,9 +24,6 @@
     <link rel="stylesheet" href="styles/esv/reset.css"/>
     <!-- endbuild -->
 
-    <!-- this link must not be enclosed into a build directive -->
-    <link rel="stylesheet" href="https://up.humanbrainproject.eu/upnav/hbp-up-nav.min.css" charset="utf8">
-
 </head>
 
 <body>
@@ -50,16 +47,9 @@
       }
     </script>
 
-    <nav class="upnav-cyan" hbp-up-nav="{
-            dataUrl: 'data-neurorobotics.json'
-        }">
-    </nav>
 
     <!-- Add your site or application content here -->
     <div ui-view></div>
-
-    <!-- this script tag must not be enclosed into a build directive -->
-    <script src="https://up.humanbrainproject.eu/upnav/hbp-up-nav.min.js" charset="utf-8"></script>
 
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->

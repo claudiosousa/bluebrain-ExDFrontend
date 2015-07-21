@@ -34,7 +34,14 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 .nrp-main-title
 {
   text-align: center;
-  padding-top: 30px;
+}
+
+.nrp-title-left-button
+{
+  float: left;
+  margin-left: 10px;
+  margin-top: 5px;
+  text-decoration: none;
 }
 
 .nrp-main-hints
