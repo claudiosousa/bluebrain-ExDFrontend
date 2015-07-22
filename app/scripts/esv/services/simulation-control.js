@@ -191,8 +191,8 @@
     };
   }]);
 
-  module.factory('experimentSimulationService', ['$q', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
-    function ($q, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError) {
+  module.factory('experimentSimulationService', ['$q', '$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
+    function ($q, $http, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError) {
     var getExperimentsCallback;
     var setProgressMessageCallback;
     var queryingServersFinishedCallback;
@@ -330,7 +330,9 @@
             } else {
               experimentTemplates[index] = experiment;
               experimentTemplates[index].serverPattern = [serverID];
-              experimentTemplates[index].imageUrl = serverNRPServicesURL + '/experiment/' + index + '/preview';
+              $http.get(serverNRPServicesURL + '/experiment/' + index + '/preview').then(function(response) {
+                experimentTemplates[index].imageData = response.data.image_as_base64;
+              });
             }
           });
         }).$promise.then(function(data) {
