@@ -3,16 +3,16 @@
 </div>
 <div class="panel-body">
   <tabset>
-    <tab heading="Transfer Functions">
+    <tab heading="Transfer Functions" active="activeTab.transferfunction" select="disableKeyBindings()" deselect="reenableKeyBindings()">
       <transfer-function-editor server={{serverBaseUrl}} simulation={{simulationID}}></transfer-function-editor>
     </tab>
-    <tab heading="Environment">
+    <tab heading="Environment" active="activeTab.environment">
       <environment-designer />
     </tab>
-    <tab heading="State Machine (SMACH)" select="smachEditorRefresh();">
+    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select="disableKeyBindings(); smachEditorRefresh()" deselect="reenableKeyBindings()">
       <smach-editor server={{serverBaseUrl}} simulation={{simulationID}}></smach-editor>
     </tab>
-    <tab heading="Events">
+    <tab heading="Events" active="activeTab.events">
       <h3>Events Editor</h3>
     </tab>
   </tabset>

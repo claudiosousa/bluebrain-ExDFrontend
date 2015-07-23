@@ -58,7 +58,8 @@
           size: '80%',
           templateUrl: 'views/esv/editor-panel.html',
           controller: 'editorPanelCtrl',
-          openCallbackFunction: 'openCallback'
+          openCallbackFunction: 'openCallback',
+          closeCallbackFunction: 'closeCallback'
         });
     }])
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
