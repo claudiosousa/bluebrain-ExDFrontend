@@ -1,5 +1,7 @@
 'use strict';
 
+var TestDataGenerator = window.TestDataGenerator;
+
 describe('Services: simulation-services', function () {
   var hbpUserDirectory,
       bbpStubFactory,
@@ -16,8 +18,7 @@ describe('Services: simulation-services', function () {
   beforeEach(module('hbpCommon'));
   beforeEach(module('bbpStubFactory'));
 
-  var httpBackend;
-  var simulations, returnSimulations, experimentTemplates, experimentTemplatesAugmented;
+  var httpBackend, simulations, returnSimulations, experimentTemplates;
 
   beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_,
       _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_,
@@ -33,9 +34,8 @@ describe('Services: simulation-services', function () {
     screenControl = _screenControl_;
     STATE = _STATE_;
 
-    var now = new Date();
     simulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, creationDate: now.toISOString(), owner: '1234'},
+      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, creationDate: (new Date()).toISOString(), owner: '1234'},
       { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED},
       { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner'},
       { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321'},
@@ -44,32 +44,18 @@ describe('Services: simulation-services', function () {
       { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, owner: 'invalid-id'}
     ];
 
-    returnSimulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, creationDate: now.toISOString(), owner: '1234', serverID : 'bbpce016'},
-      { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner', serverID : 'bbpce016'},
-      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321', serverID : 'bbpce016'},
-      { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED, serverID : 'bbpce016'},
-      { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, owner: 'invalid-id', serverID : 'bbpce016'}
-    ];
+    // The return simulations' entries are simply augmented with 'serverID' (being 'bbpce016')
+    returnSimulations = (function() {
+      simulations.forEach(function(element){
+        element.serverID = 'bbpce016';
+      });
+      return simulations;
+    })();
 
     experimentTemplates = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:['bbpce016'], timeout: 100},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:['bbpce016'], timeout: 200},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:['bbpce016'], timeout: 300}
-    };
-
-    experimentTemplatesAugmented = {
-      '1': {imageUrl: 'img/someFakeUrl1 car dog cat.png', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', experimentConfiguration: 'fakeExperiment1', serverPattern:['bbpce016'], timeout: 100, numSupportingServers : 2},
-      '2': {imageUrl: 'img/someFakeUrl2 car dog cat.png', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', experimentConfiguration: 'fakeExperiment2', serverPattern:['bbpce016'], timeout: 200, numSupportingServers : 2, runningExperiments: 1, simulations: [
-        {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
-      ]},
-      '3': {imageUrl: 'img/someFakeUrl3 car dog cat.png', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', experimentConfiguration: 'fakeExperiment3', serverPattern:['bbpce016'], timeout: 300, runningExperiments: 3, simulations: [
-        { simulationID: 2, experimentID: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
-        { simulationID: 0, experimentID: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
-        { simulationID: 2, experimentID: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
-      ]}
+      '1': TestDataGenerator.createTestExperiment(),
+      '2': TestDataGenerator.createTestExperiment(),
+      '3': TestDataGenerator.createTestExperiment()
     };
 
     httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation').respond(simulations);
@@ -77,7 +63,9 @@ describe('Services: simulation-services', function () {
     httpBackend.whenGET('http://bbpce016.epfl.ch:8080/simulation/1/state').respond({state: STATE.INITIALIZED, timeout:300});
     httpBackend.whenPUT(/()/).respond(200);
     httpBackend.whenPOST(/()/).respond(200);
+
     spyOn(console, 'error');
+
     var userInfo1234 = {
       displayName: 'John Does'
     };
@@ -103,65 +91,81 @@ describe('Services: simulation-services', function () {
     });
   }));
 
+  describe('When calling the simulation method', function() {
+    var receivedSimulations, serverURL, serverID;
 
-  it('should retrieve the simulation list', function() {
-    var mySimulations;
-    simulationService({ serverURL: 'http://bbpce016.epfl.ch:8080', serverID : 'bbpce016' }).simulations(function(data) {
-      mySimulations = data;
+    beforeEach(function(){
+      serverURL = 'http://bbpce016.epfl.ch:8080';
+      serverID = 'bbpce016';
+      simulationService({ serverURL: serverURL, serverID : serverID }).simulations(function(data) {
+        receivedSimulations = data;
+      });
+      httpBackend.expectGET(serverURL + '/simulation');
+      httpBackend.flush();
     });
-    httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
-    httpBackend.flush();
-    expect(angular.toJson(mySimulations)).toBe(angular.toJson(returnSimulations));
+
+    it('should retrieve the simulation list', function() {
+      expect(angular.toJson(receivedSimulations)).toBe(angular.toJson(returnSimulations));
+    });
+
+    it('should retrieve the owner of simulations map', function() {
+      expect(simulationService().owners['1234']).toBe('John Does');
+      expect(simulationService().owners['4321']).toBe('John Dont');
+      expect(simulationService().owners['default-owner']).toBe('Unknown');
+      expect(simulationService().owners['invalid-id']).toBe('Unknown');
+    });
+
+    it('should retrieve the uptime of a simulation', function() {
+      simulationService().updateUptime();
+      expect(simulationService().uptime['bbpce016-0'] >= 0).toBeTruthy();
+      expect(simulationService().uptime['bbpce016-0']).toBeLessThan(1); // uptime should be around 0.001s, depending on machine.
+    });
   });
 
-  it('should retrieve the owner of simulations map', function() {
-    var mySimulations;
-    simulationService({ serverURL: 'http://bbpce016.epfl.ch:8080', serverID : 'bbpce016' }).simulations(function(data) {
-      mySimulations = data;
+  describe('When calling getActiveSimulation/filterSimulations', function() {
+    var simulations;
+
+    beforeEach(function() {
+      simulations = TestDataGenerator.createTestSimulations(10, STATE.CREATED);
     });
-    httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
-    httpBackend.flush();
-    expect(simulationService().owners['1234']).toBe('John Does');
-    expect(simulationService().owners['4321']).toBe('John Dont');
-    expect(simulationService().owners['default-owner']).toBe('Unknown');
-    expect(simulationService().owners['invalid-id']).toBe('Unknown');
-  });
 
-  it('should retrieve the uptime of a simulation', function() {
-    var mySimulations;
-    simulationService({ serverURL: 'http://bbpce016.epfl.ch:8080', serverID : 'bbpce016' }).simulations(function(data) {
-      mySimulations = data;
+    it('should find a STARTED simulation in a list of otherwise CREATED simulations', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.STARTED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
     });
-    httpBackend.expectGET('http://bbpce016.epfl.ch:8080/simulation');
-    httpBackend.flush();
-    simulationService().updateUptime();
-    expect(simulationService().uptime['bbpce016-0'] >= 0).toBeTruthy();
-    expect(simulationService().uptime['bbpce016-0']).toBeLessThan(1); // uptime should be around 0.001s, depending on machine.
-  });
 
-  it('should attach a filter function and filter simulations according to state and index in the list', function() {
-    expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[3]);
+    it('should find a INITIALIZED simulation in a list of otherwise CREATED simulations', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.INITIALIZED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
 
-    expect(simulationService().filterSimulations(simulations, STATE.STARTED, STATE.PAUSED).state).toBe(STATE.STARTED);
+    it('should return undefined in case no simulation with state STARTED or PAUSED is there', function() {
+      expect(simulationService().getActiveSimulation(simulations)).toBe(undefined);
+    });
 
-    simulations[2].state = STATE.STARTED;
-    simulations[3].state = STATE.PAUSED;
+    it('should filter out a STARTED simulation', function() {
+      simulations[1].state = STATE.PAUSED;
+      simulations[3].state = STATE.STARTED;
+      expect(simulationService().filterSimulations(simulations, STATE.STARTED, STATE.PAUSED).state).toBe(STATE.STARTED);
+    });
 
-    expect(simulationService().filterSimulations(simulations, STATE.STARTED, STATE.PAUSED).state).toBe(STATE.PAUSED);
-    expect(simulationService().filterSimulations(simulations, STATE.INITIALIZED).simulationID).toBe(5);
-    expect(simulationService().filterSimulations(simulations, STATE.CREATED).simulationID).toBe(6);
+    it('should attach a filter function and filter simulations according to state and index in the list', function() {
+      simulations[2].state = STATE.STARTED;
+      simulations[3].state = STATE.PAUSED;
+      simulations[5].state = STATE.INITIALIZED;
 
-    simulations[4].state = STATE.PAUSED;
-    expect(simulationService().filterSimulations(simulations, STATE.STOPPED)).toBe(undefined);
+      expect(simulationService().filterSimulations(simulations, STATE.STARTED, STATE.PAUSED).state).toBe(STATE.PAUSED);
+      expect(simulationService().filterSimulations(simulations, STATE.INITIALIZED).simulationID).toBe(5);
 
-    simulations[2].state = STATE.STOPPED;
-    simulations[3].state = STATE.STOPPED;
-    simulations[4].state = STATE.STOPPED;
-    expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[5]);
+      // We expect it to be the last element
+      expect(simulationService().filterSimulations(simulations, STATE.CREATED).simulationID).toBe(simulations.length-1);
 
-    simulations[1].state = STATE.STOPPED;
-    simulations[5].state = STATE.STOPPED;
-    expect(simulationService().getActiveSimulation(simulations)).toBe(undefined);
+      simulations[4].state = STATE.PAUSED;
+      expect(simulationService().filterSimulations(simulations, STATE.STOPPED)).toBe(undefined);
+    });
+
   });
 
   it('should fetch a specific simulation', function() {
@@ -301,15 +305,20 @@ describe('Services: experimentSimulationService', function () {
     roslib = _roslib_;
     STATE = _STATE_;
 
-    returnSimulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0.xml', state: STATE.CREATED, serverID : 'bbpce016'},
-      { simulationID: 1, experimentID: 'fakeExperiment1.xml', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 2, experimentID: 'fakeExperiment2.xml', state: STATE.PAUSED, serverID : 'bbpce016'},
-      { simulationID: 3, experimentID: 'fakeExperiment2.xml', state: STATE.STARTED, serverID : 'bbpce016'},
-      { simulationID: 4, experimentID: 'fakeExperiment4.xml', state: STATE.STOPPED, serverID : 'bbpce016'},
-      { simulationID: 5, experimentID: 'fakeExperiment5.xml', state: STATE.INITIALIZED, serverID : 'bbpce016'},
-      { simulationID: 6, experimentID: 'fakeExperiment6.xml', state: STATE.CREATED, serverID : 'bbpce016'}
-    ];
+    // Create 7 experiments, all being the same, except for 3, which has experimentID 'fakeExperiment2.xml'
+    returnSimulations = (function () {
+      var simulations = [];
+      for (var i = 0; i < 7; i++) {
+        simulations.push({
+          simulationID: i,
+          experimentID: 'fakeExperiment' + ((i === 3) ? 2 : i) + '.xml',
+          state: STATE.CREATED,
+          serverID: 'bbpce016'
+        });
+      }
+      return simulations;
+    })();
+
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[3]);
     simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn({$promise: {then: function(){}}});
 
@@ -444,16 +453,13 @@ describe('Services: experimentSimulationService', function () {
       experimentList().experiments.mostRecentCall.args[0](experimentListCallBbpce016);
 
       // perform refreshExperiment work by hand:
-      templates['fakeExperiment1.xml'].numSupportingServers = 2;
-      templates['fakeExperiment1.xml'].numAvailableServers = 0;
-      templates['fakeExperiment2.xml'].numSupportingServers = 2;
-      templates['fakeExperiment2.xml'].numAvailableServers = 0;
-      templates['fakeExperiment3.xml'].numSupportingServers = 2;
-      templates['fakeExperiment3.xml'].numAvailableServers = 0;
+      ['fakeExperiment1.xml', 'fakeExperiment2.xml', 'fakeExperiment3.xml'].forEach(function(experiment){
+        templates[experiment].numSupportingServers = 2;
+        templates[experiment].numAvailableServers = 0;
+      });
 
       httpBackend.flush();
       expect(templates).toEqual(experimentTemplates);
-
 
       // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
       expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
@@ -547,7 +553,6 @@ describe('Services: experimentSimulationService', function () {
   });
 
   it('should check for an available Server', function(){
-    simulationService.reset();
     var isAvailableCallback = jasmine.createSpy('isAvailableCallback');
     experimentSimulationService.existsAvailableServer(experimentTemplates, isAvailableCallback);
 
