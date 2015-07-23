@@ -39,7 +39,7 @@
         });
 
         scope.update = function (name) {
-          simulationTransferFunctions(serverBaseUrl).patch({sim_id: simulationID, tranferfunction_name: name}, scope.transferFunctions[name].code);
+          simulationTransferFunctions(serverBaseUrl).patch({sim_id: simulationID, transfer_function_name: name}, scope.transferFunctions[name].code);
         };
       }
     };

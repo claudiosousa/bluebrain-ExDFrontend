@@ -130,14 +130,14 @@
 
   module.factory('simulationTransferFunctions', ['$resource', 'serverError', function($resource, serverError) {
     return function(baseUrl) {
-      return $resource(baseUrl + '/simulation/:sim_id/transferfunctions', {}, {
+      return $resource(baseUrl + '/simulation/:sim_id/transfer-functions', {}, {
         transferFunctions: {
           method: 'GET',
           interceptor : {responseError : serverError}
         },
         patch: {
           method: 'PUT',
-          url: baseUrl + '/simulation/:sim_id/transferfunctions/:tranferfunction_name',
+          url: baseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
           interceptor : {responseError : serverError}
         }
       });

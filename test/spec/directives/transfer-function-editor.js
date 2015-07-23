@@ -25,7 +25,7 @@ describe('Directive: transferFunctionEditor', function () {
     spyOn($log, 'error');
 
     var transferFunctionsReturned = {'transfer_functions': ['some code', 'more code']};
-    $httpBackend.whenGET(SERVER_URL + '/simulation/1/transferfunctions').respond(transferFunctionsReturned);
+    $httpBackend.whenGET(SERVER_URL + '/simulation/1/transfer-functions').respond(transferFunctionsReturned);
 
     element = $compile('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '"></transfer-function-editor>')($scope);
     $scope.$digest();
@@ -109,9 +109,9 @@ describe('Directive: transferFunctionEditor', function () {
     var newCode = 'New code';
     $scope.transferFunctions[tf1Name].code = newCode;
     $scope.update(tf1Name);
-    // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "tranferFunctions"
+    // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "transferFunctions"
     // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
-    expect(patchMock).toHaveBeenCalledWith({ sim_id : '1', tranferfunction_name : 'tf1' }, newCode); // jshint ignore:line
+    expect(patchMock).toHaveBeenCalledWith({ sim_id : '1', transfer_function_name : 'tf1' }, newCode); // jshint ignore:line
   });
 
 
