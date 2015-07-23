@@ -22,6 +22,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   // Set to false to disable this control
   this.enabled = true;
+  this.keyBindingsEnabled = true;
 
   this.movementSpeed = 0.05;
   this.lookSpeed = 0.01;
@@ -87,7 +88,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.onMouseUp = function (event) {
     event.preventDefault();
-    
+
     // We do not stop the event propagation here, since there may be other
     // components sitting on top, which also may have registered a handler
     // and expect the event to be fired.
@@ -110,6 +111,9 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.onKeyDown = function (event) {
+    if(this.keyBindingsEnabled === false) {
+      return;
+    }
     switch(event.keyCode) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break;
@@ -132,6 +136,9 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.onKeyUp = function (event) {
+    if(this.keyBindingsEnabled === false) {
+      return;
+    }
     switch(event.keyCode) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
