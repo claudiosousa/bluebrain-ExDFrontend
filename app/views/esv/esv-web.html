@@ -24,7 +24,7 @@
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
         <div class="list-entry-container left-right list-entry-main">
           <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
-            <img ng-src="{{exp.imageUrl}}" >
+            <img ng-src="data:image/png;base64,{{exp.imageData}}" />
           </div>
           <div class="list-entry-middle list-entry-container up-down">
             <div class="list-entry-container left-right title-line">

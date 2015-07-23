@@ -240,7 +240,7 @@ describe('Services: experimentSimulationService', function () {
   beforeEach(module('simulationControlServices'));
 
   var httpBackend;
-  var returnSimulations, experimentListCallBbpce016, experimentListCallBbpce014, experimentTemplates, experimentTemplatesAugmented;
+  var returnSimulations, experimentListCallBbpce016, experimentListCallBbpce014, experimentTemplates, experimentTemplatesAugmented, imagePreview;
 
   var bbpConfigMock = {};
   var bbpConfigString =
@@ -338,30 +338,34 @@ describe('Services: experimentSimulationService', function () {
 
     experimentTemplates = {
       'fakeExperiment1.xml': {
-        imageUrl: 'http://bbpce014.epfl.ch:8080/experiment/fakeExperiment1.xml/preview', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment2.xml': {
-        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment2.xml/preview', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment3.xml': {
-        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment3.xml/preview', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
     experimentTemplatesAugmented = {
       'fakeExperiment1.xml': {
-        imageUrl: 'http://bbpce014.epfl.ch:8080/experiment/fakeExperiment1.xml/preview', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment2.xml': {
-        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment2.xml/preview', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1, simulations: [
+        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1, simulations: [
           returnSimulations[3]
       ]},
       'fakeExperiment3.xml': {
-        imageUrl: 'http://bbpce016.epfl.ch:8080/experiment/fakeExperiment3.xml/preview', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
+    imagePreview = {
+        'image_as_base64': 'base64XF5Tf'
+    };
     httpBackend.whenGET('http://bbpce014.epfl.ch:8080/experiment').respond(experimentTemplates);
+    httpBackend.whenGET(/^http:\/\/bbpce01[46]\.epfl\.ch:8080\/experiment\/fakeExperiment[123]\.xml\/preview$/).respond(imagePreview);
     spyOn(console, 'error');
     spyOn(console, 'log');
 
@@ -447,6 +451,7 @@ describe('Services: experimentSimulationService', function () {
       templates['fakeExperiment3.xml'].numSupportingServers = 2;
       templates['fakeExperiment3.xml'].numAvailableServers = 0;
 
+      httpBackend.flush();
       expect(templates).toEqual(experimentTemplates);
 
 
