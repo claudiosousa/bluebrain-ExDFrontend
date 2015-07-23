@@ -27,6 +27,8 @@ describe('Directive: transferFunctionEditor', function () {
     var transferFunctionsReturned = {'transfer_functions': ['some code', 'more code']};
     $httpBackend.whenGET(SERVER_URL + '/simulation/1/transfer-functions').respond(transferFunctionsReturned);
 
+    var versionReturned = {'hbp_nrp_cle': '0.2.3.dev5', 'hbp_nrp_backend': '0.2.3.dev5'};
+    $httpBackend.whenGET(SERVER_URL + '/version').respond(versionReturned);
     element = $compile('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '"></transfer-function-editor>')($scope);
     $scope.$digest();
   }));
@@ -53,7 +55,7 @@ describe('Directive: transferFunctionEditor', function () {
 
   beforeEach(module('exdFrontendApp'));
 
-  var $rootScope, $compile, $httpBackend, $log, $scope, element, simulationTransferFunctions;
+  var $rootScope, $compile, $httpBackend, $log, $scope, element, simulationTransferFunctions, nrpBackendVersions;
 
   var transferFunctionsMock = jasmine.createSpy('transferFunctions');
   var patchMock = jasmine.createSpy('patch');
@@ -65,23 +67,28 @@ describe('Directive: transferFunctionEditor', function () {
   var tf3Code = '#I am not valid';
   var transferFunctionsReturned = {'transfer_functions': [tf1Code, tf2Code, tf3Code]};
 
+  var nrpBackendVersionsGetMock = jasmine.createSpy('get');
+  var nrpBackendVersionsMock = jasmine.createSpy('nrpBackendVersions').andReturn({get: nrpBackendVersionsGetMock});
   var SERVER_URL = 'https://neurorobotics-dev.humanbrainproject.eu/cle/1/api';
   var SIMULATION_ID = 1;
 
   beforeEach(module(function ($provide) {
     $provide.value('simulationTransferFunctions', simulationTransferFunctionsMock);
+    $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
   }));
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
                               _$httpBackend_,
                               _$log_,
                               _simulationTransferFunctions_,
+                              _nrpBackendVersions_,
                               $templateCache) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $httpBackend = _$httpBackend_;
     $log = _$log_;
     simulationTransferFunctions = _simulationTransferFunctions_;
+    nrpBackendVersions = _nrpBackendVersions_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '<h3>Test</h3>');
@@ -112,6 +119,13 @@ describe('Directive: transferFunctionEditor', function () {
     // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "transferFunctions"
     // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
     expect(patchMock).toHaveBeenCalledWith({ sim_id : '1', transfer_function_name : 'tf1' }, newCode); // jshint ignore:line
+  });
+
+  it('should provide the correct help urls', function () {
+    expect($scope.transferFunctions).toBeDefined();
+    expect(nrpBackendVersionsMock).toHaveBeenCalled();
+    nrpBackendVersionsGetMock.mostRecentCall.args[0]({hbp_nrp_cle_components : { major: 1, minor: 2, patch: 3, dev: 'dev3' }}); // jshint ignore:line
+    expect($scope.cleDocumentationURL).toBe('https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.2.2');
   });
 
 

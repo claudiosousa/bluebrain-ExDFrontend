@@ -55,7 +55,7 @@
         .add({
           id: 'code-editor',
           position: 'left',
-          size: '80%',
+          size: '50%',
           templateUrl: 'views/esv/editor-panel.html',
           controller: 'editorPanelCtrl',
           openCallbackFunction: 'openCallback',
