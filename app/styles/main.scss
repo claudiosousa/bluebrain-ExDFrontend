@@ -80,32 +80,6 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
   display: block !important;
 }
 
-// Experiment designer selection box directive
-.exd-model-selection-box
-{
-	margin: 1px;
-}
-
-.exd-model-description-box
-{
-  	height: 350px;
-  	border: 6px solid silver;
-  	overflow: hidden;
-	margin-bottom: 6px;
-}
-
-.exd-model-img-thumbnail {
-    border: 0 none;
-    box-shadow: none;
-}
-
-input[readonly].exd-model-selection {
-   background-color: #fff;
-}
-
-.bbp-uri-select-dropdown {
-  width: 100%;
-}
 
 // Canvas issue see
 // http://stackoverflow.com/questions/15807833/div-containing-canvas-have-got-a-strange-bottom-margin-of-5px

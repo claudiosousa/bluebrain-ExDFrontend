@@ -36,30 +36,10 @@
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
             // (See https://github.com/angular-ui/ui-router/wiki)
-            $stateProvider.state('main', {
-                url: '/main',
-                templateUrl: 'views/common/main.html',
-                controller: 'MainCtrl'
-            }).state('exd', {
-                url: '/exd',
-                templateUrl: 'views/common/exd.html',
-                controller: 'NewCtrl'
-            }).state('gz3d-view', {
+            $stateProvider.state('gz3d-view', {
                 url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode',
                 templateUrl: 'views/esv/gz3d-view.html',
                 controller: 'Gz3dViewCtrl'
-            }).state('rd', {
-              url: '/rd',
-              templateUrl: 'views/common/rd.html'
-            }).state('ed', {
-              url: '/ed',
-              templateUrl: 'views/common/ed.html'
-            }).state('bibi', {
-              url: '/bibi',
-              templateUrl: 'views/common/bibi.html'
-            }).state('esv-wall', {
-              url: '/esv-wall',
-              templateUrl: 'views/common/esv-display-wall.html'
             }).state('esv-web', {
               url: '/esv-web',
               templateUrl: 'views/esv/esv-web.html',

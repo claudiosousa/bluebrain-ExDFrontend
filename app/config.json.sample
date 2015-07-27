@@ -63,16 +63,16 @@
          },
          "bbpsrvc20":{
             "gzweb":{
-               "assets":"ws://bbpsrvc20.cscs.ch",
-               "nrp-services":"http://bbpsrvc20.cscs.ch:8080",
-               "websocket":"ws://bbpsrvc20.cscs.ch:9091/gzbridge"
+               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/4/assets",
+               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/4/api",
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws/gzbridge"
             },
             "rosbridge":{
                "topics":{
                   "spikes":"/monitor/spike_recorder",
                   "status":"/ros_cle_simulation/status"
                },
-               "websocket":"ws://bbpsrvc20.cscs.ch:9091"
+               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"
             },
             "serverJobLocation":"lugano"
          }
