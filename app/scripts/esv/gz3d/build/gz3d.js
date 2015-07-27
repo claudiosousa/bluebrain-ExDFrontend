@@ -33,160 +33,15 @@ var tabColors = {selected: 'rgb(34, 170, 221)', unselected: 'rgb(42, 42, 42)'};
 
 var modelList =
   [
-    {path:'buildings', title:'Buildings',
-    examplePath1:'fast_food', examplePath2:'kitchen_dining', examplePath3:'house_1', models:
+    {path:'virtual_room', title:'Virtual Room Objects',
+    examplePath1:'library_model',  examplePath2:'hosta_potted_plant',  examplePath3:'vr_lamp', models:
     [
-      {modelPath:'fast_food', modelTitle:'Fast Food'},
-      {modelPath:'gas_station', modelTitle:'Gas Station'},
-      {modelPath:'house_1', modelTitle:'House 1'},
-      {modelPath:'house_2', modelTitle:'House 2'},
-      {modelPath:'house_3', modelTitle:'House 3'},
-      {modelPath:'iss', modelTitle:'International Space Station'},
-      {modelPath:'iss_half', modelTitle:'ISS half'},
-      {modelPath:'kitchen_dining', modelTitle:'Kitchen and Dining'},
-      {modelPath:'office_building', modelTitle:'Office Building'},
-      {modelPath:'powerplant', modelTitle:'Power Plant'},
-      {modelPath:'starting_pen', modelTitle:'Starting Pen'},
-      {modelPath:'willowgarage', modelTitle:'Willow Garage'}
-    ]},
-
-    {path:'furniture', title:'Furniture',
-    examplePath1:'hinged_door', examplePath2:'bookshelf', examplePath3:'table', models:
-    [
-      {modelPath:'bookshelf', modelTitle:'Book Shelf'},
-      {modelPath:'cabinet', modelTitle:'Cabinet'},
-      {modelPath:'drc_practice_door_4x8', modelTitle:'4x8 Doorway'},
-      {modelPath:'drc_practice_ladder', modelTitle:'Ladder'},
-      {modelPath:'hinged_door', modelTitle:'Hinged Door'},
-      {modelPath:'table', modelTitle:'Table'},
-      {modelPath:'table_marble', modelTitle:'Table Marble'},
-
-      {modelPath:'drc_practice_ball_valve', modelTitle:'Ball Valve'},
-      {modelPath:'drc_practice_handle_wheel_valve', modelTitle:'Handle Wheel Valve'},
-      {modelPath:'drc_practice_hand_wheel_valve', modelTitle:'Hand Wheel Valve'},
-      {modelPath:'drc_practice_wheel_valve', modelTitle:'Wheel Valve'},
-      {modelPath:'drc_practice_wheel_valve_large', modelTitle:'Wheel Valve Large'},
-      {modelPath:'door_handle', modelTitle:'Door Handle'},
-
-      {modelPath:'drc_practice_ball_valve_wall', modelTitle:'Wall (Ball Valve)'},
-      {modelPath:'drc_practice_handle_wheel_valve_wall', modelTitle:'Wall (Handle Wheel Valve)'},
-      {modelPath:'drc_practice_hand_wheel_valve_wall', modelTitle:'Wall (Hand Wheel Valve)'},
-      {modelPath:'drc_practice_valve_wall', modelTitle:'Wall (Valve)'},
-      {modelPath:'drc_practice_wheel_valve_wall', modelTitle:'Wall (Wheel Valve)'},
-      {modelPath:'drc_practice_wheel_valve_large_wall', modelTitle:'Wall (Wheel Valve Large)'},
-      {modelPath:'grey_wall', modelTitle:'Grey Wall'},
-      {modelPath:'asphalt_plane', modelTitle:'Asphalt Plane'},
-      {modelPath:'drc_practice_base_4x8', modelTitle:'Debris base'},
-      {modelPath:'ground_plane', modelTitle:'Ground Plane'},
-      {modelPath:'nist_maze_wall_120', modelTitle:'120 Maze Wall'},
-      {modelPath:'nist_maze_wall_240', modelTitle:'240 Maze Wall'},
-      {modelPath:'nist_maze_wall_triple_holes_120', modelTitle:'120 Maze Wall Triple Holes'},
-      {modelPath:'nist_simple_ramp_120', modelTitle:'Simple Ramp'},
-      {modelPath:'nist_stairs_120', modelTitle:'Stairs'}
-    ]},
-
-    {path:'kitchen', title:'Kitchen',
-    examplePath1:'saucepan',  examplePath2:'beer',  examplePath3:'bowl', models:
-    [
-      {modelPath:'beer', modelTitle:'Beer'},
-      {modelPath:'bowl', modelTitle:'Bowl'},
-      {modelPath:'coke_can', modelTitle:'Coke Can'},
-      {modelPath:'saucepan', modelTitle:'Saucepan'}
-    ]},
-
-    {path:'robocup', title:'Robocup', examplePath1:'robocup_3Dsim_ball',
-    examplePath2:'robocup14_spl_goal', examplePath3:'robocup09_spl_field', models:
-    [
-      {modelPath:'robocup09_spl_field', modelTitle:'2009 SPL Field'},
-      {modelPath:'robocup14_spl_field', modelTitle:'2014 SPL Field'},
-      {modelPath:'robocup_3Dsim_field', modelTitle:'3D Sim. Field'},
-      {modelPath:'robocup14_spl_goal', modelTitle:'SPL Goal'},
-      {modelPath:'robocup_3Dsim_goal', modelTitle:'3D Sim. Goal'},
-      {modelPath:'robocup_spl_ball', modelTitle:'SPL Ball'},
-      {modelPath:'robocup_3Dsim_ball', modelTitle:'3D Sim. Ball'}
-    ]},
-
-    {path:'robots', title:'Robots',
-    examplePath1:'pioneer3at', examplePath2:'turtlebot', examplePath3:'pr2', models:
-    [
-      {modelPath:'create', modelTitle:'Create'},
-      {modelPath:'husky', modelTitle:'Husky'},
-      {modelPath:'irobot_hand', modelTitle:'iRobot Hand'},
-      {modelPath:'pioneer2dx', modelTitle:'Pioneer 2DX'},
-      {modelPath:'pioneer3at', modelTitle:'Pioneer 3AT'},
-      {modelPath:'pr2', modelTitle:'PR2'},
-      {modelPath:'robonaut', modelTitle:'Robonaut'},
-      {modelPath:'simple_arm', modelTitle:'Simple Arm'},
-      {modelPath:'simple_arm_gripper', modelTitle:'Simple Arm and Gripper'},
-      {modelPath:'simple_gripper', modelTitle:'Simple Gripper'},
-      {modelPath:'turtlebot', modelTitle:'TurtleBot'},
-      {modelPath:'youbot', modelTitle:'YouBot'}
-    ]},
-
-    {path:'sensors', title:'Sensors',
-    examplePath1:'camera', examplePath2:'hokuyo', examplePath3:'kinect', models:
-    [
-      {modelPath:'camera', modelTitle:'Camera'},
-      {modelPath:'stereo_camera', modelTitle:'Stereo Camera'},
-      {modelPath:'hokuyo', modelTitle:'Hokuyo'},
-      {modelPath:'kinect', modelTitle:'Kinect'}
-    ]},
-
-    {path:'street', title:'Street', examplePath1:'dumpster',
-    examplePath2:'drc_practice_angled_barrier_45', examplePath3:'fire_hydrant', models:
-    [
-      {modelPath:'cinder_block', modelTitle:'Cinder Block'},
-      {modelPath:'cinder_block_2', modelTitle:'Cinder Block 2'},
-      {modelPath:'cinder_block_wide', modelTitle:'Cinder Block Wide'},
-      {modelPath:'construction_barrel', modelTitle:'Construction Barrel'},
-      {modelPath:'construction_cone', modelTitle:'Construction Cone'},
-      {modelPath:'drc_practice_angled_barrier_45', modelTitle:'Angled Barrier 45'},
-      {modelPath:'drc_practice_angled_barrier_135', modelTitle:'Angled Barrier 135'},
-      {modelPath:'drc_practice_block_wall', modelTitle:'Block Wall'},
-      {modelPath:'drc_practice_orange_jersey_barrier', modelTitle:'Jersey Barrier (Orange)'},
-      {modelPath:'drc_practice_white_jersey_barrier', modelTitle:'Jersey Barrier (White)'},
-      {modelPath:'drc_practice_truss', modelTitle:'Truss'},
-      {modelPath:'drc_practice_yellow_parking_block', modelTitle:'Parking Block'},
-      {modelPath:'dumpster', modelTitle:'Dumpster'},
-      {modelPath:'fire_hydrant', modelTitle:'Fire Hydrant'},
-      {modelPath:'jersey_barrier', modelTitle:'Jersey Barrier'},
-      {modelPath:'lamp_post', modelTitle:'Lamp Post'},
-      {modelPath:'mailbox', modelTitle:'Mailbox'},
-      {modelPath:'mud_box', modelTitle:'Mud Box'},
-      {modelPath:'nist_fiducial_barrel', modelTitle:'Fiducial Barrel'},
-      {modelPath:'speed_limit_sign', modelTitle:'Speed Limit Sign'},
-      {modelPath:'stop_sign', modelTitle:'Stop Sign'}
-
-    ]},
-
-    {path:'tools', title:'Tools', examplePath1:'hammer',
-    examplePath2:'polaris_ranger_ev', examplePath3:'cordless_drill', models:
-    [
-      {modelPath:'cordless_drill', modelTitle:'Cordless Drill'},
-      {modelPath:'fire_hose_long', modelTitle:'Fire Hose'},
-      {modelPath:'fire_hose_long_curled', modelTitle:'Fire Hose Long Curled'},
-      {modelPath:'hammer', modelTitle:'Hammer'},
-      {modelPath:'monkey_wrench', modelTitle:'Monkey Wrench'},
-      {modelPath:'polaris_ranger_ev', modelTitle:'Polaris Ranger EV'},
-      {modelPath:'polaris_ranger_xp900', modelTitle:'Polaris Ranger XP900'},
-      {modelPath:'polaris_ranger_xp900_no_roll_cage', modelTitle:'Polaris Ranger without roll cage'},
-      {modelPath:'utility_cart', modelTitle:'Utility Cart'}
-    ]},
-
-    {path:'misc', title:'Misc.', examplePath1:'brick_box_3x1x3',
-    examplePath2:'drc_practice_4x4x20', examplePath3:'double_pendulum_with_base', models:
-    [
-      {modelPath:'double_pendulum_with_base', modelTitle:'Double Pendulum With Base'},
-      {modelPath:'breakable_test', modelTitle:'Breakable_test'},
-      {modelPath:'brick_box_3x1x3', modelTitle:'Brick Box 3x1x3'},
-      {modelPath:'cube_20k', modelTitle:'Cube 20k'},
-      {modelPath:'drc_practice_2x4', modelTitle:'2x4 Lumber'},
-      {modelPath:'drc_practice_2x6', modelTitle:'2x6 Lumber'},
-      {modelPath:'drc_practice_4x4x20', modelTitle:'4x4x20 Lumber'},
-      {modelPath:'drc_practice_4x4x40', modelTitle:'4x4x40 Lumber'},
-      {modelPath:'drc_practice_blue_cylinder', modelTitle:'Blue Cylinder'},
-      {modelPath:'drc_practice_wood_slats', modelTitle:'Wood Slats'},
-      {modelPath:'nist_elevated_floor_120', modelTitle:'Elevated Floor 120'}
+      {modelPath:'library_model', modelTitle:'Library'},
+      {modelPath:'hosta_potted_plant', modelTitle:'Hosta Plant'},
+      {modelPath:'vr_lamp', modelTitle:'Stand Lamp'},
+      {modelPath:'vr_screen', modelTitle:'Virtual Screen'},
+      {modelPath:'viz_poster', modelTitle:'Poster 1'},
+      {modelPath:'viz_poster_2', modelTitle:'Poster 2'}
     ]}
   ];
 
@@ -1144,7 +999,8 @@ GZ3D.Gui.prototype.init = function()
       {
         lastOpenMenu[parentId] = id;
         $('.leftPanels').hide();
-        $('#'+id).show();
+        //$('#'+id).show(); //defaults as flex, but block is needed
+        $('#'+id).css('display','block');
 
         $('.tab').css('border-left-color', tabColors.unselected);
         $('#'+parentId+'Tab').css('border-left-color', tabColors.selected);
@@ -2999,24 +2855,32 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         if (modelUri.indexOf('.dae') !== -1) // Modified for HBP, we do use coarse models all the time
         {
           modelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
-          var checkModel = new XMLHttpRequest();
-          // We use a double technique to disable the cache for these requests:
-          // 1. We create a custom url by adding the time as a parameter.
-          // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
-          // Since browsers and servers vary in their behaviour, we use both of these tricks.
-          // PS: These requests do not load the dae files, they just verify if they exist on the server
-          // so that we can choose between coarse or reqular models.
-          checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
-          checkModel.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2026 00:00:00 GMT");
-          try { checkModel.send(); } catch(err) { console.log(modelUri + ': no coarse version'); }
-          if (checkModel.status === 404)
+
+          if(modelUri.indexOf('_coarse') !== -1) //dae is already a coarse model
           {
-            modelUri = modelUri+'.dae';
+              modelUri = modelUri+'.dae';
           }
-          else
-          {
-            modelUri = modelUri+'_coarse.dae';
+          else { // check if a coarse version is available
+              var checkModel = new XMLHttpRequest();
+              // We use a double technique to disable the cache for these requests:
+              // 1. We create a custom url by adding the time as a parameter.
+              // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
+              // Since browsers and servers vary in their behaviour, we use both of these tricks.
+              // PS: These requests do not load the dae files, they just verify if they exist on the server
+              // so that we can choose between coarse or reqular models.
+              checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
+              checkModel.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2026 00:00:00 GMT");
+
+              try { checkModel.send(); } catch(err) { console.log(modelUri + ': no coarse version'); }
+
+              if (checkModel.status === 404) {
+                modelUri = modelUri+'.dae';
+              }
+              else {
+                modelUri = modelUri+'_coarse.dae';
+              }
           }
+
         }
         var materialName = parent.name + '::' + modelUri;
         this.entityMaterial[materialName] = mat;
@@ -3819,10 +3683,10 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     }
 
     this.object.updateMatrixWorld();
-    worldPosition.getPositionFromMatrix(this.object.matrixWorld);
+    worldPosition.setFromMatrixPosition(this.object.matrixWorld);
 
     this.camera.updateMatrixWorld();
-    camPosition.getPositionFromMatrix(this.camera.matrixWorld);
+    camPosition.setFromMatrixPosition(this.camera.matrixWorld);
 
     scale = worldPosition.distanceTo(camPosition) / 6 * this.scale;
     this.gizmo.position.copy(worldPosition);
@@ -6975,7 +6839,7 @@ GZ3D.Scene.prototype.setManipulationMode = function(mode)
   }
   else
   {
-    // Toggle manipulaion space (world / local)
+    // Toggle manipulation space (world / local)
     if (this.modelManipulator.mode === this.manipulationMode)
     {
       this.modelManipulator.space =

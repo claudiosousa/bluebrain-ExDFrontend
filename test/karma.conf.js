@@ -160,6 +160,7 @@ module.exports = function(config) {
 
     proxies : {
         '/views/': 'http://localhost:8000/views/',
+        '/img/': 'app/img/'
     },
 
     // Uncomment the following lines if you are using grunt's server to run the tests

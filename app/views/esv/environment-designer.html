@@ -5,7 +5,8 @@
   objects) is therefore compatible with the platform.
   Gazebo uses the <a href="http://sdformat.org/">SDF format</a>.
   If you want your environments to be
-  available,  <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the corresponding SDF file(s) and
+  available, <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the
+  corresponding SDF file(s) and
   assets).
 <hr>
 <h4>View, Move or Rotate objects on the scene:</h4>
@@ -27,10 +28,67 @@
   </button>
 </div>
 <hr>
-<h4>Save or Load environment definition file to and from your computer</h4>
+
+<h4>Save environment definition file to your computer</h4>
 <button type="button" class="btn btn-default" ng-click="exportSDFWorld()">
   <i class="glyphicon glyphicon-save"></i>
   <span>Save SDF locally</span>
 </button>
 <hr>
+
+<div ng-controller="insertControl">
+  <div id="insertMenu-simple_shapes">
+    <div class=" panelTitle"  title="Simple Shapes">
+      <h4>Insert simple Shapes</h4>
+    </div>
+    <div class="panelContent">
+      <a id="insert-entity-box" ng-mousedown="addModel('box');"
+         data-role="button">
+        <img src="img/esv/objects/box.png" draggable="false" class="clickable img-thumbnail environment-thumbnail" alt="Box">
+      </a>
+      <a id="insert-entity-sphere"
+         ng-mousedown="addModel('sphere');" data-role="button">
+        <img src="img/esv/objects/sphere.png" draggable="false" class="img-thumbnail environment-thumbnail">
+      </a>
+      <a id="insert-entity-cylinder"
+         ng-mousedown="addModel('cylinder');" data-role="button">
+        <img src="img/esv/objects/cylinder.png" draggable="false" class="img-thumbnail environment-thumbnail">
+      </a>
+    </div>
+  </div>
+  <hr>
+  <div id="insertMenu-lights" class="">
+    <div class="panelTitle" title="Lights">
+      <h4>Insert Lights</h4>
+    </div>
+    <div class="panelContent">
+      <a id="insert-entity-pointlight"
+         ng-mousedown="addModel('pointlight');" data-role="button">
+        <img src="img/esv/objects/pointlight.png" draggable="false" class="img-thumbnail environment-thumbnail">
+      </a>
+      <a id="insert-entity-spotlight"
+         ng-mousedown="addModel('spotlight');" data-role="button">
+        <img src="img/esv/objects/spotlight.png" draggable="false" class="img-thumbnail environment-thumbnail">
+      </a>
+      <a id="insert-entity-directionallight"
+         ng-mousedown="addModel('directionallight');"
+         data-role="button">
+        <img src="img/esv/objects/directionallight.png" draggable="false" class="img-thumbnail environment-thumbnail">
+      </a>
+    </div>
+  </div>
+  <hr>
+  <div ng-repeat="category in categories" id="insertMenu-{{category.path}}">
+    <div class="panelTitle"  title="{{category.title}}">
+      <h4>Insert {{category.title}}</h4>
+    </div>
+    <div class="panelContent">
+      <a ng-repeat="model in category.models" id="insert-entity-{{model.modelPath}}"
+         ng-mousedown="addModel(model.modelPath);"
+         data-role="button">
+        <img ng-src="{{assetsPath}}/{{model.modelPath}}/thumbnail.png" draggable="false" class="clickable img-thumbnail environment-thumbnail" alt="{{model.modelPath}}">
+      </a>
+    </div>
+  </div>
+</div>
 

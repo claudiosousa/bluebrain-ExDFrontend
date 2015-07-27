@@ -1,13 +1,15 @@
 'use strict';
 
 describe('Directive: environment-designer', function () {
+
+  var $rootScope, $compile, $scope, element, simulationSDFWorldSpy;
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('exdFrontendApp.Constants'));
   beforeEach(module('currentStateMockFactory'));
 
-  var simulationSDFWorldSpy;
-  var $rootScope, $compile, $scope, element, stateService, panelsCloseSpy, currentStateMock;
+  var stateService, panelsCloseSpy, currentStateMock;
 
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
@@ -49,6 +51,7 @@ describe('Directive: environment-designer', function () {
   }));
 
   beforeEach(inject(function (_$rootScope_, _$compile_, EDIT_MODE, STATE, _stateService_, _currentStateMockFactory_) {
+
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $scope = $rootScope.$new();
@@ -139,6 +142,56 @@ describe('Directive: environment-designer', function () {
     $scope.exportSDFWorld();
     expect(simulationSDFWorldSpy).toHaveBeenCalled();
     expect(exportSpy).toHaveBeenCalled();
+  });
+
+  it('should call correctly setEditMode', function () {
+    spyOn($scope, 'setEditMode');
+
+    var btns = element.find('button');
+    var viewBtn      = angular.element(btns[0]),
+        translateBtn = angular.element(btns[1]),
+        rotateBtn    = angular.element(btns[2]);
+
+    viewBtn.triggerHandler('click');
+    expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.VIEW);
+
+    translateBtn.triggerHandler('click');
+    expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
+
+    rotateBtn.triggerHandler('click');
+    expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.ROTATE);
+  });
+
+
+  it('should call correctly addModel("box")', function () {
+
+    spyOn($scope, 'addModel');
+
+    var addBoxBtnDomElem = element.find('#insert-entity-box');
+    var addBoxBtn = angular.element(addBoxBtnDomElem);
+
+    addBoxBtn.triggerHandler('mousedown');
+    expect($scope.addModel).toHaveBeenCalledWith('box');
+  });
+
+  it('should execute correctly addModel("box")', function () {
+
+    spyOn(window.guiEvents, 'emit');
+    spyOn($scope, 'setEditMode');
+
+    var addBoxBtnDomElem = element.find('#insert-entity-box');
+    var addBoxBtn = angular.element(addBoxBtnDomElem);
+
+    addBoxBtn.triggerHandler('mousedown');
+
+    //should emit 'spawn_entity_start'
+    expect(window.guiEvents.emit).toHaveBeenCalledWith('spawn_entity_start','box');
+
+    //should set translate mode
+    expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
+
+    //should close panel
+    expect(panelsCloseSpy).toHaveBeenCalled();
   });
 
 });
