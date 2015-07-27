@@ -119,16 +119,16 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.STARTED) : help(UI.PLAY_BUTTON)" ng-show="(state === STATE.PAUSED) || (state === STATE.INITIALIZED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.STARTED) : help(UI.PLAY_BUTTON)" ng-show="((state === STATE.PAUSED) || (state === STATE.INITIALIZED)) && !isInEditMode">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.PAUSED) : help(UI.PAUSE_BUTTON)" ng-show="(state === STATE.STARTED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.PAUSED) : help(UI.PAUSE_BUTTON)" ng-show="((state === STATE.STARTED)) && !isInEditMode">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.STOPPED) : help(UI.STOP_BUTTON)" ng-show="(state === STATE.STARTED) || (state === STATE.PAUSED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.STOPPED) : help(UI.STOP_BUTTON)" ng-show="((state === STATE.STARTED) || (state === STATE.PAUSED)) && !isInEditMode">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.INITIALIZED) : help(UI.RESET_BUTTON)" ng-show="(state === STATE.PAUSED)">
+            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.INITIALIZED) : help(UI.RESET_BUTTON)" ng-show="(state === STATE.PAUSED) && !isInEditMode">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
             <div ng-show="(state === STATE.INITIALIZED) || (state === STATE.STARTED) || (state === STATE.PAUSED)">
@@ -262,7 +262,7 @@
         <!-- overlay -->
 
         <!-- context menu -->
-        <div id="contextmenu" class="esv-contextmenu" ng-show="isContextMenuShown" ng-style="{ 'left': contextMenuLeft, 'top': contextMenuTop }">
+        <div id="contextmenu" class="esv-contextmenu" ng-show="isContextMenuShown && !isInEditMode" ng-style="{ 'left': contextMenuLeft, 'top': contextMenuTop }">
           <ul class="hbp-list-tableview hbp-list-tableview-selectable">
             <li class="hbp-list-tableview-heading">Change Color</li>
             <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('red'); $event.stopPropagation();">Red</li>
