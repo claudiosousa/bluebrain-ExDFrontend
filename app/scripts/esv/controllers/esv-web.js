@@ -26,25 +26,13 @@
       return output;
     };
   })
-  .filter('byLocation', function() {
-    return function(input, pattern, doApply) {
-      if (!doApply) {
-        return input;
+  .filter('byMaturity', function($filter) {
+    return function(input, isDev) {
+      if (isDev) {
+        return $filter('filter')(input, { maturity: '!production'}, true);
       }
       else {
-        var output = [];
-        angular.forEach(input, function (exp) {
-          var found = false;
-          angular.forEach(exp.serverPattern, function(server) {
-            if (server.indexOf(pattern) > -1 ) {
-              found = true;
-            }
-          });
-          if (found) {
-            output.push(exp);
-          }
-        });
-        return output;
+        return $filter('filter')(input, { maturity: 'production'}, true);
       }
     };
   })
