@@ -250,13 +250,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     httpBackend.whenPUT(/()/).respond(200);
 
     simulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED},
-      { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED},
-      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED},
-      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED},
-      { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED},
-      { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED}
+      { simulationID: 0, experimentConfiguration: 'fakeExperiment0', state: STATE.CREATED},
+      { simulationID: 1, experimentConfiguration: 'fakeExperiment1', state: STATE.INITIALIZED},
+      { simulationID: 2, experimentConfiguration: 'fakeExperiment2', state: STATE.PAUSED},
+      { simulationID: 3, experimentConfiguration: 'fakeExperiment3', state: STATE.STARTED},
+      { simulationID: 4, experimentConfiguration: 'fakeExperiment4', state: STATE.STOPPED},
+      { simulationID: 5, experimentConfiguration: 'fakeExperiment5', state: STATE.INITIALIZED},
+      { simulationID: 6, experimentConfiguration: 'fakeExperiment6', state: STATE.CREATED}
     ];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(simulations[3]);
 
@@ -284,7 +284,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       owner: '1234',
       state: STATE.INITIALIZED,
       simulationID: 1,
-      experimentID: 'FakeExperiment'
+      experimentConfiguration: 'FakeExperiment'
     };
 
     // create mock for console

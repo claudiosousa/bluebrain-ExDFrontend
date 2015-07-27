@@ -127,11 +127,11 @@
         $scope.userID = profile.id;
         simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
           $scope.ownerID = data.owner;
-          var experimentID = data.experimentID;
+          var experimentConfiguration = data.experimentConfiguration;
           // get experiment list from current server
           experimentList(serverBaseUrl).experiments(function (data) {
             angular.forEach(data.data, function(experimentTemplate) {
-              if (experimentTemplate.experimentConfiguration === experimentID) {
+              if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
                 $scope.ExperimentDescription = experimentTemplate.description;
               }
             });
