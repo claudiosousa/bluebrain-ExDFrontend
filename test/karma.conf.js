@@ -64,15 +64,12 @@ module.exports = function(config) {
       'app/scripts/**/*.js',
       'test/mock/**/*.js',
       'test/spec/**/*.js',
-      'app/scripts/ncd/**/*.js',
-      'app/scripts/exd/**/*.js',
       'app/scripts/common/**/*.js',
       // list the esv directories explicitly, since we do not want
       // to include all parts of the gz3d folder
       'app/scripts/esv/controllers/*.js',
       'app/scripts/esv/directives/*.js',
       'app/scripts/esv/services/*.js',
-      'app/partials/**/*.html',
       'app/views/esv/*.html',
       'app/views/common/*.html',
       {pattern: 'app/views/*.*', included: false, served: true}
@@ -83,15 +80,12 @@ module.exports = function(config) {
         // do not include tests or libraries
         // (these files will be instrumented by Istanbul)
         'app/scripts/app/**/*.js': ['coverage'],
-        'app/scripts/ncd/**/*.js': ['coverage'],
-        'app/scripts/exd/**/*.js': ['coverage'],
         'app/scripts/common/**/*.js': ['coverage'],
         'app/scripts/esv/controllers/*.js': ['coverage'],
         'app/scripts/esv/directives/*.js': ['coverage'],
         'app/scripts/esv/services/*.js': ['coverage'],
-        'app/partials/**/*.html': ['ng-html2js'],
         'app/views/esv/*.html': ['ng-html2js'],
-        'app/views/common/*.html': ['ng-html2js'],
+        'app/views/common/*.html': ['ng-html2js']
     },
 
     ngHtml2JsPreprocessor: {
