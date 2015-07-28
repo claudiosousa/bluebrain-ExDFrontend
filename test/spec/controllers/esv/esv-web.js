@@ -83,12 +83,12 @@ describe('Controller: experimentCtrl', function () {
     experimentTemplatesAugmented = {
       '1': {name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern:['a'], timeout: 100},
       '2': {name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200, runningExperiments: 1, simulations: [
-        {simulationID: 0, experimentID: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
+        {simulationID: 0, experimentConfiguration: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
       ]},
       '3': {name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300, runningExperiments: 3, simulations: [
-        { simulationID: 2, experimentID: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
-        { simulationID: 0, experimentID: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
-        { simulationID: 2, experimentID: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
+        { simulationID: 2, experimentConfiguration: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
+        { simulationID: 0, experimentConfiguration: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
+        { simulationID: 2, experimentConfiguration: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
       ]}
     };
 

@@ -15,7 +15,7 @@ window.TestDataGenerator = (function () {
   api.createTestSimulations = function (numberOfSimulations, initialState) {
     var simulations = [];
     for (var i = 0; i < numberOfSimulations; i++) {
-      simulations.push({simulationID: i, experimentID: 'fakeExperiment' + i + '.xml', state: initialState});
+      simulations.push({simulationID: i, experimentConfiguration: 'fakeExperiment' + i + '.xml', state: initialState});
     }
     return simulations;
   };

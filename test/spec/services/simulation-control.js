@@ -35,13 +35,13 @@ describe('Services: simulation-services', function () {
     STATE = _STATE_;
 
     simulations = [
-      { simulationID: 0, experimentID: 'fakeExperiment0', state: STATE.CREATED, creationDate: (new Date()).toISOString(), owner: '1234'},
-      { simulationID: 1, experimentID: 'fakeExperiment1', state: STATE.INITIALIZED},
-      { simulationID: 2, experimentID: 'fakeExperiment2', state: STATE.PAUSED, owner: 'default-owner'},
-      { simulationID: 3, experimentID: 'fakeExperiment3', state: STATE.STARTED, owner: '4321'},
-      { simulationID: 4, experimentID: 'fakeExperiment4', state: STATE.STOPPED},
-      { simulationID: 5, experimentID: 'fakeExperiment5', state: STATE.INITIALIZED},
-      { simulationID: 6, experimentID: 'fakeExperiment6', state: STATE.CREATED, owner: 'invalid-id'}
+      { simulationID: 0, experimentConfiguration: 'experimentConfiguration', state: STATE.CREATED, creationDate: (new Date()).toISOString(), owner: '1234'},
+      { simulationID: 1, experimentConfiguration: 'experimentConfiguration', state: STATE.INITIALIZED},
+      { simulationID: 2, experimentConfiguration: 'experimentConfiguration', state: STATE.PAUSED, owner: 'default-owner'},
+      { simulationID: 3, experimentConfiguration: 'experimentConfiguration', state: STATE.STARTED, owner: '4321'},
+      { simulationID: 4, experimentConfiguration: 'experimentConfiguration', state: STATE.STOPPED},
+      { simulationID: 5, experimentConfiguration: 'experimentConfiguration', state: STATE.INITIALIZED},
+      { simulationID: 6, experimentConfiguration: 'experimentConfiguration', state: STATE.CREATED, owner: 'invalid-id'}
     ];
 
     // The return simulations' entries are simply augmented with 'serverID' (being 'bbpce016')
@@ -305,13 +305,13 @@ describe('Services: experimentSimulationService', function () {
     roslib = _roslib_;
     STATE = _STATE_;
 
-    // Create 7 experiments, all being the same, except for 3, which has experimentID 'fakeExperiment2.xml'
+    // Create 7 experiments, all being the same, except for 3, which has experimentConfiguration 'fakeExperiment2.xml'
     returnSimulations = (function () {
       var simulations = [];
       for (var i = 0; i < 7; i++) {
         simulations.push({
           simulationID: i,
-          experimentID: 'fakeExperiment' + ((i === 3) ? 2 : i) + '.xml',
+          experimentConfiguration: 'fakeExperiment' + ((i === 3) ? 2 : i) + '.xml',
           state: STATE.CREATED,
           serverID: 'bbpce016'
         });
@@ -402,17 +402,17 @@ describe('Services: experimentSimulationService', function () {
     argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[2]);
     argumentFunction(returnSimulations);
-    expect(returnSimulations[2].experimentID).toBe(returnSimulations[3].experimentID);
-    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(1);
-    expect(experimentTemplates[returnSimulations[3].experimentID].simulations).toEqual([returnSimulations[2]]);
+    expect(returnSimulations[2].experimentConfiguration).toBe(returnSimulations[3].experimentConfiguration);
+    expect(experimentTemplates[returnSimulations[3].experimentConfiguration].runningExperiments).toBe(1);
+    expect(experimentTemplates[returnSimulations[3].experimentConfiguration].simulations).toEqual([returnSimulations[2]]);
 
     // Simulation should be removed when no simulation is running on the server
     experimentSimulationService.refreshExperiments(experimentTemplates);
     argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
     argumentFunction([]);
-    expect(experimentTemplates[returnSimulations[3].experimentID].runningExperiments).toBe(0);
-    expect(experimentTemplates[returnSimulations[3].experimentID].simulations).toEqual([]);
+    expect(experimentTemplates[returnSimulations[3].experimentConfiguration].runningExperiments).toBe(0);
+    expect(experimentTemplates[returnSimulations[3].experimentConfiguration].simulations).toEqual([]);
   });
 
   describe('Tests involving getExperiments method', function() {
@@ -511,12 +511,12 @@ describe('Services: experimentSimulationService', function () {
     it('should test the launch of an experiment on a given server', function() {
       experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
 
-      experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014');
+      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014');
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
 
       expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
-        experimentID: 'mocked_experiment_id',
+        experimentConfiguration: 'mocked_experiment_conf',
         /* jshint camelcase: false */
         gzserverHost: 'lugano'
       }, jasmine.any(Function));
@@ -530,7 +530,7 @@ describe('Services: experimentSimulationService', function () {
       experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
 
       simulationService.reset();
-      experimentSimulationService.startNewExperiments('experiment_id', 'bbpce014 bbpce016', emptyCallback);
+      experimentSimulationService.startNewExperiments('experiment_conf', 'bbpce014 bbpce016', emptyCallback);
 
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
@@ -540,12 +540,12 @@ describe('Services: experimentSimulationService', function () {
       expect(messageCallback).toHaveBeenCalled();
 
       var returnSimulations2 = [
-        { simulationID: 0, experimentID: '0', state: STATE.STOPPED, serverID : 'bbpce016'},
-        { simulationID: 1, experimentID: '1', state: STATE.STOPPED, serverID : 'bbpce016'}
+        { simulationID: 0, experimentConfiguration: '0', state: STATE.STOPPED, serverID : 'bbpce016'},
+        { simulationID: 1, experimentConfiguration: '1', state: STATE.STOPPED, serverID : 'bbpce016'}
       ];
 
       messageCallback.reset();
-      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: '0', state: STATE.STARTED, serverID : 'bbpce016'});
+      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentConfiguration: '0', state: STATE.STARTED, serverID : 'bbpce016'});
       simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations2);
       expect(messageCallback).not.toHaveBeenCalled();
     });
@@ -568,7 +568,7 @@ describe('Services: experimentSimulationService', function () {
 
     isAvailableCallback.reset();
     console.log.reset();
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentID: 'fakeExperiment3.xml', state: STATE.STARTED, serverID : 'bbpce016'});
+    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentConfiguration: 'fakeExperiment3.xml', state: STATE.STARTED, serverID : 'bbpce016'});
     simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
     expect(isAvailableCallback).not.toHaveBeenCalled();
@@ -670,7 +670,7 @@ describe('Services: error handling', function () {
     httpBackend.whenGET(/()/).respond(200);
     experimentSimulationService.getExperiments(function(){}, function(){}, function(){});
     httpBackend.flush();
-    experimentSimulationService.launchExperimentOnServer('mocked_experiment_id', 'bbpce014', errorCallback);
+    experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014', errorCallback);
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
     expect(serverError.callCount).toBe(1);

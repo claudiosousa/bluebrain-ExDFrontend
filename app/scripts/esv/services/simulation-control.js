@@ -209,8 +209,8 @@
 
     var addSimulationToTemplate = function(experimentTemplates, activeSimulation) {
       angular.forEach(experimentTemplates, function(experimentTemplate) {
-        //ToDo: Should not take the experimentConfiguration, but the ExperimentID of the template
-        if (experimentTemplate.experimentConfiguration === activeSimulation.experimentID &&
+        //ToDo: Should not take the experimentConfiguration, but the experimentConfiguration of the template
+        if (experimentTemplate.experimentConfiguration === activeSimulation.experimentConfiguration &&
             (experimentTemplate.serverPattern.indexOf(activeSimulation.serverID) > -1 )) {
           // Increase the number of running experiments for this template
           experimentTemplate.runningExperiments = ('runningExperiments' in experimentTemplate) ? experimentTemplate.runningExperiments + 1 : 1;
@@ -242,7 +242,7 @@
           if(simulation.serverID === activeSimulation.serverID) {
             found = true;
             // Found the entry which is running on this server
-            if((simulation.experimentID !== activeSimulation.experimentID) ||
+            if((simulation.experimentConfiguration !== activeSimulation.experimentConfiguration) ||
               (simulation.simulationID !== activeSimulation.simulationID) ||
               (simulation.state !== activeSimulation.state)) {
               // The simulation on this server changed:
@@ -407,7 +407,7 @@
                 isAvailableCallback(templateName, true);
               } else {
                 // server is running simulation
-                if (experimentTemplate.experimentConfiguration === activeSimulation.experimentID) {
+                if (experimentTemplate.experimentConfiguration === activeSimulation.experimentConfiguration) {
                   console.log('Server ' + serverURL + ' is running experiment ' + templateName);
                 }
               }
@@ -449,7 +449,7 @@
       });
     };
 
-    var launchExperimentOnServer = function (experimentID, freeServerID, errorCallback) {
+    var launchExperimentOnServer = function (experimentConfiguration, freeServerID, errorCallback) {
       setProgressMessageCallback({main: 'Create new Simulation...'});
       var serverURL = servers[freeServerID].gzweb['nrp-services'];
 
@@ -459,7 +459,7 @@
 
       // Create a new simulation.
       simulationGenerator(serverURL).create({
-          experimentID: experimentID,
+          experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation
         }, function (createData) {
           setProgressMessageCallback({main: 'Initialize Simulation...'});
