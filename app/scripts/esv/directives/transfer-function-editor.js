@@ -25,13 +25,13 @@
         scope.transferFunctions = {};
 
         simulationTransferFunctions(serverBaseUrl).transferFunctions({sim_id: simulationID}, function(data){
-          for (var i = 0; i < data.transfer_functions.length; i = i+1)
+          for (var i = 0; i < data.length; i = i+1)
           {
             var transferFunction = {};
-            transferFunction.code = data.transfer_functions[i];
+            transferFunction.code = data[i];
             // Kind of weird, but if we move that up it produces random bugs.
             var transferFunctionNameRegExp = /^.*def\s+(\w+)\s*\(.*/gm;
-            var matches = transferFunctionNameRegExp.exec(data.transfer_functions[i]);
+            var matches = transferFunctionNameRegExp.exec(data[i]);
             if (matches) {
               scope.transferFunctions[matches[1]] = transferFunction;
             }
