@@ -63,7 +63,7 @@ describe('Directive: transferFunctionEditor', function () {
   var tf2Name = 'tf2';
   var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + ' (varx):\n\t#put your code here';
   var tf3Code = '#I am not valid';
-  var transferFunctionsReturned = {'transfer_functions': [tf1Code, tf2Code, tf3Code]};
+  var transferFunctionsReturned = [tf1Code, tf2Code, tf3Code];
 
   var SERVER_URL = 'https://neurorobotics-dev.humanbrainproject.eu/cle/1/api';
   var SIMULATION_ID = 1;
