@@ -1,5 +1,7 @@
 'use strict';
 
+var TestDataGenerator = window.TestDataGenerator;
+
 describe('Controller: experimentCtrl', function () {
 
   // load the controller's module
@@ -12,21 +14,36 @@ describe('Controller: experimentCtrl', function () {
     httpBackend,
     timeout,
     experimentSimulationService,
-    experimentTemplates,
-    experimentTemplatesAugmented,
-    experimentTemplatesArray,
-    sortedExperimentTemplatesArray,
-    filteredExperimentTemplatesArray,
-    experimentTemplatesArrayUser,
-    experimentTemplatesArrayDevel,
     REFRESH_UPDATE_RATE,
     STATE;
 
   var experimentSimulationServiceMock = {};
-  experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
-  experimentSimulationServiceMock.setInitializedCallback = jasmine.createSpy('setInitializedCallback');
-  experimentSimulationServiceMock.existsAvailableServer = jasmine.createSpy('existsAvailableServer');
-  experimentSimulationServiceMock.refreshExperiments = jasmine.createSpy('refreshExperiments');
+
+  var experimentTemplates = {
+    '1': { name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern: ['a'], timeout: 100},
+    '3': {name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300},
+    '2': {name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200}
+  };
+
+  var experimentTemplatesArray = (function () {
+    var result = [];
+    Object.keys(experimentTemplates).forEach(function (entry) {
+      var extendedObject = angular.copy(experimentTemplates[entry]);
+      extendedObject.id = entry;
+      result.push(extendedObject);
+    });
+    return result;
+  }());
+
+  function getExperimentById(id) {
+    var result;
+    experimentTemplatesArray.forEach(function (element) {
+      if (element.id === id) {
+        result = element;
+      }
+    });
+    return angular.copy(result);
+  }
 
   beforeEach(module(function ($provide) {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
@@ -48,49 +65,10 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationService = _experimentSimulationService_;
     STATE = _STATE_;
 
-    experimentSimulationService.getExperiments.reset();
-    experimentSimulationService.setInitializedCallback.reset();
-    experimentSimulationService.getExperiments.reset();
-    experimentSimulationService.existsAvailableServer.reset();
-    experimentSimulationService.refreshExperiments.reset();
-
-    experimentTemplates = {
-      '1': {name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern:['a'], timeout: 100},
-      '3': {name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300},
-      '2': {name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200}
-    };
-    experimentTemplatesArray = [
-      {id: '1', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern:['a'], timeout: 100},
-      {id: '3', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300},
-      {id: '2', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200}
-    ];
-    sortedExperimentTemplatesArray = [
-      {id: '1', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern:['a'], timeout: 100},
-      {id: '2', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200},
-      {id: '3', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300}
-    ];
-    filteredExperimentTemplatesArray = [
-      {id: '3', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300},
-      {id: '2', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200}
-    ];
-    experimentTemplatesArrayUser = [
-      {id: '2', name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200}
-    ];
-    experimentTemplatesArrayDevel = [
-      {id: '1', name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern:['a'], timeout: 100},
-      {id: '3', name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300}
-    ];
-    experimentTemplatesAugmented = {
-      '1': {name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern:['a'], timeout: 100},
-      '2': {name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200, runningExperiments: 1, simulations: [
-        {simulationID: 0, experimentConfiguration: '2', state: STATE.CREATED, serverID : 'http://bbpce014.epfl.ch:8080'}
-      ]},
-      '3': {name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300, runningExperiments: 3, simulations: [
-        { simulationID: 2, experimentConfiguration: '3', state: STATE.CREATED, serverID : 'http://bbpce016.epfl.ch:8080'},
-        { simulationID: 0, experimentConfiguration: '3', state: STATE.INITIALIZED, serverID : 'http://bbpce017.epfl.ch:8080'},
-        { simulationID: 2, experimentConfiguration: '3', state: STATE.PAUSED, serverID : 'http://bbpce018.epfl.ch:8080'}
-      ]}
-    };
+    experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
+    experimentSimulationServiceMock.setInitializedCallback = jasmine.createSpy('setInitializedCallback');
+    experimentSimulationServiceMock.existsAvailableServer = jasmine.createSpy('existsAvailableServer');
+    experimentSimulationServiceMock.refreshExperiments = jasmine.createSpy('refreshExperiments');
 
     experimentCtrl = $controller('experimentCtrl', {
       $rootScope: rootScope,
@@ -206,14 +184,20 @@ describe('Controller: experimentCtrl', function () {
     //Ignore this warning because of the name_snippetFilter
     /*jshint camelcase: false */
     inject(function(name_snippetFilter) {
-      expect(name_snippetFilter(experimentTemplatesArray, 'dog')).toEqual(filteredExperimentTemplatesArray);
+      var unfilteredExperiments = TestDataGenerator.createTestExperiments(100);
+
+      // Modify one random entry to contain 'Waldo' in its name
+      var experimentToFind = unfilteredExperiments[TestDataGenerator.randomInt(0, unfilteredExperiments.length - 1)];
+      experimentToFind.name = 'This is a string which contains Waldo';
+
+      expect(name_snippetFilter(unfilteredExperiments, 'Waldo')).toEqual([ experimentToFind ]);
     }
   ));
 
   it('should filter the experiments in user view',
     inject(function(byMaturityFilter) {
-      expect(byMaturityFilter(experimentTemplatesArray, false)).toEqual(experimentTemplatesArrayUser);
-      expect(byMaturityFilter(experimentTemplatesArray, true)).toEqual(experimentTemplatesArrayDevel);
+      expect(byMaturityFilter(experimentTemplatesArray, false)).toEqual([getExperimentById('2')]);
+      expect(byMaturityFilter(experimentTemplatesArray, true)).toEqual([getExperimentById('1'), getExperimentById('3')]);
     }
   ));
 
@@ -260,6 +244,5 @@ describe('Controller: experimentCtrl', function () {
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
     expect(rootScope.updatePromise).not.toBeDefined();
   });
-
 
 });

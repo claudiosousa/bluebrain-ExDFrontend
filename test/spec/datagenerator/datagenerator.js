@@ -32,5 +32,13 @@ window.TestDataGenerator = (function () {
     };
   };
 
+  api.createTestExperiments = function(numberOfExperiments) {
+    var experiments = [];
+    for(var i=0;i<numberOfExperiments;i++) {
+      experiments.push(api.createTestExperiment());
+    }
+    return experiments;
+  };
+
   return api;
 }());
