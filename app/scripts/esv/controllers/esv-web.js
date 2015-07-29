@@ -4,7 +4,7 @@
   /* Controllers */
 
   angular.module('exdFrontendApp')
-  .filter('name_snippet', function() {
+  .filter('nameSnippet', function() {
     return function (input, filter) {
       var output = [];
       var reFilter = new RegExp(filter, 'i');

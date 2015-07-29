@@ -20,7 +20,7 @@
 
     <a ng-show="!showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=true">developers</a>
     <a ng-show="showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=false">users</a>
-    <div ng-repeat="exp in experiments | convertToArray | name_snippet:query | orderBy:'name':false | byMaturity:showAll" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
+    <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
         <div class="list-entry-container left-right list-entry-main">
           <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">

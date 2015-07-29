@@ -181,16 +181,14 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should filter the experiments',
-    //Ignore this warning because of the name_snippetFilter
-    /*jshint camelcase: false */
-    inject(function(name_snippetFilter) {
+    inject(function(nameSnippetFilter) {
       var unfilteredExperiments = TestDataGenerator.createTestExperiments(100);
 
       // Modify one random entry to contain 'Waldo' in its name
       var experimentToFind = unfilteredExperiments[TestDataGenerator.randomInt(0, unfilteredExperiments.length - 1)];
       experimentToFind.name = 'This is a string which contains Waldo';
 
-      expect(name_snippetFilter(unfilteredExperiments, 'Waldo')).toEqual([ experimentToFind ]);
+      expect(nameSnippetFilter(unfilteredExperiments, 'Waldo')).toEqual([ experimentToFind ]);
     }
   ));
 
