@@ -98,6 +98,7 @@
       $scope.isOwner = false;
       $scope.isInitialized = false;
       $scope.isJoiningStoppedSimulation = false;
+      $rootScope.isInEditMode = false;
 
       // Query the state of the simulation
       simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
@@ -315,7 +316,7 @@
       };
 
       // this menu is currently only displayed if the model name contains "screen"
-      $scope.toggleScreenChangeMenu = function (show, event) {
+      $rootScope.toggleScreenChangeMenu = function (show, event) {
         if($scope.isOwner) {
           if (show) {
             if (!$scope.isContextMenuShown) {
