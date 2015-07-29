@@ -4,6 +4,7 @@
 /* global Detector: true */
 /* global document: true */
 
+
 describe('testing the gz3d service', function () {
   var gz3d,
     rootScope,

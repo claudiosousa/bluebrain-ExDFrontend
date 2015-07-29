@@ -235,7 +235,7 @@
           var color = colors[value];
           if (angular.isDefined(material) && angular.isDefined(color)) {
             material.color.setHex(color);
-            material.ambient.setHex(color);
+            material.emissive.setHex(color);
             material.specular.setHex(color);
           }
         }

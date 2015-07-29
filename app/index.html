@@ -94,20 +94,21 @@
     <script src="bower_components/roslibjs/build/roslib.js"></script>
     <script src="bower_components/angular.panels/dist/angular.panels.min.js"></script>
     <script src="bower_components/angular-toArrayFilter/toArrayFilter.js"></script>
+    <script src="bower_components/threejs/build/three.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
     <!-- build:js({app,.tmp,.}) scripts/gz3d.js -->
-    <script src="scripts/esv/gz3d/client/js/include/three.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/OrbitControls.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/Detector.js"></script>
+    <script src="bower_components/threejs/examples/js/controls/OrbitControls.js"></script>
+    <script src="bower_components/threejs/examples/js/Detector.js"></script>
+    <script src="bower_components/threejs/examples/js/shaders/CopyShader.js"></script>
+    <script src="bower_components/threejs/examples/js/shaders/SSAOShader.js"></script>
+    <script src="bower_components/threejs/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="bower_components/threejs/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="bower_components/threejs/examples/js/postprocessing/MaskPass.js"></script>
+    <script src="bower_components/threejs/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="scripts/esv/gz3d/client/js/include/ThreeBackwardsCompatibility.js"></script>
     <script src="scripts/esv/gz3d/client/js/include/ColladaLoader.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/CopyShader.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/SSAOShader.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/EffectComposer.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/RenderPass.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/MaskPass.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/ShaderPass.js"></script>
     <!-- endbuild -->
 
     <!-- build:js({app,.tmp,.}) scripts/app.js -->
