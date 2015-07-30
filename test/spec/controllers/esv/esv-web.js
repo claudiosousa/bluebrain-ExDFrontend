@@ -9,6 +9,7 @@ describe('Controller: experimentCtrl', function () {
 
   var experimentCtrl,
     scope,
+    controller,
     location,
     httpBackend,
     timeout,
@@ -23,6 +24,12 @@ describe('Controller: experimentCtrl', function () {
     '2': TestDataGenerator.createTestExperiment(),
     '3': TestDataGenerator.createTestExperiment()
   };
+
+  var serversEnabled = [ 'bbpce014', 'bbpce016', 'bbpce018' ];
+  var serversEnabledFromLocalStorage = [ 'bbpce014', 'bbpce016' ];
+
+  var store = {};
+  store['server-enabled'] = angular.toJson(serversEnabled);
 
   var experimentTemplatesArray = (function () {
     var result = [];
@@ -47,6 +54,7 @@ describe('Controller: experimentCtrl', function () {
                               _experimentSimulationService_,
                               _STATE_) {
     scope = $rootScope.$new();
+    controller = $controller;
     location = _$location_;
     httpBackend = _$httpBackend_;
     timeout = _$timeout_;
@@ -57,6 +65,14 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationServiceMock.setInitializedCallback = jasmine.createSpy('setInitializedCallback');
     experimentSimulationServiceMock.existsAvailableServer = jasmine.createSpy('existsAvailableServer');
     experimentSimulationServiceMock.refreshExperiments = jasmine.createSpy('refreshExperiments');
+    experimentSimulationServiceMock.getServersEnable = jasmine.createSpy('getServersEnable').andReturn(serversEnabled);
+
+    spyOn(localStorage, 'getItem').andCallFake(function (key) {
+      return store[key];
+    });
+    spyOn(localStorage, 'setItem').andCallFake(function (key, value) {
+      store[key] = value;
+    });
 
     experimentCtrl = $controller('experimentCtrl', {
       $scope: scope
@@ -66,20 +82,23 @@ describe('Controller: experimentCtrl', function () {
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenGET('views/esv/experiment_templates.json').respond(experimentTemplates);
+
+    store['server-enabled'] = serversEnabledFromLocalStorage;
+
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
   }));
 
-  it('should init the global variables', function () {
-    expect(scope.selectedIndex).toEqual(-1);
-    expect(scope.joinSelectedIndex).toEqual(-1);
-    expect(scope.isQueryingServersFinished).toEqual(false);
-    expect(scope.updateUptimePromise).toBeDefined();
-    expect(scope.setSelected).toEqual(jasmine.any(Function));
-    expect(scope.setJoinableVisible).toEqual(jasmine.any(Function));
-    expect(experimentSimulationService.setInitializedCallback).toHaveBeenCalledWith(scope.joinExperiment);
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith({}, scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
+  it('should init the list of server enabled by default' , function () {
+    store['server-enabled'] = null;
+    // We need this var declaration to make jshint happy.
+    var experimentCtrlWithoutLocalStorage;
+    experimentCtrlWithoutLocalStorage = controller('experimentCtrl', {
+      $scope: scope
+    });
+
+    expect(scope.serversEnabled).toEqual(serversEnabled);
   });
 
   it('should set the progressbar visible', function() {
@@ -125,7 +144,7 @@ describe('Controller: experimentCtrl', function () {
     var newExperimentServerPattern = 'toto';
     scope.startNewExperiment(newExperimentString, newExperimentServerPattern);
     expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(false);
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, newExperimentServerPattern, scope.setProgressbarInvisible);
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, serversEnabled, newExperimentServerPattern, scope.setProgressbarInvisible);
   });
 
   it('should join an experiment', function(){
@@ -162,8 +181,8 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should get the experiments', function() {
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments, scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
-    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments, serversEnabled, scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
+    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[3];
     queryingServersFinishedCallback();
     expect(scope.isQueryingServersFinished).toBe(true);
   });
@@ -199,7 +218,7 @@ describe('Controller: experimentCtrl', function () {
     ));
 
   it('should create the updatePromise and call refresh experiments after 30 seconds', function() {
-    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
+    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[3];
     scope.updatePromise = undefined;
     queryingServersFinishedCallback();
 
@@ -213,32 +232,49 @@ describe('Controller: experimentCtrl', function () {
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
   });
 
+  it('should toggle servers properly', function() {
+    expect(scope.serversEnabled).not.toContain('toto');
+    scope.toggleServer('toto');
+    expect(scope.serversEnabled).toContain('toto');
+    expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+    scope.toggleServer('toto');
+    expect(scope.serversEnabled).not.toContain('toto');
+    expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+  });
+
+  it('should save the result when toggling the servers', function() {
+    expect(scope.serversEnabled).not.toContain('toto');
+    scope.toggleServer('toto');
+    expect(angular.fromJson(store['server-enabled'])).toContain('toto');
+    scope.toggleServer('toto');
+    expect(angular.fromJson(store['server-enabled'])).not.toContain('toto');
+  });
+
   describe('Tests related to scope.$destroy()', function(){
 
-    it('should stop updating after on $destroy', function() {
-      // Querying servers finished
-      experimentSimulationService.getExperiments.mostRecentCall.args[2]();
+  it('should stop updating after on $destroy', function() {
+    // Querying servers finished
+    experimentSimulationService.getExperiments.mostRecentCall.args[2]();
 
-      scope.$destroy();
+    scope.$destroy();
 
-      // Should do nothing after 30 seconds
-      timeout.flush(REFRESH_UPDATE_RATE);
-      expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+    // Should do nothing after 30 seconds
+    timeout.flush(REFRESH_UPDATE_RATE);
+    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
       expect(scope.updatePromise).not.toBeDefined();
       expect(scope.updateUptimePromise).not.toBeDefined();
-    });
+  });
 
-    it('should do nothing on $destroy', function() {
+  it('should do nothing on $destroy', function() {
       scope.updatePromise = undefined;
-      scope.$destroy();
+    scope.$destroy();
 
-      // Should do nothing after 30 seconds
-      timeout.flush(REFRESH_UPDATE_RATE);
-      expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+    // Should do nothing after 30 seconds
+    timeout.flush(REFRESH_UPDATE_RATE);
+    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
       expect(scope.updatePromise).not.toBeDefined();
       expect(scope.updateUptimePromise).not.toBeDefined();
     });
-
   });
 
 });

@@ -63,6 +63,19 @@ window.bbpConfig = {
             "status": "/ros_cle_simulation/status"
           }
         }
+      },
+      "bbpsrvc020": {
+        "gzweb": {
+          "websocket": "ws://bbpsrvc020.epfl.ch:7681",
+          "assets": "http://bbpsrvc020.epfl.ch",
+          "nrp-services": "http://bbpsrvc020.epfl.ch:8080"
+        },
+        "rosbridge": {
+          "websocket": "ws://bbpsrvc020.epfl.ch:9090",
+          "topics": {
+            "status": "/ros_cle_simulation/status"
+          }
+        }
       }
     }
   },

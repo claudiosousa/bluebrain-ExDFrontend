@@ -244,7 +244,13 @@ describe('Services: experimentSimulationService', function () {
   beforeEach(module('simulationControlServices'));
 
   var httpBackend;
-  var returnSimulations, experimentListCallBbpce016, experimentListCallBbpce014, experimentTemplates, experimentTemplatesAugmented, imagePreview;
+  var returnSimulations,
+      experimentListCallBbpce016,
+      experimentListCallBbpce014,
+      experimentTemplates,
+      experimentTemplatesAugmented,
+      imagePreview,
+      serversEnabled;
 
   var bbpConfigMock = {};
   var bbpConfigString =
@@ -373,6 +379,9 @@ describe('Services: experimentSimulationService', function () {
     imagePreview = {
         'image_as_base64': 'base64XF5Tf'
     };
+
+    serversEnabled = ['bbpce014','bbpce016', 'bbpce018'];
+
     httpBackend.whenGET('http://bbpce014.epfl.ch:8080/experiment').respond(experimentTemplates);
     httpBackend.whenGET(/^http:\/\/bbpce01[46]\.epfl\.ch:8080\/experiment\/fakeExperiment[123]\.xml\/preview$/).respond(imagePreview);
     spyOn(console, 'error');
@@ -385,20 +394,20 @@ describe('Services: experimentSimulationService', function () {
 
   it('should refresh the experiment template data structure', function() {
     // the simulation should be added to the experimentTemplates
-    experimentSimulationService.refreshExperiments(experimentTemplates);
+    experimentSimulationService.refreshExperiments(experimentTemplates, serversEnabled);
     var argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
     argumentFunction(returnSimulations);
     expect(experimentTemplates).toEqual(experimentTemplatesAugmented);
 
     // There should be no change
     var savedExperimentTemplates = angular.copy(experimentTemplates);
-    experimentSimulationService.refreshExperiments(experimentTemplates);
+    experimentSimulationService.refreshExperiments(experimentTemplates, serversEnabled);
     argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
     argumentFunction(returnSimulations);
     expect(experimentTemplates).toEqual(savedExperimentTemplates);
 
     // The simulation should be updated
-    experimentSimulationService.refreshExperiments(experimentTemplates);
+    experimentSimulationService.refreshExperiments(experimentTemplates, serversEnabled);
     argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[2]);
     argumentFunction(returnSimulations);
@@ -407,7 +416,7 @@ describe('Services: experimentSimulationService', function () {
     expect(experimentTemplates[returnSimulations[3].experimentConfiguration].simulations).toEqual([returnSimulations[2]]);
 
     // Simulation should be removed when no simulation is running on the server
-    experimentSimulationService.refreshExperiments(experimentTemplates);
+    experimentSimulationService.refreshExperiments(experimentTemplates, serversEnabled);
     argumentFunction = simulationServiceObject.simulations.mostRecentCall.args[0];
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
     argumentFunction([]);
@@ -439,7 +448,7 @@ describe('Services: experimentSimulationService', function () {
       var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
       var templates = {};
 
-      experimentSimulationService.getExperiments(templates, emptyCallback, queryingServersFinishedCallback, emptyCallback);
+      experimentSimulationService.getExperiments(templates, serversEnabled, emptyCallback, queryingServersFinishedCallback, emptyCallback);
       // Resolve the deferred variables
       mockedThen.argsForCall.forEach(function (argument) {
         argument[0]();
@@ -488,7 +497,7 @@ describe('Services: experimentSimulationService', function () {
 
       // register our callback for progress messages
       var initializedCallback = jasmine.createSpy('initializedCallback');
-      experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
+      experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
       experimentSimulationService.setInitializedCallback(initializedCallback);
 
       experimentSimulationService.registerForStatusInformation(serverID, simulationID);
@@ -509,7 +518,7 @@ describe('Services: experimentSimulationService', function () {
     });
 
     it('should test the launch of an experiment on a given server', function() {
-      experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
+      experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
 
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014');
       expect(messageCallback).toHaveBeenCalled();
@@ -527,10 +536,10 @@ describe('Services: experimentSimulationService', function () {
     });
 
     it('should start a new experiment', function(){
-      experimentSimulationService.getExperiments({}, messageCallback, emptyCallback, emptyCallback);
+      experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
 
       simulationService.reset();
-      experimentSimulationService.startNewExperiments('experiment_conf', 'bbpce014 bbpce016', emptyCallback);
+      experimentSimulationService.startNewExperiments('experiment_conf', serversEnabled, ['bbpce014', 'bbpce016'], emptyCallback);
 
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
@@ -554,7 +563,7 @@ describe('Services: experimentSimulationService', function () {
 
   it('should check for an available Server', function(){
     var isAvailableCallback = jasmine.createSpy('isAvailableCallback');
-    experimentSimulationService.existsAvailableServer(experimentTemplates, isAvailableCallback);
+    experimentSimulationService.existsAvailableServer(experimentTemplates, serversEnabled, isAvailableCallback);
 
     expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
 
@@ -574,14 +583,34 @@ describe('Services: experimentSimulationService', function () {
     expect(isAvailableCallback).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith('Server http://bbpce016.epfl.ch:8080 is running experiment fakeExperiment3.xml');
   });
+
+  it ('should get the available servers properly when they are not stored in localstorage', function() {
+    localStorage.getItem.isSpy = false;
+    spyOn(localStorage, 'getItem').andCallFake(function (key) { // jshint ignore:line
+      return null;
+    });
+    expect(experimentSimulationService.getServersEnable()).toEqual(Object.keys(bbpConfigString));
+  });
+
+  it ('should get the available servers properly when they are  stored in localstorage', function() {
+    var servers = ['foo','bar'];
+    localStorage.getItem.isSpy = false;
+    spyOn(localStorage, 'getItem').andCallFake(function (key) { // jshint ignore:line
+      return angular.toJson(servers);
+    });
+    expect(experimentSimulationService.getServersEnable()).toEqual(servers);
+  });
+
 });
 
 
 describe('Services: error handling', function () {
   var httpBackend;
   var serverError, simulationService, simulationControl;
-  var simulationGenerator, simulationState, experimentSimulationService;
+  var simulationGenerator, simulationState, experimentSimulationService, serversEnabled;
   var screenControl;
+
+  serversEnabled = ['bbpce014','bbpce016', 'bbpce018'];
 
   beforeEach(module('simulationControlServices'));
 
@@ -668,7 +697,7 @@ describe('Services: error handling', function () {
     var errorCallback = jasmine.createSpy('errorCallback');
     httpBackend.whenPOST(/()/).respond({simulationID: '0'}, 200);
     httpBackend.whenGET(/()/).respond(200);
-    experimentSimulationService.getExperiments(function(){}, function(){}, function(){});
+    experimentSimulationService.getExperiments(function(){}, serversEnabled, function(){}, function(){});
     httpBackend.flush();
     experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014', errorCallback);
     httpBackend.flush();

@@ -16,6 +16,16 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
   width: 100%;
 }
 
+.top-buttons {
+  float: left;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.servers-dropdown > li {
+  cursor: pointer;
+}
+
 .list-container {
   margin-left: auto;
   margin-right: auto;
