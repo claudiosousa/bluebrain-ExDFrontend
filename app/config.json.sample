@@ -1,189 +1,76 @@
 {
-   "api":{
-      "bluepy":{
-         "v0":"https://services.humanbrainproject.eu/bluepy/v0/api"
+  "api": {
+    "neurorobotics": {
+      "bbpce021": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "status": "/ros_cle_simulation/status"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
+        },
+        "serverJobLocation": "local"
       },
-      "collab":{
-         "v0":"https://services.humanbrainproject.eu/collab/v0"
+      "bbpce022": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/2/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/2/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "status": "/ros_cle_simulation/status"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
+        },
+        "serverJobLocation": "local"
       },
-      "document":{
-         "v0":"https://services.humanbrainproject.eu/document/v0/api"
+      "bbpce023": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/3/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/3/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "status": "/ros_cle_simulation/status"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
+        },
+        "serverJobLocation": "local"
       },
-      "image":{
-         "v0":"https://services.humanbrainproject.eu/image/v0/api"
-      },
-      "mimetype":{
-         "v0":"https://services.humanbrainproject.eu/mimetype/v0"
-      },
-      "neurorobotics":{
-         "bbpce021":{
-            "gzweb":{
-               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/1/assets",
-               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/1/api",
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws/gzbridge"
-            },
-            "rosbridge":{
-               "topics":{
-                  "spikes":"/monitor/spike_recorder",
-                  "status":"/ros_cle_simulation/status"
-               },
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
-            },
-            "serverJobLocation":"local"
-         },
-         "bbpce022":{
-            "gzweb":{
-               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/2/assets",
-               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/2/api",
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws/gzbridge"
-            },
-            "rosbridge":{
-               "topics":{
-                  "spikes":"/monitor/spike_recorder",
-                  "status":"/ros_cle_simulation/status"
-               },
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
-            },
-            "serverJobLocation":"local"
-         },
-         "bbpce023":{
-            "gzweb":{
-               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/3/assets",
-               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/3/api",
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws/gzbridge"
-            },
-            "rosbridge":{
-               "topics":{
-                  "spikes":"/monitor/spike_recorder",
-                  "status":"/ros_cle_simulation/status"
-               },
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
-            },
-            "serverJobLocation":"local"
-         },
-         "bbpsrvc20":{
-            "gzweb":{
-               "assets":"https://neurorobotics-dev.humanbrainproject.eu/cle/4/assets",
-               "nrp-services":"https://neurorobotics-dev.humanbrainproject.eu/cle/4/api",
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws/gzbridge"
-            },
-            "rosbridge":{
-               "topics":{
-                  "spikes":"/monitor/spike_recorder",
-                  "status":"/ros_cle_simulation/status"
-               },
-               "websocket":"wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"
-            },
-            "serverJobLocation":"lugano"
-         }
-      },
-      "provenance":{
-         "v0":"https://services.humanbrainproject.eu/provenance/v0/api",
-         "v1":"https://services.humanbrainproject.eu/provenance/v1/api"
-      },
-      "s3":{
-         "v0":"https://storage.humanbrainproject.eu"
-      },
-      "simconfig":{
-         "v0":"https://services.humanbrainproject.eu/bluepy/v0/api"
-      },
-      "task":{
-         "v0":"https://services.humanbrainproject.eu/task/v0/api"
-      },
-      "user":{
-         "v0":"https://services.humanbrainproject.eu/oidc/v0/api"
+      "bbpsrvc20": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/4/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/4/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "status": "/ros_cle_simulation/status"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"
+        },
+        "serverJobLocation": "lugano"
       }
-   },
-   "auth":{
-      "clientId":"neurorobotics-ui",
-      "url":"https://services.humanbrainproject.eu/oidc"
-   },
-   "bbpBrowser":{
-      "features":{
-         "releaseApi":false
-      }
-   },
-   "hbpFileStore":{
-      "maxFileUploadSize":41943040
-   },
-   "oidc":{
-      "debug":false
-   },
-   "up":{
-      "baseUrl":"https://up.humanbrainproject.eu/#",
-      "config":"https://up.humanbrainproject.eu/upnav/data-production.json",
-      "extensions":{
-         "ui":{
-            "apps":[
-               {
-                  "name":"Documentation",
-                  "type":"external",
-                  "url":"https://developer.humanbrainproject.eu/docs/"
-               },
-               {
-                  "name":"NMPI",
-                  "type":"external",
-                  "url":"https://neuromorphic.humanbrainproject.eu/app/"
-               }
-            ],
-            "settings":[
-               {
-                  "category":"User Management",
-                  "name":"Manage Users",
-                  "type":"external",
-                  "url":"https://up.humanbrainproject.eu/apps/usermanagement/#/user/"
-               },
-               {
-                  "category":"User Management",
-                  "name":"Create User",
-                  "type":"external",
-                  "url":"https://up.humanbrainproject.eu/apps/usermanagement/#/create-user/"
-               },
-               {
-                  "category":"User Management",
-                  "name":"Manage Account Requests",
-                  "type":"external",
-                  "url":"https://up.humanbrainproject.eu/apps/usermanagement/#/account-request/"
-               }
-            ],
-            "user":[
-               {
-                  "name":"profile",
-                  "title":"Profile",
-                  "type":"external",
-                  "url":"https://up.humanbrainproject.eu/apps/userprofile/#/me"
-               },
-               {
-                  "name":"editProfile",
-                  "title":"Edit Profile",
-                  "type":"external",
-                  "url":"https://up.humanbrainproject.eu/apps/userprofile/#/me/edit"
-               }
-            ]
-         }
-      },
-      "resourceUrlWhitelist":[
-         "https://up.humanbrainproject.eu/apps/**",
-         "https://developer.humanbrainproject.eu/**",
-         "https://neuromorphic.humanbrainproject.eu/**"
-      ],
-      "sites":[
-         {
-            "name":"Public",
-            "url":"https://humanbrainproject.eu"
-         },
-         {
-            "name":"Unified Portal",
-            "url":"https://up.humanbrainproject.eu"
-         },
-         {
-            "name":"Collaboration",
-            "url":"https://collaboration.humanbrainproject.eu"
-         },
-         {
-            "name":"Education",
-            "url":"https://education.humanbrainproject.eu"
-         }
-      ]
-   }
+    },
+    "user": {
+      "v0": "https://services.humanbrainproject.eu/oidc/v0/api"
+    }
+  },
+  "auth": {
+    "clientId": "neurorobotics-ui",
+    "url": "https://services.humanbrainproject.eu/oidc"
+  },
+  "oidc": {
+    "debug": false
+  }
 }
