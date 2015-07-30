@@ -29,12 +29,8 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
   clear: both;
 }
 
-@media only screen
-and (min-width : $screen-sm-min)
-{
-  .list-entry-container {
-    display: flex;
-  }
+.list-entry-container {
+  display: flex;
 }
 
 .list-entry-container.selected {
@@ -63,14 +59,16 @@ and (min-width : $screen-sm-min)
 }
 
 .list-entry-left {
-  flex: 0 1 200px;
+  flex: 1;
+  min-width: 200px;
   padding-right: 15px;
   padding-left: 15px;
   transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
 }
 
 .list-entry-left.selected {
-  flex: 0 1 400px;
+  flex: 2;
+  min-width: 250px;
 }
 
 .list-entry-left > img {
@@ -79,11 +77,7 @@ and (min-width : $screen-sm-min)
 }
 
 .list-entry-middle {
-  flex: 1;
-}
-
-.list-entry-right {
-  flex: 2;
+  flex: 8;
 }
 
 .list-entry-running {
@@ -95,14 +89,7 @@ and (min-width : $screen-sm-min)
 
 .list-entry-buttons {
   padding-top: 10px;
-}
-
-@media only screen
-and (max-width : 768px)
-{
-  .list-select-buttons {
-    margin-top: 10px;
-  }
+  padding-bottom: 10px;
 }
 
 .self-center {

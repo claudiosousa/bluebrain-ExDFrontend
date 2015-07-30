@@ -22,63 +22,56 @@
     <a ng-show="showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=false">users</a>
     <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
-        <div class="list-entry-container left-right list-entry-main">
-          <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
-            <img ng-src="data:image/png;base64,{{exp.imageData}}" />
-          </div>
-          <div class="list-entry-middle list-entry-container up-down">
-            <div class="list-entry-container left-right title-line">
-              <div class="h4">{{exp.name}}</div>
-              <div ng-if="exp.runningExperiments == 1" class="list-entry-running">({{exp.runningExperiments}} simulation running)</div>
-              <div ng-if="exp.runningExperiments > 1" class="list-entry-running">({{exp.runningExperiments}} simulations running)</div>
-            </div>
-            <div ng-if="exp.id == selectedIndex">{{exp.description}}<br/>
-              <i ng-if="exp.timeout != undefined">Timeout: {{exp.timeout | timeDDHHMMSS}}</i><br/>
-              <i ng-if="exp.numSupportingServers != undefined">Available servers: {{exp.numAvailableServers}} / {{exp.numSupportingServers}}</i>
-            </div>
-            <div ng-if="exp.id != selectedIndex">{{exp.description | limitTo: 200}}...</div>
-            <div collapse="isQueryingServersFinished" ng-if="exp.id == selectedIndex">
-              <div class="list-entry-container center"><i class="fa fa-spinner fa-spin"></i>&nbsp;<i>Querying available servers...</i></div>
-            </div>
-            <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
-              <div class="btn-group" role="group">
-                <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);">Edit experiment configuration</button>
-                <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter">Create new simulation</button>
-                <button ng-if="isServerAvailable[exp.id]" ng-disabled="startNewExperimentSelectedIndex !== -1" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);">Create new simulation</button>
-                <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);">Join existing simulation »</button>
-              </div>
-            </div>
-            <div  collapse="startNewExperimentSelectedIndex != exp.id">
-              <progressbar value="100" class="progress-striped active top-buffer"><i><b>{{progressMessageMain}}</b> {{progressMessageSub}}</i></progressbar>
-            </div>
-            <div  class="table-wrapper" collapse="joinSelectedIndex != exp.id">
-              <table class="table table-striped">
-                <thead>
-                <tr>
-                  <th>Simulation</th>
-                  <th>Server</th>
-                  <th>Creator</th>
-                  <th>Uptime</th>
-                  <th>Status</th>
-                  <th>&nbsp;</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="simul in exp.simulations">
-                  <td>{{simul.experimentConfiguration}}</td>
-                  <td>{{simul.serverID}}</td>
-                  <td>{{owners[simul.owner]}}</td>
-                  <td>{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
-                  <td>{{simul.state}}</td>
-                  <td><a ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{OPERATION_MODE.VIEW}}');" type="button" class="btn btn-default" ng-disabled="simul.state === STATE.CREATED">Join »</a></td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
+          <img ng-src="data:image/png;base64,{{exp.imageData}}" />
         </div>
-        <div class="list-entry-right list-entry-container center">
-          <div class="self-center"><button type="button" class="btn btn-primary list-select-buttons" ng-click="setSelected(exp.id);" ng-if="exp.id !== selectedIndex" ng-disabled="startNewExperimentSelectedIndex !== -1">Select »</button></div>
+        <div class="list-entry-middle list-entry-container up-down">
+          <div class="list-entry-container left-right title-line">
+            <div class="h4">{{exp.name}}</div>
+            <div ng-if="exp.runningExperiments == 1" class="list-entry-running">({{exp.runningExperiments}} simulation running)</div>
+            <div ng-if="exp.runningExperiments > 1" class="list-entry-running">({{exp.runningExperiments}} simulations running)</div>
+          </div>
+          <div ng-if="exp.id == selectedIndex">{{exp.description}}<br/>
+            <i ng-if="exp.timeout != undefined">Timeout: {{exp.timeout | timeDDHHMMSS}}</i><br/>
+            <i ng-if="exp.numSupportingServers != undefined">Available servers: {{exp.numAvailableServers}} / {{exp.numSupportingServers}}</i>
+          </div>
+          <div ng-if="exp.id != selectedIndex">{{exp.description | limitTo: 200}}...</div>
+          <div collapse="isQueryingServersFinished" ng-if="exp.id == selectedIndex">
+            <div class="list-entry-container center"><i class="fa fa-spinner fa-spin"></i>&nbsp;<i>Querying available servers...</i></div>
+          </div>
+          <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
+            <div class="btn-group" role="group">
+              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);"><i class="fa fa-pencil"></i> Edit</button>
+              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter"><i class="fa fa-plus"></i> Create</button>
+              <button ng-if="isServerAvailable[exp.id]" ng-disabled="startNewExperimentSelectedIndex !== -1" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);"><i class="fa fa-plus"></i> Create</button>
+              <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);"><i class="fa fa-sign-in"></i> Join »</button>
+            </div>
+          </div>
+          <div  collapse="startNewExperimentSelectedIndex != exp.id">
+            <progressbar value="100" class="progress-striped active top-buffer"><i><b>{{progressMessageMain}}</b> {{progressMessageSub}}</i></progressbar>
+          </div>
+          <div  class="table-wrapper" collapse="joinSelectedIndex != exp.id">
+            <table class="table table-striped">
+              <thead>
+              <tr>
+                <th>Server</th>
+                <th>Creator</th>
+                <th>Uptime</th>
+                <th>Status</th>
+                <th>&nbsp;</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr ng-repeat="simul in exp.simulations">
+                <td>{{simul.serverID}}</td>
+                <td>{{owners[simul.owner]}}</td>
+                <td>{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
+                <td>{{simul.state}}</td>
+                <td><a ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{OPERATION_MODE.VIEW}}');" type="button" class="btn btn-default" ng-disabled="simul.state === STATE.CREATED">Join »</a></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
