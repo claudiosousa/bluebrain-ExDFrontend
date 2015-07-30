@@ -36,8 +36,8 @@
       }
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
-      function ($scope, $rootScope, $timeout, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
+  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
+      function ($scope, $rootScope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
     $rootScope.selectedIndex = -1;
     $rootScope.joinSelectedIndex = -1;
     $rootScope.startNewExperimentSelectedIndex = -1;
@@ -117,7 +117,10 @@
       $scope.setProgressMessage,
       // This function is called when all servers responded to the query of running experiments
       function() {
-        $rootScope.updateUptimePromise = $timeout(simulationService().updateUptime, UPTIME_UPDATE_RATE);
+        // We store this promise in the scope in order to be able to cancel the interval later
+        $scope.updateUptimePromise = $interval(function () {
+          simulationService().updateUptime();
+        }, UPTIME_UPDATE_RATE);
         $scope.owners = simulationService().owners;
         $scope.uptime = simulationService().uptime;
         $rootScope.isQueryingServersFinished = true;
@@ -134,9 +137,9 @@
         $timeout.cancel($rootScope.updatePromise);
         $rootScope.updatePromise = undefined;
       }
-      if (angular.isDefined($rootScope.updateUptimePromise)) {
-        $timeout.cancel($rootScope.updateUptimePromise);
-        $rootScope.updateUptimePromise = undefined;
+      if (angular.isDefined($scope.updateUptimePromise)) {
+        $interval.cancel($scope.updateUptimePromise);
+        $scope.updateUptimePromise = undefined;
       }
       // Deregister the initialized callback
       experimentSimulationService.setInitializedCallback(undefined);
