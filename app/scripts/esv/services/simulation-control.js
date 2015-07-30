@@ -32,10 +32,11 @@
             element.serverID = serverID;
             // keep a copy of creation dates in an array (will be used to calculate uptime array)
             creationDate[serverID + '-' + element.simulationID] = element.creationDate;
-            hbpUserDirectory.get([element.owner]).then(function (profile)
-            {
-              owners[element.owner] = getUserName(profile);
-            });
+            if (element.state !== STATE.STOPPED && !(element.owner in owners)) {
+              hbpUserDirectory.get([element.owner]).then(function (profile) {
+                owners[element.owner] = getUserName(profile);
+              });
+            }
           });
         }
         return data;
