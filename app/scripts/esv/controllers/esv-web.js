@@ -36,46 +36,46 @@
       }
     };
   })
-  .controller('experimentCtrl', ['$scope', '$rootScope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
-      function ($scope, $rootScope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
-    $rootScope.selectedIndex = -1;
-    $rootScope.joinSelectedIndex = -1;
-    $rootScope.startNewExperimentSelectedIndex = -1;
-    $rootScope.isServerAvailable = {};
-    $rootScope.isQueryingServersFinished = false;
-    $rootScope.STATE = STATE;
+  .controller('experimentCtrl', ['$scope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE',
+      function ($scope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE) {
+    $scope.selectedIndex = -1;
+    $scope.joinSelectedIndex = -1;
+    $scope.startNewExperimentSelectedIndex = -1;
+    $scope.isServerAvailable = {};
+    $scope.isQueryingServersFinished = false;
+    $scope.STATE = STATE;
     $scope.OPERATION_MODE = OPERATION_MODE;
-    $rootScope.updatePromise = undefined;
-    $rootScope.updateUptimePromise = undefined;
+    $scope.updatePromise = undefined;
+    $scope.updateUptimePromise = undefined;
     $scope.experiments = {};
 
     var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
     var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
 
     $scope.setSelected = function(index) {
-      if ($rootScope.startNewExperimentSelectedIndex !== -1) {
+      if ($scope.startNewExperimentSelectedIndex !== -1) {
         return;
       }
-      if (index !== $rootScope.selectedIndex) {
-        $rootScope.selectedIndex = index;
-        $rootScope.joinSelectedIndex = -1;
-        $rootScope.startNewExperimentSelectedIndex = -1;
+      if (index !== $scope.selectedIndex) {
+        $scope.selectedIndex = index;
+        $scope.joinSelectedIndex = -1;
+        $scope.startNewExperimentSelectedIndex = -1;
       }
     };
 
     $scope.setJoinableVisible = function(index) {
-      $rootScope.joinSelectedIndex = index;
-      $rootScope.startNewExperimentSelectedIndex = -1;
+      $scope.joinSelectedIndex = index;
+      $scope.startNewExperimentSelectedIndex = -1;
     };
 
     $scope.setProgressbarVisible = function(index) {
-      $rootScope.joinSelectedIndex = -1;
-      $rootScope.startNewExperimentSelectedIndex = index;
+      $scope.joinSelectedIndex = -1;
+      $scope.startNewExperimentSelectedIndex = index;
     };
 
     $scope.setProgressbarInvisible = function() {
-      $rootScope.joinSelectedIndex = -1;
-      $rootScope.startNewExperimentSelectedIndex = -1;
+      $scope.joinSelectedIndex = -1;
+      $scope.startNewExperimentSelectedIndex = -1;
     };
 
     $scope.setProgressMessage = function(msg){
@@ -107,7 +107,7 @@
     experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
     var setIsServerAvailable = function(id, isAvailable){
-      $rootScope.isServerAvailable[id] = isAvailable;
+      $scope.isServerAvailable[id] = isAvailable;
     };
 
     experimentSimulationService.getExperiments(
@@ -123,9 +123,9 @@
         }, UPTIME_UPDATE_RATE);
         $scope.owners = simulationService().owners;
         $scope.uptime = simulationService().uptime;
-        $rootScope.isQueryingServersFinished = true;
+        $scope.isQueryingServersFinished = true;
         // Start to update the datastructure in regular intervals
-        $rootScope.updatePromise = $timeout(function(){
+        $scope.updatePromise = $timeout(function(){
           experimentSimulationService.refreshExperiments($scope.experiments, setIsServerAvailable);
         }, ESV_UPDATE_RATE);
       },
@@ -133,9 +133,9 @@
 
     // clean up on leaving
     $scope.$on("$destroy", function() {
-      if (angular.isDefined($rootScope.updatePromise)) {
-        $timeout.cancel($rootScope.updatePromise);
-        $rootScope.updatePromise = undefined;
+      if (angular.isDefined($scope.updatePromise)) {
+        $timeout.cancel($scope.updatePromise);
+        $scope.updatePromise = undefined;
       }
       if (angular.isDefined($scope.updateUptimePromise)) {
         $interval.cancel($scope.updateUptimePromise);

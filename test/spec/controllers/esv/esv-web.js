@@ -1,15 +1,14 @@
 'use strict';
 
-var TestDataGenerator = window.TestDataGenerator;
-
 describe('Controller: experimentCtrl', function () {
+
+  var TestDataGenerator = window.TestDataGenerator;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
 
   var experimentCtrl,
     scope,
-    rootScope,
     location,
     httpBackend,
     timeout,
@@ -20,9 +19,9 @@ describe('Controller: experimentCtrl', function () {
   var experimentSimulationServiceMock = {};
 
   var experimentTemplates = {
-    '1': { name: 'FakeName 1 car', description: 'Some Fake Description 1 xxx', maturity: 'development', experimentConfiguration: 'fake configuration 1', serverPattern: ['a'], timeout: 100},
-    '3': {name: 'FakeName 3 cat', description: 'Some Fake Description 3 dog', maturity: 'development', experimentConfiguration: 'fake configuration 3', serverPattern:['c'], timeout: 300},
-    '2': {name: 'FakeName 2 dog', description: 'Some Fake Description 2 yyy', maturity: 'production', experimentConfiguration: 'fake configuration 2', serverPattern:['b'], timeout: 200}
+    '1': TestDataGenerator.createTestExperiment(),
+    '2': TestDataGenerator.createTestExperiment(),
+    '3': TestDataGenerator.createTestExperiment()
   };
 
   var experimentTemplatesArray = (function () {
@@ -34,16 +33,6 @@ describe('Controller: experimentCtrl', function () {
     });
     return result;
   }());
-
-  function getExperimentById(id) {
-    var result;
-    experimentTemplatesArray.forEach(function (element) {
-      if (element.id === id) {
-        result = element;
-      }
-    });
-    return angular.copy(result);
-  }
 
   beforeEach(module(function ($provide) {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
@@ -57,7 +46,6 @@ describe('Controller: experimentCtrl', function () {
                               _$timeout_,
                               _experimentSimulationService_,
                               _STATE_) {
-    rootScope = $rootScope;
     scope = $rootScope.$new();
     location = _$location_;
     httpBackend = _$httpBackend_;
@@ -71,7 +59,6 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationServiceMock.refreshExperiments = jasmine.createSpy('refreshExperiments');
 
     experimentCtrl = $controller('experimentCtrl', {
-      $rootScope: rootScope,
       $scope: scope
     });
 
@@ -85,9 +72,9 @@ describe('Controller: experimentCtrl', function () {
   }));
 
   it('should init the global variables', function () {
-    expect(rootScope.selectedIndex).toEqual(-1);
-    expect(rootScope.joinSelectedIndex).toEqual(-1);
-    expect(rootScope.isQueryingServersFinished).toEqual(false);
+    expect(scope.selectedIndex).toEqual(-1);
+    expect(scope.joinSelectedIndex).toEqual(-1);
+    expect(scope.isQueryingServersFinished).toEqual(false);
     expect(scope.setSelected).toEqual(jasmine.any(Function));
     expect(scope.setJoinableVisible).toEqual(jasmine.any(Function));
     expect(experimentSimulationService.setInitializedCallback).toHaveBeenCalledWith(scope.joinExperiment);
@@ -95,19 +82,19 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should set the progressbar visible', function() {
-    rootScope.joinSelectedIndex = 3;
-    rootScope.startNewExperimentSelectedIndex = -1;
+    scope.joinSelectedIndex = 3;
+    scope.startNewExperimentSelectedIndex = -1;
     scope.setProgressbarVisible(2);
-    expect(rootScope.joinSelectedIndex).toEqual(-1);
-    expect(rootScope.startNewExperimentSelectedIndex).toEqual(2);
+    expect(scope.joinSelectedIndex).toEqual(-1);
+    expect(scope.startNewExperimentSelectedIndex).toEqual(2);
   });
 
   it('should set the progressbar invisible', function() {
-    rootScope.joinSelectedIndex = 3;
-    rootScope.startNewExperimentSelectedIndex = 2;
+    scope.joinSelectedIndex = 3;
+    scope.startNewExperimentSelectedIndex = 2;
     scope.setProgressbarInvisible();
-    expect(rootScope.joinSelectedIndex).toEqual(-1);
-    expect(rootScope.startNewExperimentSelectedIndex).toEqual(-1);
+    expect(scope.joinSelectedIndex).toEqual(-1);
+    expect(scope.startNewExperimentSelectedIndex).toEqual(-1);
   });
 
   it('should set the progress message', function() {
@@ -150,34 +137,34 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should select the correct entry', function() {
-    rootScope.selectedIndex = -1;
-    rootScope.joinSelectedIndex = 3;
+    scope.selectedIndex = -1;
+    scope.joinSelectedIndex = 3;
     scope.setSelected(1);
-    expect(rootScope.selectedIndex).toEqual(1);
-    expect(rootScope.joinSelectedIndex).toEqual(-1);
+    expect(scope.selectedIndex).toEqual(1);
+    expect(scope.joinSelectedIndex).toEqual(-1);
 
-    rootScope.selectedIndex = 2;
-    rootScope.joinSelectedIndex = 3;
+    scope.selectedIndex = 2;
+    scope.joinSelectedIndex = 3;
     scope.setSelected(2);
-    expect(rootScope.selectedIndex).toEqual(2);
-    expect(rootScope.joinSelectedIndex).toEqual(3);
+    expect(scope.selectedIndex).toEqual(2);
+    expect(scope.joinSelectedIndex).toEqual(3);
 
-    rootScope.startNewExperimentSelectedIndex = 1;
+    scope.startNewExperimentSelectedIndex = 1;
     scope.setSelected(1);
-    expect(rootScope.selectedIndex).toEqual(2);
+    expect(scope.selectedIndex).toEqual(2);
   });
 
   it('should set the Joinable table to visible', function() {
-    rootScope.joinSelectedIndex = -1;
+    scope.joinSelectedIndex = -1;
     scope.setJoinableVisible(1);
-    expect(rootScope.joinSelectedIndex).toEqual(1);
+    expect(scope.joinSelectedIndex).toEqual(1);
   });
 
   it('should get the experiments', function() {
     expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments, scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
     var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
     queryingServersFinishedCallback();
-    expect(rootScope.isQueryingServersFinished).toBe(true);
+    expect(scope.isQueryingServersFinished).toBe(true);
   });
 
   it('should filter the experiments',
@@ -194,8 +181,13 @@ describe('Controller: experimentCtrl', function () {
 
   it('should filter the experiments in user view',
     inject(function(byMaturityFilter) {
-      expect(byMaturityFilter(experimentTemplatesArray, false)).toEqual([getExperimentById('2')]);
-      expect(byMaturityFilter(experimentTemplatesArray, true)).toEqual([getExperimentById('1'), getExperimentById('3')]);
+      var unfilteredExperiments = TestDataGenerator.createTestExperiments(3);
+
+      // Modify one entry to contain 'production' in its maturity property
+      unfilteredExperiments[2].maturity = 'production';
+
+      expect(byMaturityFilter(unfilteredExperiments, false)).toEqual([unfilteredExperiments['2']]);
+      expect(byMaturityFilter(unfilteredExperiments, true)).toEqual([unfilteredExperiments['0'], unfilteredExperiments['1']]);
     }
   ));
 
@@ -207,10 +199,10 @@ describe('Controller: experimentCtrl', function () {
 
   it('should create the updatePromise and call refresh experiments after 30 seconds', function() {
     var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[2];
-    rootScope.updatePromise = undefined;
+    scope.updatePromise = undefined;
     queryingServersFinishedCallback();
 
-    expect(rootScope.updatePromise).toBeDefined();
+    expect(scope.updatePromise).toBeDefined();
     // Should not have been called 1 second before REFRESH_UPDATE_RATE
     timeout.flush(REFRESH_UPDATE_RATE - 1000);
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
@@ -229,18 +221,18 @@ describe('Controller: experimentCtrl', function () {
     // Should do nothing after 30 seconds
     timeout.flush(REFRESH_UPDATE_RATE);
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
-    expect(rootScope.updatePromise).not.toBeDefined();
-    expect(rootScope.updateUptimePromise).not.toBeDefined();
+    expect(scope.updatePromise).not.toBeDefined();
+    expect(scope.updateUptimePromise).not.toBeDefined();
   });
 
   it('should do nothing on $destroy', function() {
-    rootScope.updatePromise = undefined;
+    scope.updatePromise = undefined;
     scope.$destroy();
 
     // Should do nothing after 30 seconds
     timeout.flush(REFRESH_UPDATE_RATE);
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
-    expect(rootScope.updatePromise).not.toBeDefined();
+    expect(scope.updatePromise).not.toBeDefined();
   });
 
 });

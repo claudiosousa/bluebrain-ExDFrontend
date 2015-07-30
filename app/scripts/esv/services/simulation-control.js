@@ -28,7 +28,7 @@
       // Append the new transformation to the defaults
       return defaults.concat(function(data) {
         if (angular.isArray(data)) { // false in case of a Bad Gateway Error 502
-          angular.forEach(data, function(element, index) {
+          angular.forEach(data, function(element) {
             element.serverID = serverID;
             // keep a copy of creation dates in an array (will be used to calculate uptime array)
             creationDate[serverID + '-' + element.simulationID] = element.creationDate;
@@ -195,11 +195,11 @@
 
   module.factory('experimentSimulationService', ['$q', '$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
     function ($q, $http, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError) {
-    var getExperimentsCallback;
     var setProgressMessageCallback;
     var queryingServersFinishedCallback;
     var initializedCallback;
     var servers = bbpConfig.get('api.neurorobotics');
+    var serverIDs = Object.keys(servers);
     var rosConnection;
     var statusListener;
     var shouldLaunchInEditMode = false;
@@ -225,7 +225,7 @@
     };
 
     var deleteSimulationFromTemplate = function(experimentTemplates, serverID) {
-      angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
+      angular.forEach(experimentTemplates, function(experimentTemplate) {
         angular.forEach(experimentTemplate.simulations, function (simulation, simulationIndex) {
           if(simulation.serverID === serverID) {
             // delete the outdated entry
@@ -238,7 +238,7 @@
 
     var searchAndUpdateExperimentTemplates = function(experimentTemplates, activeSimulation) {
       var found = false;
-      angular.forEach(experimentTemplates, function(experimentTemplate, templateName){
+      angular.forEach(experimentTemplates, function(experimentTemplate){
         angular.forEach(experimentTemplate.simulations, function(simulation, simulationIndex){
           if(simulation.serverID === activeSimulation.serverID) {
             found = true;
@@ -262,14 +262,12 @@
 
     // Refresh the experiment data structure
     var refreshExperiments = function(experimentTemplates, isServerAvailableCallback) {
-      var serverIDs = Object.keys(servers);
-
       // We will use this array to collect promises. Those can then be used in the
       // end for indicating when all loading is done.
       var requests = [];
 
       // Query each server to get the updated data
-      angular.forEach(serverIDs, function(serverID, index) {
+      angular.forEach(serverIDs, function(serverID) {
         var serverNRPServicesURL = servers[serverID].gzweb['nrp-services'];
 
         // Create a deferred and store its promise.
@@ -292,7 +290,7 @@
             // Delete all elements in the data structure with this serverID
             deleteSimulationFromTemplate(experimentTemplates, serverID);
           }
-        }).$promise.then(function(data) {
+        }).$promise.then(function() {
             // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
             // is offline), we resolve the respective deferred.
             deferred.resolve();
@@ -311,13 +309,11 @@
       setProgressMessageCallback = progressMessageCallback;
       queryingServersFinishedCallback = queryingServersFinishedCb;
 
-      var serverIDs = Object.keys(servers);
-
       // We will use this array to collect promises. Those can then be used in the
       // end for indicating when all loading is done.
       var requests = [];
 
-      angular.forEach(serverIDs, function(serverID, index) {
+      angular.forEach(serverIDs, function(serverID) {
         var serverNRPServicesURL = servers[serverID].gzweb['nrp-services'];
 
         // Create a deferred and store its promise.
@@ -337,7 +333,7 @@
               });
             }
           });
-        }).$promise.then(function(data) {
+        }).$promise.then(function() {
             // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
             // is offline), we resolve the respective deferred.
             deferred.resolve();
@@ -385,10 +381,9 @@
       angular.forEach(experimentTemplates, function(experimentTemplate, templateName) {
         experimentTemplate.numSupportingServers = 0;
         experimentTemplate.numAvailableServers = 0;
-        var serverIDs = Object.keys(servers);
 
         // for each server
-        angular.forEach(serverIDs, function (serverID, index) {
+        angular.forEach(serverIDs, function (serverID) {
           // check if server can run experiment
           if (experimentTemplate.serverPattern.indexOf(serverID) > -1) {
             var serverURL = servers[serverID].gzweb['nrp-services'];
@@ -412,7 +407,7 @@
                   console.log('Server ' + serverURL + ' is running experiment ' + templateName);
                 }
               }
-            }).$promise.then(function(data) {
+            }).$promise.then(function() {
                 // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
                 // is offline), we resolve the respective deferred.
                 deferred.resolve();
@@ -430,9 +425,8 @@
 
     // TODO improve this code (keyword: semaphore!)
     var startNewExperiments = function(id, serverPattern, errorCallback){
-      var serverIDs = Object.keys(servers);
       var keepGoing = true;
-      angular.forEach(serverIDs, function(serverID, index){
+      angular.forEach(serverIDs, function(serverID){
         if(keepGoing) {
           if (serverPattern.indexOf(serverID) > -1) {
             var serverURL = servers[serverID].gzweb['nrp-services'];

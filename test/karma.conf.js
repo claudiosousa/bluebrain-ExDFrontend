@@ -63,6 +63,7 @@ module.exports = function(config) {
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
       'app/scripts/**/*.js',
       'test/mock/**/*.js',
+      'test/spec/datagenerator/*.js',
       'test/spec/**/*.js',
       'app/scripts/common/**/*.js',
       // list the esv directories explicitly, since we do not want
