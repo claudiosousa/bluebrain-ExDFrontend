@@ -63,7 +63,7 @@
             if (scope.oldState === undefined) { scope.oldState = state; }
             switch (mode) {
               case EDIT_MODE.VIEW:
-                if (state === STATE.PAUSED) { newState = scope.oldState; }
+                if (state === STATE.PAUSED && scope.oldState !== STATE.PAUSED) { newState = scope.oldState; }
                 break;
               case EDIT_MODE.TRANSLATE:
               case EDIT_MODE.ROTATE:
