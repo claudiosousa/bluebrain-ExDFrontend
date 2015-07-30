@@ -11,7 +11,8 @@
           mode: 'text/x-python'
       }" ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
-  <button type="button" class="btn btn-default btn-md" ng-click="update(name)">
-    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Update
+  <button type="button" class="btn btn-default btn-md disabled enable-tooltip" 
+  tooltip="Coming soon" tooltip-trigger="mouseenter" ng-click="true || update(name)">
+    <span class="glyphicon glyphicon-save" aria-hidden="true"/>Update
   </button>
 </div>
