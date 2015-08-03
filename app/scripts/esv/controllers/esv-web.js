@@ -110,6 +110,11 @@
       $scope.isServerAvailable[id] = isAvailable;
     };
 
+    // We store this promise in the scope in order to be able to cancel the interval later
+    $scope.updateUptimePromise = $interval(function () {
+      simulationService().updateUptime();
+    }, UPTIME_UPDATE_RATE);
+
     experimentSimulationService.getExperiments(
       // This is the datastructure where all the templates and running experiments are stored
       $scope.experiments,
@@ -117,10 +122,6 @@
       $scope.setProgressMessage,
       // This function is called when all servers responded to the query of running experiments
       function() {
-        // We store this promise in the scope in order to be able to cancel the interval later
-        $scope.updateUptimePromise = $interval(function () {
-          simulationService().updateUptime();
-        }, UPTIME_UPDATE_RATE);
         $scope.owners = simulationService().owners;
         $scope.uptime = simulationService().uptime;
         $scope.isQueryingServersFinished = true;

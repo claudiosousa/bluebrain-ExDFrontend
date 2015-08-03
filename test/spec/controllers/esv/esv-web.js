@@ -75,6 +75,7 @@ describe('Controller: experimentCtrl', function () {
     expect(scope.selectedIndex).toEqual(-1);
     expect(scope.joinSelectedIndex).toEqual(-1);
     expect(scope.isQueryingServersFinished).toEqual(false);
+    expect(scope.updateUptimePromise).toBeDefined();
     expect(scope.setSelected).toEqual(jasmine.any(Function));
     expect(scope.setJoinableVisible).toEqual(jasmine.any(Function));
     expect(experimentSimulationService.setInitializedCallback).toHaveBeenCalledWith(scope.joinExperiment);
@@ -212,27 +213,32 @@ describe('Controller: experimentCtrl', function () {
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
   });
 
-  it('should stop updating after on $destroy', function() {
-    // Querying servers finished
-    experimentSimulationService.getExperiments.mostRecentCall.args[2]();
+  describe('Tests related to scope.$destroy()', function(){
 
-    scope.$destroy();
+    it('should stop updating after on $destroy', function() {
+      // Querying servers finished
+      experimentSimulationService.getExperiments.mostRecentCall.args[2]();
 
-    // Should do nothing after 30 seconds
-    timeout.flush(REFRESH_UPDATE_RATE);
-    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
-    expect(scope.updatePromise).not.toBeDefined();
-    expect(scope.updateUptimePromise).not.toBeDefined();
-  });
+      scope.$destroy();
 
-  it('should do nothing on $destroy', function() {
-    scope.updatePromise = undefined;
-    scope.$destroy();
+      // Should do nothing after 30 seconds
+      timeout.flush(REFRESH_UPDATE_RATE);
+      expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+      expect(scope.updatePromise).not.toBeDefined();
+      expect(scope.updateUptimePromise).not.toBeDefined();
+    });
 
-    // Should do nothing after 30 seconds
-    timeout.flush(REFRESH_UPDATE_RATE);
-    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
-    expect(scope.updatePromise).not.toBeDefined();
+    it('should do nothing on $destroy', function() {
+      scope.updatePromise = undefined;
+      scope.$destroy();
+
+      // Should do nothing after 30 seconds
+      timeout.flush(REFRESH_UPDATE_RATE);
+      expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+      expect(scope.updatePromise).not.toBeDefined();
+      expect(scope.updateUptimePromise).not.toBeDefined();
+    });
+
   });
 
 });
