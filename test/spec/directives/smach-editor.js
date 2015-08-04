@@ -7,6 +7,7 @@ describe('Directive: smachEditor', function () {
   var $rootScope, $compile, $httpBackend, $log, $scope, element;
   var SERVER_URL = 'http://bbpce014.epfl.ch:8080';
   var SIMULATION_ID = 1;
+  var stateMachineCodesResponse = { 'data' : { 'SM1' : 'Code of SM' , 'SM2' : 'Code of SM2' }};
 
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
@@ -21,7 +22,7 @@ describe('Directive: smachEditor', function () {
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/smach-editor.html', '<h3>Test</h3>');
     $httpBackend.whenGET('views/esv/smach-editor.html').respond('<h3>Test</h3>');
-    $httpBackend.whenGET('views/esv/smach-example-code.py').respond('Test');
+    $httpBackend.whenGET(/^http:\/\/bbpce014\.epfl\.ch:8080\/simulation\/\d\/state-machines$/).respond(stateMachineCodesResponse);
     $httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     spyOn($log, 'error');
 
@@ -45,10 +46,10 @@ describe('Directive: smachEditor', function () {
     expect(element.prop('outerHTML')).toContain('<smach-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '" class="ng-scope"><h3>Test</h3></smach-editor>');
   });
 
-  it('should init the smachCode variable', function () {
-    expect($scope.smachCode).toEqual('');
+  it('should init the smachCodes object', function () {
+    expect($scope.smachCodes).toEqual({});
     $scope.smachEditorRefresh();
     $httpBackend.flush();
-    expect($scope.smachCode).toEqual('Test');
+    expect($scope.smachCodes).toEqual(stateMachineCodesResponse.data);
   });
 });
