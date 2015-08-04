@@ -4,8 +4,8 @@
 /* global Detector: true */
 /* global document: true */
 
-describe('testing the gzInitialization service', function () {
-  var gzInitialization,
+describe('testing the gz3d service', function () {
+  var gz3d,
     rootScope,
     bbpConfig;
 
@@ -51,9 +51,9 @@ describe('testing the gzInitialization service', function () {
     $provide.value('$stateParams', stateParams);
     $provide.value('bbpConfig', bbpConfigMock);
   }));
-  beforeEach(inject(function ($rootScope, _gzInitialization_, _$stateParams_, _bbpConfig_) {
+  beforeEach(inject(function ($rootScope, _gz3d_, _$stateParams_, _bbpConfig_) {
     rootScope = $rootScope;
-    gzInitialization = _gzInitialization_;
+    gz3d = _gz3d_;
     stateParams = _$stateParams_;
     bbpConfig = _bbpConfig_;
 
@@ -61,7 +61,7 @@ describe('testing the gzInitialization service', function () {
     spyOn(console, 'error');
 
     // Always initialize first
-    gzInitialization.Initialize('bbpce016', 'fakeSimID');
+    gz3d.Initialize('bbpce016', 'fakeSimID');
   }));
 
   it('checks if all the GZ3D constructors have been called', function() {
@@ -74,24 +74,24 @@ describe('testing the gzInitialization service', function () {
 
   it('checks for the correct callback of the DIV size changes', function() {
     rootScope.$digest();
-    rootScope.container.offsetHeight = 110;
+    gz3d.container.offsetHeight = 110;
     rootScope.$digest();
     expect(SceneObject.setWindowSize).toHaveBeenCalledWith(200, 110);
-    rootScope.container.offsetWidth = 210;
-    rootScope.container.offsetHeight = 100;
+    gz3d.container.offsetWidth = 210;
+    gz3d.container.offsetHeight = 100;
     rootScope.$digest();
     expect(SceneObject.setWindowSize).toHaveBeenCalledWith(210, 100);
   });
 
   it('should not initialize when already initialized', function() {
-    rootScope.sdfParser = undefined;
+    gz3d.sdfParser = undefined;
     // initialize a second time
-    gzInitialization.Initialize('fakeserverID', 'fakeSimID');
-    expect(rootScope.sdfParser).not.toBeDefined();
+    gz3d.Initialize('fakeserverID', 'fakeSimID');
+    expect(gz3d.sdfParser).not.toBeDefined();
   });
 
   it('should deinitialize', function() {
-    gzInitialization.deInitialize();
+    gz3d.deInitialize();
     expect(rootScope.sdfParser).not.toBeDefined();
     expect(rootScope.iface).not.toBeDefined();
     expect(rootScope.gui).not.toBeDefined();

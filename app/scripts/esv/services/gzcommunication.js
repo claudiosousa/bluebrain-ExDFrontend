@@ -8,7 +8,7 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
-  gz3dServices.factory('gzInitialization', [ '$rootScope', '$window', '$stateParams', '$compile', 'bbpConfig',
+  gz3dServices.factory('gz3d', ['$rootScope', '$window', '$stateParams', '$compile', 'bbpConfig',
     function ($rootScope, $window, $stateParams, $compile, bbpConfig) {
     /* moved from the gz3d-view.html*/
     if (!Detector.webgl) {
@@ -18,12 +18,13 @@
     var requestId;
     var isInitialized = false;
     var offsetHeightListenerUnregister;
+    var retval = {};
 
     var resizeGZ3D = function() {
-      $rootScope.scene.setWindowSize($rootScope.container.offsetWidth, $rootScope.container.offsetHeight);
+      retval.scene.setWindowSize(retval.container.offsetWidth, retval.container.offsetHeight);
     };
 
-    var initialize = function(serverID, simulationID) {
+    retval.Initialize = function(serverID, simulationID) {
       if(isInitialized) {
         return;
       }
@@ -36,41 +37,41 @@
       GZ3D.assetsPath = serverConfig.gzweb.assets;
       GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
 
-      $rootScope.container = document.getElementById( 'container' );
+      retval.container = document.getElementById('container');
 
-      $rootScope.scene = new GZ3D.Scene($rootScope.container, $rootScope, $compile);
-      $rootScope.gui = new GZ3D.Gui($rootScope.scene);
-      $rootScope.iface = new GZ3D.GZIface($rootScope.scene, $rootScope.gui);
-      $rootScope.sdfparser = new GZ3D.SdfParser($rootScope.scene, $rootScope.gui, $rootScope.iface);
+      retval.scene = new GZ3D.Scene(retval.container, $rootScope, $compile);
+      retval.gui = new GZ3D.Gui(retval.scene);
+      retval.iface = new GZ3D.GZIface(retval.scene, retval.gui);
+      retval.sdfParser = new GZ3D.SdfParser(retval.scene, retval.gui, retval.iface);
 
       // FPS indicator
-      $rootScope.stats = new Stats();
-      $rootScope.stats.domElement.style.position = 'absolute';
-      $rootScope.stats.domElement.style.top = '0px';
-      $rootScope.stats.domElement.style.zIndex = 100;
+      retval.stats = new Stats();
+      retval.stats.domElement.style.position = 'absolute';
+      retval.stats.domElement.style.top = '0px';
+      retval.stats.domElement.style.zIndex = 100;
 
-      $rootScope.animate = function() {
-        requestId = requestAnimationFrame($rootScope.animate);
-        $rootScope.render();
+      retval.animate = function() {
+        requestId = requestAnimationFrame(retval.animate);
+        retval.render();
       };
 
-      $rootScope.render = function() {
-        $rootScope.scene.render();
+      retval.render = function() {
+        retval.scene.render();
       };
 
-      $rootScope.animate();
+      retval.animate();
       $window.addEventListener('resize', resizeGZ3D, false);
 
       offsetHeightListenerUnregister = $rootScope.$watch(function() {
-        return $rootScope.container.offsetHeight;
+        return retval.container.offsetHeight;
       }, function(newValue, oldValue) {
-        if ((newValue !== oldValue) && angular.isDefined($rootScope.scene)) {
+        if ((newValue !== oldValue) && angular.isDefined(retval.scene)) {
           resizeGZ3D();
         }
       }, true);
     };
 
-    var deInitialize = function() {
+    retval.deInitialize = function() {
       if (angular.isFunction(offsetHeightListenerUnregister)) {
         offsetHeightListenerUnregister();
       }
@@ -79,21 +80,17 @@
 
       isInitialized = false;
 
-      delete $rootScope.sdfparser;
-      delete $rootScope.iface;
-      delete $rootScope.gui;
-      delete $rootScope.scene;
+      delete retval.sdfParser;
+      delete retval.iface;
+      delete retval.gui;
+      delete retval.scene;
 
-      delete $rootScope.container;
-      delete $rootScope.stats;
-      delete $rootScope.animate;
-      delete $rootScope.render;
+      delete retval.container;
+      delete retval.stats;
+      delete retval.animate;
+      delete retval.render;
     };
 
-    // now expose our public functions
-    return {
-      Initialize: initialize,
-      deInitialize: deInitialize
-    };
+    return retval;
   }]);
 }());
