@@ -131,40 +131,6 @@
     };
   }]);
 
-  module.factory('simulationTransferFunctions', ['$resource', 'serverError', function ($resource, serverError) {
-    return function (baseUrl) {
-      return $resource(baseUrl + '/simulation/:sim_id/transfer-functions', {}, {
-        transferFunctions: {
-          method: 'GET',
-          isArray: true,
-          interceptor: {responseError: serverError}
-        },
-        patch: {
-          method: 'PUT',
-          url: baseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
-          interceptor: {responseError: serverError}
-        }
-      });
-    };
-  }]);
-
-  module.factory('simulationStateMachineScripts', ['$resource', 'serverError', function($resource, serverError) {
-    return function(baseUrl) {
-      return $resource(baseUrl + '/simulation/:sim_id/state-machines', {}, {
-        get: {
-          method: 'GET',
-          isArray: false,
-          interceptor : {responseError : serverError}
-        },
-        put: {
-          method: 'PUT',
-          url: baseUrl + '/simulation/:sim_id/state-machines/:state_machine_name',
-          interceptor : {responseError : serverError}
-        }
-      });
-    };
-  }]);
-
   module.factory('simulationGenerator', ['$resource', 'serverError', function ($resource, serverError) {
     return function (baseUrl) {
       return $resource(baseUrl + '/simulation', {}, {
