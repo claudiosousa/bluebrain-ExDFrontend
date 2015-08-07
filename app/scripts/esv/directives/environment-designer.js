@@ -90,7 +90,7 @@
         scope.exportSDFWorld = function () {
           $log.debug('ED: Querying server for SDF world export.');
           simulationSDFWorld(scope.serverBaseUrl).export({}, function (data) {
-            var $q = data.sdf_dump;
+            var $q = data.sdf;
             var $el = document.createElement('a');
             $el.setAttribute('href', 'data:text/xml;charset=utf-8,' + encodeURIComponent($q));
             $el.setAttribute('download', 'world.sdf');
