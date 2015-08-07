@@ -63,6 +63,9 @@
                       ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);">
                 <i class="fa fa-plus"></i> Launch
               </button>
+              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="  uploadEnvironmentAndStart(exp);">
+                Upload custom environment
+              </button>
               <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);">
                 <i class="fa fa-sign-in"></i> Join »
               </button>

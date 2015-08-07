@@ -239,7 +239,6 @@ describe('Services: experimentSimulationService', function () {
     roslib,
     STATE;
 
-
   // load the service to test and mock the necessary service
   beforeEach(module('simulationControlServices'));
 
@@ -249,7 +248,8 @@ describe('Services: experimentSimulationService', function () {
       experimentTemplates,
       experimentTemplatesAugmented,
       imagePreview,
-      serversEnabled;
+      serversEnabled,
+      simulationSDFWorld;
 
   var bbpConfigMock = {};
   var bbpConfigString =
@@ -287,6 +287,10 @@ describe('Services: experimentSimulationService', function () {
   var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateMockObject);
   var experimentListMockObject = { experiments: jasmine.createSpy('experiments')};
   var experimentListMock = jasmine.createSpy('experimentList').andReturn(experimentListMockObject);
+  var simulationSDFWorldObject = {
+    import: jasmine.createSpy('import')
+  };
+  var simulationSDFWorldMock = jasmine.createSpy('simulationSDFWorld').andReturn(simulationSDFWorldObject);
 
   beforeEach(module(function ($provide) {
     $provide.constant('bbpConfig', bbpConfigMock);
@@ -295,10 +299,12 @@ describe('Services: experimentSimulationService', function () {
     $provide.value('simulationGenerator', simulationGeneratorMock);
     $provide.value('simulationState', simulationStateMock);
     $provide.value('experimentList', experimentListMock);
+    $provide.value('simulationSDFWorld', simulationSDFWorldMock);
   }));
 
   beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_,
-      _simulationState_, _experimentSimulationService_, _experimentList_, _bbpConfig_, _roslib_, _STATE_) {
+      _simulationState_, _experimentSimulationService_, _experimentList_, _bbpConfig_, _roslib_, _STATE_,
+      _simulationSDFWorld_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
     simulationService = _simulationService_;
@@ -309,6 +315,7 @@ describe('Services: experimentSimulationService', function () {
     bbpConfig = _bbpConfig_;
     roslib = _roslib_;
     STATE = _STATE_;
+    simulationSDFWorld = _simulationSDFWorld_;
 
     // Create 7 experiments, all being the same, except for 3, which has experimentConfiguration 'fakeExperiment2.xml'
     returnSimulations = (function () {
@@ -370,7 +377,7 @@ describe('Services: experimentSimulationService', function () {
     httpBackend.whenGET('http://bbpce014.epfl.ch:8080/experiment').respond(experimentTemplates);
     httpBackend.whenGET(/^http:\/\/bbpce01[46]\.epfl\.ch:8080\/experiment\/fakeExperiment[123]\.xml\/preview$/).respond(imagePreview);
     spyOn(console, 'error');
-    spyOn(console, 'log');
+    spyOn(console, 'log').andCallThrough();
 
     rosConnectionMock.close = jasmine.createSpy('close');
     roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionMock);
@@ -412,6 +419,34 @@ describe('Services: experimentSimulationService', function () {
     argumentFunction([]);
     expect(experimentTemplates[returnSimulations[3].experimentConfiguration].runningExperiments).toBe(0);
     expect(experimentTemplates[returnSimulations[3].experimentConfiguration].simulations).toEqual([]);
+  });
+
+  it('should call correctly startNewExperiments when calling startNewExperiment and enterEditMode', function() {
+    var oldSnes = experimentSimulationService.startNewExperiments;
+    var oldSsliem = experimentSimulationService.setShouldLaunchInEditMode;
+    var oldGse = experimentSimulationService.getServersEnable;
+
+    spyOn(experimentSimulationService, 'startNewExperiments');
+    spyOn(experimentSimulationService, 'setShouldLaunchInEditMode');
+    spyOn(experimentSimulationService, 'getServersEnable');
+
+    experimentSimulationService.enterEditMode('expconf', 'envconf', 'serverPattern', null);
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
+    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(true);
+    expect(experimentSimulationService.getServersEnable).toHaveBeenCalled();
+
+    experimentSimulationService.startNewExperiments.reset();
+    experimentSimulationService.setShouldLaunchInEditMode.reset();
+    experimentSimulationService.getServersEnable.reset();
+
+    experimentSimulationService.startNewExperiment('expconf', 'envconf', 'serverPattern', null);
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
+    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(false);
+    expect(experimentSimulationService.getServersEnable).toHaveBeenCalled();
+
+    experimentSimulationService.startNewExperiments = oldSnes;
+    experimentSimulationService.setShouldLaunchInEditMode = oldSsliem;
+    experimentSimulationService.getServersEnable = oldGse;
   });
 
   describe('Tests involving getExperiments method', function() {
@@ -534,7 +569,7 @@ describe('Services: experimentSimulationService', function () {
       experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
 
       experimentSimulationService.setShouldLaunchInEditMode(true);
-      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014');
+      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', null);
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
 
@@ -553,7 +588,7 @@ describe('Services: experimentSimulationService', function () {
     it('should start the experiment in view mode', function() {
       experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
       experimentSimulationService.setShouldLaunchInEditMode(false);
-      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014');
+      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', null);
       expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
         experimentConfiguration: 'mocked_experiment_conf',
         /* jshint camelcase: false */
@@ -566,7 +601,8 @@ describe('Services: experimentSimulationService', function () {
       experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
 
       simulationService.reset();
-      experimentSimulationService.startNewExperiments('experiment_conf', serversEnabled, ['bbpce014', 'bbpce016'], emptyCallback);
+
+      experimentSimulationService.startNewExperiments('experiment_conf', null, serversEnabled, ['bbpce014', 'bbpce016'], emptyCallback);
 
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce014.epfl.ch:8080', serverID: 'bbpce014'});
       expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
@@ -584,6 +620,51 @@ describe('Services: experimentSimulationService', function () {
       simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentConfiguration: '0', state: STATE.STARTED, serverID : 'bbpce016'});
       simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations2);
       expect(messageCallback).not.toHaveBeenCalled();
+    });
+
+    it('should upload the new environment if any when calling startNewExperiments', function () {
+      experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
+
+      experimentSimulationService.startNewExperiments('experiment_conf', 'notnull', serversEnabled, ['bbpce014', 'bbpce016'], emptyCallback);
+
+      simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
+      simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
+
+      expect(simulationSDFWorldObject.import).toHaveBeenCalled();
+
+      var oldLeos = experimentSimulationService.launchExperimentOnServer;
+      experimentSimulationService.launchExperimentOnServer = jasmine.createSpy('launchExperimentOnServer').andCallFake(function(){});
+      // spyOn(experimentSimulationService, 'launchExperimentOnServer').andCallFake(function () {});
+      simulationSDFWorldObject.import.mostRecentCall.args[1]({path: 'dummy'});
+      expect(experimentSimulationService.launchExperimentOnServer).toHaveBeenCalled();
+      // experimentSimulationService.launchExperimentOnServer.andCal
+      // lThrough();
+      experimentSimulationService.launchExperimentOnServer = oldLeos;
+    });
+
+    it('should pass environmentConfiguration to the backend iff it\'s defined', function () {
+      experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
+
+      experimentSimulationService.launchExperimentOnServer('experiment_conf', 'environment_conf', 'bbpce014', emptyCallback);
+
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBe('environment_conf');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('view');
+
+      experimentSimulationService.launchExperimentOnServer('experiment_conf', undefined, 'bbpce014', emptyCallback);
+
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBeUndefined();
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('view');
+
+      experimentSimulationService.launchExperimentOnServer('experiment_conf', null, 'bbpce014', emptyCallback);
+
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBeUndefined();
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('view');
     });
 
   });
@@ -725,7 +806,7 @@ describe('Services: error handling', function () {
     httpBackend.whenGET(/()/).respond(200);
     experimentSimulationService.getExperiments(function(){}, serversEnabled, function(){}, function(){});
     httpBackend.flush();
-    experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014', errorCallback);
+    experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', errorCallback);
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
     expect(serverError.display.callCount).toBe(1);

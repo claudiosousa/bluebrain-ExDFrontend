@@ -30,7 +30,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       OPERATION_MODE,
       serverError,
       panels,
-      gz3d;
+      gz3d,
+      experimentSimulationService;
 
   // Mock simulationServices
   var simulationServiceObject = {};
@@ -231,7 +232,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _OPERATION_MODE_,
                               _serverError_,
                               _panels_,
-                              _gz3d_) {
+                              _gz3d_,
+                              _experimentSimulationService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
@@ -258,6 +260,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     serverError = _serverError_;
     panels = _panels_;
     gz3d = _gz3d_;
+    experimentSimulationService = _experimentSimulationService_;
 
     gz3d.scene = {};
     gz3d.scene.radialMenu = {};
@@ -661,6 +664,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.$destroy();
       expect(document.execCommand).toHaveBeenCalled();
     });
+
+/*    it('should call newExp if necessary on destroy', function () {
+      var dummyNewExp = jasmine.createSpy('dummyNewExp');
+      experimentSimulationService.setExperimentForRestart(stateParams.serverID, dummyNewExp);
+      scope.$destroy();
+      expect(dummyNewExp).toHaveBeenCalled();
+    }); */
 
     it('should do nothing on $destroy when all is undefined', function() {
       scope.assetLoadingSplashScreen = undefined;

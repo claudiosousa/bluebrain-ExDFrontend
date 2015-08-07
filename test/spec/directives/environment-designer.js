@@ -2,14 +2,13 @@
 
 describe('Directive: environment-designer', function () {
 
-  var $rootScope, $compile, $scope, element, simulationSDFWorldSpy;
-
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('exdFrontendApp.Constants'));
   beforeEach(module('currentStateMockFactory'));
 
-  var stateService, panelsCloseSpy, currentStateMock;
+  var simulationSDFWorldSpy, simulationControlSpy;
+  var $rootScope, $compile, $scope, $document, element, stateService, panelsCloseSpy, currentStateMock, experimentSimulationService;
 
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
@@ -36,13 +35,17 @@ describe('Directive: environment-designer', function () {
     $provide.value('panels', {
       close: panelsCloseSpy
     });
-
   }));
 
-  beforeEach(module('simulationControlServices', function ($provide) {
+  beforeEach(module('simulationControlServices'));
+  beforeEach(module(function ($provide) {
     $provide.decorator('simulationSDFWorld', function () {
       simulationSDFWorldSpy = jasmine.createSpy('simulationSDFWorld');
       return simulationSDFWorldSpy.andCallThrough();
+    });
+    $provide.decorator('simulationControl', function () {
+      simulationControlSpy = jasmine.createSpy('simulationControl');
+      return simulationControlSpy.andCallThrough();
     });
   }));
 
@@ -50,16 +53,17 @@ describe('Directive: environment-designer', function () {
     $provide.value(currentStateMock);
   }));
 
-  beforeEach(inject(function (_$rootScope_, _$compile_, EDIT_MODE, STATE, _stateService_, _currentStateMockFactory_) {
-
+  beforeEach(inject(function (_$rootScope_, _$compile_, _$document_, EDIT_MODE, STATE, _stateService_, _currentStateMockFactory_, _experimentSimulationService_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
+    $document = _$document_;
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
     $scope.STATE = STATE;
     $scope.gz3d = {};
     stateService = _stateService_;
     currentStateMock = _currentStateMockFactory_.get();
+    experimentSimulationService = _experimentSimulationService_;
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
 
@@ -192,6 +196,31 @@ describe('Directive: environment-designer', function () {
 
     //should close panel
     expect(panelsCloseSpy).toHaveBeenCalled();
+
+  });
+
+  it('should create a new dummy anchor and click it when exporting the environment', function () {
+    var exportSpy = jasmine.createSpy('export');
+    simulationSDFWorldSpy.andCallFake(function () {
+      return {
+        export: exportSpy.andCallFake(function (args, cb) { cb({'sdf': 'dummysdf'}); })
+      };
+    });
+
+    var dummyAnchorElement = {
+      setAttribute: jasmine.createSpy('setAttribute'),
+      style: {
+        display: undefined
+      },
+      click: jasmine.createSpy('click')
+    };
+
+    spyOn(angular, 'element').andCallFake(function () { return [dummyAnchorElement]; });
+
+    $scope.exportSDFWorld();
+    expect(exportSpy).toHaveBeenCalled();
+    expect(angular.element).toHaveBeenCalled();
+    expect(dummyAnchorElement.click).toHaveBeenCalled();
   });
 
 });

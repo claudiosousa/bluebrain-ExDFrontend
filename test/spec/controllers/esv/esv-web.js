@@ -33,11 +33,6 @@ describe('Controller: experimentCtrl', function () {
   simulationServiceMockObject.updateUptime = jasmine.createSpy('updateUptime');
   var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
 
-  var experimentSimulationServiceMock = {
-    setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
-    startNewExperiments : jasmine.createSpy('startNewExperiments')
-  };
-
   var experimentTemplates = {
     '1': TestDataGenerator.createTestExperiment(),
     '2': TestDataGenerator.createTestExperiment(),
@@ -49,6 +44,18 @@ describe('Controller: experimentCtrl', function () {
 
   var store = {};
   store['server-enabled'] = angular.toJson(serversEnabled);
+
+  var experimentSimulationServiceMock = {
+    setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
+    startNewExperiments : jasmine.createSpy('startNewExperiments'),
+    getExperiments : jasmine.createSpy('getExperiments'),
+    setInitializedCallback : jasmine.createSpy('setInitializedCallback'),
+    existsAvailableServer : jasmine.createSpy('existsAvailableServer'),
+    refreshExperiments : jasmine.createSpy('refreshExperiments'),
+    getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
+    startNewExperiment : jasmine.createSpy('startNewExperiment'),
+    enterEditMode : jasmine.createSpy('enterEditMode')
+  };
 
   var experimentTemplatesArray = (function () {
     var result = [];
@@ -64,8 +71,9 @@ describe('Controller: experimentCtrl', function () {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
     $provide.value('simulationService', simulationServiceMock);
-    experimentSimulationServiceMock.setShouldLaunchInEditMode.reset();
-    experimentSimulationServiceMock.startNewExperiments.reset();
+    for (var mock in experimentSimulationServiceMock) {
+      experimentSimulationServiceMock[mock].reset();
+    }
     hbpUserDirectoryPromiseObject.then.reset();
     hbpUserDirectoryPromiseObject2.then.reset();
     hbpUserDirectoryMock.getCurrentUser.reset();
@@ -95,12 +103,6 @@ describe('Controller: experimentCtrl', function () {
     simulationService = _simulationService_;
     hbpUserDirectory = _hbpUserDirectory_;
     STATE = _STATE_;
-
-    experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
-    experimentSimulationServiceMock.setInitializedCallback = jasmine.createSpy('setInitializedCallback');
-    experimentSimulationServiceMock.existsAvailableServer = jasmine.createSpy('existsAvailableServer');
-    experimentSimulationServiceMock.refreshExperiments = jasmine.createSpy('refreshExperiments');
-    experimentSimulationServiceMock.getServersEnable = jasmine.createSpy('getServersEnable').andReturn(serversEnabled);
 
     spyOn(localStorage, 'getItem').andCallFake(function (key) {
       return store[key];
@@ -180,26 +182,6 @@ describe('Controller: experimentCtrl', function () {
     scope.$apply.mostRecentCall.args[0]();
     expect(scope.progressMessageMain).toEqual('');
     expect(scope.progressMessageSub).toEqual('');
-  });
-
-  it('should start a new experiment in view mode', function(){
-    experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
-    experimentSimulationService.setShouldLaunchInEditMode = jasmine.createSpy('setShouldLaunchInEditMode');
-    var newExperimentString = 'fubar';
-    var newExperimentServerPattern = 'toto';
-    scope.startNewExperiment(newExperimentString, newExperimentServerPattern);
-    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(false);
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, serversEnabled, newExperimentServerPattern, scope.setProgressbarInvisible);
-  });
-
-  it('should start a new experiment in edit mode', function(){
-    experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
-    experimentSimulationService.setShouldLaunchInEditMode = jasmine.createSpy('setShouldLaunchInEditMode');
-    var newExperimentString = 'fubar';
-    var newExperimentServerPattern = 'toto';
-    scope.enterEditMode(newExperimentString, newExperimentServerPattern);
-    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(true);
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, serversEnabled, newExperimentServerPattern, scope.setProgressbarInvisible);
   });
 
   it('should join an experiment', function(){
@@ -359,10 +341,60 @@ describe('Controller: experimentCtrl', function () {
     });
   });
 
+  it('should forward correctly the call to the experimentSimulationService when calling startNewExperiment', function () {
+    scope.startNewExperiment('foo', 'bar');
+    expect(experimentSimulationService.startNewExperiment).toHaveBeenCalled();
+    expect(experimentSimulationService.startNewExperiment.mostRecentCall.args[0]).toBe('foo');
+    expect(experimentSimulationService.startNewExperiment.mostRecentCall.args[2]).toBe('bar');
+  });
+
   it('should test enterEditMode', function() {
     scope.enterEditMode('foo', 'bar');
-    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalled();
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
+    expect(experimentSimulationService.enterEditMode).toHaveBeenCalled();
+    expect(experimentSimulationService.enterEditMode.mostRecentCall.args[0]).toBe('foo');
+    expect(experimentSimulationService.enterEditMode.mostRecentCall.args[2]).toBe('bar');
+  });
+
+  describe('tests the uploadEnvironmentAndStart', function () {
+
+    var dummyInput, dummyFileReader, elementReturnVal;
+    dummyInput = {
+      'click': jasmine.createSpy('click'),
+      'files': jasmine.createSpy('files')
+    };
+    dummyFileReader = {
+      'readAsText': jasmine.createSpy('readAsText')
+    };
+    elementReturnVal = [dummyInput];
+    elementReturnVal.bind = jasmine.createSpy('bind');
+
+    beforeEach(inject(function ($window) {
+      dummyInput.click.reset();
+      dummyInput.files.reset();
+      elementReturnVal.bind.reset();
+      spyOn(angular, 'element').andReturn(elementReturnVal);
+      dummyFileReader.readAsText.reset();
+      dummyFileReader.onload = undefined;
+      spyOn($window, 'FileReader').andReturn(dummyFileReader);
+    }));
+
+    it('should create a new inputElement and click it', function () {
+      scope.uploadEnvironmentAndStart('experiment');
+      expect(angular.element).toHaveBeenCalled();
+      expect(elementReturnVal.bind).toHaveBeenCalled();
+      expect(elementReturnVal.bind.mostRecentCall.args[0]).toBe('change');
+      expect(dummyInput.click).toHaveBeenCalled();
+    });
+
+    it('should read the uploaded file and forward the content to startNewExperiment', function () {
+      scope.uploadEnvironmentAndStart('experiment');
+      elementReturnVal.bind.mostRecentCall.args[1]();
+      expect(dummyFileReader.readAsText).toHaveBeenCalled();
+      expect(dummyFileReader.onload).toBeDefined();
+      dummyFileReader.onload({target: 'dummy'});
+      expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
+    });
+
   });
 
 });

@@ -9,10 +9,10 @@
   });
 
   angular.module('exdFrontendApp')
-  .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', 'simulationSDFWorld', 'STATE', 'simulationState',
-                                     '$stateParams', 'bbpConfig', '$rootScope', 'gz3d', 'stateService',
-  function ($log, EDIT_MODE, panels, simulationSDFWorld, STATE, simulationState,
-            $stateParams, bbpConfig, $rootScope, gz3d, stateService) {
+  .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', 'simulationSDFWorld', 'STATE', 'simulationState', 'simulationControl',
+                                     '$stateParams', 'bbpConfig', '$rootScope', 'gz3d', 'stateService', 'experimentSimulationService', '$document',
+  function ($log, EDIT_MODE, panels, simulationSDFWorld, STATE, simulationState, simulationControl,
+            $stateParams, bbpConfig, $rootScope, gz3d, stateService, experimentSimulationService, $document) {
     return {
       templateUrl: 'views/esv/environment-designer.html',
       restrict: 'E',
@@ -64,14 +64,10 @@
         scope.exportSDFWorld = function () {
           $log.debug('ED: Querying server for SDF world export.');
           simulationSDFWorld(scope.serverBaseUrl).export({}, function (data) {
-            var $q = data.sdf;
-            var $el = document.createElement('a');
-            $el.setAttribute('href', 'data:text/xml;charset=utf-8,' + encodeURIComponent($q));
-            $el.setAttribute('download', 'world.sdf');
-            $el.style.display = 'none';
-            document.body.appendChild($el);
-            $el.click();
-            document.body.removeChild($el);
+            angular.element('<a ' +
+              'href="data:text/xml;charset=utf-8,' + encodeURIComponent(data.sdf) + '" ' +
+              'download="world.sdf" />')[0]
+            .click();
           });
         };
       }

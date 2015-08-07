@@ -36,8 +36,8 @@
         }
       };
     })
-    .controller('experimentCtrl', ['$scope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE', 'bbpConfig', 'hbpUserDirectory',
-      function ($scope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE, bbpConfig, hbpUserDirectory) {
+    .controller('experimentCtrl', ['$scope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE', 'bbpConfig', 'hbpUserDirectory', 'simulationSDFWorld', '$log',
+      function ($scope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE, bbpConfig, hbpUserDirectory, simulationSDFWorld, $log) {
         $scope.selectedIndex = -1;
         $scope.joinSelectedIndex = -1;
         $scope.startNewExperimentSelectedIndex = -1;
@@ -104,14 +104,12 @@
           localStorage.setItem('server-enabled', angular.toJson($scope.serversEnabled));
         };
 
-        $scope.startNewExperiment = function (configuration, serverPattern) {
-          experimentSimulationService.setShouldLaunchInEditMode(false);
-          experimentSimulationService.startNewExperiments(configuration, $scope.serversEnabled, serverPattern, $scope.setProgressbarInvisible);
+        $scope.startNewExperiment = function(configuration, serverPattern) {
+          experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible);
         };
 
-        $scope.enterEditMode = function (configuration, serverPattern) {
-          experimentSimulationService.setShouldLaunchInEditMode(true);
-          experimentSimulationService.startNewExperiments(configuration, $scope.serversEnabled, serverPattern, $scope.setProgressbarInvisible);
+        $scope.enterEditMode = function(configuration, serverPattern) {
+          experimentSimulationService.enterEditMode(configuration, null, serverPattern, $scope.setProgressbarInvisible);
         };
 
         $scope.joinExperiment = function (url) {
@@ -156,6 +154,28 @@
             }
           },
           setIsServerAvailable);
+
+        $scope.uploadEnvironmentAndStart = function(experiment) {
+          $log.debug('Creating dummy input file');
+          var inputElement = angular.element('<input type="file" />');
+          inputElement.bind('change', function () {
+            // Showing the progress bar
+            $scope.setProgressbarVisible(experiment.id);
+            // Uploading the SDF file
+            var reader = new FileReader();
+            reader.readAsText(inputElement[0].files[0], "UTF-8");
+            reader.onload = function (evt) {
+              experimentSimulationService.startNewExperiments(
+                experiment.experimentConfiguration,
+                evt.target.result,
+                $scope.serversEnabled,
+                experiment.serverPattern,
+                $scope.setProgressbarInvisible
+              );
+            };
+          });
+          inputElement[0].click();
+        };
 
         // clean up on leaving
         $scope.$on("$destroy", function () {

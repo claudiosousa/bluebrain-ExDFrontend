@@ -156,7 +156,8 @@
           interceptor: {responseError: serverError.display}
         },
         import: {
-          method: 'PUT'
+          method: 'PUT',
+          interceptor: {responseError: serverError}
         }
       });
     };
@@ -186,8 +187,8 @@
     };
   }]);
 
-  module.factory('experimentSimulationService', ['$q', '$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError',
-    function ($q, $http, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError) {
+  module.factory('experimentSimulationService', ['$q', '$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError', 'simulationSDFWorld',
+    function ($q, $http, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError, simulationSDFWorld) {
       var setProgressMessageCallback;
       var queryingServersFinishedCallback;
       var initializedCallback;
@@ -431,7 +432,7 @@
 
       };
 
-      var startNewExperiments = function (id, serversEnabled, serverPattern, errorCallback) {
+      var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, errorCallback) {
         var keepGoing = true;
         angular.forEach(serverIDs, function (serverID) {
           if (keepGoing && (serversEnabled.indexOf(serverID) > -1)) {
@@ -442,7 +443,16 @@
                 if (!angular.isDefined(activeSimulation)) {
                   if (keepGoing) {
                     keepGoing = false;
-                    launchExperimentOnServer(id, serverID, errorCallback);
+
+                    // Need to send the SDF to the backend before launching the experiment
+                    if (angular.isDefined(envSDFData) && envSDFData !== null) {
+                      simulationSDFWorld(serverURL).import({sdf: envSDFData}, function (data) {
+                        experimentSimulationService.launchExperimentOnServer(expConf, data.path, serverID, errorCallback);
+                      });
+                    }
+                    else {
+                      experimentSimulationService.launchExperimentOnServer(expConf, null, serverID, errorCallback);
+                    }
                   }
                 }
               });
@@ -451,7 +461,7 @@
         });
       };
 
-      var launchExperimentOnServer = function (experimentConfiguration, freeServerID, errorCallback) {
+      var launchExperimentOnServer = function (experimentConfiguration, environmentConfiguration, freeServerID, errorCallback) {
         setProgressMessageCallback({main: 'Create new Simulation...'});
         var serverURL = servers[freeServerID].gzweb['nrp-services'];
 
@@ -460,12 +470,18 @@
         var serverJobLocation = servers[freeServerID].serverJobLocation ? servers[freeServerID].serverJobLocation : 'local';
         var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
 
-        // Create a new simulation.
-        simulationGenerator(serverURL).create({
+        var simInitData = {
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
           operationMode: operationMode
-        }, function (createData) {
+        };
+
+        if (angular.isDefined(environmentConfiguration) && environmentConfiguration !== null) {
+          simInitData.environmentConfiguration = environmentConfiguration;
+        }
+
+        // Create a new simulation.
+        simulationGenerator(serverURL).create(simInitData, function (createData) {
           setProgressMessageCallback({main: 'Initialize Simulation...'});
           // register for messages during initialization
           registerForStatusInformation(freeServerID, createData.simulationID);
@@ -507,8 +523,18 @@
         return result;
       };
 
+      var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
+        experimentSimulationService.setShouldLaunchInEditMode(false);
+        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
+      };
+
+      var enterEditMode = function (expConf, envConf, serverPattern, errorCallback) {
+        experimentSimulationService.setShouldLaunchInEditMode(true);
+        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
+      };
+
       // Public methods of the service
-      return {
+      var experimentSimulationService = {
         getExperiments: getExperiments,
         refreshExperiments: refreshExperiments,
         registerForStatusInformation: registerForStatusInformation,
@@ -517,8 +543,12 @@
         launchExperimentOnServer: launchExperimentOnServer,
         setInitializedCallback: setInitializedCallback,
         setShouldLaunchInEditMode: setShouldLaunchInEditMode,
-        getServersEnable: getServersEnable
+        getServersEnable: getServersEnable,
+        startNewExperiment: startNewExperiment,
+        enterEditMode: enterEditMode
       };
+
+      return experimentSimulationService;
 
     }]);
 }());

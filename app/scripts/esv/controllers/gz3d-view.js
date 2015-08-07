@@ -66,12 +66,12 @@
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
-      'simulationState', 'serverError', 'screenControl', 'experimentList',
+      'simulationState', 'serverError', 'screenControl', 'experimentList', 'experimentSimulationService',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'gz3d', 'EDIT_MODE', 'stateService',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
-          simulationState, serverError, screenControl, experimentList,
+          simulationState, serverError, screenControl, experimentList, experimentSimulationService,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion, panels, UI, OPERATION_MODE, gz3d, EDIT_MODE, stateService) {
 
