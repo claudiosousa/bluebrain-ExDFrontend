@@ -2,131 +2,92 @@
 
 describe('Directive: transferFunctionEditor', function () {
 
-  beforeEach(module('exdFrontendApp'));
+  var $rootScope, $compile, $httpBackend, $log, $scope, element, backendInterfaceService, nrpBackendVersions;
 
-  var $rootScope, $compile, $httpBackend, $log, $scope, element;
-
-  var SERVER_URL = 'http://bbpce014.epfl.ch:8080';
-  var SIMULATION_ID = 1;
-
-  beforeEach(inject(function (_$rootScope_,
-                              _$compile_,
-                              _$httpBackend_,
-                              _$log_,
-                              $templateCache) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $httpBackend = _$httpBackend_;
-    $log = _$log_;
-
-    $scope = $rootScope.$new();
-    $templateCache.put('views/esv/transfer-function-editor.html', '<h3>Test</h3>');
-    $httpBackend.expectGET('views/esv/transfer-function-editor.html');
-    spyOn($log, 'error');
-
-    var transferFunctionsReturned = {'transfer_functions': ['some code', 'more code']};
-    $httpBackend.whenGET(SERVER_URL + '/simulation/1/transfer-functions').respond(transferFunctionsReturned);
-
-    var versionReturned = {'hbp_nrp_cle': '0.2.3.dev5', 'hbp_nrp_backend': '0.2.3.dev5'};
-    $httpBackend.whenGET(SERVER_URL + '/version').respond(versionReturned);
-    element = $compile('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '"></transfer-function-editor>')($scope);
-    $scope.$digest();
-  }));
-
-  it('should output an error if no serverUrl or simulationID was provided', function () {
-    expect($log.error.callCount).toEqual(0);
-    element = $compile('<transfer-function-editor server="" simulation=""></transfer-function-editor>')($scope);
-    $scope.$digest();
-    expect($log.error.callCount).toEqual(2);
-  });
-
-  it('should not output an error', function () {
-    expect($log.error.callCount).toEqual(0);
-  });
-
-  it('replaces the element with the appropriate content', function () {
-    // Compile a piece of HTML containing the directive
-    expect(element.prop('outerHTML')).toContain('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '" class="ng-scope"><h3>Test</h3></transfer-function-editor>');
-  });
-
-});
-
-describe('Directive: transferFunctionEditor', function () {
-
-  beforeEach(module('exdFrontendApp'));
-
-  var $rootScope, $compile, $httpBackend, $log, $scope, element, simulationTransferFunctions, nrpBackendVersions;
-
-  var transferFunctionsMock = jasmine.createSpy('transferFunctions');
-  var patchMock = jasmine.createSpy('patch');
-  var simulationTransferFunctionsMock = jasmine.createSpy('simulationTransferFunctions').andReturn({transferFunctions: transferFunctionsMock, patch: patchMock});
-  var tf1Name = 'tf1';
-  var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
-  var tf2Name = 'tf2';
-  var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + ' (varx):\n\t#put your code here';
-  var tf3Code = '#I am not valid';
-  var transferFunctionsReturned = [tf1Code, tf2Code, tf3Code];
+  var backendInterfaceServiceMock = {
+    getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
+    setTransferFunction: jasmine.createSpy('setTransferFunction'),
+    getServerBaseUrl: jasmine.createSpy('getServerBaseUrl')
+  };
 
   var nrpBackendVersionsGetMock = jasmine.createSpy('get');
   var nrpBackendVersionsMock = jasmine.createSpy('nrpBackendVersions').andReturn({get: nrpBackendVersionsGetMock});
-  var SERVER_URL = 'https://neurorobotics-dev.humanbrainproject.eu/cle/1/api';
-  var SIMULATION_ID = 1;
 
+  beforeEach(module('exdFrontendApp'));
   beforeEach(module(function ($provide) {
-    $provide.value('simulationTransferFunctions', simulationTransferFunctionsMock);
+    $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
   }));
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
                               _$httpBackend_,
                               _$log_,
-                              _simulationTransferFunctions_,
+                              _backendInterfaceService_,
                               _nrpBackendVersions_,
                               $templateCache) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $httpBackend = _$httpBackend_;
     $log = _$log_;
-    simulationTransferFunctions = _simulationTransferFunctions_;
+    backendInterfaceService = _backendInterfaceService_;
     nrpBackendVersions = _nrpBackendVersions_;
 
     $scope = $rootScope.$new();
-    $templateCache.put('views/esv/transfer-function-editor.html', '<h3>Test</h3>');
-
-    element = $compile('<transfer-function-editor server="' + SERVER_URL + '" simulation="' + SIMULATION_ID + '"></transfer-function-editor>')($scope);
+    $templateCache.put('views/esv/transfer-function-editor.html', '');
+    element = $compile('<transfer-function-editor />')($scope);
     $scope.$digest();
   }));
 
   it('should init the transferFunctions variable', function () {
     expect($scope.transferFunctions).toBeDefined();
-    expect(simulationTransferFunctionsMock).toHaveBeenCalled();
-    transferFunctionsMock.mostRecentCall.args[1](transferFunctionsReturned);
-    var expected = {};
-    var expectedTf1 = {code: tf1Code};
-    var expectedTf2 = {code: tf2Code};
-    expected[tf1Name] = expectedTf1;
-    expected[tf2Name] = expectedTf2;
-    expect($scope.transferFunctions).toEqual(expected);
+    expect(backendInterfaceService.getServerBaseUrl).toHaveBeenCalled();
+    expect(nrpBackendVersions).toHaveBeenCalled();
+    expect(backendInterfaceService.getTransferFunctions).toHaveBeenCalled();
   });
 
-  it('should save back the tf properly', function () {
-    expect($scope.transferFunctions).toBeDefined();
-    expect(simulationTransferFunctionsMock).toHaveBeenCalled();
-    transferFunctionsMock.mostRecentCall.args[1](transferFunctionsReturned);
-    var newCode = 'New code';
-    $scope.transferFunctions[tf1Name].code = newCode;
-    $scope.update(tf1Name);
-    // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "transferFunctions"
-    // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
-    expect(patchMock).toHaveBeenCalledWith({ sim_id : '1', transfer_function_name : 'tf1' }, newCode); // jshint ignore:line
+  describe('Retrieving and saving transferFunctions', function () {
+    var tf1Name = 'tf1';
+    var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
+    var tf2Name = 'tf2';
+    var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + ' (varx):\n\t#put your code here';
+    var tf3Code = '#I am not valid';
+    var transferFunctionsReturned = [tf1Code, tf2Code, tf3Code];
+
+    beforeEach(function(){
+      backendInterfaceService.getTransferFunctions.mostRecentCall.args[0](transferFunctionsReturned);
+    });
+
+    it('should handle the retrieved transferFunctions properly', function () {
+      var expected = {};
+      var expectedTf1 = {code: tf1Code};
+      var expectedTf2 = {code: tf2Code};
+      expected[tf1Name] = expectedTf1;
+      expected[tf2Name] = expectedTf2;
+      expect($scope.transferFunctions).toEqual(expected);
+    });
+
+    it('should save back the tf properly', function () {
+      var newCode = 'New code';
+      $scope.transferFunctions[tf1Name].code = newCode;
+      $scope.update(tf1Name);
+      // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "transferFunctions"
+      // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
+      expect(backendInterfaceService.setTransferFunction).toHaveBeenCalledWith('tf1', newCode);
+    });
   });
 
   it('should provide the correct help urls', function () {
     expect($scope.transferFunctions).toBeDefined();
     expect(nrpBackendVersionsMock).toHaveBeenCalled();
-    nrpBackendVersionsGetMock.mostRecentCall.args[0]({hbp_nrp_cle_components : { major: 1, minor: 2, patch: 3, dev: 'dev3' }}); // jshint ignore:line
+    nrpBackendVersionsGetMock.mostRecentCall.args[0]({
+      hbp_nrp_cle_components: { // jshint ignore:line
+        major: 1,
+        minor: 2,
+        patch: 3,
+        dev: 'dev3'
+      }
+    });
     expect($scope.cleDocumentationURL).toBe('https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.2.2');
   });
-
 
 });

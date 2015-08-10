@@ -17,7 +17,10 @@ describe('Controller: experimentCtrl', function () {
     REFRESH_UPDATE_RATE,
     STATE;
 
-  var experimentSimulationServiceMock = {};
+  var experimentSimulationServiceMock = {
+    setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
+    startNewExperiments : jasmine.createSpy('startNewExperiments')
+  };
 
   var experimentTemplates = {
     '1': TestDataGenerator.createTestExperiment(),
@@ -275,6 +278,12 @@ describe('Controller: experimentCtrl', function () {
       expect(scope.updatePromise).not.toBeDefined();
       expect(scope.updateUptimePromise).not.toBeDefined();
     });
+  });
+
+  it('should test enterEditMode', function() {
+    scope.enterEditMode('foo', 'bar');
+    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalled();
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
   });
 
 });
