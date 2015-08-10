@@ -140,8 +140,8 @@
                     <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 60 ? 'red' : '' }">Timeout:</span>
                   </div>
                   <div>
-                    <span>{{simulationTimeText | timeDDHHMMSS}}</span><br/>
-                    <span>{{realTimeText | timeDDHHMMSS}}</span><br/>
+                    <span id="simTime">{{simulationTimeText | timeDDHHMMSS}}</span><br/>
+                    <span id="realTime">{{realTimeText | timeDDHHMMSS}}</span><br/>
                     <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 60 ? 'red' : '' }">{{simTimeoutText | timeDDHHMMSS}}</span>
                   </div>
                 </div>
