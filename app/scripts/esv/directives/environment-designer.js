@@ -38,14 +38,10 @@
               break;
             case EDIT_MODE.TRANSLATE:
             case EDIT_MODE.ROTATE:
-              if (stateService.currentState === STATE.PAUSED) {
-                $log.debug("Simulation already paused, setting mode to " + mode + ".");
-                setMode(mode);
-              }
-              else {
-                $log.debug("Pausing simulation and setting mode to " + mode + ".");
-                stateService.setCurrentState(STATE.PAUSED).then(function () { setMode(mode); });
-              }
+              stateService.ensureStateBeforeExecuting(
+                STATE.PAUSED,
+                function() { setMode(mode); }
+              );
               break;
             }
           }

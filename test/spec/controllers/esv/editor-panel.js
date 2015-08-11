@@ -52,6 +52,9 @@ describe('Controller: editorPanelCtrl', function () {
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
+
+    scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
+    scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
   }));
 
   it('should throw an error when no serverID or simulationID was provided', function () {
@@ -74,6 +77,19 @@ describe('Controller: editorPanelCtrl', function () {
     expect(scope.panelIsOpen).toBeTruthy();
     scope.closeCallback();
     expect(scope.panelIsOpen).toBeFalsy();
+  });
+
+  it('should refresh the panel on the open callbacks', function() {
+    scope.activeTab.transferfunction = true;
+    expect(scope.controls.transferfunction.refresh).not.toHaveBeenCalled();
+    scope.openCallback();
+    expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
+    expect(scope.controls.statemachine.refresh).not.toHaveBeenCalled();
+    scope.activeTab.transferfunction = false;
+    scope.activeTab.statemachine = true;
+    scope.closeCallback();
+    scope.openCallback();
+    expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
   });
 
   it('should disable the key bindings when an code editor tab is active and the panel is opened', function () {

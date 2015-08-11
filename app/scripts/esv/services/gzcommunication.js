@@ -18,13 +18,13 @@
     var requestId;
     var isInitialized = false;
     var offsetHeightListenerUnregister;
-    var retval = {};
+    var returnValue = {};
 
     var resizeGZ3D = function() {
-      retval.scene.setWindowSize(retval.container.offsetWidth, retval.container.offsetHeight);
+      returnValue.scene.setWindowSize(returnValue.container.offsetWidth, returnValue.container.offsetHeight);
     };
 
-    retval.Initialize = function(serverID, simulationID) {
+    returnValue.Initialize = function(serverID, simulationID) {
       if(isInitialized) {
         return;
       }
@@ -37,41 +37,41 @@
       GZ3D.assetsPath = serverConfig.gzweb.assets;
       GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
 
-      retval.container = document.getElementById('container');
+      returnValue.container = document.getElementById('container');
 
-      retval.scene = new GZ3D.Scene(retval.container, $rootScope, $compile);
-      retval.gui = new GZ3D.Gui(retval.scene);
-      retval.iface = new GZ3D.GZIface(retval.scene, retval.gui);
-      retval.sdfParser = new GZ3D.SdfParser(retval.scene, retval.gui, retval.iface);
+      returnValue.scene = new GZ3D.Scene(returnValue.container, $rootScope, $compile);
+      returnValue.gui = new GZ3D.Gui(returnValue.scene);
+      returnValue.iface = new GZ3D.GZIface(returnValue.scene, returnValue.gui);
+      returnValue.sdfParser = new GZ3D.SdfParser(returnValue.scene, returnValue.gui, returnValue.iface);
 
       // FPS indicator
-      retval.stats = new Stats();
-      retval.stats.domElement.style.position = 'absolute';
-      retval.stats.domElement.style.top = '0px';
-      retval.stats.domElement.style.zIndex = 100;
+      returnValue.stats = new Stats();
+      returnValue.stats.domElement.style.position = 'absolute';
+      returnValue.stats.domElement.style.top = '0px';
+      returnValue.stats.domElement.style.zIndex = 100;
 
-      retval.animate = function() {
-        requestId = requestAnimationFrame(retval.animate);
-        retval.render();
+      returnValue.animate = function() {
+        requestId = requestAnimationFrame(returnValue.animate);
+        returnValue.render();
       };
 
-      retval.render = function() {
-        retval.scene.render();
+      returnValue.render = function() {
+        returnValue.scene.render();
       };
 
-      retval.animate();
+      returnValue.animate();
       $window.addEventListener('resize', resizeGZ3D, false);
 
       offsetHeightListenerUnregister = $rootScope.$watch(function() {
-        return retval.container.offsetHeight;
+        return returnValue.container.offsetHeight;
       }, function(newValue, oldValue) {
-        if ((newValue !== oldValue) && angular.isDefined(retval.scene)) {
+        if ((newValue !== oldValue) && angular.isDefined(returnValue.scene)) {
           resizeGZ3D();
         }
       }, true);
     };
 
-    retval.deInitialize = function() {
+    returnValue.deInitialize = function() {
       if (angular.isFunction(offsetHeightListenerUnregister)) {
         offsetHeightListenerUnregister();
       }
@@ -80,17 +80,17 @@
 
       isInitialized = false;
 
-      delete retval.sdfParser;
-      delete retval.iface;
-      delete retval.gui;
-      delete retval.scene;
+      delete returnValue.sdfParser;
+      delete returnValue.iface;
+      delete returnValue.gui;
+      delete returnValue.scene;
 
-      delete retval.container;
-      delete retval.stats;
-      delete retval.animate;
-      delete retval.render;
+      delete returnValue.container;
+      delete returnValue.stats;
+      delete returnValue.animate;
+      delete returnValue.render;
     };
 
-    return retval;
+    return returnValue;
   }]);
 }());

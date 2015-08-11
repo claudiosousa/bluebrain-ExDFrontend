@@ -4,9 +4,10 @@ describe('Directive: environment-designer', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('exdFrontendApp.Constants'));
+  beforeEach(module('currentStateMockFactory'));
 
   var simulationSDFWorldSpy;
-  var $rootScope, $compile, $scope, element, stateService;
+  var $rootScope, $compile, $scope, element, stateService, panelsCloseSpy, currentStateMock;
 
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
@@ -28,6 +29,12 @@ describe('Directive: environment-designer', function () {
         }
       )
     });
+
+    panelsCloseSpy = jasmine.createSpy('close');
+    $provide.value('panels', {
+      close: panelsCloseSpy
+    });
+
   }));
 
   beforeEach(module('simulationControlServices', function ($provide) {
@@ -38,30 +45,10 @@ describe('Directive: environment-designer', function () {
   }));
 
   beforeEach(module('simulationStateServices', function ($provide) {
-    var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
-    var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
-    var localCurrentState;
-
-    getCurrentStateSpy.andCallFake(function () {
-      return { then: function (f) { f(); } };
-    });
-
-    setCurrentStateSpy.andCallFake(function (s) {
-      localCurrentState = s;
-      return {
-        then: function (f) { f(); },
-        catch: function (f) { f(); }
-      };
-    });
-
-    $provide.value('stateService', {
-      getCurrentState: getCurrentStateSpy,
-      setCurrentState: setCurrentStateSpy,
-      currentState: localCurrentState
-    });
+    $provide.value(currentStateMock);
   }));
 
-  beforeEach(inject(function (_$rootScope_, _$compile_, EDIT_MODE, STATE, _stateService_) {
+  beforeEach(inject(function (_$rootScope_, _$compile_, EDIT_MODE, STATE, _stateService_, _currentStateMockFactory_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $scope = $rootScope.$new();
@@ -69,7 +56,7 @@ describe('Directive: environment-designer', function () {
     $scope.STATE = STATE;
     $scope.gz3d = {};
     stateService = _stateService_;
-
+    currentStateMock = _currentStateMockFactory_.get();
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
 
@@ -103,30 +90,28 @@ describe('Directive: environment-designer', function () {
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.ROTATE);
   });
 
+  it('should call correctly close panels when edit mode already set', function () {
+    stateService.currentState = $scope.STATE.STARTED;
+    $scope.gz3d.scene.manipulationMode = $scope.EDIT_MODE.TRANSLATE;
+    $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
+    expect(panelsCloseSpy).toHaveBeenCalled();
+  });
+
   it('should correctly set the edit mode', function () {
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect(stateService.setCurrentState).toHaveBeenCalled();
+    expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalled();
     expect($scope.gz3d.scene.setManipulationMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
     expect($scope.gz3d.scene.manipulationMode).toBe($scope.EDIT_MODE.TRANSLATE);
-  });
-
-  it('should not repeat the whole process if already in the correct mode', function () {
-    stateService.currentState = $scope.STATE.STARTED;
-    stateService.currentState = $scope.STATE.STARTED;
-    $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect($scope.gz3d.scene.setManipulationMode.callCount).toBe(1);
-    $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect($scope.gz3d.scene.setManipulationMode.callCount).toBe(1);
   });
 
   it('should pause the simulation when needed', function () {
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect(stateService.setCurrentState.mostRecentCall.args[0]).toBe($scope.STATE.PAUSED);
+    expect(stateService.ensureStateBeforeExecuting.mostRecentCall.args[0]).toBe($scope.STATE.PAUSED);
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.ROTATE);
-    expect(stateService.setCurrentState.mostRecentCall.args[0]).toBe($scope.STATE.PAUSED);
+    expect(stateService.ensureStateBeforeExecuting.mostRecentCall.args[0]).toBe($scope.STATE.PAUSED);
   });
 
   it('should not update the state if already in the correct state', function () {
