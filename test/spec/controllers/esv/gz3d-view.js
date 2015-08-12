@@ -15,6 +15,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       simulationService,
       simulationState,
       simulationControl,
+      stateService,
       screenControl,
       roslib,
       splashInstance,
@@ -29,7 +30,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       UI,
       OPERATION_MODE,
       serverError,
-      panels;
+      panels,
+      gz3d;
 
   // Mock simulationServices
   var simulationServiceObject = {};
@@ -123,9 +125,36 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('simulationStateServices', function ($provide) {
+    var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
+    var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
+    var getThenSpy = jasmine.createSpy('then');
+    var setThenSpy = jasmine.createSpy('then');
+    var setCatchSpy = jasmine.createSpy('catch');
+    var localCurrentState;
+
+    getCurrentStateSpy.andCallFake(function () {
+      return { then: getThenSpy.andCallFake(function (f) { f(); }) };
+    });
+
+    setCurrentStateSpy.andCallFake(function (s) {
+      localCurrentState = s;
+      return {
+        then: setThenSpy.andCallFake(function (f) { f(); }).
+          andReturn({ catch: function (f) { f(); } }),
+        catch: setCatchSpy.andCallFake(function (f) { f(); })
+      };
+    });
+
+    $provide.value('stateService', {
+      getCurrentState: getCurrentStateSpy,
+      setCurrentState: setCurrentStateSpy,
+      currentState: localCurrentState
+    });
+  }));
 
   beforeEach(module(function ($provide) {
-    $provide.value('gzInitialization', gzInitializationMock);
+    $provide.value('gz3d', gzInitializationMock);
     $provide.value('cameraManipulation', cameraManipulationMock);
     $provide.value('splash', splashServiceMock);
     $provide.value('assetLoadingSplash', assetLoadingSplashMock);
@@ -194,6 +223,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _simulationService_,
                               _simulationState_,
                               _simulationControl_,
+                              _stateService_,
                               _screenControl_,
                               _$stateParams_,
                               _nrpBackendVersions_,
@@ -202,7 +232,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _UI_,
                               _OPERATION_MODE_,
                               _serverError_,
-                              _panels_) {
+                              _panels_,
+                              _gz3d_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
@@ -219,6 +250,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationService = _simulationService_;
     simulationState = _simulationState_;
     simulationControl = _simulationControl_;
+    stateService = _stateService_;
     screenControl = _screenControl_;
     stateParams = _$stateParams_;
     nrpBackendVersions = _nrpBackendVersions_;
@@ -228,23 +260,24 @@ describe('Controller: Gz3dViewCtrl', function () {
     OPERATION_MODE = _OPERATION_MODE_;
     serverError = _serverError_;
     panels = _panels_;
+    gz3d = _gz3d_;
 
-    rootScope.scene = {};
-    rootScope.scene.radialMenu = {};
-    rootScope.scene.radialMenu.showing = false;
-    rootScope.scene.modelManipulator = {};
-    rootScope.scene.modelManipulator.pickerNames = '';
-    rootScope.scene.emitter = {};
-    rootScope.scene.controls = {};
-    rootScope.scene.controls.onMouseDownManipulator = jasmine.createSpy('onMouseDownManipulator');
-    rootScope.scene.controls.onMouseUpManipulator = jasmine.createSpy('onMouseUpManipulator');
-    rootScope.gui = {};
-    rootScope.gui.emitter = {};
-    rootScope.iface = {};
-    rootScope.iface.setAssetProgressCallback = jasmine.createSpy('setAssetProgressCallback');
-    rootScope.iface.registerWebSocketConnectionCallback = jasmine.createSpy('registerWebSocketConnectionCallback');
-    rootScope.iface.webSocket = {};
-    rootScope.iface.webSocket.close = jasmine.createSpy('close');
+    gz3d.scene = {};
+    gz3d.scene.radialMenu = {};
+    gz3d.scene.radialMenu.showing = false;
+    gz3d.scene.modelManipulator = {};
+    gz3d.scene.modelManipulator.pickerNames = '';
+    gz3d.scene.emitter = {};
+    gz3d.scene.controls = {};
+    gz3d.scene.controls.onMouseDownManipulator = jasmine.createSpy('onMouseDownManipulator');
+    gz3d.scene.controls.onMouseUpManipulator = jasmine.createSpy('onMouseUpManipulator');
+    gz3d.gui = {};
+    gz3d.gui.emitter = {};
+    gz3d.iface = {};
+    gz3d.iface.setAssetProgressCallback = jasmine.createSpy('setAssetProgressCallback');
+    gz3d.iface.registerWebSocketConnectionCallback = jasmine.createSpy('registerWebSocketConnectionCallback');
+    gz3d.iface.webSocket = {};
+    gz3d.iface.webSocket.close = jasmine.createSpy('close');
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenPUT(/()/).respond(200);
@@ -310,16 +343,18 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should set isJoiningStoppedSimulation to true when already stopped', function(){
       expect(scope.isJoiningStoppedSimulation).toBe(false);
-      simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STOPPED});
+      stateService.currentState = STATE.STOPPED;
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
       expect(scope.isJoiningStoppedSimulation).toBe(true);
     });
 
     it('should set the assetLoadingSplash callback in gz3d', function(){
-      simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
+      stateService.currentState = STATE.STARTED;
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
       expect(scope.assetLoadingSplashScreen).toEqual(assetLoadingSplashInstance);
       expect(assetLoadingSplash.open).toHaveBeenCalled();
-      expect(rootScope.iface.setAssetProgressCallback).toHaveBeenCalled();
-      rootScope.iface.setAssetProgressCallback.mostRecentCall.args[0](exampleProgressData);
+      expect(gz3d.iface.setAssetProgressCallback).toHaveBeenCalled();
+      gz3d.iface.setAssetProgressCallback.mostRecentCall.args[0](exampleProgressData);
       expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
     });
 
@@ -350,41 +385,24 @@ describe('Controller: Gz3dViewCtrl', function () {
       //Ignore this warning because of the sim_id
       /*jshint camelcase: false */
 
-      // first test whether the state given as a parameter is passed
+      // test whether the state given as a parameter is passed
       scope.updateSimulation(STATE.STARTED);
-      expect(simulationStateObject.update).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'},
-        {state: STATE.STARTED}, jasmine.any(Function), jasmine.any(Function));
+      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STARTED);
 
-      // second test whether the callback function does what it should do
-      scope.state = STATE.UNDEFINED;
-      simulationStateObject.update.mostRecentCall.args[2]({state: STATE.PAUSED});
-      expect(scope.state).toBe(STATE.PAUSED);
-
-      // third, test whether duplicate requests are skipped
-      simulationStateObject.update.reset();
-      scope.previousState = undefined;
+      // test whether duplicate requests are skipped
       scope.updateSimulation(STATE.STARTED);
-      expect(simulationStateObject.update).toHaveBeenCalled();
-      simulationStateObject.update.reset();
-      expect(scope.previousState).toBe(STATE.STARTED);
+      expect(stateService.setCurrentState).toHaveBeenCalled();
+      stateService.setCurrentState.reset();
       scope.updateSimulation(STATE.STARTED);
       expect(simulationStateObject.update).not.toHaveBeenCalled();
-
-      // fourth, test whether the error callback reset $scope.previousState to undefined
-      scope.previousState = STATE.STARTED;
-      scope.updateSimulation(STATE.PAUSED);
-      simulationStateObject.update.mostRecentCall.args[3](); // call the error callback
-      expect(serverError.callCount).toBe(1); // test whether the error callback handles server error messages
-      expect(scope.previousState).not.toBeDefined();
     });
 
-    it('should make the current state available and call registerForStatusInformation', function() {
+    it('should call registerForStatusInformation', function() {
       spyOn(scope, 'registerForStatusInformation');
 
       scope.state = STATE.UNDEFINED;
-      simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
-      expect(scope.state).toEqual(STATE.STARTED);
-
+      stateService.currentState = STATE.STARTED;
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
       expect(scope.registerForStatusInformation).toHaveBeenCalled();
     });
 
@@ -397,11 +415,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
       var callbackFunction = returnedConnectionObject.subscribe.mostRecentCall.args[0];
       // test state change
-      scope.state = STATE.STARTED;
+      stateService.currentState = STATE.STARTED;
       callbackFunction({ data: '{"state": "'+STATE.STOPPED+'"}'});
-      expect(scope.state).toBe(STATE.STOPPED);
+      expect(stateService.currentState).toBe(STATE.STOPPED);
       // test open splash screen with callbackOnClose
-      scope.state = STATE.STOPPED;
+      stateService.currentState = STATE.STOPPED;
       callbackFunction({ data: '{"progress": { "block_ui": "False", "task":"Task1", "subtask":"Subtask1"}}'});
       expect(splash.open).toHaveBeenCalled();
       var callbackOnClose = splash.open.mostRecentCall.args[1];
@@ -409,7 +427,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Task1', subHeadline: 'Subtask1' });
       // test open splash screen without callbackOnClose
       scope.splashScreen = undefined;
-      scope.state = STATE.INITIALIZED;
+      stateService.currentState = STATE.INITIALIZED;
       callbackFunction({ data: '{"progress": { "block_ui": "False", "task":"Task1", "subtask":"Subtask1"}}'});
       callbackOnClose = splash.open.mostRecentCall.args[1];
       expect(callbackOnClose).not.toBeDefined();
@@ -421,7 +439,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(splash.close).not.toHaveBeenCalled();
       expect(splash.spin).toBe(false);
       // test "done" in IF path (with close)
-      scope.state = STATE.STOPPED;
+      stateService.currentState = STATE.STOPPED;
       scope.splashScreen = undefined;
       splash.close.reset();
       splash.showButton = false;
@@ -437,9 +455,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should get the model under the current mouse position', function () {
-      rootScope.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
+      gz3d.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
       scope.getModelUnderMouse({clientX: 10, clientY: 10});
-      expect(rootScope.scene.getRayCastModel).toHaveBeenCalled();
+      expect(gz3d.scene.getRayCastModel).toHaveBeenCalled();
     });
 
     it('should set a color on the selected screen', function() {
@@ -449,7 +467,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       // prepare the test: create mockups
       var entityToChange = { 'children' : [ { 'material' : {} } ] };
-      rootScope.scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
+      gz3d.scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
 
       // actual test
       // currently no element is selected, hence we want a console.error message
@@ -475,7 +493,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.isOwner = true;
       scope.toggleScreenChangeMenu(show, event);
       expect(scope.isContextMenuShown).toBe(false);
-      expect(rootScope.scene.radialMenu.showing).toBe(false);
+      expect(gz3d.scene.radialMenu.showing).toBe(false);
 
       // now the true case
       show = true;
@@ -484,12 +502,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.getModelUnderMouse = function(event) { // jshint ignore:line
         return { 'name' : 'vr_screen_1' };
       };
-      rootScope.scene.selectedEntity = { 'some_key' : 'some_value' };
+      gz3d.scene.selectedEntity = { 'some_key' : 'some_value' };
       scope.toggleScreenChangeMenu(show, event);
 
       expect(scope.contextMenuTop).toEqual(event.clientY);
       expect(scope.contextMenuLeft).toEqual(event.clientX);
-      expect(scope.selectedEntity).toEqual(rootScope.scene.selectedEntity);
+      expect(scope.selectedEntity).toEqual(gz3d.scene.selectedEntity);
 
       // now if you are not the owner
       scope.isOwner = false;
@@ -502,16 +520,16 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should turn slider position into light intensities', function() {
         expect(scope.updateLightIntensities).toEqual(jasmine.any(Function));
-        rootScope.scene.emitter.emit = jasmine.createSpy('emit');
+        gz3d.scene.emitter.emit = jasmine.createSpy('emit');
 
         scope.updateLightIntensities(60.0);
 
-        expect(rootScope.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', (60 - 50) / 50.25);
-        expect(rootScope.scene.emitter.emit.callCount).toEqual(1);
+        expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', (60 - 50) / 50.25);
+        expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
     });
 
     it('should emit light intensity changes', function() {
-        rootScope.scene.scene = {};
+        gz3d.scene.scene = {};
 
         // three is loaded externally, jshint does not know that
         var light0 = new THREE.AmbientLight(); // jshint ignore:line
@@ -522,7 +540,7 @@ describe('Controller: Gz3dViewCtrl', function () {
         light2.name = 'right_spot';
         light2.initialIntensity = 0.5;
 
-        rootScope.scene.scene.__lights = [light1, light2];
+        gz3d.scene.scene.__lights = [light1, light2];
 
         // helper is defined as 'undefined' for semantical reasons
         var helper = undefined; // jshint ignore:line
@@ -535,7 +553,7 @@ describe('Controller: Gz3dViewCtrl', function () {
         var entity2 = {
             children: [light2, helper]
         };
-        rootScope.scene.getByName = function(name) {
+        gz3d.scene.getByName = function(name) {
             if (name === 'ambient') {
                 return entity0;
             }
@@ -552,8 +570,8 @@ describe('Controller: Gz3dViewCtrl', function () {
         };
 
         //TODO: complete test implementation
-        //rootScope.scene.getLightType = GZ3D.Scene.prototype.getLightType;
-        //rootScope.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
+        //gz3d.scene.getLightType = GZ3D.Scene.prototype.getLightType;
+        //gz3d.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
         //scope.incrementLightIntensities(-0.5);
     });
 
@@ -578,27 +596,27 @@ describe('Controller: Gz3dViewCtrl', function () {
       var e = { which: 1 }; // 1 for left mouse button
       scope.helpModeActivated = false;
       scope.requestMove(e, 'moveForward');
-      expect(rootScope.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
+      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
       scope.releaseMove(e, 'moveForward');
-      expect(rootScope.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
+      expect(gz3d.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
 
       e.which = 2; // 2 for right mouse button
       scope.helpModeActivated = false;
-      rootScope.scene.controls.onMouseDownManipulator.reset();
-      rootScope.scene.controls.onMouseUpManipulator.reset();
+      gz3d.scene.controls.onMouseDownManipulator.reset();
+      gz3d.scene.controls.onMouseUpManipulator.reset();
       scope.requestMove(e, 'moveBackward');
-      expect(rootScope.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
+      expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
       scope.releaseMove(e, 'moveBackward');
-      expect(rootScope.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
+      expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
 
       e.which = 1;
       scope.helpModeActivated = true;
-      rootScope.scene.controls.onMouseDownManipulator.reset();
-      rootScope.scene.controls.onMouseUpManipulator.reset();
+      gz3d.scene.controls.onMouseDownManipulator.reset();
+      gz3d.scene.controls.onMouseUpManipulator.reset();
       scope.requestMove(e, 'rotateRight');
-      expect(rootScope.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
+      expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
       scope.releaseMove(e, 'rotateRight');
-      expect(rootScope.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
+      expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
     });
 
     it('should toggle the showSpikeTrain variable', function() {
@@ -631,7 +649,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should close all connections and splash screens on $destroy', function() {
       spyOn(window, 'stop');
-      simulationStateObject.state.mostRecentCall.args[1]({state: STATE.STARTED});
+      stateService.currentState = STATE.STARTED;
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
       scope.splashScreen = splashInstance;
       scope.worldStatsListener = returnedConnectionObject;
 
@@ -645,7 +664,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.worldStatsListener.unsubscribe).toHaveBeenCalled();
       expect(scope.worldStatsListener.removeAllListeners).toHaveBeenCalled();
       expect(scope.rosConnection.close).toHaveBeenCalled();
-      expect(scope.iface.webSocket.close).toHaveBeenCalled();
+      expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
       expect(gzInitializationMock.deInitialize).toHaveBeenCalled();
       expect(window.stop).toHaveBeenCalled();
     });
@@ -662,7 +681,9 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should do nothing on $destroy when all is undefined', function() {
       scope.assetLoadingSplashScreen = undefined;
-      scope.iface.webSocket = undefined;
+      gz3d.iface.webSocket = undefined;
+      scope.rosConnection = undefined;
+      scope.statusListener = undefined;
 
       scope.$destroy();
 
@@ -671,7 +692,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.statusListener).not.toBeDefined();
       expect(scope.worldStatsListener).not.toBeDefined();
       expect(scope.rosConnection).not.toBeDefined();
-      expect(scope.iface.webSocket).not.toBeDefined();
+      expect(gz3d.iface.webSocket).not.toBeDefined();
     });
 
     it('should show the help text correctly', function() {

@@ -4,12 +4,14 @@ describe('Controller: editorPanelCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('gz3dServices'));
 
   var experimentCtrl,
       scope,
       rootScope,
       bbpConfig,
-      controller;
+      controller,
+      gz3d;
 
   var stateParams;
 
@@ -21,17 +23,19 @@ describe('Controller: editorPanelCtrl', function () {
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _$stateParams_,
-                              _bbpConfig_) {
+                              _bbpConfig_,
+                              _gz3d_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
     stateParams = _$stateParams_;
     bbpConfig = _bbpConfig_;
+    gz3d = _gz3d_;
 
     // Mock the scene controls object
-    rootScope.scene = {};
-    rootScope.scene.controls = {};
-    rootScope.scene.controls.keyBindingsEnabled = true;
+    gz3d.scene = {};
+    gz3d.scene.controls = {};
+    gz3d.scene.controls.keyBindingsEnabled = true;
 
     stateParams = {
       mode : undefined,
@@ -74,42 +78,42 @@ describe('Controller: editorPanelCtrl', function () {
 
   it('should disable the key bindings when an code editor tab is active and the panel is opened', function () {
     expect(scope.panelIsOpen).toBeFalsy();
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeTruthy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
 
     //Test the transferfunction tab
     scope.activeTab.transferfunction = true;
     scope.openCallback();
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeFalsy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeFalsy();
 
     scope.closeCallback();
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeTruthy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
 
     //Test the statemachine tab
     scope.activeTab.statemachine = true;
     scope.openCallback();
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeFalsy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeFalsy();
   });
 
   it('should disable the key bindings when the panel is open and the disableKeyBindings function is called', function () {
     scope.panelIsOpen = true;
-    rootScope.scene.controls.keyBindingsEnabled = true;
+    gz3d.scene.controls.keyBindingsEnabled = true;
     scope.disableKeyBindings();
 
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeFalsy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeFalsy();
   });
 
   it('should NOT disable the key bindings when the panel is CLOSED and the disableKeyBindings function is called', function () {
     scope.panelIsOpen = false;
-    rootScope.scene.controls.keyBindingsEnabled = true;
+    gz3d.scene.controls.keyBindingsEnabled = true;
     scope.disableKeyBindings();
 
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeTruthy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
   });
 
   it('should re-enable the key bindings', function () {
-    rootScope.scene.controls.keyBindingsEnabled = false;
+    gz3d.scene.controls.keyBindingsEnabled = false;
     scope.reenableKeyBindings();
 
-    expect(rootScope.scene.controls.keyBindingsEnabled).toBeTruthy();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
   });
 });

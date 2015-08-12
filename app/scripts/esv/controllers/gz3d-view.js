@@ -64,15 +64,15 @@
     }])
     .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
-      'gzInitialization', 'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
+      'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl', 'experimentList',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
+      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'gz3d', 'EDIT_MODE', 'stateService',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
-          gzInitialization, hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
+          hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, serverError, screenControl, experimentList,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
-          nrpFrontendVersion, panels, UI, OPERATION_MODE) {
+          nrpFrontendVersion, panels, UI, OPERATION_MODE, gz3d, EDIT_MODE, stateService) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -91,37 +91,15 @@
       $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
       $scope.spikeTopic = serverConfig.rosbridge.topics.spikes;
 
-      $scope.state = STATE.UNDEFINED;
       $scope.STATE = STATE;
       $scope.OPERATION_MODE = OPERATION_MODE;
       $scope.UI = UI;
       $scope.isOwner = false;
       $scope.isInitialized = false;
       $scope.isJoiningStoppedSimulation = false;
-      $rootScope.isInEditMode = false;
-
-      // Query the state of the simulation
-      simulationState(serverBaseUrl).state({sim_id: simulationID}, function(data){
-        $scope.state = data.state;
-        if ($scope.state === STATE.STOPPED) {
-          // The Simulation is already Stopped, so do nothing more but show the alert popup
-          $scope.isJoiningStoppedSimulation = true;
-        } else {
-          // Initialize GZ3D and so on...
-          gzInitialization.Initialize($stateParams.serverID, $stateParams.simulationID);
-
-          // Register for the status updates as well as the timing stats
-          // Note that we have two different connections here, hence we only put one as a callback for
-          // $rootScope.iface and the other one not!
-          $scope.registerForStatusInformation();
-
-          // Show the splash screen for the progress of the asset loading
-          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(resetScreenColors);
-          $rootScope.iface.setAssetProgressCallback(function(data){
-            assetLoadingSplash.setProgress(data);
-          });
-        }
-      });
+      $scope.gz3d = gz3d;
+      $scope.stateService = stateService;
+      $scope.EDIT_MODE = EDIT_MODE;
 
       hbpUserDirectory.getCurrentUser().then(function (profile) {
         $scope.userName = profile.displayName;
@@ -174,13 +152,13 @@
           /* State messages */
           /* Manage before other since others may depend on state changes */
           if (message !== undefined && message.state !== undefined) {
-            $scope.$apply(function() { $scope.state = message.state; });
+            $scope.$apply(function() { stateService.currentState = message.state; });
           }
           /* Progress messages (apart start state progress messages which are handled by another progress bar) */
-          if (message !== undefined && message.progress !== undefined && $scope.state !== STATE.STARTED ) {
+          if (message !== undefined && message.progress !== undefined && stateService.currentState !== STATE.STARTED ) {
             $scope.splashScreen = $scope.splashScreen || splash.open(
                 !message.progress.block_ui,
-                (($scope.state === STATE.STOPPED) ? callbackOnClose : undefined));
+                ((stateService.currentState === STATE.STOPPED) ? callbackOnClose : undefined));
             if (message.progress.done !== undefined && message.progress.done) {
               splash.spin = false;
               splash.setMessage({ headline: 'Finished' });
@@ -217,6 +195,28 @@
         });
       };
 
+      // Query the state of the simulation
+      stateService.getCurrentState().then(function () {
+        if (stateService.currentState === STATE.STOPPED) {
+          // The Simulation is already Stopped, so do nothing more but show the alert popup
+          $scope.isJoiningStoppedSimulation = true;
+        } else {
+          // Initialize GZ3D and so on...
+          gz3d.Initialize($stateParams.serverID, $stateParams.simulationID);
+
+          // Register for the status updates as well as the timing stats
+          // Note that we have two different connections here, hence we only put one as a callback for
+          // $rootScope.iface and the other one not!
+          $scope.registerForStatusInformation();
+
+          // Show the splash screen for the progress of the asset loading
+          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(resetScreenColors);
+          gz3d.iface.setAssetProgressCallback(function(data){
+            assetLoadingSplash.setProgress(data);
+          });
+        }
+      });
+
       // The following lines allow the joining client to retrieve the actual screen color stored by the server.
       // The method below gets the 'server' color for each screen since it might have been changed
       // by another client connected earlier to the same simulation.
@@ -226,7 +226,7 @@
       /* istanbul ignore next */
       $scope.updateScreenColor = function(simulation, screenString) { // screenString must be either 'left' or 'right'
         var colors = {'Gazebo/Red': 0xff0000, 'Gazebo/Blue': 0x0000ff};
-        var scene = $rootScope.scene;// scene is undefined when closing and destroying the asset-loading splah screen
+        var scene = gz3d.scene;// scene is undefined when closing and destroying the asset-loading splah screen
         var entity = scene ? scene.getByName(screenString + '_vr_screen::body::screen_glass') : undefined;
         if (entity) {
           var child = entity.children ? entity.children[0] : undefined;
@@ -249,22 +249,19 @@
       };
 
       $scope.updateSimulation = function (newState) {
-        if (newState === $scope.previousState) {
+        if (newState === stateService.currentState) {
           return; // avoid duplicated update requests
         }
-        $scope.previousState = newState;
-        simulationState(serverBaseUrl).update({sim_id: simulationID}, {state: newState}, function(data) {
-          $scope.state = data.state;
-          // Temporary fix for screen color update on reset event, see comments above
-          /* istanbul ignore next */
-          if (newState === STATE.INITIALIZED) {
-            resetScreenColors();
+        stateService.setCurrentState(newState).then(
+          function () {
+            // Temporary fix for screen color update on reset event, see comments above
+            /* istanbul ignore next */
+            if (newState === STATE.INITIALIZED) {
+              resetScreenColors();
+            }
           }
-        }, function(data) {
-          serverError(data);
-          $scope.previousState = undefined;
-        }
-        );
+        )
+        .catch(function(data) { serverError(data); });
       };
 
       // stores, whether the context menu should be displayed
@@ -277,7 +274,7 @@
       $scope.getModelUnderMouse = function(event) {
         var pos = new THREE.Vector2(event.clientX, event.clientY);
         var intersect = new THREE.Vector3();
-        var model = $rootScope.scene.getRayCastModel(pos, intersect);
+        var model = gz3d.scene.getRayCastModel(pos, intersect);
         return model;
       };
 
@@ -324,22 +321,22 @@
               // scene.radialMenu.showing is a property of GZ3D that was originally used to display a radial menu, We are
               // reusing it for our context menu. The reason is that this variables disables or enables the controls of
               // scene in the render loop.
-              $rootScope.scene.radialMenu.showing = $scope.isContextMenuShown =
+              gz3d.scene.radialMenu.showing = $scope.isContextMenuShown =
                 (model &&
                 model.name !== '' &&
                 model.name !== 'plane' &&
                 model.name.indexOf('screen') !== -1 &&
-                $rootScope.scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
+                gz3d.scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
 
 
               $scope.contextMenuTop = event.clientY;
               $scope.contextMenuLeft = event.clientX;
-              $scope.selectedEntity = $rootScope.scene.selectedEntity;
+              $scope.selectedEntity = gz3d.scene.selectedEntity;
             }
           }
           else {
             $scope.isContextMenuShown = false;
-            $rootScope.scene.radialMenu.showing = false;
+            gz3d.scene.radialMenu.showing = false;
           }
         }
 
@@ -350,7 +347,7 @@
       $scope.updateLightIntensities = function(sliderPosition) {
         var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
         // we avoid purposely -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
-        $rootScope.scene.emitter.emit('lightChanged', ratio);
+        gz3d.scene.emitter.emit('lightChanged', ratio);
       };
 
       // Camera manipulation
@@ -372,13 +369,13 @@
 
       $scope.requestMove = function(event, action) {
         if (!$scope.helpModeActivated && event.which === 1) { // camera control uses left button only
-          $rootScope.scene.controls.onMouseDownManipulator(action);
+          gz3d.scene.controls.onMouseDownManipulator(action);
         }
       };
 
       $scope.releaseMove = function(event, action) {
         if (!$scope.helpModeActivated && event.which === 1) { // camera control uses left button only
-          $rootScope.scene.controls.onMouseUpManipulator(action);
+          gz3d.scene.controls.onMouseUpManipulator(action);
         }
       };
 
@@ -391,7 +388,7 @@
 
       // robot view
       $scope.toggleRobotView = function() {
-        $rootScope.scene.views.forEach(function(view) {
+        gz3d.scene.views.forEach(function(view) {
           if (view.name === 'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
             view.active = !view.active;
             view.container.style.visibility = view.active ? 'visible' : 'hidden';
@@ -427,10 +424,10 @@
         if (angular.isDefined($scope.rosConnection)) {
           $scope.rosConnection.close();
         }
-        if (angular.isDefined($rootScope.iface) && angular.isDefined($rootScope.iface.webSocket)) {
-          $rootScope.iface.webSocket.close();
+        if (angular.isDefined(gz3d.iface) && angular.isDefined(gz3d.iface.webSocket)) {
+          gz3d.iface.webSocket.close();
         }
-        gzInitialization.deInitialize();
+        gz3d.deInitialize();
 
         // Stop/Cancel loading assets
         // The window.stop() method is not supported by Internet Explorer

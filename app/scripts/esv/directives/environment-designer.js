@@ -10,81 +10,45 @@
 
   angular.module('exdFrontendApp')
   .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', 'simulationSDFWorld', 'STATE', 'simulationState',
-                                     '$stateParams', '$rootScope',
-  function ($log, EDIT_MODE, panels, simulationSDFWorld, STATE, simulationState, $stateParams, $rootScope) {
+                                     '$stateParams', 'bbpConfig', '$rootScope', 'gz3d', 'stateService',
+  function ($log, EDIT_MODE, panels, simulationSDFWorld, STATE, simulationState,
+            $stateParams, bbpConfig, $rootScope, gz3d, stateService) {
     return {
       templateUrl: 'views/esv/environment-designer.html',
       restrict: 'E',
       link: function(scope, element, attrs) {
         scope.EDIT_MODE = EDIT_MODE;
-        scope.mode = EDIT_MODE.VIEW;
-        scope.oldState = undefined;
+        scope.gz3d = gz3d;
 
-        scope.setEditMode = function(mode) {
-          if (scope.mode === mode) {
+        scope.setEditMode = function (mode) {
+          var setMode = function(mode) {
+            $log.debug('Setting mode ' + mode + '.');
+            gz3d.scene.setManipulationMode(mode);
+            panels.close();
+          };
+
+          if (gz3d.scene.manipulationMode === mode) {
             $log.debug("Mode " + mode + " is already set.");
             panels.close();
             return;
-          }
-
-          var setMode = function() {
-            $log.debug('Setting mode ' + mode + '.');
-            scope.mode = mode;
-            $rootScope.scene.setManipulationMode(mode);
+          } else {
             switch (mode) {
-              case EDIT_MODE.VIEW:
-                $rootScope.isInEditMode = false;
-                $rootScope.toggleScreenChangeMenu(false);
-                break;
-              case EDIT_MODE.TRANSLATE:
-              case EDIT_MODE.ROTATE:
-                $rootScope.isInEditMode = true;
-                break;
-            }
-            panels.close();
-          };
-
-          var setNewState = function(state) {
-            simulationState(scope.serverBaseUrl).update(
-              {sim_id: $stateParams.simulationID}, {state: state},
-              function(data) {
-                if (data.state !== state) {
-                  $log.debug('Something went wrong when setting state.');
-                  panels.close();
-                  return;
-                }
-                setMode();
+            case EDIT_MODE.VIEW:
+              setMode(mode);
+              break;
+            case EDIT_MODE.TRANSLATE:
+            case EDIT_MODE.ROTATE:
+              if (stateService.currentState === STATE.PAUSED) {
+                $log.debug("Simulation already paused, setting mode to " + mode + ".");
+                setMode(mode);
               }
-            );
-          };
-
-          var onStateFetched = function(state) {
-            var newState;
-            if (scope.oldState === undefined) { scope.oldState = state; }
-            switch (mode) {
-              case EDIT_MODE.VIEW:
-                if (state === STATE.PAUSED && scope.oldState !== STATE.PAUSED) { newState = scope.oldState; }
-                break;
-              case EDIT_MODE.TRANSLATE:
-              case EDIT_MODE.ROTATE:
-                scope.oldState = state;
-                if (state === STATE.STARTED) { newState = STATE.PAUSED; }
-                break;
+              else {
+                $log.debug("Pausing simulation and setting mode to " + mode + ".");
+                stateService.setCurrentState(STATE.PAUSED).then(function () { setMode(mode); });
+              }
+              break;
             }
-            if (newState) {
-              $log.debug('Changing the simulation state to ' + newState + '.');
-              setNewState(newState);
-            }
-            else {
-              $log.debug('No need to change the simulation state.');
-              setMode();
-            }
-          };
-
-          simulationState(scope.serverBaseUrl).state(
-            {sim_id: $stateParams.simulationID},
-            function(data) { onStateFetched(data.state); }
-          );
+          }
         };
 
         scope.exportSDFWorld = function () {

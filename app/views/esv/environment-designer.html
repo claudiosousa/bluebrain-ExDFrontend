@@ -10,15 +10,18 @@
 <hr>
 <h4>View, Move or Rotate objects on the scene:</h4>
 <div class="btn-group" role="group">
-  <button type="button" class="btn btn-default" ng-class="{active:mode==EDIT_MODE.VIEW}" ng-click="setEditMode(EDIT_MODE.VIEW)">
+  <button type="button" class="btn btn-default" ng-class="{active:gz3d.scene.manipulationMode==EDIT_MODE.VIEW}"
+          ng-click="setEditMode(EDIT_MODE.VIEW)">
     <i class="glyphicon glyphicon-eye-open"></i>
     <span>View mode</span>
   </button>
-  <button type="button" class="btn btn-default" ng-class="{active:mode==EDIT_MODE.TRANSLATE}" ng-click="setEditMode(EDIT_MODE.TRANSLATE)">
+  <button type="button" class="btn btn-default" ng-class="{active:gz3d.scene.manipulationMode==EDIT_MODE.TRANSLATE}"
+          ng-click="setEditMode(EDIT_MODE.TRANSLATE)">
     <i class="glyphicon glyphicon-move"></i>
     <span>Move objects</span>
   </button>
-  <button type="button" class="btn btn-default" ng-class="{active:mode==EDIT_MODE.ROTATE}" ng-click="setEditMode(EDIT_MODE.ROTATE)">
+  <button type="button" class="btn btn-default" ng-class="{active:gz3d.scene.manipulationMode==EDIT_MODE.ROTATE}"
+          ng-click="setEditMode(EDIT_MODE.ROTATE)">
     <i class="glyphicon glyphicon-repeat"></i>
     <span>Rotate objects</span>
   </button>

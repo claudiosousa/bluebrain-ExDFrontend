@@ -3,7 +3,9 @@
 
   /* global console: false */
 
-  angular.module('exdFrontendApp').controller('editorPanelCtrl', ['$rootScope', '$scope', '$stateParams','bbpConfig', function ($rootScope, $scope, $stateParams, bbpConfig) {
+  angular.module('exdFrontendApp').controller('editorPanelCtrl',
+    ['$rootScope', '$scope', '$stateParams','bbpConfig', 'gz3d',
+    function ($rootScope, $scope, $stateParams, bbpConfig, gz3d) {
     if (!$stateParams.serverID || !$stateParams.simulationID){
       throw "No serverID or simulationID given.";
     }
@@ -24,27 +26,27 @@
       $scope.panelIsOpen = true;
       if($scope.activeTab.transferfunction === true ||
         $scope.activeTab.statemachine === true) {
-        $rootScope.scene.controls.keyBindingsEnabled = false;
+        gz3d.scene.controls.keyBindingsEnabled = false;
       }
     };
 
     $scope.closeCallback = function() {
       // The Panel is closed
       $scope.panelIsOpen = false;
-      $rootScope.scene.controls.keyBindingsEnabled = true;
+      gz3d.scene.controls.keyBindingsEnabled = true;
     };
 
     $scope.disableKeyBindings = function() {
       // Only disable the key bindings if the panel is open
       // This prevents disabling the key bindings when the page is loaded
       if($scope.panelIsOpen === true) {
-        $rootScope.scene.controls.keyBindingsEnabled = false;
+        gz3d.scene.controls.keyBindingsEnabled = false;
       }
     };
 
     $scope.reenableKeyBindings = function() {
       // Reenable the key bindings when the user leaves a code-editor panel
-      $rootScope.scene.controls.keyBindingsEnabled = true;
+      gz3d.scene.controls.keyBindingsEnabled = true;
     };
   }]);
 
