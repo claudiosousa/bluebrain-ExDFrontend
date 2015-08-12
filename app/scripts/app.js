@@ -55,10 +55,6 @@
         })
         // Authentication
         .config(function(bbpOidcSessionProvider) {
-            // Set to true if you want to automatically prompt login
-            // when user has no valid token.
-            bbpOidcSessionProvider.alwaysPromptLogin(true);
-
             // Set to true if you want to check for the existance of
             // a token while loading.
             bbpOidcSessionProvider.ensureToken(true);
