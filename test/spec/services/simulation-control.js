@@ -245,7 +245,6 @@ describe('Services: experimentSimulationService', function () {
 
   var httpBackend;
   var returnSimulations,
-      experimentListCallBbpce016,
       experimentListCallBbpce014,
       experimentTemplates,
       experimentTemplatesAugmented,
@@ -327,20 +326,6 @@ describe('Services: experimentSimulationService', function () {
 
     simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(returnSimulations[3]);
     simulationServiceObject.simulations = jasmine.createSpy('simulations').andReturn({$promise: {then: function(){}}});
-
-    experimentListCallBbpce016 = {
-      data : {
-        'fakeExperiment1.xml': {
-          name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', timeout: 100
-        },
-        'fakeExperiment2.xml': {
-          name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', timeout: 200
-        },
-        'fakeExperiment3.xml': {
-          name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', timeout: 300
-        }
-      }
-    };
 
     // introduce same '1' experiment on other server to pass through if branch in getExperiments
     experimentListCallBbpce014 = {
@@ -425,6 +410,21 @@ describe('Services: experimentSimulationService', function () {
   });
 
   describe('Tests involving getExperiments method', function() {
+    var TestDataGenerator = window.TestDataGenerator;
+
+    // The experiments that are given as a parameter to the getExperiments method and which are "filled up".
+    // (TODO: This also means the incoming parameter is modified, which is considered to be bad practice:
+    // http://programmers.stackexchange.com/questions/245767/is-it-an-antipattern-modifying-an-incoming-parameter )
+    var experimentsFetched = {};
+
+    var experimentsFromTheServer = {
+      data: {
+        'fakeExperiment1.xml': TestDataGenerator.createTestExperiment(),
+        'fakeExperiment2.xml': TestDataGenerator.createTestExperiment(),
+        'fakeExperiment3.xml': TestDataGenerator.createTestExperiment()
+      }
+    };
+
     var messageCallback;
     var mockedThen;
     var emptyCallback = function() {};
@@ -444,11 +444,23 @@ describe('Services: experimentSimulationService', function () {
       console.log.reset();
     });
 
+    it('should extend the fetched experiments from the server with the proper imageData', function () {
+      var base64EncodedImageResult = 'base64XF5Tf';
+      var serversEnabled = [];
+
+      experimentSimulationService.getExperiments(experimentsFetched, serversEnabled, emptyCallback, emptyCallback, emptyCallback);
+      experimentList().experiments.mostRecentCall.args[0](experimentsFromTheServer);
+      httpBackend.flush();
+
+      Object.keys(experimentsFromTheServer.data).forEach(function (experimentKey) {
+        expect(experimentsFetched[experimentKey].imageData).toEqual(base64EncodedImageResult);
+      });
+    });
+
     it('should callback when all servers have answered to the query', function() {
       var queryingServersFinishedCallback = jasmine.createSpy('queryingServersFinishedCallback');
-      var templates = {};
 
-      experimentSimulationService.getExperiments(templates, serversEnabled, emptyCallback, queryingServersFinishedCallback, emptyCallback);
+      experimentSimulationService.getExperiments(experimentsFetched, serversEnabled, emptyCallback, queryingServersFinishedCallback, emptyCallback);
       // Resolve the deferred variables
       mockedThen.argsForCall.forEach(function (argument) {
         argument[0]();
@@ -458,17 +470,13 @@ describe('Services: experimentSimulationService', function () {
       scope.$digest();
 
       expect(experimentList().experiments.callCount).toBe(2);
-      experimentList().experiments.argsForCall[0][0](experimentListCallBbpce014);
-      experimentList().experiments.mostRecentCall.args[0](experimentListCallBbpce016);
+      experimentList().experiments.mostRecentCall.args[0](experimentsFromTheServer);
 
       // perform refreshExperiment work by hand:
       ['fakeExperiment1.xml', 'fakeExperiment2.xml', 'fakeExperiment3.xml'].forEach(function(experiment){
-        templates[experiment].numSupportingServers = 2;
-        templates[experiment].numAvailableServers = 0;
+        experimentsFetched[experiment].numSupportingServers = 2;
+        experimentsFetched[experiment].numAvailableServers = 0;
       });
-
-      httpBackend.flush();
-      expect(templates).toEqual(experimentTemplates);
 
       // The callback for querying the servers is not called since this happens in a callback of a currently mocked function.
       expect(queryingServersFinishedCallback).not.toHaveBeenCalled();
@@ -483,7 +491,7 @@ describe('Services: experimentSimulationService', function () {
       // At this place "checkServerAvailability" should have been called which as well queries servers.
       // So we again have to resolve the promises and do a $digest()
       mockedThen.argsForCall.forEach(function (argument) {
-       argument[0]();
+      argument[0]();
       });
       scope.$digest();
 
