@@ -528,6 +528,7 @@ describe('Services: experimentSimulationService', function () {
     it('should test the launch of an experiment on a given server', function() {
       experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
 
+      experimentSimulationService.setShouldLaunchInEditMode(true);
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014');
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
@@ -535,12 +536,25 @@ describe('Services: experimentSimulationService', function () {
       expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
         experimentConfiguration: 'mocked_experiment_conf',
         /* jshint camelcase: false */
-        gzserverHost: 'lugano'
+        gzserverHost: 'lugano',
+        operationMode: 'edit'
       }, jasmine.any(Function));
       simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
 
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080');
+    });
+
+    it('should start the experiment in view mode', function() {
+      experimentSimulationService.getExperiments({}, serversEnabled, messageCallback, emptyCallback, emptyCallback);
+      experimentSimulationService.setShouldLaunchInEditMode(false);
+      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014');
+      expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
+        experimentConfiguration: 'mocked_experiment_conf',
+        /* jshint camelcase: false */
+        gzserverHost: 'lugano',
+        operationMode: 'view'
+      }, jasmine.any(Function));
     });
 
     it('should start a new experiment', function(){

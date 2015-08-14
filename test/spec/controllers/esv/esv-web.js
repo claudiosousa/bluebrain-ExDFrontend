@@ -13,9 +13,25 @@ describe('Controller: experimentCtrl', function () {
     location,
     httpBackend,
     timeout,
+    interval,
     experimentSimulationService,
+    simulationService,
+    hbpUserDirectory,
     REFRESH_UPDATE_RATE,
+    UPTIME_UPDATE_RATE,
     STATE;
+
+  var hbpUserDirectoryPromiseObject = {};
+  hbpUserDirectoryPromiseObject.then = jasmine.createSpy('then');
+  var hbpUserDirectoryPromiseObject2 = {};
+  hbpUserDirectoryPromiseObject2.then = jasmine.createSpy('then');
+  var hbpUserDirectoryMock = {};
+  hbpUserDirectoryMock.getCurrentUser = jasmine.createSpy('getCurrentUser').andReturn(hbpUserDirectoryPromiseObject);
+  hbpUserDirectoryMock.get = jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2);
+
+  var simulationServiceMockObject = {};
+  simulationServiceMockObject.updateUptime = jasmine.createSpy('updateUptime');
+  var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
 
   var experimentSimulationServiceMock = {
     setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
@@ -46,6 +62,16 @@ describe('Controller: experimentCtrl', function () {
 
   beforeEach(module(function ($provide) {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
+    $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
+    $provide.value('simulationService', simulationServiceMock);
+    experimentSimulationServiceMock.setShouldLaunchInEditMode.reset();
+    experimentSimulationServiceMock.startNewExperiments.reset();
+    hbpUserDirectoryPromiseObject.then.reset();
+    hbpUserDirectoryPromiseObject2.then.reset();
+    hbpUserDirectoryMock.getCurrentUser.reset();
+    hbpUserDirectoryMock.get.reset();
+    simulationServiceMock.reset();
+    simulationServiceMockObject.updateUptime.reset();
   }));
 
   // Initialize the controller and a mock scope
@@ -54,14 +80,20 @@ describe('Controller: experimentCtrl', function () {
                               _$location_,
                               _$httpBackend_,
                               _$timeout_,
+                              _$interval_,
                               _experimentSimulationService_,
+                              _simulationService_,
+                              _hbpUserDirectory_,
                               _STATE_) {
     scope = $rootScope.$new();
     controller = $controller;
     location = _$location_;
     httpBackend = _$httpBackend_;
     timeout = _$timeout_;
+    interval = _$interval_;
     experimentSimulationService = _experimentSimulationService_;
+    simulationService = _simulationService_;
+    hbpUserDirectory = _hbpUserDirectory_;
     STATE = _STATE_;
 
     experimentSimulationServiceMock.getExperiments = jasmine.createSpy('getExperiments');
@@ -82,6 +114,7 @@ describe('Controller: experimentCtrl', function () {
     });
 
     REFRESH_UPDATE_RATE = 30 * 1000; // 30 seconds
+    UPTIME_UPDATE_RATE = 2 * 1000; // 2 seconds
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenGET('views/esv/experiment_templates.json').respond(experimentTemplates);
@@ -92,6 +125,15 @@ describe('Controller: experimentCtrl', function () {
     spyOn(console, 'error');
     spyOn(console, 'log');
   }));
+
+  it('should fetch and set the current user id' , function () {
+    var currentUserInfo1234 = {
+      displayName: 'John Does',
+      id: '1234'
+    };
+    hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
+    expect(scope.userID).toEqual(currentUserInfo1234.id);
+  });
 
   it('should init the list of server enabled by default' , function () {
     store['server-enabled'] = null;
@@ -140,13 +182,23 @@ describe('Controller: experimentCtrl', function () {
     expect(scope.progressMessageSub).toEqual('');
   });
 
-  it('should start a new experiment', function(){
+  it('should start a new experiment in view mode', function(){
     experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
     experimentSimulationService.setShouldLaunchInEditMode = jasmine.createSpy('setShouldLaunchInEditMode');
     var newExperimentString = 'fubar';
     var newExperimentServerPattern = 'toto';
     scope.startNewExperiment(newExperimentString, newExperimentServerPattern);
     expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(false);
+    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, serversEnabled, newExperimentServerPattern, scope.setProgressbarInvisible);
+  });
+
+  it('should start a new experiment in edit mode', function(){
+    experimentSimulationService.startNewExperiments = jasmine.createSpy('startNewExperiments');
+    experimentSimulationService.setShouldLaunchInEditMode = jasmine.createSpy('setShouldLaunchInEditMode');
+    var newExperimentString = 'fubar';
+    var newExperimentServerPattern = 'toto';
+    scope.enterEditMode(newExperimentString, newExperimentServerPattern);
+    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(true);
     expect(experimentSimulationService.startNewExperiments).toHaveBeenCalledWith(newExperimentString, serversEnabled, newExperimentServerPattern, scope.setProgressbarInvisible);
   });
 
@@ -220,7 +272,7 @@ describe('Controller: experimentCtrl', function () {
       }
     ));
 
-  it('should create the updatePromise and call refresh experiments after 30 seconds', function() {
+  it('should create the updatePromise and call refresh experiments after REFRESH_UPDATE_RATE seconds', function() {
     var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[3];
     scope.updatePromise = undefined;
     queryingServersFinishedCallback();
@@ -233,6 +285,13 @@ describe('Controller: experimentCtrl', function () {
     // called after in total REFRESH_UPDATE_RATE seconds
     timeout.flush(1000);
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+  });
+
+  it('should create the updateUptimePromise and update the uptime after UPTIME_UPDATE_RATE seconds', function() {
+    expect(scope.updateUptimePromise).toBeDefined();
+    expect(simulationServiceMockObject.updateUptime).not.toHaveBeenCalled();
+    interval.flush(UPTIME_UPDATE_RATE);
+    expect(simulationServiceMockObject.updateUptime).toHaveBeenCalled();
   });
 
   it('should toggle servers properly', function() {
@@ -253,28 +312,39 @@ describe('Controller: experimentCtrl', function () {
     expect(angular.fromJson(store['server-enabled'])).not.toContain('toto');
   });
 
-  describe('Tests related to scope.$destroy()', function(){
-
-  it('should stop updating after on $destroy', function() {
-    // Querying servers finished
-    experimentSimulationService.getExperiments.mostRecentCall.args[2]();
-
-    scope.$destroy();
-
-    // Should do nothing after 30 seconds
-    timeout.flush(REFRESH_UPDATE_RATE);
-    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
-      expect(scope.updatePromise).not.toBeDefined();
-      expect(scope.updateUptimePromise).not.toBeDefined();
+  it('should set the isServerAvailable variable', function() {
+    scope.toggleServer('dummy');
+    scope.isServerAvailable = {};
+    experimentSimulationService.refreshExperiments.mostRecentCall.args[2]('fakeId', true);
+    expect(scope.isServerAvailable).toEqual({'fakeId': true});
   });
 
-  it('should do nothing on $destroy', function() {
-      scope.updatePromise = undefined;
-    scope.$destroy();
+  describe('Tests related to scope.$destroy()', function(){
 
-    // Should do nothing after 30 seconds
-    timeout.flush(REFRESH_UPDATE_RATE);
-    expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+    it('should stop updating after on $destroy', function() {
+      // Querying servers finished
+      experimentSimulationService.getExperiments.mostRecentCall.args[2]();
+      scope.updatePromise = timeout(function(){}, REFRESH_UPDATE_RATE);
+
+      scope.$destroy();
+
+      // Should do nothing after 30 seconds
+      timeout.flush(REFRESH_UPDATE_RATE);
+      interval.flush(UPTIME_UPDATE_RATE);
+      expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+      expect(scope.updatePromise).not.toBeDefined();
+      expect(scope.updateUptimePromise).not.toBeDefined();
+    });
+
+    it('should do nothing on $destroy', function() {
+      scope.updatePromise = undefined;
+      scope.updateUptimePromise = undefined;
+      scope.$destroy();
+
+      // Should do nothing after 30 seconds
+      timeout.flush(REFRESH_UPDATE_RATE);
+      interval.flush(UPTIME_UPDATE_RATE);
+      expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
       expect(scope.updatePromise).not.toBeDefined();
       expect(scope.updateUptimePromise).not.toBeDefined();
     });

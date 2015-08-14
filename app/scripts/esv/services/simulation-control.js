@@ -416,9 +416,7 @@
         });
       };
 
-      // TODO improve this code (keyword: semaphore!)
       var startNewExperiments = function (id, serversEnabled, serverPattern, errorCallback) {
-
         var keepGoing = true;
         angular.forEach(serverIDs, function (serverID) {
           if (keepGoing && (serversEnabled.indexOf(serverID) > -1)) {
@@ -445,11 +443,13 @@
         // In case the config does specify where to run, we take the value from the config file. If there is no hint,
         // we fallback to "local".
         var serverJobLocation = servers[freeServerID].serverJobLocation ? servers[freeServerID].serverJobLocation : 'local';
+        var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
 
         // Create a new simulation.
         simulationGenerator(serverURL).create({
           experimentConfiguration: experimentConfiguration,
-          gzserverHost: serverJobLocation
+          gzserverHost: serverJobLocation,
+          operationMode: operationMode
         }, function (createData) {
           setProgressMessageCallback({main: 'Initialize Simulation...'});
           // register for messages during initialization

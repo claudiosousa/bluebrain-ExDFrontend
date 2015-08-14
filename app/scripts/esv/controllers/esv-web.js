@@ -36,8 +36,8 @@
         }
       };
     })
-    .controller('experimentCtrl', ['$scope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE', 'bbpConfig',
-      function ($scope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE, bbpConfig) {
+    .controller('experimentCtrl', ['$scope', '$timeout', '$interval', '$location', 'simulationService', 'experimentSimulationService', 'STATE', 'OPERATION_MODE', 'bbpConfig', 'hbpUserDirectory',
+      function ($scope, $timeout, $interval, $location, simulationService, experimentSimulationService, STATE, OPERATION_MODE, bbpConfig, hbpUserDirectory) {
         $scope.selectedIndex = -1;
         $scope.joinSelectedIndex = -1;
         $scope.startNewExperimentSelectedIndex = -1;
@@ -50,6 +50,7 @@
         $scope.experiments = {};
         $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
+        $scope.userID = undefined;
 
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -91,7 +92,6 @@
         };
 
         $scope.toggleServer = function (server) {
-
           var idx = $scope.serversEnabled.indexOf(server);
           if (idx > -1) {
             $scope.serversEnabled.splice(idx, 1);
@@ -129,6 +129,10 @@
         $scope.updateUptimePromise = $interval(function () {
           simulationService().updateUptime();
         }, UPTIME_UPDATE_RATE);
+
+        hbpUserDirectory.getCurrentUser().then(function (profile) {
+          $scope.userID = profile.id;
+        });
 
         experimentSimulationService.getExperiments(
           // This is the datastructure where all the templates and running experiments are stored

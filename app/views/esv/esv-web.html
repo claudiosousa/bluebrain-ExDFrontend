@@ -19,7 +19,9 @@
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu dropdown-menu-left servers-dropdown">
-          <li ng-repeat="server in serverNames" ng-click="toggleServer(server); $event.stopPropagation();"><a><input type="checkbox" ng-checked="serversEnabled.indexOf(server) > -1" ng-click="toggleServer(server); $event.stopPropagation();"> {{server}}</a></li>
+          <li ng-repeat="server in serverNames" ng-click="toggleServer(server); $event.stopPropagation();">
+            <a><input type="checkbox" ng-checked="serversEnabled.indexOf(server) > -1" ng-click="toggleServer(server); $event.stopPropagation();"> {{server}}</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -29,7 +31,8 @@
     <a ng-show="!showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=true">developers</a>
     <a ng-show="showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=false">users</a>
 
-    <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
+    <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll"
+         ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
         <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
           <img ng-src="data:image/png;base64,{{exp.imageData}}" />
@@ -50,10 +53,19 @@
           </div>
           <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
             <div class="btn-group" role="group">
-              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);"><i class="fa fa-pencil"></i> Edit</button>
-              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter"><i class="fa fa-plus"></i> Create</button>
-              <button ng-if="isServerAvailable[exp.id]" ng-disabled="startNewExperimentSelectedIndex !== -1" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);"><i class="fa fa-plus"></i> Create</button>
-              <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);"><i class="fa fa-sign-in"></i> Join »</button>
+              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);">
+                <i class="fa fa-pencil"></i> Edit
+              </button>
+              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter">
+                <i class="fa fa-plus"></i> Launch
+              </button>
+              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1"
+                      ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);">
+                <i class="fa fa-plus"></i> Launch
+              </button>
+              <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);">
+                <i class="fa fa-sign-in"></i> Join »
+              </button>
             </div>
           </div>
           <div  collapse="startNewExperimentSelectedIndex != exp.id">
@@ -76,7 +88,12 @@
                 <td>{{owners[simul.owner]}}</td>
                 <td>{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
                 <td>{{simul.state}}</td>
-                <td><a ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{OPERATION_MODE.VIEW}}');" type="button" class="btn btn-default" ng-disabled="simul.state === STATE.CREATED">Join »</a></td>
+                <td>
+                  <a ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
+                     type="button" class="btn btn-default" ng-disabled="simul.state === STATE.CREATED">
+                    {{((simul.owner === userID)&&(simul.operationMode === OPERATION_MODE.EDIT))?'Edit':'Join'}} »
+                  </a>
+                </td>
               </tr>
               </tbody>
             </table>
