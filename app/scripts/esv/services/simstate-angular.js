@@ -16,13 +16,13 @@
     ['simulationState', '$stateParams', 'bbpConfig', '$q', 'serverError',
     function (simulationState, $stateParams, bbpConfig, $q, serverError) {
       var retval = {};
-      var serverID = $stateParams.serverID;
-      var simulationID = $stateParams.simulationID;
-      var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
-      var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
       retval.getCurrentState = function () {
         var deferred = $q.defer();
+        var serverID = $stateParams.serverID;
+        var simulationID = $stateParams.simulationID;
+        var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+        var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
         simulationState(serverBaseUrl).state({sim_id: simulationID},
           function (data) {
@@ -39,6 +39,10 @@
 
       retval.setCurrentState = function (newState) {
         var deferred = $q.defer();
+        var serverID = $stateParams.serverID;
+        var simulationID = $stateParams.simulationID;
+        var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+        var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
         simulationState(serverBaseUrl).update(
           {sim_id: simulationID},
