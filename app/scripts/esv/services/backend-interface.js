@@ -29,6 +29,11 @@
           method: 'PUT',
           url: serverBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
           interceptor: {responseError: serverError}
+        },
+        delete: {
+          method: 'DELETE',
+          url: serverBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
+          interceptor: {responseError: serverError}
         }
       });
 
@@ -49,8 +54,11 @@
             callback(data);
           });
         },
-        setTransferFunction: function (name, data) {
-          resourceTransferFunction.patch({sim_id: $stateParams.simulationID, transfer_function_name: name}, data);
+        setTransferFunction: function (name, data, callback) {
+          resourceTransferFunction.patch({sim_id: $stateParams.simulationID, transfer_function_name: name}, data, callback);
+        },
+        deleteTransferFunction: function (name, data) {
+          resourceTransferFunction.delete({sim_id: $stateParams.simulationID, transfer_function_name: name});
         },
         getServerBaseUrl: function () {
           return serverBaseUrl;

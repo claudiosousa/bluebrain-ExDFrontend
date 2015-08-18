@@ -6,11 +6,14 @@
       return {
         templateUrl: 'views/esv/smach-editor.html',
         restrict: 'E',
+        scope: {
+          control: '='
+        },
         link: function (scope, element, attrs) {
 
           scope.smachCodes = {};
 
-          scope.smachEditorRefresh = function () {
+          scope.control.refresh = function () {
             backendInterfaceService.getStateMachineScripts(function(response) {
               scope.smachCodes = response.data;
             });

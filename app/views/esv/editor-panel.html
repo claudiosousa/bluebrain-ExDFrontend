@@ -3,17 +3,14 @@
 </div>
 <div class="panel-body">
   <tabset>
-    <tab heading="Transfer Functions" active="activeTab.transferfunction" select="disableKeyBindings()" deselect="reenableKeyBindings()">
-      <transfer-function-editor />
+    <tab heading="Transfer Functions" active="activeTab.transferfunction" select="disableKeyBindings(); controls.transferfunction.refresh()" deselect="reenableKeyBindings()">
+      <transfer-function-editor control="controls.transferfunction" />
     </tab>
     <tab heading="Environment" active="activeTab.environment">
       <environment-designer />
     </tab>
-    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select="disableKeyBindings(); smachEditorRefresh()" deselect="reenableKeyBindings()">
-      <smach-editor />
-    </tab>
-    <tab heading="Events" active="activeTab.events">
-      <h3>Events Editor</h3>
+    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select="disableKeyBindings(); controls.statemachine.refresh()" deselect="reenableKeyBindings()">
+      <smach-editor control="controls.statemachine"/>
     </tab>
   </tabset>
 </div>

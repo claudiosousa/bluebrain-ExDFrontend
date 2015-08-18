@@ -21,12 +21,23 @@
     $scope.activeTab.statemachine = false;
     $scope.activeTab.events = false;
 
+    $scope.controls = {};
+    $scope.controls.transferfunction = {};
+    $scope.controls.statemachine = {};
+
     $scope.openCallback = function() {
       // The Panel is opened
       $scope.panelIsOpen = true;
       if($scope.activeTab.transferfunction === true ||
         $scope.activeTab.statemachine === true) {
         gz3d.scene.controls.keyBindingsEnabled = false;
+      }
+
+      if ($scope.activeTab.transferfunction === true){
+        $scope.controls.transferfunction.refresh();
+      }
+      else if ($scope.activeTab.statemachine === true ){
+        $scope.controls.statemachine.refresh();
       }
     };
 

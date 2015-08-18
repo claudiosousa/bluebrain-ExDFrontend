@@ -5,13 +5,32 @@
     .constant('HELP_BASE_URL', "https://developer.humanbrainproject.eu/docs"
   );
 
-  angular.module('exdFrontendApp').directive('transferFunctionEditor', ['$log', 'backendInterfaceService', 'nrpBackendVersions', 'HELP_BASE_URL',
-    function ($log, backendInterfaceService, nrpBackendVersions, HELP_BASE_URL) {
+  angular.module('exdFrontendApp').directive('transferFunctionEditor', [
+      '$log',
+      'backendInterfaceService',
+      'nrpBackendVersions',
+      'STATE',
+      'stateService',
+      'pythonCodeHelper',
+      'HELP_BASE_URL',
+    function ($log, backendInterfaceService, nrpBackendVersions, STATE, stateService, pythonCodeHelper, HELP_BASE_URL) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
       restrict: 'E',
+      scope: {
+        control: '='
+      },
       link: function (scope, element, attrs) {
+
+        scope.editorOptions = {
+          lineWrapping : true,
+          lineNumbers: true,
+          readOnly: false,
+          mode: 'text/x-python'
+        };
+
         scope.transferFunctions = {};
+        var addedTransferFunctionCount = 0;
 
         scope.cleDocumentationURL = HELP_BASE_URL + "/hbp-nrp-cle/latest/";
 
@@ -28,6 +47,7 @@
               }
               else {
                 $log.error("Help URL cannot be computed for dev version" + data.hbp_nrp_cle);
+                documentationVersion = "latest";
               }
             }
             else {
@@ -37,24 +57,68 @@
           }
         });
 
-        // TODO: Maybe move parts of the logic also to the service?
-        backendInterfaceService.getTransferFunctions(
-          function (data) {
-            for (var i = 0; i < data.length; i = i + 1) {
-              var transferFunction = {};
-              transferFunction.code = data[i];
-              // Kind of weird, but if we move that up it produces random bugs.
-              var transferFunctionNameRegExp = /^.*def\s+(\w+)\s*\(.*/gm;
-              var matches = transferFunctionNameRegExp.exec(data[i]);
-              if (matches) {
-                scope.transferFunctions[matches[1]] = transferFunction;
+        scope.control.refresh = function () {
+          backendInterfaceService.getTransferFunctions(
+            function (data) {
+              for (var i = 0; i < data.length; i = i + 1) {
+                var transferFunction = {};
+                transferFunction.code = data[i];
+                transferFunction.dirty = false;
+                transferFunction.local = false;
+                var functionName = pythonCodeHelper.getFunctionName(data[i]);
+                if (functionName) {
+                  // If we already have local changes, we do not update
+                  if (!(scope.transferFunctions[functionName] && scope.transferFunctions[functionName].dirty))
+                  {
+                    scope.transferFunctions[functionName] = transferFunction;
+                    scope.transferFunctions[functionName].functionName = functionName;
+                  }
+                }
               }
-            }
           });
+        };
 
         scope.update = function (name) {
-          backendInterfaceService.setTransferFunction(name, scope.transferFunctions[name].code);
+          stateService.ensureStateBeforeExecuting(
+            STATE.PAUSED,
+            function() {
+                backendInterfaceService.setTransferFunction(name, scope.transferFunctions[name].code, function(){
+                  scope.transferFunctions[name].dirty = false;
+                });
+            }
+          );
         };
+
+        scope.onTransferFunctionChange = function (name) {
+          scope.transferFunctions[name].functionName = pythonCodeHelper.getFunctionName(scope.transferFunctions[name].code);
+          scope.transferFunctions[name].dirty = true;
+        };
+
+        scope.delete = function (name) {
+          if (scope.transferFunctions[name].local) {
+            delete scope.transferFunctions[name];
+          } else {
+            stateService.ensureStateBeforeExecuting(
+              STATE.PAUSED,
+              function () {
+                backendInterfaceService.deleteTransferFunction(name);
+                delete scope.transferFunctions[name];
+              }
+            );
+          }
+        };
+
+        scope.create = function () {
+          var transferFunction = {};
+          var name = "transferfunction_" + addedTransferFunctionCount;
+          transferFunction.code = "@nrp.Robot2Neuron()\ndef " + name + "(t):\n    print \"Hello world at time \" + str(t)";
+          transferFunction.functionName = name;
+          transferFunction.dirty = true;
+          transferFunction.local = true;
+          scope.transferFunctions[name] = transferFunction;
+          addedTransferFunctionCount = addedTransferFunctionCount + 1;
+        };
+
       }
     };
   }]);

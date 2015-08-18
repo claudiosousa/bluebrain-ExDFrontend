@@ -15,9 +15,9 @@
   module.factory('stateService',
     ['simulationState', '$stateParams', 'bbpConfig', '$q', 'serverError',
     function (simulationState, $stateParams, bbpConfig, $q, serverError) {
-      var retval = {};
+      var returnValue = {};
 
-      retval.getCurrentState = function () {
+      returnValue.getCurrentState = function () {
         var deferred = $q.defer();
         var serverID = $stateParams.serverID;
         var simulationID = $stateParams.simulationID;
@@ -26,7 +26,7 @@
 
         simulationState(serverBaseUrl).state({sim_id: simulationID},
           function (data) {
-            retval.currentState = data.state;
+            returnValue.currentState = data.state;
             deferred.resolve();
           },
           function (data) {
@@ -37,7 +37,7 @@
         return deferred.promise;
       };
 
-      retval.setCurrentState = function (newState) {
+      returnValue.setCurrentState = function (newState) {
         var deferred = $q.defer();
         var serverID = $stateParams.serverID;
         var simulationID = $stateParams.simulationID;
@@ -48,7 +48,7 @@
           {sim_id: simulationID},
           {state: newState},
           function (data) {
-            retval.currentState = data.state;
+            returnValue.currentState = data.state;
             deferred.resolve();
           },
           function (data) {
@@ -59,7 +59,19 @@
         return deferred.promise;
       };
 
-      return retval;
+      returnValue.ensureStateBeforeExecuting = function (state, toBeExecuted) {
+        if (returnValue.currentState === state) {
+          toBeExecuted();
+        }
+        else {
+          returnValue.setCurrentState(state)
+            .then(function () {
+              toBeExecuted();
+            });
+        }
+      };
+
+      return returnValue;
     }
   ]);
 }());

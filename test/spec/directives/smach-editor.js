@@ -34,24 +34,27 @@ describe('Directive: smachEditor', function () {
     backendInterfaceService = _backendInterfaceService_;
 
     $scope = $rootScope.$new();
-    element = $compile('<smach-editor />')($scope);
+    $scope.control = {};
+    element = $compile('<smach-editor control="control"/>')($scope);
     $scope.$digest();
+
+
   }));
 
   it('should init the smachCodes object', function () {
-    expect($scope.smachCodes).toEqual({});
-    $scope.smachEditorRefresh();
+    expect(element.isolateScope().smachCodes).toEqual({});
+    $scope.control.refresh();
 
     // Execute the registered callback
     var stateMachineCodesResponse = {'data': {'SM1': 'Code of SM', 'SM2': 'Code of SM2'}};
     backendInterfaceService.getStateMachineScripts.mostRecentCall.args[0](stateMachineCodesResponse);
 
-    expect($scope.smachCodes).toEqual(stateMachineCodesResponse.data);
+    expect(element.isolateScope().smachCodes).toEqual(stateMachineCodesResponse.data);
   });
 
   it('should test the update function', function() {
-    $scope.smachCodes.foo = 'bar';
-    $scope.update('foo');
+    element.isolateScope().smachCodes.foo = 'bar';
+    element.isolateScope().update('foo');
     expect(backendInterfaceService.setStateMachineScript).toHaveBeenCalledWith('foo', 'bar');
   });
 

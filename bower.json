@@ -24,7 +24,8 @@
     "stats.js": "latest",
     "angular-ui-codemirror": "latest",
     "roslibjs": "~0.12.0",
-    "angular.panels": "*"
+    "angular.panels": "*",
+    "angular-toArrayFilter": "*"
   },
   "overrides": {
     "codemirror": {
