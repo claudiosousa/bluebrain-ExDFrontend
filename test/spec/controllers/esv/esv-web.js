@@ -320,7 +320,6 @@ describe('Controller: experimentCtrl', function () {
   });
 
   describe('Tests related to scope.$destroy()', function(){
-
     it('should stop updating after on $destroy', function() {
       // Querying servers finished
       experimentSimulationService.getExperiments.mostRecentCall.args[2]();
@@ -347,6 +346,16 @@ describe('Controller: experimentCtrl', function () {
       expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
       expect(scope.updatePromise).not.toBeDefined();
       expect(scope.updateUptimePromise).not.toBeDefined();
+    });
+
+    it('should not schedule a new update after $destroy', function() {
+      scope.updatePromise = undefined;
+      expect(scope.isDestroyed).toBeFalsy();
+      scope.$destroy();
+      expect(scope.isDestroyed).toBeTruthy();
+      // Querying servers finished
+      experimentSimulationService.getExperiments.mostRecentCall.args[2]();
+      expect(scope.updatePromise).toBeUndefined();
     });
   });
 

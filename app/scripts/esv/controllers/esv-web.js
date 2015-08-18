@@ -43,6 +43,7 @@
         $scope.startNewExperimentSelectedIndex = -1;
         $scope.isServerAvailable = {};
         $scope.isQueryingServersFinished = false;
+        $scope.isDestroyed = false;
         $scope.STATE = STATE;
         $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.updatePromise = undefined;
@@ -145,15 +146,20 @@
             $scope.owners = simulationService().owners;
             $scope.uptime = simulationService().uptime;
             $scope.isQueryingServersFinished = true;
-            // Start to update the datastructure in regular intervals
-            $scope.updatePromise = $timeout(function () {
-              experimentSimulationService.refreshExperiments($scope.experiments, $scope.serversEnabled, setIsServerAvailable);
-            }, ESV_UPDATE_RATE);
+
+            // Schedule the update if the esv-web controller was not destroyed in the meantime
+            if(!$scope.isDestroyed) {
+              // Start to update the datastructure in regular intervals
+              $scope.updatePromise = $timeout(function () {
+                experimentSimulationService.refreshExperiments($scope.experiments, $scope.serversEnabled, setIsServerAvailable);
+              }, ESV_UPDATE_RATE);
+            }
           },
           setIsServerAvailable);
 
         // clean up on leaving
         $scope.$on("$destroy", function () {
+          $scope.isDestroyed = true;
           if (angular.isDefined($scope.updatePromise)) {
             $timeout.cancel($scope.updatePromise);
             $scope.updatePromise = undefined;
