@@ -13,9 +13,10 @@
 
   var module = angular.module('simulationStateServices', []);
   module.factory('stateService',
-    ['simulationState', '$stateParams', 'bbpConfig', '$q', 'serverError',
-    function (simulationState, $stateParams, bbpConfig, $q, serverError) {
+    ['simulationState', '$stateParams', '$log', 'bbpConfig', '$q', 'serverError',
+    function (simulationState, $stateParams, $log, bbpConfig, $q, serverError) {
       var returnValue = {};
+      returnValue.statePending = false;
 
       returnValue.getCurrentState = function () {
         var deferred = $q.defer();
@@ -38,11 +39,20 @@
       };
 
       returnValue.setCurrentState = function (newState) {
-        if (newState === returnValue.lastRequestedState) {
-          return; // avoid duplicated update requests
-        }
-        returnValue.lastRequestedState = newState;
         var deferred = $q.defer();
+
+        // Ignore state changes when there are pending state changes
+        if (returnValue.statePending === true) {
+          deferred.reject();
+          return deferred.promise; // avoid duplicated update requests
+        }
+        // Ignore state changes that are the same as the current state when there are no pending changes
+        if ((newState === returnValue.currentState)&&(returnValue.statePending === false)) {
+          deferred.reject();
+          return deferred.promise; // avoid duplicated update requests
+        }
+        returnValue.statePending = true;
+        returnValue.lastRequestedState = newState;
         var serverID = $stateParams.serverID;
         var simulationID = $stateParams.simulationID;
         var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
@@ -53,14 +63,16 @@
           {state: newState},
           function (data) {
             returnValue.currentState = data.state;
+            returnValue.statePending = false;
             deferred.resolve();
-
           },
           function (data) {
+            returnValue.statePending = false;
             serverError(data);
             deferred.reject();
           }
         );
+
         return deferred.promise;
       };
 

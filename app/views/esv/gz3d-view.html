@@ -119,16 +119,36 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.STARTED) : help(UI.PLAY_BUTTON)" ng-show="((stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
+            <div ng-if="isOwner"
+                 class="hbp-toolbar-action"
+                 ng-disabled="stateService.statePending"
+                 ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}"
+                 ng-click="(!helpModeActivated) ? updateSimulation(STATE.STARTED) : help(UI.PLAY_BUTTON)"
+                 ng-show="((stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.PAUSED) : help(UI.PAUSE_BUTTON)" ng-show="((stateService.currentState === STATE.STARTED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
+            <div ng-if="isOwner"
+                 class="hbp-toolbar-action"
+                 ng-disabled="stateService.statePending"
+                 ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}"
+                 ng-click="(!helpModeActivated) ? updateSimulation(STATE.PAUSED) : help(UI.PAUSE_BUTTON)"
+                 ng-show="((stateService.currentState === STATE.STARTED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.STOPPED) : help(UI.STOP_BUTTON)" ng-show="((stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
+            <div ng-if="isOwner"
+                 class="hbp-toolbar-action"
+                 ng-disabled="stateService.statePending"
+                 ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}"
+                 ng-click="(!helpModeActivated) ? updateSimulation(STATE.STOPPED) : help(UI.STOP_BUTTON)"
+                 ng-show="((stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
-            <div ng-if="isOwner" class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}" ng-click="(!helpModeActivated) ? updateSimulation(STATE.INITIALIZED) : help(UI.RESET_BUTTON)" ng-show="(stateService.currentState === STATE.PAUSED) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
+            <div ng-if="isOwner"
+                 class="hbp-toolbar-action"
+                 ng-disabled="stateService.statePending"
+                 ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}"
+                 ng-click="(!helpModeActivated) ? updateSimulation(STATE.INITIALIZED) : help(UI.RESET_BUTTON)"
+                 ng-show="(stateService.currentState === STATE.PAUSED) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
             <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)">
