@@ -524,7 +524,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
         scope.updateLightIntensities(60.0);
 
-        expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', (60 - 50) / 50.25);
+        expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', (60 - 75) / 50.25);
         expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
     });
 

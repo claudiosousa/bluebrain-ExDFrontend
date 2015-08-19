@@ -2524,7 +2524,13 @@ GZ3D.GZIface.prototype.onConnected = function()
 
   var publishLightModify = function(ratio)
   {
-    var lights = that.scene.scene.__lights;
+    var lights = [];
+    that.scene.scene.traverse(function(node) {
+      if (node instanceof THREE.Light) {
+        lights.push(node);
+      }
+    });
+
     var numberOfLights = lights.length;
     for (var i = 0; i < numberOfLights; i+=1) {
       if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
