@@ -7,7 +7,9 @@
         element.on('click', function() {
           /* global $: false */
           var target = angular.isDefined(scrollTargetId) ? $(scrollTargetId) : element;
-          $('body').animate({scrollTop: target.offset().top}, 'slow');
+          // Unlike Chrome, Firefox places the overflow at the html, 
+          // see http://stackoverflow.com/questions/8149155/animate-scrolltop-not-working-in-firefox
+          $('body,html').animate({scrollTop: target.offset().top}, 'fast');
         });
       }
     };
