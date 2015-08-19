@@ -67,35 +67,34 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should handle the retrieved transferFunctions properly', function () {
-      var expected = {};
-      var expectedTf1 = {code: tf1Code, dirty: false, local: false, functionName: 'tf1'};
-      var expectedTf2 = {code: tf2Code, dirty: false, local: false, functionName: 'tf2'};
-      expected[tf1Name] = expectedTf1;
-      expected[tf2Name] = expectedTf2;
+
+      var expectedTf1 = {code: tf1Code, dirty: false, local: false, functionName: 'tf1', id: 'tf1'};
+      var expectedTf2 = {code: tf2Code, dirty: false, local: false, functionName: 'tf2', id: 'tf2'};
+      var expected = [expectedTf2, expectedTf1];
       expect(element.isolateScope().transferFunctions).toEqual(expected);
     });
 
     it('should save back the tf properly', function () {
       var newCode = 'New code';
-      element.isolateScope().transferFunctions[tf1Name].code = newCode;
-      element.isolateScope().transferFunctions[tf1Name].dirty = true;
-      element.isolateScope().update(tf1Name);
+      element.isolateScope().transferFunctions[1].code = newCode;
+      element.isolateScope().transferFunctions[1].dirty = true;
+      element.isolateScope().update(element.isolateScope().transferFunctions[1]);
       // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "transferFunctions"
       // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
       expect(backendInterfaceService.setTransferFunction).toHaveBeenCalledWith('tf1', newCode, jasmine.any(Function));
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
-      expect(element.isolateScope().transferFunctions[tf1Name].dirty).toEqual(false);
+      expect(element.isolateScope().transferFunctions[1].dirty).toEqual(false);
     });
 
     it('should delete a tf properly', function() {
-      element.isolateScope().delete(tf1Name);
+      element.isolateScope().delete(element.isolateScope().transferFunctions[1]);
       expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1');
-      expect(element.isolateScope().transferFunctions.tf1).not.toBeDefined();
-      expect(element.isolateScope().transferFunctions.tf2).toBeDefined();
+      expect(element.isolateScope().transferFunctions[1]).not.toBeDefined();
+      expect(element.isolateScope().transferFunctions[0]).toBeDefined();
 
-      element.isolateScope().transferFunctions.tf2.local = true;
+      element.isolateScope().transferFunctions[0].local = true;
       element.isolateScope().delete(tf2Name);
-      expect(element.isolateScope().transferFunctions.tf2).not.toBeDefined();
+      expect(element.isolateScope().transferFunctions[0]).not.toBeDefined();
       // Since the tf is local, we should not call back the server
       expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1');
     });
@@ -105,17 +104,17 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should create a tf properly', function() {
       element.isolateScope().create();
-      var expected = {'transferfunction_0': {code: '@nrp.Robot2Neuron()\ndef transferfunction_0(t):\n    print \"Hello world at time \" + str(t)', dirty: true, local: true, functionName: 'transferfunction_0'}};
+      var expected = [{id: 'transferfunction_0', code: '@nrp.Robot2Neuron()\ndef transferfunction_0(t):\n    print \"Hello world at time \" + str(t)', dirty: true, local: true, functionName: 'transferfunction_0'}];
       expect(element.isolateScope().transferFunctions).toEqual(expected);
     });
 
     it('should update a TF properly when editing it', function() {
       var tf1Code = '@customdecorator(toto)\ndef tf1(var1, var2):\n\t#put your code here';
       var tf1CodeNewCode = '@customdecorator(toto)\ndef tf_new_name(var1, var2):\n\t#put your code here';
-      element.isolateScope().transferFunctions.tf1 = {code: tf1Code, dirty: false, local: false, functionName: 'tf1'};
-      element.isolateScope().transferFunctions.tf1.code = tf1CodeNewCode;
-      element.isolateScope().onTransferFunctionChange('tf1');
-      expect(element.isolateScope().transferFunctions).toEqual({'tf1':{code: tf1CodeNewCode, dirty: true, local: false, functionName: 'tf_new_name'}});
+      element.isolateScope().transferFunctions[0] = {code: tf1Code, dirty: false, local: false, functionName: 'tf1'};
+      element.isolateScope().transferFunctions[0].code = tf1CodeNewCode;
+      element.isolateScope().onTransferFunctionChange(element.isolateScope().transferFunctions[0]);
+      expect(element.isolateScope().transferFunctions).toEqual([{code: tf1CodeNewCode, dirty: true, local: false, functionName: 'tf_new_name'}]);
     });
 
   });
