@@ -29,7 +29,10 @@
           mode: 'text/x-python'
         };
 
-        scope.transferFunctions = {};
+        scope.stateService = stateService;
+        scope.STATE = STATE;
+
+        scope.transferFunctions = [];
         var addedTransferFunctionCount = 0;
 
         scope.cleDocumentationURL = HELP_BASE_URL + "/hbp-nrp-cle/latest/";
@@ -65,44 +68,54 @@
                 transferFunction.code = data[i];
                 transferFunction.dirty = false;
                 transferFunction.local = false;
-                var functionName = pythonCodeHelper.getFunctionName(data[i]);
-                if (functionName) {
+                transferFunction.functionName = transferFunction.id = pythonCodeHelper.getFunctionName(data[i]);
+                if (transferFunction.functionName) {
                   // If we already have local changes, we do not update
-                  if (!(scope.transferFunctions[functionName] && scope.transferFunctions[functionName].dirty))
+                  var foundIndex = -1;
+                  for (var j = 0, len = scope.transferFunctions.length; j < len; j = j+1) {
+                    if (scope.transferFunctions[j].id === transferFunction.functionName) {
+                      foundIndex = j;
+                      break;
+                    }
+                  }
+                  if (foundIndex >= 0 && !scope.transferFunctions[foundIndex].dirty)
                   {
-                    scope.transferFunctions[functionName] = transferFunction;
-                    scope.transferFunctions[functionName].functionName = functionName;
+                    scope.transferFunctions[foundIndex] = transferFunction;
+                  } else if (foundIndex < 0) {
+                    scope.transferFunctions.unshift(transferFunction);
                   }
                 }
               }
           });
         };
 
-        scope.update = function (name) {
+        scope.update = function (transferFunction) {
           stateService.ensureStateBeforeExecuting(
             STATE.PAUSED,
             function() {
-                backendInterfaceService.setTransferFunction(name, scope.transferFunctions[name].code, function(){
-                  scope.transferFunctions[name].dirty = false;
+                backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code, function(){
+                  transferFunction.dirty = false;
                 });
             }
           );
         };
 
-        scope.onTransferFunctionChange = function (name) {
-          scope.transferFunctions[name].functionName = pythonCodeHelper.getFunctionName(scope.transferFunctions[name].code);
-          scope.transferFunctions[name].dirty = true;
+        scope.onTransferFunctionChange = function (transferFunction) {
+          transferFunction.functionName = pythonCodeHelper.getFunctionName(transferFunction.code);
+          transferFunction.dirty = true;
         };
 
-        scope.delete = function (name) {
-          if (scope.transferFunctions[name].local) {
-            delete scope.transferFunctions[name];
+        scope.delete = function (transferFunction) {
+          if (transferFunction.local) {
+            var index = scope.transferFunctions.indexOf(transferFunction);
+            scope.transferFunctions.splice(index, 1);
           } else {
             stateService.ensureStateBeforeExecuting(
               STATE.PAUSED,
               function () {
-                backendInterfaceService.deleteTransferFunction(name);
-                delete scope.transferFunctions[name];
+                backendInterfaceService.deleteTransferFunction(transferFunction.id);
+                var index = scope.transferFunctions.indexOf(transferFunction);
+                scope.transferFunctions.splice(index, 1);
               }
             );
           }
@@ -115,7 +128,8 @@
           transferFunction.functionName = name;
           transferFunction.dirty = true;
           transferFunction.local = true;
-          scope.transferFunctions[name] = transferFunction;
+          transferFunction.id = name;
+          scope.transferFunctions.unshift(transferFunction);
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
         };
 

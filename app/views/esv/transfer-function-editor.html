@@ -1,18 +1,20 @@
 <h3>Transfer Functions Editor</h3>
 <p>The transfer functions describe how spikes from the neuronal simulation are to be translated into commands for a robot and how the sensor data from the robot should be translated back to spikes. Help on transfer functions could be obtained <a target="_blank" href="{{cleDocumentationURL}}/transfer_functions.html">here</a>. Transfer function syntax is described in more details <a target="_blank" href="{{cleDocumentationURL}}/tutorials/robot2neuron.html#specification-in-python">here (robot to neuron)</a> and <a target="_blank" href="{{cleDocumentationURL}}/tutorials/neuron2robot.html#specification-in-python">here (neuron to robot).</a></p>
+<div class="alert alert-info" role="alert">The simulation will be automatically paused when updating or deleting a transfer function.</div>
+<div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable transfer function edition.</div>
 <hr>
-<button type="button" class="btn btn-default btn-md" ng-click="create()">
+<button type="button" class="btn btn-default btn-md" ng-disabled="(stateService.currentState === STATE.INITIALIZED)" ng-click="create()">
   <span class="glyphicon glyphicon-add"/> New transfer function
 </button>
-<div ng-repeat="transferFunction in transferFunctions | toArray | orderBy: '-local' ">
+<div ng-repeat="transferFunction in transferFunctions">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.functionName}}</span></code></h4>
-  <div ui-codemirror ui-codemirror-opts="editorOptions" ng-change="onTransferFunctionChange(transferFunction.$key)" ng-model="transferFunction.code" ui-refresh="transferFunction.code">
+  <div ui-codemirror ui-codemirror-opts="editorOptions" ng-change="onTransferFunctionChange(transferFunction)" ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
-  <button type="button" class="btn btn-default btn-md" ng-disabled="!transferFunction.dirty" ng-click="update(transferFunction.$key)">
+  <button type="button" class="btn btn-default btn-md" ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED)" ng-click="update(transferFunction)">
     <span class="glyphicon glyphicon-save"/> Update
   </button>
-  <button type="button" class="btn btn-default btn-md" ng-click="delete(transferFunction.$key)">
+  <button type="button" class="btn btn-default btn-md" ng-disabled="(stateService.currentState === STATE.INITIALIZED)" ng-click="delete(transferFunction)">
     <span class="glyphicon glyphicon-remove"/> Delete
   </button>
 </div>
