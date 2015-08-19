@@ -345,7 +345,7 @@
       // Lights management
       $scope.sliderPosition = 50;
       $scope.updateLightIntensities = function(sliderPosition) {
-        var ratio = (sliderPosition - 50.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1, 1])
+        var ratio = (sliderPosition - 75.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1.5, 0.5])
         // we avoid purposely -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
         gz3d.scene.emitter.emit('lightChanged', ratio);
       };
