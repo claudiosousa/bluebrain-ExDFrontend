@@ -257,8 +257,7 @@
               resetScreenColors();
             }
           }
-        )
-        .catch(function(data) { serverError(data); });
+        );
       };
 
       // stores, whether the context menu should be displayed
