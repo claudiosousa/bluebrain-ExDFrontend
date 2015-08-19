@@ -38,6 +38,10 @@
       };
 
       returnValue.setCurrentState = function (newState) {
+        if (newState === returnValue.lastRequestedState) {
+          return; // avoid duplicated update requests
+        }
+        returnValue.lastRequestedState = newState;
         var deferred = $q.defer();
         var serverID = $stateParams.serverID;
         var simulationID = $stateParams.simulationID;
@@ -50,6 +54,7 @@
           function (data) {
             returnValue.currentState = data.state;
             deferred.resolve();
+
           },
           function (data) {
             serverError(data);

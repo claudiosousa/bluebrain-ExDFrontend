@@ -249,9 +249,6 @@
       };
 
       $scope.updateSimulation = function (newState) {
-        if (newState === stateService.currentState) {
-          return; // avoid duplicated update requests
-        }
         stateService.setCurrentState(newState).then(
           function () {
             // Temporary fix for screen color update on reset event, see comments above
