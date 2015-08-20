@@ -88,7 +88,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should delete a tf properly', function() {
       element.isolateScope().delete(element.isolateScope().transferFunctions[1]);
-      expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1');
+      expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1', jasmine.any(Function));
       expect(element.isolateScope().transferFunctions[1]).not.toBeDefined();
       expect(element.isolateScope().transferFunctions[0]).toBeDefined();
 
@@ -96,7 +96,7 @@ describe('Directive: transferFunctionEditor', function () {
       element.isolateScope().delete(tf2Name);
       expect(element.isolateScope().transferFunctions[0]).not.toBeDefined();
       // Since the tf is local, we should not call back the server
-      expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1');
+      expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1', jasmine.any(Function));
     });
   });
 

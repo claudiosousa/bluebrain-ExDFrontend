@@ -41,18 +41,14 @@
       returnValue.setCurrentState = function (newState) {
         var deferred = $q.defer();
 
-        // Ignore state changes when there are pending state changes
-        if (returnValue.statePending === true) {
-          deferred.reject();
-          return deferred.promise; // avoid duplicated update requests
-        }
-        // Ignore state changes that are the same as the current state when there are no pending changes
-        if ((newState === returnValue.currentState)&&(returnValue.statePending === false)) {
+        // Ignore state change request if
+        // (1) there are pending state changes
+        // (2) the requested state is the current state
+        if (returnValue.statePending === true || newState === returnValue.currentState) {
           deferred.reject();
           return deferred.promise; // avoid duplicated update requests
         }
         returnValue.statePending = true;
-        returnValue.lastRequestedState = newState;
         var serverID = $stateParams.serverID;
         var simulationID = $stateParams.simulationID;
         var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];

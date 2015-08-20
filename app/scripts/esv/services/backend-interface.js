@@ -57,8 +57,8 @@
         setTransferFunction: function (name, data, callback) {
           resourceTransferFunction.patch({sim_id: $stateParams.simulationID, transfer_function_name: name}, data, callback);
         },
-        deleteTransferFunction: function (name, data) {
-          resourceTransferFunction.delete({sim_id: $stateParams.simulationID, transfer_function_name: name});
+        deleteTransferFunction: function (name, callback) {
+          resourceTransferFunction.delete({sim_id: $stateParams.simulationID, transfer_function_name: name}, callback);
         },
         getServerBaseUrl: function () {
           return serverBaseUrl;

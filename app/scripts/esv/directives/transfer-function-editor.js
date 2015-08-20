@@ -90,12 +90,17 @@
         };
 
         scope.update = function (transferFunction) {
+          var restart = stateService.currentState === STATE.STARTED;
           stateService.ensureStateBeforeExecuting(
             STATE.PAUSED,
             function() {
                 backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code, function(){
                   transferFunction.dirty = false;
-                });
+                  if (restart) {
+                    stateService.setCurrentState(STATE.STARTED);
+                  }
+                }
+              );
             }
           );
         };
@@ -110,10 +115,15 @@
             var index = scope.transferFunctions.indexOf(transferFunction);
             scope.transferFunctions.splice(index, 1);
           } else {
+            var restart = stateService.currentState === STATE.STARTED;
             stateService.ensureStateBeforeExecuting(
               STATE.PAUSED,
               function () {
-                backendInterfaceService.deleteTransferFunction(transferFunction.id);
+                backendInterfaceService.deleteTransferFunction(transferFunction.id, function() {
+                  if (restart) {
+                    stateService.setCurrentState(STATE.STARTED);
+                  }
+                });
                 var index = scope.transferFunctions.indexOf(transferFunction);
                 scope.transferFunctions.splice(index, 1);
               }
