@@ -4,8 +4,24 @@ describe('Services: simulation state', function () {
   var simulationStateSpy;
   var updateSpy = jasmine.createSpy('update');
   var stateSpy = jasmine.createSpy('state');
-  var stateService, q;
+  var stateService,
+      stateParams,
+      q,
+      httpBackend,
+      STATE,
+      roslib;
 
+  // Mock RosLib
+  var roslibMock = {};
+  var returnedRosConnectionObject = {};
+  returnedRosConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
+  returnedRosConnectionObject.removeAllListeners = jasmine.createSpy('removeAllListeners');
+  returnedRosConnectionObject.subscribe = jasmine.createSpy('subscribe');
+  var rosConnectionObject = {};
+  rosConnectionObject.close = jasmine.createSpy('close');
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject);
+  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedRosConnectionObject);
+  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedRosConnectionObject);
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationStateServices'));
@@ -13,12 +29,25 @@ describe('Services: simulation state', function () {
   beforeEach(module('simulationControlServices', function ($provide) {
     $provide.decorator('simulationState', function () {
       simulationStateSpy = jasmine.createSpy('simulationState');
-      return simulationStateSpy;
+      return simulationStateSpy.andCallFake(function (s) {
+        /* jshint unused:false */
+        return {
+          state: stateSpy,
+          update: updateSpy
+        };
+      });
     });
   }));
 
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
+    $provide.value('roslib', roslibMock);
+    returnedRosConnectionObject.unsubscribe.reset();
+    returnedRosConnectionObject.removeAllListeners.reset();
+    returnedRosConnectionObject.subscribe.reset();
+    rosConnectionObject.close.reset();
+    roslibMock.getOrCreateConnectionTo.reset();
+    roslibMock.createStringTopic.reset();
     $provide.value('$stateParams',
       {
         serverID : 'bbpce016',
@@ -31,7 +60,15 @@ describe('Services: simulation state', function () {
           'bbpce016': {
             gzweb: {
               assets: 'mock_assets',
+              'nrp-services': 'http://some-url',
               websocket: 'mock_websocket'
+            },
+            rosbridge: {
+              topics   : {
+                spikes: '/mock_spike_topic',
+                status: '/mock_status_topic'
+              },
+              websocket: 'wss://mock_ws_url'
             }
           }
         }
@@ -39,34 +76,182 @@ describe('Services: simulation state', function () {
     });
   }));
 
-  beforeEach(inject(function (_stateService_, $q) {
+  beforeEach(inject(function (_stateService_,
+                              _$stateParams_,
+                              $q,
+                              _$httpBackend_,
+                              _STATE_,
+                              _roslib_) {
     stateService = _stateService_;
+    stateParams = _$stateParams_;
     q = $q;
+    httpBackend = _$httpBackend_;
+    STATE = _STATE_;
+    roslib = _roslib_;
+
+    httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
+
+    // create mock for console
+    spyOn(console, 'error');
+
+    stateSpy.reset();
+    updateSpy.reset();
   }));
 
-  it('should call state when getting and update when setting', function () {
-    stateSpy.callCount = 0;
-    updateSpy.callCount = 0;
-    simulationStateSpy.andCallFake(function (s) {
-      /* jshint unused:false */
-      return {
-        state: stateSpy,
-        update: updateSpy
-      };
-    });
+  it('should throw an error when init the simstate service with no serverID or simulationID', function () {
+    stateParams.serverID = undefined;
+    expect(stateService.Initialize).toThrow();
 
-    stateService.getCurrentState();
-    expect(stateSpy.callCount).toBe(1);
-
-    stateService.setCurrentState('PAUSED');
-    expect(updateSpy.callCount).toBe(1);
+    stateParams.serverID = 'fake_id';
+    stateParams.simulationID = undefined;
+    expect(stateService.Initialize).toThrow();
   });
 
-  it('should change the state when calling ensureStateBeforeExecuting', function () {
+  it('should init the simstate service', function () {
+    stateService.statePending = true;
+    stateService.Initialize();
+    expect(stateService.statePending).toBeFalsy();
+  });
+
+  it('should test registerForStatusInformation', function() {
+    stateService.Initialize();
+    stateService.startListeningForStatusInformation();
+    expect(roslib.getOrCreateConnectionTo).toHaveBeenCalled();
+    expect(roslib.createStringTopic).toHaveBeenCalled();
+    expect(returnedRosConnectionObject.subscribe).toHaveBeenCalled();
+  });
+
+  it('should unregister on stopListeningForStatusInformation', function () {
+    stateService.Initialize();
+    stateService.startListeningForStatusInformation();
+    returnedRosConnectionObject.unsubscribe.reset();
+    returnedRosConnectionObject.removeAllListeners.reset();
+    rosConnectionObject.close.reset();
+
+    stateService.stopListeningForStatusInformation();
+    expect(returnedRosConnectionObject.unsubscribe).toHaveBeenCalled();
+    expect(returnedRosConnectionObject.removeAllListeners).toHaveBeenCalled();
+    expect(rosConnectionObject.close).toHaveBeenCalled();
+
+    // nothing is called a second time
+    returnedRosConnectionObject.unsubscribe.reset();
+    returnedRosConnectionObject.removeAllListeners.reset();
+    rosConnectionObject.close.reset();
+    stateService.stopListeningForStatusInformation();
+    expect(returnedRosConnectionObject.unsubscribe).not.toHaveBeenCalled();
+    expect(returnedRosConnectionObject.removeAllListeners).not.toHaveBeenCalled();
+    expect(rosConnectionObject.close).not.toHaveBeenCalled();
+  });
+
+  it('should call the registered callback methods', function () {
+    var stateCallback = jasmine.createSpy('stateCallback');
+    var messageCallback = jasmine.createSpy('messageCallback');
+    stateService.Initialize();
+    stateService.startListeningForStatusInformation();
+    var messageReceivedFunction = returnedRosConnectionObject.subscribe.mostRecentCall.args[0];
+    stateService.addStateCallback(stateCallback);
+    stateService.addMessageCallback(messageCallback);
+
+    //the registered callback is called
+    stateService.currentState = STATE.STARTED;
+    messageReceivedFunction({ data: '{"state": "'+STATE.STOPPED+'"}'});
+    expect(stateService.currentState).toBe(STATE.STOPPED);
+    expect(stateCallback).toHaveBeenCalledWith(STATE.STOPPED);
+    expect(messageCallback).toHaveBeenCalledWith({state: STATE.STOPPED});
+
+    stateCallback.reset();
+    messageCallback.reset();
+
+    //nothing is called when the state is the same
+    stateService.currentState = STATE.STARTED;
+    messageReceivedFunction({ data: '{"state": "'+STATE.STARTED+'"}'});
+    expect(stateService.currentState).toBe(STATE.STARTED);
+    expect(stateCallback).not.toHaveBeenCalled();
+
+    stateCallback.reset();
+    messageCallback.reset();
+
+    //stateCallback is not called when there is no state
+    stateService.currentState = STATE.STARTED;
+    messageReceivedFunction({ data: '{}'});
+    expect(stateService.currentState).toBe(STATE.STARTED);
+    expect(stateCallback).not.toHaveBeenCalled();
+    expect(messageCallback).toHaveBeenCalled();
+
+    stateCallback.reset();
+    messageCallback.reset();
+
+    //an error is logged when there is no valid JSON message
+    messageReceivedFunction({ data: ''});
+    expect(console.error).toHaveBeenCalled();
+
+    stateCallback.reset();
+    messageCallback.reset();
+
+    //after unregister, nothing is called
+    stateService.removeStateCallback(stateCallback);
+    stateService.removeMessageCallback(messageCallback);
+    messageReceivedFunction({ data: '{"state": "'+STATE.PAUSED+'"}'});
+    expect(stateService.currentState).toBe(STATE.PAUSED);
+    expect(stateCallback).not.toHaveBeenCalled();
+    expect(messageCallback).not.toHaveBeenCalled();
+
+    stateCallback.reset();
+    messageCallback.reset();
+
+    //don't call undefined callbacks
+    stateService.addStateCallback(undefined);
+    stateService.addMessageCallback(undefined);
+    stateService.currentState = STATE.STARTED;
+    console.error.reset();
+    messageReceivedFunction({ data: '{"state": "'+STATE.PAUSED+'"}'});
+    expect(stateService.currentState).toBe(STATE.PAUSED);
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('should call "state" when getting', function () {
+    stateService.getCurrentState();
+    expect(stateSpy).toHaveBeenCalled();
+  });
+
+  it('should call "update" when setting', function () {
+    stateService.setCurrentState(STATE.PAUSED);
+    expect(updateSpy).toHaveBeenCalled();
+  });
+
+  it('should avoid duplicate update requests', function () {
+    simulationStateSpy.reset();
+    stateService.statePending = true;
+    stateService.currentState = STATE.INITIALIZED;
+    stateService.setCurrentState(STATE.PAUSED);
+    expect(simulationStateSpy).not.toHaveBeenCalled();
+
+    simulationStateSpy.reset();
+    stateService.statePending = true;
+    stateService.currentState = STATE.INITIALIZED;
+    stateService.setCurrentState(STATE.PAUSED);
+    expect(simulationStateSpy).not.toHaveBeenCalled();
+
+    simulationStateSpy.reset();
+    stateService.statePending = false;
+    stateService.currentState = STATE.PAUSED;
+    stateService.setCurrentState(STATE.PAUSED);
+    expect(simulationStateSpy).not.toHaveBeenCalled();
+  });
+
+  it('should ensure the state when calling ensureStateBeforeExecuting', function () {
     var myOwnFunction = jasmine.createSpy('myOwnFunction');
-    stateService.currentState = 'STARTED';
-    stateService.ensureStateBeforeExecuting('STARTED', myOwnFunction);
-    expect(myOwnFunction.callCount).toEqual(1);
+    //Create mock for the already tested function
+    stateService.setCurrentState = jasmine.createSpy('setCurrentState').andReturn({then: function(f){return f();}});
+    stateService.currentState = STATE.STARTED;
+    stateService.ensureStateBeforeExecuting(STATE.STARTED, myOwnFunction);
+    expect(myOwnFunction).toHaveBeenCalled();
+
+    myOwnFunction.reset();
+    stateService.currentState = STATE.STARTED;
+    stateService.ensureStateBeforeExecuting(STATE.STOPPED, myOwnFunction);
+    expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STOPPED);
+    expect(myOwnFunction).toHaveBeenCalled();
   });
 
   it('should set current state when query for the state', function() {

@@ -17,7 +17,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       simulationControl,
       stateService,
       screenControl,
-      roslib,
       splashInstance,
       exampleProgressData,
       assetLoadingSplash,
@@ -72,17 +71,6 @@ describe('Controller: Gz3dViewCtrl', function () {
   assetLoadingSplashMock.open = jasmine.createSpy('open').andReturn(assetLoadingSplashInstance);
   assetLoadingSplashMock.close = jasmine.createSpy('close');
 
-  var roslibMock = {};
-  var returnedConnectionObject = {};
-  returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
-  returnedConnectionObject.removeAllListeners = jasmine.createSpy('removeAllListeners');
-  returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  var rosConnectionObject = {};
-  rosConnectionObject.close = jasmine.createSpy('close');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject);
-  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedConnectionObject);
-  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
-
   var hbpUserDirectoryPromiseObject = {};
   hbpUserDirectoryPromiseObject.then = jasmine.createSpy('then');
   var hbpUserDirectoryPromiseObject2 = {};
@@ -126,12 +114,21 @@ describe('Controller: Gz3dViewCtrl', function () {
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationStateServices', function ($provide) {
+    var InitializeSpy = jasmine.createSpy('Initialize');
+    var startListeningForStatusInformationSpy = jasmine.createSpy('startListeningForStatusInformation');
+    var stopListeningForStatusInformationSpy = jasmine.createSpy('stopListeningForStatusInformation');
+    var addStateCallbackSpy = jasmine.createSpy('addStateCallback');
+    var removeStateCallbackSpy = jasmine.createSpy('removeStateCallback');
+    var addMessageCallbackSpy = jasmine.createSpy('addMessageCallback');
+    var removeMessageCallbackSpy = jasmine.createSpy('removeMessageCallback');
     var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
     var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
+    var ensureStateBeforeExecutingSpy = jasmine.createSpy('ensureStateBeforeExecuting');
     var getThenSpy = jasmine.createSpy('then');
     var setThenSpy = jasmine.createSpy('then');
     var setCatchSpy = jasmine.createSpy('catch');
     var localCurrentState;
+    var localStatePending = false;
 
     getCurrentStateSpy.andCallFake(function () {
       return { then: getThenSpy.andCallFake(function (f) { f(); }) };
@@ -147,9 +144,18 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     $provide.value('stateService', {
+      Initialize: InitializeSpy,
+      startListeningForStatusInformation: startListeningForStatusInformationSpy,
+      stopListeningForStatusInformation: stopListeningForStatusInformationSpy,
+      addStateCallback: addStateCallbackSpy,
+      removeStateCallback: removeStateCallbackSpy,
+      addMessageCallback: addMessageCallbackSpy,
+      removeMessageCallback: removeMessageCallbackSpy,
       getCurrentState: getCurrentStateSpy,
       setCurrentState: setCurrentStateSpy,
-      currentState: localCurrentState
+      ensureStateBeforeExecuting: ensureStateBeforeExecutingSpy,
+      currentState: localCurrentState,
+      statePending: localStatePending
     });
   }));
 
@@ -158,7 +164,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('cameraManipulation', cameraManipulationMock);
     $provide.value('splash', splashServiceMock);
     $provide.value('assetLoadingSplash', assetLoadingSplashMock);
-    $provide.value('roslib', roslibMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('simulationState', simulationStateMock);
     $provide.value('simulationControl', simulationControlMock);
@@ -190,12 +195,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     assetLoadingSplashInstance.close.reset();
     assetLoadingSplashMock.open.reset();
     assetLoadingSplashMock.close.reset();
-    returnedConnectionObject.unsubscribe.reset();
-    returnedConnectionObject.removeAllListeners.reset();
-    returnedConnectionObject.subscribe.reset();
-    rosConnectionObject.close.reset();
-    roslibMock.getOrCreateConnectionTo.reset();
-    roslibMock.createStringTopic.reset();
     hbpUserDirectoryPromiseObject.then.reset();
     hbpUserDirectoryPromiseObject2.then.reset();
     hbpUserDirectoryMock.getCurrentUser.reset();
@@ -219,7 +218,6 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _cameraManipulation_,
                               _splash_,
                               _assetLoadingSplash_,
-                              _roslib_,
                               _simulationService_,
                               _simulationState_,
                               _simulationControl_,
@@ -246,7 +244,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
     assetLoadingSplash = _assetLoadingSplash_;
-    roslib = _roslib_;
     simulationService = _simulationService_;
     simulationState = _simulationState_;
     simulationControl = _simulationControl_;
@@ -397,30 +394,20 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(simulationStateObject.update).not.toHaveBeenCalled();
     });
 
-    it('should call registerForStatusInformation', function() {
-      spyOn(scope, 'registerForStatusInformation');
-
+    it('should register for status information', function() {
       scope.state = STATE.UNDEFINED;
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
-      expect(scope.registerForStatusInformation).toHaveBeenCalled();
+      expect(stateService.startListeningForStatusInformation).toHaveBeenCalled();
+      expect(stateService.addMessageCallback).toHaveBeenCalled();
     });
 
-    it('should test registerForStatusInformation', function() {
-      scope.registerForStatusInformation();
-      expect(roslib.getOrCreateConnectionTo).toHaveBeenCalled();
-      expect(roslib.createStringTopic).toHaveBeenCalled();
-      expect(scope.rosConnection).toBeDefined();
-      expect(scope.statusListener).toBeDefined();
-      expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
-      var callbackFunction = returnedConnectionObject.subscribe.mostRecentCall.args[0];
-      // test state change
-      stateService.currentState = STATE.STARTED;
-      callbackFunction({ data: '{"state": "'+STATE.STOPPED+'"}'});
-      expect(stateService.currentState).toBe(STATE.STOPPED);
-      // test open splash screen with callbackOnClose
+    it('should open splash screen with callbackOnClose', function () {
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
       stateService.currentState = STATE.STOPPED;
-      callbackFunction({ data: '{"progress": { "block_ui": "False", "task":"Task1", "subtask":"Subtask1"}}'});
+      //Test the messageCallback
+      scope.splashScreen = undefined;
+      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
       expect(splash.open).toHaveBeenCalled();
       var callbackOnClose = splash.open.mostRecentCall.args[1];
       expect(callbackOnClose).toBeDefined();
@@ -428,13 +415,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       // test open splash screen without callbackOnClose
       scope.splashScreen = undefined;
       stateService.currentState = STATE.INITIALIZED;
-      callbackFunction({ data: '{"progress": { "block_ui": "False", "task":"Task1", "subtask":"Subtask1"}}'});
+      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
       callbackOnClose = splash.open.mostRecentCall.args[1];
       expect(callbackOnClose).not.toBeDefined();
       // test "done" without close
       splash.showButton = true;
       splash.spin = true;
-      callbackFunction({ data: '{"progress": { "block_ui": "False", "done":"True" }}'});
+      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', done: 'True'}});
       expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Finished' });
       expect(splash.close).not.toHaveBeenCalled();
       expect(splash.spin).toBe(false);
@@ -443,10 +430,10 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.splashScreen = undefined;
       splash.close.reset();
       splash.showButton = false;
-      callbackFunction({ data: '{"progress": { "block_ui": "True", "done":"True" }}'});
+      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'True', done: 'True'}});
       expect(splash.close).toHaveBeenCalled();
       // test "timeout"
-      callbackFunction({ data: '{"timeout": 264, "simulationTime": 1, "realTime": 2}'});
+      stateService.addMessageCallback.mostRecentCall.args[0]({timeout: 264, simulationTime: 1, realTime: 2});
       expect(scope.simTimeoutText).toBe(264);
       // test "simulationTime"
       expect(scope.simulationTimeText).toBe(1);
@@ -652,18 +639,14 @@ describe('Controller: Gz3dViewCtrl', function () {
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
       scope.splashScreen = splashInstance;
-      scope.worldStatsListener = returnedConnectionObject;
 
       // call the method under test
       scope.$destroy();
 
       expect(splash.close).toHaveBeenCalled();
       expect(assetLoadingSplash.close).toHaveBeenCalled();
-      expect(scope.statusListener.unsubscribe).toHaveBeenCalled();
-      expect(scope.statusListener.removeAllListeners).toHaveBeenCalled();
-      expect(scope.worldStatsListener.unsubscribe).toHaveBeenCalled();
-      expect(scope.worldStatsListener.removeAllListeners).toHaveBeenCalled();
-      expect(scope.rosConnection.close).toHaveBeenCalled();
+      expect(stateService.stopListeningForStatusInformation).toHaveBeenCalled();
+      expect(stateService.removeMessageCallback).toHaveBeenCalled();
       expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
       expect(gzInitializationMock.deInitialize).toHaveBeenCalled();
       expect(window.stop).toHaveBeenCalled();

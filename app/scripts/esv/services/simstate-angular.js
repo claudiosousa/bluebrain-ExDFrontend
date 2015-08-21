@@ -11,23 +11,117 @@
 (function () {
   'use strict';
 
+  /* global console: false */
+
   var module = angular.module('simulationStateServices', []);
   module.factory('stateService',
-    ['simulationState', '$stateParams', '$log', 'bbpConfig', '$q', 'serverError',
-    function (simulationState, $stateParams, $log, bbpConfig, $q, serverError) {
-      var returnValue = {};
-      returnValue.statePending = false;
+    ['$rootScope', 'simulationState', '$stateParams', '$log', 'bbpConfig', '$q', 'serverError', 'roslib',
+    function ($rootScope, simulationState, $stateParams, $log, bbpConfig, $q, serverError, roslib) {
+      var thisStateService = {};
+      var serverID, simulationID, serverConfig, serverBaseUrl, rosConnection, statusListener;
+      var stateCallbacks = [];
+      var messageCallbacks = [];
+      thisStateService.statePending = false;
 
-      returnValue.getCurrentState = function () {
+      var triggerStateCallbacks = function() {
+        angular.forEach(stateCallbacks, function(callback) {
+          if (angular.isDefined(callback)) {
+            callback(thisStateService.currentState);
+          }
+        });
+      };
+
+      var triggerMessageCallbacks = function(message) {
+        angular.forEach(messageCallbacks, function(callback) {
+          if (angular.isDefined(callback)) {
+            callback(message);
+          }
+        });
+      };
+
+      var onMessageReceived = function (data) {
+        try {
+          var message = JSON.parse(data.data);
+          /* State messages */
+          /* Manage before other since others may depend on state changes */
+          if (angular.isDefined(message.state) && (message.state !== thisStateService.currentState)) {
+            $rootScope.$apply(function(){
+              thisStateService.currentState = message.state;
+              triggerStateCallbacks();
+            });
+          }
+
+          /* Call every registered message callback with the received message */
+          $rootScope.$apply(function(){
+            triggerMessageCallbacks(message);
+          });
+        } catch(err) {
+          console.error("Invalid JSON Message received.");
+        }
+      };
+
+      // This function loads the server specific configuration and sets the simulation specific values
+      thisStateService.Initialize = function() {
+        if (!$stateParams.serverID || !$stateParams.simulationID){
+          throw "No serverID or simulationID given.";
+        }
+        serverID = $stateParams.serverID;
+        simulationID = $stateParams.simulationID;
+        serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+        serverBaseUrl = serverConfig.gzweb['nrp-services'];
+        thisStateService.statePending = false;
+      };
+
+      thisStateService.startListeningForStatusInformation = function() {
+        var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
+        var statusTopic = serverConfig.rosbridge.topics.status;
+        rosConnection = roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
+        statusListener = roslib.createStringTopic(rosConnection, statusTopic);
+
+        statusListener.unsubscribe(); // clear old subscriptions
+        statusListener.subscribe(onMessageReceived);
+      };
+
+      thisStateService.stopListeningForStatusInformation = function() {
+        // unregister to the statustopic
+        if (angular.isDefined(statusListener)) {
+          statusListener.unsubscribe();
+          statusListener.removeAllListeners();
+          statusListener = undefined;
+        }
+        // Close the roslib connections
+        if (angular.isDefined(rosConnection)) {
+          rosConnection.close();
+          rosConnection = undefined;
+        }
+      };
+
+      thisStateService.addStateCallback = function(callback) {
+        stateCallbacks.push(callback);
+      };
+
+      thisStateService.removeStateCallback = function(callback) {
+        stateCallbacks = stateCallbacks.filter(function(element){
+          return element !== callback;
+        });
+      };
+
+      thisStateService.addMessageCallback = function(callback) {
+        messageCallbacks.push(callback);
+      };
+
+      thisStateService.removeMessageCallback = function(callback) {
+        messageCallbacks = messageCallbacks.filter(function(element){
+          return element !== callback;
+        });
+      };
+
+      thisStateService.getCurrentState = function () {
         var deferred = $q.defer();
-        var serverID = $stateParams.serverID;
-        var simulationID = $stateParams.simulationID;
-        var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
-        var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
         simulationState(serverBaseUrl).state({sim_id: simulationID},
           function (data) {
-            returnValue.currentState = data.state;
+            thisStateService.currentState = data.state;
             deferred.resolve();
           },
           function (data) {
@@ -38,32 +132,29 @@
         return deferred.promise;
       };
 
-      returnValue.setCurrentState = function (newState) {
+      thisStateService.setCurrentState = function (newState) {
         var deferred = $q.defer();
 
         // Ignore state change request if
         // (1) there are pending state changes
         // (2) the requested state is the current state
-        if (returnValue.statePending === true || newState === returnValue.currentState) {
+        if (thisStateService.statePending === true || newState === thisStateService.currentState) {
           deferred.reject();
           return deferred.promise; // avoid duplicated update requests
         }
-        returnValue.statePending = true;
-        var serverID = $stateParams.serverID;
-        var simulationID = $stateParams.simulationID;
-        var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
-        var serverBaseUrl = serverConfig.gzweb['nrp-services'];
+        thisStateService.statePending = true;
 
         simulationState(serverBaseUrl).update(
           {sim_id: simulationID},
           {state: newState},
           function (data) {
-            returnValue.currentState = data.state;
-            returnValue.statePending = false;
+            thisStateService.currentState = data.state;
+            thisStateService.statePending = false;
+            triggerStateCallbacks();
             deferred.resolve();
           },
           function (data) {
-            returnValue.statePending = false;
+            thisStateService.statePending = false;
             serverError(data);
             deferred.reject();
           }
@@ -72,19 +163,19 @@
         return deferred.promise;
       };
 
-      returnValue.ensureStateBeforeExecuting = function (state, toBeExecuted) {
-        if (returnValue.currentState === state) {
+      thisStateService.ensureStateBeforeExecuting = function (state, toBeExecuted) {
+        if (thisStateService.currentState === state) {
           toBeExecuted();
         }
         else {
-          returnValue.setCurrentState(state)
+          thisStateService.setCurrentState(state)
             .then(function () {
               toBeExecuted();
             });
         }
       };
 
-      return returnValue;
+      return thisStateService;
     }
   ]);
 }());

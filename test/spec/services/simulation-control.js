@@ -372,8 +372,13 @@ describe('Services: experimentSimulationService', function () {
     spyOn(console, 'error');
     spyOn(console, 'log');
 
+    rosConnectionMock.close = jasmine.createSpy('close');
     roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionMock);
-    statusListenerMock = { subscribe : jasmine.createSpy('subscribe')};
+    statusListenerMock = {
+      subscribe: jasmine.createSpy('subscribe'),
+      unsubscribe: jasmine.createSpy('unsubscribe'),
+      removeAllListeners: jasmine.createSpy('removeAllListeners')
+    };
     roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(statusListenerMock);
   }));
 

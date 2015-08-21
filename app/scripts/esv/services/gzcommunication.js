@@ -75,14 +75,16 @@
       returnValue.scene.setWindowSize(returnValue.container.offsetWidth, returnValue.container.offsetHeight);
     };
 
-    returnValue.Initialize = function(serverID, simulationID) {
+    returnValue.Initialize = function() {
       if(isInitialized) {
         return;
       }
       isInitialized = true;
-      if (!serverID || !simulationID){
+      if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
       }
+      var serverID = $stateParams.serverID;
+      var simulationID = $stateParams.simulationID;
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
 
       GZ3D.assetsPath = serverConfig.gzweb.assets;
