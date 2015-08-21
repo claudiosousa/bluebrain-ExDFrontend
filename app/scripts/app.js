@@ -14,6 +14,7 @@
         .module('exdFrontendApp', ['ngAnimate',
                                    'ngCookies',
                                    'ngResource',
+                                   'n3-line-chart',
                                    'ngSanitize',
                                    'ngTouch',
                                    'ui.router',

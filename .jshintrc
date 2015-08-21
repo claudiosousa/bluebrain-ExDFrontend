@@ -111,7 +111,10 @@
 
     "maxerr"        : 100,      // Maximum errors before stopping.
     "predef"        : [         // Extra globals.
-        "angular"
+        "angular",
+        "_",
+        "d3"
     ],
     "indent"        : 4         // Specify indentation spacing
+
 }

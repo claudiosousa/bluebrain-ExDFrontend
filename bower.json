@@ -26,7 +26,8 @@
     "roslibjs": "~0.12.0",
     "angular.panels": "*",
     "angular-toArrayFilter": "*",
-    "threejs": "r71"
+    "threejs": "r71",
+    "n3-line-chart": "~1.1.11"
   },
   "overrides": {
     "codemirror": {

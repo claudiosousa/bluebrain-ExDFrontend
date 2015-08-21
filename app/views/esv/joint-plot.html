@@ -1,0 +1,26 @@
+<div class="jointplot-wrapper">
+  <div class="jointplot" ng-show="allJoints.length > 0">
+    <div class="property-selector">
+      <span ng-repeat="(prop, value) in selectedProperties">
+        <label for="{{prop}}">
+          <input type="checkbox" ng-model="selectedProperties[prop]" id="{{prop}}">
+          {{prop}}
+        </label><br/>
+      </span>
+    </div>
+    <div class="joint-selector">
+      <span ng-repeat="joint in allJoints">
+        <label ng-style="getCurveColor(joint)" for="{{joint}}">
+          <input type="checkbox" ng-model="selectedJoints[joint]" name="group" id="{{joint}}">
+          {{joint}}
+        </label><br/>
+      </span>
+    </div>
+    <div class="linechart-wrapper">
+      <linechart class="linechart" height="400" data="curves" options="plotOptions"></linechart>
+    </div>
+  </div>
+  <div class="jointplot" ng-hide="allJoints.length > 0">
+    <h4>Start the simulation to display the plot</h4>
+  </div>
+</div>

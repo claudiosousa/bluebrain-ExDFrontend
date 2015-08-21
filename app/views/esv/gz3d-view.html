@@ -1,6 +1,7 @@
 <!-- build:css(.tmp) styles/esv/gz3d-view.css -->
 <link rel="stylesheet" href="styles/esv/gz3d-view.css" />
 <link rel="stylesheet" href="styles/esv/spiketrain.css" />
+<link rel="stylesheet" href="styles/esv/joint-plot.css" />
 <!-- endbuild -->
 
   <script id="heightmapVS" type="x-shader/x-vertex">
@@ -100,6 +101,7 @@
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
         <spiketrain server={{rosbridgeWebsocketUrl}} topic={{spikeTopic}} movable resizeable ng-show="showSpikeTrain"></spiketrain>
+        <joint-plot server={{rosbridgeWebsocketUrl}} topic={{jointTopic}} movable resizeable ng-show="showJointPlot"></joint-plot>
 
         <!-- HelpText -->
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
@@ -245,12 +247,19 @@
               </div>
               <!-- toggle spiketrain -->
 
+              <!-- toggle jointPlot -->
+              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.SPIKETRAIN);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+                <img src="img/esv/jointplot_logo.png">
+              </div>
+              <!-- toggle jointPlot -->
+
               <!-- toggle robot camera view -->
               <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW}" ng-click="(!helpModeActivated) ? toggleRobotView() : help(UI.ROBOT_VIEW);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <!--<img src="img/esv/robot_view_icon.png" width=32 height=32>-->
                 <i class="fa fa-eye fa-2x vertcenter"></i>
               </div>
               <!-- toggle robot camera view -->
+
 
               <!-- code editor icon-->
               <div ng-if="operationMode === OPERATION_MODE.EDIT" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR}" ng-click="(!helpModeActivated) ? edit() : help(UI.CODE_EDITOR)">

@@ -1,0 +1,22 @@
+$popOverViewerMinWidth: 50px;
+$popOverViewerMinHeight: 140px;
+
+@mixin compute-top( $height: $popOverViewerMinHeight, $bottom: 65px) {
+  top: calc(100% - #{$bottom + $height});
+}
+
+.pop-over-viewer {
+  @include compute-top($popOverViewerMinHeight);
+  display: flex;
+  position: absolute;
+  border-radius: 8px;
+  border-color: black;
+  border: 2px solid;
+  background:rgba(255, 255, 255, 0.8);
+  opacity: 1;
+  min-width: $popOverViewerMinWidth;
+  min-height: $popOverViewerMinHeight;
+  height: $popOverViewerMinHeight;
+  left:5%;
+  width: 90%;
+}

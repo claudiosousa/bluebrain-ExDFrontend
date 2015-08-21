@@ -48,6 +48,9 @@ module.exports = function(config) {
       'bower_components/angular.panels/dist/angular.panels.min.js',
       'bower_components/angular-toArrayFilter/toArrayFilter.js',
       'bower_components/threejs/build/three.js',
+      'bower_components/d3/d3.js',
+      'bower_components/moment/moment.js',
+      'bower_components/n3-line-chart/build/line-chart.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'bower_components/threejs/examples/js/controls/OrbitControls.js',

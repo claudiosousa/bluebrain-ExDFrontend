@@ -1,0 +1,36 @@
+@import "pop-over-viewer.scss";
+
+$jointPlotBottom: 65px;
+$jointPlotHeight: 400px;
+$jointPlotPadding: 10px;
+
+.jointplot-wrapper {
+  @extend .pop-over-viewer;
+  @include compute-top($jointPlotBottom, $jointPlotHeight);
+  height: $jointPlotHeight;
+
+  .jointplot {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+  .linechart-wrapper  {
+    flex-grow: 1;
+  }
+
+  .property-selector, .joint-selector {
+    padding-left: $jointPlotPadding;
+    padding-top: $jointPlotPadding;
+  }
+  .linechart-wrapper {
+    flex-shrink: 0;
+    flex-basis: 240px;
+
+    svg .legend {
+      /* the legend from n3-line-chart is ugly */
+      display: none;
+    }
+  }
+
+}

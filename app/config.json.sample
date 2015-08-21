@@ -10,6 +10,7 @@
         "rosbridge": {
           "topics": {
             "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
             "status": "/ros_cle_simulation/status"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
@@ -25,6 +26,7 @@
         "rosbridge": {
           "topics": {
             "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
             "status": "/ros_cle_simulation/status"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
@@ -40,6 +42,7 @@
         "rosbridge": {
           "topics": {
             "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
             "status": "/ros_cle_simulation/status"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
@@ -55,6 +58,7 @@
         "rosbridge": {
           "topics": {
             "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
             "status": "/ros_cle_simulation/status"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"

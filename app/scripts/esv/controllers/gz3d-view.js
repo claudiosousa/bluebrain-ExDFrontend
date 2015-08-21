@@ -90,6 +90,7 @@
 
       $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
       $scope.spikeTopic = serverConfig.rosbridge.topics.spikes;
+      $scope.jointTopic = serverConfig.rosbridge.topics.joint;
 
       $scope.STATE = STATE;
       $scope.OPERATION_MODE = OPERATION_MODE;
@@ -380,6 +381,12 @@
       $scope.showSpikeTrain = false;
       $scope.toggleSpikeTrain = function() {
         $scope.showSpikeTrain = !$scope.showSpikeTrain;
+      };
+
+      // JointPlot
+      $scope.showJointPlot = false;
+      $scope.toggleJointPlot = function() {
+        $scope.showJointPlot = !$scope.showJointPlot;
       };
 
       // robot view
