@@ -65,12 +65,12 @@
       return ros;
     };
 
-    ROSLIB.createTopic = function (connection, topicName, messageType) {
-      return new ROSLIB.Topic({
+    ROSLIB.createTopic = function (connection, topicName, messageType, additionalOptions) {
+      return new ROSLIB.Topic(_.extend({
         ros: connection,
         name: topicName,
         messageType: messageType
-      });
+      }, additionalOptions));
     };
 
     ROSLIB.createStringTopic = function (connection, topicName) {

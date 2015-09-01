@@ -1,11 +1,10 @@
 (function () {
   'use strict';
   var MAX_N_MEASUREMENTS = 100;
-  var pointFrequency = 2.0; // in Hz
+  var pointFrequency = 5.0; // number of points per seconds
 
   function configureJointPlot(scope, roslib) {
     scope.curves = [];
-    scope.lastPointTimestamp = -Infinity; // in seconds
     scope.allJoints = [];
     scope.selectedJoints = {};
     scope.selectedProperties = {
@@ -95,17 +94,17 @@
     // Subscribe to the ROS topic
     scope.startJointDisplay = function () {
       var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
-      scope.jointTopicSubscriber = scope.jointTopicSubscriber || roslib.createTopic(rosConnection, scope.topic, 'sensor_msgs/JointState');
+      scope.jointTopicSubscriber = scope.jointTopicSubscriber || roslib.createTopic(rosConnection,
+                                                                                    scope.topic,
+                                                                                    'sensor_msgs/JointState', {
+                                                                                      throttle_rate: 1.0 / pointFrequency * 1000.0
+                                                                                    });
       scope.jointTopicSubscriber.subscribe(scope.onNewJointMessageReceived);
     };
 
     scope.onNewJointMessageReceived = function (message) {
       scope.allJoints = message.name;
       var currentTime = message.header.stamp.secs + message.header.stamp.nsecs * 0.000000001;
-      if (currentTime - scope.lastPointTimestamp < 1.0 / pointFrequency) {
-        return;
-      }
-      scope.lastPointTimestamp = currentTime;
       if (scope.curves.length >= MAX_N_MEASUREMENTS) {
         scope.curves.shift();
       }
@@ -176,14 +175,7 @@
           axes: {
             x: {key: 'time'}
           },
-          series: [
-            {
-              y: "back_left_joint_position"
-            },
-            {
-              y: "front_right_joint_velocity"
-            }
-          ]
+          series: []
         };
 
         // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the

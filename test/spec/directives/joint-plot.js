@@ -24,8 +24,6 @@ describe('Directive: joint-plot', function () {
     header: { stamp: { secs: 1, nsecs: 500000000} }
   };
 
-  var messageMockClose = _.cloneDeep(messageMock);
-  messageMockClose.header.stamp.nsecs += 500000;
   var messageMockFar = _.cloneDeep(messageMock);
   messageMockFar.header.stamp.secs += 1;
 
@@ -88,17 +86,6 @@ describe('Directive: joint-plot', function () {
     expect($scope.curves[0].jointc_effort).toBeUndefined();
   });
 
-  it('should update its lastPointTimestamp', function() {
-    expect($scope.lastPointTimestamp).toBe(-Infinity);
-    $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.lastPointTimestamp).toBe(1.5);
-  });
-
-  it('should not register 2 datapoints that are too close', function() {
-    $scope.onNewJointMessageReceived(messageMock);
-    $scope.onNewJointMessageReceived(messageMockClose);
-    expect($scope.curves.length).toBe(1);
-  });
 
   it('should register 2 datapoints that are sufficiently far in time', function() {
     $scope.onNewJointMessageReceived(messageMock);
@@ -177,6 +164,8 @@ describe('Directive: joint-plot', function () {
     expect(style.color).toBeUndefined();
   });
 
+
+
   it('should gray-out a selected curve that has no color yet', function() {
     var style = $scope.getCurveColor('jointa');
     expect(style.color).toBe('#8A8A8A');
@@ -189,6 +178,16 @@ describe('Directive: joint-plot', function () {
     var style = $scope.getCurveColor('jointa');
     expect($scope.indexToColor).toHaveBeenCalled();
     expect(style.color).toBe('#FFFFFF');
+  });
+
+
+  it('should use previously selected colors', function() {
+    spyOn($scope, 'indexToColor');
+    $scope.onNewJointMessageReceived(messageMock);
+    var indexToColorCallCount = $scope.indexToColor.callCount;
+    expect(indexToColorCallCount).toBeGreaterThan(0);
+    $scope.onNewJointMessageReceived(messageMock);
+    expect($scope.indexToColor.callCount).toBe(indexToColorCallCount);
   });
 
   it('should pop datapoints when there are too many', function() {
