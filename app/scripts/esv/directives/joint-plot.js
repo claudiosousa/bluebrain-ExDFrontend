@@ -157,6 +157,7 @@
       restrict: 'E',
       replace: true,
       link: function (scope, element, attrs) {
+        scope.chartHeight = 400;
         if(angular.isUndefined(attrs.server)) {
           $log.error('The server URL was not specified!');
         }
@@ -189,6 +190,12 @@
           }
         });
 
+        var parent = angular.element(element[0].childNodes[1]);
+        scope.$watch(function() {
+          return parent.height();
+        }, function(newHeight) {
+          scope.chartHeight = newHeight;
+        });
       }
 
     };
