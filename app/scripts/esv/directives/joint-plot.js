@@ -156,6 +156,10 @@
       templateUrl: 'views/esv/joint-plot.html',
       restrict: 'E',
       replace: true,
+      scope: {
+        server: '@',
+        topic: '@'
+      },
       link: function (scope, element, attrs) {
         if(angular.isUndefined(attrs.server)) {
           $log.error('The server URL was not specified!');
@@ -164,11 +168,6 @@
         if(angular.isUndefined(attrs.topic)) {
           $log.error('The topic for the joints was not specified!');
         }
-
-        scope.server = attrs.server;
-        scope.topic = attrs.topic;
-
-        var div = element[0].childNodes[1];
 
         configureJointPlot(scope, roslib);
         scope.plotOptions = {
@@ -180,7 +179,7 @@
 
         // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
         // ROS topic.
-        scope.$watch(attrs.ngShow, function (visible) {
+        scope.$watch(function() { return element.is(':visible'); }, function(visible) {
           if (visible) {
             scope.startJointDisplay();
           }
