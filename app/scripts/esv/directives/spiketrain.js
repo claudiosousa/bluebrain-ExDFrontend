@@ -166,8 +166,8 @@
     // Subscribe to the ROS topic
     scope.startSpikeDisplay = function (firstTimeRun) {
       scope.onScreenSizeChanged();
-      var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
-      scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.topic, 'cle_ros_msgs/SpikeEvent');
+      var rosConnection = roslib.getOrCreateConnectionTo(scope.spikeServer);
+      scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.spikeTopic, 'cle_ros_msgs/SpikeEvent');
       scope.spikeTopicSubscriber.subscribe(scope.onNewSpikesMessageReceived);
       if (firstTimeRun === false) {
         scope.drawSeparator();
@@ -199,8 +199,8 @@
           $log.error('The topic for the spikes was not specified!');
         }
 
-        scope.server = attrs.server;
-        scope.topic = attrs.topic;
+        scope.spikeServer = attrs.server;
+        scope.spikeTopic = attrs.topic;
 
         var firstTimeRun = true;
         var div = element[0].childNodes[1];
