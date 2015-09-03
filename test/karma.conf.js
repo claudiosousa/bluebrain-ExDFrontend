@@ -33,8 +33,6 @@ module.exports = function(config) {
       'bower_components/lodash/dist/lodash.compat.js',
       'bower_components/angular-bbp-config/angular-bbp-config.js',
       'bower_components/bbp-oidc-client/angular-bbp-oidc-client.js',
-      'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
-      'bower_components/marked-hbp/lib/marked.js',
       'bower_components/angular-hbp-common/dist/angular-hbp-common.js',
       'bower_components/angular-hbp-document-client/dist/angular-hbp-document-client.js',
       'bower_components/xml2json/xml2json.js',

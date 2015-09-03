@@ -2064,9 +2064,9 @@ GZ3D.GZIface.prototype.connect = function()
 
   var token = [];
   var url = GZ3D.webSocketUrl;
-  if (localStorage.getItem('tokens-bbp')) {
+  if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
     try {
-      token = JSON.parse(localStorage.getItem('tokens-bbp'));
+      token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
     } catch(e) {
       token[0] = { access_token : 'notoken' };
     }

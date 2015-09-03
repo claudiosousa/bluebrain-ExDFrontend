@@ -59,3 +59,12 @@ Updating the version
 --------------------
 To update the version, bump `bower.json`, the build will take care of spreading
 the change.
+
+Changelog
+=========
+
+[0.2.2] Fixed font for buttons in headers
+
+[0.2.1]  Added: hbpDialogFactory.confirm(options)
+         Deprecated: hbpDialogFactory.confirmation()
+[0.2.0]  Use Bootstrap SASS 3.2.x which has a new directory structure.

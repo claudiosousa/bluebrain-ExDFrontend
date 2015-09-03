@@ -4,6 +4,7 @@ describe('Services: roslib-angular', function () {
 
   var roslib;
   var testURL = 'ws://fu.bar:123';
+  var tokenKey = 'tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc';
 
   // Unfortunately we have to mock a global variable here.
   var mockedOn = jasmine.createSpy('on');
@@ -25,7 +26,7 @@ describe('Services: roslib-angular', function () {
 
   it('should create a connection if there is none for this URL currently', function() {
     roslib.getOrCreateConnectionTo(testURL);
-    expect(localStorage.getItem).toHaveBeenCalledWith('tokens-bbp');
+    expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
     expect(window.ROSLIB.Ros).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=mockaccesstoken'});
     expect(mockedOn).toHaveBeenCalled();
     expect(mockedOn.callCount).toBe(3);
@@ -37,12 +38,12 @@ describe('Services: roslib-angular', function () {
     window.ROSLIB.Ros.reset();
     window.localStorage.getItem = jasmine.createSpy('getItem').andReturn(undefined);
     roslib.getOrCreateConnectionTo(testURL);
-    expect(localStorage.getItem).toHaveBeenCalledWith('tokens-bbp');
+    expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
     expect(window.ROSLIB.Ros).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=no-token'});
     window.localStorage.getItem.reset();
     window.localStorage.getItem = jasmine.createSpy('getItem').andReturn([{}]);
     roslib.getOrCreateConnectionTo(testURL);
-    expect(localStorage.getItem).toHaveBeenCalledWith('tokens-bbp');
+    expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
     expect(window.ROSLIB.Ros).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=malformed-token'});
   });
 
