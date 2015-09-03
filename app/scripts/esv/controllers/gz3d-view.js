@@ -45,7 +45,8 @@
       OWNER_DISPLAY: 9,
       EXIT_BUTTON: 10,
       ROBOT_VIEW: 11,
-      CODE_EDITOR: 12
+      CODE_EDITOR: 12,
+      JOINT_PLOT: 13
     });
 
   angular.module('exdFrontendApp')

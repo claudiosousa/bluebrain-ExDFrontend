@@ -113,6 +113,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CAMERA_TRANSLATION]='With those controls, you can change the viewpoint of your local camera. By clicking on the left/right/diagonal arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/backward/right. The up/down arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CAMERA_ROTATION]='With those controls, you can change the orientation of your local camera. The center circle lets you reset the orientation. You also can look around by draging the mouse in the 3d-scene.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.SPIKETRAIN]='This button toggles the view for the spike-train visualization.'">
+        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.JOINT_PLOT]='This button toggles the view for the joints\' line chart.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.ROBOT_VIEW]='This button toggles the view from the robot camera.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.OWNER_DISPLAY]='This information appears when you are not the displayed owner of the experiment and thus you are in a view-only mode.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EXIT_BUTTON]='Here you can leave the simulation.'">
@@ -248,7 +249,7 @@
               <!-- toggle spiketrain -->
 
               <!-- toggle jointPlot -->
-              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.SPIKETRAIN);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.JOINT_PLOT}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.JOINT_PLOT);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <img src="img/esv/jointplot_logo.png">
               </div>
               <!-- toggle jointPlot -->
