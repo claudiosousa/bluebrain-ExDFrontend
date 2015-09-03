@@ -67,12 +67,12 @@
       '$location', '$http', '$window', '$document', 'bbpConfig',
       'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl', 'experimentList',
-      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'roslib', 'STATE', 'ERROR', 'nrpBackendVersions',
+      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'gz3d', 'EDIT_MODE', 'stateService',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, serverError, screenControl, experimentList,
-          timeDDHHMMSSFilter, splash, assetLoadingSplash, roslib, STATE, ERROR, nrpBackendVersions,
+          timeDDHHMMSSFilter, splash, assetLoadingSplash, STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion, panels, UI, OPERATION_MODE, gz3d, EDIT_MODE, stateService) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
@@ -130,72 +130,44 @@
       nrpBackendVersions(serverBaseUrl).get(function(data) {
         $scope.versions = angular.extend($scope.versions, data);
       });
+
       /* status messages are listened to here. A splash screen is opened to display progress messages. */
       /* This is the case when closing an simulation for example. Loading is taken take of */
       /* by a progressbar somewhere else. */
       /* Timeout messages are displayed in the toolbar. */
-      $scope.registerForStatusInformation = function() {
-        var rosbridgeWebsocketUrl = $scope.rosbridgeWebsocketUrl;
-        var statusTopic = serverConfig.rosbridge.topics.status;
+      var messageCallback = function(message) {
         var callbackOnClose = function() {
           $scope.splashScreen = undefined;
-          /* avoid "$apply already in progress" error */
-          _.defer(function() { // jshint ignore:line
-            $scope.$apply(function() { $location.path("esv-web"); });
-          });
+          $location.path("esv-web");
         };
 
-        $scope.rosConnection = $scope.rosConnection || roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
-        $scope.statusListener = $scope.statusListener || roslib.createStringTopic($scope.rosConnection, statusTopic);
+        /* Progress messages (apart start state progress messages which are handled by another progress bar) */
+        if (angular.isDefined(message.progress) && message.state !== STATE.STARTED ) {
+          $scope.splashScreen = $scope.splashScreen || splash.open(
+              !message.progress.block_ui,
+              ((stateService.currentState === STATE.STOPPED) ? callbackOnClose : undefined));
+          if (angular.isDefined(message.progress.done) && message.progress.done) {
+            splash.spin = false;
+            splash.setMessage({ headline: 'Finished' });
 
-        $scope.statusListener.unsubscribe(); // clear old subscriptions
-        $scope.statusListener.subscribe(function (data) {
-          var message = JSON.parse(data.data);
-          /* State messages */
-          /* Manage before other since others may depend on state changes */
-          if (message !== undefined && message.state !== undefined) {
-            $scope.$apply(function() { stateService.currentState = message.state; });
-          }
-          /* Progress messages (apart start state progress messages which are handled by another progress bar) */
-          if (message !== undefined && message.progress !== undefined && stateService.currentState !== STATE.STARTED ) {
-            $scope.splashScreen = $scope.splashScreen || splash.open(
-                !message.progress.block_ui,
-                ((stateService.currentState === STATE.STOPPED) ? callbackOnClose : undefined));
-            if (message.progress.done !== undefined && message.progress.done) {
-              splash.spin = false;
-              splash.setMessage({ headline: 'Finished' });
-
-              /* if splash is a blocking modal (no button), then close it */
-              /* (else it is closed by the user on button click) */
-              if (!splash.showButton) {
-                splash.close();
-                $scope.splashScreen = undefined;
-              }
-            } else {
-              splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
+            /* if splash is a blocking modal (no button), then close it */
+            /* (else it is closed by the user on button click) */
+            if (!splash.showButton) {
+              splash.close();
+              $scope.splashScreen = undefined;
             }
+          } else {
+            splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
           }
-          /* Time messages */
-          if (angular.isDefined(message)) {
-            var to = angular.isDefined(message.timeout);
-            var st = angular.isDefined(message.simulationTime);
-            var rt = angular.isDefined(message.realTime);
-            if (to || st || rt) {
-              $scope.$apply(function() {
-                if (to) {
-                  $scope.simTimeoutText = message.timeout;
-                }
-                if (st) {
-                  $scope.simulationTimeText = message.simulationTime;
-                }
-                if (rt) {
-                  $scope.realTimeText = message.realTime;
-                }
-              });
-            }
-          }
-        });
+        }
+        /* Time messages */
+        if (angular.isDefined(message.timeout)) { $scope.simTimeoutText = message.timeout; }
+        if (angular.isDefined(message.simulationTime)) { $scope.simulationTimeText = message.simulationTime; }
+        if (angular.isDefined(message.realTime)) { $scope.realTimeText = message.realTime; }
       };
+
+      // Initializes the state service with the current server specific configuration
+      stateService.Initialize();
 
       // Query the state of the simulation
       stateService.getCurrentState().then(function () {
@@ -204,12 +176,14 @@
           $scope.isJoiningStoppedSimulation = true;
         } else {
           // Initialize GZ3D and so on...
-          gz3d.Initialize($stateParams.serverID, $stateParams.simulationID);
+          gz3d.Initialize();
 
           // Register for the status updates as well as the timing stats
           // Note that we have two different connections here, hence we only put one as a callback for
           // $rootScope.iface and the other one not!
-          $scope.registerForStatusInformation();
+          /* Listen for status infromations */
+          stateService.startListeningForStatusInformation();
+          stateService.addMessageCallback(messageCallback);
 
           // Show the splash screen for the progress of the asset loading
           $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(resetScreenColors);
@@ -337,7 +311,6 @@
             gz3d.scene.radialMenu.showing = false;
           }
         }
-
       };
 
       // Lights management
@@ -418,16 +391,13 @@
           assetLoadingSplash.close();
           delete $scope.assetLoadingSplashScreen;
         }
-        // unregister to the statustopic
-        if (angular.isDefined($scope.statusListener)) {
-          $scope.statusListener.unsubscribe();
-          $scope.statusListener.removeAllListeners();
-        }
 
-        // Close the roslib connections
-        if (angular.isDefined($scope.rosConnection)) {
-          $scope.rosConnection.close();
-        }
+        // Stop listening for status messages
+        stateService.stopListeningForStatusInformation();
+
+        // unregister the message callback
+        stateService.removeMessageCallback(messageCallback);
+
         if (angular.isDefined(gz3d.iface) && angular.isDefined(gz3d.iface.webSocket)) {
           gz3d.iface.webSocket.close();
         }

@@ -348,6 +348,11 @@
           var message = JSON.parse(data.data);
           if (message !== undefined && message.progress !== undefined) {
             if (message.progress.done !== undefined && message.progress.done) {
+              statusListener.unsubscribe();
+              statusListener.removeAllListeners();
+              statusListener = undefined;
+              rosConnection.close();
+              rosConnection = undefined;
               setProgressMessageCallback({main: 'Simulation initialized.'});
               var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
               var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + operationMode;
