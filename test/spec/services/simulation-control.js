@@ -603,7 +603,6 @@ describe('Services: experimentSimulationService', function () {
     simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
     expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
     expect(isAvailableCallback).not.toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledWith('Server http://bbpce016.epfl.ch:8080 is running experiment fakeExperiment3.xml');
   });
 
   it ('should get the available servers properly when they are not stored in localstorage', function() {

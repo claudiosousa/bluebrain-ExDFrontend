@@ -3,10 +3,14 @@
 
   /* global console: false */
 
+  angular.module('exdFrontendApp.Constants')
+    .constant('DEFAULT_RESOURCE_GET_TIMEOUT', 3000 // ms
+  );
+
   var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants', 'exdFrontendFilters', 'nrpErrorHandlers', 'bbpConfig', 'hbpCommon']);
 
-  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', 'serverError', 'uptimeFilter',
-    function ($resource, $http, hbpUserDirectory, STATE, serverError, uptimeFilter) {
+  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', 'serverError', 'uptimeFilter','DEFAULT_RESOURCE_GET_TIMEOUT',
+    function ($resource, $http, hbpUserDirectory, STATE, serverError, uptimeFilter, DEFAULT_RESOURCE_GET_TIMEOUT) {
 
       // Keeps track of the owner of experiments in a map (id -> display name)
       var owners = {};
@@ -82,6 +86,8 @@
         var functions = $resource(params.serverURL + '/simulation', {}, {
           simulations: {
             method: 'GET',
+            // prevent the user to wait for long time since our servers can only handle one request at a time (yet).
+            timeout: DEFAULT_RESOURCE_GET_TIMEOUT,
             isArray: true,
             interceptor: {
               responseError: function (response) {
@@ -167,11 +173,13 @@
     };
   }]);
 
-  module.factory('experimentList', ['$resource', 'serverError', function ($resource, serverError) {
+  module.factory('experimentList', ['$resource', 'serverError', 'DEFAULT_RESOURCE_GET_TIMEOUT', function ($resource, serverError, DEFAULT_RESOURCE_GET_TIMEOUT) {
     return function (baseUrl) {
       return $resource(baseUrl + '/experiment', {}, {
         experiments: {
           method: 'GET',
+          // prevent the user to wait for long time since our servers can only handle one request at a time (yet).
+          timeout: DEFAULT_RESOURCE_GET_TIMEOUT,
           interceptor: {responseError: serverError}
         }
       });
@@ -367,46 +375,47 @@
         // end for indicating when all loading is done.
         var requests = [];
 
+
         // for each experiment
         angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
           experimentTemplate.numSupportingServers = 0;
           experimentTemplate.numAvailableServers = 0;
+        });
 
-          // for each server
-          angular.forEach(serverIDs, function (serverID) {
-            // if server was disabled in developer UI, then exclude it
-            if (serversEnabled.indexOf(serverID) > -1) {
-              // check if server can run experiment
+        // for each server
+        angular.forEach(serverIDs, function (serverID) {
+          // if server was disabled in developer UI, then exclude it
+          if (serversEnabled.indexOf(serverID) > -1) {
+
+            var serverURL = servers[serverID].gzweb['nrp-services'];
+
+            angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
               if (experimentTemplate.serverPattern.indexOf(serverID) > -1) {
-                var serverURL = servers[serverID].gzweb['nrp-services'];
-
                 experimentTemplate.numSupportingServers = experimentTemplate.numSupportingServers + 1;
                 console.log('Server ' + serverURL + ' can host experiment ' + templateName);
+              }
+            });
 
-                // Create a deferred and store its promise.
-                var deferred = $q.defer();
-                requests.push(deferred.promise);
+            // Create a deferred and store its promise.
+            var deferred = $q.defer();
+            requests.push(deferred.promise);
 
-                simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
-                  var activeSimulation = simulationService().getActiveSimulation(data);
-                  if (!angular.isDefined(activeSimulation)) {
+            simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
+              var activeSimulation = simulationService().getActiveSimulation(data);
+              angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
+                // check if server can run experiment
+                if (experimentTemplate.serverPattern.indexOf(serverID) > -1 && !angular.isDefined(activeSimulation)) {
                     // server is free
                     experimentTemplate.numAvailableServers = experimentTemplate.numAvailableServers + 1;
                     isAvailableCallback(templateName, true);
-                  } else {
-                    // server is running simulation
-                    if (experimentTemplate.experimentConfiguration === activeSimulation.experimentConfiguration) {
-                      console.log('Server ' + serverURL + ' is running experiment ' + templateName);
-                    }
-                  }
-                }).$promise.then(function () {
-                    // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
-                    // is offline), we resolve the respective deferred.
-                    deferred.resolve();
-                  });
-              }
-            }
-          });
+                }
+              });
+            }).$promise.then(function () {
+                // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
+                // is offline), we resolve the respective deferred.
+                deferred.resolve();
+              });
+          }
         });
 
         // After all promises are "fulfilled" we know that all requests have been processed.
@@ -414,6 +423,7 @@
         $q.all(requests).then(function () {
           queryingServersFinishedCallback();
         });
+
       };
 
       var startNewExperiments = function (id, serversEnabled, serverPattern, errorCallback) {
