@@ -8,6 +8,7 @@ $jointPlotPadding: 10px;
   @extend .pop-over-viewer;
   @include compute-top($jointPlotBottom, $jointPlotHeight);
   height: $jointPlotHeight;
+  min-width: 600px;
 
   .jointplot {
     display: flex;
