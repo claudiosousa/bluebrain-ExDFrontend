@@ -24,6 +24,9 @@ $jointPlotPadding: 10px;
     padding-left: $jointPlotPadding;
     padding-top: $jointPlotPadding;
   }
+  .joint-selector {
+    order: -1;
+  }
   .linechart-wrapper {
     flex-shrink: 0;
     flex-basis: 240px;
