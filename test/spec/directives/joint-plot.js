@@ -50,12 +50,7 @@ describe('Directive: joint-plot', function () {
       jointb: true,
       jointc: false
     };
-    $scope.selectedProperties = {
-      position: true,
-      velocity: true,
-      effort: false
-    };
-
+    $scope.selectedProperty = { name: 'position' };
   }));
 
   it('replaces the element with the appropriate content', function () {
@@ -74,10 +69,11 @@ describe('Directive: joint-plot', function () {
     expect($scope.curves[0].jointa_position).toBe(1);
     expect($scope.curves[0].jointb_position).toBe(2);
 
-    expect($scope.curves[0].jointa_velocity).toBe(4);
-    expect($scope.curves[0].jointb_velocity).toBe(5);
 
-    // effort is not a selected property
+    // velocity and effort are not selected properties
+    expect($scope.curves[0].jointa_velocity).toBeUndefined();
+    expect($scope.curves[0].jointb_velocity).toBeUndefined();
+
     expect($scope.curves[0].jointa_effort).toBeUndefined();
     expect($scope.curves[0].jointb_effort).toBeUndefined();
 
@@ -141,14 +137,14 @@ describe('Directive: joint-plot', function () {
     $scope.onNewJointMessageReceived(messageMock);
 
     expect($scope.curves[0].jointc_position).toBe(3);
-    expect($scope.curves[0].jointc_velocity).toBe(6);
+    expect($scope.curves[0].jointc_velocity).toBeUndefined();
     expect($scope.curves[0].jointc_effort).toBeUndefined();
   });
 
   it('should register new property', function () {
     expect($scope.curves.length).toBe(0);
-    expect($scope.selectedProperties.effort).toBeFalsy();
-    $scope.selectedProperties.effort = true;
+    expect($scope.selectedProperty.name).toBe('position');
+    $scope.selectedProperty.name = 'effort';
     $scope.$digest();
     $scope.onNewJointMessageReceived(messageMock);
 
@@ -161,8 +157,6 @@ describe('Directive: joint-plot', function () {
     $scope.onNewJointMessageReceived(messageMock);
     expect($scope.curveToColorIdx.jointa_position).toBe(0);
     expect($scope.curveToColorIdx.jointb_position).toBe(1);
-    expect($scope.curveToColorIdx.jointa_velocity).toBe(2);
-    expect($scope.curveToColorIdx.jointb_velocity).toBe(3);
   });
 
   it('should clean colormap when curves are removed', function () {

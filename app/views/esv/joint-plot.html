@@ -1,12 +1,18 @@
 <div class="jointplot-wrapper">
   <div class="jointplot" ng-show="allJoints.length > 0">
     <div class="property-selector">
-      <span ng-repeat="(prop, value) in selectedProperties">
-        <label for="{{prop}}">
-          <input type="checkbox" ng-model="selectedProperties[prop]" id="{{prop}}">
-          {{prop}}
-        </label><br/>
-      </span>
+      <label>
+        <input value="position" type="radio" ng-model="selectedProperty.name">
+        position
+      </label><br/>
+      <label>
+        <input value="velocity" type="radio" ng-model="selectedProperty.name">
+        velocity
+      </label><br/>
+      <label>
+        <input value="effort" type="radio" ng-model="selectedProperty.name">
+        effort
+      </label><br/>
     </div>
     <div class="joint-selector">
       <span ng-repeat="joint in allJoints">

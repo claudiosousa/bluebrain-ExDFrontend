@@ -7,29 +7,21 @@
     scope.curves = [];
     scope.allJoints = [];
     scope.selectedJoints = {};
-    scope.selectedProperties = {
-      velocity: true,
-      position: false,
-      effort: false
-    };
+    scope.selectedProperty = { name: "position" };
     scope.indexToColor = d3.scale.category10();
     scope.curveToColorIdx = {};
 
     scope.getCurveColor = function(joint) {
       var cssRet = {};
       if (scope.selectedJoints[joint]) {
-        var propertyToPlot =  _.pick(scope.selectedProperties, _.identity); // filter out falsy values
-        // oops: multiple curve per joint
-        _.forOwn(propertyToPlot, function(trueBool, propertyName) {
-          var colorIdx = scope.curveToColorIdx[joint + '_' + propertyName];
-          if (!_.isUndefined(colorIdx)) {
-            cssRet.color = scope.indexToColor(scope.curveToColorIdx[joint + '_' + propertyName]);
-          }
-          else {
-            // this curve is selected but it may not have been assigned a color yet
-            cssRet.color = "#8A8A8A";
-          }
-        });
+        var colorIdx = scope.curveToColorIdx[joint + '_' + scope.selectedProperty.name];
+        if (!_.isUndefined(colorIdx)) {
+          cssRet.color = scope.indexToColor(scope.curveToColorIdx[joint + '_' + scope.selectedProperty.name]);
+        }
+        else {
+          // this curve is selected but it may not have been assigned a color yet
+          cssRet.color = "#8A8A8A";
+        }
       }
       return cssRet;
     };
@@ -55,15 +47,14 @@
     };
 
     var updateSeries = function() {
-      var propertyToPlot =  _.pick(scope.selectedProperties, _.identity); // filter out falsy values
       var jointToPlot =  _.pick(scope.selectedJoints, _.identity); // filter out falsy values
 
       var curveNamesToPlot = [];
-      _.forOwn(propertyToPlot, function(trueBool, propertyName) {
-        _.forOwn(jointToPlot, function(trueBool, joint) {
-          curveNamesToPlot.push(joint + '_' + propertyName);
-        });
+
+      _.forOwn(jointToPlot, function(trueBool, joint) {
+        curveNamesToPlot.push(joint + '_' + scope.selectedProperty.name);
       });
+
 
       // unregister curve in colormap if not selected for plotting
       _.forOwn(scope.curveToColorIdx, function(colorIdx, curveName) {
@@ -88,7 +79,7 @@
       scope.plotOptions.series = newSeries;
     };
 
-    scope.$watch('selectedProperties', requireUpdateSerie, true);
+    scope.$watch('selectedProperty.name', requireUpdateSerie);
     scope.$watch('selectedJoints', requireUpdateSerie, true);
 
     // Subscribe to the ROS topic
@@ -123,13 +114,10 @@
         });
       });
 
-      var propertyToPlot =  _.pick(scope.selectedProperties, _.identity); // filter out falsy values
       _.forEach(messageByJoint, function (joint) {
         if (scope.selectedJoints[joint.name]) {
           // that joint is selected
-          _.forOwn(propertyToPlot, function(trueBool, prop) {
-            newDataPoint[joint.name + '_' + prop] = joint[prop];
-          });
+          newDataPoint[joint.name + '_' + scope.selectedProperty.name] = joint[scope.selectedProperty.name];
         }
       });
 
