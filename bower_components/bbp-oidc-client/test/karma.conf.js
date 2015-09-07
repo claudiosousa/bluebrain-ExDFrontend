@@ -10,7 +10,7 @@ module.exports = function(config) {
         basePath: '../',
 
         // testing framework to use (jasmine/mocha/qunit/...)
-        frameworks: ['jasmine'],
+        frameworks: ['jasmine-ajax', 'jasmine'],
 
         // list of files / patterns to load in the browser
         files: [
@@ -19,11 +19,10 @@ module.exports = function(config) {
             'components/angular-bbp-config/angular-bbp-config.js',
 
             // vendors
-            'components/crypto-js-evanvosberg/build/components/core-min.js',
-            'components/crypto-js-evanvosberg/build/components/sha256-min.js',
-            'components/crypto-js-evanvosberg/build/components/x64-core-min.js',
-            'components/crypto-js-evanvosberg/build/rollups/hmac-sha256.js', // TODO remove after switch to new oidc server
-            'components/crypto-js-evanvosberg/build/components/enc-base64-min.js',
+            'components/crypto-js/core.js',
+            'components/crypto-js/sha256.js',
+            'components/crypto-js/x64-core.js',
+            'components/crypto-js/enc-base64.js',
             'components/jsrsasign/ext/base64-min.js',
             'components/jsrsasign/ext/jsbn-min.js',
             'components/jsrsasign/ext/rsa-min.js',

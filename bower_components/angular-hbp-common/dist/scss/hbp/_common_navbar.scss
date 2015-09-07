@@ -12,25 +12,27 @@
 // Markup: <nav class="navbar navbar-fixed-top navbar-hbp" role="navigation">
 //        <div class="container-fluid">
 //            <div class="navbar-header">
+//                <span class="hbp-site-current visible-xs-inline"><a href="#">Styleguide</a></span>
 //                <button type="button" class="navbar-toggle">
 //                    <span class="sr-only">Toggle navigation</span>
 //                    <span class="icon-bar"></span>
 //                    <span class="icon-bar"></span>
 //                    <span class="icon-bar"></span>
 //                </button>
-//                <a class="navbar-brand hbp-site-current" href="#">
-//                  Styleguide
-//                </a>
 //            </div>
 //            <div class="collapse navbar-collapse" style="height: 0px;">
 //                <ul class="hbp-site-selector nav navbar-nav hidden-xs">
 //                    <li class="dropdown">
-//                        <a href class="dropdown-toggle">
-//                            <span class="visible-xs-inline">Websites</span>
-//                            <i class="glyphicon glyphicon-chevron-down"></i>
-//                        </a>
+//                        <div href="" class="dropdown-toggle">
+//                            <span class="hbp-site-current"><a href="#">Styleguide</a></span>
+//                            <a href><i class="glyphicon glyphicon-chevron-down"></i></a>
+//                        </div>
 //                        <ul class="dropdown-menu">
-//                            <li ng-repeat="site in sites" ng-class="{ active: isActiveSite(site) }"><a href="{{site.url}}">{{site.name}}</a></li>
+//                            <li><a href="https://humanbrainproject.eu/">Public</a></li>
+//                            <li><a href>Platform</a></li>
+//                            <li class="active"><a href>Styleguide</a></li>
+//                            <li><a href="https://collaboration.humanbrainproject.eu/">Collaboration</a></li>
+//                            <li><a href="https://education.humanbrainproject.eu/">Education</a></li>
 //                        </ul>
 //                    </li>
 //                </ul>
@@ -40,17 +42,26 @@
 //                    <li><a href="#">Tools</a></li>
 //                    <li><a ui-sref="job-manager" ui-sref-active="active" href="#/job-manager">Jobs <bbp-job-badge><span class="badge badge-hbp badge-hbp-done">0</span></bbp-job-badge></a></li>
 //                </ul>
-//                <ul class="hbp-user-widget nav navbar-nav navbar-right">
-//                    <li>
-//                        <a href class="dropdown-toggle">
-//                            User Name <i class="glyphicon glyphicon-cog"></i>
-//                        </a>
-//                        <div class="dropdown-menu">
-//                            <ul>
-//                                <li><a href>Logout</a></li>
-//                            </ul>
-//                        </div>
+//                <ul class="hbp-secondary-navbar nav navbar-nav visible-xs-block">
+//                    <li class="dropdown">
+//                        <a href class="dropdown-toggle">Website Selector <i class="glyphicon glyphicon-chevron-down"></i></a>
+//                        <ul class="dropdown-menu">
+//                            <li><a href="https://humanbrainproject.eu/">Public</a></li>
+//                            <li><a href>Platform</a></li>
+//                            <li class="active"><a href>Styleguide</a></li>
+//                            <li><a href="https://collaboration.humanbrainproject.eu/">Collaboration</a></li>
+//                            <li><a href="https://education.humanbrainproject.eu/">Education</a></li>
+//                        </ul>
 //                    </li>
+//                </ul>
+//                <ul class="hbp-user-widget nav navbar-nav navbar-right">
+//                    <li class="hbp-user-widget-display-name dropdown">
+//                        <a href="" class="dropdown-toggle">Olivier Amblet <i class="glyphicon glyphicon-chevron-down"></i></a>
+//                        <ul class="dropdown-menu">
+//                            <li><a href>Logout</a></li>
+//                        </ul>
+//                    </li>
+//                    <li class="hbp-user-widget-action"><a href=""><i class="glyphicon glyphicon-cog"></i><span class="visible-xs-inline"> Settings</span></a></li>
 //                </ul>
 //            </div>
 //        </div>
@@ -113,6 +124,7 @@
     }
 
     .navbar-header {
+        padding-left: $padding-base-horizontal;
         /* Degrade the logo behind the scene
            on screen where (width < 490px) */
         overflow: hidden;
@@ -120,10 +132,14 @@
         /*---~---*/
     }
 
-    .navbar-brand {
-        font-size: inherit;
+    .hbp-site-current > a{
         font-weight: bold;
         color: $gray-lighter;
+        margin-right: 12px;
+
+        &:hover {
+            text-decoration: none;
+        }
     }
 
     .navbar-nav > li > a:hover,
@@ -143,28 +159,19 @@
         color: $gray-lighter;
     }
 
-    &.navbar-fixed-top {
-        border-width: 0px 0px 0px;
+    .hbp-logo {
+        height: $hbp-common-navbar-height;
+        width: #{$hbp-common-navbar-height + 10};
+        background-size:  hbp-common-navbar-height auto;
     }
 
-
-    .hbp-site-current {
-        font-weight: bold;
-        color: $gray-lighter;
-        margin-right: 12px;
-
-        &:hover {
-            text-decoration: none;
-        }
+    &.navbar-fixed-top {
+        border-width: 0px 0px 0px;
     }
 
     .dropdown-menu {
         background: transparentize($gray-darker, 0.1);
         font-size: 1em;
-
-        > .dropdown-header {
-            padding: $nav-link-padding;
-        }
 
         > li > a {
             color: $hbp-common-navbar-gray-text;
@@ -217,7 +224,6 @@
                 transition: border 200ms;
                 border: 1px solid rgba(0,0,0,0);
                 border-radius: $border-radius-base;
-                margin-left: -(2*$padding-base-horizontal);
             }
 
             &:hover .dropdown-toggle i,
@@ -298,6 +304,12 @@
 
             &:hover {
                 background: transparentize($gray-light, 0.8);
+            }
+
+
+            .dropdown {
+                float: left;
+                padding: 10px 15px;
             }
 
             li > a:hover,

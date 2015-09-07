@@ -27,9 +27,9 @@
 
       var ros;
       var token = [];
-      if (localStorage.getItem('tokens-bbp')) {
+      if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
         try {
-          token = JSON.parse(localStorage.getItem('tokens-bbp'));
+          token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
         } catch(e) {
           // this token will be rejected by the server and the client will get a proper auth error
           token[0] = { access_token : 'malformed-token' };

@@ -5,7 +5,7 @@ angular.module('hbpCommon', [
   'bbpOidcClient',
   'hbp-common-templates'
 ]);
-window.hbpCommonVersion = '0.5.0';
+window.hbpCommonVersion = '0.2.6';
 angular.module('hbpCommon').controller('hbpMetaNavigationCtrl', [
   '$rootScope',
   '$scope',
@@ -119,60 +119,18 @@ angular.module('hbpCommon').directive('hbpPerformAction', [function () {
       }
     };
   }]);
-angular.module('hbpCommon').directive('hbpUpNav', [
-  '$rootScope',
-  '$timeout',
-  'hbpUserDirectory',
-  'bbpOidcSession',
-  function ($rootScope, $timeout, hbpUserDirectory, bbpOidcSession) {
-    'use strict';
-    return {
-      restrict: 'A',
-      scope: { data: '=hbpUpNav' },
-      link: function (scope, element) {
-        var logout = function () {
-          bbpOidcSession.logout().then(function () {
-            $rootScope.$broadcast('user:disconnected');
-          });
-        };
-        // Remove the user info when logged out
-        scope.$on('user:disconnected', function () {
-          element[0].hbpUpNav({
-            user: null,
-            logout: null
-          });
-        });
-        // Update nav configuration
-        if (scope.data) {
-          $timeout(function () {
-            element[0].hbpUpNav(scope.data);
-          }, 0);
-        }
-        // Once logged, display the user
-        hbpUserDirectory.getCurrentUser().then(function (profile) {
-          element[0].hbpUpNav({
-            user: {
-              displayName: profile.displayName,
-              id: profile.id
-            },
-            logout: logout
-          });
-        });
-      }
-    };
-  }
-]);
 angular.module('hbpCommon').factory('hbpDialogFactory', [
   '$modal',
   '$log',
   '$q',
   '$rootScope',
-  '$compile',
-  '$templateCache',
-  'hbpErrorService',
-  function ($modal, $log, $q, $rootScope, $compile, $templateCache, hbpErrorService) {
+  function ($modal, $log, $q, $rootScope) {
     'use strict';
     /**
+     * @ngdoc
+     * @type function
+     * @name hbpDialogFactory.confirm
+     *
      * @description
      * `confirm` function displays a confirmation dialog.
      *
@@ -211,24 +169,6 @@ angular.module('hbpCommon').factory('hbpDialogFactory', [
         });
       return instance.result;
     }
-    /**
-     * ### Method `hbpErrorService.notify({HbpError}error)`
-     *
-     * Notify the user from of the given error.
-     *
-     * @param  {HbpError} error the error to display
-     */
-    function error(err) {
-      var scope = $rootScope.$new();
-      scope.error = err;
-      return alert({
-        class: 'error',
-        title: 'Error!',
-        label: 'Close',
-        scope: scope,
-        templateUrl: 'templates/error-alert.html'
-      });
-    }
     function alert(options) {
       if (typeof options === 'string') {
         return deprecatedAlert.apply(window, arguments);
@@ -264,7 +204,6 @@ angular.module('hbpCommon').factory('hbpDialogFactory', [
     }
     return {
       alert: alert,
-      error: error,
       confirm: confirm,
       confirmation: function (templateUrl, action, title, actionName, scope) {
         $log.warn('hbpDialogFactory.confirmation is deprecated.');
@@ -280,22 +219,31 @@ angular.module('hbpCommon').factory('hbpDialogFactory', [
             return;
           }
           return action(scope).then(null, function (data) {
-            var error;
+            var error = {
+                type: 'UnknownError',
+                message: 'An unknown error occured.'
+              };
             if (typeof data === 'string') {
-              error = hbpErrorService.error({
+              error = {
                 type: 'Error',
                 message: data
-              });
-            } else if (data) {
-              if (!data.status) {
-                data = {
-                  status: -1,
-                  data: data
+              };
+            }
+            if (data) {
+              if (data.status && data.data) {
+                data = data.data;
+              }
+              if (data.error) {
+                data = data.error;
+              }
+              if (data.type && data.message) {
+                error = data;
+              } else if (data.reason) {
+                error = {
+                  type: 'Error',
+                  message: data.reason
                 };
               }
-              error = hbpErrorService.httpError(data);
-            } else {
-              error = hbpErrorService.error();
             }
             alert({
               title: 'Error',
@@ -309,66 +257,10 @@ angular.module('hbpCommon').factory('hbpDialogFactory', [
     };
   }
 ]);
-angular.module('hbpCommon').service('hbpErrorService', function () {
-  'use strict';
-  var HbpError = function (options) {
-    options = angular.extend({
-      type: 'UnknownError',
-      message: 'An unknown error occured.',
-      code: -1
-    }, options);
-    this.type = options.type;
-    this.message = options.message;
-    this.data = options.data;
-    this.code = options.code;
-  };
-  return {
-    httpError: function (response) {
-      if (response.status === undefined) {
-        return new HbpError({ message: 'Cannot parse error, invalid format.' });
-      }
-      var error = new HbpError({ code: response.status });
-      if (response.status === 0) {
-        error.type = 'ClientError';
-        error.message = 'The client cannot run the request.';
-        return error;
-      }
-      if (response.status === 404) {
-        error.type = 'NotFound';
-        error.message = 'Resource not found';
-        return error;
-      }
-      if (response.data) {
-        var errorSource = response.data;
-        if (errorSource.error) {
-          errorSource = errorSource.error;
-        }
-        if (errorSource.type) {
-          error.type = errorSource.type;
-        }
-        if (errorSource.data) {
-          error.data = errorSource.data;
-        }
-        if (errorSource.message) {
-          error.message = errorSource.message;
-        } else if (errorSource.reason) {
-          error.type = 'Error';
-          error.message = errorSource.reason;
-        }
-      }
-      return error;
-    },
-    error: function (options) {
-      return new HbpError(options);
-    }
-  };
-});
 angular.module('hbpCommon').service('hbpUiUtil', [
   '$window',
   '$document',
-  '$q',
-  'hbpErrorService',
-  function ($window, $document, $q, hbpErrorService) {
+  function ($window, $document) {
     'use strict';
     // Test wether the given element
     // is part of the viewport
@@ -397,8 +289,11 @@ angular.module('hbpCommon').service('hbpUiUtil', [
         return submitCall.apply(this, callArguments).then(function (response) {
           closeMethod(response);
         }, function (response) {
-          scope.error = hbpErrorService.httpError(response);
-          $q.reject(scope.error);
+          if (response && response.data) {
+            scope.error = response.data;
+          } else {
+            scope.error = 'An unknown error occured';
+          }
         });
       };
     };
@@ -415,19 +310,12 @@ angular.module('hbpCommon').service('hbpUiUtil', [
       return $filter('date')(date, 'yyyy-MM-dd HH:mm:ss');
     };
   }
-]).filter('hbpCapitalize', [function () {
+]).filter('hbpCapitalize', [
+  '$filter',
+  function () {
     'use strict';
     return function (string) {
       return string.charAt().toUpperCase() + string.substring(1);
-    };
-  }]).filter('hbpMarkdown', [
-  '$sce',
-  function ($sce) {
-    'use strict';
-    return function (string) {
-      if (string !== undefined) {
-        return $sce.trustAsHtml(marked(string, { sanitize: true }));
-      }
     };
   }
 ]).run([
@@ -477,11 +365,10 @@ angular.module('hbpCommon').factory('hbpUserDirectory', [
   '$http',
   '$cacheFactory',
   'bbpConfig',
-  'hbpErrorService',
-  function ($rootScope, $q, $http, $cacheFactory, bbpConfig, errorService) {
+  function ($rootScope, $q, $http, $cacheFactory, bbpConfig) {
     'use strict';
     var userCache = $cacheFactory('hbpUserCache');
-    var userApiUrl = bbpConfig.get('api.user.v0');
+    var userApiUrl = bbpConfig('api.user.v0') + '/';
     // key used to store the logged in user in the cache
     var currentUserKey = '_currentUser_';
     $rootScope.$on('user:disconnected', function () {
@@ -515,154 +402,77 @@ angular.module('hbpCommon').factory('hbpUserDirectory', [
         userCache.put(addedUserList[i].id, addedUserList[i]);
       }
     };
-    var loadMore = function (url) {
-      return function () {
-        return $http.get(url).then(buildListResponse, function (response) {
-          return $q.reject(errorService.httpError(response));
-        });
-      };
-    };
-    var buildListResponse = function (response) {
-      var users = response.data.result;
-      var result = { result: users };
-      if (response.data.next) {
-        result.next = loadMore(response.data.next);
-      }
-      if (response.data.prev) {
-        result.prev = loadMore(response.data.prev);
-      }
-      return result;
-    };
-    // Return a promise with an map of id->userInfo based on the
-    // provided list of IDs.
-    var get = function (ids) {
-      var deferred = $q.defer();
-      var i;
-      var uncachedUser = [];
-      var uncachedGroup = [];
-      var response = {};
-      var urls = [];
-      var rejectDeferred = function () {
-        deferred.reject.apply(deferred, ids);
-      };
-      var processResponseAndCarryOn = function (data) {
-        addToCache(data.data.result, response);
-        if (urls && urls.length > 0) {
-          return $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
-        } else {
-          deferred.resolve(response);
-        }
-      };
-      for (i = 0; i < ids.length; i++) {
-        var user = userCache.get(ids[i]);
-        if (user) {
-          // The id is already cached
-          response[ids[i]] = user;
-        } else {
-          if (ids[i].indexOf('S') === 0) {
-            // The id is from a group
-            uncachedGroup.push(ids[i]);
+    return {
+      get: function (ids) {
+        var deferred = $q.defer();
+        var rejectDeferred = function () {
+          deferred.reject.apply(deferred, ids);
+        };
+        var processResponseAndCarryOn = function (data) {
+          if (urls.length > 0) {
+            addToCache(data.data.result, response);
+            return $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
           } else {
-            // The id is from a user
-            uncachedUser.push(ids[i]);
+            addToCache(data.data.result, response);
+            deferred.resolve(response);
+          }
+        };
+        var i;
+        var uncachedUser = [];
+        var uncachedGroup = [];
+        var response = {};
+        var urls = [];
+        for (i = 0; i < ids.length; i++) {
+          var user = userCache.get(ids[i]);
+          if (user) {
+            // The id is already cached
+            response[ids[i]] = user;
+          } else {
+            if (ids[i].indexOf('S') === 0) {
+              // The id is from a group
+              uncachedGroup.push(ids[i]);
+            } else {
+              // The id is from a user
+              uncachedUser.push(ids[i]);
+            }
           }
         }
-      }
-      if (uncachedUser.length + uncachedGroup.length === 0) {
-        // All ids are already available -> we resolve the promise
-        deferred.resolve(response);
-      } else {
-        // Get the list of URLs to call
-        splitInURl(uncachedUser, userApiUrl + '/user?filter=id=', urls);
-        splitInURl(uncachedGroup, userApiUrl + '/group?filter=id=', urls);
-        // Async calls and combination of result
-        $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
-      }
-      return deferred.promise;
-    };
-    return {
-      get: get,
+        if (uncachedUser.length + uncachedGroup.length === 0) {
+          // All ids are already available -> we resolve the promise
+          deferred.resolve(response);
+        } else {
+          // Get the list of URLs to call
+          splitInURl(uncachedUser, userApiUrl + 'user?filter=id=', urls);
+          splitInURl(uncachedGroup, userApiUrl + 'group?filter=id=', urls);
+          // Async calls and combination of result
+          $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
+        }
+        return deferred.promise;
+      },
       getCurrentUser: function () {
+        var deferred = $q.defer();
         var user = userCache.get(currentUserKey);
         if (user) {
-          return $q.when(user);
+          // loaded from cache
+          deferred.resolve(user);
+        } else {
+          // load it from user profile service
+          $q.all({
+            'user': $http.get(userApiUrl + 'user/me'),
+            'groups': $http.get(userApiUrl + 'user/me/groups')
+          }).then(function (aggregatedData) {
+            // merge groups into user profile
+            var profile = aggregatedData.user.data;
+            profile.groups = aggregatedData.groups.data.result;
+            // add to cache
+            userCache.put(currentUserKey, profile);
+            deferred.resolve(profile);
+          }, deferred.reject);
         }
-        // load it from user profile service
-        return $q.all({
-          'user': $http.get(userApiUrl + '/user/me'),
-          'groups': $http.get(userApiUrl + '/user/me/groups')
-        }).then(function (aggregatedData) {
-          // merge groups into user profile
-          var profile = aggregatedData.user.data;
-          profile.groups = aggregatedData.groups.data.result;
-          // add to cache
-          userCache.put(currentUserKey, profile);
-          return profile;
-        }, function (response) {
-          return $q.reject(errorService.httpError(response));
-        });
+        return deferred.promise;
       },
       create: function (user) {
-        return $http.post(userApiUrl + '/user', user).then(function () {
-          return user;
-        }, function (response) {
-          return $q.reject(errorService.httpError(response));
-        });
-      },
-      update: function (user, data) {
-        data = data || user;
-        var id = typeof user === 'string' ? user : user.id;
-        return $http.put(userApiUrl + '/user/' + id, data).then(function () {
-          userCache.remove(id);
-          if (userCache.get(currentUserKey) && userCache.get(currentUserKey).id === id) {
-            userCache.remove(currentUserKey);
-          }
-          return get([id]).then(function (users) {
-            return _.first(_.values(users));
-          });
-        }, function (response) {
-          return $q.reject(errorService.httpError(response));
-        });
-      },
-      list: function (options) {
-        var defaultOptions = {
-            page: 0,
-            pageSize: 10,
-            managedOnly: false
-          };
-        var opt = angular.extend(defaultOptions, options);
-        var filterStr;
-        if (opt.filter) {
-          var filterArr = _.map(opt.filter, function (val, key) {
-              if (_.isArray(val)) {
-                val = val.join('+');
-              }
-              return key + '=' + val;
-            });
-          filterStr = filterArr.join();
-        }
-        var sortStr;
-        if (opt.sort) {
-          if (_.isArray(opt.sort)) {
-            sortStr = opt.sort.join();
-          } else {
-            sortStr = _(opt.sort).toString();
-          }
-        }
-        var endpoint = userApiUrl + '/user';
-        if (opt.managedOnly) {
-          endpoint += '/managed';
-        }
-        return $http.get(endpoint, {
-          params: {
-            page: opt.page,
-            pageSize: opt.pageSize,
-            filter: filterStr,
-            sort: sortStr
-          }
-        }).then(buildListResponse, function (response) {
-          return $q.reject(errorService.httpError(response));
-        });
+        return $http.post(userApiUrl + 'user', user);
       }
     };
   }
@@ -729,7 +539,6 @@ angular.module('hbp-common-templates', [
   'templates/content-icon.html',
   'templates/dialog-alert.html',
   'templates/dialog-confirmation.html',
-  'templates/error-alert.html',
   'templates/icon.html'
 ]);
 angular.module('templates/breadcrumb.html', []).run([
@@ -741,7 +550,7 @@ angular.module('templates/breadcrumb.html', []).run([
 angular.module('templates/content-description.html', []).run([
   '$templateCache',
   function ($templateCache) {
-    $templateCache.put('templates/content-description.html', '<span ng-switch="content">\n' + '    <span ng-switch-when="application/vnd.bbp.FeatureExtract.Dependency+txt">Text FeatureExtract</span>\n' + '    <span ng-switch-when="application/vnd.bbp.SimulationProtocol.StimulationConfig">Simulation Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.SimulationProtocol.ReportingConfig">Reporting Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Config+config">Circuit Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Config">Circuit Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Combination">Circuit Combination</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Combination+xml">XML Circuit Combination</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Simulation.BlueConfig">BlueConfig File</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Simulation.HOC">HOC Simulation</span>\n' + '    <span ng-switch-when="application/vnd.bbp.bundle.Image.png">Image Bundle</span>\n' + '    <span ng-switch-when="application/zip">Archive</span>\n' + '    <span ng-switch-when="application/rar">Archive</span>\n' + '    <span ng-switch-when="application/json">JSON</span>\n' + '    <span ng-switch-when="application/txt">Plain Text</span>\n' + '    <span ng-switch-when="text/plain">Plain Text</span>\n' + '    <span ng-switch-when="image/jpeg">JPEG Image</span>\n' + '    <span ng-switch-when="image/png">PNG Image</span>\n' + '    <span ng-switch-when="image/gif">GIF Image</span>\n' + '    <span ng-switch-when="video/avi">AVI Video</span>\n' + '    <span ng-switch-when="video/mpg">MPEG Video</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.Morphology">Morphology</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.Morphology+asc">ASCI Morphology</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.Morphology+h5">H5 Morphology</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.NeuronDB">DAT NeuronDB</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.NeuronDB+dat">DAT NeuronDB</span>\n' + '    <span ng-switch-default>{{fallback}}</span>\n' + '</span>\n' + '');
+    $templateCache.put('templates/content-description.html', '<span ng-switch="content">\n' + '    <span ng-switch-when="application/vnd.bbp.FeatureExtract.Dependency+txt">Text FeatureExtract</span>\n' + '    <span ng-switch-when="application/vnd.bbp.SimulationProtocol.StimulationConfig">Simulation Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.SimulationProtocol.ReportingConfig">Reporting Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Config+config">Circuit Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Config">Circuit Configuration</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Combination">Circuit Combination</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Circuit.Combination+xml">XML Circuit Combination</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Simulation.BlueConfig">BlueConfig File</span>\n' + '    <span ng-switch-when="application/vnd.bbp.Simulation.HOC">HOC Simulation</span>\n' + '    <span ng-switch-when="application/zip">Archive</span>\n' + '    <span ng-switch-when="application/rar">Archive</span>\n' + '    <span ng-switch-when="application/json">JSON</span>\n' + '    <span ng-switch-when="application/txt">Plain Text</span>\n' + '    <span ng-switch-when="text/plain">Plain Text</span>\n' + '    <span ng-switch-when="image/jpeg">JPEG Image</span>\n' + '    <span ng-switch-when="image/png">PNG Image</span>\n' + '    <span ng-switch-when="image/gif">GIF Image</span>\n' + '    <span ng-switch-when="video/avi">AVI Video</span>\n' + '    <span ng-switch-when="video/mpg">MPEG Video</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.Morphology">Morphology</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.Morphology+asc">ASCI Morphology</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.Morphology+h5">H5 Morphology</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.NeuronDB">DAT NeuronDB</span>\n' + '    <span ng-switch-when="model/vnd.bbp.Morphology.NeuronDB+dat">DAT NeuronDB</span>\n' + '    <span ng-switch-default>{{fallback}}</span>\n' + '</span>\n' + '');
   }
 ]);
 angular.module('templates/content-icon.html', []).run([
@@ -760,12 +569,6 @@ angular.module('templates/dialog-confirmation.html', []).run([
   '$templateCache',
   function ($templateCache) {
     $templateCache.put('templates/dialog-confirmation.html', '<div class="modal-header"  >\n' + '    <button type="button" class="close" ng-click="$dismiss(\'cancel\')" aria-hidden="true">&times;</button>\n' + '    <h4 class="modal-title">{{title}}</h4>\n' + '</div>\n' + '<div class="modal-body">\n' + '    <alert ng-if="error" type="danger">{{error.reason}}</alert>\n' + '    <ng-include ng-if="confirmationContentUrl" src="confirmationContentUrl"></ng-include>\n' + '    {{confirmationContent}}\n' + '</div>\n' + '<div class="modal-footer">\n' + '    <button class="btn btn-default" ng-click="$dismiss(\'cancel\')">{{cancelLabel}}</button>\n' + '    <button class="btn btn-danger" ng-click="$close()">{{confirmLabel}}</button>\n' + '</div>\n' + '');
-  }
-]);
-angular.module('templates/error-alert.html', []).run([
-  '$templateCache',
-  function ($templateCache) {
-    $templateCache.put('templates/error-alert.html', '<div class="alert alert-danger">[{{error.type}}] {{error.message}}</div>\n' + '<pre><code>{{error | json}}</code></pre>\n' + '');
   }
 ]);
 angular.module('templates/icon.html', []).run([
