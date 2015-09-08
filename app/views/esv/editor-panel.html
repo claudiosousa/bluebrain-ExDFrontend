@@ -3,14 +3,14 @@
 </div>
 <div class="panel-body">
   <tabset>
-    <tab heading="Transfer Functions" active="activeTab.transferfunction" select="disableKeyBindings(); controls.transferfunction.refresh()" deselect="reenableKeyBindings()">
+    <tab heading="Transfer Functions" active="activeTab.transferfunction" select="!isClosing && disableKeyBindings(); !isClosing && controls.transferfunction.refresh()" deselect="reenableKeyBindings()">
       <transfer-function-editor topic="{{transferFunctionErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
         control="controls.transferfunction" />
     </tab>
     <tab heading="Environment" active="activeTab.environment">
       <environment-designer />
     </tab>
-    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select="disableKeyBindings(); controls.statemachine.refresh()" deselect="reenableKeyBindings()">
+    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.statemachine.refresh()" deselect="reenableKeyBindings()">
       <smach-editor control="controls.statemachine"/>
     </tab>
   </tabset>

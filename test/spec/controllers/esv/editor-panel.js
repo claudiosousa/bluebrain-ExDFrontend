@@ -138,4 +138,12 @@ describe('Controller: editorPanelCtrl', function () {
     expect(scope.reenableKeyBindings).not.toThrow();
   });
 
+  it('should set the variable isClosing to be true', function () {
+    expect(scope.isClosing).toBeFalsy();
+
+    scope.$destroy();
+
+    expect(scope.isClosing).toBeTruthy();
+  });
+
 });

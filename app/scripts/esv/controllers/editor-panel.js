@@ -15,6 +15,7 @@
     $scope.serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
     $scope.panelIsOpen = false;
+    $scope.isClosing = false;
     $scope.activeTab = {};
     $scope.activeTab.transferfunction = false;
     $scope.activeTab.environment = false;
@@ -63,6 +64,11 @@
         gz3d.scene.controls.keyBindingsEnabled = true;
       }
     };
-  }]);
 
+    // clean up on leaving
+    $scope.$on("$destroy", function() {
+      // prevent calling the select functions of the tabs
+      $scope.isClosing = true;
+    });
+  }]);
 }());
