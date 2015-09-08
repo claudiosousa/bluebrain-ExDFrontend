@@ -11,7 +11,8 @@
           "topics": {
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
-            "status": "/ros_cle_simulation/status"
+            "status": "/ros_cle_simulation/status",
+            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
         },
@@ -27,7 +28,8 @@
           "topics": {
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
-            "status": "/ros_cle_simulation/status"
+            "status": "/ros_cle_simulation/status",
+            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
         },
@@ -43,7 +45,8 @@
           "topics": {
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
-            "status": "/ros_cle_simulation/status"
+            "status": "/ros_cle_simulation/status",
+            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
         },
@@ -59,7 +62,8 @@
           "topics": {
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
-            "status": "/ros_cle_simulation/status"
+            "status": "/ros_cle_simulation/status",
+            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"
         },

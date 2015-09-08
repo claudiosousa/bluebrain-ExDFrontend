@@ -13,7 +13,16 @@
       'stateService',
       'pythonCodeHelper',
       'HELP_BASE_URL',
-    function ($log, backendInterfaceService, nrpBackendVersions, STATE, stateService, pythonCodeHelper, HELP_BASE_URL) {
+      'roslib',
+    function (
+        $log, 
+        backendInterfaceService, 
+        nrpBackendVersions, 
+        STATE, stateService, 
+        pythonCodeHelper, 
+        HELP_BASE_URL,
+        roslib
+    ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
       restrict: 'E',
@@ -60,6 +69,33 @@
           }
         });
 
+        scope.onNewErrorMessageReceived = function(msg) {
+          var flawedTransferFunction = _.find(scope.transferFunctions, {'functionName':  msg.functionName});
+          flawedTransferFunction.error = { message: msg.message };
+          if (msg.lineNumber >= 0) { // Python Syntax Error
+            var codeMirrorCollection = document.getElementsByClassName('CodeMirror');
+            var transferFunctionDivs = _.filter(codeMirrorCollection, 
+              function(e){
+                 return e.nodeName === 'DIV';
+              }
+            );
+            // Error line highlighting
+            var flawedTransferFunctionIndex = _.indexOf(scope.transferFunctions, flawedTransferFunction);
+            var codeMirrorDiv = transferFunctionDivs[flawedTransferFunctionIndex];
+            var editor = codeMirrorDiv.CodeMirror;
+            var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
+            flawedTransferFunction.error.lineHandle = editor.getLineHandle(codeMirrorLineNumber);
+            editor.addLineClass(codeMirrorLineNumber, 'background', 'alert alert-danger');
+            flawedTransferFunction.editor = editor;
+          }
+        };
+
+        var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
+        scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
+        scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
+
+
+
         scope.control.refresh = function () {
           backendInterfaceService.getTransferFunctions(
             function (data) {
@@ -72,7 +108,7 @@
                 if (transferFunction.functionName) {
                   // If we already have local changes, we do not update
                   var foundIndex = -1;
-                  for (var j = 0, len = scope.transferFunctions.length; j < len; j = j+1) {
+                  for (var j = 0, len = scope.transferFunctions.length; j < len; j = j + 1) {
                     if (scope.transferFunctions[j].id === transferFunction.functionName) {
                       foundIndex = j;
                       break;
@@ -89,6 +125,15 @@
           });
         };
 
+        scope.cleanError = function(transferFunction) {     
+          var editor = transferFunction.editor;
+          var lineHandle = transferFunction.error.lineHandle;
+          if (angular.isDefined(editor) && angular.isDefined(lineHandle)) {
+            editor.removeLineClass(lineHandle, 'background', 'alert alert-danger');
+          }
+          transferFunction.error = undefined;
+        };
+
         scope.update = function (transferFunction) {
           var restart = stateService.currentState === STATE.STARTED;
           stateService.ensureStateBeforeExecuting(
@@ -96,6 +141,9 @@
             function() {
                 backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code, function(){
                   transferFunction.dirty = false;
+                  if (angular.isDefined(transferFunction.error)) { 
+                    scope.cleanError(transferFunction);
+                  }
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);
                   }
@@ -130,6 +178,7 @@
             );
           }
         };
+
 
         scope.create = function () {
           var transferFunction = {};

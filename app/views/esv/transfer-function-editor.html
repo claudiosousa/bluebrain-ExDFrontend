@@ -10,6 +10,7 @@
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.functionName}}</span></code></h4>
   <div ui-codemirror ui-codemirror-opts="editorOptions" ng-change="onTransferFunctionChange(transferFunction)" ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
+ <div ng-if="transferFunction.error" class="alert alert-danger" role="alert">{{transferFunction.error.message}}</div>
   <button type="button" class="btn btn-default btn-md" 
     ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending" 
     ng-click="update(transferFunction)">

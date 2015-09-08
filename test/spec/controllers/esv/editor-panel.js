@@ -132,4 +132,10 @@ describe('Controller: editorPanelCtrl', function () {
 
     expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
   });
+
+  it('should not throw an error when gz3d.scene is already disposed on close', function () {
+    gz3d.scene = undefined;
+    expect(scope.reenableKeyBindings).not.toThrow();
+  });
+
 });

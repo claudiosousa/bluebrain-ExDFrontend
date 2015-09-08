@@ -3,7 +3,7 @@
 describe('Directive: transferFunctionEditor', function () {
 
   var $rootScope, $compile, $httpBackend, $log, $scope, element, backendInterfaceService,
-    nrpBackendVersions, currentStateMock;
+    nrpBackendVersions, currentStateMock, roslib, stateService, STATE;
 
   var backendInterfaceServiceMock = {
     getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
@@ -15,12 +15,19 @@ describe('Directive: transferFunctionEditor', function () {
   var nrpBackendVersionsGetMock = jasmine.createSpy('get');
   var nrpBackendVersionsMock = jasmine.createSpy('nrpBackendVersions').andReturn({get: nrpBackendVersionsGetMock});
 
+  var roslibMock = {};
+  var returnedConnectionObject = {};
+  returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('currentStateMockFactory'));
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
     $provide.value('stateService', currentStateMock);
+    $provide.value('roslib', roslibMock);
   }));
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
@@ -29,11 +36,17 @@ describe('Directive: transferFunctionEditor', function () {
                               _backendInterfaceService_,
                               _nrpBackendVersions_,
                               $templateCache,
-                              _currentStateMockFactory_) {
+                              _currentStateMockFactory_,
+                              _roslib_,
+                              _stateService_,
+                              _STATE_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $httpBackend = _$httpBackend_;
     $log = _$log_;
+    roslib = _roslib_;
+    STATE = _STATE_;
+    stateService = _stateService_;
     backendInterfaceService = _backendInterfaceService_;
     nrpBackendVersions = _nrpBackendVersions_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
@@ -79,11 +92,36 @@ describe('Directive: transferFunctionEditor', function () {
       element.isolateScope().transferFunctions[1].code = newCode;
       element.isolateScope().transferFunctions[1].dirty = true;
       element.isolateScope().update(element.isolateScope().transferFunctions[1]);
-      // The next line is ignored by jshint. The reason is that we cannot change "transfer_function" to "transferFunctions"
-      // since this dictionnary key is serialized from python on the Backend and Python hint prefer this syntax...
       expect(backendInterfaceService.setTransferFunction).toHaveBeenCalledWith('tf1', newCode, jasmine.any(Function));
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
       expect(element.isolateScope().transferFunctions[1].dirty).toEqual(false);
+    });
+
+    it('should call the error cleanup callback depending on the tf error field', function () {
+      var scope =  element.isolateScope();
+      var tf1 = scope.transferFunctions[1];
+      tf1.error = {};
+      scope.update(tf1);
+      spyOn(scope, 'cleanError');
+      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      expect(scope.cleanError.callCount).toBe(1);
+      tf1.error = undefined;
+      scope.update(tf1);
+      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      expect(scope.cleanError.callCount).toBe(1);
+    });
+
+    it('should restart the simulation if it was paused for update', function () {
+      var scope =  element.isolateScope();
+      var tf1 = scope.transferFunctions[1];
+      stateService.currentState = STATE.STARTED;
+      scope.update(tf1);
+      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      expect(stateService.setCurrentState.callCount).toBe(1);
+      stateService.currentState = STATE.PAUSED;
+      scope.update(tf1);
+      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      expect(stateService.setCurrentState.callCount).toBe(1);
     });
 
     it('should delete a tf properly', function() {
@@ -98,6 +136,36 @@ describe('Directive: transferFunctionEditor', function () {
       // Since the tf is local, we should not call back the server
       expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1', jasmine.any(Function));
     });
+
+    it('should fill the error field of the flawed transfer function', function () {
+      var msg = { functionName: 'tf2', message: 'You nearly broke the platform!' };
+      var scope = element.isolateScope();
+      scope.onNewErrorMessageReceived(msg);
+      expect(scope.transferFunctions[0].error.message).toEqual(msg.message);
+    });
+
+    it('should clean the error field of the flawed transfer function', function () {
+      var msg = { functionName: 'tf1', message: 'You are in trouble!' };
+      var scope = element.isolateScope();
+      scope.onNewErrorMessageReceived(msg);
+      var tf1 = scope.transferFunctions[1];
+      scope.cleanError(tf1);
+      expect(scope.transferFunctions[1].error).not.toBeDefined();
+    });
+
+    it('should remove error highlighting in the flawed transfer function editor', function () {
+      var editor = {};
+      editor.removeLineClass = jasmine.createSpy('removeLineClass');
+      var msg = { functionName: 'tf1', message: 'You just managed it!', lineNumber: -1 };
+      var scope = element.isolateScope();
+      scope.onNewErrorMessageReceived(msg);
+      var tf1 = scope.transferFunctions[1];
+      tf1.editor = editor;
+      tf1.error.lineHandle = {};
+      scope.cleanError(tf1);
+      expect(editor.removeLineClass).toHaveBeenCalled();
+    });
+
   });
 
   describe('Editing transferFunctions', function () {
