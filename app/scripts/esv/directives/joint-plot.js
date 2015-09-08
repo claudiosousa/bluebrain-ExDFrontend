@@ -181,7 +181,7 @@
         scope.$watch(function() {
           return parent.height();
         }, function(newHeight) {
-          scope.chartHeight = newHeight;
+          scope.chartHeight = Math.max(newHeight,80);
         });
       }
 
