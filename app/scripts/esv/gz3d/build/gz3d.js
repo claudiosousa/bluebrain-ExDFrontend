@@ -2569,18 +2569,28 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   {
     this.scene.setPose(modelObj, model.pose.position, model.pose.orientation);
   }
+
+  var visualsToHide = [];
+  var modelUriAnimated = this.animatedModelAvailable(model, visualsToHide);
+  var animatedModelFound = (modelUriAnimated !== undefined);
+
+  if (animatedModelFound)
+  {
+    this.loadAnimatedModel(modelUriAnimated, this.scene, model.name);
+  }
   for (var j = 0; j < model.link.length; ++j)
   {
     var link = model.link[j];
     var linkObj = new THREE.Object3D();
+    var hideVisualObj = false;
     linkObj.name = link.name;
     linkObj.userData = link.id;
     linkObj.serverProperties =
-        {
-          self_collide: link.self_collide,
-          gravity: link.gravity,
-          kinematic: link.kinematic
-        };
+      {
+        self_collide: link.self_collide,
+        gravity: link.gravity,
+        kinematic: link.kinematic
+      };
 
     if (link.pose)
     {
@@ -2591,9 +2601,17 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     for (var k = 0; k < link.visual.length; ++k)
     {
       var visual = link.visual[k];
+      if (animatedModelFound)
+      {
+        hideVisualObj = this.isVisualHidden(visual, visualsToHide);
+      }
       var visualObj = this.createVisualFromMsg(visual);
       if (visualObj && !visualObj.parent)
       {
+        if (animatedModelFound && hideVisualObj)
+        {
+          visualObj.visible = false;
+        }
         linkObj.add(visualObj);
       }
     }
@@ -2603,11 +2621,14 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       var collision = link.collision[l];
       for (var m = 0; m < link.collision[l].visual.length; ++m)
       {
-        var collisionVisual = link.collision[l].visual[m];
-        var collisionVisualObj = this.createVisualFromMsg(collisionVisual);
-        if (collisionVisualObj && !collisionVisualObj.parent)
+        if (!animatedModelFound)
         {
-          linkObj.add(collisionVisualObj);
+          var collisionVisual = link.collision[l].visual[m];
+          var collisionVisualObj = this.createVisualFromMsg(collisionVisual);
+          if (collisionVisualObj && !collisionVisualObj.parent)
+          {
+            linkObj.add(collisionVisualObj);
+          }
         }
       }
     }
@@ -2629,6 +2650,127 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   }
 
   return modelObj;
+};
+
+GZ3D.GZIface.prototype.animatedModelAvailable = function(model, visualsToHide) {
+  var uriPath = GZ3D.assetsPath;
+  var animatedModelFound = undefined;
+
+  for (var j = 0; j < model.link.length; ++j)
+  {
+    var link = model.link[j];
+
+    for (var k = 0; k < link.visual.length; k++)
+    {
+      var geom = link.visual[k].geometry;
+      if (geom && geom.mesh)
+      {
+        var meshUri = geom.mesh.filename;
+        // This saves all visuals of a model here because access to the loaded model after the loading
+        // process finished is more difficult to implement. The optimal solution would be to actually
+        // do this only after an animated model was found, but for testing purposes, I decided to build
+        // the list of visuals in a model here.
+        visualsToHide.push(geom.mesh.filename);
+        var uriType = meshUri.substring(0, meshUri.indexOf('://'));
+        if (uriType === 'file' || uriType === 'model')
+        {
+          var modelUri = meshUri.substring(meshUri.indexOf('://') + 3);
+          var modelName = modelUri.substring(0, modelUri.indexOf('/'));
+          var modelUriCheck = uriPath + '/' + modelName + '/meshes/' + modelName + '_animated.dae';
+          var checkModel = new XMLHttpRequest();
+          // We use a double technique to disable the cache for these requests:
+          // 1. We create a custom url by adding the time as a parameter.
+          // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
+          // Since browsers and servers vary in their behaviour, we use both of these tricks.
+          // PS: These requests do not load the dae files, they just verify if they exist on the server
+          // so that we can choose between coarse or reqular models.
+          checkModel.open('HEAD', modelUriCheck, false);
+          try { checkModel.send(); } catch(err) { console.log(modelUriCheck + ': no animated version'); }
+          if (checkModel.status === 404)
+          {
+            console.log("    NO animated version found.");
+          }
+          else
+          {
+            console.log("    ANIMATED version found.");
+            animatedModelFound = modelUriCheck;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return animatedModelFound;
+};
+
+GZ3D.GZIface.prototype.loadAnimatedModel = function(modelUriAnimated, scene, modelName) {
+  var loader = new THREE.ColladaLoader();
+
+  // Progress update: Add this asset to the assetProgressArray
+  var that = this;
+  var element = {};
+  element.id = modelName + "_animated";
+  element.url = modelUriAnimated;
+  element.progress = 0;
+  element.totalSize = 0;
+  element.done = false;
+  this.assetProgressData.assets.push(element);
+  loader.load(modelUriAnimated, function(collada)
+  {
+    var modelParent = new THREE.Object3D();
+    var linkParent = new THREE.Object3D();
+    collada.scene.traverse ( function (child)
+    {
+      if (child instanceof THREE.Mesh)
+      {
+        var transparentMaterial = new THREE.MeshBasicMaterial( { color: 0x11ff11 } );
+        transparentMaterial.wireframe = true;
+        child.material = transparentMaterial;
+      }
+    });
+
+    linkParent.add(collada.scene);
+    var colladaSceneAxes = new THREE.AxisHelper(2);
+    linkParent.add(colladaSceneAxes);
+    modelParent.add(linkParent);
+    var modelParentAxes = new THREE.AxisHelper(4);
+    modelParent.add(modelParentAxes);
+
+    // Fabian: This is a temporary measure to synchronize the positions
+    // of the SDF-based mouse model and the client-specific mouse model.
+    // This is an issue caused by different model positions in Blender.
+    modelParent.position.y = modelParent.position.y + 4.49;
+    modelParent.position.z = modelParent.position.z + 0.29;
+
+    var helper = new THREE.SkeletonHelper(collada.scene);
+    helper.material.linewidth = 3;
+    helper.visible = true;
+
+    scene.add(helper);
+    scene.add(modelParent);
+
+    element.done = true;
+    that.assetProgressCallback(that.assetProgressData);
+  }, function(progress){
+    element.progress = progress.loaded;
+    element.totalSize = progress.total;
+    element.error = progress.error;
+    that.assetProgressCallback(that.assetProgressData);
+  });
+};
+
+GZ3D.GZIface.prototype.isVisualHidden = function(visual, visualsToHide) {
+  if (visual.geometry && visual.geometry.mesh)
+  {
+    for (var k = 0; k < visualsToHide.length; k++)
+    {
+      if (visualsToHide[k] == visual.geometry.mesh.filename)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
 };
 
 GZ3D.GZIface.prototype.updateVisualFromMsg = function (visualObj, visual) {
