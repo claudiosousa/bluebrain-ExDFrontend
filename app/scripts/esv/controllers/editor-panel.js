@@ -57,7 +57,9 @@
 
     $scope.reenableKeyBindings = function() {
       // Reenable the key bindings when the user leaves a code-editor panel
-      gz3d.scene.controls.keyBindingsEnabled = true;
+      if (angular.isDefined(gz3d.scene)) {
+        gz3d.scene.controls.keyBindingsEnabled = true;
+      }
     };
   }]);
 
