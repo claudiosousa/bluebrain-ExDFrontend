@@ -88,6 +88,7 @@ input[type=number]::-webkit-inner-spin-button
 }
 .panelsGroup
 {
+  margin-left: 1em;
   height: 100%;
   position: absolute;
   top: 0;
@@ -95,15 +96,12 @@ input[type=number]::-webkit-inner-spin-button
 .leftPanels
 {
   display: none;
-  background-color: #2a2a2a;
   height: 100%;
   width: 23em;
 }
 .panelContent
 {
   height: calc(100% - 2.51em);
-  overflow-y: auto;
-  overflow-x: hidden;
   margin-top: 0.01em;
 }
 .panelTitle
@@ -111,11 +109,6 @@ input[type=number]::-webkit-inner-spin-button
   width: 100%;
   height: 2.5em;
   line-height: 1.8em;
-  background-color: #1d1d1d;
-}
-.panelTitle:hover
-{
-  background-color: #212121;
 }
 .panelTitle h3
 {
@@ -146,6 +139,12 @@ input[type=number]::-webkit-inner-spin-button
 {
   cursor: pointer;
 }
+
+.insertMenus
+{
+  display : none;
+}
+
 /* main menu*/
 #mainMenu li
 {
@@ -203,6 +202,12 @@ input[type=number]::-webkit-inner-spin-button
 {
   display: none;
 }
+
+a[id^="insert-entity-"]
+{
+   text-decoration: none;
+}
+
 /* world tree */
 .expandableTree
 {

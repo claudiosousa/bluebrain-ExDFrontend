@@ -17,6 +17,14 @@
       templateUrl: 'views/esv/environment-designer.html',
       restrict: 'E',
       link: function(scope, element, attrs) {
+        if (!$stateParams.serverID || !$stateParams.simulationID) {
+          throw "No serverID or simulationID given.";
+        }
+
+        var serverID = $stateParams.serverID;
+        var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+        scope.assetsPath = serverConfig.gzweb.assets;//used by the view
+
         scope.EDIT_MODE = EDIT_MODE;
         scope.gz3d = gz3d;
 
@@ -45,6 +53,12 @@
               break;
             }
           }
+        };
+
+        scope.addModel = function (modelName) {
+          window.guiEvents.emit('spawn_entity_start', modelName);
+          scope.setEditMode(EDIT_MODE.TRANSLATE);
+          panels.close();
         };
 
         scope.exportSDFWorld = function () {
