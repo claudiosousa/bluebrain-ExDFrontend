@@ -28,6 +28,14 @@ describe('Services: nrp-error-handlers', function () {
     expect(result.template).toEqual(error);
   });
 
+  it('should translate 400 errors properly', function() {
+    var response = {data: {status: 400}};
+    var result = nrpErrorService.httpError(response);
+    expect(result.title).toEqual('Error');
+    expect(result.label).toEqual('OK');
+    expect(result.template).toEqual('The request could not be understood by the server');
+  });
+
 });
 
 describe('Services: nrp-error-handlers', function () {

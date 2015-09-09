@@ -24,6 +24,9 @@
             error.title = errorSource.type;
             error.template = errorSource.message;
           }
+          else if (errorSource.status === 400) {
+            error.template = 'The request could not be understood by the server';
+          }
           else {
             error.template = errorSource;
           }
