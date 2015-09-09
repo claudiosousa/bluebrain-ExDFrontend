@@ -8,7 +8,7 @@
       return $resource(baseUrl + '/version', {}, {
         get: {
           method: 'GET',
-          interceptor : {responseError : serverError},
+          interceptor : {responseError: serverError.display},
           transformResponse: function(data) {
             var result = {};
             var getLatestReleasedVersion = function(version)

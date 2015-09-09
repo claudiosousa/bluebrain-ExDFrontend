@@ -635,7 +635,6 @@ describe('Services: error handling', function () {
   var serverError, simulationService, simulationControl;
   var simulationGenerator, simulationState, experimentSimulationService, serversEnabled;
   var screenControl;
-
   serversEnabled = ['bbpce014','bbpce016', 'bbpce018'];
 
   beforeEach(module('simulationControlServices'));
@@ -645,6 +644,7 @@ describe('Services: error handling', function () {
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
 
   var serverErrorMock = jasmine.createSpy('serverError');
+  serverErrorMock.display = jasmine.createSpy('display');
   beforeEach(module(function ($provide) {
     $provide.value('serverError', serverErrorMock);
     $provide.value('roslib', roslibMock);
@@ -655,7 +655,7 @@ describe('Services: error handling', function () {
 
     httpBackend = $httpBackend;
     serverError = _serverError_;
-    serverError.reset();
+    serverError.display.reset();
     simulationService = _simulationService_;
     simulationControl = _simulationControl_;
     simulationGenerator = _simulationGenerator_;
@@ -670,7 +670,7 @@ describe('Services: error handling', function () {
      httpBackend.verifyNoOutstandingRequest();
    });
 
-  it('should call once serverError for every failing service', function() {
+  it('should call once serverError.display for every failing service', function() {
     var serverURL = 'http://bbpce014.epfl.ch:8080';
     var serverID = 'bbpce014';
     var response;
@@ -679,10 +679,10 @@ describe('Services: error handling', function () {
     simulationService({serverURL: serverURL, serverID: serverID}).simulations();
     httpBackend.expectGET(serverURL + '/simulation');
     httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
+    expect(serverError.display.callCount).toBe(1);
+    response = serverError.display.mostRecentCall.args[0];
     expect(response.status).toBe(400);
-    serverError.reset();
+    serverError.display.reset();
 
     //Ignore this warning because of the sim_id
     /*jshint camelcase: false */
@@ -690,32 +690,32 @@ describe('Services: error handling', function () {
     simulationControl(serverURL).simulation(simulationID);
     httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id);
     httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
+    expect(serverError.display.callCount).toBe(1);
+    response = serverError.display.mostRecentCall.args[0];
     expect(response.status).toBe(400);
-    serverError.reset();
+    serverError.display.reset();
 
     simulationState(serverURL).state(simulationID);
     httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id + '/state');
     httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
+    expect(serverError.display.callCount).toBe(1);
+    response = serverError.display.mostRecentCall.args[0];
     expect(response.status).toBe(400);
-    serverError.reset();
+    serverError.display.reset();
 
     simulationGenerator(serverURL).create();
     httpBackend.expectPOST(serverURL + '/simulation').respond(500);
     httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
+    expect(serverError.display.callCount).toBe(1);
+    response = serverError.display.mostRecentCall.args[0];
     expect(response.status).toBe(500);
-    serverError.reset();
+    serverError.display.reset();
 
     screenControl(serverURL).updateScreenColor(simulationID, {});
     httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction', {});
     httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
+    expect(serverError.display.callCount).toBe(1);
+    response = serverError.display.mostRecentCall.args[0];
     expect(response.status).toBe(500);
   });
 
@@ -728,7 +728,7 @@ describe('Services: error handling', function () {
     experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', 'bbpce014', errorCallback);
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
-    expect(serverError.callCount).toBe(1);
+    expect(serverError.display.callCount).toBe(1);
   });
 
   it('should not call serverError for a failing GET /simulation request with 504 status', function() {
@@ -738,7 +738,7 @@ describe('Services: error handling', function () {
     simulationService({serverURL: serverURL, serverID: serverID}).simulations();
     httpBackend.expectGET(serverURL + '/simulation');
     httpBackend.flush();
-    expect(serverError.callCount).toBe(0);
+    expect(serverError.display.callCount).toBe(0);
   });
 
 });

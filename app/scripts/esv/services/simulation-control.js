@@ -93,7 +93,7 @@
               responseError: function (response) {
                 // Prevent 504 Gateway Timeout errors to be displayed
                 if (response.status !== 504) {
-                  serverError(response);
+                  serverError.display(response);
                 }
               }
             },
@@ -117,7 +117,7 @@
       return $resource(baseUrl + '/simulation/:sim_id', {}, {
         simulation: {
           method: 'GET',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         }
       });
     };
@@ -128,7 +128,7 @@
       return $resource(baseUrl + '/simulation/:sim_id/state', {}, {
         state: {
           method: 'GET',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         },
         update: { // this method initializes, starts, stops, or pauses the simulation
           method: 'PUT'
@@ -142,7 +142,7 @@
       return $resource(baseUrl + '/simulation', {}, {
         create: {
           method: 'POST',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         }
       });
     };
@@ -153,7 +153,7 @@
       return $resource(baseUrl + '/simulation/sdf_world', {}, {
         export: {
           method: 'GET',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         },
         import: {
           method: 'PUT'
@@ -167,7 +167,7 @@
       return $resource(baseUrl + '/simulation/:sim_id/interaction', {}, {
         updateScreenColor: {
           method: 'PUT',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         }
       });
     };
@@ -180,7 +180,7 @@
           method: 'GET',
           // prevent the user to wait for long time since our servers can only handle one request at a time (yet).
           timeout: DEFAULT_RESOURCE_GET_TIMEOUT,
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         }
       });
     };
@@ -478,7 +478,7 @@
               // Going to the GZ3D-Page is done in the "registerForStatusInformation" function on success
             },
             function (updateData) {
-              serverError(updateData);
+              serverError.display(updateData);
               errorCallback();
             }
           );

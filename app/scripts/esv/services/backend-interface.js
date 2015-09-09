@@ -10,12 +10,12 @@
       var resourceStateMachine = $resource(serverBaseUrl + '/simulation/:sim_id/state-machines', {}, {
         get: {
           method: 'GET',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         },
         put: {
           method: 'PUT',
           url: serverBaseUrl + '/simulation/:sim_id/state-machines/:state_machine_name',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         }
       });
 
@@ -23,17 +23,16 @@
         transferFunctions: {
           method: 'GET',
           isArray: true,
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         },
         patch: {
           method: 'PUT',
-          url: serverBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
-          interceptor: {responseError: serverError}
+          url: serverBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name'
         },
         delete: {
           method: 'DELETE',
           url: serverBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
-          interceptor: {responseError: serverError}
+          interceptor: {responseError: serverError.display}
         }
       });
 
@@ -54,8 +53,15 @@
             callback(data);
           });
         },
-        setTransferFunction: function (name, data, callback) {
-          resourceTransferFunction.patch({sim_id: $stateParams.simulationID, transfer_function_name: name}, data, callback);
+        setTransferFunction: function (name, data, successCallback, errorCallback) {
+          resourceTransferFunction.patch({
+            sim_id: $stateParams.simulationID, 
+            transfer_function_name: name
+          }, 
+            data, 
+            successCallback,
+            errorCallback
+          );
         },
         deleteTransferFunction: function (name, callback) {
           resourceTransferFunction.delete({sim_id: $stateParams.simulationID, transfer_function_name: name}, callback);

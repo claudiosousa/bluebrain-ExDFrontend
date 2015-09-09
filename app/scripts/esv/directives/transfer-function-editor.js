@@ -14,6 +14,7 @@
       'pythonCodeHelper',
       'HELP_BASE_URL',
       'roslib',
+      'serverError',
     function (
         $log, 
         backendInterfaceService, 
@@ -21,7 +22,8 @@
         STATE, stateService, 
         pythonCodeHelper, 
         HELP_BASE_URL,
-        roslib
+        roslib,
+        serverError
     ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
@@ -69,24 +71,31 @@
           }
         });
 
+        scope.getTransferFunctionEditor = function(transferFunction) {
+          if (angular.isDefined(transferFunction.editor)) {
+            return transferFunction.editor;
+          }
+          var codeMirrorCollection = document.getElementsByClassName('CodeMirror');
+          var transferFunctionDivs = _.filter(codeMirrorCollection, 
+            function(e){
+               return e.nodeName === 'DIV';
+            }
+          );
+          var transferFunctionIndex = _.indexOf(scope.transferFunctions, transferFunction);
+          var codeMirrorDiv = transferFunctionDivs[transferFunctionIndex];
+          transferFunction.editor = codeMirrorDiv.CodeMirror;
+          return transferFunction.editor;
+        };
+
         scope.onNewErrorMessageReceived = function(msg) {
           var flawedTransferFunction = _.find(scope.transferFunctions, {'functionName':  msg.functionName});
           flawedTransferFunction.error = { message: msg.message };
           if (msg.lineNumber >= 0) { // Python Syntax Error
-            var codeMirrorCollection = document.getElementsByClassName('CodeMirror');
-            var transferFunctionDivs = _.filter(codeMirrorCollection, 
-              function(e){
-                 return e.nodeName === 'DIV';
-              }
-            );
             // Error line highlighting
-            var flawedTransferFunctionIndex = _.indexOf(scope.transferFunctions, flawedTransferFunction);
-            var codeMirrorDiv = transferFunctionDivs[flawedTransferFunctionIndex];
-            var editor = codeMirrorDiv.CodeMirror;
+            var editor = scope.getTransferFunctionEditor(flawedTransferFunction);
             var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
             flawedTransferFunction.error.lineHandle = editor.getLineHandle(codeMirrorLineNumber);
             editor.addLineClass(codeMirrorLineNumber, 'background', 'alert alert-danger');
-            flawedTransferFunction.editor = editor;
           }
         };
 
@@ -105,6 +114,7 @@
                 transferFunction.dirty = false;
                 transferFunction.local = false;
                 transferFunction.functionName = transferFunction.id = pythonCodeHelper.getFunctionName(data[i]);
+                transferFunction.editor = undefined;
                 if (transferFunction.functionName) {
                   // If we already have local changes, we do not update
                   var foundIndex = -1;
@@ -126,7 +136,7 @@
         };
 
         scope.cleanError = function(transferFunction) {     
-          var editor = transferFunction.editor;
+          var editor = scope.getTransferFunctionEditor(transferFunction);
           var lineHandle = transferFunction.error.lineHandle;
           if (angular.isDefined(editor) && angular.isDefined(lineHandle)) {
             editor.removeLineClass(lineHandle, 'background', 'alert alert-danger');
@@ -139,14 +149,21 @@
           stateService.ensureStateBeforeExecuting(
             STATE.PAUSED,
             function() {
-                backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code, function(){
+              backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code, 
+                function(){
                   transferFunction.dirty = false;
                   if (angular.isDefined(transferFunction.error)) { 
                     scope.cleanError(transferFunction);
                   }
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);
-                  }
+                  }                    
+                }, 
+                function(data) {
+                  serverError.display(data);  
+                  if (restart) {
+                    stateService.setCurrentState(STATE.STARTED);
+                  }                  
                 }
               );
             }

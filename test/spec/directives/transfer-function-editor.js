@@ -29,6 +29,8 @@ describe('Directive: transferFunctionEditor', function () {
     $provide.value('stateService', currentStateMock);
     $provide.value('roslib', roslibMock);
   }));
+
+  var editorMock = {};  
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
                               _$httpBackend_,
@@ -50,6 +52,9 @@ describe('Directive: transferFunctionEditor', function () {
     backendInterfaceService = _backendInterfaceService_;
     nrpBackendVersions = _nrpBackendVersions_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
+    editorMock.getLineHandle = jasmine.createSpy('getLineHandle').andReturn(0);
+    editorMock.addLineClass = jasmine.createSpy('addLineClass');
+    editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
@@ -81,46 +86,62 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should handle the retrieved transferFunctions properly', function () {
 
-      var expectedTf1 = {code: tf1Code, dirty: false, local: false, functionName: 'tf1', id: 'tf1'};
-      var expectedTf2 = {code: tf2Code, dirty: false, local: false, functionName: 'tf2', id: 'tf2'};
+      var expectedTf1 = {code: tf1Code, dirty: false, local: false, functionName: 'tf1', id: 'tf1', editor: undefined };
+      var expectedTf2 = {code: tf2Code, dirty: false, local: false, functionName: 'tf2', id: 'tf2', editor: undefined };
       var expected = [expectedTf2, expectedTf1];
       expect(element.isolateScope().transferFunctions).toEqual(expected);
     });
 
     it('should save back the tf properly', function () {
       var newCode = 'New code';
-      element.isolateScope().transferFunctions[1].code = newCode;
-      element.isolateScope().transferFunctions[1].dirty = true;
-      element.isolateScope().update(element.isolateScope().transferFunctions[1]);
-      expect(backendInterfaceService.setTransferFunction).toHaveBeenCalledWith('tf1', newCode, jasmine.any(Function));
+      var isolateScope = element.isolateScope();
+      isolateScope.transferFunctions[1].code = newCode;
+      isolateScope.transferFunctions[1].dirty = true;
+      isolateScope.update(element.isolateScope().transferFunctions[1]);
+      expect(backendInterfaceService.setTransferFunction).toHaveBeenCalledWith(
+        'tf1', newCode, jasmine.any(Function), jasmine.any(Function)
+      );
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
-      expect(element.isolateScope().transferFunctions[1].dirty).toEqual(false);
+      expect(isolateScope.transferFunctions[1].dirty).toEqual(false);
     });
 
     it('should call the error cleanup callback depending on the tf error field', function () {
-      var scope =  element.isolateScope();
-      var tf1 = scope.transferFunctions[1];
+      var isolateScope =  element.isolateScope();
+      var tf1 = isolateScope.transferFunctions[1];
       tf1.error = {};
-      scope.update(tf1);
-      spyOn(scope, 'cleanError');
+      isolateScope.update(tf1);
+      spyOn(isolateScope, 'cleanError');
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
-      expect(scope.cleanError.callCount).toBe(1);
+      expect(isolateScope.cleanError.callCount).toBe(1);
       tf1.error = undefined;
-      scope.update(tf1);
+      isolateScope.update(tf1);
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
-      expect(scope.cleanError.callCount).toBe(1);
+      expect(isolateScope.cleanError.callCount).toBe(1);
     });
 
-    it('should restart the simulation if it was paused for update', function () {
-      var scope =  element.isolateScope();
-      var tf1 = scope.transferFunctions[1];
+    it('should restart the simulation if it was paused for update and the update succeeded', function () {
+      var isolateScope =  element.isolateScope();
+      var tf1 = isolateScope.transferFunctions[1];
       stateService.currentState = STATE.STARTED;
-      scope.update(tf1);
+      isolateScope.update(tf1);
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
       expect(stateService.setCurrentState.callCount).toBe(1);
       stateService.currentState = STATE.PAUSED;
-      scope.update(tf1);
+      isolateScope.update(tf1);
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      expect(stateService.setCurrentState.callCount).toBe(1);
+    });
+
+    it('should restart the simulation if it was paused for update and the update failed', function () {
+      var isolateScope =  element.isolateScope();
+      var tf1 = isolateScope.transferFunctions[1];
+      stateService.currentState = STATE.STARTED;
+      isolateScope.update(tf1);
+      backendInterfaceService.setTransferFunction.mostRecentCall.args[3]();
+      expect(stateService.setCurrentState.callCount).toBe(1);
+      stateService.currentState = STATE.PAUSED;
+      isolateScope.update(tf1);
+      backendInterfaceService.setTransferFunction.mostRecentCall.args[3]();
       expect(stateService.setCurrentState.callCount).toBe(1);
     });
 
@@ -137,33 +158,73 @@ describe('Directive: transferFunctionEditor', function () {
       expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1', jasmine.any(Function));
     });
 
+    it('should restart the simulation if it was paused for a delete operation', function () {
+      var isolateScope =  element.isolateScope();
+      var tf1 = isolateScope.transferFunctions[1];
+      stateService.currentState = STATE.STARTED;
+      isolateScope.delete(tf1);
+      backendInterfaceService.deleteTransferFunction.mostRecentCall.args[1]();
+      expect(stateService.setCurrentState.callCount).toBe(1);
+      stateService.currentState = STATE.PAUSED;
+      var tf2 = isolateScope.transferFunctions[0];
+      isolateScope.delete(tf2);
+      backendInterfaceService.deleteTransferFunction.mostRecentCall.args[1]();
+      expect(stateService.setCurrentState.callCount).toBe(1);
+    });
+
+    it('should remove tf from array for a local delete operation', function () {
+      var isolateScope = element.isolateScope();
+      var tf1 = isolateScope.transferFunctions[1];
+      tf1.local = true;
+      isolateScope.delete(tf1);
+      expect(isolateScope.transferFunctions.indexOf(tf1)).toBe(-1);
+    });
+
     it('should fill the error field of the flawed transfer function', function () {
       var msg = { functionName: 'tf2', message: 'You nearly broke the platform!' };
-      var scope = element.isolateScope();
-      scope.onNewErrorMessageReceived(msg);
-      expect(scope.transferFunctions[0].error.message).toEqual(msg.message);
+      var isolateScope = element.isolateScope();
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(isolateScope.transferFunctions[0].error.message).toEqual(msg.message);
     });
 
     it('should clean the error field of the flawed transfer function', function () {
       var msg = { functionName: 'tf1', message: 'You are in trouble!' };
-      var scope = element.isolateScope();
-      scope.onNewErrorMessageReceived(msg);
-      var tf1 = scope.transferFunctions[1];
-      scope.cleanError(tf1);
-      expect(scope.transferFunctions[1].error).not.toBeDefined();
+      var isolateScope = element.isolateScope();
+      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      isolateScope.onNewErrorMessageReceived(msg);
+      var tf1 = isolateScope.transferFunctions[1];
+      isolateScope.cleanError(tf1);
+      expect(isolateScope.transferFunctions[1].error).not.toBeDefined();
+    });
+
+    it('should highlight the error line in the transfer function editor', function () {
+      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1 };
+      var isolateScope = element.isolateScope();
+
+      var tf1 = isolateScope.transferFunctions[1];
+      tf1.editor = editorMock;
+      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(isolateScope.getTransferFunctionEditor).toHaveBeenCalledWith(tf1);
+      expect(tf1.error.lineHandle).toBe(0);
+    });
+
+    it('should return transfer function editor if defined', function () {
+      var isolateScope = element.isolateScope();
+      var tf1 = isolateScope.transferFunctions[1];
+      tf1.editor = editorMock;
+      expect(isolateScope.getTransferFunctionEditor(tf1)).toBe(tf1.editor);
     });
 
     it('should remove error highlighting in the flawed transfer function editor', function () {
-      var editor = {};
-      editor.removeLineClass = jasmine.createSpy('removeLineClass');
       var msg = { functionName: 'tf1', message: 'You just managed it!', lineNumber: -1 };
-      var scope = element.isolateScope();
-      scope.onNewErrorMessageReceived(msg);
-      var tf1 = scope.transferFunctions[1];
-      tf1.editor = editor;
+      var isolateScope = element.isolateScope();
+      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      isolateScope.onNewErrorMessageReceived(msg);
+      var tf1 = isolateScope.transferFunctions[1];
       tf1.error.lineHandle = {};
-      scope.cleanError(tf1);
-      expect(editor.removeLineClass).toHaveBeenCalled();
+      isolateScope.cleanError(tf1);
+      expect(editorMock.removeLineClass).toHaveBeenCalled();
     });
 
   });

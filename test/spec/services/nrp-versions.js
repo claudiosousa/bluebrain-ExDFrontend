@@ -5,11 +5,13 @@ describe('Services: nrp-versions', function () {
   var serverError;
   var httpBackend;
   var serverURL = 'http://bbpce014.epfl.ch:8080';
+  var serverErrorMock = {};
+  serverErrorMock.display = jasmine.createSpy('display');
 
   beforeEach(module('nrpBackendAbout'));
 
     beforeEach(module(function ($provide) {
-      $provide.value('serverError', jasmine.createSpy('serverError'));
+      $provide.value('serverError', serverErrorMock);
     }));
 
   beforeEach(inject(function($httpBackend, _serverError_, _nrpBackendVersions_, _nrpFrontendVersion_){
@@ -17,7 +19,7 @@ describe('Services: nrp-versions', function () {
     serverError = _serverError_;
     nrpBackendVersions = _nrpBackendVersions_;
     nrpFrontendVersion = _nrpFrontendVersion_;
-    serverError.reset();
+    serverError.display.reset();
   }));
 
   afterEach(function() {
@@ -29,7 +31,7 @@ describe('Services: nrp-versions', function () {
     nrpBackendVersions(serverURL).get();
     httpBackend.expectGET(serverURL + '/version').respond(200);
     httpBackend.flush();
-    expect(serverError.callCount).toBe(0);
+    expect(serverError.display.callCount).toBe(0);
   });
 
   it('should parse properly the versions', function() {
@@ -55,8 +57,8 @@ describe('Services: nrp-versions', function () {
     var response = nrpBackendVersions(serverURL).get();
     httpBackend.expectGET(serverURL + '/version').respond(400);
     httpBackend.flush();
-    expect(serverError.callCount).toBe(1);
-    response = serverError.mostRecentCall.args[0];
+    expect(serverError.display.callCount).toBe(1);
+    response = serverError.display.mostRecentCall.args[0];
     expect(response.status).toBe(400);
    });
 });

@@ -51,9 +51,30 @@ describe('Services: nrp-error-handlers', function () {
     spyOn(nrpErrorService, 'httpError');
   }));
 
+  it('should filter in errors without response', function() {
+    expect(serverError.filter(undefined)).toBe(true);
+  });
+
+  it('should filter out errors due to GET requests on unavailable servers', function() {
+    var response = { 
+      data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, 
+      status: 0 
+    };
+    expect(serverError.filter(response)).toBe(false);
+  });
+
+  it('should filter out transfer function errors', function() {
+    var response = { 
+      data: { code: 400, message: 'Syntax Error', type: 'Transfer function error'}, 
+      status: 0 
+    };
+    serverError.display(response);
+    expect(serverError.filter(response)).toBe(false);
+  });
+
   it('should call once nrpErrorService.httpError and hbpDialogFactory.error', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
-    serverError(response);
+    serverError.display(response);
     expect(hbpDialogFactory.alert.callCount).toBe(1);
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
     expect(nrpErrorService.httpError.callCount).toBe(1);
@@ -61,7 +82,7 @@ describe('Services: nrp-error-handlers', function () {
 
   it('should call neither nrpErrorService.httpError nor hbpDialogFactory.error', function() {
     var response = { data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, status: 0 };
-    serverError(response);
+    serverError.display(response);
     expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
     expect(nrpErrorService.httpError).not.toHaveBeenCalled();
   });

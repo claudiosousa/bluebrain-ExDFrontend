@@ -155,7 +155,7 @@
           },
           function (data) {
             thisStateService.statePending = false;
-            serverError(data);
+            serverError.display(data);
             deferred.reject();
           }
         );
