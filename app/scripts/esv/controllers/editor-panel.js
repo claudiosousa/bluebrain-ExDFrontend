@@ -24,6 +24,8 @@
     $scope.controls = {};
     $scope.controls.transferfunction = {};
     $scope.controls.statemachine = {};
+    $scope.transferFunctionErrorTopic = serverConfig.rosbridge.topics.transferFunctionError;
+    $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
 
     $scope.openCallback = function() {
       // The Panel is opened
