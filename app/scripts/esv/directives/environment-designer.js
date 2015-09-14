@@ -21,6 +21,9 @@
           throw "No serverID or simulationID given.";
         }
 
+        scope.stateService = stateService;
+        scope.STATE = STATE;
+
         var serverID = $stateParams.serverID;
         var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
         scope.assetsPath = serverConfig.gzweb.assets;//used by the view
@@ -56,9 +59,11 @@
         };
 
         scope.addModel = function (modelName) {
-          window.guiEvents.emit('spawn_entity_start', modelName);
-          scope.setEditMode(EDIT_MODE.TRANSLATE);
-          panels.close();
+          if (stateService.currentState !== STATE.INITIALIZED) {
+            window.guiEvents.emit('spawn_entity_start', modelName);
+            scope.setEditMode(EDIT_MODE.TRANSLATE);
+            panels.close();
+          }
         };
 
         scope.exportSDFWorld = function () {

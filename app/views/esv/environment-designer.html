@@ -8,21 +8,28 @@
   available, <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the
   corresponding SDF file(s) and
   assets).
+<div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
 <hr>
 <h4>View, Move or Rotate objects on the scene:</h4>
 <div class="btn-group" role="group">
-  <button type="button" class="btn btn-default" ng-class="{active:gz3d.scene.manipulationMode==EDIT_MODE.VIEW}"
-          ng-click="setEditMode(EDIT_MODE.VIEW)">
+  <button type="button" class="btn btn-default"
+          ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.VIEW}"
+          ng-click="setEditMode(EDIT_MODE.VIEW)"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
     <i class="glyphicon glyphicon-eye-open"></i>
     <span>View mode</span>
   </button>
-  <button type="button" class="btn btn-default" ng-class="{active:gz3d.scene.manipulationMode==EDIT_MODE.TRANSLATE}"
-          ng-click="setEditMode(EDIT_MODE.TRANSLATE)">
+  <button type="button" class="btn btn-default"
+          ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
+          ng-click="setEditMode(EDIT_MODE.TRANSLATE)"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
     <i class="glyphicon glyphicon-move"></i>
     <span>Move objects</span>
   </button>
-  <button type="button" class="btn btn-default" ng-class="{active:gz3d.scene.manipulationMode==EDIT_MODE.ROTATE}"
-          ng-click="setEditMode(EDIT_MODE.ROTATE)">
+  <button type="button" class="btn btn-default"
+          ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
+          ng-click="setEditMode(EDIT_MODE.ROTATE)"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
     <i class="glyphicon glyphicon-repeat"></i>
     <span>Rotate objects</span>
   </button>
@@ -30,7 +37,9 @@
 <hr>
 <h4>Save or Load environment definition file to and from your computer</h4>
 <div class="btn-group" role="group">
-  <button type="button" class="btn btn-default" ng-click="exportSDFWorld()">
+  <button type="button" class="btn btn-default" 
+          ng-click="exportSDFWorld()"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
     <i class="glyphicon glyphicon-save"></i>
     <span>Save SDF locally</span>
   </button>
@@ -43,17 +52,22 @@
       <h4>Insert simple Shapes</h4>
     </div>
     <div class="panelContent">
-      <a id="insert-entity-box" ng-mousedown="addModel('box');"
+      <a id="insert-entity-box"
+         ng-mousedown="addModel('box');"
          data-role="button">
-        <img src="img/esv/objects/box.png" draggable="false" class="clickable img-thumbnail environment-thumbnail" alt="Box">
+        <img src="img/esv/objects/box.png" draggable="false" class="img-thumbnail environment-thumbnail" alt="Box"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
       </a>
       <a id="insert-entity-sphere"
-         ng-mousedown="addModel('sphere');" data-role="button">
-        <img src="img/esv/objects/sphere.png" draggable="false" class="img-thumbnail environment-thumbnail">
+         ng-mousedown="addModel('sphere');"
+         data-role="button">
+        <img src="img/esv/objects/sphere.png" draggable="false" class="img-thumbnail environment-thumbnail"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
       </a>
       <a id="insert-entity-cylinder"
          ng-mousedown="addModel('cylinder');" data-role="button">
-        <img src="img/esv/objects/cylinder.png" draggable="false" class="img-thumbnail environment-thumbnail">
+        <img src="img/esv/objects/cylinder.png" draggable="false" class="img-thumbnail environment-thumbnail"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
       </a>
     </div>
   </div>
@@ -65,16 +79,19 @@
     <div class="panelContent">
       <a id="insert-entity-pointlight"
          ng-mousedown="addModel('pointlight');" data-role="button">
-        <img src="img/esv/objects/pointlight.png" draggable="false" class="img-thumbnail environment-thumbnail">
+        <img src="img/esv/objects/pointlight.png" draggable="false" class="img-thumbnail environment-thumbnail"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
       </a>
       <a id="insert-entity-spotlight"
          ng-mousedown="addModel('spotlight');" data-role="button">
-        <img src="img/esv/objects/spotlight.png" draggable="false" class="img-thumbnail environment-thumbnail">
+        <img src="img/esv/objects/spotlight.png" draggable="false" class="img-thumbnail environment-thumbnail"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
       </a>
       <a id="insert-entity-directionallight"
          ng-mousedown="addModel('directionallight');"
          data-role="button">
-        <img src="img/esv/objects/directionallight.png" draggable="false" class="img-thumbnail environment-thumbnail">
+        <img src="img/esv/objects/directionallight.png" draggable="false" class="img-thumbnail environment-thumbnail"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
       </a>
     </div>
   </div>
@@ -87,7 +104,11 @@
       <a ng-repeat="model in category.models" id="insert-entity-{{model.modelPath}}"
          ng-mousedown="addModel(model.modelPath);"
          data-role="button">
-        <img ng-src="{{assetsPath}}/{{model.modelPath}}/thumbnail.png" draggable="false" class="clickable img-thumbnail environment-thumbnail" alt="{{model.modelPath}}">
+        <img ng-src="{{assetsPath}}/{{model.modelPath}}/thumbnail.png"
+             draggable="false"
+             class="img-thumbnail environment-thumbnail"
+             ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'"
+             alt="{{model.modelPath}}">
       </a>
     </div>
   </div>

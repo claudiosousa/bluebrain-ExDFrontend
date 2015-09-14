@@ -178,6 +178,20 @@ describe('Directive: environment-designer', function () {
     expect($scope.addModel).toHaveBeenCalledWith('box');
   });
 
+  it('should not spawn models when in INITIALIZED state', function () {
+
+    spyOn($scope, 'addModel');
+    spyOn(window.guiEvents, 'emit');
+    $scope.stateService.currentState = $scope.STATE.INITIALIZED;
+    var addBoxBtnDomElem = element.find('#insert-entity-box');
+    var addBoxBtn = angular.element(addBoxBtnDomElem);
+
+    addBoxBtn.triggerHandler('mousedown');
+    expect($scope.addModel).toHaveBeenCalledWith('box');
+    expect(window.guiEvents.emit).not.toHaveBeenCalledWith('spawn_entity_start','box');
+
+  });
+
   it('should execute correctly addModel("box")', function () {
 
     spyOn(window.guiEvents, 'emit');

@@ -141,3 +141,8 @@ body > div {
   box-shadow: none;
   width: 80px;
 }
+
+.disabled-image {
+  opacity: 0.4;
+  filter: alpha(opacity=40); /* msie */
+}
