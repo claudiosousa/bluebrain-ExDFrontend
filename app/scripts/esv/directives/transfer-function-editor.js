@@ -15,15 +15,17 @@
       'HELP_BASE_URL',
       'roslib',
       'serverError',
+      '$timeout',
     function (
-        $log, 
-        backendInterfaceService, 
-        nrpBackendVersions, 
-        STATE, stateService, 
-        pythonCodeHelper, 
+        $log,
+        backendInterfaceService,
+        nrpBackendVersions,
+        STATE, stateService,
+        pythonCodeHelper,
         HELP_BASE_URL,
         roslib,
-        serverError
+        serverError,
+        $timeout
     ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
@@ -76,7 +78,7 @@
             return transferFunction.editor;
           }
           var codeMirrorCollection = document.getElementsByClassName('CodeMirror');
-          var transferFunctionDivs = _.filter(codeMirrorCollection, 
+          var transferFunctionDivs = _.filter(codeMirrorCollection,
             function(e){
                return e.nodeName === 'DIV';
             }
@@ -135,7 +137,7 @@
           });
         };
 
-        scope.cleanError = function(transferFunction) {     
+        scope.cleanError = function(transferFunction) {
           var editor = scope.getTransferFunctionEditor(transferFunction);
           var lineHandle = transferFunction.error.lineHandle;
           if (angular.isDefined(editor) && angular.isDefined(lineHandle)) {
@@ -149,21 +151,21 @@
           stateService.ensureStateBeforeExecuting(
             STATE.PAUSED,
             function() {
-              backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code, 
+              backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code,
                 function(){
                   transferFunction.dirty = false;
-                  if (angular.isDefined(transferFunction.error)) { 
+                  if (angular.isDefined(transferFunction.error)) {
                     scope.cleanError(transferFunction);
                   }
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);
-                  }                    
-                }, 
+                  }
+                },
                 function(data) {
-                  serverError.display(data);  
+                  serverError.display(data);
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);
-                  }                  
+                  }
                 }
               );
             }
@@ -209,6 +211,64 @@
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
         };
 
+        var tfCodeMarkupBegin = "#--code-begin--\n";
+        var tfCodeMarkupEnd = "#--code-end--\n";
+        var buildTransferFunctionFile = function(transferFunctions) {
+          var codeText = "";
+          transferFunctions.forEach(function(tf) {
+            codeText = codeText.concat(tfCodeMarkupBegin);
+            codeText = codeText.concat(tf.code + "\n");
+            codeText = codeText.concat(tfCodeMarkupEnd + "\n");
+          });
+          return codeText;
+        };
+
+        scope.save = function () {
+          var file = new Blob([
+            buildTransferFunctionFile(scope.transferFunctions)
+          ], {type: "plain/text", endings: 'native'});
+
+          var button = angular.element(document.querySelector('#save-transfer-functions'));
+          button.attr("href", URL.createObjectURL(file));
+        };
+
+        scope.loadTransferFunctions = function(file) {
+          if (file && !file.$error) {
+            var textReader = new FileReader();
+            textReader.onload = function(e) {
+              $timeout(function() {
+                var contents = e.target.result;
+                var regexCode = new RegExp(tfCodeMarkupBegin + "([^]*?)" + tfCodeMarkupEnd,"g");
+
+                var tfCode = contents.match(regexCode);
+
+                var loadedTransferFunctions = _.map(tfCode, function(code, idx) {
+                  var codeLength = tfCode[idx].length - tfCodeMarkupBegin.length - tfCodeMarkupEnd.length;
+                  return {
+                    code: tfCode[idx].substr(tfCodeMarkupBegin.length, codeLength),
+                    dirty: true,
+                    local: true
+                  };
+                });
+
+                if (scope.transferFunction) {
+                  scope.transferFunctions.forEach(function(tf) {
+                    scope.delete(tf);
+                  });
+                }
+
+                scope.transferFunctions = loadedTransferFunctions;
+                scope.transferFunctions.forEach(function(tf) {
+                  scope.onTransferFunctionChange(tf);
+                  tf.id = tf.functionName;
+                  scope.update(tf);
+                });
+              });
+            };
+
+            textReader.readAsText(file);
+          }
+        };
       }
     };
   }]);
