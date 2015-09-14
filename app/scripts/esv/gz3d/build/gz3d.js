@@ -604,8 +604,8 @@ GZ3D.Gui = function(scene)
   this.init();
   this.emitter = new EventEmitter2({verbose: true});
   this.guiEvents = guiEvents;
-};
 
+};
 /**
  * Initialize GUI
  */
@@ -2751,8 +2751,8 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
 
     // visualization - Deactivated since it causes the robot to be very big and the user
     // can't barely select other objects on the scene. Reactivate for debug purposes !
-    // var cameraHelper = new THREE.CameraHelper(view.camera);
-    // view.camera.add( cameraHelper );
+    //var cameraHelper = new THREE.CameraHelper(view.camera);
+    //view.camera.add( cameraHelper );
 
     sensorObj.add(view.camera);
   }
@@ -4870,6 +4870,7 @@ GZ3D.Scene.prototype.init = function()
 
   this.container.addEventListener( 'mousedown',
       function(event) {that.onPointerDown(event);}, false );
+
   this.container.addEventListener( 'touchstart',
       function(event) {that.onPointerDown(event);}, false );
 
@@ -7210,6 +7211,7 @@ GZ3D.Scene.prototype.selectEntity = function(object)
       this.scene.remove(this.modelManipulator.gizmo);
     }
     this.hideBoundingBox();
+
     this.selectedEntity = null;
     guiEvents.emit('setTreeDeselected');
   }

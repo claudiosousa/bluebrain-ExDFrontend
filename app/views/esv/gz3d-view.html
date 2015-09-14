@@ -86,16 +86,16 @@
 
     <div id="gz3d-body" data-role="page" data-theme="b" data-content-theme="c" class="esv-flex-container esv-flex-greedy-element">
       <!-- Alert popup --->
-      <div class="alert alert-warning" ng-show="isJoiningStoppedSimulation">
+      <div class="alert alert-warning" ng-show="viewState.isJoiningStoppedSimulation">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
         Sorry, the simulation you just wanted to join is already stopped.
         <button class="btn btn-warning btn-xs pull-right" ui-sref="esv-web">&times;</button>
       </div>
       <!-- container -->
       <div class="esv-flex-container esv-flex-greedy-element">
-        <!-- WEBGL-context -->
+        <!-- WEBGL-context   -->
         <div data-role="content" id="container" class="esv-flex-container esv-flex-greedy-element">
-          <div ng-mousemove="updateHoverInfo($event);" ng-click="toggleScreenChangeMenu(true, $event);" id="container_MainView" class="esv-flex-greedy-element"></div>
+          <div ng-mousemove="updateHoverInfo($event);" ng-mousedown="toggleContextMenu(true, $event);" id="container_MainView" class="esv-flex-greedy-element"></div>
         </div>
         <!-- WEBGL-context -->
 
@@ -122,7 +122,7 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar">
-            <div ng-if="isOwner"
+            <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}"
@@ -130,7 +130,7 @@
                  ng-show="((stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div ng-if="isOwner"
+            <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}"
@@ -138,7 +138,7 @@
                  ng-show="((stateService.currentState === STATE.STARTED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div ng-if="isOwner"
+            <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}"
@@ -146,7 +146,7 @@
                  ng-show="((stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
-            <div ng-if="isOwner"
+            <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}"
@@ -169,7 +169,7 @@
                   </div>
                 </div>
               </div>
-              <div ng-if="isOwner" class="hbp-toolbar-large-tool hidden-xs" ng-class="{'highlighted': currentSelectedUIElement === UI.LIGHT_SLIDER}" ng-click="helpModeActivated && help(UI.LIGHT_SLIDER);">
+              <div ng-if="viewState.isOwner" class="hbp-toolbar-large-tool hidden-xs" ng-class="{'highlighted': currentSelectedUIElement === UI.LIGHT_SLIDER}" ng-click="helpModeActivated && help(UI.LIGHT_SLIDER);">
                 <i class="fa fa-lightbulb-o"></i>
                 <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition" ng-disabled="helpModeActivated"
                        ng-change="updateLightIntensities(sliderPosition)"/>
@@ -270,7 +270,7 @@
             </div>
 
             <!-- owner information -->
-            <div ng-if="isOwner === false" class="hbp-toolbar-large-tool-two-lines default-cursor" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>
+            <div ng-if="viewState.isOwner === false" class="hbp-toolbar-large-tool-two-lines default-cursor" ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.OWNER_DISPLAY)">View-Only Mode<br/>Owner: {{owner}}</div>
             <!-- owner information -->
 
             <!-- #### The following will be aligned on the right side (in reverse order) #### -->
@@ -291,17 +291,7 @@
         </div>
         <!-- overlay -->
 
-        <!-- context menu -->
-        <div id="contextmenu" class="esv-contextmenu" ng-show="isContextMenuShown && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)" ng-style="{ 'left': contextMenuLeft, 'top': contextMenuTop }">
-          <ul class="hbp-list-tableview hbp-list-tableview-selectable">
-            <li class="hbp-list-tableview-heading">Change Color</li>
-            <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('red'); $event.stopPropagation();">Red</li>
-            <li class="hbp-list-tableview-entry" ng-click="setColorOnEntity('blue'); $event.stopPropagation();">Blue</li>
-            <li class="hbp-list-tableview-entry" ng-click="toggleScreenChangeMenu(false); $event.stopPropagation();">No Change (Close)</li>
-          </ul>
-        </div>
-        <!-- context menu -->
-
+        <context-menu></context-menu>
         <!-- large top-right help icon -->
         <div ng-if="helpModeActivated" class="fa fa-question-circle fa-5x help-icon active" ng-click="toggleHelpMode()"></div>
         <div ng-if="helpModeActivated" class="fa fa-question fa-4x help-icon-inner" ng-click="toggleHelpMode()"></div>

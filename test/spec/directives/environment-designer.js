@@ -2,16 +2,21 @@
 
 describe('Directive: environment-designer', function () {
 
+
+  var $rootScope, $compile, $scope, $document, element, stateService,
+    panels, currentStateMock, gz3dMock, contextMenuState, simulationSDFWorld;
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
-  beforeEach(module('exdFrontendApp.Constants'));
   beforeEach(module('currentStateMockFactory'));
-
-  var simulationSDFWorldSpy, simulationControlSpy;
-  var $rootScope, $compile, $scope, $document, element, stateService, panelsCloseSpy, currentStateMock, experimentSimulationService;
-
-  beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
+    $provide.value('stateService', currentStateMock);
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').andCallThrough());
+    $provide.value('contextMenuState', {
+      toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
+      pushItemGroup : jasmine.createSpy('pushItemGroup')
+    });
     $provide.value('$stateParams',
       {
         serverID : 'bbpce016',
@@ -30,49 +35,48 @@ describe('Directive: environment-designer', function () {
         }
       )
     });
-
-    panelsCloseSpy = jasmine.createSpy('close');
     $provide.value('panels', {
-      close: panelsCloseSpy
+      close: jasmine.createSpy('close')
     });
   }));
 
-  beforeEach(module('simulationControlServices'));
-  beforeEach(module(function ($provide) {
-    $provide.decorator('simulationSDFWorld', function () {
-      simulationSDFWorldSpy = jasmine.createSpy('simulationSDFWorld');
-      return simulationSDFWorldSpy.andCallThrough();
-    });
-    $provide.decorator('simulationControl', function () {
-      simulationControlSpy = jasmine.createSpy('simulationControl');
-      return simulationControlSpy.andCallThrough();
-    });
-  }));
+  beforeEach(inject(function (
+    _$rootScope_,
+    _$compile_,
+    _$document_,
+    EDIT_MODE, STATE,
+    _currentStateMockFactory_,
+    _stateService_,
+    _contextMenuState_,
+    _panels_,
+    _simulationSDFWorld_) {
 
-  beforeEach(module('simulationStateServices', function ($provide) {
-    $provide.value(currentStateMock);
-  }));
-
-  beforeEach(inject(function (_$rootScope_, _$compile_, _$document_, EDIT_MODE, STATE, _stateService_, _currentStateMockFactory_, _experimentSimulationService_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $document = _$document_;
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
     $scope.STATE = STATE;
-    $scope.gz3d = {};
+    contextMenuState = _contextMenuState_;
+    currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
-    currentStateMock = _currentStateMockFactory_.get();
-    experimentSimulationService = _experimentSimulationService_;
+    panels = _panels_;
+    simulationSDFWorld = _simulationSDFWorld_;
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
+    var sceneMock = {
+      setManipulationMode: jasmine.createSpy('setManipulationMode').
+        andCallFake(function (m) {
+          this.manipulationMode = m;
+        }),
 
-    $scope.gz3d.scene = jasmine.createSpy('scene');
-    $scope.gz3d.scene.setManipulationMode = jasmine.createSpy('setManipulationMode')
-      .andCallFake(function (m) {
-        $scope.gz3d.scene.manipulationMode = m;
-      });
-    $scope.gz3d.toggleScreenChangeMenu = jasmine.createSpy('toggleScreenChangeMenu');
+      manipulationMode: undefined
+    };
+    gz3dMock = {
+      gui: { emitter: { emit: jasmine.createSpy('emit') } },
+      scene: sceneMock,
+      toggleScreenChangeMenu: jasmine.createSpy('toggleScreenChangeMenu')
+    };
   }));
 
   it('should replace the element with the appropriate content', function () {
@@ -101,7 +105,7 @@ describe('Directive: environment-designer', function () {
     stateService.currentState = $scope.STATE.STARTED;
     $scope.gz3d.scene.manipulationMode = $scope.EDIT_MODE.TRANSLATE;
     $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect(panelsCloseSpy).toHaveBeenCalled();
+    expect(panels.close).toHaveBeenCalled();
   });
 
   it('should correctly set the edit mode', function () {
@@ -122,8 +126,7 @@ describe('Directive: environment-designer', function () {
   });
 
   it('should not update the state if already in the correct state', function () {
-    stateService.setCurrentState.callCount = 0;
-
+    expect(stateService.setCurrentState.callCount).toBe(0);
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.VIEW);
     expect(stateService.setCurrentState.callCount).toBe(0);
@@ -137,14 +140,15 @@ describe('Directive: environment-designer', function () {
 
   it('should call the right REST API for the SDF export process', function () {
     var exportSpy = jasmine.createSpy('export');
-    simulationSDFWorldSpy.andCallFake(function () {
+    simulationSDFWorld.andCallFake(
+    function () {
       return {
-        export: exportSpy.andCallFake(function () {})
+        export: exportSpy.andCallFake(function(){})
       };
     });
 
     $scope.exportSDFWorld();
-    expect(simulationSDFWorldSpy).toHaveBeenCalled();
+    expect(simulationSDFWorld).toHaveBeenCalled();
     expect(exportSpy).toHaveBeenCalled();
   });
 
@@ -168,7 +172,6 @@ describe('Directive: environment-designer', function () {
 
 
   it('should call correctly addModel("box")', function () {
-
     spyOn($scope, 'addModel');
 
     var addBoxBtnDomElem = element.find('#insert-entity-box');
@@ -179,7 +182,6 @@ describe('Directive: environment-designer', function () {
   });
 
   it('should not spawn models when in INITIALIZED state', function () {
-
     spyOn($scope, 'addModel');
     spyOn(window.guiEvents, 'emit');
     $scope.stateService.currentState = $scope.STATE.INITIALIZED;
@@ -209,13 +211,13 @@ describe('Directive: environment-designer', function () {
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
 
     //should close panel
-    expect(panelsCloseSpy).toHaveBeenCalled();
+    expect(panels.close).toHaveBeenCalled();
 
   });
 
   it('should create a new dummy anchor and click it when exporting the environment', function () {
     var exportSpy = jasmine.createSpy('export');
-    simulationSDFWorldSpy.andCallFake(function () {
+    simulationSDFWorld.andCallFake(function () {
       return {
         export: exportSpy.andCallFake(function (args, cb) { cb({'sdf': 'dummysdf'}); })
       };
@@ -235,6 +237,15 @@ describe('Directive: environment-designer', function () {
     expect(exportSpy).toHaveBeenCalled();
     expect(angular.element).toHaveBeenCalled();
     expect(dummyAnchorElement.click).toHaveBeenCalled();
+  });
+
+  it('should emit delete_entity and toggle menu when deleteModel is called', function () {
+    $scope.deleteModel();//call function
+    //should emit 'delete_entity'
+    expect($scope.gz3d.gui.emitter.emit).toHaveBeenCalled();
+    //should toggle menu
+    expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
+
   });
 
 });

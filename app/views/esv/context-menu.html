@@ -1,0 +1,15 @@
+<!-- context menu -->
+<div id="contextmenu" class="esv-contextmenu" ng-show="contextMenuState.isShown && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)"
+     ng-style="{ 'left': contextMenuState.contextMenuLeft, 'top': contextMenuState.contextMenuTop }">
+    <ul class="hbp-list-tableview hbp-list-tableview-selectable">
+
+        <div ng-repeat="itemsGroup in contextMenuState.itemsGroups">
+            <li ng-show="itemsGroup.visible" class="hbp-list-tableview-heading">{{itemsGroup.label}}</li>
+            <li ng-repeat="item in itemsGroup.items" ng-show="item.visible" class="hbp-list-tableview-entry" ng-click="item.callback($event)">
+                {{item.text}}
+            </li>
+
+        </div>
+    </ul>
+</div>
+<!-- context menu -->
