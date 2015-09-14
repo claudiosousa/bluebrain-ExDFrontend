@@ -159,3 +159,7 @@ and (max-device-width : 1024px) {
 .btn.disabled.enable-tooltip {
   pointer-events: all;
 }
+
+.no-margin {
+margin:0px 0px 0px 0px !important;
+}

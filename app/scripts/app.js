@@ -50,7 +50,8 @@
               controller: 'experimentCtrl'
             }).state('home', {
               url: '/',
-              templateUrl: 'views/common/home.html'
+              templateUrl: 'views/common/home.html',
+              controller: 'MainCtrl'
             });
 
             // Provide a default route.
