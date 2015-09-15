@@ -3,7 +3,7 @@
 describe('Directive: transferFunctionEditor', function () {
 
   var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, element, backendInterfaceService,
-    nrpBackendVersions, currentStateMock, roslib, stateService, STATE;
+    currentStateMock, roslib, stateService, STATE, documentationURLs;
 
   var backendInterfaceServiceMock = {
     getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
@@ -12,8 +12,14 @@ describe('Directive: transferFunctionEditor', function () {
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl')
   };
 
-  var nrpBackendVersionsGetMock = jasmine.createSpy('get');
-  var nrpBackendVersionsMock = jasmine.createSpy('nrpBackendVersions').andReturn({get: nrpBackendVersionsGetMock});
+  var documentationURLsMock =
+  {
+    getDocumentationURLs: function() {
+      return {
+        then: function(callback) {return callback({cleDocumentationURL: 'cleDocumentationURL', backendDocumentationURL: 'backendDocumentationURL'});}
+      };
+    }
+  };
 
   var roslibMock = {};
   var returnedConnectionObject = {};
@@ -26,7 +32,7 @@ describe('Directive: transferFunctionEditor', function () {
   beforeEach(module('currentStateMockFactory'));
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
-    $provide.value('nrpBackendVersions', nrpBackendVersionsMock);
+    $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('stateService', currentStateMock);
     $provide.value('roslib', roslibMock);
   }));
@@ -38,9 +44,9 @@ describe('Directive: transferFunctionEditor', function () {
                               _$log_,
                               _$timeout_,
                               _backendInterfaceService_,
-                              _nrpBackendVersions_,
                               $templateCache,
                               _currentStateMockFactory_,
+                              _documentationURLs_,
                               _roslib_,
                               _stateService_,
                               _STATE_) {
@@ -49,11 +55,11 @@ describe('Directive: transferFunctionEditor', function () {
     $httpBackend = _$httpBackend_;
     $log = _$log_;
     $timeout = _$timeout_;
+    documentationURLs = _documentationURLs_;
     roslib = _roslib_;
     STATE = _STATE_;
     stateService = _stateService_;
     backendInterfaceService = _backendInterfaceService_;
-    nrpBackendVersions = _nrpBackendVersions_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
     editorMock.getLineHandle = jasmine.createSpy('getLineHandle').andReturn(0);
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
@@ -69,9 +75,8 @@ describe('Directive: transferFunctionEditor', function () {
   it('should init the transferFunctions variable', function () {
     $scope.control.refresh();
     expect(element.isolateScope().transferFunctions).toBeDefined();
-    expect(backendInterfaceService.getServerBaseUrl).toHaveBeenCalled();
-    expect(nrpBackendVersions).toHaveBeenCalled();
     expect(backendInterfaceService.getTransferFunctions).toHaveBeenCalled();
+    expect(element.isolateScope().cleDocumentationURL).toEqual('cleDocumentationURL');
   });
 
   describe('Retrieving, saving and deleting transferFunctions', function () {
@@ -316,46 +321,5 @@ describe('Directive: transferFunctionEditor', function () {
     expect(window.FileReader).not.toHaveBeenCalled();
   });
 
-
-  it('should provide the correct help urls', function () {
-    expect(element.isolateScope().transferFunctions).toBeDefined();
-    expect(nrpBackendVersionsMock).toHaveBeenCalled();
-    nrpBackendVersionsGetMock.mostRecentCall.args[0]({
-      hbp_nrp_cle_components: { // jshint ignore:line
-        major: 1,
-        minor: 2,
-        patch: 3,
-        dev: 'dev3'
-      }
-    });
-    expect(element.isolateScope().cleDocumentationURL).toBe('https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.2.2');
-  });
-
-  it('should provide the correct help urls with a released version', function () {
-    expect(element.isolateScope().transferFunctions).toBeDefined();
-    expect(nrpBackendVersionsMock).toHaveBeenCalled();
-    nrpBackendVersionsGetMock.mostRecentCall.args[0]({
-      hbp_nrp_cle_components: { // jshint ignore:line
-        major: 1,
-        minor: 2,
-        patch: 3,
-      }
-    });
-    expect(element.isolateScope().cleDocumentationURL).toBe('https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.2.3');
-  });
-
-  it('should deal with uncorrect version for the HELP url', function () {
-    expect(element.isolateScope().transferFunctions).toBeDefined();
-    expect(nrpBackendVersionsMock).toHaveBeenCalled();
-    nrpBackendVersionsGetMock.mostRecentCall.args[0]({
-      hbp_nrp_cle_components: { // jshint ignore:line
-        major: 1,
-        minor: 2,
-        patch: 0,
-        dev: 'dev3'
-      }
-    });
-    expect(element.isolateScope().cleDocumentationURL).toBe('https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/latest');
-  });
 
 });

@@ -1,9 +1,18 @@
 <h3>SMACH State Machine Editor</h3>
-
+<p>The platform is designed to use state machines to control and evaluate experiments. A state machine controlling an
+  experiment can monitor any simulation properties published on ROS topics (e.g. simulation time, sensor output, spiking
+  activity of brain) and publish on ROS topics or call ROS services. </p><p>A state machine evaluating the success of an
+  experiment has the same capabilities than a monitoring state machine and should either publish a success or failure
+  message to the ROS "status" topic. State machine syntax is described in more details
+  <a target="_blank" href="{{backendDocumentationURL}}/tutorials/state_machines.html">here</a>
+</p>
+<div ng-show="smachCodes === undefined" class="alert alert-info" role="alert">
+  There is no SMACH script available for this experiment.
+</div>
 <div ng-repeat="(name, _) in smachCodes">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{name}}</span></code></h4>
-
+  <hr>
   <div ui-codemirror="{
           lineWrapping : true,
           lineNumbers: true,

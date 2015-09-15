@@ -16,9 +16,19 @@ describe('Directive: smachEditor', function () {
     setStateMachineScript: jasmine.createSpy('setStateMachineScript')
   };
 
+  var documentationURLsMock =
+  {
+    getDocumentationURLs: function() {
+      return {
+        then: function(callback) {return callback({cleDocumentationURL: 'cleDocumentationURL', backendDocumentationURL: 'backendDocumentationURL'});}
+      };
+    }
+  };
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
+    $provide.value('documentationURLs', documentationURLsMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,
@@ -42,7 +52,6 @@ describe('Directive: smachEditor', function () {
   }));
 
   it('should init the smachCodes object', function () {
-    expect(element.isolateScope().smachCodes).toEqual({});
     $scope.control.refresh();
 
     // Execute the registered callback
@@ -50,11 +59,13 @@ describe('Directive: smachEditor', function () {
     backendInterfaceService.getStateMachineScripts.mostRecentCall.args[0](stateMachineCodesResponse);
 
     expect(element.isolateScope().smachCodes).toEqual(stateMachineCodesResponse.data);
+    expect(element.isolateScope().backendDocumentationURL).toEqual('backendDocumentationURL');
   });
 
   it('should test the update function', function() {
-    element.isolateScope().smachCodes.foo = 'bar';
-    element.isolateScope().update('foo');
+    var isolateScope = element.isolateScope();
+    isolateScope.smachCodes = { foo: 'bar' };
+    isolateScope.update('foo');
     expect(backendInterfaceService.setStateMachineScript).toHaveBeenCalledWith('foo', 'bar');
   });
 

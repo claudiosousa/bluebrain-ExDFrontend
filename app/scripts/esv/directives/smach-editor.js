@@ -1,8 +1,10 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp').directive('smachEditor', ['backendInterfaceService',
-    function (backendInterfaceService) {
+  angular.module('exdFrontendApp').directive('smachEditor', [
+    'backendInterfaceService',
+    'documentationURLs',
+    function (backendInterfaceService, documentationURLs) {
       return {
         templateUrl: 'views/esv/smach-editor.html',
         restrict: 'E',
@@ -11,17 +13,22 @@
         },
         link: function (scope, element, attrs) {
 
-          scope.smachCodes = {};
-
           scope.control.refresh = function () {
             backendInterfaceService.getStateMachineScripts(function(response) {
               scope.smachCodes = response.data;
+              if (angular.equals({}, scope.smachCodes)) {
+                scope.smachCodes = undefined;
+              }
             });
           };
 
           scope.update = function (name) {
             backendInterfaceService.setStateMachineScript(name, scope.smachCodes[name]);
           };
+
+          documentationURLs.getDocumentationURLs().then(function(data) {
+            scope.backendDocumentationURL = data.backendDocumentationURL;
+          });
 
         }
       };
