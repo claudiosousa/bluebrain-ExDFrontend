@@ -35,6 +35,7 @@
                                    'exdFrontendFilters',
                                    'nrpErrorHandlers',
                                    'nrpBackendAbout',
+                                   'ngFileUpload',
                                    'nrpBrowserDetection'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {

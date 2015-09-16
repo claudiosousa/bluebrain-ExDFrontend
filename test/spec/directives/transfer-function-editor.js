@@ -2,7 +2,7 @@
 
 describe('Directive: transferFunctionEditor', function () {
 
-  var $rootScope, $compile, $httpBackend, $log, $scope, element, backendInterfaceService,
+  var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, element, backendInterfaceService,
     nrpBackendVersions, currentStateMock, roslib, stateService, STATE;
 
   var backendInterfaceServiceMock = {
@@ -22,6 +22,7 @@ describe('Directive: transferFunctionEditor', function () {
   roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
   beforeEach(module('currentStateMockFactory'));
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
@@ -30,11 +31,12 @@ describe('Directive: transferFunctionEditor', function () {
     $provide.value('roslib', roslibMock);
   }));
 
-  var editorMock = {};  
+  var editorMock = {};
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
                               _$httpBackend_,
                               _$log_,
+                              _$timeout_,
                               _backendInterfaceService_,
                               _nrpBackendVersions_,
                               $templateCache,
@@ -46,6 +48,7 @@ describe('Directive: transferFunctionEditor', function () {
     $compile = _$compile_;
     $httpBackend = _$httpBackend_;
     $log = _$log_;
+    $timeout = _$timeout_;
     roslib = _roslib_;
     STATE = _STATE_;
     stateService = _stateService_;
@@ -152,7 +155,7 @@ describe('Directive: transferFunctionEditor', function () {
       expect(element.isolateScope().transferFunctions[0]).toBeDefined();
 
       element.isolateScope().transferFunctions[0].local = true;
-      element.isolateScope().delete(tf2Name);
+      element.isolateScope().delete(element.isolateScope().transferFunctions[0]);
       expect(element.isolateScope().transferFunctions[0]).not.toBeDefined();
       // Since the tf is local, we should not call back the server
       expect(backendInterfaceService.deleteTransferFunction).toHaveBeenCalledWith('tf1', jasmine.any(Function));
@@ -185,6 +188,22 @@ describe('Directive: transferFunctionEditor', function () {
       var isolateScope = element.isolateScope();
       isolateScope.onNewErrorMessageReceived(msg);
       expect(isolateScope.transferFunctions[0].error.message).toEqual(msg.message);
+    });
+
+    it('should report syntax error', function () {
+      var scope = element.isolateScope();
+      var codeMirrorCollectionMock = [{
+        nodeName: 'DIV',
+        CodeMirror: editorMock,
+      }];
+      spyOn(document, 'getElementsByClassName').andReturn(codeMirrorCollectionMock);
+      var firstTFName = scope.transferFunctions[0].functionName;
+      var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3 };
+      scope.onNewErrorMessageReceived(msg);
+      expect(scope.transferFunctions[0].error.message).toEqual(msg.message);
+      expect(codeMirrorCollectionMock[0].CodeMirror.getLineHandle).toHaveBeenCalled();
+      expect(codeMirrorCollectionMock[0].CodeMirror.addLineClass).toHaveBeenCalled();
+      expect(scope.transferFunctions[0].editor).toBe(codeMirrorCollectionMock[0].CodeMirror);
     });
 
     it('should clean the error field of the flawed transfer function', function () {
@@ -247,6 +266,56 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
   });
+
+  it('should be able to load tf from file', function() {
+    var scope = element.isolateScope();
+    scope.transferFunctions = null;
+    var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
+    var tfNameMock = ['superPythonFn', 'anotherCoolFn'];
+
+    var transferFunctionsCode = _.map(tfNameMock, function(fnName) {
+      var code = 'def '+fnName+' (someParam):\n' +
+        '\tinsert awesome python code here\n' +
+        '\tand here for multiligne awesomeness\n';
+      return code;
+    });
+
+    var tfFileMock = transferFunctionsCode.map(function(pyfn) {
+      return '#--code-begin--\n' + pyfn + '#--code-end--\n';
+    }).join('\n');
+
+    var fileReaderMock = {
+      readAsText: readAsTextSpy
+    };
+    var eventMock = {
+      target : { result: tfFileMock }
+    };
+    spyOn(window, 'FileReader').andReturn(fileReaderMock);
+
+    scope.loadTransferFunctions('someFile');
+    expect(window.FileReader).toHaveBeenCalled();
+    expect(readAsTextSpy).toHaveBeenCalled();
+
+    fileReaderMock.onload(eventMock);
+    $timeout.flush();
+    expect(scope.transferFunctions[0].functionName).toEqual(tfNameMock[0]);
+    expect(scope.transferFunctions[0].code).toEqual(transferFunctionsCode[0]);
+
+    expect(scope.transferFunctions[1].functionName).toEqual(tfNameMock[1]);
+    expect(scope.transferFunctions[1].code).toEqual(transferFunctionsCode[1]);
+  });
+
+  it('should not try to load an invalid file', function() {
+    var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
+    var fileReaderMock = {
+      readAsText: readAsTextSpy
+    };
+    spyOn(window, 'FileReader').andReturn(fileReaderMock);
+
+    element.isolateScope().loadTransferFunctions({$error:'some error'});
+    expect(window.FileReader).not.toHaveBeenCalled();
+  });
+
 
   it('should provide the correct help urls', function () {
     expect(element.isolateScope().transferFunctions).toBeDefined();
