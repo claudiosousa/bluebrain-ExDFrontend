@@ -274,15 +274,15 @@ describe('Directive: transferFunctionEditor', function () {
     var tfNameMock = ['superPythonFn', 'anotherCoolFn'];
 
     var transferFunctionsCode = _.map(tfNameMock, function(fnName) {
-      var code = 'def '+fnName+' (someParam):\n' +
+      var code = '@decorate-my-furniture\n' +
+        '@beautiful(decorator)\n' +
+        'def '+fnName+' (someParam1, someParam2):\n' +
         '\tinsert awesome python code here\n' +
         '\tand here for multiligne awesomeness\n';
       return code;
     });
 
-    var tfFileMock = transferFunctionsCode.map(function(pyfn) {
-      return '#--code-begin--\n' + pyfn + '#--code-end--\n';
-    }).join('\n');
+    var tfFileMock = transferFunctionsCode.join('');
 
     var fileReaderMock = {
       readAsText: readAsTextSpy
