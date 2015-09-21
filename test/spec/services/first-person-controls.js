@@ -252,7 +252,7 @@ describe('FirstPersonControls', function () {
     triggerMouseEvent(domElement, 'mousedown', 0, 10, 20);
 
     expect(firstPersonControls.updateSphericalAngles).toHaveBeenCalled();
-    expect(firstPersonControls.azimuth).toEqual(Math.PI);
+    expect(firstPersonControls.azimuth).toEqual(Math.PI * 2);
     expect(firstPersonControls.zenith).toBeCloseTo(Math.PI / 2, 5);
     expect(firstPersonControls.azimuthOnMouseDown).toEqual(firstPersonControls.azimuth);
     expect(firstPersonControls.zenithOnMouseDown).toBeCloseTo(firstPersonControls.zenith, 5);
@@ -288,7 +288,7 @@ describe('FirstPersonControls', function () {
 
     var startAzimuth = Math.PI;
     var startZenith = Math.PI / 2;
-    expect(firstPersonControls.azimuth).toEqual(startAzimuth);
+    expect(firstPersonControls.azimuth).toEqual(startAzimuth * 2);
     expect(firstPersonControls.zenith).toBeCloseTo(startZenith, 5);
 
     var mouseDeltaX = Math.PI / 2;

@@ -273,7 +273,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     vecForward.normalize();
 
     this.zenith = Math.acos(-vecForward.z);
-    this.azimuth = Math.atan(vecForward.y / vecForward.x) + Math.PI;
+    this.azimuth = Math.atan2(vecForward.y, vecForward.x)  + Math.PI ;
   };
 
   function bind(scope, fn) {
