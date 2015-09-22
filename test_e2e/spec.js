@@ -24,7 +24,7 @@ const TIMEOUT_LOAD_EXPERIMENT_LIST = TIMEOUT_SHORT;
 const TIMEOUT_CREATE_AND_LOAD_EXPERIMENT = 45000;
 
 const EXPERIMENT_TO_CHOOSE = 'Husky Braitenberg experiment';
-const CREATE_SIMULATION_BUTTON = 'Create new simulation';
+const CREATE_SIMULATION_BUTTON = 'Launch';
 const JOIN_SIMULATION_BUTTON = 'Join existing simulation';
 const JOIN_BUTTON = 'Join ';
 
@@ -129,7 +129,7 @@ function startPauseSimulation() {
       console.log('Simulation time: ' + text);
       var deviation = simTimeInSeconds(text) - simulationTime;
       console.log('Deviation = ' + deviation);
-      expect(deviation <= 1).toBe(true);
+      expect(deviation <= 3).toBe(true); //a slow response from server can cause error
       deferred.fulfill();
     });
 
@@ -140,12 +140,13 @@ function stopSimulation() {
 
     // Stop simulation
     element(by.css('.glyphicon.glyphicon-stop')).click().then(function () {
-        console.log('Simulation stopped')
+        browser.sleep(5000);
+        console.log('Simulation stopped');
     });
 
     // Exit experiment
     browser.driver.wait(element(by.partialButtonText('OK')).click());
-    return browser.driver.getCurrentUrl().then(function (url) {
+        return browser.driver.getCurrentUrl().then(function (url) {
         return url == URL_ESV_PAGE;
     });
 
@@ -207,7 +208,7 @@ describe('Start Simulation', function () {
       expect(browser.driver.getCurrentUrl()).toContain('esv-web/gz3d-view');
       startPauseSimulation().then(function(){
         stopSimulation().then(function () {
-          browser.driver.wait(TIMEOUT_SHORT);
+          browser.sleep(TIMEOUT_SHORT)
           console.log('Waited for '+(TIMEOUT_SHORT/1000)+'s now for splash screen to vanish')
           expect(browser.driver.getCurrentUrl()).toEqual(URL_ESV_PAGE);
         });
