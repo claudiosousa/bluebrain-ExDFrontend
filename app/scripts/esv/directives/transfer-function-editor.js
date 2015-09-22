@@ -187,16 +187,37 @@
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
         };
 
-        var tfCodeMarkupBegin = "#--code-begin--\n";
-        var tfCodeMarkupEnd = "#--code-end--\n";
         var buildTransferFunctionFile = function(transferFunctions) {
-          var codeText = "";
-          transferFunctions.forEach(function(tf) {
-            codeText = codeText.concat(tfCodeMarkupBegin);
-            codeText = codeText.concat(tf.code + "\n");
-            codeText = codeText.concat(tfCodeMarkupEnd + "\n");
+          return _.pluck(transferFunctions, 'code').join('\n');
+        };
+
+        var splitCodeFile = function(content) {
+          // matches decorators and function declaration:
+          var regexCode = /((^@.*)\n)*^.*def\s+\w+\s*\(.*/gm;
+
+          // slice the codefile into separate functions
+          var match = regexCode.exec(content);
+          var previousMatchIdx = match.index;
+          match = regexCode.exec(content);
+
+          var loadedTransferFunctions=[];
+          while (match !== null) {
+            loadedTransferFunctions.push({
+              code: content.slice(previousMatchIdx, match.index),
+              dirty: true,
+              local: true
+            });
+            previousMatchIdx = match.index;
+            match = regexCode.exec(content);
+          }
+          // get the last code match
+          loadedTransferFunctions.push({
+            code: content.slice(previousMatchIdx),
+            dirty: true,
+            local: true
           });
-          return codeText;
+
+          return loadedTransferFunctions;
         };
 
         scope.save = function () {
@@ -208,24 +229,15 @@
           button.attr("href", URL.createObjectURL(file));
         };
 
+
+
         scope.loadTransferFunctions = function(file) {
           if (file && !file.$error) {
             var textReader = new FileReader();
             textReader.onload = function(e) {
               $timeout(function() {
-                var contents = e.target.result;
-                var regexCode = new RegExp(tfCodeMarkupBegin + "([^]*?)" + tfCodeMarkupEnd,"g");
-
-                var tfCode = contents.match(regexCode);
-
-                var loadedTransferFunctions = _.map(tfCode, function(code, idx) {
-                  var codeLength = tfCode[idx].length - tfCodeMarkupBegin.length - tfCodeMarkupEnd.length;
-                  return {
-                    code: tfCode[idx].substr(tfCodeMarkupBegin.length, codeLength),
-                    dirty: true,
-                    local: true
-                  };
-                });
+                var content = e.target.result;
+                var loadedTransferFunctions = splitCodeFile(content);
 
                 if (scope.transferFunction) {
                   scope.transferFunctions.forEach(function(tf) {
