@@ -2737,6 +2737,7 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
 
     var isMainView = false;
     var view = this.scene.createView(sensor.name, left, top, width, height, zIndex, fov, near, far, isMainView);
+    view.type = sensor.type;
 
     // camera sensors defined in gazebo .sdf seem to look along positive x axis (wtf ...), so need to adjust the rotation here
     view.camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
