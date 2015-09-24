@@ -22,7 +22,6 @@
       var resourceTransferFunction = $resource(serverBaseUrl + '/simulation/:sim_id/transfer-functions', {}, {
         transferFunctions: {
           method: 'GET',
-          isArray: true,
           interceptor: {responseError: serverError.display}
         },
         patch: {

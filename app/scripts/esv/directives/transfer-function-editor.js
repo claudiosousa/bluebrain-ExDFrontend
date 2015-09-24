@@ -1,6 +1,14 @@
 (function () {
   'use strict';
 
+  angular.module('exdFrontendApp.Constants')
+    // constants for CLE error types
+    .constant('SIMULATION_FACTORY_CLE_ERROR', {
+      COMPILE: 'Compile',
+      RUNTIME: 'RunTime',
+      LOADING: 'Loading',
+    });
+
   angular.module('exdFrontendApp').directive('transferFunctionEditor', [
       '$log',
       'backendInterfaceService',
@@ -12,6 +20,7 @@
       'serverError',
       '$timeout',
       'documentationURLs',
+      'SIMULATION_FACTORY_CLE_ERROR',
     function (
         $log,
         backendInterfaceService,
@@ -22,7 +31,8 @@
         roslib,
         serverError,
         $timeout,
-        documentationURLs
+        documentationURLs,
+        SIMULATION_FACTORY_CLE_ERROR
     ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
@@ -41,6 +51,8 @@
 
         scope.stateService = stateService;
         scope.STATE = STATE;
+        scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
+        var ScriptObject = pythonCodeHelper.ScriptObject;
 
         scope.transferFunctions = [];
         var addedTransferFunctionCount = 0;
@@ -50,30 +62,24 @@
         });
 
         scope.getTransferFunctionEditor = function(transferFunction) {
-          if (angular.isDefined(transferFunction.editor)) {
-            return transferFunction.editor;
-          }
-          var codeMirrorCollection = document.getElementsByClassName('CodeMirror');
-          var transferFunctionDivs = _.filter(codeMirrorCollection,
-            function(e){
-               return e.nodeName === 'DIV';
-            }
-          );
-          var transferFunctionIndex = _.indexOf(scope.transferFunctions, transferFunction);
-          var codeMirrorDiv = transferFunctionDivs[transferFunctionIndex];
-          transferFunction.editor = codeMirrorDiv.CodeMirror;
-          return transferFunction.editor;
+          var id = 'transfer-function-' + transferFunction.id;
+          var codeMirrorDiv = document.getElementById(id).firstChild;
+          return codeMirrorDiv.CodeMirror;
         };
 
         scope.onNewErrorMessageReceived = function(msg) {
-          var flawedTransferFunction = _.find(scope.transferFunctions, {'functionName':  msg.functionName});
-          flawedTransferFunction.error = { message: msg.message };
+          var flawedTransferFunction = _.find(scope.transferFunctions, {'name':  msg.functionName});
+          // Remove error line highlighting if a new compile error is received
+          if (msg.errorType === scope.ERROR.COMPILE) {
+            scope.cleanCompileError(flawedTransferFunction);
+          }
+          flawedTransferFunction.error[msg.errorType] = msg;
           if (msg.lineNumber >= 0) { // Python Syntax Error
             // Error line highlighting
             var editor = scope.getTransferFunctionEditor(flawedTransferFunction);
             var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
-            flawedTransferFunction.error.lineHandle = editor.getLineHandle(codeMirrorLineNumber);
-            editor.addLineClass(codeMirrorLineNumber, 'background', 'alert alert-danger');
+            flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = editor.getLineHandle(codeMirrorLineNumber);
+            editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
           }
         };
 
@@ -82,57 +88,46 @@
         scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
 
 
-
         scope.control.refresh = function () {
           backendInterfaceService.getTransferFunctions(
-            function (data) {
-              for (var i = 0; i < data.length; i = i + 1) {
-                var transferFunction = {};
-                transferFunction.code = data[i];
-                transferFunction.dirty = false;
-                transferFunction.local = false;
-                transferFunction.functionName = transferFunction.id = pythonCodeHelper.getFunctionName(data[i]);
-                transferFunction.editor = undefined;
-                if (transferFunction.functionName) {
-                  // If we already have local changes, we do not update
-                  var foundIndex = -1;
-                  for (var j = 0, len = scope.transferFunctions.length; j < len; j = j + 1) {
-                    if (scope.transferFunctions[j].id === transferFunction.functionName) {
-                      foundIndex = j;
-                      break;
-                    }
-                  }
-                  if (foundIndex >= 0 && !scope.transferFunctions[foundIndex].dirty)
-                  {
-                    scope.transferFunctions[foundIndex] = transferFunction;
-                  } else if (foundIndex < 0) {
-                    scope.transferFunctions.unshift(transferFunction);
-                  }
+            function (response) {
+              _.forEach(response.data, function(code, id) {
+                var transferFunction = new ScriptObject(id, code);
+                // If we already have local changes, we do not update
+                var tf = _.find(scope.transferFunctions, {'name':  id});
+                var found = angular.isDefined(tf);
+                if (found && !tf.dirty)
+                {
+                  tf = transferFunction;
+                } else if (!found) {
+                  scope.transferFunctions.unshift(transferFunction);
                 }
-              }
+             });
           });
         };
 
-        scope.cleanError = function(transferFunction) {
-          var editor = scope.getTransferFunctionEditor(transferFunction);
-          var lineHandle = transferFunction.error.lineHandle;
-          if (angular.isDefined(editor) && angular.isDefined(lineHandle)) {
-            editor.removeLineClass(lineHandle, 'background', 'alert alert-danger');
+        scope.cleanCompileError = function(transferFunction) {
+          var compileError = transferFunction.error[scope.ERROR.COMPILE];
+          var lineHandle = compileError ? compileError.lineHandle : undefined;
+          if (angular.isDefined(lineHandle)) {
+            var editor = scope.getTransferFunctionEditor(transferFunction);
+            editor.removeLineClass(lineHandle, 'background', 'alert-danger');
           }
-          transferFunction.error = undefined;
+          delete transferFunction.error[scope.ERROR.COMPILE];
         };
 
-        scope.update = function (transferFunction) {
+        scope.update = function(transferFunction) {
           var restart = stateService.currentState === STATE.STARTED;
           stateService.ensureStateBeforeExecuting(
             STATE.PAUSED,
             function() {
+              delete transferFunction.error[scope.ERROR.RUNTIME];
+              delete transferFunction.error[scope.ERROR.LOADING];
               backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code,
                 function(){
                   transferFunction.dirty = false;
-                  if (angular.isDefined(transferFunction.error)) {
-                    scope.cleanError(transferFunction);
-                  }
+                  transferFunction.local = false;
+                  scope.cleanCompileError(transferFunction);
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);
                   }
@@ -149,13 +144,13 @@
         };
 
         scope.onTransferFunctionChange = function (transferFunction) {
-          transferFunction.functionName = pythonCodeHelper.getFunctionName(transferFunction.code);
+          transferFunction.name = pythonCodeHelper.getFunctionName(transferFunction.code);
           transferFunction.dirty = true;
         };
 
         scope.delete = function (transferFunction) {
+          var index = scope.transferFunctions.indexOf(transferFunction);
           if (transferFunction.local) {
-            var index = scope.transferFunctions.indexOf(transferFunction);
             scope.transferFunctions.splice(index, 1);
           } else {
             var restart = stateService.currentState === STATE.STARTED;
@@ -167,22 +162,18 @@
                     stateService.setCurrentState(STATE.STARTED);
                   }
                 });
-                var index = scope.transferFunctions.indexOf(transferFunction);
                 scope.transferFunctions.splice(index, 1);
               }
             );
           }
         };
 
-
         scope.create = function () {
-          var transferFunction = {};
-          var name = "transferfunction_" + addedTransferFunctionCount;
-          transferFunction.code = "@nrp.Robot2Neuron()\ndef " + name + "(t):\n    print \"Hello world at time \" + str(t)";
-          transferFunction.functionName = name;
+          var id = "transferfunction_" + addedTransferFunctionCount;
+          var code = "@nrp.Robot2Neuron()\ndef " + id + "(t):\n    print \"Hello world at time \" + str(t)";
+          var transferFunction = new ScriptObject(id, code);
           transferFunction.dirty = true;
           transferFunction.local = true;
-          transferFunction.id = name;
           scope.transferFunctions.unshift(transferFunction);
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
         };
@@ -200,22 +191,14 @@
           var previousMatchIdx = match.index;
           match = regexCode.exec(content);
 
-          var loadedTransferFunctions=[];
+          var loadedTransferFunctions = [];
           while (match !== null) {
-            loadedTransferFunctions.push({
-              code: content.slice(previousMatchIdx, match.index),
-              dirty: true,
-              local: true
-            });
+            loadedTransferFunctions.push(new ScriptObject('', content.slice(previousMatchIdx, match.index)));
             previousMatchIdx = match.index;
             match = regexCode.exec(content);
           }
           // get the last code match
-          loadedTransferFunctions.push({
-            code: content.slice(previousMatchIdx),
-            dirty: true,
-            local: true
-          });
+          loadedTransferFunctions.push(new ScriptObject('', content.slice(previousMatchIdx)));
 
           return loadedTransferFunctions;
         };
@@ -229,8 +212,6 @@
           button.attr("href", URL.createObjectURL(file));
         };
 
-
-
         scope.loadTransferFunctions = function(file) {
           if (file && !file.$error) {
             var textReader = new FileReader();
@@ -238,22 +219,21 @@
               $timeout(function() {
                 var content = e.target.result;
                 var loadedTransferFunctions = splitCodeFile(content);
-
-                if (scope.transferFunction) {
-                  scope.transferFunctions.forEach(function(tf) {
+                // Removes all TFs
+                _.forEach(scope.transferFunctions, function(tf) {
                     scope.delete(tf);
-                  });
-                }
-
+                });
+                // Upload new TFs to back-end
                 scope.transferFunctions = loadedTransferFunctions;
                 scope.transferFunctions.forEach(function(tf) {
                   scope.onTransferFunctionChange(tf);
-                  tf.id = tf.functionName;
+                  tf.id = tf.name;
+                  tf.local = true;
                   scope.update(tf);
                 });
               });
             };
-
+            
             textReader.readAsText(file);
           }
         };

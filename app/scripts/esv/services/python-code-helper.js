@@ -16,6 +16,13 @@
         }
       };
 
+      returnValue.ScriptObject = function(id, code) {
+            this.name = this.id = id;
+            this.code = code;
+            this.local = this.dirty = false;
+            this.error = {};
+      };
+      
       return returnValue;
     }
   );
