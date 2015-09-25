@@ -16,6 +16,11 @@
           method: 'PUT',
           url: serverBaseUrl + '/simulation/:sim_id/state-machines/:state_machine_name',
           interceptor: {responseError: serverError.display}
+        },
+        delete: {
+          method: 'DELETE',
+          url: serverBaseUrl + '/simulation/:sim_id/state-machines/:state_machine_name',
+          interceptor: {responseError: serverError.display}
         }
       });
 
@@ -36,16 +41,19 @@
       });
 
       return {
-        getStateMachineScripts: function (callback) {
+        getStateMachines: function (callback) {
           resourceStateMachine.get({sim_id: $stateParams.simulationID}, function (response) {
             callback(response);
           });
         },
-        setStateMachineScript: function (name, data) {
+        setStateMachine: function (name, data, successCallback) {
           resourceStateMachine.put({
             sim_id: $stateParams.simulationID,
             state_machine_name: name
-          }, data);
+          }, data, successCallback);
+        },
+        deleteStateMachine: function (name, callback) {
+          resourceStateMachine.delete({sim_id: $stateParams.simulationID, state_machine_name: name}, callback);
         },
         getTransferFunctions: function (callback) {
           resourceTransferFunction.transferFunctions({sim_id: $stateParams.simulationID}, function (data) {

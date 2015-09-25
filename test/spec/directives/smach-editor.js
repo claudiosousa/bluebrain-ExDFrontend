@@ -8,19 +8,29 @@ describe('Directive: smachEditor', function () {
     $compile,
     $httpBackend,
     $scope,
+    isolateScope,
     element,
-    backendInterfaceService;
+    backendInterfaceService,
+    pythonCodeHelper,
+    ScriptObject,
+    stateMachines;
 
   var backendInterfaceServiceMock = {
-    getStateMachineScripts: jasmine.createSpy('getStateMachineScripts'),
-    setStateMachineScript: jasmine.createSpy('setStateMachineScript')
+    getStateMachines: jasmine.createSpy('getStateMachines'),
+    setStateMachine: jasmine.createSpy('setStateMachine'),
+    deleteStateMachine: jasmine.createSpy('deleteStateMachine')
   };
 
   var documentationURLsMock =
   {
     getDocumentationURLs: function() {
       return {
-        then: function(callback) {return callback({cleDocumentationURL: 'cleDocumentationURL', backendDocumentationURL: 'backendDocumentationURL'});}
+        then: function(callback) {
+          return callback({
+            cleDocumentationURL: 'cleDocumentationURL', 
+            backendDocumentationURL: 'backendDocumentationURL'
+          });
+        }
       };
     }
   };
@@ -35,38 +45,83 @@ describe('Directive: smachEditor', function () {
                               _$httpBackend_,
                               _$compile_,
                               _backendInterfaceService_,
-                              $templateCache) {
+                              $templateCache,
+                              _pythonCodeHelper_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $httpBackend = _$httpBackend_;
     $httpBackend.whenGET(VIEW).respond('');
     $templateCache.put(VIEW, '');
     backendInterfaceService = _backendInterfaceService_;
-
+    pythonCodeHelper = _pythonCodeHelper_;
+    ScriptObject = pythonCodeHelper.ScriptObject;
     $scope = $rootScope.$new();
     $scope.control = {};
     element = $compile('<smach-editor control="control"/>')($scope);
     $scope.$digest();
-
-
+    isolateScope = element.isolateScope();
+    stateMachines = isolateScope.stateMachines;
   }));
 
-  it('should init the smachCodes object', function () {
+  it('should init the stateMachines variable', function () {
     $scope.control.refresh();
-
-    // Execute the registered callback
-    var stateMachineCodesResponse = {'data': {'SM1': 'Code of SM', 'SM2': 'Code of SM2'}};
-    backendInterfaceService.getStateMachineScripts.mostRecentCall.args[0](stateMachineCodesResponse);
-
-    expect(element.isolateScope().smachCodes).toEqual(stateMachineCodesResponse.data);
-    expect(element.isolateScope().backendDocumentationURL).toEqual('backendDocumentationURL');
+    expect(isolateScope.stateMachines).toEqual([]);
+    expect(backendInterfaceService.getStateMachines).toHaveBeenCalled();
+    expect(isolateScope.backendDocumentationURL).toEqual('backendDocumentationURL'); 
   });
 
-  it('should test the update function', function() {
-    var isolateScope = element.isolateScope();
-    isolateScope.smachCodes = { foo: 'bar' };
-    isolateScope.update('foo');
-    expect(backendInterfaceService.setStateMachineScript).toHaveBeenCalledWith('foo', 'bar');
+  describe('Retrieving, saving and deleting stateMachines', function () {
+      var response = {data: {SM3: 'Code of SM3', SM2: 'Code of SM2', SM1: 'Code of SM1'}};
+      var expected = [];
+      var sm1, sm2, sm3;
+
+      beforeEach(function(){
+        $scope.control.refresh();
+        sm1 = new ScriptObject('SM1', 'Code of SM1');
+        sm2 = new ScriptObject('SM2', 'Code of SM2');
+        sm3 = new ScriptObject('SM3', 'Code of SM3');
+        expected = [sm1, sm2, sm3];
+        isolateScope.stateMachines = angular.copy(expected);
+        stateMachines = isolateScope.stateMachines;
+      });
+
+      it('should handle the retrieved stateMachines properly', function () {
+        backendInterfaceService.getStateMachines.mostRecentCall.args[0](response);
+        expect(_.findIndex(stateMachines, sm1)).not.toBe(-1);
+        expect(_.findIndex(stateMachines, sm2)).not.toBe(-1);
+        expect(_.findIndex(stateMachines, sm3)).not.toBe(-1);
+        expect(stateMachines.length).toBe(3);
+        // This order is not guaranteed. Still, keys are printed in insertion order on all major browsers
+        // See http://stackoverflow.com/questions/5525795/does-javascript-guarantee-object-property-order
+        expect(stateMachines).toEqual(expected);
+      });
+
+      it('should test the update function', function() {
+        var sm = new ScriptObject('SM', 'Code of SM');
+        isolateScope.stateMachines = [sm];
+        isolateScope.update(sm);
+        expect(backendInterfaceService.setStateMachine).toHaveBeenCalledWith(sm.id, sm.code, jasmine.any(Function));
+        sm.dirty = true;
+        sm.local = true;
+        backendInterfaceService.setStateMachine.mostRecentCall.args[2]();
+        expect(sm.dirty).toEqual(false);
+        expect(sm.local).toEqual(false);
+      });
+
+      it('should delete a state machine properly', function() {
+        var sm1 = stateMachines[0];
+        isolateScope.delete(sm1);
+        expect(backendInterfaceService.deleteStateMachine).toHaveBeenCalledWith('SM1', jasmine.any(Function));
+        backendInterfaceService.deleteStateMachine.mostRecentCall.args[1]();
+        expect(stateMachines.indexOf(sm1)).toBe(-1);
+
+        var sm2 = stateMachines[0];
+        sm2.local = true;
+        isolateScope.delete(sm2);
+        expect(stateMachines.indexOf(sm2)).toBe(-1);
+        // Since the state machine is local, we should not call back the server
+        expect(backendInterfaceService.deleteStateMachine).not.toHaveBeenCalledWith('SM2', jasmine.any(Function));
+    });
   });
 
 });

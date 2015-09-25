@@ -6,21 +6,30 @@
   message to the ROS "status" topic. State machine syntax is described in more details
   <a target="_blank" href="{{backendDocumentationURL}}/tutorials/state_machines.html">here</a>
 </p>
-<div ng-show="smachCodes === undefined" class="alert alert-info" role="alert">
+<div ng-show="stateMachines.length === 0" class="alert alert-info" role="alert">
   There is no SMACH script available for this experiment.
 </div>
-<div ng-repeat="(name, _) in smachCodes">
+<div ng-repeat="stateMachine in stateMachines">
   <hr>
-  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{name}}</span></code></h4>
+  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
   <hr>
   <div ui-codemirror="{
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,
           mode: 'text/x-python'
-      }" ng-model="smachCodes[name]" ui-refresh="smachCodes[name]">
+      }"
+      ng-model="stateMachine.code"
+      ui-refresh="stateMachine.code">
   </div>
-  <button type="button" class="btn btn-default btn-md" ng-click="update(name)">
+  <button type="button" class="btn btn-default btn-md"
+    ng-click="update(stateMachine)"
+    ng-disabled="!stateMachine.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending">
     <span class="glyphicon glyphicon-save" aria-hidden="true"/>Update
+  </button>
+  <button type="button" class="btn btn-default btn-md"
+    ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+    ng-click="delete(stateMachine)">
+    <span class="glyphicon glyphicon-remove"/> Delete
   </button>
 </div>
