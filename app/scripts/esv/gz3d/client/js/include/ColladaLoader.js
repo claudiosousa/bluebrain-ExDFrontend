@@ -60,69 +60,76 @@ THREE.ColladaLoader = function () {
 
 		var length = 0;
 
-		if ( document.implementation && document.implementation.createDocument ) {
+		if (document.implementation && document.implementation.createDocument) {
 
-			var request = new XMLHttpRequest();
+		  var request = new XMLHttpRequest();
 
-			request.onreadystatechange = function() {
+		  request.onreadystatechange = function () {
 
-				if ( request.readyState === 4 ) {
+		    if (request.readyState === 4) {
 
-					if ( request.status === 0 || request.status === 200 ) {
+		      if (request.status === 0 || request.status === 200) {
 
 
-						if ( request.responseXML ) {
+		        if (request.responseXML) {
 
-							readyCallbackFunc = readyCallback;
-							parse( request.responseXML, undefined, url );
+		          readyCallbackFunc = readyCallback;
+		          parse(request.responseXML, undefined, url);
 
-						} else if ( request.responseText ) {
+		        } else if (request.responseText) {
 
-							readyCallbackFunc = readyCallback;
-							var xmlParser = new DOMParser();
-							var responseXML = xmlParser.parseFromString( request.responseText, "application/xml" );
-							parse( responseXML, undefined, url );
+		          readyCallbackFunc = readyCallback;
+		          var xmlParser = new DOMParser();
+		          var responseXML = xmlParser.parseFromString(request.responseText, "application/xml");
+		          parse(responseXML, undefined, url);
 
-						} else {
+		        } else {
 
-							if ( failCallback ) {
+		          if (failCallback) {
 
-								failCallback();
+		            failCallback();
 
-							} else {
+		          } else {
 
-								console.error( "ColladaLoader: Empty or non-existing file (" + url + ")" );
+		            console.error("ColladaLoader: Empty or non-existing file (" + url + ")");
 
-							}
+		          }
 
-						}
+		        }
 
-					}
+		      }
 
-				} else if ( request.readyState === 3 ) {
+		    } else if (request.status === 404) { // HBP Fix: we support 404 errors.
+		      if (failCallback) {
+		        failCallback();
+		      } else {
+		        console.error("ColladaLoader: Received 404 for (" + url + ")");
+		      }
+		    } else if (request.readyState === 3) {
 
-					if ( progressCallback ) {
+		      if (progressCallback) {
 
-						if ( length === 0 ) {
+		        if (length === 0) {
 
-							length = request.getResponseHeader( "Content-Length" );
+              // HBP Fix: we do use parseInt here,
+              length = parseInt(request.getResponseHeader( "Content-Length" ));
 
-						}
+		        }
 
-						progressCallback( { total: length, loaded: request.responseText.length } );
+		        progressCallback({total: length, loaded: request.responseText.length});
 
-					}
+		      }
 
-				}
+		    }
 
-			}
+		  }
 
-			request.open( "GET", url, true );
-			request.send( null );
+		  request.open("GET", url, true);
+		  request.send(null);
 
 		} else {
 
-			alert( "Don't know how to parse XML!" );
+		  alert("Don't know how to parse XML!");
 
 		}
 
