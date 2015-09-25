@@ -61,6 +61,7 @@ describe('Controller: editorPanelCtrl', function () {
 
     scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
     scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
+    scope.controls.pynneditor.refresh = jasmine.createSpy('refresh');
   }));
 
   it('should set the panelIsOpen on the open and close callbacks', function () {
@@ -84,6 +85,10 @@ describe('Controller: editorPanelCtrl', function () {
     scope.closeCallback();
     scope.openCallback();
     expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
+    scope.activeTab.statemachine = false;
+    scope.activeTab.pynneditor = true;
+    scope.openCallback();
+    expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
   });
 
   it('should disable the key bindings when an code editor tab is active and the panel is opened', function () {
@@ -97,9 +102,19 @@ describe('Controller: editorPanelCtrl', function () {
 
     scope.closeCallback();
     expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
+    scope.activeTab.transferfunction = false;
 
     //Test the statemachine tab
     scope.activeTab.statemachine = true;
+    scope.openCallback();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeFalsy();
+
+    scope.closeCallback();
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
+    scope.activeTab.statemachine = false;
+
+    //Test the pynn-editor tab
+    scope.activeTab.pynneditor = true;
     scope.openCallback();
     expect(gz3d.scene.controls.keyBindingsEnabled).toBeFalsy();
   });

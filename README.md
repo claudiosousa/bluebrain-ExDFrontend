@@ -36,5 +36,5 @@ Create a valid app/config.json from app/config.json.sample
 
 run
 ```
-grunt server
+grunt serve
 ```
