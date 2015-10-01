@@ -27,7 +27,7 @@ describe('Directive: smachEditor', function () {
       return {
         then: function(callback) {
           return callback({
-            cleDocumentationURL: 'cleDocumentationURL', 
+            cleDocumentationURL: 'cleDocumentationURL',
             backendDocumentationURL: 'backendDocumentationURL'
           });
         }
@@ -67,7 +67,7 @@ describe('Directive: smachEditor', function () {
     $scope.control.refresh();
     expect(isolateScope.stateMachines).toEqual([]);
     expect(backendInterfaceService.getStateMachines).toHaveBeenCalled();
-    expect(isolateScope.backendDocumentationURL).toEqual('backendDocumentationURL'); 
+    expect(isolateScope.backendDocumentationURL).toEqual('backendDocumentationURL');
   });
 
   describe('Retrieving, saving and deleting stateMachines', function () {
@@ -123,5 +123,36 @@ describe('Directive: smachEditor', function () {
         expect(backendInterfaceService.deleteStateMachine).not.toHaveBeenCalledWith('SM2', jasmine.any(Function));
     });
   });
+
+  describe('Editing state machines', function () {
+
+      it('should create state machines properly', function() {
+        var numberOfNewStateMachines = 3;
+        for (var i = 0; i < numberOfNewStateMachines; ++i) {
+          isolateScope.create();
+        }
+        var n = numberOfNewStateMachines - 1;
+        var sm = stateMachines[0];
+        expect(sm.id).toEqual('statemachine_' + n);
+        expect(sm.code).toContain('import smach_ros');
+        expect(sm.code).toContain('import DefaultStateMachine');
+        expect(sm.code).toContain('def populate():\n');
+        expect(sm.code).toContain('(DefaultStateMachine)');
+      });
+
+      it('should update script flags properly when editing the state machine code', function() {
+        var smCode = 'class(MyStateMachine):\n    def populate():\n        return None';
+        var smCodeNewCode = 'class(MyStateMachine):\n    def populate():\n        return []';
+        stateMachines[0] = {code: smCode, dirty: false, local: false, id: 'sm'};
+        var sm = stateMachines[0];
+        sm.code = smCodeNewCode;
+        isolateScope.onStateMachineChange(sm);
+        expect(stateMachines).toEqual(
+          [
+            { code: smCodeNewCode, dirty: true, local: false, id: 'sm'}
+          ]);
+      });
+
+    });
 
 });

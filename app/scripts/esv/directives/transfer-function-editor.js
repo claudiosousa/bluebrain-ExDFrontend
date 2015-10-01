@@ -233,7 +233,6 @@
                 });
               });
             };
-            
             textReader.readAsText(file);
           }
         };

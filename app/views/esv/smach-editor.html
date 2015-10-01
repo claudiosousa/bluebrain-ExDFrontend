@@ -9,6 +9,9 @@
 <div ng-show="stateMachines.length === 0" class="alert alert-info" role="alert">
   There is no SMACH script available for this experiment.
 </div>
+<button type="button" class="btn btn-default btn-md" ng-click="create()">
+  <span class="glyphicon glyphicon-add"></span> New state machine
+</button>
 <div ng-repeat="stateMachine in stateMachines">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
@@ -20,16 +23,17 @@
           mode: 'text/x-python'
       }"
       ng-model="stateMachine.code"
-      ui-refresh="stateMachine.code">
+      ui-refresh="stateMachine.code"
+      ng-change="onStateMachineChange(stateMachine)">
   </div>
   <button type="button" class="btn btn-default btn-md"
     ng-click="update(stateMachine)"
     ng-disabled="!stateMachine.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending">
-    <span class="glyphicon glyphicon-save" aria-hidden="true"/>Update
+    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Update
   </button>
   <button type="button" class="btn btn-default btn-md"
     ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
     ng-click="delete(stateMachine)">
-    <span class="glyphicon glyphicon-remove"/> Delete
+    <span class="glyphicon glyphicon-remove"></span> Delete
   </button>
 </div>

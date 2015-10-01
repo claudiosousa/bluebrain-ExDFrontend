@@ -3,7 +3,7 @@
 <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable transfer function edition.</div>
 <hr>
 <button type="button" class="btn btn-default btn-md" ng-disabled="(stateService.currentState === STATE.INITIALIZED)" ng-click="create()">
-  <span class="glyphicon glyphicon-add"/> New transfer function
+  <span class="glyphicon glyphicon-add"></span> New transfer function
 </button>
 <a id="save-transfer-functions" href="" class="btn btn-default btn-md" ng-click="save()" download="transferFunctions.py">Save</a>
 <button class="btn btn-default btn-md" type="file"
@@ -14,25 +14,25 @@
 <div ng-repeat="transferFunction in transferFunctions">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
-  <div ng-attr-id="transfer-function-{{transferFunction.id}}" 
-    ui-codemirror ui-codemirror-opts="editorOptions" 
-    ng-change="onTransferFunctionChange(transferFunction)" 
+  <div ng-attr-id="transfer-function-{{transferFunction.id}}"
+    ui-codemirror ui-codemirror-opts="editorOptions"
+    ng-change="onTransferFunctionChange(transferFunction)"
     ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
- 
+
  <div ng-repeat="(type, error) in transferFunction.error">
    <div class="alert alert-danger" role="alert">
     {{error.message}} <b>({{type}})</b>
    </div>
  </div>
-  
+
   <button type="button" class="btn btn-default btn-md"
     ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
     ng-click="update(transferFunction)">
-    <span class="glyphicon glyphicon-save"/> Update
+    <span class="glyphicon glyphicon-save"></span> Update
   </button>
   <button type="button" class="btn btn-default btn-md"
     ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending" ng-click="delete(transferFunction)">
-    <span class="glyphicon glyphicon-remove"/> Delete
+    <span class="glyphicon glyphicon-remove"></span> Delete
   </button>
 </div>

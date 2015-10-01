@@ -21,6 +21,7 @@
           scope.STATE = STATE;
           scope.stateMachines = [];
           var ScriptObject = pythonCodeHelper.ScriptObject;
+          var addedStateMachineCount = 0;
 
           scope.control.refresh = function () {
             backendInterfaceService.getStateMachines(
@@ -52,6 +53,26 @@
 
           scope.onStateMachineChange = function (stateMachine) {
             stateMachine.dirty = true;
+          };
+
+          scope.create = function () {
+            var count = addedStateMachineCount;
+            var id = 'statemachine_' + count;
+            var code = 'import smach_ros\n'+
+                'from hbp_nrp_backend.exd_config.default_state_machine import DefaultStateMachine\n\n' +
+                'def create_state_machine():\n'+
+                '    return MyStateMachine_' + count + '()\n\n' +
+                'class MyStateMachine_' + count + '(DefaultStateMachine):\n'+
+                '    @staticmethod\n'+
+                '    def populate():\n'+
+                '        state_list = []\n'+
+                '        # Define states and transitions here\n'+
+                '        return state_list';
+            var stateMachine = new ScriptObject(id, code);
+            stateMachine.dirty = true;
+            stateMachine.local = true;
+            scope.stateMachines.unshift(stateMachine);
+            addedStateMachineCount = addedStateMachineCount + 1;
           };
 
           scope.delete = function (stateMachine) {
