@@ -1918,15 +1918,17 @@ GZ3D.GZIface.prototype.connect = function()
 {
   // connect to websocket
 
-  var token = [];
   var url = GZ3D.webSocketUrl;
-  if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
-    try {
-      token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
-    } catch(e) {
-      token[0] = { access_token : 'notoken' };
+  if (!localStorage.getItem('localmode.forceuser')) {
+    var token = [];
+    if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
+      try {
+        token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
+      } catch(e) {
+        token[0] = { access_token : 'notoken' };
+      }
+      url = url + '/?token=' + token[0].access_token;
     }
-    url = url + '/?token=' + token[0].access_token;
   }
 
   this.webSocket = new ROSLIB.Ros({

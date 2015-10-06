@@ -129,9 +129,13 @@
           simulationService().updateUptime();
         }, UPTIME_UPDATE_RATE);
 
-        hbpUserDirectory.getCurrentUser().then(function (profile) {
-          $scope.userID = profile.id;
-        });
+        if (!bbpConfig.get('localmode.forceuser', false)) {
+          hbpUserDirectory.getCurrentUser().then(function (profile) {
+            $scope.userID = profile.id;
+          });
+        } else {
+          $scope.userID = bbpConfig.get('localmode.ownerID');
+        }
 
         experimentSimulationService.getExperiments(
           // This is the datastructure where all the templates and running experiments are stored

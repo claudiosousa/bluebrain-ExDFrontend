@@ -60,12 +60,14 @@
             // Provide a default route.
             // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
             $urlRouterProvider.otherwise('/');
-        })
-        // Authentication
-        .config(function(bbpOidcSessionProvider) {
-            // Set to true if you want to check for the existance of
-            // a token while loading.
+        }).config(function(bbpOidcSessionProvider, bbpConfig) {
+          // Set to true if you want to check for the existence of
+          // a token while loading.
+          if (!bbpConfig.get('localmode.forceuser', false)) {
             bbpOidcSessionProvider.ensureToken(true);
+          } else {
+            localStorage.setItem('localmode.forceuser', true);
+          }
         });
 
     // load the configuration used by bbpConfig
