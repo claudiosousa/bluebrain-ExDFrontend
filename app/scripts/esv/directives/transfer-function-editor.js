@@ -5,7 +5,7 @@
     // constants for CLE error types
     .constant('SIMULATION_FACTORY_CLE_ERROR', {
       COMPILE: 'Compile',
-      RUNTIME: 'RunTime',
+      RUNTIME: 'Runtime',
       LOADING: 'Loading',
     });
 
@@ -15,7 +15,6 @@
       'STATE',
       'stateService',
       'pythonCodeHelper',
-      'HELP_BASE_URL',
       'roslib',
       'serverError',
       '$timeout',
@@ -27,7 +26,6 @@
         STATE,
         stateService,
         pythonCodeHelper,
-        HELP_BASE_URL,
         roslib,
         serverError,
         $timeout,
