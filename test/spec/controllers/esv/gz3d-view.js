@@ -16,6 +16,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       simulationState,
       simulationControl,
       stateService,
+      contextMenuState,
       screenControl,
       splashInstance,
       exampleProgressData,
@@ -160,6 +161,18 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
   }));
 
+
+    beforeEach(module('contextMenuStateService', function ($provide) {
+
+    var toggleContextMenuSpy = jasmine.createSpy('toggleContextMenu');
+    var pushItemGroupSpy = jasmine.createSpy('pushItemGroup');
+
+    $provide.value('contextMenuState', {
+      toggleContextMenu: toggleContextMenuSpy,
+      pushItemGroup : pushItemGroupSpy
+    });
+  }));
+
   beforeEach(module(function ($provide) {
     $provide.value('gz3d', gzInitializationMock);
     $provide.value('cameraManipulation', cameraManipulationMock);
@@ -223,6 +236,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _simulationState_,
                               _simulationControl_,
                               _stateService_,
+                              _contextMenuState_,
                               _screenControl_,
                               _$stateParams_,
                               _nrpBackendVersions_,
@@ -250,6 +264,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationState = _simulationState_;
     simulationControl = _simulationControl_;
     stateService = _stateService_;
+    contextMenuState = _contextMenuState_;
     screenControl = _screenControl_;
     stateParams = _$stateParams_;
     nrpBackendVersions = _nrpBackendVersions_;
@@ -261,6 +276,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     panels = _panels_;
     gz3d = _gz3d_;
     experimentSimulationService = _experimentSimulationService_;
+
+    scope.viewState = {};
 
     gz3d.scene = {};
     gz3d.scene.radialMenu = {};
@@ -278,6 +295,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     gz3d.iface.registerWebSocketConnectionCallback = jasmine.createSpy('registerWebSocketConnectionCallback');
     gz3d.iface.webSocket = {};
     gz3d.iface.webSocket.close = jasmine.createSpy('close');
+
+
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenPUT(/()/).respond(200);
@@ -342,10 +361,10 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should set isJoiningStoppedSimulation to true when already stopped', function(){
-      expect(scope.isJoiningStoppedSimulation).toBe(false);
+      expect(scope.viewState.isJoiningStoppedSimulation).toBe(false);
       stateService.currentState = STATE.STOPPED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
-      expect(scope.isJoiningStoppedSimulation).toBe(true);
+      expect(scope.viewState.isJoiningStoppedSimulation).toBe(true);
     });
 
     it('should set the assetLoadingSplash callback in gz3d', function(){
@@ -358,27 +377,30 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
     });
 
+
+
+
     it('should set the current User and checks if isOwner (1)', function() {
-      scope.isOwner = false;
+      scope.viewState.isOwner = false;
       hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
       expect(scope.userName).toEqual(currentUserInfo1234.displayName);
       expect(scope.userID).toEqual(currentUserInfo1234.id);
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
       expect(scope.ownerID).toEqual(fakeSimulationData.owner);
-      expect(scope.isOwner).toBe(true);
+      expect(scope.viewState.isOwner).toBe(true);
 
       hbpUserDirectoryPromiseObject2.then.mostRecentCall.args[0](currentUserInfo1234Hash);
       expect(scope.owner).toEqual(currentUserInfo1234.displayName);
     });
 
     it('should set the current User and checks if isOwner (2)', function() {
-      scope.isOwner = true;
+      scope.viewState.isOwner = true;
       hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](otherUserInfo4321);
       expect(scope.userName).toEqual(otherUserInfo4321.displayName);
       expect(scope.userID).toEqual(otherUserInfo4321.id);
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
       expect(scope.ownerID).toEqual(fakeSimulationData.owner);
-      expect(scope.isOwner).toBe(false);
+      expect(scope.viewState.isOwner).toBe(false);
     });
 
     it('should check that updateSimulation sets the scope\'s state', function () {
@@ -444,12 +466,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.realTimeText).toBe(2);
     });
 
-    it('should get the model under the current mouse position', function () {
-      gz3d.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
-      scope.getModelUnderMouse({clientX: 10, clientY: 10});
-      expect(gz3d.scene.getRayCastModel).toHaveBeenCalled();
-    });
-
     it('should set a color on the selected screen', function() {
       //Ignore this warning because of the sim_id
       /*jshint camelcase: false */
@@ -466,46 +482,32 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(console.error.callCount).toEqual(1);
 
       // pretend we selected a screen now
-      scope.selectedEntity = { 'name' : 'left_vr_screen' };
+      gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
       scope.setColorOnEntity('red');
 
       expect(screenControl).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
       expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToRed'});
     });
 
-    it('should toggle a menu to be able to change the screen color', function() {
-      // actual test
-      expect(scope.toggleScreenChangeMenu).toEqual(jasmine.any(Function));
 
-      // first the false case
-      var show = false;
-      var event = {};
-      scope.isOwner = true;
-      scope.toggleScreenChangeMenu(show, event);
-      expect(scope.isContextMenuShown).toBe(false);
-      expect(gz3d.scene.radialMenu.showing).toBe(false);
+    it('should call context menu service if user is the simulation owner', function() {
 
-      // now the true case
-      show = true;
-      event = { 'clientX' : 100, 'clientY': 200 };
-      scope.isContextMenuShown = false;
-      scope.getModelUnderMouse = function(event) { // jshint ignore:line
-        return { 'name' : 'vr_screen_1' };
-      };
-      gz3d.scene.selectedEntity = { 'some_key' : 'some_value' };
-      scope.toggleScreenChangeMenu(show, event);
+      var event = {button : 2};
 
-      expect(scope.contextMenuTop).toEqual(event.clientY);
-      expect(scope.contextMenuLeft).toEqual(event.clientX);
-      expect(scope.selectedEntity).toEqual(gz3d.scene.selectedEntity);
+      //false case
+      scope.viewState.isOwner = false;
 
-      // now if you are not the owner
-      scope.isOwner = false;
-      scope.show = true;
-      scope.isContextMenuShown = false;
-      spyOn(scope, 'getModelUnderMouse');
-      scope.toggleScreenChangeMenu(show, event);
-      expect(scope.getModelUnderMouse).not.toHaveBeenCalled();
+      scope.toggleContextMenu(true, event);//call the function under test
+
+      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
+
+      //true case
+      scope.viewState.isOwner = true;
+
+      scope.toggleContextMenu(true, event);//call the function under test
+
+      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, event);
+
     });
 
     it('should turn slider position into light intensities', function() {
@@ -724,11 +726,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
   });
 
-
   describe('(EditMode)', function () {
     beforeEach(function(){
       stateParams.mode = OPERATION_MODE.EDIT;
-
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope
@@ -744,5 +744,4 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(panels.open).toHaveBeenCalledWith('code-editor');
     });
   });
-
 });

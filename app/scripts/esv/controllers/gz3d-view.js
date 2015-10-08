@@ -68,12 +68,12 @@
       'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
       'simulationState', 'serverError', 'screenControl', 'experimentList', 'experimentSimulationService',
       'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'STATE', 'ERROR', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'gz3d', 'EDIT_MODE', 'stateService',
+      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
         function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
           hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
           simulationState, serverError, screenControl, experimentList, experimentSimulationService,
           timeDDHHMMSSFilter, splash, assetLoadingSplash, STATE, ERROR, nrpBackendVersions,
-          nrpFrontendVersion, panels, UI, OPERATION_MODE, gz3d, EDIT_MODE, stateService) {
+          nrpFrontendVersion, panels, UI, OPERATION_MODE, gz3d, EDIT_MODE, stateService, contextMenuState) {
 
       if (!$stateParams.serverID || !$stateParams.simulationID){
         throw "No serverID or simulationID given.";
@@ -96,12 +96,18 @@
       $scope.STATE = STATE;
       $scope.OPERATION_MODE = OPERATION_MODE;
       $scope.UI = UI;
-      $scope.isOwner = false;
-      $scope.isInitialized = false;
-      $scope.isJoiningStoppedSimulation = false;
+
+      $scope.viewState = {
+        isOwner: false,
+        isInitialized : false,
+        isJoiningStoppedSimulation : false,
+      };
+
       $scope.gz3d = gz3d;
       $scope.stateService = stateService;
       $scope.EDIT_MODE = EDIT_MODE;
+
+      $scope.contextMenuState = contextMenuState;
 
       hbpUserDirectory.getCurrentUser().then(function (profile) {
         $scope.userName = profile.displayName;
@@ -121,7 +127,7 @@
           {
             $scope.owner = simulationService().getUserName(profile);
           });
-          $scope.isOwner = ($scope.ownerID === $scope.userID);
+          $scope.viewState.isOwner = ($scope.ownerID === $scope.userID);
         });
       });
 
@@ -173,7 +179,7 @@
       stateService.getCurrentState().then(function () {
         if (stateService.currentState === STATE.STOPPED) {
           // The Simulation is already Stopped, so do nothing more but show the alert popup
-          $scope.isJoiningStoppedSimulation = true;
+          $scope.viewState.isJoiningStoppedSimulation = true;
         } else {
           // Initialize GZ3D and so on...
           gz3d.Initialize();
@@ -236,29 +242,18 @@
         );
       };
 
-      // stores, whether the context menu should be displayed
-      $scope.isContextMenuShown = false;
-
-      // the position of the context menu
-      $scope.contextMenuTop = 0;
-      $scope.contextMenuLeft = 0;
-
-      $scope.getModelUnderMouse = function(event) {
-        var pos = new THREE.Vector2(event.clientX, event.clientY);
-        var intersect = new THREE.Vector3();
-        var model = gz3d.scene.getRayCastModel(pos, intersect);
-        return model;
-      };
-
       // for convenience we pass just a string as 'red' or 'blue' currently, this will be replaced later on
       $scope.setColorOnEntity = function (value) {
-        if(!$scope.selectedEntity) {
+
+        var selectedEntity = gz3d.scene.selectedEntity;
+
+        if(!selectedEntity) {
           console.error('Could not change screen color since there was no object selected');
           return;
         }
         // send RESTful commands to server
         var screenParams = {};
-        var name = $scope.selectedEntity.name;
+        var name = selectedEntity.name;
 
         if ((name === 'right_vr_screen') && (value === 'red'))
         {
@@ -279,39 +274,67 @@
 
         screenControl(serverBaseUrl).updateScreenColor({sim_id: simulationID}, screenParams);
 
-
-        // deactivate the context menu after a color was assigned
-        $scope.toggleScreenChangeMenu(false);
+        // hide context menu after a color was assigned
+        contextMenuState.toggleContextMenu(false);
       };
 
-      // this menu is currently only displayed if the model name contains "screen"
-      $rootScope.toggleScreenChangeMenu = function (show, event) {
-        if($scope.isOwner) {
-          if (show) {
-            if (!$scope.isContextMenuShown) {
-              var model = $scope.getModelUnderMouse(event);
-              // scene.radialMenu.showing is a property of GZ3D that was originally used to display a radial menu, We are
-              // reusing it for our context menu. The reason is that this variables disables or enables the controls of
-              // scene in the render loop.
-              gz3d.scene.radialMenu.showing = $scope.isContextMenuShown =
-                (model &&
-                model.name !== '' &&
-                model.name !== 'plane' &&
-                model.name.indexOf('screen') !== -1 &&
-                gz3d.scene.modelManipulator.pickerNames.indexOf(model.name) === -1);
+      //ScreenChange context Menu setup
+      var screenChangeMenuItemGroup = {
+        label: 'Change Color',
+        visible: false,
+        items: [
+             { text: 'Red',
+               callback: function (event){ $scope.setColorOnEntity("red"); event.stopPropagation();},
+               visible: false
+             },
+             { text: 'Blue',
+               callback: function (event){ $scope.setColorOnEntity("blue"); event.stopPropagation();},
+               visible: false
+             }
+        ],
+
+        hide: function() {
+            this.visible = this.items[0].visible = this.items[1].visible = false;
+        },
+
+        show: function(model) {
+            var show =
+              gz3d.scene.manipulationMode === EDIT_MODE.VIEW &&
+              model.name.indexOf('screen') !== -1;
+
+            return (this.visible =
+                      this.items[0].visible =
+                        this.items[1].visible = show);
+          }
+      };
+
+      $window.oncontextmenu = function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
+      };
+      contextMenuState.pushItemGroup(screenChangeMenuItemGroup);
 
 
-              $scope.contextMenuTop = event.clientY;
-              $scope.contextMenuLeft = event.clientX;
-              $scope.selectedEntity = gz3d.scene.selectedEntity;
-            }
-          }
-          else {
-            $scope.isContextMenuShown = false;
-            gz3d.scene.radialMenu.showing = false;
-          }
+      //main context menu handler
+      $scope.toggleContextMenu = function (show, event) {
+
+        if($scope.viewState.isOwner) {
+           switch (event.button) {
+            case 2:
+              //right click -> show menu
+              contextMenuState.toggleContextMenu(show, event);
+              break;
+
+            //other buttons -> hide menu
+            case 0:
+            case 1:
+              contextMenuState.toggleContextMenu(false);
+              break;
+           }
         }
       };
+
 
       // Lights management
       $scope.sliderPosition = 50;
@@ -432,5 +455,6 @@
       $scope.exit = function(path) {
         $location.path(path);
       };
-    }]);
+    }])
+    ;
 }());

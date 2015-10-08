@@ -30,6 +30,7 @@
                                    'gz3dServices',
                                    'simulationControlServices',
                                    'simulationStateServices',
+                                   'contextMenuStateService',
                                    'pythonCodeHelperServices',
                                    'exdFrontendApp.Constants',
                                    'exdFrontendFilters',
