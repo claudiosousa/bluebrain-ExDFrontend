@@ -49,7 +49,7 @@ describe('Directive: spiketrain', function () {
       // "b" value of our spike
       expect(canvasData[i + 2]).toBe(0);
       // "a" value of our spike
-      expect(canvasData[i + 3]).toBe(128);
+      expect(canvasData[i + 3]).toBe(255);
     }
     // The last pixel is black-transparent (0,0,0,0)
     for (i = 1; i <= 4 * 16; i += 1) {
@@ -80,7 +80,7 @@ describe('Directive: spiketrain', function () {
       // "b" value of our spike
       expect(canvasData[i + 2]).toBe(0);
       // "a" value of our spike
-      expect(canvasData[i + 3]).toBe(128);
+      expect(canvasData[i + 3]).toBe(255);
     }
     // The last pixel is black-transparent (0,0,0,0)
     for (i = 1; i <= (4 * 16); i += 1) {

@@ -73,8 +73,10 @@
           for (var i = 0; i < message.spikes.length; i = i + 1) {
             var yPosition = message.spikes[i].neuron * (scope.neuronYSize + 1); // One pixel space in between
             currentContext.beginPath();
-            currentContext.moveTo(scope.xPosition, yPosition);
-            currentContext.lineTo(scope.xPosition, yPosition + (scope.neuronYSize - 1));
+            // In order to draw pure black lines, we need to shift the x position by 0.5. See
+            // http://mzl.la/1NpjoBh for more info
+            currentContext.moveTo(scope.xPosition + 0.5, yPosition);
+            currentContext.lineTo(scope.xPosition + 0.5 , yPosition + (scope.neuronYSize - 1));
             currentContext.stroke();
           }
 
