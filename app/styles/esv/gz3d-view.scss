@@ -146,3 +146,16 @@ body > div {
   opacity: 0.4;
   filter: alpha(opacity=40); /* msie */
 }
+
+.camera-view {
+  border: 2px solid black;
+}
+
+.camera-view-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin-left: 5px;
+  font-weight: bold;
+  text-shadow: white 0 0 5px, white 0 0 5px, white 0 0 5px;
+}
