@@ -63,29 +63,40 @@
           closeCallbackFunction: 'closeCallback'
         });
     }])
-    .controller('Gz3dViewCtrl', ['$rootScope', '$scope', '$stateParams', '$timeout',
+    .controller('Gz3dViewCtrl',
+      ['$rootScope', '$scope', '$timeout',
       '$location', '$http', '$window', '$document', 'bbpConfig',
-      'hbpUserDirectory', 'simulationGenerator', 'simulationService', 'simulationControl',
-      'simulationState', 'serverError', 'screenControl', 'experimentList', 'experimentSimulationService',
-      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash', 'STATE', 'ERROR', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
-        function ($rootScope, $scope, $stateParams, $timeout, $location, $http, $window, $document, bbpConfig,
-          hbpUserDirectory, simulationGenerator, simulationService, simulationControl,
-          simulationState, serverError, screenControl, experimentList, experimentSimulationService,
-          timeDDHHMMSSFilter, splash, assetLoadingSplash, STATE, ERROR, nrpBackendVersions,
-          nrpFrontendVersion, panels, UI, OPERATION_MODE, gz3d, EDIT_MODE, stateService, contextMenuState) {
+      'hbpUserDirectory', 'simulationGenerator', 'simulationService',
+      'simulationControl', 'simulationState', 'serverError',
+      'screenControl', 'experimentList', 'experimentSimulationService',
+      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash',
+      'STATE', 'ERROR', 'nrpBackendVersions',
+      'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
+      'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
+      'simulationInfo',
+        function ($rootScope, $scope, $timeout,
+          $location, $http, $window, $document, bbpConfig,
+          hbpUserDirectory, simulationGenerator, simulationService,
+          simulationControl, simulationState, serverError,
+          screenControl, experimentList, experimentSimulationService,
+          timeDDHHMMSSFilter, splash, assetLoadingSplash,
+          STATE, ERROR, nrpBackendVersions,
+          nrpFrontendVersion, panels, UI, OPERATION_MODE,
+          gz3d, EDIT_MODE, stateService, contextMenuState,
+          simulationInfo) {
 
-      if (!$stateParams.serverID || !$stateParams.simulationID){
-        throw "No serverID or simulationID given.";
-      }
-      var serverID = $stateParams.serverID;
-      var simulationID = $stateParams.simulationID;
+      // This is the only place where simulation info are, and should be, initialized
+      simulationInfo.Initialize();
+
+      stateService.Initialize();
+      var serverID = simulationInfo.serverID;
+      var simulationID = simulationInfo.simulationID;
       var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
       var serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
-      $scope.operationMode = $stateParams.mode;
+      $scope.operationMode = simulationInfo.mode;
       $scope.helpModeActivated = false;
-      $scope.helpDescription="";
+      $scope.helpDescription = '';
       $scope.helpText = {};
       $scope.currentSelectedUIElement = UI.UNDEFINED;
 
@@ -171,9 +182,6 @@
         if (angular.isDefined(message.simulationTime)) { $scope.simulationTimeText = message.simulationTime; }
         if (angular.isDefined(message.realTime)) { $scope.realTimeText = message.realTime; }
       };
-
-      // Initializes the state service with the current server specific configuration
-      stateService.Initialize();
 
       // Query the state of the simulation
       stateService.getCurrentState().then(function () {

@@ -7,10 +7,17 @@
     .constant('DEFAULT_RESOURCE_GET_TIMEOUT', 3000 // ms
   );
 
-  var module = angular.module('simulationControlServices', ['ngResource', 'exdFrontendApp.Constants', 'exdFrontendFilters', 'nrpErrorHandlers', 'bbpConfig', 'hbpCommon']);
+  var module = angular.module('simulationControlServices', ['ngResource',
+    'exdFrontendApp.Constants',
+    'exdFrontendFilters',
+    'nrpErrorHandlers',
+    'bbpConfig',
+    'hbpCommon']);
 
-  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE', 'serverError', 'uptimeFilter','DEFAULT_RESOURCE_GET_TIMEOUT',
-    function ($resource, $http, hbpUserDirectory, STATE, serverError, uptimeFilter, DEFAULT_RESOURCE_GET_TIMEOUT) {
+  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE',
+    'serverError', 'uptimeFilter','DEFAULT_RESOURCE_GET_TIMEOUT',
+    function ($resource, $http, hbpUserDirectory, STATE,
+      serverError, uptimeFilter, DEFAULT_RESOURCE_GET_TIMEOUT) {
 
       // Keeps track of the owner of experiments in a map (id -> display name)
       var owners = {};

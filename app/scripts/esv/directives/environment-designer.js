@@ -10,24 +10,19 @@
 
   angular.module('exdFrontendApp')
   .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', 'simulationSDFWorld', 'STATE',
-                                     '$stateParams', 'bbpConfig', '$rootScope', 'gz3d', 'stateService',
+                                     'bbpConfig', '$rootScope', 'gz3d', 'stateService', 'simulationInfo',
                                      '$document', 'OPERATION_MODE','contextMenuState',
   function ($log, EDIT_MODE, panels, simulationSDFWorld, STATE,
-            $stateParams, bbpConfig, $rootScope, gz3d, stateService,
+            bbpConfig, $rootScope, gz3d, stateService, simulationInfo,
             $document, OPERATION_MODE, contextMenuState) {
     return {
       templateUrl: 'views/esv/environment-designer.html',
       restrict: 'E',
       link: function(scope, element, attrs) {
-        if (!$stateParams.serverID || !$stateParams.simulationID) {
-          throw "No serverID or simulationID given.";
-        }
-
         scope.stateService = stateService;
         scope.STATE = STATE;
 
-        var serverID = $stateParams.serverID;
-        var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
+        var serverConfig = simulationInfo.serverConfig;
         scope.assetsPath = serverConfig.gzweb.assets;//used by the view
 
         scope.EDIT_MODE = EDIT_MODE;
@@ -90,7 +85,7 @@
 
             show: function(model) {
                 var show =
-                  ($stateParams.mode === OPERATION_MODE.EDIT) &&
+                  (simulationInfo.mode === OPERATION_MODE.EDIT) &&
                    (stateService.currentState === STATE.INITIALIZED || stateService.currentState === STATE.PAUSED) &&
                   model.name.indexOf('robot') === -1;//don't delete the robot
 

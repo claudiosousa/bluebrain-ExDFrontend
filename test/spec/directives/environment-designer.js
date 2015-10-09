@@ -17,10 +17,19 @@ describe('Directive: environment-designer', function () {
       toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
       pushItemGroup : jasmine.createSpy('pushItemGroup')
     });
-    $provide.value('$stateParams',
+    $provide.value('simulationInfo',
       {
+        mode : undefined,
         serverID : 'bbpce016',
-        simulationID : 'mocked_simulation_id'
+        simulationID : 'mocked_simulation_id',
+        serverConfig: {
+          gzweb: {},
+          rosbridge: {
+            topics: {
+              transferFunctionError: {}
+            }
+          }
+        }
       }
     );
     $provide.value('bbpConfig', {

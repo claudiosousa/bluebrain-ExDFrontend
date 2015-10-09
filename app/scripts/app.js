@@ -32,6 +32,7 @@
                                    'simulationStateServices',
                                    'contextMenuStateService',
                                    'pythonCodeHelperServices',
+                                   'simulationInfoService',
                                    'exdFrontendApp.Constants',
                                    'exdFrontendFilters',
                                    'nrpErrorHandlers',

@@ -13,22 +13,20 @@ describe('Controller: editorPanelCtrl', function () {
       controller,
       gz3d;
 
-  var stateParams;
+  var simulationInfo;
 
   beforeEach(module(function ($provide) {
-    $provide.value('$stateParams', stateParams);
+    $provide.value('simulationInfo', simulationInfo);
   }));
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
-                              _$stateParams_,
                               _bbpConfig_,
                               _gz3d_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
-    stateParams = _$stateParams_;
     bbpConfig = _bbpConfig_;
     gz3d = _gz3d_;
 
@@ -37,16 +35,24 @@ describe('Controller: editorPanelCtrl', function () {
     gz3d.scene.controls = {};
     gz3d.scene.controls.keyBindingsEnabled = true;
 
-    stateParams = {
+    simulationInfo = {
       mode : undefined,
       serverID : 'bbpce016',
-      simulationID : 'mocked_simulation_id'
+      simulationID : 'mocked_simulation_id',
+      serverConfig: {
+        gzweb: {},
+        rosbridge: {
+          topics: {
+            transferFunctionError: {}
+          }
+        }
+      }
     };
 
     experimentCtrl = $controller('editorPanelCtrl', {
       $rootScope: rootScope,
       $scope: scope,
-      $stateParams: stateParams
+      simulationInfo: simulationInfo
     });
 
     // create mock for console
@@ -56,18 +62,6 @@ describe('Controller: editorPanelCtrl', function () {
     scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
     scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
   }));
-
-  it('should throw an error when no serverID or simulationID was provided', function () {
-    stateParams.serverID = undefined;
-    stateParams.simulationID = undefined;
-    expect(function(){
-      controller('editorPanelCtrl', {
-        $rootScope: rootScope,
-        $scope: scope,
-        $stateParams: stateParams
-      });
-    }).toThrow('No serverID or simulationID given.');
-  });
 
   it('should set the panelIsOpen on the open and close callbacks', function () {
     expect(scope.panelIsOpen).toBeFalsy();
@@ -93,8 +87,8 @@ describe('Controller: editorPanelCtrl', function () {
   });
 
   it('should disable the key bindings when an code editor tab is active and the panel is opened', function () {
-    expect(scope.panelIsOpen).toBeFalsy();
-    expect(gz3d.scene.controls.keyBindingsEnabled).toBeTruthy();
+    expect(scope.panelIsOpen).toBe(false);
+    expect(gz3d.scene.controls.keyBindingsEnabled).toBe(true);
 
     //Test the transferfunction tab
     scope.activeTab.transferfunction = true;
