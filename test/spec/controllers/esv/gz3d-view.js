@@ -191,7 +191,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
     $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').andReturn(nrpBackendVersionsObject));
     $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
-    $provide.value('$timeout', jasmine.createSpy('$timeout'));
     $provide.value('serverError', jasmine.createSpy('serverError'));
     $provide.value('panels', { open: jasmine.createSpy('open') });
     simulationInfo = {
@@ -217,7 +216,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _hbpUserDirectory_,
-                              $timeout,
+                              _$timeout_,
                               _$httpBackend_,
                               _$window_,
                               _$document_,
@@ -244,7 +243,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     hbpUserDirectory = _hbpUserDirectory_;
-    timeout = $timeout;
+    timeout = _$timeout_;
     httpBackend = _$httpBackend_;
     window = _$window_;
     document = _$document_;
@@ -303,8 +302,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     // create mock for console
     spyOn(console, 'error');
     spyOn(console, 'log');
-
-    timeout.reset();
   }));
 
   describe('(ViewMode)', function () {
@@ -619,6 +616,16 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.versions).toEqual(dataResult);
     });
 
+    it('should set the focus on the supplied html element', function() {
+      var element = {'focus': jasmine.createSpy('focus')};
+      var backup = window.document.getElementById;
+      window.document.getElementById = jasmine.createSpy('getElementById').andReturn(element);
+      scope.focus('dummyelement');
+      timeout.flush();
+      expect(element.focus).toHaveBeenCalled();
+      window.document.getElementById = backup;
+    });
+
     it('should close all connections and splash screens on $destroy', function() {
       spyOn(window, 'stop');
       stateService.currentState = STATE.STARTED;
@@ -693,11 +700,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.showKeyboardControlInfoDiv).toBe(false);
       scope.showKeyboardControlInfo();
       expect(scope.showKeyboardControlInfoDiv).toBe(true);
-      timeout.mostRecentCall.args[0]();
+      timeout.flush();
       expect(scope.showKeyboardControlInfoDiv).toBe(false);
-      timeout.reset();
+
+      // After a second call, the div should not be displayed again
       scope.showKeyboardControlInfo();
-      expect(timeout).not.toHaveBeenCalled();
+      expect(scope.showKeyboardControlInfoDiv).toBe(false);
     });
 
     it('should go back to the esv-web page', function() {
