@@ -13,15 +13,22 @@
 
   /* global console: false */
 
-  var module = angular.module('simulationStateServices', []);
+  var module = angular.module('simulationStateServices',
+    ['bbpConfig', 'simulationInfoService',
+     'nrpErrorHandlers'
+    ]);
   module.factory('stateService',
-    ['$rootScope', 'simulationState', '$stateParams', '$log', 'bbpConfig', '$q', 'serverError', 'roslib',
-    function ($rootScope, simulationState, $stateParams, $log, bbpConfig, $q, serverError, roslib) {
+    ['$rootScope', 'simulationState',
+    '$log', 'bbpConfig', '$q', 'serverError', 'roslib',
+    'simulationInfo',
+    function ($rootScope, simulationState,
+      $log, bbpConfig, $q, serverError, roslib,
+      simulationInfo) {
       var thisStateService = {};
-      var serverID, simulationID, serverConfig, serverBaseUrl, rosConnection, statusListener;
       var stateCallbacks = [];
       var messageCallbacks = [];
       thisStateService.statePending = false;
+      var rosConnection, statusListener;
 
       var triggerStateCallbacks = function() {
         angular.forEach(stateCallbacks, function(callback) {
@@ -62,19 +69,12 @@
 
       // This function loads the server specific configuration and sets the simulation specific values
       thisStateService.Initialize = function() {
-        if (!$stateParams.serverID || !$stateParams.simulationID){
-          throw "No serverID or simulationID given.";
-        }
-        serverID = $stateParams.serverID;
-        simulationID = $stateParams.simulationID;
-        serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
-        serverBaseUrl = serverConfig.gzweb['nrp-services'];
         thisStateService.statePending = false;
       };
 
       thisStateService.startListeningForStatusInformation = function() {
-        var rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
-        var statusTopic = serverConfig.rosbridge.topics.status;
+        var rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+        var statusTopic = simulationInfo.serverConfig.rosbridge.topics.status;
         rosConnection = roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
         statusListener = roslib.createStringTopic(rosConnection, statusTopic);
 
@@ -119,7 +119,7 @@
       thisStateService.getCurrentState = function () {
         var deferred = $q.defer();
 
-        simulationState(serverBaseUrl).state({sim_id: simulationID},
+        simulationState(simulationInfo.serverBaseUrl).state({sim_id: simulationInfo.simulationID},
           function (data) {
             thisStateService.currentState = data.state;
             deferred.resolve();
@@ -144,8 +144,8 @@
         }
         thisStateService.statePending = true;
 
-        simulationState(serverBaseUrl).update(
-          {sim_id: simulationID},
+        simulationState(simulationInfo.serverBaseUrl).update(
+          {sim_id: simulationInfo.simulationID},
           {state: newState},
           function (data) {
             thisStateService.currentState = data.state;

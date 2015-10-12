@@ -2,7 +2,7 @@
 
 var TestDataGenerator = window.TestDataGenerator;
 
-describe('Services: simulation-services', function () {
+describe('Services: server-info-service', function () {
   var hbpUserDirectory,
       bbpStubFactory,
       simulationService,

@@ -4,14 +4,10 @@
   /* global console: false */
 
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', '$stateParams','bbpConfig', 'gz3d',
-    function ($rootScope, $scope, $stateParams, bbpConfig, gz3d) {
-    if (!$stateParams.serverID || !$stateParams.simulationID){
-      throw "No serverID or simulationID given.";
-    }
-    var serverID = $stateParams.serverID;
-    var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
-    $scope.simulationID = $stateParams.simulationID;
+    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d',
+    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d) {
+    var serverConfig = simulationInfo.serverConfig;
+    $scope.simulationID = simulationInfo.simulationID;
     $scope.serverBaseUrl = serverConfig.gzweb['nrp-services'];
 
     $scope.panelIsOpen = false;

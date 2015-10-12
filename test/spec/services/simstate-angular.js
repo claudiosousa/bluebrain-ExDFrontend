@@ -2,26 +2,21 @@
 
 describe('Services: simulation state', function () {
   var simulationStateSpy;
-  var updateSpy = jasmine.createSpy('update');
-  var stateSpy = jasmine.createSpy('state');
+  var updateSpy, stateSpy;
   var stateService,
-      stateParams,
       q,
       httpBackend,
       STATE,
       roslib;
 
-  // Mock RosLib
-  var roslibMock = {};
-  var returnedRosConnectionObject = {};
-  returnedRosConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
-  returnedRosConnectionObject.removeAllListeners = jasmine.createSpy('removeAllListeners');
-  returnedRosConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  var rosConnectionObject = {};
-  rosConnectionObject.close = jasmine.createSpy('close');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject);
-  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn(returnedRosConnectionObject);
-  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedRosConnectionObject);
+  var rosConnectionObject = {
+    close: jasmine.createSpy('close')
+  };
+  var returnedRosConnectionObject = {
+      unsubscribe: jasmine.createSpy('unsubscribe'),
+      removeAllListeners: jasmine.createSpy('removeAllListeners'),
+      subscribe: jasmine.createSpy('subscribe')
+  };
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationStateServices'));
@@ -41,19 +36,31 @@ describe('Services: simulation state', function () {
 
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
+    // Mock RosLib
+    var roslibMock = {
+      getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject),
+      createStringTopic: jasmine.createSpy('createStringTopic').andReturn(returnedRosConnectionObject),
+      createTopic: jasmine.createSpy('createTopic').andReturn(returnedRosConnectionObject)
+    };
     $provide.value('roslib', roslibMock);
     returnedRosConnectionObject.unsubscribe.reset();
     returnedRosConnectionObject.removeAllListeners.reset();
     returnedRosConnectionObject.subscribe.reset();
     rosConnectionObject.close.reset();
-    roslibMock.getOrCreateConnectionTo.reset();
-    roslibMock.createStringTopic.reset();
-    $provide.value('$stateParams',
-      {
-        serverID : 'bbpce016',
-        simulationID : 'mocked_simulation_id'
-      }
-    );
+    var rosbridge = {
+      topics: {
+        spikes: '/mock_spike_topic',
+        status: '/mock_status_topic'
+      },
+      websocket: 'wss://mock_ws_url'
+    };
+    var simulationInfo = {
+      serverID: 'bbpce016',
+      simulationID: 'mocked_simulation_id',
+      serverConfig: { rosbridge: rosbridge },
+      Initialize: jasmine.createSpy('Initialize')
+    };
+    $provide.value('simulationInfo', simulationInfo);
     $provide.value('bbpConfig', {
       get: jasmine.createSpy('get').andReturn(
         {
@@ -63,13 +70,7 @@ describe('Services: simulation state', function () {
               'nrp-services': 'http://some-url',
               websocket: 'mock_websocket'
             },
-            rosbridge: {
-              topics   : {
-                spikes: '/mock_spike_topic',
-                status: '/mock_status_topic'
-              },
-              websocket: 'wss://mock_ws_url'
-            }
+            rosbridge: rosbridge
           }
         }
       )
@@ -77,13 +78,11 @@ describe('Services: simulation state', function () {
   }));
 
   beforeEach(inject(function (_stateService_,
-                              _$stateParams_,
                               $q,
                               _$httpBackend_,
                               _STATE_,
                               _roslib_) {
     stateService = _stateService_;
-    stateParams = _$stateParams_;
     q = $q;
     httpBackend = _$httpBackend_;
     STATE = _STATE_;
@@ -94,23 +93,14 @@ describe('Services: simulation state', function () {
     // create mock for console
     spyOn(console, 'error');
 
-    stateSpy.reset();
-    updateSpy.reset();
+    updateSpy = jasmine.createSpy('update');
+    stateSpy = jasmine.createSpy('state');
   }));
-
-  it('should throw an error when init the simstate service with no serverID or simulationID', function () {
-    stateParams.serverID = undefined;
-    expect(stateService.Initialize).toThrow();
-
-    stateParams.serverID = 'fake_id';
-    stateParams.simulationID = undefined;
-    expect(stateService.Initialize).toThrow();
-  });
 
   it('should init the simstate service', function () {
     stateService.statePending = true;
     stateService.Initialize();
-    expect(stateService.statePending).toBeFalsy();
+    expect(stateService.statePending).toBe(false);
   });
 
   it('should test registerForStatusInformation', function() {
