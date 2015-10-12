@@ -1,6 +1,6 @@
 {
   "name": "exd-frontend",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "repository": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend",
   "dependencies": {
     "angular": "~1.2.0",
