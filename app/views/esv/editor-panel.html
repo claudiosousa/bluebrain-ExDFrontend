@@ -10,7 +10,7 @@
       <transfer-function-editor topic="{{transferFunctionErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
         control="controls.transferfunction" />
     </tab>
-    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.statemachine.refresh()" deselect="reenableKeyBindings()">
+    <tab ng-if="REMOVED-FROM-TSR-RELEASE" heading="State Machine (SMACH)" active="activeTab.statemachine" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.statemachine.refresh()" deselect="reenableKeyBindings()">
       <smach-editor control="controls.statemachine"/>
     </tab>
   </tabset>
