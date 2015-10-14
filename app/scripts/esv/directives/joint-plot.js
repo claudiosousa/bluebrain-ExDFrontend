@@ -10,6 +10,7 @@
     scope.selectedProperty = { name: "position" };
     scope.indexToColor = d3.scale.category10();
     scope.curveToColorIdx = {};
+    scope.timeWindow = 10;
 
     scope.getCurveColor = function(joint) {
       var cssRet = {};
@@ -96,9 +97,14 @@
     scope.onNewJointMessageReceived = function (message) {
       scope.allJoints = message.name;
       var currentTime = message.header.stamp.secs + message.header.stamp.nsecs * 0.000000001;
-      if (scope.curves.length >= MAX_N_MEASUREMENTS) {
-        scope.curves.shift();
+      if (currentTime > scope.plotOptions.axes.x.max) {
+        scope.plotOptions.axes.x.max = currentTime;
+        scope.plotOptions.axes.x.min = currentTime - scope.timeWindow;
       }
+
+      scope.curves = _.filter(scope.curves, function(point) {
+        return point.time >= scope.plotOptions.axes.x.min;
+      });
 
       var newDataPoint = {
         time: currentTime
@@ -139,7 +145,7 @@
     };
   }
 
-  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', '$timeout', function ($log, $window, $filter, roslib, $timeout) {
+  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', '$timeout', function ($log, $window, $filter, roslib, stateService, STATE, $timeout) {
     return {
       templateUrl: 'views/esv/joint-plot.html',
       restrict: 'E',
@@ -176,7 +182,12 @@
 
         scope.plotOptions = {
           axes: {
-            x: {key: 'time'}
+            x: {
+              key: 'time',
+              ticks: 10,
+              min: 0,
+              max: scope.timeWindow
+            }
           },
           series: []
         };
@@ -201,6 +212,24 @@
           return parent.height();
         }, function(newHeight) {
           scope.chartHeight = Math.max(newHeight,80);
+        });
+
+        // clean plot when reinitialize the simulation
+        var onStateChangedCallback = function(newState) {
+          if (newState === STATE.INITIALIZED){
+            // clear the jointplot
+            scope.curves.length = 0;
+            scope.plotOptions.axes.x.min = 0;
+            scope.plotOptions.axes.x.max = scope.timeWindow;
+          }
+        };
+
+        stateService.addStateCallback(onStateChangedCallback);
+
+        // clean up on leaving
+        scope.$on("$destroy", function() {
+          // remove the callback
+          stateService.removeStateCallback(onStateChangedCallback);
         });
       }
 

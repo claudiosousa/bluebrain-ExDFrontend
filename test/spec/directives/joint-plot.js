@@ -61,6 +61,13 @@ describe('Directive: joint-plot', function () {
     expect(element.prop('outerHTML')).toContain('<svg');
   });
 
+  it('should unregister from stateService on destroy', inject(function(stateService) {
+    spyOn(stateService,'removeStateCallback');
+    $scope.$broadcast('$destroy');
+    $scope.$digest();
+    expect(stateService.removeStateCallback).toHaveBeenCalled();
+  }));
+
   it('should register selected curves properly', function() {
     $scope.onNewJointMessageReceived(messageMock);
     expect($scope.curves.length).toBe(1);
@@ -214,11 +221,22 @@ describe('Directive: joint-plot', function () {
     expect($scope.indexToColor.callCount).toBe(indexToColorCallCount);
   });
 
-  it('should pop datapoints when there are too many', function() {
-    $scope.curves.length = 100;
-    spyOn($scope.curves, 'shift');
+  it('should pop datapoints when they are too old', function() {
+    var messageMockClose = _.cloneDeep(messageMock);
+    messageMockClose.header.stamp.secs += 0.5;
+
+    var messageMockReallyFar1 = _.cloneDeep(messageMock);
+    messageMockReallyFar1.header.stamp.secs += 1000;
+    var messageMockReallyFar2 = _.cloneDeep(messageMock);
+    messageMockReallyFar1.header.stamp.secs += 1000.5;
+
     $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.curves.shift).toHaveBeenCalled();
+    $scope.onNewJointMessageReceived(messageMockClose);
+    $scope.onNewJointMessageReceived(messageMockReallyFar1);
+    // two first messages are filtered out, too old
+    expect($scope.curves.length).toBe(1);
+    $scope.onNewJointMessageReceived(messageMockReallyFar2);
+    expect($scope.curves.length).toBe(2);
   });
 
 });
