@@ -94,9 +94,7 @@
       <!-- container -->
       <div class="esv-flex-container esv-flex-greedy-element">
         <!-- WEBGL-context   -->
-        <div data-role="content" id="container" class="esv-flex-container esv-flex-greedy-element">
-          <div ng-mousemove="updateHoverInfo($event);" ng-mousedown="toggleContextMenu(true, $event);" id="container_MainView" class="esv-flex-greedy-element"></div>
-        </div>
+        <div data-role="content" id="container" class="esv-flex-container esv-flex-greedy-element" ng-mousemove="updateHoverInfo($event);" ng-mousedown="toggleContextMenu(true, $event);"></div>
         <!-- WEBGL-context -->
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
@@ -118,6 +116,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.OWNER_DISPLAY]='This information appears when you are not the displayed owner of the experiment and thus you are in a view-only mode.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EXIT_BUTTON]='Here you can leave the simulation.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CODE_EDITOR]='Toggle the experiment designer. Choose between the environment designer and the transfer function (TF) editor in the tabs above. \n- The environment designer allows to add, move, rotate and scale objects during the simulation. The environment model can be saved or loaded using the SDF format. \n- The TF editor allows to re-define or add new transfer functions into the current simulation. The transfer functions represent the main interface between the robot and the spiking neural network and define the conversion from the sensory input to the sensory neurons and from the network output to the robot control properties. A transfer function can be defined, loaded and saved as a Python script.'">
+        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.GRAPHICS_PERFORMANCE]='This Button toggles the performance hungry graphic options (shadows, ...)'">
 
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
@@ -172,7 +171,7 @@
               <div ng-if="viewState.isOwner" class="hbp-toolbar-large-tool hidden-xs" ng-class="{'highlighted': currentSelectedUIElement === UI.LIGHT_SLIDER}" ng-click="helpModeActivated && help(UI.LIGHT_SLIDER);">
                 <i class="fa fa-lightbulb-o"></i>
                 <input id="lightslider" type="range" min="0" max="100" steps="10" value="50" ng-model="sliderPosition" ng-disabled="helpModeActivated"
-                       ng-change="updateLightIntensities(sliderPosition)" ng-mouseup="focus('container');"/>
+                       ng-change="updateLightIntensity(sliderPosition)" ng-mouseup="focus('container');" />
               </div>
               <!-- camera translation tool -->
               <div class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container" ng-class="{'highlighted': currentSelectedUIElement === UI.CAMERA_TRANSLATION}" ng-click="(helpModeActivated && help(UI.CAMERA_TRANSLATION)) || helpModeActivated || showKeyboardControlInfo();">
@@ -260,6 +259,12 @@
                 <i class="fa fa-eye fa-2x vertcenter"></i>
               </div>
               <!-- toggle robot camera view -->
+
+              <!-- toggle graphics performance -->
+              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.GRAPHICS_PERFORMANCE}" ng-click="(!helpModeActivated) ? toggleGraphicsPerformance() : help(UI.GRAPHICS_PERFORMANCE);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+                <i class="fa fa-tachometer fa-2x vertcenter"></i>
+              </div>
+              <!-- toggle graphics performance -->
 
 
               <!-- code editor icon-->

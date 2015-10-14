@@ -143,9 +143,16 @@ describe('Controller: Gz3dViewCtrl', function () {
         gui: {
           emitter: {}
         },
-        views: [{type: 'toto'},
-               {type: 'camera', active: true, container: {style: {visibility: 'aaa'}}},
-               {type: 'camera', active: false, container: {style: {visibility: 'bbb'}}}]
+        setShadowMaps: jasmine.createSpy('setShadowMaps'),
+        renderer: {
+          shadowMapEnabled: false
+        },
+        viewManager: {
+          views: [
+            {type: 'camera', active: true, container: {style: {visibility: 'visible'}}},
+            {type: 'camera', active: false, container: {style: {visibility: 'hidden'}}}
+          ]
+        }
       },
       iface: {
         setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
@@ -545,12 +552,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should turn slider position into light intensities', function() {
-        expect(scope.updateLightIntensities).toEqual(jasmine.any(Function));
+        expect(scope.updateLightIntensity).toEqual(jasmine.any(Function));
         gz3d.scene.emitter.emit = jasmine.createSpy('emit');
 
-        scope.updateLightIntensities(60.0);
+        scope.updateLightIntensity(60.0);
 
-        expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', (60 - 75) / 50.25);
+        expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 60 / 50);
         expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
     });
 
@@ -685,12 +692,24 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.showJointPlot).toBe(true);
     });
 
-    it('should toggle the robot view', function() {
+    it('should toggle the robot camera views', function() {
+      expect(gz3d.scene.viewManager.views[0].type).toBe('camera');
+      expect(gz3d.scene.viewManager.views[0].active).toBe(true);
+      expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('visible');
+      expect(gz3d.scene.viewManager.views[1].type).toBe('camera');
+      expect(gz3d.scene.viewManager.views[1].active).toBe(false);
+      expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
       scope.toggleRobotView();
-      expect(scope.gz3d.scene.views[1].active).toEqual(false);
-      expect(scope.gz3d.scene.views[1].container.style.visibility).toEqual('hidden');
-      expect(scope.gz3d.scene.views[2].active).toEqual(true);
-      expect(scope.gz3d.scene.views[2].container.style.visibility).toEqual('visible');
+      expect(gz3d.scene.viewManager.views[0].active).toBe(false);
+      expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('hidden');
+      expect(gz3d.scene.viewManager.views[1].active).toBe(true);
+      expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('visible');
+    });
+
+    it('should toggle the rendering performance', function() {
+      expect(gz3d.scene.renderer.shadowMapEnabled).toBe(false);
+      scope.toggleGraphicsPerformance();
+      expect(gz3d.scene.setShadowMaps).toHaveBeenCalledWith(true);
     });
 
     it('should toggle the help mode variable', function() {

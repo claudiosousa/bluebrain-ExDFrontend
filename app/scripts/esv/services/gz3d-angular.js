@@ -59,8 +59,8 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
-  gz3dServices.factory('gz3d', ['$rootScope', '$window', '$stateParams', '$compile', 'bbpConfig',
-    function ($rootScope, $window, $stateParams, $compile, bbpConfig) {
+  gz3dServices.factory('gz3d', ['$rootScope', '$window', '$compile', 'simulationInfo',
+    function ($rootScope, $window, $compile, simulationInfo) {
     /* moved from the gz3d-view.html*/
     if (!Detector.webgl) {
       Detector.addGetWebGLMessage();
@@ -80,19 +80,23 @@
         return;
       }
       isInitialized = true;
-      if (!$stateParams.serverID || !$stateParams.simulationID){
-        throw "No serverID or simulationID given.";
-      }
-      var serverID = $stateParams.serverID;
-      var simulationID = $stateParams.simulationID;
-      var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
 
-      GZ3D.assetsPath = serverConfig.gzweb.assets;
-      GZ3D.webSocketUrl = serverConfig.gzweb.websocket;
+      GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
+      GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
+
+      returnValue.createRenderContainer = function(adjustable, name) {
+        if (adjustable) {
+          return $compile('<div movable resizeable keep-aspect-ratio class="camera-view"><div class="camera-view-label">' + name + '</div></div>')($rootScope)[0];
+        } else {
+          return $compile('<div keep-aspect-ratio class="camera-view"><div class="camera-view-label">' + name + '</div></div>')($rootScope)[0];
+        }
+      };
 
       returnValue.container = document.getElementById('container');
 
-      returnValue.scene = new GZ3D.Scene(returnValue.container, $rootScope, $compile);
+      returnValue.scene = new GZ3D.Scene();
+      returnValue.scene.viewManager.setCallbackCreateRenderContainer(returnValue.createRenderContainer);
+
       returnValue.gui = new GZ3D.Gui(returnValue.scene);
       returnValue.iface = new GZ3D.GZIface(returnValue.scene, returnValue.gui);
       returnValue.sdfParser = new GZ3D.SdfParser(returnValue.scene, returnValue.gui, returnValue.iface);
@@ -142,6 +146,7 @@
       delete returnValue.stats;
       delete returnValue.animate;
       delete returnValue.render;
+      delete returnValue.createRenderContainer;
     };
 
     return returnValue;

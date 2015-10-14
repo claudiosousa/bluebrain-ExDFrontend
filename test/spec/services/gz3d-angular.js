@@ -7,18 +7,7 @@
 
 describe('testing the gz3d service', function () {
   var gz3d,
-    rootScope,
-    bbpConfig;
-
-  var stateParams = {
-    serverID : 'bbpce016',
-    simulationID : 'mocked_simulation_id'
-  };
-
-  var bbpConfigMock = {};
-  bbpConfigMock.get = jasmine.createSpy('get').andReturn({
-    'bbpce016' : { gzweb: {assets: 'mock_assets', websocket: 'mock_websocket'}}
-  });
+    rootScope;
 
   //Mock the javascript document
   document = {};
@@ -35,6 +24,8 @@ describe('testing the gz3d service', function () {
 
   var SceneObject = {};
   SceneObject.render = jasmine.createSpy('render');
+  SceneObject.viewManager = {};
+  SceneObject.viewManager.setCallbackCreateRenderContainer = jasmine.createSpy('setCallbackCreateRenderContainer');
   var DomElement = {};
   SceneObject.getDomElement = jasmine.createSpy('getDomElement').andReturn(DomElement);
   SceneObject.setWindowSize = jasmine.createSpy('setWindowSize');
@@ -47,26 +38,31 @@ describe('testing the gz3d service', function () {
   GZ3D.GZIface = jasmine.createSpy('GZIface').andReturn(GZIfaceObject);
   GZ3D.SdfParser = jasmine.createSpy('SdfParser').andReturn(SdfParserObject);
 
+  var simulationInfo = {
+    serverID: 'bbpce016',
+    simulationID: 'mocked_simulation_id',
+    serverConfig: { gzweb: {assets: 'https://assets', websocket:'wss://websocket'} },
+    Initialize: jasmine.createSpy('Initialize')
+  };
+
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
-    $provide.value('$stateParams', stateParams);
-    $provide.value('bbpConfig', bbpConfigMock);
+    $provide.value('simulationInfo', simulationInfo);
   }));
-  beforeEach(inject(function ($rootScope, _gz3d_, _$stateParams_, _bbpConfig_) {
+  beforeEach(inject(function ($rootScope, $compile, _gz3d_) {
     rootScope = $rootScope;
     gz3d = _gz3d_;
-    stateParams = _$stateParams_;
-    bbpConfig = _bbpConfig_;
 
     // create a mock for console
     spyOn(console, 'error');
 
     // Always initialize first
-    gz3d.Initialize('bbpce016', 'fakeSimID');
+    gz3d.Initialize();
   }));
 
   it('checks if all the GZ3D constructors have been called', function() {
     expect(GZ3D.Scene).toHaveBeenCalled();
+    expect(SceneObject.viewManager.setCallbackCreateRenderContainer).toHaveBeenCalledWith(gz3d.createRenderContainer);
     expect(GZ3D.Gui).toHaveBeenCalledWith(SceneObject);
     expect(GZ3D.GZIface).toHaveBeenCalledWith(SceneObject, GuiObject);
     expect(GZ3D.SdfParser).toHaveBeenCalledWith(SceneObject, GuiObject , GZIfaceObject);
@@ -82,6 +78,25 @@ describe('testing the gz3d service', function () {
     gz3d.container.offsetHeight = 100;
     rootScope.$digest();
     expect(SceneObject.setWindowSize).toHaveBeenCalledWith(210, 100);
+  });
+
+  it('checks if render container elements are correctly generated', function() {
+
+    gz3d.Initialize();
+    var testRenderContainerAdjustable = gz3d.createRenderContainer(true, 'test_rendercontainer_adjustable');
+    var testRenderContainerNotAdjustable = gz3d.createRenderContainer(false, 'test_rendercontainer_unadjustable');
+
+    expect(testRenderContainerAdjustable.getAttribute('movable')).not.toEqual(undefined);
+    expect(testRenderContainerAdjustable.getAttribute('resizeable')).not.toEqual(undefined);
+    expect(testRenderContainerAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
+    expect(testRenderContainerAdjustable.className).toEqual('camera-view ng-scope');
+    expect(testRenderContainerAdjustable.innerHTML).toContain('class="camera-view-label"');
+    expect(testRenderContainerAdjustable.innerHTML).toContain('test_rendercontainer_adjustable');
+
+    expect(testRenderContainerNotAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
+    expect(testRenderContainerNotAdjustable.className).toEqual('camera-view ng-scope');
+    expect(testRenderContainerNotAdjustable.innerHTML).toContain('class="camera-view-label"');
+    expect(testRenderContainerNotAdjustable.innerHTML).toContain('test_rendercontainer_unadjustable');
   });
 
   it('should not initialize when already initialized', function() {
