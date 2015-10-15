@@ -238,6 +238,22 @@
         });
       };
 
+      // play/pause/stop/initialize button handler
+      $scope.simControlButtonHandler = function(newState) {
+
+       $scope.updateSimulation(newState);
+       $scope.setEditMode(EDIT_MODE.VIEW);
+
+      };
+
+      $scope.setEditMode = function (newMode) {
+
+        //oldMode !== newMode
+        if(gz3d.scene.manipulationMode !== newMode) {
+            gz3d.scene.setManipulationMode(newMode);
+        }
+      };
+
       $scope.updateSimulation = function (newState) {
         stateService.setCurrentState(newState).then(
           function () {

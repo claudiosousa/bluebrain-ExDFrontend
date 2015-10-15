@@ -30,6 +30,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       STATE,
       UI,
       OPERATION_MODE,
+      EDIT_MODE,
       serverError,
       panels,
       gz3d,
@@ -133,6 +134,7 @@ describe('Controller: Gz3dViewCtrl', function () {
           pickerNames: ''
         },
         emitter: {},
+        setManipulationMode : jasmine.createSpy('setManipulationMode'),
         controls: {
           onMouseDownManipulator: jasmine.createSpy('onMouseDownManipulator'),
           onMouseUpManipulator: jasmine.createSpy('onMouseUpManipulator')
@@ -235,6 +237,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _STATE_,
                               _UI_,
                               _OPERATION_MODE_,
+                              _EDIT_MODE_,
                               _serverError_,
                               _panels_,
                               _gz3d_,
@@ -262,6 +265,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     STATE = _STATE_;
     UI = _UI_;
     OPERATION_MODE = _OPERATION_MODE_;
+    EDIT_MODE = _EDIT_MODE_;
     serverError = _serverError_;
     panels = _panels_;
     gz3d = _gz3d_;
@@ -586,6 +590,34 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
       scope.releaseMove(e, 'rotateRight');
       expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
+    });
+
+
+    it('should not set edit mode if the new mode is equal to the current one', function() {
+      gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
+
+      //false case
+      scope.setEditMode(EDIT_MODE.VIEW);
+      expect(gz3d.scene.setManipulationMode).not.toHaveBeenCalled();
+
+      //true case
+      scope.setEditMode(EDIT_MODE.EDIT);
+      expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.EDIT);
+
+    });
+
+    it('should correctly execute simControlButtonHandler', function() {
+      //test setup
+      var newState = STATE.STARTED;
+      scope.setEditMode = jasmine.createSpy('setEditMode');
+      scope.updateSimulation = jasmine.createSpy('updateSimulation');
+
+      //call function under test
+      scope.simControlButtonHandler(newState);
+
+      //check test outcome
+      expect(scope.updateSimulation).toHaveBeenCalledWith(newState);
+      expect(scope.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
     });
 
     it('should toggle the showSpikeTrain variable', function() {
