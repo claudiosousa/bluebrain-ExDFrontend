@@ -4,8 +4,8 @@
   /* global console: false */
 
   angular.module('exdFrontendApp.Constants')
-    .constant('DEFAULT_RESOURCE_GET_TIMEOUT', 3000 // ms
-  );
+    .constant('DEFAULT_RESOURCE_GET_TIMEOUT', 3000) // ms
+    .constant('EXPERIMENTS_GET_TIMEOUT', 30000); // ms
 
   var module = angular.module('simulationControlServices', ['ngResource',
     'exdFrontendApp.Constants',
@@ -181,13 +181,13 @@
     };
   }]);
 
-  module.factory('experimentList', ['$resource', 'serverError', 'DEFAULT_RESOURCE_GET_TIMEOUT', function ($resource, serverError, DEFAULT_RESOURCE_GET_TIMEOUT) {
+  module.factory('experimentList', ['$resource', 'serverError', 'EXPERIMENTS_GET_TIMEOUT', function ($resource, serverError, EXPERIMENTS_GET_TIMEOUT) {
     return function (baseUrl) {
       return $resource(baseUrl + '/experiment', {}, {
         experiments: {
           method: 'GET',
           // prevent the user to wait for long time since our servers can only handle one request at a time (yet).
-          timeout: DEFAULT_RESOURCE_GET_TIMEOUT,
+          timeout: EXPERIMENTS_GET_TIMEOUT,
           interceptor: {responseError: serverError.display}
         }
       });
