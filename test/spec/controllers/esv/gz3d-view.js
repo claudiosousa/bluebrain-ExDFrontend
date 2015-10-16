@@ -396,6 +396,14 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(simulationStateObject.update).not.toHaveBeenCalled();
     });
 
+    it('should reset everything on reset button pressed', function() {
+      scope.updateSimulation(STATE.INITIALIZED);
+      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.INITIALIZED);
+      stateService.setCurrentState(STATE.INITIALIZED).then.mostRecentCall.args[0]();
+      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initPosition');
+      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initRotation');
+    });
+
     it('should register for status information', function() {
       scope.state = STATE.UNDEFINED;
       stateService.currentState = STATE.STARTED;
