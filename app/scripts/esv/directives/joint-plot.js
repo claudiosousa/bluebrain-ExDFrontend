@@ -139,7 +139,7 @@
     };
   }
 
-  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', function ($log, $window, $filter, roslib) {
+  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', '$timeout', function ($log, $window, $filter, roslib, $timeout) {
     return {
       templateUrl: 'views/esv/joint-plot.html',
       restrict: 'E',
@@ -150,6 +150,7 @@
       },
       link: function (scope, element, attrs) {
         scope.chartHeight = 400;
+
         if(angular.isUndefined(attrs.server)) {
           $log.error('The server URL was not specified!');
         }
@@ -157,8 +158,20 @@
         if(angular.isUndefined(attrs.topic)) {
           $log.error('The topic for the joints was not specified!');
         }
-
+        var lineChartWrapper = angular.element(element[0].childNodes[1].childNodes[5]);
         configureJointPlot(scope, roslib);
+
+        scope.onResizeBegin = function() {
+          lineChartWrapper.css('visibility', 'hidden');
+        };
+        scope.onResizeEnd = function() {
+          // the chart needs a bit of time to adjust its size
+          $timeout(function() {
+            lineChartWrapper.css('visibility', 'visible');
+          }, 500);
+        };
+
+
         scope.plotOptions = {
           axes: {
             x: {key: 'time'}

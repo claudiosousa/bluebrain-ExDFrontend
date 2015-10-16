@@ -105,6 +105,21 @@ describe('Directive: joint-plot', function () {
     expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
   });
 
+  it('should hide on resize begin', function() {
+    var lineChartWrapper = angular.element(element[0].childNodes[1].childNodes[5]);
+    $scope.onResizeBegin();
+    expect(lineChartWrapper.css('visibility')).toBe('hidden');
+  });
+
+  it('should show on resize end', inject(function($timeout) {
+    var lineChartWrapper = angular.element(element[0].childNodes[1].childNodes[5]);
+    lineChartWrapper.css('visibility', 'hidden');
+    $scope.onResizeEnd();
+    $timeout.flush();
+    expect(lineChartWrapper.css('visibility')).toBe('visible');
+  }));
+
+
   it('should unsubscribe when stopJointDisplay is called', function () {
     $scope.jointTopicSubscriber = {unsubscribe: jasmine.createSpy('unsubscribe')};
     $scope.stopJointDisplay();

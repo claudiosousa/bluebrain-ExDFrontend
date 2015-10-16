@@ -30,7 +30,7 @@ describe('Directive: spiketrain', function () {
 
   it('replaces the element with the appropriate content', function () {
     // Compile a piece of HTML containing the directive
-    expect(element.prop('outerHTML')).toContain('<div class="spikegraph ng-scope ng-hide" server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div></div>');
+    expect(element.prop('outerHTML')).toContain('<div resizeable="" class="spikegraph ng-scope ng-hide" server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div><div class="resizeable"></div></div>');
   });
 
   it('should display spike message properly', function () {
