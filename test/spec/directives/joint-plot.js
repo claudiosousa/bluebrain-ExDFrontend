@@ -53,7 +53,7 @@ describe('Directive: joint-plot', function () {
     $scope.selectedProperty = { name: 'position' };
   }));
 
-  it('replaces the element with the appropriate content', function () {
+  it('should replace the element with the appropriate content', function () {
     // Compile a piece of HTML containing the directive
     expect(element.prop('outerHTML')).toContain('class="jointplot');
     expect(element.prop('outerHTML')).toContain(JOINT_TOPIC);
@@ -111,22 +111,25 @@ describe('Directive: joint-plot', function () {
     expect($scope.jointTopicSubscriber.unsubscribe).toHaveBeenCalled();
   });
 
-  // Would be great to have those tests in, though didn't find how to trigger :visible
-  // xit('should call the stopJointDisplay function', function () {
-  //   spyOn($scope, 'stopJointDisplay');
-  //   parentscope.showJointPlot = false;
-  //   parentscope.$digest();
-  //   $scope.$digest();
-  //   expect($scope.stopJointDisplay).toHaveBeenCalled();
-  // });
+  it('should call the stopJointDisplay function', function () {
+    spyOn($scope, 'stopJointDisplay');
+    parentscope.showJointPlot = false;
+    parentscope.$digest();
+    $scope.$digest();
+    expect($scope.stopJointDisplay).toHaveBeenCalled();
+  });
 
-  // xit('should call the startJointDisplay function', function () {
-  //   spyOn($scope, 'startJointDisplay');
-  //   parentscope.showJointPlot = true;
-  //   parentscope.$digest();
-  //   $scope.$digest();
-  //   expect($scope.startJointDisplay).toHaveBeenCalled();
-  // });
+  it('should call the startJointDisplay function', function () {
+    parentscope.showJointPlot = false;
+    parentscope.$digest();
+    $scope.$digest();
+
+    spyOn($scope, 'startJointDisplay');
+    parentscope.showJointPlot = true;
+    parentscope.$digest();
+    $scope.$digest();
+    expect($scope.startJointDisplay).toHaveBeenCalled();
+  });
 
 
   it('should register new joint', function () {

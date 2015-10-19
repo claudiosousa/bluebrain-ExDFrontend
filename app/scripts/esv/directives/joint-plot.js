@@ -146,7 +146,9 @@
       replace: true,
       scope: {
         server: '@',
-        topic: '@'
+        topic: '@',
+        // see https://github.com/angular/angular.js/issues/2500
+        ngShow: '='
       },
       link: function (scope, element, attrs) {
         scope.chartHeight = 400;
@@ -168,14 +170,18 @@
 
         // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
         // ROS topic.
-        scope.$watch(function() { return element.is(':visible'); }, function(visible) {
-          if (visible) {
-            scope.startJointDisplay();
-          }
-          else {
-            scope.stopJointDisplay();
-          }
-        });
+        if (attrs.hasOwnProperty('ngShow')) {
+          scope.$watch("ngShow", function (visible) {
+            if (visible) {
+              element.show();
+              scope.startJointDisplay();
+            }
+            else {
+              element.hide();
+              scope.stopJointDisplay();
+            }
+          });
+        }
 
         var parent = angular.element(element[0].childNodes[1]);
         scope.$watch(function() {
