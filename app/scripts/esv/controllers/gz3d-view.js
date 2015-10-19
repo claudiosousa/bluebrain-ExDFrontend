@@ -245,6 +245,8 @@
             /* istanbul ignore next */
             if (newState === STATE.INITIALIZED) {
               resetScreenColors();
+              gz3d.scene.controls.onMouseDownManipulator('initPosition');
+              gz3d.scene.controls.onMouseDownManipulator('initRotation');
             }
           }
         );
