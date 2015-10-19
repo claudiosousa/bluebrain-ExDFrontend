@@ -247,6 +247,9 @@
               resetScreenColors();
               gz3d.scene.controls.onMouseDownManipulator('initPosition');
               gz3d.scene.controls.onMouseDownManipulator('initRotation');
+              gz3d.scene.controls.update();
+              gz3d.scene.controls.onMouseUpManipulator('initPosition');
+              gz3d.scene.controls.onMouseUpManipulator('initRotation');
             }
           }
         );

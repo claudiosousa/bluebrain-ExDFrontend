@@ -135,7 +135,8 @@ describe('Controller: Gz3dViewCtrl', function () {
         emitter: {},
         controls: {
           onMouseDownManipulator: jasmine.createSpy('onMouseDownManipulator'),
-          onMouseUpManipulator: jasmine.createSpy('onMouseUpManipulator')
+          onMouseUpManipulator: jasmine.createSpy('onMouseUpManipulator'),
+          update: jasmine.createSpy('update')
         },
         gui: {
           emitter: {}
