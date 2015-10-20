@@ -160,6 +160,9 @@
 
         configureJointPlot(scope, roslib);
         scope.plotOptions = {
+          tooltip: {
+            mode: 'none'
+          },
           axes: {
             x: {key: 'time'}
           },
