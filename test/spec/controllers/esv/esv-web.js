@@ -137,11 +137,19 @@ describe('Controller: experimentCtrl', function () {
     expect(scope.userID).toEqual(currentUserInfo1234.id);
   });
 
+  it('should set the forced user id in full local mode' , function () {
+    window.bbpConfig.localmode.forceuser = true;
+    controller('experimentCtrl', {
+      $scope: scope
+    });
+    expect(hbpUserDirectory.get).not.toHaveBeenCalled();
+    expect(scope.userID).toEqual('vonarnim');
+    window.bbpConfig.localmode.forceuser = false;
+  });
+
   it('should init the list of server enabled by default' , function () {
     store['server-enabled'] = null;
-    // We need this var declaration to make jshint happy.
-    var experimentCtrlWithoutLocalStorage;
-    experimentCtrlWithoutLocalStorage = controller('experimentCtrl', {
+    controller('experimentCtrl', {
       $scope: scope
     });
 

@@ -80,5 +80,9 @@
   },
   "oidc": {
     "debug": false
+  },
+  "localmode" : {
+    "forceuser": false,
+    "ownerID": "vonarnim"
   }
 }

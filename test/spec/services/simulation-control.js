@@ -115,6 +115,25 @@ describe('Services: server-info-service', function () {
       expect(simulationService().owners['invalid-id']).toBe('Unknown');
     });
 
+    it('should set the forced user as owner when in full local mode', function() {
+      hbpUserDirectory.get.reset();
+      for (var member in simulationService().owners) {
+        delete simulationService().owners[member];
+      }
+      window.bbpConfig.localmode.forceuser = true;
+      simulationService({ serverURL: serverURL, serverID : serverID }).simulations(function(data) {
+        receivedSimulations = data;
+      });
+      httpBackend.expectGET(serverURL + '/simulation');
+      httpBackend.flush();
+      expect(hbpUserDirectory.get).not.toHaveBeenCalled();
+      expect(simulationService().owners['1234']).toBe('vonarnim');
+      expect(simulationService().owners['4321']).toBe('vonarnim');
+      expect(simulationService().owners['default-owner']).toBe('vonarnim');
+      expect(simulationService().owners['invalid-id']).toBe('vonarnim');
+      window.bbpConfig.localmode.forceuser = false;
+    });
+
     it('should retrieve the uptime of a simulation', function() {
       simulationService().updateUptime();
       expect(simulationService().uptime['bbpce016-0'] >= 0).toBeTruthy();

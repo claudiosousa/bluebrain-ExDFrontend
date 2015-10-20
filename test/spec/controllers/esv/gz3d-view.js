@@ -381,6 +381,20 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.viewState.isOwner).toBe(false);
     });
 
+    it('should set the forced user id in full local mode' , function () {
+      window.bbpConfig.localmode.forceuser = true;
+      controller('Gz3dViewCtrl', {
+        $rootScope: rootScope,
+        $scope: scope
+      });
+      expect(scope.userName).toEqual('vonarnim');
+      expect(scope.userID).toEqual('vonarnim');
+      expect(scope.ownerID).toEqual('vonarnim');
+      expect(scope.owner).toEqual('vonarnim');
+      expect(scope.viewState.isOwner).toBe(true);
+      window.bbpConfig.localmode.forceuser = false;
+    });
+
     it('should check that updateSimulation sets the scope\'s state', function () {
       //Ignore this warning because of the sim_id
       /*jshint camelcase: false */

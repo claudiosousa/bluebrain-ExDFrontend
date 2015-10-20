@@ -9,7 +9,7 @@
   // This allows our components to be intuitive, predictable, and testable. Hence we "wrap" this library here.
   // http://www.bennadel.com/blog/2720-creating-and-extending-a-lodash-underscore-service-in-angularjs.htm
   var app = angular.module('exdFrontendApp');
-  app.factory('roslib', function ($window) {
+  app.factory('roslib', ['$window','bbpConfig', function ($window, bbpConfig) {
 
     // Get a local handle on the global ROSLIB reference
     var ROSLIB = $window.ROSLIB;
@@ -26,19 +26,21 @@
     ROSLIB.getOrCreateConnectionTo = function (url) {
 
       var ros;
-      var token = [];
-      if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
-        try {
-          token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
-        } catch(e) {
+      if (!bbpConfig.get('localmode.forceuser', false)) {
+        var token = [];
+        if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
+          try {
+            token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
+          } catch(e) {
+            // this token will be rejected by the server and the client will get a proper auth error
+            token[0] = { access_token : 'malformed-token' };
+          }
+        } else {
           // this token will be rejected by the server and the client will get a proper auth error
-          token[0] = { access_token : 'malformed-token' };
+          token[0] = { access_token : 'no-token' };
         }
-      } else {
-        // this token will be rejected by the server and the client will get a proper auth error
-        token[0] = { access_token : 'no-token' };
+        url = url + '/?token=' + token[0].access_token;
       }
-      url = url + '/?token=' + token[0].access_token;
       if (! connections[url]) {
         ros = new ROSLIB.Ros({
           url: url
@@ -85,6 +87,6 @@
     // into other aspects of the AngularJS application.
     return (ROSLIB);
 
-  });
+  }]);
 
 }());

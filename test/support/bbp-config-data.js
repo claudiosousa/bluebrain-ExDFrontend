@@ -114,5 +114,9 @@ window.bbpConfig = {
       'https://*.humanbrainproject.eu/**',
       'http://localhost:*/'
     ]
+  },
+  "localmode" : {
+    "forceuser": false,
+    "ownerID": "vonarnim"
   }
 };

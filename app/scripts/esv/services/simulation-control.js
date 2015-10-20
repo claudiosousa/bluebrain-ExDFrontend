@@ -14,9 +14,9 @@
     'bbpConfig',
     'hbpCommon']);
 
-  module.factory('simulationService', ['$resource', '$http', 'hbpUserDirectory', 'STATE',
+  module.factory('simulationService', ['$resource', '$http', 'bbpConfig', 'hbpUserDirectory', 'STATE',
     'serverError', 'uptimeFilter','DEFAULT_RESOURCE_GET_TIMEOUT',
-    function ($resource, $http, hbpUserDirectory, STATE,
+    function ($resource, $http, bbpConfig, hbpUserDirectory, STATE,
       serverError, uptimeFilter, DEFAULT_RESOURCE_GET_TIMEOUT) {
 
       // Keeps track of the owner of experiments in a map (id -> display name)
@@ -44,9 +44,13 @@
               // keep a copy of creation dates in an array (will be used to calculate uptime array)
               creationDate[serverID + '-' + element.simulationID] = element.creationDate;
               if (element.state !== STATE.STOPPED && !(element.owner in owners)) {
-                hbpUserDirectory.get([element.owner]).then(function (profile) {
-                  owners[element.owner] = getUserName(profile);
-                });
+                if (!bbpConfig.get('localmode.forceuser', false)) {
+                  hbpUserDirectory.get([element.owner]).then(function (profile) {
+                    owners[element.owner] = getUserName(profile);
+                  });
+                } else {
+                  owners[element.owner] = bbpConfig.get('localmode.ownerID');
+                }
               }
             });
           }

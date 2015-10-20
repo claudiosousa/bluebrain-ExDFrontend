@@ -107,41 +107,46 @@
       $scope.STATE = STATE;
       $scope.OPERATION_MODE = OPERATION_MODE;
       $scope.UI = UI;
-
       $scope.viewState = {
         isOwner: false,
         isInitialized : false,
         isJoiningStoppedSimulation : false,
       };
-
       $scope.gz3d = gz3d;
       $scope.stateService = stateService;
       $scope.EDIT_MODE = EDIT_MODE;
-
       $scope.contextMenuState = contextMenuState;
 
-      hbpUserDirectory.getCurrentUser().then(function (profile) {
-        $scope.userName = profile.displayName;
-        $scope.userID = profile.id;
-        simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
-          $scope.ownerID = data.owner;
-          var experimentConfiguration = data.experimentConfiguration;
-          // get experiment list from current server
-          experimentList(serverBaseUrl).experiments(function (data) {
-            angular.forEach(data.data, function(experimentTemplate) {
-              if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
-                $scope.ExperimentDescription = experimentTemplate.description;
-              }
+      if (!bbpConfig.get('localmode.forceuser', false)) {
+        hbpUserDirectory.getCurrentUser().then(function (profile) {
+          $scope.userName = profile.displayName;
+          $scope.userID = profile.id;
+          simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
+            $scope.ownerID = data.owner;
+            var experimentConfiguration = data.experimentConfiguration;
+            // get experiment list from current server
+            experimentList(serverBaseUrl).experiments(function (data) {
+              angular.forEach(data.data, function(experimentTemplate) {
+                if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
+                  $scope.ExperimentDescription = experimentTemplate.description;
+                }
+              });
             });
+            hbpUserDirectory.get([data.owner]).then(function (profile)
+            {
+              $scope.owner = simulationService().getUserName(profile);
+            });
+            $scope.viewState.isOwner = ($scope.ownerID === $scope.userID);
           });
-          hbpUserDirectory.get([data.owner]).then(function (profile)
-          {
-            $scope.owner = simulationService().getUserName(profile);
-          });
-          $scope.viewState.isOwner = ($scope.ownerID === $scope.userID);
         });
-      });
-
+      } else {
+        $scope.userName = bbpConfig.get('localmode.ownerID');
+        $scope.userID = bbpConfig.get('localmode.ownerID');
+        $scope.ownerID = bbpConfig.get('localmode.ownerID');
+        $scope.owner = bbpConfig.get('localmode.ownerID');
+        $scope.viewState.isOwner = true;
+      }
+ 
       $scope.versions = {};
       nrpFrontendVersion.get(function(data) { $scope.versions.hbp_nrp_esv = data.hbp_nrp_esv; });
       nrpBackendVersions(serverBaseUrl).get(function(data) {
