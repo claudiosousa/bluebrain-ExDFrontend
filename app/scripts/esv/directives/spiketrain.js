@@ -186,7 +186,7 @@
     }
 
     return {
-      template: '<div class="spikegraph"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div></div>',
+      template: '<div resizeable class="spikegraph"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div></div>',
       restrict: 'E',
       replace: true,
       //Todo: Should have isolated (own) scope
@@ -246,4 +246,3 @@
     };
   }]);
 }());
-
