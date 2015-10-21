@@ -108,6 +108,20 @@ describe('Directive: smachEditor', function () {
         expect(stateMachines).toEqual(expected);
       });
 
+      it('should call the refresh function', function() {
+        var callback;
+        var editor = {
+          'refresh': jasmine.createSpy('refresh'),
+          'on': function(name, cb) {callback = cb;},
+          'off': function() {callback = undefined;}
+        };
+        isolateScope.refreshLayout(editor);
+        expect(callback).toBeDefined();
+        callback();
+        expect(editor.refresh).toHaveBeenCalled();
+        expect(callback).not.toBeDefined();
+      });
+
       it('should test the update function', function() {
         var sm = new ScriptObject('SM', 'Code of SM');
         isolateScope.stateMachines = [sm];
