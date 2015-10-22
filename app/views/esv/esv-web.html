@@ -57,7 +57,7 @@
               <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);">
                 <i class="fa fa-pencil"></i> Edit
               </button>
-              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter">
+              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch
               </button>
               <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1"
