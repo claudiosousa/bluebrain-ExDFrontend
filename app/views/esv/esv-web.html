@@ -54,20 +54,39 @@
           </div>
           <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
             <div class="btn-group" role="group">
-              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);">
+              <!-- Edit button (enabled/disabled) --->
+              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1"
+                      ng-click="setProgressbarVisible(exp.id);enterEditMode(exp.experimentConfiguration, exp.serverPattern);">
                 <i class="fa fa-pencil"></i> Edit
               </button>
-              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
-                <i class="fa fa-plus"></i> Launch
+              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip"
+                      tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+                <i class="fa fa-pencil"></i> Edit
               </button>
+
+              <!-- Launch button (enabled/disabled) --->
               <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1"
                       ng-click="setProgressbarVisible(exp.id);startNewExperiment(exp.experimentConfiguration, exp.serverPattern);">
                 <i class="fa fa-plus"></i> Launch
               </button>
-              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-click="  uploadEnvironmentAndStart(exp);">
-                Upload custom environment
+              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip"
+                      tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+                <i class="fa fa-plus"></i> Launch
               </button>
-              <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1" ng-click="setJoinableVisible(exp.id);">
+
+              <!-- Upload custom environment button (enabled/disabled) --->
+              <button ng-if="isServerAvailable[exp.id]" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1"
+                      ng-click="uploadEnvironmentAndStart(exp);">
+                <i class="fa fa-upload"></i> Upload custom environment
+              </button>
+              <button ng-if="!isServerAvailable[exp.id]" class="btn btn-default disabled enable-tooltip"
+                      tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+                <i class="fa fa-upload"></i> Upload custom environment
+              </button>
+
+              <!-- Join button --->
+              <button ng-if="exp.runningExperiments > 0" class="btn btn-default" ng-disabled="startNewExperimentSelectedIndex !== -1"
+                      ng-click="setJoinableVisible(exp.id);">
                 <i class="fa fa-sign-in"></i> Join »
               </button>
             </div>
