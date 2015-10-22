@@ -66,7 +66,7 @@
 
               toggleContextMenu : function (show, event) {
 
-                    if (show) {
+                    if (show && !this.isShown) {
                         var model = this._getModelUnderMouse(event);
 
                         if (model) {

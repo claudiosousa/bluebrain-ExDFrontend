@@ -332,15 +332,22 @@
         },
 
         show: function(model) {
-            var show =
-              gz3d.scene.manipulationMode === EDIT_MODE.VIEW &&
+            var shouldShowOnlyInViewMode =
+              (gz3d.scene.manipulationMode === EDIT_MODE.VIEW);
+
+            var shouldShowOnlyOnScreens =
               model.name.indexOf('screen') !== -1;
+
+            var show =
+              shouldShowOnlyInViewMode &&
+              shouldShowOnlyOnScreens;
 
             return (this.visible =
                       this.items[0].visible =
                         this.items[1].visible = show);
           }
       };
+
 
       $window.oncontextmenu = function(event) {
           event.preventDefault();

@@ -121,7 +121,7 @@
 
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
-          <div class="hbp-toolbar">
+          <div class="hbp-toolbar" ng-mousedown="toggleContextMenu(false, $event);">
             <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
