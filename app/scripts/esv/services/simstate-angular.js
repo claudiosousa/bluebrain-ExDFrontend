@@ -18,10 +18,10 @@
      'nrpErrorHandlers'
     ]);
   module.factory('stateService',
-    ['$rootScope', 'simulationState',
+    ['simulationState',
     '$log', 'bbpConfig', '$q', 'serverError', 'roslib',
     'simulationInfo',
-    function ($rootScope, simulationState,
+    function (simulationState,
       $log, bbpConfig, $q, serverError, roslib,
       simulationInfo) {
       var thisStateService = {};
@@ -52,16 +52,12 @@
           /* State messages */
           /* Manage before other since others may depend on state changes */
           if (angular.isDefined(message.state) && (message.state !== thisStateService.currentState)) {
-            $rootScope.$apply(function(){
-              thisStateService.currentState = message.state;
-              triggerStateCallbacks();
-            });
+            thisStateService.currentState = message.state;
+            triggerStateCallbacks();
           }
 
           /* Call every registered message callback with the received message */
-          $rootScope.$apply(function(){
-            triggerMessageCallbacks(message);
-          });
+          triggerMessageCallbacks(message);
         } catch(err) {
           console.error("Invalid JSON Message received.");
         }

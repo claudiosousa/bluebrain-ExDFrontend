@@ -9,7 +9,7 @@
   // This allows our components to be intuitive, predictable, and testable. Hence we "wrap" this library here.
   // http://www.bennadel.com/blog/2720-creating-and-extending-a-lodash-underscore-service-in-angularjs.htm
   var app = angular.module('exdFrontendApp');
-  app.factory('roslib', ['$window','bbpConfig', function ($window, bbpConfig) {
+  app.factory('roslib', ['$window','bbpConfig', '$rootScope', function ($window, bbpConfig, $rootScope) {
 
     // Get a local handle on the global ROSLIB reference
     var ROSLIB = $window.ROSLIB;
@@ -82,6 +82,18 @@
         messageType: 'std_msgs/String'
       });
     };
+
+    ROSLIB.Topic.prototype.subscribe = (function(originalSub) {
+      return function(callback) {
+        var that = this;
+        var angularAwareCb = function(message) {
+          $rootScope.$apply(function() {
+            callback(message);
+          });
+        };
+        originalSub.call(that, angularAwareCb);
+      };
+    }(ROSLIB.Topic.prototype.subscribe));
 
     // Return the (formerly global) reference so that it can be injected
     // into other aspects of the AngularJS application.
