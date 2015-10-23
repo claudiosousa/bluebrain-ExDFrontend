@@ -75,7 +75,7 @@
         statusListener = roslib.createStringTopic(rosConnection, statusTopic);
 
         statusListener.unsubscribe(); // clear old subscriptions
-        statusListener.subscribe(onMessageReceived);
+        statusListener.subscribe(onMessageReceived, true);
       };
 
       thisStateService.stopListeningForStatusInformation = function() {

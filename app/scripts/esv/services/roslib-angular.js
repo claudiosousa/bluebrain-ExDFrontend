@@ -84,14 +84,18 @@
     };
 
     ROSLIB.Topic.prototype.subscribe = (function(originalSub) {
-      return function(callback) {
+      return function(callback, makeAngularAware) {
         var that = this;
-        var angularAwareCb = function(message) {
-          $rootScope.$apply(function() {
-            callback(message);
-          });
-        };
-        originalSub.call(that, angularAwareCb);
+        var finalCb = callback;
+        if (makeAngularAware) {
+          finalCb = function(message) {
+            $rootScope.$apply(function() {
+              callback(message);
+            });
+          };
+        }
+        originalSub.call(that, finalCb);
+        return finalCb;
       };
     }(ROSLIB.Topic.prototype.subscribe));
 

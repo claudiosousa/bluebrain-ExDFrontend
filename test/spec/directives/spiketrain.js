@@ -3,10 +3,20 @@
 describe('Directive: spiketrain', function () {
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
 
-  var $scope, element, roslib, stateService, STATE, window;
+  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout;
   var SERVER_URL = 'ws://localhost:1234';
   var SPIKE_TOPIC = '/cle_sim/spike';
+
+  function setShow(showBool) {
+    parentscope.showSpikeTrain = showBool;
+    parentscope.$digest();
+    $scope.$digest();
+    if (showBool) {
+      timeout.flush();
+    }
+  }
 
   // TODO(Stefan) extract this to a common place, it is used in several places!
   beforeEach(module(function ($provide) {
@@ -27,20 +37,43 @@ describe('Directive: spiketrain', function () {
 
   beforeEach(inject(function (
     $rootScope, $compile, $window,
-    _roslib_, _stateService_, _STATE_) {
-    $scope = $rootScope.$new();
-    spyOn($scope, '$on');
-    element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')($scope);
-    $scope.$digest();
+    _roslib_, _stateService_, _STATE_, $timeout) {
+    parentscope = $rootScope.$new();
+    parentscope.showSpikeTrain = false;
+    element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')(parentscope);
+    parentscope.$digest();
+    $scope = element.isolateScope();
     roslib = _roslib_;
     window = $window;
+    timeout = $timeout;
     stateService = _stateService_;
     STATE = _STATE_;
   }));
 
+  it('should draw separator if not first time run', function () {
+    spyOn($scope, 'drawSeparator');
+    setShow(true);
+    expect($scope.drawSeparator).not.toHaveBeenCalled();
+
+    setShow(false);
+    expect($scope.drawSeparator).not.toHaveBeenCalled();
+
+    setShow(true);
+    expect($scope.drawSeparator).toHaveBeenCalled();
+  });
+
   it('replaces the element with the appropriate content', function () {
     // Compile a piece of HTML containing the directive
-    expect(element.prop('outerHTML')).toContain('<div resizeable="" class="spikegraph ng-scope ng-hide" server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div><div class="resizeable"></div></div>');
+    expect(element.prop('outerHTML')).toContain('resizeable');
+    expect(element.prop('outerHTML')).toContain('spikegraph');
+    expect(element.prop('outerHTML')).toContain('ng-isolate-scope');
+    expect(element.prop('outerHTML')).toContain('server="' + SERVER_URL + '"');
+    expect(element.prop('outerHTML')).toContain('topic="' + SPIKE_TOPIC + '"');
+    expect(element.prop('outerHTML')).toContain('ng-show="showSpikeTrain"');
+    expect(element.prop('outerHTML')).toContain('leftaxis');
+    expect(element.prop('outerHTML')).toContain('spiketrain');
+    expect(element.prop('outerHTML')).toContain('<p class="legend">NeuronID</p>');
+    expect(element.prop('outerHTML')).toContain('<canvas></canvas><canvas></canvas>');
   });
 
   it('should set the state callback properly', function () {
@@ -57,8 +90,8 @@ describe('Directive: spiketrain', function () {
 
   it('should remove the state callback on $destroy event', function () {
     var onStateChangeCallback = stateService.addStateCallback.mostRecentCall.args[0];
-    var destroyCallback = $scope.$on.mostRecentCall.args[1];
-    destroyCallback();
+    $scope.$broadcast('$destroy');
+    $scope.$digest();
     expect(stateService.removeStateCallback).toHaveBeenCalledWith(onStateChangeCallback);
   });
 
@@ -140,8 +173,7 @@ describe('Directive: spiketrain', function () {
   it('should display black separation bar on re-showing the monitor (not the first one)', function () {
     spyOn($scope, 'startSpikeDisplay').andCallThrough();
     spyOn($scope, 'drawSeparator').andCallThrough();
-    $scope.showSpikeTrain = true;
-    $scope.$digest();
+    setShow(true);
     expect($scope.startSpikeDisplay).toHaveBeenCalledWith(true);
     expect($scope.drawSeparator).not.toHaveBeenCalled();
 
@@ -152,15 +184,12 @@ describe('Directive: spiketrain', function () {
       expect(canvasData[i]).toBe(0);
     }
 
-    $scope.showSpikeTrain = false;
-    $scope.$digest();
-
+    setShow(false);
     $scope.startSpikeDisplay.reset();
     $scope.drawSeparator.reset();
     $scope.xPosition = 10;
 
-    $scope.showSpikeTrain = true;
-    $scope.$digest();
+    setShow(true);
     expect($scope.startSpikeDisplay).toHaveBeenCalledWith(false);
     expect($scope.drawSeparator).toHaveBeenCalled();
 
@@ -218,16 +247,9 @@ describe('Directive: spiketrain', function () {
 
   it('should call the resize function (1)', function () {
     spyOn($scope, 'onScreenSizeChanged');
-    $scope.showSpikeTrain = true;
+    setShow(true);
     /*global $: false */
     $(window).resize();
-    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
-  });
-
-  it('should call the resize function (2)', function () {
-    spyOn($scope, 'onScreenSizeChanged');
-    element.css('display', 'block');
-    $scope.$digest();
     expect($scope.onScreenSizeChanged).toHaveBeenCalled();
   });
 
@@ -254,8 +276,7 @@ describe('Directive: spiketrain', function () {
 
   it('should call the startSpikeDisplay function', function () {
     spyOn($scope, 'startSpikeDisplay');
-    $scope.showSpikeTrain = true;
-    $scope.$digest();
+    setShow(true);
     expect($scope.startSpikeDisplay).toHaveBeenCalled();
   });
 

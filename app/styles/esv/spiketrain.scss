@@ -8,6 +8,7 @@ $spikeTrainMargin: 5px;
   @extend .pop-over-viewer;
   @include compute-top($spikeTrainBottom, $spikeTrainHeight);
   height: $spikeTrainHeight;
+  display: flex !important;
 }
 
 .spikegraph.ng-hide {
@@ -17,7 +18,8 @@ $spikeTrainMargin: 5px;
 .spiketrain {
   position: relative;
   margin: $spikeTrainMargin 0px $spikeTrainMargin 0px;
-  flex: 1 0 0;
+  display: inline-block;
+  flex-grow: 1;
   overflow: hidden;
 }
 
@@ -31,9 +33,9 @@ $spikeTrainMargin: 5px;
 }
 
 .spikegraph .leftaxis {
-  width: 35px;
+  flex-basis: 35px;
   height: 100%;
-  display: flex;
+  display: inline-flex;
 }
 
 .spikegraph .leftaxis .arrow {

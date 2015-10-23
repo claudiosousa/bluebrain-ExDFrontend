@@ -1,7 +1,7 @@
 (function () {
   'use strict';
-  var MAX_N_MEASUREMENTS = 100;
   var pointFrequency = 5.0; // number of points per seconds
+  var topicSubCb;
 
   function configureJointPlot(scope, roslib) {
     scope.curves = [];
@@ -91,7 +91,7 @@
                                                                                     'sensor_msgs/JointState', {
                                                                                       throttle_rate: 1.0 / pointFrequency * 1000.0
                                                                                     });
-      scope.jointTopicSubscriber.subscribe(scope.onNewJointMessageReceived);
+      topicSubCb = scope.jointTopicSubscriber.subscribe(scope.onNewJointMessageReceived, true);
     };
 
     scope.onNewJointMessageReceived = function (message) {
@@ -140,7 +140,7 @@
       if (scope.jointTopicSubscriber) {
         // One has to be careful here: it is not sufficient to only call unsubscribe but you have to
         // put in the function as an argument, otherwise your function will be called twice!
-        scope.jointTopicSubscriber.unsubscribe(scope.onNewJointMessageReceived);
+        scope.jointTopicSubscriber.unsubscribe(topicSubCb);
       }
     };
   }
@@ -159,11 +159,11 @@
       link: function (scope, element, attrs) {
         scope.chartHeight = 400;
 
-        if(angular.isUndefined(attrs.server)) {
+        if(angular.isUndefined(scope.server)) {
           $log.error('The server URL was not specified!');
         }
 
-        if(angular.isUndefined(attrs.topic)) {
+        if(angular.isUndefined(scope.topic)) {
           $log.error('The topic for the joints was not specified!');
         }
         var lineChartWrapper = angular.element(element[0].childNodes[1].childNodes[5]);

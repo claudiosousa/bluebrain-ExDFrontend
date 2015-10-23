@@ -1,16 +1,9 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp').directive('spiketrain', ['$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', function ($log, $window, $filter, roslib, stateService, STATE) {
-    var scope;
-    var onStateChangedCallback = function(newState) {
-      if (newState === STATE.INITIALIZED){
-        scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);
-        scope.ctx[1].clearRect(0, 0, scope.canvas[1].width, scope.canvas[1].height);
-      }
-    };
+  angular.module('exdFrontendApp').directive('spiketrain', ['$timeout', '$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', function ($timeout, $log, $window, $filter, roslib, stateService, STATE) {
 
-    function configureSpiketrain(canvas1, canvas2, div) {
+    function configureSpiketrain(scope, canvas1, canvas2, div) {
       scope.canvas = [canvas1, canvas2];
       scope.directiveDiv = div;
       scope.ctx = [scope.canvas[0].getContext("2d"), scope.canvas[1].getContext("2d")];
@@ -21,6 +14,18 @@
       var MARK_INTERVAL = 2000; // time lapse (ms) between two consecutive time marks
       var TIMELABEL_SPACE = 15; // Vertical space in the canvas reserved for the time label
 
+      var onStateChangedCallback = function(newState) {
+        if (newState === STATE.INITIALIZED){
+          scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);
+          scope.ctx[1].clearRect(0, 0, scope.canvas[1].width, scope.canvas[1].height);
+        }
+      };
+
+      // clean up on leaving
+      scope.$on("$destroy", function() {
+        // remove the callback
+        stateService.removeStateCallback(onStateChangedCallback);
+      });
       scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);
       scope.ctx[1].clearRect(0, 0, scope.canvas[1].width, scope.canvas[1].height);
 
@@ -166,9 +171,8 @@
 
       // Subscribe to the ROS topic
       scope.startSpikeDisplay = function (firstTimeRun) {
-        scope.onScreenSizeChanged();
-        var rosConnection = roslib.getOrCreateConnectionTo(scope.spikeServer);
-        scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.spikeTopic, 'cle_ros_msgs/SpikeEvent');
+        var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
+        scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.topic, 'cle_ros_msgs/SpikeEvent');
         scope.spikeTopicSubscriber.subscribe(scope.onNewSpikesMessageReceived);
         if (firstTimeRun === false) {
           scope.drawSeparator();
@@ -189,59 +193,51 @@
       template: '<div resizeable class="spikegraph"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div></div>',
       restrict: 'E',
       replace: true,
-      //Todo: Should have isolated (own) scope
-      link: function (mScope, element, attrs) {
-        if(angular.isUndefined(attrs.server)) {
+      scope: {
+        server: '@',
+        topic: '@',
+        // see https://github.com/angular/angular.js/issues/2500
+        ngShow: '='
+      },
+      link: function (scope, element, attrs) {
+        if(angular.isUndefined(scope.server)) {
           $log.error('The server URL was not specified!');
         }
 
-        if(angular.isUndefined(attrs.topic)) {
+        if(angular.isUndefined(scope.topic)) {
           $log.error('The topic for the spikes was not specified!');
         }
 
-        scope = mScope;
-        scope.spikeServer = attrs.server;
-        scope.spikeTopic = attrs.topic;
-
         var firstTimeRun = true;
         var div = element[0].childNodes[1];
-        configureSpiketrain(div.childNodes[0], div.childNodes[1], div);
+        configureSpiketrain(scope, div.childNodes[0], div.childNodes[1], div);
 
         // When resizing the window, we have to take care of resizing the canvas
         angular.element($window).bind('resize', function() {
           if(scope.showSpikeTrain === true) {
-            scope.onScreenSizeChanged();
-          }
-        });
-
-        // When displaying the canvas, we need to resize it !
-        scope.getDisplayed = function () {
-          return element.css('display');
-        };
-        scope.$watch(scope.getDisplayed, function(display) {
-          if (display !== 'none')
-          {
-            scope.onScreenSizeChanged();
+            // asynchronous recomputation of the size
+            $timeout(scope.onScreenSizeChanged, 0);
           }
         });
 
         // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
         // ROS topic.
-        scope.$watch(attrs.ngShow, function (visible) {
-          if (visible) {
-            scope.startSpikeDisplay(firstTimeRun);
-            firstTimeRun = false;
-          }
-          else {
-            scope.stopSpikeDisplay();
-          }
-        });
+        if (attrs.hasOwnProperty('ngShow')) {
+          scope.$watch("ngShow", function (visible) {
+            if (visible) {
+              element.show();
+              scope.startSpikeDisplay(firstTimeRun);
+              firstTimeRun = false;
+              // asynchronous recomputation of the size
+              $timeout(scope.onScreenSizeChanged, 0);
+            }
+            else {
+              element.hide();
+              scope.stopSpikeDisplay();
+            }
+          });
+        }
 
-        // clean up on leaving
-        scope.$on("$destroy", function() {
-          // remove the callback
-          stateService.removeStateCallback(onStateChangedCallback);
-        });
       }
     };
   }]);
