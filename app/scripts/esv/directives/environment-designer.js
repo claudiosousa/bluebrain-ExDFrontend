@@ -84,10 +84,19 @@
             },
 
             show: function(model) {
+                var shouldShowOnlyInEditMode =
+                  (simulationInfo.mode === OPERATION_MODE.EDIT);
+
+                var shouldShowOnlyWhenSimIsPaused =
+                  (stateService.currentState === STATE.PAUSED);
+
+                var shouldNotShowOnRobots =
+                  model.name.indexOf('robot') === -1;
+
                 var show =
-                  (simulationInfo.mode === OPERATION_MODE.EDIT) &&
-                   (stateService.currentState === STATE.INITIALIZED || stateService.currentState === STATE.PAUSED) &&
-                  model.name.indexOf('robot') === -1;//don't delete the robot
+                   shouldShowOnlyInEditMode &&
+                   shouldShowOnlyWhenSimIsPaused &&
+                   shouldNotShowOnRobots; //don't delete the robot
 
                 this.items[0].text = model.name;
 
