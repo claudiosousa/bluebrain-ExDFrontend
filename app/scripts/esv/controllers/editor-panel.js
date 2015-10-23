@@ -8,7 +8,7 @@
     function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d) {
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
-    $scope.serverBaseUrl = serverConfig.gzweb['nrp-services'];
+    $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
     $scope.panelIsOpen = false;
     $scope.isClosing = false;

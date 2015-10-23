@@ -89,11 +89,7 @@
       simulationInfo.Initialize();
 
       stateService.Initialize();
-      var serverID = simulationInfo.serverID;
-      var simulationID = simulationInfo.simulationID;
-      var serverConfig = bbpConfig.get('api.neurorobotics')[serverID];
-      var serverBaseUrl = serverConfig.gzweb['nrp-services'];
-
+      var serverConfig = bbpConfig.get('api.neurorobotics')[simulationInfo.serverID];
       $scope.operationMode = simulationInfo.mode;
       $scope.helpModeActivated = false;
       $scope.helpDescription = '';
@@ -127,11 +123,11 @@
         $scope.userName = bbpConfig.get('localmode.ownerID');
         $scope.userID = bbpConfig.get('localmode.ownerID');
       }
-      simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
+      simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function(data){
         $scope.ownerID = data.owner;
         var experimentConfiguration = data.experimentConfiguration;
         // get experiment list from current server
-        experimentList(serverBaseUrl).experiments(function (data) {
+        experimentList(simulationInfo.serverBaseUrl).experiments(function (data) {
           angular.forEach(data.data, function(experimentTemplate, experimentID) {
             if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
               $scope.ExperimentDescription = experimentTemplate.description;
@@ -152,7 +148,7 @@
 
       $scope.versions = {};
       nrpFrontendVersion.get(function(data) { $scope.versions.hbp_nrp_esv = data.hbp_nrp_esv; });
-      nrpBackendVersions(serverBaseUrl).get(function(data) {
+      nrpBackendVersions(simulationInfo.serverBaseUrl).get(function(data) {
         $scope.versions = angular.extend($scope.versions, data);
       });
 
@@ -240,7 +236,7 @@
       };
       /* istanbul ignore next */
       var resetScreenColors = function() {
-        simulationControl(serverBaseUrl).simulation({sim_id: simulationID}, function(data){
+        simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function(data){
           $scope.updateScreenColor(data, 'left');
           $scope.updateScreenColor(data, 'right');
         });
@@ -309,7 +305,7 @@
           screenParams.name = 'LeftScreenToBlue';
         }
 
-        screenControl(serverBaseUrl).updateScreenColor({sim_id: simulationID}, screenParams);
+        screenControl(simulationInfo.serverBaseUrl).updateScreenColor({sim_id: simulationInfo.simulationID}, screenParams);
 
         // hide context menu after a color was assigned
         contextMenuState.toggleContextMenu(false);
