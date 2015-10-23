@@ -29,6 +29,17 @@
             scope.backendDocumentationURL = data.backendDocumentationURL;
           });
 
+          scope.refreshLayout = function(editor) {
+            // This updates the layout of the editor also onLoad
+            // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
+            // and remove the listener afterwards
+            var r = function() {
+              editor.refresh();
+              editor.off("change", r);
+            };
+            editor.on("change", r);
+          };
+
           scope.control.refresh = function () {
             backendInterfaceService.getStateMachines(
               function (response) {
@@ -44,7 +55,7 @@
                   } else if (!found) {
                     scope.stateMachines.unshift(stateMachine);
                   }
-               });
+                });
             });
           };
 

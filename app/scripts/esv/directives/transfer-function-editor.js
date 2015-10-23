@@ -40,7 +40,19 @@
       },
       link: function (scope, element, attrs) {
 
+        scope.refreshLayout = function(editor) {
+          // This updates the layout of the editor also onLoad
+          // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
+          // and remove the listener afterwards
+          var r = function() {
+            editor.refresh();
+            editor.off("change", r);
+          };
+          editor.on("change", r);
+        };
+
         scope.editorOptions = {
+          onLoad: scope.refreshLayout,
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,

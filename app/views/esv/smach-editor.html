@@ -21,6 +21,7 @@
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
   <hr>
   <div ui-codemirror="{
+          onLoad: refreshLayout,
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,
@@ -40,10 +41,10 @@
     ng-click="delete(stateMachine)">
     <span class="glyphicon glyphicon-remove"></span> Delete
   </button>
-  <a id="save-state-machine-to-file-{{stateMachine.id}}" 
-    href="" 
-    class="btn btn-default btn-md" 
-    ng-click="save(stateMachine)" 
+  <a id="save-state-machine-to-file-{{stateMachine.id}}"
+    href=""
+    class="btn btn-default btn-md"
+    ng-click="save(stateMachine)"
     download="{{stateMachine.id}}.py">Save
   </a>
 </div>

@@ -2,7 +2,7 @@
 
 describe('Directive: transferFunctionEditor', function () {
 
-  var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, isolateScope, 
+  var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, isolateScope,
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, pythonCodeHelper, ScriptObject;
@@ -19,7 +19,7 @@ describe('Directive: transferFunctionEditor', function () {
     getDocumentationURLs: function() {
       return {
         then: function(callback) {
-          return callback({cleDocumentationURL: 'cleDocumentationURL', 
+          return callback({cleDocumentationURL: 'cleDocumentationURL',
             backendDocumentationURL: 'backendDocumentationURL'});}
       };
     }
@@ -120,6 +120,20 @@ describe('Directive: transferFunctionEditor', function () {
       // This order is not guaranteed. Still, keys are printed in insertion order on all major browsers
       // See http://stackoverflow.com/questions/5525795/does-javascript-guarantee-object-property-order
       expect(transferFunctions).toEqual(expected);
+    });
+
+    it('should call the refresh function', function() {
+      var callback;
+      var editor = {
+        'refresh': jasmine.createSpy('refresh'),
+        'on': function(name, cb) {callback = cb;},
+        'off': function() {callback = undefined;}
+      };
+      isolateScope.refreshLayout(editor);
+      expect(callback).toBeDefined();
+      callback();
+      expect(editor.refresh).toHaveBeenCalled();
+      expect(callback).not.toBeDefined();
     });
 
     it('should save back the tf properly', function () {
@@ -291,9 +305,9 @@ describe('Directive: transferFunctionEditor', function () {
       }
       var n = numberOfNewFunctions - 1;
       var tfNewName = 'transferfunction_' + n;
-      var expectedTF = { 
-           id: tfNewName, 
-           code: '@nrp.Robot2Neuron()\ndef ' + tfNewName + '(t):\n    print \"Hello world at time \" + str(t)', 
+      var expectedTF = {
+           id: tfNewName,
+           code: '@nrp.Robot2Neuron()\ndef ' + tfNewName + '(t):\n    print \"Hello world at time \" + str(t)',
            dirty: true, local: true, name: tfNewName,
            error: {}
       };
