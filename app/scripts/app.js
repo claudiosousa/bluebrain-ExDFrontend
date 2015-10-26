@@ -65,6 +65,7 @@
           // a token while loading.
           if (!bbpConfig.get('localmode.forceuser', false)) {
             bbpOidcSessionProvider.ensureToken(true);
+            localStorage.setItem('localmode.forceuser', false);
           } else {
             localStorage.setItem('localmode.forceuser', true);
           }

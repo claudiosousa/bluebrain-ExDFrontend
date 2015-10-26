@@ -1,0 +1,19 @@
+<h3>PyNN Brain Editor</h3>
+<p>PyNN (pronounced 'pine') is a simulator-independent language for building neuronal network models.</p>
+<p>When the experiment contains a PyNN script, you can see the code here.</a>
+</p>
+<div ng-show="pynnScript === undefined" class="alert alert-info" role="alert">
+  There is no PyNN script available for this experiment.
+</div>
+<div ng-show="pynnScript !== undefined" >
+  <hr>
+  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">PyNN Script</span></code></h4>
+  <hr>
+  <div ui-codemirror="{
+          lineWrapping : true,
+          lineNumbers: true,
+          readOnly: true,
+          mode: 'text/x-python'
+      }" ng-model="pynnScript" ui-refresh="pynnScript">
+  </div>
+</div>

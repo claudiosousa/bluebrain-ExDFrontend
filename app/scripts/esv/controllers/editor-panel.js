@@ -16,11 +16,14 @@
     $scope.activeTab.transferfunction = false;
     $scope.activeTab.environment = false;
     $scope.activeTab.statemachine = false;
+    $scope.activeTab.pynneditor = false;
     $scope.activeTab.events = false;
 
     $scope.controls = {};
     $scope.controls.transferfunction = {};
     $scope.controls.statemachine = {};
+    $scope.controls.pynneditor = {};
+
     $scope.transferFunctionErrorTopic = serverConfig.rosbridge.topics.transferFunctionError;
     $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
 
@@ -28,15 +31,19 @@
       // The Panel is opened
       $scope.panelIsOpen = true;
       if($scope.activeTab.transferfunction === true ||
-        $scope.activeTab.statemachine === true) {
+        $scope.activeTab.statemachine === true ||
+        $scope.activeTab.pynneditor === true) {
         gz3d.scene.controls.keyBindingsEnabled = false;
       }
 
-      if ($scope.activeTab.transferfunction === true){
+      if ($scope.activeTab.transferfunction === true) {
         $scope.controls.transferfunction.refresh();
       }
-      else if ($scope.activeTab.statemachine === true ){
+      else if ($scope.activeTab.statemachine === true) {
         $scope.controls.statemachine.refresh();
+      }
+      else if ($scope.activeTab.pynneditor === true) {
+        $scope.controls.pynneditor.refresh();
       }
     };
 

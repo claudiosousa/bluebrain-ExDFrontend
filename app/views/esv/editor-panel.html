@@ -13,5 +13,8 @@
     <tab ng-if="REMOVED-FROM-TSR-RELEASE" heading="State Machine (SMACH)" active="activeTab.statemachine" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.statemachine.refresh()" deselect="reenableKeyBindings()">
       <smach-editor control="controls.statemachine"/>
     </tab>
+    <tab heading="Brain Model (PyNN)" active="activeTab.pynneditor" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.pynneditor.refresh()" deselect="reenableKeyBindings()">
+      <pynn-editor control="controls.pynneditor"/>
+    </tab>
   </tabset>
 </div>

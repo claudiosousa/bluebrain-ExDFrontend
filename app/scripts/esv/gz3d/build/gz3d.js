@@ -1919,7 +1919,7 @@ GZ3D.GZIface.prototype.connect = function()
   // connect to websocket
 
   var url = GZ3D.webSocketUrl;
-  if (!localStorage.getItem('localmode.forceuser')) {
+  if (localStorage.getItem('localmode.forceuser') === 'false') {
     var token = [];
     if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
       try {

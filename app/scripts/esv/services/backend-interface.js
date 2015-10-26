@@ -2,8 +2,8 @@
   'use strict';
 
   angular.module('exdFrontendApp').factory('backendInterfaceService',
-    ['$resource', 'simulationInfo', 'bbpConfig', 'serverError',
-    function ($resource, simulationInfo, bbpConfig, serverError) {
+    ['$resource', '$stateParams', 'bbpConfig', 'serverError', 'simulationInfo',
+    function ($resource, $stateParams, bbpConfig, serverError, simulationInfo) {
 
       var resourceStateMachine = function(backendBaseUrl) {
           return $resource(backendBaseUrl + '/simulation/:sim_id/state-machines', {}, {
@@ -42,7 +42,24 @@
         });
       };
 
+      var resourceBrain = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/experiment/:exp_id/brain', {}, {
+          get: {
+            method: 'GET',
+            interceptor: {responseError: serverError.display}
+          }
+        });
+      };
+
       return {
+        getBrain: function (callback) {
+          resourceBrain(simulationInfo.serverBaseUrl).get(
+            {exp_id: simulationInfo.experimentID},
+            function(response) {
+              callback(response);
+            }
+          );
+        },
         getStateMachines: function (callback) {
           resourceStateMachine(simulationInfo.serverBaseUrl).get(
             {sim_id: simulationInfo.simulationID},

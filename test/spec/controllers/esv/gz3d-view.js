@@ -391,12 +391,18 @@ describe('Controller: Gz3dViewCtrl', function () {
         $rootScope: rootScope,
         $scope: scope
       });
+      simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
       expect(scope.userName).toEqual('vonarnim');
       expect(scope.userID).toEqual('vonarnim');
-      expect(scope.ownerID).toEqual('vonarnim');
+      expect(scope.ownerID).toEqual(fakeSimulationData.owner);
       expect(scope.owner).toEqual('vonarnim');
       expect(scope.viewState.isOwner).toBe(true);
       window.bbpConfig.localmode.forceuser = false;
+    });
+
+    it('should initialize simulationInfo.experimentID', function() {
+      hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](otherUserInfo4321);
+      expect(simulationInfo.experimentID).toBeDefined();
     });
 
     it('should check that updateSimulation sets the scope\'s state', function () {
