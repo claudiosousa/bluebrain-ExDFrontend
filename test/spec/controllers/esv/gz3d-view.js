@@ -142,7 +142,10 @@ describe('Controller: Gz3dViewCtrl', function () {
         },
         gui: {
           emitter: {}
-        }
+        },
+        views: [{type: 'toto'},
+               {type: 'camera', active: true, container: {style: {visibility: 'aaa'}}},
+               {type: 'camera', active: false, container: {style: {visibility: 'bbb'}}}]
       },
       iface: {
         setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
@@ -199,6 +202,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationInfo = {
       serverID : stateParamsMock.serverID,
       simulationID : stateParamsMock.simulationID,
+      serverBaseUrl : 'http://bbpce016.epfl.ch:8080',
       Initialize: jasmine.createSpy('Initialize'),
       mode: undefined
     };
@@ -495,8 +499,28 @@ describe('Controller: Gz3dViewCtrl', function () {
       gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
       scope.setColorOnEntity('red');
 
-      expect(screenControl).toHaveBeenCalledWith('http://bbpce016.epfl.ch:8080');
+      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
       expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToRed'});
+
+      gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
+      scope.setColorOnEntity('blue');
+
+      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
+      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToBlue'});
+
+      gz3d.scene.selectedEntity = { 'name' : 'right_vr_screen' };
+      scope.setColorOnEntity('red');
+
+      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
+      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'RightScreenToRed'});
+
+      gz3d.scene.selectedEntity = { 'name' : 'right_vr_screen' };
+      scope.setColorOnEntity('blue');
+
+      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
+      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'RightScreenToBlue'});
+
+
     });
 
 
@@ -653,6 +677,20 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.showSpikeTrain).toBe(false);
       scope.toggleSpikeTrain();
       expect(scope.showSpikeTrain).toBe(true);
+    });
+
+    it('should toggle the showJoinPlot variable', function() {
+      expect(scope.showJointPlot).toBe(false);
+      scope.toggleJointPlot();
+      expect(scope.showJointPlot).toBe(true);
+    });
+
+    it('should toggle the robot view', function() {
+      scope.toggleRobotView();
+      expect(scope.gz3d.scene.views[1].active).toEqual(false);
+      expect(scope.gz3d.scene.views[1].container.style.visibility).toEqual('hidden');
+      expect(scope.gz3d.scene.views[2].active).toEqual(true);
+      expect(scope.gz3d.scene.views[2].container.style.visibility).toEqual('visible');
     });
 
     it('should toggle the help mode variable', function() {
