@@ -4,33 +4,62 @@ describe('Directive: spiketrain', function () {
 
   beforeEach(module('exdFrontendApp'));
 
-  var $scope, element, roslib, window;
+  var $scope, element, roslib, stateService, STATE, window;
   var SERVER_URL = 'ws://localhost:1234';
   var SPIKE_TOPIC = '/cle_sim/spike';
 
   // TODO(Stefan) extract this to a common place, it is used in several places!
-  var roslibMock = {};
-  var returnedConnectionObject = {};
-  returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
-  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
-
   beforeEach(module(function ($provide) {
+    var returnedConnectionObject = {
+      subscribe: jasmine.createSpy('subscribe'),
+      unsubscribe: jasmine.createSpy('unsubscribe')
+    };
+    var roslibMock = {
+      getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo').andReturn({}),
+      createTopic: jasmine.createSpy('createTopic').andReturn(returnedConnectionObject)
+    };
     $provide.value('roslib', roslibMock);
+    $provide.value('stateService', {
+      addStateCallback: jasmine.createSpy('addStateCallback'),
+      removeStateCallback: jasmine.createSpy('removeStateCallback')
+    });
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, $window, _roslib_) {
+  beforeEach(inject(function (
+    $rootScope, $compile, $window,
+    _roslib_, _stateService_, _STATE_) {
     $scope = $rootScope.$new();
+    spyOn($scope, '$on');
     element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')($scope);
     $scope.$digest();
     roslib = _roslib_;
     window = $window;
+    stateService = _stateService_;
+    STATE = _STATE_;
   }));
 
   it('replaces the element with the appropriate content', function () {
     // Compile a piece of HTML containing the directive
     expect(element.prop('outerHTML')).toContain('<div resizeable="" class="spikegraph ng-scope ng-hide" server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div><div class="resizeable"></div></div>');
+  });
+
+  it('should set the state callback properly', function () {
+    var onStateChangeCallback = stateService.addStateCallback.mostRecentCall.args[0];
+    var clearRectMock = { clearRect: jasmine.createSpy('clearRect') };
+    var ctx = $scope.ctx = [ clearRectMock, angular.copy(clearRectMock) ];
+    onStateChangeCallback(STATE.STOPPED);
+    expect(ctx[0].clearRect).not.toHaveBeenCalled();
+    expect(ctx[1].clearRect).not.toHaveBeenCalled();
+    onStateChangeCallback(STATE.INITIALIZED);
+    expect(ctx[0].clearRect).toHaveBeenCalled();
+    expect(ctx[1].clearRect).toHaveBeenCalled();
+  });
+
+  it('should remove the state callback on $destroy event', function () {
+    var onStateChangeCallback = stateService.addStateCallback.mostRecentCall.args[0];
+    var destroyCallback = $scope.$on.mostRecentCall.args[1];
+    destroyCallback();
+    expect(stateService.removeStateCallback).toHaveBeenCalledWith(onStateChangeCallback);
   });
 
   it('should display spike message properly', function () {
@@ -176,6 +205,15 @@ describe('Directive: spiketrain', function () {
     expect($scope.canvas[0].height).toBe(200);
     expect($scope.canvas[1].width).toBe(400);
     expect($scope.canvas[1].height).toBe(200);
+
+    $scope.currentCanvasIndex = 0;
+    var canvas = $scope.canvas[$scope.currentCanvasIndex];
+    $scope.directiveDiv.offsetWidth = canvas.width;
+    $scope.directiveDiv.offsetHeight = canvas.height;
+    canvas.style.left = '12px';
+    expect($scope.xPosition).toBe(0);
+    $scope.onScreenSizeChanged();
+    expect(canvas.style.left).toBe('12px');
   });
 
   it('should call the resize function (1)', function () {
@@ -193,6 +231,27 @@ describe('Directive: spiketrain', function () {
     expect($scope.onScreenSizeChanged).toHaveBeenCalled();
   });
 
+  it('should hide canvas while resizing', function () {
+    var canvas = $scope.canvas;
+    var styles = [ canvas[0].style, canvas[1].style ];
+    expect(styles[0].visibility).toBe('');
+    expect(styles[1].visibility).toBe('');
+    $scope.onResizeBegin();
+    expect(styles[0].visibility).toBe('hidden');
+    expect(styles[1].visibility).toBe('hidden');
+  });
+
+
+  it('should show canvas once resizing is done', function () {
+    var canvas = $scope.canvas;
+    var styles = [ canvas[0].style, canvas[1].style ];
+    expect(styles[0].visibility).toBe('');
+    expect(styles[1].visibility).toBe('');
+    $scope.onResizeEnd();
+    expect(styles[0].visibility).toBe('visible');
+    expect(styles[1].visibility).toBe('visible');
+  });
+
   it('should call the startSpikeDisplay function', function () {
     spyOn($scope, 'startSpikeDisplay');
     $scope.showSpikeTrain = true;
@@ -201,16 +260,12 @@ describe('Directive: spiketrain', function () {
   });
 
   it('should connect to roslib when calling startSpikeDisplay', function () {
-    roslibMock.getOrCreateConnectionTo.reset();
-    roslibMock.createTopic.reset();
-    returnedConnectionObject.subscribe.reset();
-
     $scope.spikeTopicSubscriber = undefined;
     $scope.startSpikeDisplay();
 
-    expect(roslibMock.getOrCreateConnectionTo).toHaveBeenCalled();
-    expect(roslibMock.createTopic).toHaveBeenCalled();
-    expect(returnedConnectionObject.subscribe).toHaveBeenCalled();
+    expect(roslib.getOrCreateConnectionTo).toHaveBeenCalled();
+    expect(roslib.createTopic).toHaveBeenCalled();
+    expect(roslib.createTopic().subscribe).toHaveBeenCalled();
   });
 
   it('should unsubscribe when stopSpikeDisplay is called', function () {

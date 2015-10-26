@@ -353,7 +353,7 @@ describe('Directive: transferFunctionEditor', function () {
       expect(window.FileReader).toHaveBeenCalled();
       expect(readAsTextSpy).toHaveBeenCalled();
       fileReaderMock.onload(eventMock);
-      expect(transferFunctions).toEqual([]);
+      isolateScope.transferFunctions = [new ScriptObject('tf', 'some unimportant code')];
       $timeout.flush();
       transferFunctions = isolateScope.transferFunctions;
       expect(transferFunctions[0].name).toEqual(tfNameMock[0]);
@@ -371,6 +371,16 @@ describe('Directive: transferFunctionEditor', function () {
 
       isolateScope.loadTransferFunctions({$error:'some error'});
       expect(window.FileReader).not.toHaveBeenCalled();
+    });
+
+
+    it('should save transfer functions to file', function() {
+      spyOn(window, 'Blob');
+      spyOn(document, 'querySelector');
+      var button = { attr: jasmine.createSpy('attr')};
+      spyOn(angular, 'element').andReturn(button);
+      isolateScope.save();
+      expect(button.attr).toHaveBeenCalled();
     });
 
   });

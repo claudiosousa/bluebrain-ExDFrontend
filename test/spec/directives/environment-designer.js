@@ -4,34 +4,36 @@ describe('Directive: environment-designer', function () {
 
 
   var $rootScope, $compile, $scope, $document, element, stateService,
-    panels, currentStateMock, gz3dMock, contextMenuState, simulationSDFWorld;
+    panels, currentStateMock, gz3dMock, contextMenuState, simulationSDFWorld,
+    simulationInfo;
+
+  var simulationInfoMock =
+  {
+    mode : undefined,
+    serverID : 'bbpce016',
+    simulationID : 'mocked_simulation_id',
+    serverConfig: {
+      gzweb: {},
+      rosbridge: {
+        topics: {
+          transferFunctionError: {}
+        }
+      }
+    }
+  };
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('currentStateMockFactory'));
   beforeEach(module(function ($provide) {
     $provide.value('stateService', currentStateMock);
+    $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('gz3d', gz3dMock);
     $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').andCallThrough());
     $provide.value('contextMenuState', {
       toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
       pushItemGroup : jasmine.createSpy('pushItemGroup')
     });
-    $provide.value('simulationInfo',
-      {
-        mode : undefined,
-        serverID : 'bbpce016',
-        simulationID : 'mocked_simulation_id',
-        serverConfig: {
-          gzweb: {},
-          rosbridge: {
-            topics: {
-              transferFunctionError: {}
-            }
-          }
-        }
-      }
-    );
     $provide.value('bbpConfig', {
       get: jasmine.createSpy('get').andReturn(
         {
@@ -53,12 +55,15 @@ describe('Directive: environment-designer', function () {
     _$rootScope_,
     _$compile_,
     _$document_,
-    EDIT_MODE, STATE,
+    EDIT_MODE,
+    STATE,
+    OPERATION_MODE,
     _currentStateMockFactory_,
     _stateService_,
     _contextMenuState_,
     _panels_,
-    _simulationSDFWorld_) {
+    _simulationSDFWorld_,
+    _simulationInfo_) {
 
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -69,6 +74,8 @@ describe('Directive: environment-designer', function () {
     contextMenuState = _contextMenuState_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
+    simulationInfoMock.mode = OPERATION_MODE.EDIT;
+    simulationInfo = _simulationInfo_;
     panels = _panels_;
     simulationSDFWorld = _simulationSDFWorld_;
     element = $compile('<environment-designer />')($scope);
@@ -123,6 +130,27 @@ describe('Directive: environment-designer', function () {
     expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalled();
     expect($scope.gz3d.scene.setManipulationMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
     expect($scope.gz3d.scene.manipulationMode).toBe($scope.EDIT_MODE.TRANSLATE);
+  });
+
+  it('should call correctly contextMenuState.pushItemGroup', function () {
+    stateService.currentState = $scope.STATE.PAUSED;
+    var itemGroup = contextMenuState.pushItemGroup.mostRecentCall.args[0];
+    expect(itemGroup.visible).toBe(false);
+    expect(itemGroup.items[0].visible).toBe(false);
+    itemGroup.visible = true;
+    itemGroup.items[0].visible = true;
+    itemGroup.hide();
+    expect(itemGroup.visible).toBe(false);
+    expect(itemGroup.items[0].visible).toBe(false);
+    var eventMock = { stopPropagation: jasmine.createSpy('stopPropagation') };
+    spyOn($scope, 'deleteModel');
+    itemGroup.items[0].callback(eventMock);
+    expect($scope.deleteModel).toHaveBeenCalled();
+    expect(eventMock.stopPropagation).toHaveBeenCalled();
+    var modelMock = { name: 'my_robot'};
+    expect(itemGroup.show(modelMock)).toBe(false);
+    modelMock.name = 'iAmNotARobot';
+    expect(itemGroup.show(modelMock)).toBe(true);
   });
 
   it('should pause the simulation when needed', function () {
