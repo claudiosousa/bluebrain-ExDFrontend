@@ -1,3 +1,5 @@
+@import "angular-hbp-common/dist/scss/hbp-common.scss";
+
 /* Experiment Simulation Viewer */
 /* Flexbox Layout to cover the complete browser window */
 html {
@@ -98,7 +100,8 @@ body > div {
   right:0;
   margin-left:auto;
   margin-right:auto;
-  top: 100px;
+  top: 1%;
+  bottom: $hbp-toolbar-height + 5px;
   background:rgba(150, 220, 150, 0.95);
   width: 80%;
   border-radius: 8px;
