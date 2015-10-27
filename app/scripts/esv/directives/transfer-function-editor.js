@@ -188,7 +188,7 @@
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
         };
 
-        var buildTransferFunctionFile = function(transferFunctions) {
+        scope.buildTransferFunctionFile = function(transferFunctions) {
           return _.pluck(transferFunctions, 'code').join('\n');
         };
 
@@ -215,7 +215,7 @@
 
         scope.save = function () {
           var file = new Blob([
-            buildTransferFunctionFile(scope.transferFunctions)
+            scope.buildTransferFunctionFile(scope.transferFunctions)
           ], {type: "plain/text", endings: 'native'});
 
           var button = angular.element(document.querySelector('#save-transfer-functions'));

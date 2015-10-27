@@ -96,12 +96,12 @@
 
         var canvas = scope.canvas[scope.currentCanvasIndex];
 
-          // Ignore when there are no changes in the dimensions
-          if(scope.directiveDiv.offsetWidth === canvas.width && scope.directiveDiv.offsetHeight === canvas.height){
-            return;
-          }
+        // Ignore when there are no changes in the dimensions
+        if(scope.directiveDiv.offsetWidth === canvas.width && scope.directiveDiv.offsetHeight === canvas.height){
+          return;
+        }
 
-          // Resize the canvas accordingly
+        // Resize the canvas accordingly
         canvas.width = scope.directiveDiv.offsetWidth;
         canvas.height = scope.directiveDiv.offsetHeight;
         canvas.style.left = canvas.width - scope.xPosition;
