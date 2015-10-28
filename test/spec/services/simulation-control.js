@@ -690,24 +690,74 @@ describe('Services: experimentSimulationService', function () {
 
   it('should check for an available Server', function(){
     var isAvailableCallback = jasmine.createSpy('isAvailableCallback');
-    experimentSimulationService.existsAvailableServer(experimentTemplates, serversEnabled, isAvailableCallback);
+    // Set which server is occupied with running simulations or not
+    var serverAvailableHash = {'bbpce014': true, 'bbpce016': true}; // All servers are available
+    experimentSimulationService.existsAvailableServer(experimentTemplates, serversEnabled, serverAvailableHash, isAvailableCallback);
+    expect(experimentTemplates['fakeExperiment1.xml'].numSupportingServers).toBe(2);
+    expect(experimentTemplates['fakeExperiment1.xml'].numAvailableServers).toBe(2);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment1.xml', true);
 
-    expect(simulationService).toHaveBeenCalledWith({serverURL: 'http://bbpce016.epfl.ch:8080', serverID: 'bbpce016'});
+    expect(experimentTemplates['fakeExperiment2.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment2.xml'].numAvailableServers).toBe(1);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment2.xml', true);
 
-    expect(simulationServiceObject.simulations).toHaveBeenCalled();
-
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn(undefined);
-    simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
-    expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
-    expect(isAvailableCallback).toHaveBeenCalled();
-
+    expect(experimentTemplates['fakeExperiment3.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment3.xml'].numAvailableServers).toBe(1);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment3.xml', true);
 
     isAvailableCallback.reset();
-    console.log.reset();
-    simulationServiceObject.getActiveSimulation = jasmine.createSpy('getActiveSimulation').andReturn({ simulationID: 0, experimentConfiguration: 'fakeExperiment3.xml', state: STATE.STARTED, serverID : 'bbpce016'});
-    simulationServiceObject.simulations.mostRecentCall.args[0](returnSimulations);
-    expect(simulationServiceObject.getActiveSimulation).toHaveBeenCalled();
-    expect(isAvailableCallback).not.toHaveBeenCalled();
+
+    // Set which server is occupied with running simulations or not
+    serverAvailableHash = {'bbpce014': true, 'bbpce016': false}; // Only server bbpce014 is available
+    experimentSimulationService.existsAvailableServer(experimentTemplates, serversEnabled, serverAvailableHash, isAvailableCallback);
+    expect(experimentTemplates['fakeExperiment1.xml'].numSupportingServers).toBe(2);
+    expect(experimentTemplates['fakeExperiment1.xml'].numAvailableServers).toBe(1);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment1.xml', true);
+
+    expect(experimentTemplates['fakeExperiment2.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment2.xml'].numAvailableServers).toBe(0);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment2.xml', false);
+
+    expect(experimentTemplates['fakeExperiment3.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment3.xml'].numAvailableServers).toBe(0);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment3.xml', false);
+
+    isAvailableCallback.reset();
+
+    // Set which server is occupied with running simulations or not
+    serverAvailableHash = {'bbpce014': false, 'bbpce016': true}; // Only server bbpce016 is available
+    experimentSimulationService.existsAvailableServer(experimentTemplates, serversEnabled, serverAvailableHash, isAvailableCallback);
+    expect(experimentTemplates['fakeExperiment1.xml'].numSupportingServers).toBe(2);
+    expect(experimentTemplates['fakeExperiment1.xml'].numAvailableServers).toBe(1);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment1.xml', true);
+
+    expect(experimentTemplates['fakeExperiment2.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment2.xml'].numAvailableServers).toBe(1);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment2.xml', true);
+
+    expect(experimentTemplates['fakeExperiment3.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment3.xml'].numAvailableServers).toBe(1);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment3.xml', true);
+
+    isAvailableCallback.reset();
+
+    // Set which server is occupied with running simulations or not
+    serverAvailableHash = {'bbpce014': false, 'bbpce016': false}; // No server is available
+    experimentSimulationService.existsAvailableServer(experimentTemplates, serversEnabled, serverAvailableHash, isAvailableCallback);
+    expect(experimentTemplates['fakeExperiment1.xml'].numSupportingServers).toBe(2);
+    expect(experimentTemplates['fakeExperiment1.xml'].numAvailableServers).toBe(0);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment1.xml', false);
+
+    expect(experimentTemplates['fakeExperiment2.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment2.xml'].numAvailableServers).toBe(0);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment2.xml', false);
+
+    expect(experimentTemplates['fakeExperiment3.xml'].numSupportingServers).toBe(1);
+    expect(experimentTemplates['fakeExperiment3.xml'].numAvailableServers).toBe(0);
+    expect(isAvailableCallback).toHaveBeenCalledWith('fakeExperiment3.xml', false);
+
+    isAvailableCallback.reset();
+
   });
 
   it ('should get the available servers properly when they are not stored in localstorage', function() {
