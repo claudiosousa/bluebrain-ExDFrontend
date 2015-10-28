@@ -524,9 +524,9 @@
         }
         else {
           angular.forEach(serverIDs, function (server) {
-            // Temporary: as soon as Lugano server are stable enough, remove it.
-            // For the moment, it preselect only geneva servers.
-            if (server.indexOf('bbpce') > -1) {
+            // Temporary: Lugano servers are the only one with a working camera.
+            // For the moment, it preselects only Lugano servers.
+            if (server.indexOf('bbpsrvc') > -1) {
               result.push(server);
             }
           });

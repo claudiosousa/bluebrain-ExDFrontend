@@ -289,6 +289,14 @@ describe('Services: experimentSimulationService', function () {
       'rosbridge': {
         'websocket': 'ws://bbpce016.epfl.ch:9090', 'topics': { 'status': '/ros_cle_simulation/status' }
       }
+    },
+    'bbpsrvc21': {
+      'gzweb': {
+        'websocket': 'ws://bbpsrvc21.cscs.ch:7681', 'assets': 'http://bbpsrvc21.cscs.ch', 'nrp-services': 'http://bbpsrvc21.cscs.ch:8080'
+      },
+      'rosbridge': {
+        'websocket': 'ws://bbpsrvc21.cscs.ch:9090', 'topics': { 'status': '/ros_cle_simulation/status' }
+      }
     }
   };
   bbpConfigMock.get = jasmine.createSpy('get').andReturn(bbpConfigString);
@@ -394,7 +402,8 @@ describe('Services: experimentSimulationService', function () {
     serversEnabled = ['bbpce014','bbpce016', 'bbpce018'];
 
     httpBackend.whenGET('http://bbpce014.epfl.ch:8080/experiment').respond(experimentTemplates);
-    httpBackend.whenGET(/^http:\/\/bbpce01[46]\.epfl\.ch:8080\/experiment\/fakeExperiment[123]\.xml\/preview$/).respond(imagePreview);
+    httpBackend.whenGET(/^http:\/\/bbpce\d\d\d\.epfl\.ch:8080\/experiment\/fakeExperiment[123]\.xml\/preview$/).respond(imagePreview);
+    httpBackend.whenGET(/^http:\/\/bbpsrvc\d\d\.cscs\.ch:8080\/experiment\/fakeExperiment[123]\.xml\/preview$/).respond(imagePreview);
     spyOn(console, 'error');
     spyOn(console, 'log').andCallThrough();
 
@@ -528,7 +537,7 @@ describe('Services: experimentSimulationService', function () {
       // also see: http://stackoverflow.com/questions/24211312/angular-q-when-is-not-resolved-in-karma-unit-test
       scope.$digest();
 
-      expect(experimentList().experiments.callCount).toBe(2);
+      expect(experimentList().experiments.callCount).toBe(3);
       experimentList().experiments.mostRecentCall.args[0](experimentsFromTheServer);
 
       // perform refreshExperiment work by hand:
@@ -715,7 +724,7 @@ describe('Services: experimentSimulationService', function () {
     spyOn(localStorage, 'getItem').andCallFake(function (key) { // jshint ignore:line
       return null;
     });
-    expect(experimentSimulationService.getServersEnable()).toEqual(Object.keys(bbpConfigString));
+    expect(experimentSimulationService.getServersEnable()).toEqual([Object.keys(bbpConfigString)[2]]);
   });
 
   it ('should get the available servers properly when they are  stored in localstorage', function() {
