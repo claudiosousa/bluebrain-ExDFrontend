@@ -46,7 +46,8 @@
       EXIT_BUTTON: 10,
       ROBOT_VIEW: 11,
       CODE_EDITOR: 12,
-      JOINT_PLOT: 13
+      JOINT_PLOT: 13,
+      GRAPHICS_PERFORMANCE: 14
     });
 
   angular.module('exdFrontendApp')
@@ -378,9 +379,8 @@
 
       // Lights management
       $scope.sliderPosition = 50;
-      $scope.updateLightIntensities = function(sliderPosition) {
-        var ratio = (sliderPosition - 75.0) / 50.25; // turns the slider position (in [0,100]) into an increase/decrease ratio (in [-1.5, 0.5])
-        // we avoid purposely -1.0 when dividing by 50 + epsilon -- for zero intensity cannot scale to a positive value!
+      $scope.updateLightIntensity = function(sliderPosition) {
+        var ratio = sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
         gz3d.scene.emitter.emit('lightChanged', ratio);
       };
 
@@ -441,12 +441,18 @@
 
       // robot view
       $scope.toggleRobotView = function() {
-        gz3d.scene.views.forEach(function(view) {
+        gz3d.scene.viewManager.views.forEach(function(view) {
           if (angular.isDefined(view.type) && view.type === 'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
             view.active = !view.active;
             view.container.style.visibility = view.active ? 'visible' : 'hidden';
           }
         });
+      };
+
+      // graphics performance settings
+      $scope.toggleGraphicsPerformance = function() {
+        var isShadowsEnabled = gz3d.scene.renderer.shadowMapEnabled;
+        gz3d.scene.setShadowMaps(!isShadowsEnabled);
       };
 
       // help mode

@@ -1,13 +1,11 @@
 var GZ3D = GZ3D || {
   REVISION : '1',
+  assetsPath: 'http://localhost:8080/assets',
+  webSocketUrl: 'ws://localhost:7681'
 };
-
 
 /*global $:false */
 /*global angular*/
-
-THREE.ImageUtils.crossOrigin = 'anonymous'; // needed to allow cross-origin loading of textures
-
 
 var guiEvents = new EventEmitter2({ verbose: true });
 
@@ -251,7 +249,6 @@ $(function()
 
   $('.tab').click(function()
       {
-        debugger;
         var idTab = $(this).attr('id');
         var idMenu = idTab.substring(0,idTab.indexOf('Tab'));
 
@@ -351,6 +348,14 @@ $(function()
         guiEvents.emit('show_orbit_indicator');
         guiEvents.emit('closeTabs', false);
       });
+  $('#view-shadows').click(function()
+      {
+        guiEvents.emit('show_shadows', 'toggle');
+      });
+  $('#view-camera-sensors').click(function()
+      {
+        guiEvents.emit('show_camera_sensors', 'toggle');
+      });
   $( '#snap-to-grid' ).click(function() {
     guiEvents.emit('snap_to_grid');
     guiEvents.emit('closeTabs', false);
@@ -365,13 +370,12 @@ $(function()
   });
 
   // Disable Esc key to close panel
-  $('#gz3d-body').on('keyup', function(event)
-      {
-        if (event.which === 27)
-        {
-          return false;
-        }
-      });
+    $('#gz3d-body').on('keyup', function(event) {
+    if (event.which === 27)
+    {
+      return false;
+    }
+  });
 
   // Object menu
   $( '#view-transparent' ).click(function() {
@@ -442,7 +446,7 @@ function getNameFromPath(path)
 }
 
 // World tree
-var gzangular = angular.module('gzangular', []);
+var gzangular = angular.module('gzangular',[]);
 // add ng-right-click
 gzangular.directive('ngRightClick', function($parse)
 {
@@ -600,12 +604,12 @@ gzangular.controller('insertControl', ['$scope', function($scope)
 GZ3D.Gui = function(scene)
 {
   this.scene = scene;
-  this.domElement = scene.container;
+  this.domElement = scene.getDomElement();
   this.init();
   this.emitter = new EventEmitter2({verbose: true});
   this.guiEvents = guiEvents;
-
 };
+
 /**
  * Initialize GUI
  */
@@ -698,6 +702,73 @@ GZ3D.Gui.prototype.init = function()
         guiEvents.emit('notification_popup','Reset view');
       }
   );
+
+  guiEvents.on('show_shadows', function(option)
+      {
+          if (option === 'show')
+          {
+              //that.emitter.emit('setShadows', true);
+              that.scene.setShadowMaps(true);
+          }
+          else if (option === 'hide')
+          {
+              //that.emitter.emit('setShadows', false);
+              that.scene.setShadowMaps(false);
+          }
+          else if (option === 'toggle')
+          {
+              var shadowsEnabled = that.scene.renderer.shadowMapEnabled;
+              //that.emitter.emit('setShadows', !shadowsEnabled);
+              that.scene.setShadowMaps(!shadowsEnabled);
+          }
+
+          if(!that.scene.renderer.shadowMapEnabled)
+          {
+              $('#view-shadows').buttonMarkup({icon: 'false'});
+              guiEvents.emit('notification_popup','Disabling shadows');
+          }
+          else
+          {
+              $('#view-shadows').buttonMarkup({icon: 'check'});
+              guiEvents.emit('notification_popup','Enabling shadows');
+          }
+      }
+  );
+
+    guiEvents.on('show_camera_sensors', function(option)
+        {
+            var camerasShown = false;
+            if (option === 'show')
+            {
+                that.scene.viewManager.showCameras(true);
+            }
+            else if (option === 'hide')
+            {
+                that.scene.viewManager.showCameras(false);
+            }
+            else if (option === 'toggle')
+            {
+                if (that.scene.viewManager.views.length > 1) {
+                    camerasShown = that.scene.viewManager.views[1].active;
+                    that.scene.viewManager.showCameras(!camerasShown);
+                }
+            }
+
+            if (that.scene.viewManager.views.length > 1) {
+                camerasShown = that.scene.viewManager.views[1].active;
+            }
+            if(!camerasShown)
+            {
+                $('#view-camera-sensors').buttonMarkup({icon: 'false'});
+                guiEvents.emit('notification_popup','Disabling camera views');
+            }
+            else
+            {
+                $('#view-camera-sensors').buttonMarkup({icon: 'check'});
+                guiEvents.emit('notification_popup','Enabling camera views');
+            }
+        }
+    );
 
   guiEvents.on('pause', function(paused)
       {
@@ -998,6 +1069,7 @@ GZ3D.Gui.prototype.init = function()
   guiEvents.on('openTab', function (id, parentId)
       {
         lastOpenMenu[parentId] = id;
+
         $('.leftPanels').hide();
         //$('#'+id).show(); //defaults as flex, but block is needed
         $('#'+id).css('display','block');
@@ -1225,27 +1297,17 @@ GZ3D.Gui.prototype.init = function()
         }
         else if (prop === 'attenuation_constant')
         {
-          // Adjust according to factor
-          var factor = 1;
-          if (lightObj instanceof THREE.PointLight)
-          {
-            factor = 1.5;
-          }
-          else if (lightObj instanceof THREE.SpotLight)
-          {
-            factor = 5;
-          }
-          value *= factor;
-
-          lightObj.intensity = value;
+          entity.serverProperties.attenuation_constant = value;
         }
         else if (prop === 'attenuation_linear')
         {
           entity.serverProperties.attenuation_linear = value;
+          lightObj.intensity = lightObj.intensity/(1+value);
         }
         else if (prop === 'attenuation_quadratic')
         {
           entity.serverProperties.attenuation_quadratic = value;
+          lightObj.intensity = lightObj.intensity/(1+value);
         }
 
         // updating color too often, maybe only update when popup is closed
@@ -1263,6 +1325,42 @@ GZ3D.Gui.prototype.init = function()
   );
 };
 
+/**
+ * Play/pause simulation
+ * @param {boolean} paused
+ */
+GZ3D.Gui.prototype.setPaused = function(paused)
+{
+  if (paused)
+  {
+    $('#playText').html(
+        '<img style="height:1.2em" src="style/images/play.png" title="Play">');
+  }
+  else
+  {
+    $('#playText').html(
+        '<img style="height:1.2em" src="style/images/pause.png" title="Pause">'
+        );
+  }
+};
+
+/**
+ * Update displayed real time
+ * @param {string} realTime
+ */
+GZ3D.Gui.prototype.setRealTime = function(realTime)
+{
+  $('.real-time-value').text(realTime);
+};
+
+/**
+ * Update displayed simulation time
+ * @param {string} simTime
+ */
+GZ3D.Gui.prototype.setSimTime = function(simTime)
+{
+  $('.sim-time-value').text(simTime);
+};
 
 var sceneStats = {};
 /**
@@ -1333,13 +1431,14 @@ GZ3D.Gui.prototype.setModelStats = function(stats, action)
     // New model
     if (model.length === 0)
     {
+      var thumbnail = this.findModelThumbnail(modelName);
 
       formatted = this.formatStats(stats);
 
       modelStats.push(
           {
             name: modelName,
-            thumbnail: undefined,
+            thumbnail: thumbnail,
             selected: 'unselectedTreeItem',
             is_static: this.trueOrFalse(stats.is_static),
             position: formatted.pose.position,
@@ -1528,6 +1627,20 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
     if (light.length === 0)
     {
       var type = stats.type;
+
+      var thumbnail;
+      switch(type)
+      {
+        case GZ3D.LIGHT_SPOT:
+            thumbnail = 'style/images/spotlight.png';
+            break;
+        case GZ3D.LIGHT_DIRECTIONAL:
+            thumbnail = 'style/images/directionallight.png';
+            break;
+        default:
+            thumbnail = 'style/images/pointlight.png';
+      }
+
       stats.attenuation = {constant: stats.attenuation_constant,
                            linear: stats.attenuation_linear,
                            quadratic: stats.attenuation_quadratic};
@@ -1543,7 +1656,7 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
       lightStats.push(
           {
             name: name,
-            thumbnail: undefined,
+            thumbnail: thumbnail,
             selected: 'unselectedTreeItem',
             position: formatted.pose.position,
             orientation: formatted.pose.orientation,
@@ -1584,6 +1697,38 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
   this.updateStats();
 };
 
+/**
+ * Find thumbnail
+ * @param {} instanceName
+ * @returns string
+ */
+GZ3D.Gui.prototype.findModelThumbnail = function(instanceName)
+{
+  for(var i = 0; i < modelList.length; ++i)
+  {
+    for(var j = 0; j < modelList[i].models.length; ++j)
+    {
+      var path = modelList[i].models[j].modelPath;
+      if(instanceName.indexOf(path) >= 0)
+      {
+        return '/assets/'+path+'/thumbnails/0.png';
+      }
+    }
+  }
+  if(instanceName.indexOf('box') >= 0)
+  {
+    return 'style/images/box.png';
+  }
+  if(instanceName.indexOf('sphere') >= 0)
+  {
+    return 'style/images/sphere.png';
+  }
+  if(instanceName.indexOf('cylinder') >= 0)
+  {
+    return 'style/images/cylinder.png';
+  }
+  return 'style/images/box.png';
+};
 
 /**
  * Update model stats
@@ -1666,7 +1811,7 @@ GZ3D.Gui.prototype.openEntityPopup = function(event, entity)
 /**
  * Format stats message for proper display
  * @param {} stats
- * @returns {position, orientation, inertial, diffuse, specular, attenuation}
+ * @returns {Object.<position, orientation, inertial, diffuse, specular, attenuation>}
  */
 GZ3D.Gui.prototype.formatStats = function(stats)
 {
@@ -1775,73 +1920,72 @@ GZ3D.Gui.prototype.formatStats = function(stats)
  * Round numbers and format colors
  * @param {} stats
  * @param {} decimals - number of decimals to display, null for input fields
- * @returns stats
+ * @returns result
  */
 GZ3D.Gui.prototype.round = function(stats, isColor, decimals)
 {
-  if (typeof stats === 'number')
+  var result = stats;
+  if (typeof result === 'number')
   {
-    stats = this.roundNumber(stats, isColor, decimals);
+    result = this.roundNumber(result, isColor, decimals);
   }
   else // array of numbers
   {
-    stats = this.roundArray(stats, isColor, decimals);
+    result = this.roundArray(result, isColor, decimals);
   }
-  return stats;
+  return result;
 };
 
 /**
  * Round number and format color
  * @param {} stats
  * @param {} decimals - number of decimals to display, null for input fields
- * @returns stats
+ * @returns result
  */
 GZ3D.Gui.prototype.roundNumber = function(stats, isColor, decimals)
 {
+  var result = stats;
   if (isColor)
   {
-    stats = Math.round(stats * 255);
+    result = Math.round(result * 255);
   }
   else
   {
     if (decimals === null)
     {
-      stats = Math.round(stats*1000)/1000;
+      result = Math.round(result*1000)/1000;
     }
     else
     {
-      stats = stats.toFixed(decimals);
+      result = result.toFixed(decimals);
     }
   }
-  return stats;
+  return result;
 };
 
 /**
  * Round each number in an array
  * @param {} stats
  * @param {} decimals - number of decimals to display, null for input fields
- * @returns stats
+ * @returns result
  */
 GZ3D.Gui.prototype.roundArray = function(stats, isColor, decimals)
 {
-  var result = {};
-  for (var key in stats)
+  var result = stats;
+  for (var key in result)
   {
-    if (stats.hasOwnProperty(key)) {
-      if (typeof stats[key] === 'number')
-      {
-        result[key] = this.roundNumber(stats[key], isColor, decimals);
-      }
+    if (typeof result[key] === 'number')
+    {
+      result[key] = this.roundNumber(result[key], isColor, decimals);
     }
   }
-
   return result;
 };
 
 /**
  * Format toggle items
  * @param {} stats: true / false
- * @returns {icon, title}
+ * @returns {Object.<icon, title>}
  */
 GZ3D.Gui.prototype.trueOrFalse = function(stats)
 {
@@ -1877,6 +2021,8 @@ GZ3D.Gui.prototype.deleteFromStats = function(type, name)
 
 //var GAZEBO_MODEL_DATABASE_URI='http://gazebosim.org/models';
 
+THREE.ImageUtils.crossOrigin = 'anonymous'; // needed to allow cross-origin loading of textures
+
 GZ3D.GZIface = function(scene, gui)
 {
   this.scene = scene;
@@ -1889,14 +2035,14 @@ GZ3D.GZIface = function(scene, gui)
   this.init();
   this.visualsToAdd = [];
 
+  this.numConnectionTrials = 0;
+  this.maxConnectionTrials = 30; // try to connect 30 times
+  this.timeToSleepBtwTrials = 1000; // wait 1 second between connection trials
+
   this.assetProgressData = {};
   this.assetProgressData.assets = [];
   this.assetProgressData.prepared = false;
   this.assetProgressCallback = undefined;
-
-  this.numConnectionTrials = 0;
-  this.maxConnectionTrials = 30; // try to connect 30 times
-  this.timeToSleepBtwTrials = 1000; // wait 1 second between connection trials
 
   this.webSocketConnectionCallbacks = [];
 };
@@ -1914,10 +2060,13 @@ GZ3D.GZIface.prototype.setAssetProgressCallback = function(callback)
   this.assetProgressCallback = callback;
 };
 
+GZ3D.GZIface.prototype.registerWebSocketConnectionCallback = function(callback) {
+  this.webSocketConnectionCallbacks.push(callback);
+};
+
 GZ3D.GZIface.prototype.connect = function()
 {
   // connect to websocket
-
   var url = GZ3D.webSocketUrl;
   if (localStorage.getItem('localmode.forceuser') === 'false') {
     var token = [];
@@ -1928,6 +2077,8 @@ GZ3D.GZIface.prototype.connect = function()
         token[0] = { access_token : 'notoken' };
       }
       url = url + '/?token=' + token[0].access_token;
+    } else {
+      url = 'ws://' + location.hostname + ':7681';
     }
   }
 
@@ -1944,7 +2095,7 @@ GZ3D.GZIface.prototype.connect = function()
   });
   this.webSocket.on('close', function() {
     console.log('Connection closed to websocket server: ' + that.webSocket.socket.url);
-  })
+  });
 
   this.numConnectionTrials++;
 };
@@ -1967,13 +2118,10 @@ GZ3D.GZIface.prototype.onError = function()
   }
 };
 
-GZ3D.GZIface.prototype.registerWebSocketConnectionCallback = function(callback) {
-  this.webSocketConnectionCallbacks.push(callback);
-};
-
 GZ3D.GZIface.prototype.onConnected = function()
 {
   console.log('Connected to websocket server: ' + this.webSocket.socket.url);
+
   this.isConnected = true;
   this.emitter.emit('connection');
 
@@ -2041,6 +2189,11 @@ GZ3D.GZIface.prototype.onConnected = function()
     if (message.name)
     {
       this.scene.name = message.name;
+    }
+
+    if (message.grid === true)
+    {
+      //this.gui.guiEvents.emit('show_grid', 'show'); // do not show grid by default for now
     }
 
     if (message.ambient)
@@ -2231,6 +2384,20 @@ GZ3D.GZIface.prototype.onConnected = function()
 
   visualTopic.subscribe(visualUpdate.bind(this));
 
+  // world stats
+  var worldStatsTopic = new ROSLIB.Topic({
+    ros : this.webSocket,
+    name : '~/world_stats',
+    messageType : 'world_stats',
+  });
+
+  var worldStatsUpdate = function(message)
+  {
+    this.updateStatsGuiFromMsg(message);
+  };
+
+  worldStatsTopic.subscribe(worldStatsUpdate.bind(this));
+
   // Lights
   var lightTopic = new ROSLIB.Topic({
     ros : this.webSocket,
@@ -2238,6 +2405,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     messageType : 'light',
   });
 
+  // equivalent to modelUpdate / poseUpdate
   var lightUpdate = function(message)
   {
     var entity = this.scene.getByName(message.name);
@@ -2246,7 +2414,10 @@ GZ3D.GZIface.prototype.onConnected = function()
       var lightObj = this.createLightFromMsg(message);
       this.scene.add(lightObj);
       guiEvents.emit('notification_popup', message.name+' inserted');
-    } else {
+    }
+    else if (entity && entity !== this.scene.modelManipulator.object
+        && entity.parent !== this.scene.modelManipulator.object)
+    {
       this.scene.updateLight(entity, message);
     }
     this.gui.setLightStats(message, 'update');
@@ -2325,16 +2496,26 @@ GZ3D.GZIface.prototype.onConnected = function()
     return entityMsg;
   };
 
-  var createEntityModifyMessageWithLight = function(entity, lightIntensity)
+  /*
+  TODO: (Sandro Weber)
+  The following functions are used to change all lights at the same time through the light slider of the NRP.
+  Gazebo only knows attenuation factors, not intensity, so we manipulate diffuse color for now.
+  Probably replaced / revamped after a dedicated edit tab is introduced to allow manipulation of lights directly.
+   */
+  var createEntityModifyMessageWithLight = function(entity, diffuse)
   {
     var entityMsg = createEntityModifyMessage(entity);
 
     var lightObj = entity.children[0];
+
+    if (diffuse === undefined) {
+      diffuse = lightObj.color;
+    }
     entityMsg.diffuse =
     {
-      r: lightObj.color.r,
-      g: lightObj.color.g,
-      b: lightObj.color.b
+      r: diffuse.r,
+      g: diffuse.g,
+      b: diffuse.b
     };
     entityMsg.specular =
     {
@@ -2345,20 +2526,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     entityMsg.direction = entity.direction;
     entityMsg.range = lightObj.distance;
 
-
-    var lightType = that.scene.DIRECTIONAL;
-    // Adjust according to factor
-    if (lightObj instanceof THREE.PointLight)
-    {
-      lightType = that.scene.POINT;
-    }
-    else if (lightObj instanceof THREE.SpotLight)
-    {
-      lightType = that.scene.SPOT;
-    }
-
-    var attenuation_constant = that.scene.intensityToAttenuation(lightIntensity, lightType);
-    entityMsg.attenuation_constant = attenuation_constant;
+    entityMsg.attenuation_constant = entity.serverProperties.attenuation_constant;
     entityMsg.attenuation_linear = entity.serverProperties.attenuation_linear;
     entityMsg.attenuation_quadratic = entity.serverProperties.attenuation_quadratic;
 
@@ -2370,7 +2538,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     var lightObj = entity.children[0];
     if (lightObj && lightObj instanceof THREE.Light)
     {
-      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, lightObj.intensity));
+      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, undefined));
     }
     else
     {
@@ -2395,21 +2563,19 @@ GZ3D.GZIface.prototype.onConnected = function()
         continue;
       }
       var entity = that.scene.getByName(lights[i].name);
-      var lightObj = entity.children[0];
-      var intensity = (1 + ratio) * lightObj.initialIntensity;
+      var newDiffuse = new THREE.Color();
+      newDiffuse.r = THREE.Math.clamp(ratio * entity.serverProperties.initial.diffuse.r, 0, 1);
+      newDiffuse.g = THREE.Math.clamp(ratio * entity.serverProperties.initial.diffuse.g, 0, 1);
+      newDiffuse.b = THREE.Math.clamp(ratio * entity.serverProperties.initial.diffuse.b, 0, 1);
 
-      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, intensity));
+      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, newDiffuse));
     }
   };
 
   this.scene.emitter.on('lightChanged', publishLightModify);
-
-  // Link messages - for modifying links
-  this.linkModifyTopic = new ROSLIB.Topic({
-    ros : this.webSocket,
-    name : '~/link',
-    messageType : 'link',
-  });
+  /*
+  end of light slider change functions
+   */
 
   var publishLinkModify = function(entity, type)
   {
@@ -2544,22 +2710,85 @@ GZ3D.GZIface.prototype.onConnected = function()
   );
 };
 
-// This method uses code also to be found at GZ3D.GZIface.prototype.createModelFromMsg.
-// Currently not everything is handled for an update, but this method was introduced to handle
-// the updates of colors of objects; if there should be more functionality one could consider
-// merging the two methods and extracting the different things to parameters (or any other means
-// of configuration).
-GZ3D.GZIface.prototype.updateModelFromMsg = function (modelObj, modelMsg) {
-  for (var j = 0; j < modelMsg.link.length; ++j) {
-    var link = modelMsg.link[j];
-    var linkObj = modelObj.children[j];
+GZ3D.GZIface.prototype.updateStatsGuiFromMsg = function(stats)
+{
+  this.gui.setPaused(stats.paused);
 
-    for (var k = 0; k < link.visual.length; ++k) {
-      var visual = link.visual[k];
-      var visualObj = linkObj.getObjectByName(visual.name);
-      this.updateVisualFromMsg(visualObj, visual);
-    }
+  var simSec = stats.sim_time.sec;
+  var simNSec = stats.sim_time.nsec;
+
+  var simDay = Math.floor(simSec / 86400);
+  simSec -= simDay * 86400;
+
+  var simHour = Math.floor(simSec / 3600);
+  simSec -= simHour * 3600;
+
+  var simMin = Math.floor(simSec / 60);
+  simSec -= simMin * 60;
+
+  var simMsec = Math.floor(simNSec * 1e-6);
+
+  var realSec = stats.real_time.sec;
+  var realNSec = stats.real_time.nsec;
+
+  var realDay = Math.floor(realSec / 86400);
+  realSec -= realDay * 86400;
+
+  var realHour = Math.floor(realSec / 3600);
+  realSec -= realHour * 3600;
+
+  var realMin = Math.floor(realSec / 60);
+  realSec -= realMin * 60;
+
+  var realMsec = Math.floor(realNSec * 1e-6);
+
+  var simTimeValue = '';
+  var realTimeValue = '';
+
+  if (realDay < 10)
+  {
+    realTimeValue += '0';
   }
+  realTimeValue += realDay.toFixed(0) + ' ';
+  if (realHour < 10)
+  {
+    realTimeValue += '0';
+  }
+  realTimeValue += realHour.toFixed(0) + ':';
+  if (realMin < 10)
+  {
+    realTimeValue += '0';
+  }
+  realTimeValue += realMin.toFixed(0)  + ':';
+  if (realSec < 10)
+  {
+    realTimeValue += '0';
+  }
+  realTimeValue += realSec.toFixed(0);
+
+  if (simDay < 10)
+  {
+    simTimeValue += '0';
+  }
+  simTimeValue += simDay.toFixed(0)  + ' ';
+  if (simHour < 10)
+  {
+    simTimeValue += '0';
+  }
+  simTimeValue += simHour.toFixed(0) + ':';
+  if (simMin < 10)
+  {
+    simTimeValue += '0';
+  }
+  simTimeValue += simMin.toFixed(0) + ':';
+  if (simSec < 10)
+  {
+    simTimeValue += '0';
+  }
+  simTimeValue += simSec.toFixed(0);
+
+  this.gui.setRealTime(realTimeValue);
+  this.gui.setSimTime(simTimeValue);
 };
 
 GZ3D.GZIface.prototype.createModelFromMsg = function(model)
@@ -2572,6 +2801,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     this.scene.setPose(modelObj, model.pose.position, model.pose.orientation);
   }
 
+  /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
   var visualsToHide = [];
   var modelUriAnimated = this.animatedModelAvailable(model, visualsToHide);
   var animatedModelFound = (modelUriAnimated !== undefined);
@@ -2580,19 +2810,21 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   {
     this.loadAnimatedModel(modelUriAnimated, this.scene, model.name);
   }
+  /* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository */
+
   for (var j = 0; j < model.link.length; ++j)
   {
     var link = model.link[j];
     var linkObj = new THREE.Object3D();
-    var hideVisualObj = false;
+    var hideVisualObj = false;  // !IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
     linkObj.name = link.name;
     linkObj.userData = link.id;
     linkObj.serverProperties =
-      {
-        self_collide: link.self_collide,
-        gravity: link.gravity,
-        kinematic: link.kinematic
-      };
+        {
+          self_collide: link.self_collide,
+          gravity: link.gravity,
+          kinematic: link.kinematic
+        };
 
     if (link.pose)
     {
@@ -2603,17 +2835,24 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     for (var k = 0; k < link.visual.length; ++k)
     {
       var visual = link.visual[k];
+
+      /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
       if (animatedModelFound)
       {
         hideVisualObj = this.isVisualHidden(visual, visualsToHide);
       }
+      /* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository*/
+
       var visualObj = this.createVisualFromMsg(visual);
       if (visualObj && !visualObj.parent)
       {
+        /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
         if (animatedModelFound && hideVisualObj)
         {
           visualObj.visible = false;
         }
+        /* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository*/
+
         linkObj.add(visualObj);
       }
     }
@@ -2623,15 +2862,13 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       var collision = link.collision[l];
       for (var m = 0; m < link.collision[l].visual.length; ++m)
       {
-        if (!animatedModelFound)
-        {
+        if (!animatedModelFound) { //!IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
           var collisionVisual = link.collision[l].visual[m];
           var collisionVisualObj = this.createVisualFromMsg(collisionVisual);
-          if (collisionVisualObj && !collisionVisualObj.parent)
-          {
+          if (collisionVisualObj && !collisionVisualObj.parent) {
             linkObj.add(collisionVisualObj);
           }
-        }
+        } // !IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
       }
     }
 
@@ -2645,7 +2882,6 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       }
     }
   }
-
   if (model.joint)
   {
     modelObj.joint = model.joint;
@@ -2654,6 +2890,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   return modelObj;
 };
 
+/* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
 GZ3D.GZIface.prototype.animatedModelAvailable = function(model, visualsToHide) {
   var uriPath = GZ3D.assetsPath;
   var animatedModelFound = undefined;
@@ -2774,14 +3011,22 @@ GZ3D.GZIface.prototype.isVisualHidden = function(visual, visualsToHide) {
   }
   return false;
 };
+/* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository*/
 
-GZ3D.GZIface.prototype.updateVisualFromMsg = function (visualObj, visual) {
-  if (visual.geometry) {
-    var obj = visualObj.children[0];
-    var mat = this.parseMaterial(visual.material);
+// This method uses code also to be found at GZ3D.GZIface.prototype.createModelFromMsg.
+// Currently not everything is handled for an update, but this method was introduced to handle
+// the updates of colors of objects; if there should be more functionality one could consider
+// merging the two methods and extracting the different things to parameters (or any other means
+// of configuration).
+GZ3D.GZIface.prototype.updateModelFromMsg = function (modelObj, modelMsg) {
+  for (var j = 0; j < modelMsg.link.length; ++j) {
+    var link = modelMsg.link[j];
+    var linkObj = modelObj.children[j];
 
-    if (obj && mat) {
-      this.scene.setMaterial(obj, mat);
+    for (var k = 0; k < link.visual.length; ++k) {
+      var visual = link.visual[k];
+      var visualObj = linkObj.getObjectByName(visual.name);
+      this.updateVisualFromMsg(visualObj, visual);
     }
   }
 };
@@ -2808,34 +3053,50 @@ GZ3D.GZIface.prototype.createVisualFromMsg = function(visual)
   }
 };
 
+GZ3D.GZIface.prototype.updateVisualFromMsg = function (visualObj, visual) {
+  if (visual.geometry) {
+    var obj = visualObj.children[0];
+    var mat = this.parseMaterial(visual.material);
+
+    if (obj && mat) {
+      this.scene.setMaterial(obj, mat);
+    }
+  }
+};
+
 GZ3D.GZIface.prototype.createLightFromMsg = function(light)
 {
-  var obj, direction;
-  var special_params = [0.0, 0.0, 0.0];
+  var obj, range, direction;
 
-  if (light.type === this.scene.POINT)
+  if (light.type === this.scene.LIGHT_POINT)
   {
     direction = null;
+    range = light.range;
   }
-  else if (light.type === this.scene.SPOT)
+  else if (light.type === this.scene.LIGHT_SPOT)
   {
     direction = light.direction;
-    special_params[0] = light.spot_inner_angle;
-    special_params[1] = light.spot_outer_angle;
-    special_params[2] = light.spot_falloff;
+    range = light.range;
   }
-  else if (light.type === this.scene.DIRECTIONAL)
+  else if (light.type === this.scene.LIGHT_DIRECTIONAL)
   {
     direction = light.direction;
+    range = null;
   }
 
-  var intensity = this.scene.attenuationToIntensity(light.attenuation_constant, light.type);
+  // equation taken from
+  // http://wiki.blender.org/index.php/Doc:2.6/Manual/Lighting/Lights/Light_Attenuation
+  var E = 1;
+  var D = 1;
+  var r = 1;
+  var L = light.attenuation_linear;
+  var Q = light.attenuation_quadratic;
+  var intensity = E*(D/(D+L*r))*(Math.pow(D,2)/(Math.pow(D,2)+Q*Math.pow(r,2)));
 
-  obj = this.scene.createLight(light.type, light.diffuse,
-        intensity,
-        light.pose, light.range, light.cast_shadows, light.name,
-        direction, light.specular, light.attenuation_linear,
-        light.attenuation_quadratic, special_params);
+  obj = this.scene.createLight(light.type, light.diffuse, intensity,
+        light.pose, range, light.cast_shadows, light.name,
+        direction, light.specular, light.attenuation_constant,
+        light.attenuation_linear, light.attenuation_quadratic, light.spot_outer_angle, light.spot_falloff);
 
   return obj;
 };
@@ -2867,38 +3128,48 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
   if (sensor.type === 'camera') {
     // if we have a camera sensor we have a potential view that could be rendered
     // camera parameters are not published by gazebo right now, so hardcoded until fixed
-    var fov = 30;
-    var near = 0.1;
-    var far = 100;
-    var zIndex = this.scene.views.length;
+    var camResolution = [960, 600];
+    var camFOV = 60;
+    var camNear = 0.1;
+    var camFar = 100;
+
+    var displayParams = {
+      left: '5%',
+      top: '5%',
+      width: '20%',
+      height: '20%',
+      adjustable: true
+    };
+    var cameraParams = {
+      width: camResolution[0],
+      height: camResolution[1],
+      fov: camFOV,
+      near: camNear,
+      far: camFar
+    };
+    var viewName = 'view_' + sensor.name;
+    var view = this.scene.viewManager.createView(viewName, displayParams, cameraParams);
+    if (!view) {
+      console.error('GZ3D.GZIface.createSensorFromMsg() - failed to create view ' + viewName);
+      return;
+    }
 
     // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
     // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
-    var width = 0.2;
-    var height = 0.3;
 
-    var max_views_per_line = Math.floor(1.0 / width);
-    var left = ((zIndex - 1) % max_views_per_line) * width;
-    var top = Math.floor((zIndex - 1) / max_views_per_line) * height;
-
-    var isMainView = false;
-    var view = this.scene.createView(sensor.name, left, top, width, height, zIndex, fov, near, far, isMainView);
-    view.type = sensor.type;
-
-    // camera sensors defined in gazebo .sdf seem to look along positive x axis (wtf ...), so need to adjust the rotation here
+    // camera sensors defined in gazebo .sdf seem to look along positive x axis, so need to adjust the rotation here
     view.camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
     view.camera.rotateOnAxis(new THREE.Vector3(0, 0, 1), -Math.PI / 2);
 
     // set view inactive and hide at start
-    view.active = false;
-    view.container.style.visibility = 'hidden';
-
-    this.scene.views.push(view);
+    this.scene.viewManager.setViewVisibility(view, false);
 
     // visualization - Deactivated since it causes the robot to be very big and the user
     // can't barely select other objects on the scene. Reactivate for debug purposes !
-    //var cameraHelper = new THREE.CameraHelper(view.camera);
-    //view.camera.add( cameraHelper );
+    // var cameraHelper = new THREE.CameraHelper(view.camera);
+    // view.camera.add( cameraHelper );
+
+    view.type = sensor.type;
 
     sensorObj.add(view.camera);
   }
@@ -2999,36 +3270,37 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         }
 
         var modelUri = uriPath + '/' + modelName;
-        if (modelUri.indexOf('.dae') !== -1) // Modified for HBP, we do use coarse models all the time
+        // Use coarse version on touch devices
+        if (modelUri.indexOf('.dae') !== -1 /*&& isTouchDevice*/) // Modified for HBP, we do use coarse models all the time
         {
           modelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
 
           if(modelUri.indexOf('_coarse') !== -1) //dae is already a coarse model
           {
-              modelUri = modelUri+'.dae';
+            modelUri = modelUri+'.dae';
           }
           else { // check if a coarse version is available
-              var checkModel = new XMLHttpRequest();
-              // We use a double technique to disable the cache for these requests:
-              // 1. We create a custom url by adding the time as a parameter.
-              // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
-              // Since browsers and servers vary in their behaviour, we use both of these tricks.
-              // PS: These requests do not load the dae files, they just verify if they exist on the server
-              // so that we can choose between coarse or reqular models.
-              checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
-              checkModel.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2026 00:00:00 GMT");
+            var checkModel = new XMLHttpRequest();
+            // We use a double technique to disable the cache for these requests:
+            // 1. We create a custom url by adding the time as a parameter.
+            // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
+            // Since browsers and servers vary in their behaviour, we use both of these tricks.
+            // PS: These requests do not load the dae files, they just verify if they exist on the server
+            // so that we can choose between coarse or reqular models.
+            checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
+            checkModel.setRequestHeader('If-Modified-Since', 'Sat, 1 Jan 2026 00:00:00 GMT');
 
-              try { checkModel.send(); } catch(err) { console.log(modelUri + ': no coarse version'); }
+            try { checkModel.send(); } catch(err) { console.log(modelUri + ': no coarse version'); }
 
-              if (checkModel.status === 404) {
-                modelUri = modelUri+'.dae';
-              }
-              else {
-                modelUri = modelUri+'_coarse.dae';
-              }
+            if (checkModel.status === 404) {
+              modelUri = modelUri+'.dae';
+            }
+            else {
+              modelUri = modelUri+'_coarse.dae';
+            }
           }
-
         }
+
         var materialName = parent.name + '::' + modelUri;
         this.entityMaterial[materialName] = mat;
 
@@ -3042,32 +3314,37 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         this.assetProgressData.assets.push(element);
 
         this.scene.loadMesh(modelUri, submesh,
-          centerSubmesh, function(dae) {
-            if (that.entityMaterial[materialName])
-            {
-              var allChildren = [];
-              dae.getDescendants(allChildren);
-              for (var c = 0; c < allChildren.length; ++c)
+            centerSubmesh, function(dae) {
+              if (that.entityMaterial[materialName])
               {
-                if (allChildren[c] instanceof THREE.Mesh)
+                var allChildren = [];
+                dae.getDescendants(allChildren);
+                for (var c = 0; c < allChildren.length; ++c)
                 {
-                  that.scene.setMaterial(allChildren[c],
-                      that.entityMaterial[materialName]);
-                  break;
+                  if (allChildren[c] instanceof THREE.Mesh)
+                  {
+                    that.scene.setMaterial(allChildren[c],
+                        that.entityMaterial[materialName]);
+                    break;
+                  }
                 }
               }
-            }
-            parent.add(dae);
-            loadGeom(parent);
-            // Progress update: execute callback
-            element.done = true;
-            that.assetProgressCallback(that.assetProgressData);
-          }, function(progress){
-            element.progress = progress.loaded;
-            element.totalSize = progress.total;
-            element.error = progress.error;
-            that.assetProgressCallback(that.assetProgressData);
-          });
+              parent.add(dae);
+              loadGeom(parent);
+
+              // Progress update: execute callback
+              element.done = true;
+              if (that.assetProgressCallback) {
+                that.assetProgressCallback(that.assetProgressData);
+              }
+            }, function(progress){
+              element.progress = progress.loaded;
+              element.totalSize = progress.total;
+              element.error = progress.error;
+              if (that.assetProgressCallback) {
+                that.assetProgressCallback(that.assetProgressData);
+              }
+            });
       }
     }
   }
@@ -3144,7 +3421,6 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
 
           allChildren[c].visible = that.scene.showCollisions;
         }
-        break;
       }
     }
   }
@@ -3201,7 +3477,7 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
     return null;
   }
 
-  var uriPath = GZ3D.assetsPath;
+  var uriPath = GZ3D.assetsPath;//'assets';
   var texture;
   var normalMap;
   var textureUri;
@@ -3307,6 +3583,232 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
   };
 };
 
+
+/*GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
+{
+  var obj;
+
+  var uriPath = 'assets';
+  var texture;
+  var normalMap;
+  var textureUri;
+  var mat;
+  if (material)
+  {
+    // get texture from material script
+    var script  = material.script;
+    if (script)
+    {
+      if (script.uri.length > 0)
+      {
+        if (script.name)
+        {
+          mat = this.material[script.name];
+          if (mat)
+          {
+            var textureName = mat['texture'];
+            if (textureName)
+            {
+              for (var i = 0; i < script.uri.length; ++i)
+              {
+                var type = script.uri[i].substring(0,
+                      script.uri[i].indexOf('://'));
+
+                if (type === 'model')
+                {
+                  if (script.uri[i].indexOf('textures') > 0)
+                  {
+                    textureUri = script.uri[i].substring(
+                        script.uri[i].indexOf('://') + 3);
+                    break;
+                  }
+                }
+                else if (type === 'file')
+                {
+                  if (script.uri[i].indexOf('materials') > 0)
+                  {
+                    textureUri = script.uri[i].substring(
+                        script.uri[i].indexOf('://') + 3,
+                        script.uri[i].indexOf('materials') + 9) + '/textures';
+                    break;
+                  }
+                }
+              }
+              if (textureUri)
+              {
+                texture = uriPath + '/' +
+                    textureUri  + '/' + textureName;
+              }
+            }
+          }
+        }
+      }
+    }
+    // normal map
+    if (material.normal_map)
+    {
+      var mapUri;
+      if (material.normal_map.indexOf('://') > 0)
+      {
+        mapUri = material.normal_map.substring(
+            material.normal_map.indexOf('://') + 3,
+            material.normal_map.lastIndexOf('/'));
+      }
+      else
+      {
+        mapUri = textureUri;
+      }
+      if (mapUri)
+      {
+        var startIndex = material.normal_map.lastIndexOf('/') + 1;
+        if (startIndex < 0)
+        {
+          startIndex = 0;
+        }
+        var normalMapName = material.normal_map.substr(startIndex,
+            material.normal_map.lastIndexOf('.') - startIndex);
+        normalMap = uriPath + '/' +
+          mapUri  + '/' + normalMapName + '.png';
+      }
+
+    }
+  }
+
+  if (geom.box)
+  {
+    obj = this.scene.createBox(geom.box.size.x, geom.box.size.y,
+        geom.box.size.z);
+  }
+  else if (geom.cylinder)
+  {
+    obj = this.scene.createCylinder(geom.cylinder.radius,
+        geom.cylinder.length);
+  }
+  else if (geom.sphere)
+  {
+    obj = this.scene.createSphere(geom.sphere.radius);
+  }
+  else if (geom.plane)
+  {
+    obj = this.scene.createPlane(geom.plane.normal.x, geom.plane.normal.y,
+        geom.plane.normal.z, geom.plane.size.x, geom.plane.size.y);
+  }
+  else if (geom.mesh)
+  {
+    // get model name which the mesh is in
+    var rootModel = parent;
+    while (rootModel.parent)
+    {
+      rootModel = rootModel.parent;
+    }
+
+    {
+      var meshUri = geom.mesh.filename;
+      var submesh = geom.mesh.submesh;
+      var centerSubmesh = geom.mesh.center_submesh;
+
+      console.log(geom.mesh.filename + ' ' + submesh);
+
+      var uriType = meshUri.substring(0, meshUri.indexOf('://'));
+      if (uriType === 'file' || uriType === 'model')
+      {
+        var modelName = meshUri.substring(meshUri.indexOf('://') + 3);
+        if (geom.mesh.scale)
+        {
+          parent.scale.x = geom.mesh.scale.x;
+          parent.scale.y = geom.mesh.scale.y;
+          parent.scale.z = geom.mesh.scale.z;
+        }
+
+        this.scene.loadMesh(uriPath + '/' + modelName, submesh, centerSubmesh,
+            texture, normalMap, parent);
+      }
+    }
+  }
+  else if (geom.heightmap)
+  {
+    var that = this;
+    var request = new ROSLIB.ServiceRequest({
+      name : that.scene.name
+    });
+
+    // redirect the texture paths to the assets dir
+    var textures = geom.heightmap.texture;
+    for ( var k = 0; k < textures.length; ++k)
+    {
+      textures[k].diffuse = this.parseUri(textures[k].diffuse);
+      textures[k].normal = this.parseUri(textures[k].normal);
+    }
+
+    var sizes = geom.heightmap.size;
+
+    // send service request and load heightmap on response
+    this.heightmapDataService.callService(request,
+        function(result)
+        {
+          var heightmap = result.heightmap;
+          // gazebo heightmap is always square shaped,
+          // and a dimension of: 2^N + 1
+          that.scene.loadHeightmap(heightmap.heights, heightmap.size.x,
+              heightmap.size.y, heightmap.width, heightmap.height,
+              heightmap.origin, textures,
+              geom.heightmap.blend, parent);
+            //console.log('Result for service call on ' + result);
+        });
+
+    //this.scene.loadHeightmap(parent)
+  }
+
+  // texture mapping for simple shapes and planes only,
+  // not used by mesh and terrain
+  if (obj)
+  {
+
+    if (mat)
+    {
+      obj.material = new THREE.MeshPhongMaterial();
+
+      var ambient = mat['ambient'];
+      if (ambient)
+      {
+        obj.material.emissive.setRGB(ambient[0], ambient[1], ambient[2]);
+      }
+      var diffuse = mat['diffuse'];
+      if (diffuse)
+      {
+        obj.material.color.setRGB(diffuse[0], diffuse[1], diffuse[2]);
+      }
+      var specular = mat['specular'];
+      if (specular)
+      {
+        obj.material.specular.setRGB(specular[0], specular[1], specular[2]);
+      }
+      var opacity = mat['opacity'];
+      if (opacity)
+      {
+        if (opacity < 1)
+        {
+          obj.material.transparent = true;
+          obj.material.opacity = opacity;
+        }
+      }
+
+      //this.scene.setMaterial(obj, texture, normalMap);
+
+      if (texture)
+      {
+        obj.material.map = THREE.ImageUtils.loadTexture(texture);
+      }
+      if (normalMap)
+      {
+        obj.material.normalMap = THREE.ImageUtils.loadTexture(normalMap);
+      }
+    }
+    obj.updateMatrix();
+    parent.add(obj);
+  }
+};
+*/
 
 // Based on TransformControls.js
 // original author: arodic / https://github.com/arodic
@@ -4085,7 +4587,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
         worldRotationMatrix.extractRotation(scope.object.matrixWorld);
 
         parentRotationMatrix.extractRotation(scope.object.parent.matrixWorld);
-        parentScale.getScaleFromMatrix(tempMatrix.getInverse(
+        parentScale.setFromMatrixScale(tempMatrix.getInverse(
             scope.object.parent.matrixWorld));
 
         offset.copy(planeIntersect.point);
@@ -4200,7 +4702,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
           parentRotationMatrix.extractRotation(
               scope.object.parent.matrixWorld);
-          parentScale.getScaleFromMatrix(tempMatrix.getInverse(
+          parentScale.setFromMatrixScale(tempMatrix.getInverse(
               scope.object.parent.matrixWorld));
 
           offset.copy(planeIntersect.point);
@@ -4484,10 +4986,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   function bakeTransformations(object)
   {
     var tempGeometry = new THREE.Geometry();
-
     object.updateMatrix();
     tempGeometry.merge(object.geometry, object.matrix);
-
     object.geometry = tempGeometry;
     object.position.set(0, 0, 0);
     object.rotation.set(0, 0, 0);
@@ -4498,6 +4998,302 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 GZ3D.Manipulator.prototype = Object.create(THREE.EventDispatcher.prototype);
 
 
+/**
+ * Created by Sandro Weber (webers@in.tum.de).
+ */
+
+GZ3D.MULTIVIEW_MAX_VIEW_COUNT = 10;
+
+/**
+ * GZ3D.MULTIVIEW_RENDER_VIEWPORTS uses view containers as transparent references to determine viewports for rendering (one single canvas).
+ * This is broken in combination with shadowmaps at the moment. See renderToViewport() method.
+ *
+ * @type {number}
+ */
+GZ3D.MULTIVIEW_RENDER_VIEWPORTS = 1;
+/**
+ * GZ3D.MULTIVIEW_RENDER_COPY2CANVAS renders views offscreen then copies into the view containers (multiple separate canvases).
+ * @type {number}
+ */
+GZ3D.MULTIVIEW_RENDER_COPY2CANVAS = 2;
+
+GZ3D.MultiView = function(gz3dScene, mainContainer, callbackCreateRenderContainer)
+{
+    this.gz3dScene = gz3dScene;
+    this.mainContainer = mainContainer;
+    this.createRenderContainerCallback = callbackCreateRenderContainer;
+
+    this.init();
+};
+
+GZ3D.MultiView.prototype.init = function()
+{
+    this.views = [];
+
+    this.mainContainer.style.zIndex = 0;
+
+    this.renderMethod = GZ3D.MULTIVIEW_RENDER_COPY2CANVAS;
+    if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_VIEWPORTS) {
+        this.mainContainer.appendChild(this.gz3dScene.getDomElement());
+    }
+};
+
+GZ3D.MultiView.prototype.setCallbackCreateRenderContainer = function(callback)
+{
+    this.createRenderContainerCallback = callback;
+};
+
+/**
+ *
+ * @param name
+ * @param displayParams {left, top, width, height, zIndex, adjustable}
+ * @param cameraParams {width, height, fov, near, far}
+ */
+GZ3D.MultiView.prototype.createView = function(name, displayParams, cameraParams)
+{
+    if (this.getViewByName(name) !== undefined) {
+        console.error('GZ3D.MultiView.createView() - a view of that name already exists (' + name + ')');
+        return null;
+    }
+
+    if (this.views.length >= this.MULTIVIEW_MAX_VIEW_COUNT) {
+        console.warn('GZ3D.MultiView.createView() - creating new view will exceed MULTIVIEW_MAX_VIEW_COUNT(' + this.MULTIVIEW_MAX_VIEW_COUNT + '). This may cause z-ordering issues.');
+    }
+
+    // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
+    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
+    // Here we use (preliminary) percentual width and ignore the displayParams for now
+    if (this.views.length >= 1) {
+      var width = 0.2;
+      var height = (width * this.mainContainer.innerWidth / cameraParams.width) * cameraParams.height;
+      var max_views_per_line = Math.floor(1.0 / width);
+      var zIndex = this.mainContainer.style.zIndex + this.views.length;
+      var left = ((zIndex - 1) % max_views_per_line) * width;
+      var top = Math.floor((zIndex - 1) / max_views_per_line) * height;
+      displayParams.width = width * 100 + '%';
+      displayParams.height = height * 100 + '%';
+      displayParams.left = left * 100 + '%';
+      displayParams.top = top * 100 + '%';
+      displayParams.zIndex = zIndex;
+    }
+
+    var container = this.createViewContainer(displayParams, name);
+    if (container === null) {
+        return;
+    }
+
+    // camera
+    var camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.width / cameraParams.height, cameraParams.near, cameraParams.far);
+    camera.name = name;
+
+    // assemble view
+    var view = {
+        name: name,
+        active: true,
+        container: container,
+        camera: camera
+    };
+
+    this.views.push(view);
+    this.mainContainer.appendChild(view.container);
+
+    return view;
+};
+
+GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
+{
+    if (this.createRenderContainerCallback === undefined) {
+        console.error('GZ3D.MultiView.createViewContainer() - no callback for creating view reference container defined');
+        return null;
+    }
+
+    // container div
+    var viewContainer = this.createRenderContainerCallback(displayParams.adjustable, name);
+    if (!viewContainer) {
+        console.error('GZ3D.MultiView.createViewContainer() - could not create view container via callback');
+        return null;
+    }
+
+    // z-index
+    var zIndexTop = parseInt(this.mainContainer.style.zIndex, 10) + this.views.length + 1;
+    viewContainer.style.zIndex = (displayParams.zIndex !== undefined) ? displayParams.zIndex : zIndexTop;
+
+    // positioning
+
+    viewContainer.style.position = 'absolute';
+    viewContainer.style.left = displayParams.left;
+    viewContainer.style.top = displayParams.top;
+    viewContainer.style.width =  displayParams.width;
+    viewContainer.style.height =  displayParams.height;
+
+    // We set 50px as a min-width for now and set the min height accordingly
+    viewContainer.style.minWidth = '50px';
+    viewContainer.style.minHeight = (50 * (parseInt(displayParams.width, 10)/parseInt(displayParams.height, 10))) + 'px';
+    viewContainer.style.maxWidth = '100%';
+    viewContainer.style.maxHeight = '100%';
+
+    // transparent view-container so we can render viewport with one renderer in the same context
+    // view-container is only taken as reference for viewport
+    viewContainer.style.boxShadow = '0px 0px 0px 3px rgba(0,0,0,0.3)';
+    viewContainer.style.borderRadius = '2px';
+    viewContainer.style.background = 'rgba(0,0,0,0)';
+
+    if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_COPY2CANVAS) {
+        // canvas
+        viewContainer.canvas = document.createElement('canvas');
+        viewContainer.appendChild( viewContainer.canvas );
+        viewContainer.canvas.style.width = '100%';
+        viewContainer.canvas.style.height = '100%';
+    }
+
+    return viewContainer;
+};
+
+GZ3D.MultiView.prototype.getViewByName = function(name)
+{
+    for (var i = 0; i < this.views.length; i = i+1) {
+        if (this.views[i].name === name) {
+            return this.views[i];
+        }
+    }
+
+    return undefined;
+};
+
+GZ3D.MultiView.prototype.setViewVisibility = function(view, visible)
+{
+    view.active = visible;
+    if (view.active) {
+        view.container.style.visibility = 'visible';
+    } else {
+        view.container.style.visibility = 'hidden';
+    }
+};
+
+GZ3D.MultiView.prototype.updateCamera = function(view)
+{
+    view.camera.aspect = view.container.clientWidth / view.container.clientHeight;
+    view.camera.updateProjectionMatrix();
+};
+
+GZ3D.MultiView.prototype.getViewport = function(view)
+{
+    var viewport = {
+        x: view.container.offsetLeft,
+        y: this.mainContainer.clientHeight - view.container.clientHeight - view.container.offsetTop,
+        w: view.container.clientWidth,
+        h: view.container.clientHeight
+    };
+
+    return viewport;
+};
+
+GZ3D.MultiView.prototype.setWindowSize = function(width, height)
+{
+
+};
+
+GZ3D.MultiView.prototype.renderViews = function()
+{
+    // sort views into rendering order
+    this.views.sort(function(a, b) {
+       return a.container.style.zIndex - b.container.style.zIndex;
+    });
+
+    for (var i = 0, l = this.views.length; i < l; i = i+1) {
+        var view = this.views[i];
+
+        if (view.active) {
+            switch(this.renderMethod) {
+                case GZ3D.MULTIVIEW_RENDER_VIEWPORTS:
+                    this.renderToViewport(view);
+                    break;
+                case GZ3D.MULTIVIEW_RENDER_COPY2CANVAS:
+                    this.renderAndCopyToCanvas(view);
+                    break;
+            }
+        }
+    }
+};
+
+/**
+ * !IMPORTANT!
+ * https://github.com/mrdoob/three.js/issues/3532
+ * This is at the moment not a good idea, see issue above. ScissorTest will scramble shadowmaps.
+ *
+ * @param view
+ */
+GZ3D.MultiView.prototype.renderToViewport = function(view)
+{
+    this.updateCamera(view);  //TODO: better solution with resize callback, also adjust camera helper
+
+    var webglRenderer = this.gz3dScene.renderer;
+
+    var viewport = this.getViewport(view);
+    webglRenderer.setViewport( viewport.x, viewport.y, viewport.w, viewport.h );
+    webglRenderer.setScissor( viewport.x, viewport.y, viewport.w, viewport.h );
+    webglRenderer.enableScissorTest ( true );
+
+    if (this.gz3dScene.effectsEnabled) {
+        this.gz3dScene.scene.overrideMaterial = this.depthMaterial;
+        this.gz3dScene.renderer.render(this.gz3dScene.scene, view.camera, this.depthTarget);
+        this.gz3dScene.scene.overrideMaterial = null;
+        this.gz3dScene.composer.render();
+    } else {
+        webglRenderer.render(this.gz3dScene.scene, view.camera);
+    }
+};
+
+GZ3D.MultiView.prototype.renderAndCopyToCanvas = function(view)
+{
+    this.updateCamera(view);  //TODO: better solution with resize callback, also adjust camera helper
+
+    var webglRenderer = this.gz3dScene.renderer;
+
+    var width = view.container.canvas.clientWidth;
+    var height = view.container.canvas.clientHeight;
+    view.container.canvas.width = width;
+    view.container.canvas.height = height;
+
+    if (webglRenderer.context.canvas.width < width) {
+        webglRenderer.context.canvas.width = width;
+    }
+    if (webglRenderer.context.canvas.height < height) {
+        webglRenderer.context.canvas.height = height;
+    }
+    webglRenderer.setViewport( 0, 0, width, height );
+
+    if (this.gz3dScene.effectsEnabled) {
+        this.gz3dScene.scene.overrideMaterial = this.depthMaterial;
+        this.gz3dScene.renderer.render(this.gz3dScene.scene, view.camera, this.depthTarget);
+        this.gz3dScene.scene.overrideMaterial = null;
+        this.gz3dScene.composer.render();
+    } else {
+        webglRenderer.render(this.gz3dScene.scene, view.camera);
+    }
+
+    // copy rendered image over to view canvas
+    var srcX = 0;
+    var srcY = webglRenderer.context.canvas.height - height + 1;
+    var dstX = 0;
+    var dstY = 0;
+    // no cleaner solution right now, should be coming though: https://github.com/mrdoob/three.js/pull/6723#issuecomment-134129027
+    // this kills performance a little ...
+    if ( srcX >= 0 && srcY >= 0 && width >= 1 && height >= 1 ) {
+        view.container.canvas.getContext('2d').drawImage( webglRenderer.context.canvas,
+            srcX, srcY, width, height,
+            dstX, dstY, width, height );
+    }
+};
+
+GZ3D.MultiView.prototype.showCameras = function(show)
+{
+    for (var i = 0; i < this.views.length; i = i+1) {
+        if (this.views[i].type === 'camera') {
+            this.setViewVisibility(this.views[i], show);
+        }
+    }
+};
 /**
  * Radial menu for an object
  * @constructor
@@ -4524,6 +5320,8 @@ GZ3D.RadialMenu.prototype.init = function()
   this.bgSizeSelected = 68*scale;
   this.highlightSize = 45*scale;
   this.iconProportion = 0.6;
+  this.bgShape = THREE.ImageUtils.loadTexture(
+      'style/images/icon_background.png' );
   this.layers = {
     ICON: 0,
     BACKGROUND : 1,
@@ -4551,6 +5349,15 @@ GZ3D.RadialMenu.prototype.init = function()
 
   // Object containing all items
   this.menu = new THREE.Object3D();
+
+  // Add items to the menu
+  this.addItem('delete','style/images/trash.png');
+  this.addItem('translate','style/images/translate.png');
+  this.addItem('rotate','style/images/rotate.png');
+  this.addItem('transparent','style/images/transparent.png');
+  this.addItem('wireframe','style/images/wireframe.png');
+  this.addItem('joints','style/images/joints.png');
+
   this.setNumberOfItems(this.menu.children.length);
 
   // Start hidden
@@ -4842,9 +5649,9 @@ GZ3D.RadialMenu.prototype.addItem = function(type, iconTexture)
   // Icon
   iconTexture = THREE.ImageUtils.loadTexture( iconTexture );
 
-  var iconMaterial = new THREE.SpriteMaterial( { useScreenCoordinates: true,
-      alignment: THREE.SpriteAlignment.center } );
-  iconMaterial.map = iconTexture;
+  var iconMaterial = new THREE.SpriteMaterial( {
+    map: iconTexture
+  } );
 
   var icon = new THREE.Sprite( iconMaterial );
   icon.scale.set( this.bgSize*this.iconProportion,
@@ -4854,8 +5661,6 @@ GZ3D.RadialMenu.prototype.addItem = function(type, iconTexture)
   // Background
   var bgMaterial = new THREE.SpriteMaterial( {
       map: this.bgShape,
-      useScreenCoordinates: true,
-      alignment: THREE.SpriteAlignment.center,
       color: this.plainColor } );
 
   var bg = new THREE.Sprite( bgMaterial );
@@ -4864,8 +5669,6 @@ GZ3D.RadialMenu.prototype.addItem = function(type, iconTexture)
   // Highlight
   var highlightMaterial = new THREE.SpriteMaterial({
       map: this.bgShape,
-      useScreenCoordinates: true,
-      alignment: THREE.SpriteAlignment.center,
       color: this.highlightColor});
 
   var highlight = new THREE.Sprite(highlightMaterial);
@@ -4897,41 +5700,15 @@ GZ3D.RadialMenu.prototype.setNumberOfItems = function(number)
  * The scene is where everything is placed, from objects, to lights and cameras.
  * @constructor
  */
-GZ3D.Scene = function(container, $rootScope, $compile)
+GZ3D.Scene = function()
 {
-  this.container = container;
-  this.$rootScope = $rootScope;
-  this.$compile = $compile;
-
   this.init();
 };
 
-GZ3D.Scene.prototype.POINT = 1;
-GZ3D.Scene.prototype.SPOT = 2;
-GZ3D.Scene.prototype.DIRECTIONAL = 3;
-GZ3D.Scene.prototype.UNKNOWN = 4;
-
-GZ3D.Scene.prototype.getLightType = function(lightObj) {
-  if (lightObj instanceof THREE.PointLight) {
-    return GZ3D.Scene.prototype.POINT;
-  } else if (lightObj instanceof THREE.SpotLight) {
-    return GZ3D.Scene.prototype.SPOT;
-  } else if (lightObj instanceof THREE.DirectionalLight) {
-    return GZ3D.Scene.prototype.DIRECTIONAL;
-  }
-
-  return GZ3D.Scene.prototype.UNKNOWN;
-}
-
-GZ3D.Scene.prototype.attenuationToIntensity = function(attenuationConstant, lightType) {
-  var INTENSITY_FACTOR = [0.35, 0.35, 0.35];
-  return INTENSITY_FACTOR[lightType - 1] / attenuationConstant;
-}
-
-GZ3D.Scene.prototype.intensityToAttenuation = function(intensity, lightType) {
-  return GZ3D.Scene.prototype.attenuationToIntensity(intensity, lightType);
-}
-
+GZ3D.Scene.prototype.LIGHT_POINT = 1;
+GZ3D.Scene.prototype.LIGHT_SPOT = 2;
+GZ3D.Scene.prototype.LIGHT_DIRECTIONAL = 3;
+GZ3D.Scene.prototype.LIGHT_UNKNOWN = 4;
 
 /**
  * Initialize scene
@@ -4951,29 +5728,44 @@ GZ3D.Scene.prototype.init = function()
   this.manipulationMode = 'view';
   this.pointerOnMenu = false;
 
-  // background color
-  this.backgroundColor = new THREE.Color( 0xb2b2b2 );
-  this.renderer = this.createRenderer(this.container, this.backgroundColor);
+  this.renderer = new THREE.WebGLRenderer({antialias: true });
+  this.renderer.setClearColor(0xb2b2b2, 1); // Sky
+  this.renderer.setSize( window.innerWidth, window.innerHeight);
+
+  // shadows
+  this.renderer.shadowMapEnabled = false;
+  this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+
+  this.container = document.getElementById( 'container' );
+
+  // create views manager
+  this.viewManager = new GZ3D.MultiView(this, this.container, function(adjustable, name){
+    return document.createElement('div');
+  });
+  // create main view
+  var displayParams = {
+    left: '0px',
+    top: '0px',
+    width: '100%',
+    height: '100%',
+    adjustable: false
+  };
+  var cameraParams = {
+    width: 960,
+    height: 600,
+    fov: 60,
+    near: 0.1,
+    far: 100
+  };
+  this.viewManager.createView('main_view', displayParams, cameraParams);
 
   // lights
   this.ambient = new THREE.AmbientLight( 0x666666 );
   this.scene.add(this.ambient);
 
-  // views
-  this.MAX_VIEW_COUNT = 5;
-  this.views = [];
-
-  var zIndex = 0;
-  var fov = 45;
-  var near = 1;
-  var far = 10000;
-  var isMainView = true;
-  var mainView = this.createView('main_view', 0.0, 0.0, 1.0, 1.0, zIndex, fov, near, far, isMainView);
-  this.views.push(mainView);
-
-  // set main user camera
-  this.camera = this.views[0].camera;
-  this.defaultCameraPosition = new THREE.Vector3(5.0, 0.0, 1.0);
+  // camera
+  this.camera = this.viewManager.getViewByName('main_view').camera;
+  this.defaultCameraPosition = new THREE.Vector3(5, 0, 1);
   this.resetView();
 
   // Grid
@@ -4991,7 +5783,7 @@ GZ3D.Scene.prototype.init = function()
   this.showCollisions = false;
 
   this.spawnModel = new GZ3D.SpawnModel(
-      this, this.container);
+      this, this.getDomElement());
   // Material for simple shapes being spawned (grey transparent)
   this.spawnedShapeMaterial = new THREE.MeshPhongMaterial(
       {color:0xffffff, shading: THREE.SmoothShading} );
@@ -5002,35 +5794,41 @@ GZ3D.Scene.prototype.init = function()
 
   // Need to use `document` instead of getDomElement in order to get events
   // outside the webgl div element.
-  this.container.addEventListener( 'mouseup',
+  document.addEventListener( 'mouseup',
       function(event) {that.onPointerUp(event);}, false );
 
-  this.container.addEventListener( 'DOMMouseScroll',
+  this.getDomElement().addEventListener( 'mouseup',
+      function(event) {that.onPointerUp(event);}, false );
+
+  this.getDomElement().addEventListener( 'DOMMouseScroll',
       function(event) {that.onMouseScroll(event);}, false ); //firefox
 
-  this.container.addEventListener( 'mousewheel',
+  this.getDomElement().addEventListener( 'mousewheel',
       function(event) {that.onMouseScroll(event);}, false );
 
   document.addEventListener( 'keydown',
       function(event) {that.onKeyDown(event);}, false );
 
-  this.container.addEventListener( 'mousedown',
+  this.getDomElement().addEventListener( 'mousedown',
+      function(event) {that.onPointerDown(event);}, false );
+  this.getDomElement().addEventListener( 'touchstart',
       function(event) {that.onPointerDown(event);}, false );
 
-  this.container.addEventListener( 'touchstart',
-      function(event) {that.onPointerDown(event);}, false );
-
-  this.container.addEventListener( 'touchend',
+  this.getDomElement().addEventListener( 'touchend',
       function(event) {that.onPointerUp(event);}, false );
 
   // Handles for translating and rotating objects
   this.modelManipulator = new GZ3D.Manipulator(this.camera, isTouchDevice,
-      this.container);
+      this.getDomElement());
 
   this.timeDown = null;
 
   var domElementForKeyBindings = document.getElementsByTagName('body')[0];
   this.controls = new THREE.FirstPersonControls(this.camera, this.container, domElementForKeyBindings);
+  if (this.controls instanceof THREE.FirstPersonControls) {
+    this.controls.movementSpeed = 0.2;
+    this.controls.lookSpeed = 0.005;
+  }
   if (this.controls.targetIndicator !== undefined) {
     this.scene.add(this.controls.targetIndicator);
   }
@@ -5050,8 +5848,8 @@ GZ3D.Scene.prototype.init = function()
   this.depthMaterial.blending = THREE.NoBlending;
 
   // postprocessing
-  this.composer = new THREE.EffectComposer(this.renderer);
-  this.composer.addPass( new THREE.RenderPass(this.scene, this.camera));
+  this.composer = new THREE.EffectComposer(this.renderer );
+  this.composer.addPass( new THREE.RenderPass(this.scene,this.camera));
 
   this.depthTarget = new THREE.WebGLRenderTarget( window.innerWidth,
       window.innerHeight, { minFilter: THREE.NearestFilter,
@@ -5066,7 +5864,7 @@ GZ3D.Scene.prototype.init = function()
   this.composer.addPass( effect );
 
   // Radial menu (only triggered by touch)
-  this.radialMenu = new GZ3D.RadialMenu(this.container);
+  this.radialMenu = new GZ3D.RadialMenu(this.getDomElement());
   this.scene.add(this.radialMenu.menu);
 
   // Bounding Box
@@ -5291,105 +6089,6 @@ GZ3D.Scene.prototype.initScene = function()
   this.add(obj);
 };
 
-/**
- * Create a new view with its own relative screen position, div, canvas and camera.
- *
- * @param {string} name The views name (and also name of the the camera object belonging to the view)
- * @param {number} left The relative ([0;1]) position of the left border within the containing element
- * @param {number} bottom The relative ([0;1]) position of the bottom border within the containing element
- * @param {number} width The relative ([0;1]) width within the containing element
- * @param {number} height The relative ([0;1]) height within the containing element
- * @param {number} zIndex The z-index of the view's div
- * @param {number} fov FOV for the view's camera
- * @param {number} near Near plane distance for the view's camera
- * @param {number} far Far plane distance for the view's camera
- *
- * @return {view} The view
- */
-GZ3D.Scene.prototype.createView = function(name, left, top, width, height, zIndex, fov, near, far, isMainView)
-{
-  if (this.views.length >= this.MAX_VIEW_COUNT) {
-    console.warn('Creating new gz3d view will exceed MAX_VIEW_COUNT(' + this.MAX_VIEW_COUNT + '). This may cause z-ordering issues.');
-  }
-
-  /*
-   Since cloning the scene for every view is impracticable here we need a solution that renders
-   the same scene into multiple views with its own div/canvas each (to have them resizable/movable easily).
-   Due to an implementation bug in THREE.WebGLRenderer it's impossible to render 1 scene
-   with multiple renderers (this will possibly be fixed in the future).
-   The issue thread: https://github.com/mrdoob/three.js/issues/189
-   Using texture render targets to render the scene to and then having separate view scenes only containing
-   these textures does not work either with THREE.js alone right now. A solution with WebGL FBO might be possible
-   but requires more investigation/time.
-   The current solution will use drawImage() during rendering to copy image data from off-screen canvas to view canvas.
-   This decreases performance compared to direct rendering.
-   */
-
-  // container div
-  var viewContainer;
-  if (isMainView) {
-    viewContainer = document.getElementById('container_MainView');
-  } else {
-    viewContainer = this.$compile('<div movable resizeable keep-aspect-ratio class="camera-view"><div class="camera-view-label">' + name + '</div></div>')(this.$rootScope)[0];
-    viewContainer.style.position = 'absolute';
-    viewContainer.style.left = left * 100 + '%';
-    viewContainer.style.top = top * 100 + '%';
-
-    // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
-    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
-    // Here we use (preliminary) percentual width.
-    viewContainer.style.width = width * 100 + '%';
-    viewContainer.style.height = height * 100 + '%';
-
-    // We set 50px as a min-width for now and set the min height accordingly
-    viewContainer.style.minWidth = "50px";
-    viewContainer.style.minHeight = (50 * (width/height)) + "px";
-
-    this.container.appendChild(viewContainer);
-  }
-
-  if (angular.isDefined(zIndex)) {
-    viewContainer.style.zIndex = zIndex;
-  } else {
-    viewContainer.style.zIndex = this.views.length;
-  }
-
-  // canvas
-  var canvas = document.createElement('canvas');
-  viewContainer.appendChild( canvas );
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-
-  // camera
-  var camera = new THREE.PerspectiveCamera(fov, viewContainer.offsetWidth / viewContainer.offsetHeight, near, far);
-  camera.name = name;
-
-  // assemble view
-  var view = {
-    name: name,
-    active: true,
-    zIndex: zIndex,
-    container: viewContainer,
-    canvas: canvas,
-    camera: camera
-  };
-
-  return view;
-};
-
-GZ3D.Scene.prototype.createRenderer = function(container, background)
-{
-  var renderer = new THREE.WebGLRenderer({antialias: true });
-  renderer.setClearColor(background, 1); // Sky
-  renderer.setSize( container.offsetWidth, container.offsetHeight);
-  // renderer.shadowMapEnabled = true;
-  // renderer.shadowMapSoft = true;
-
-  //container.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
 GZ3D.Scene.prototype.setSDFParser = function(sdfParser)
 {
   this.spawnModel.sdfParser = sdfParser;
@@ -5498,7 +6197,7 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
  */
 GZ3D.Scene.prototype.onPointerUp = function(event)
 {
-  event.preventDefault();
+  //event.preventDefault();
 
   // Clicks (<150ms) outside any models trigger view mode
   var millisecs = new Date().getTime();
@@ -5554,11 +6253,11 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
 
       if (event.keyCode === 187)
       {
-        //this.controls.dollyOut();
+        this.controls.dollyOut();
       }
       else
       {
-        //this.controls.dollyIn();
+        this.controls.dollyIn();
       }
     }
   }
@@ -5702,42 +6401,29 @@ GZ3D.Scene.prototype.getRayCastModel = function(pos, intersect)
  */
 GZ3D.Scene.prototype.getDomElement = function()
 {
-  return this.renderer.domElement;
-};
-
-/**
- * Get view container element
- * @returns {domElement}
- */
-GZ3D.Scene.prototype.getViewByName = function(name)
-{
-  for (var i = 0; i < this.views.length; i = i + 1) {
-    var view = this.views[i];
-    if (view.name === name) {
-      return view;
-    }
-  }
-
-  return null;
+  return this.container;
 };
 
 /**
  * Render scene
  */
-GZ3D.Scene.prototype.render = function() {
+GZ3D.Scene.prototype.render = function()
+{
   // Kill camera control when:
   // -manipulating
   // -using radial menu
   // -pointer over menus
   // -spawning
   if (this.modelManipulator.hovered ||
-    this.radialMenu.showing ||
-    this.pointerOnMenu ||
-    this.spawnModel.active) {
+      this.radialMenu.showing ||
+      this.pointerOnMenu ||
+      this.spawnModel.active)
+  {
     this.controls.enabled = false;
     this.controls.update();
   }
-  else {
+  else
+  {
     this.controls.enabled = true;
     this.controls.update();
   }
@@ -5745,45 +6431,7 @@ GZ3D.Scene.prototype.render = function() {
   this.modelManipulator.update();
   this.radialMenu.update();
 
-  // @Sandro(self-reminder): window size update (GZ3D.Scene.prototype.setWindowSize) might be needed before rendering
-
-  for (var i = 0; i < this.views.length; ++i) {
-    var view = this.views[i];
-
-    if (view.active) {
-      // prepare
-      this.updateViewSize(view);  //TODO: better solution with resize callback, also adjust camera helper!
-      var width = view.canvas.width;
-      var height = view.canvas.height;
-      this.renderer.setViewport( 0, 0, width, height );
-      view.camera.aspect = width / height;
-      view.camera.updateProjectionMatrix();
-
-      // render scene to offscreen canvas
-      if (this.effectsEnabled) {
-        this.scene.overrideMaterial = this.depthMaterial;
-        this.renderer.render(this.scene, view.camera);
-        this.scene.overrideMaterial = null;
-        this.composer.render();
-      }
-      else
-      {
-        this.renderer.render(this.scene, view.camera);
-      }
-
-      // copy rendered image over to view canvas
-      var srcX = 0;
-      var srcY = this.renderer.context.canvas.height - height;
-      var dstX = 0;
-      var dstY = 0;
-
-      if ( srcX >= 0 && srcY >= 0 && width >= 1 && height >= 1 ) {
-        view.canvas.getContext('2d').drawImage( this.renderer.context.canvas,
-          srcX, srcY, width, height,
-          dstX, dstY, width, height );
-      }
-    }
-  }
+  this.viewManager.renderViews();
 };
 
 /**
@@ -5793,26 +6441,16 @@ GZ3D.Scene.prototype.render = function() {
  */
 GZ3D.Scene.prototype.setWindowSize = function(width, height)
 {
-  var that = this;
-  this.views.forEach(function(view) {
-    that.updateViewSize(view);
-  });
+  this.camera.aspect = width / height;
+  this.camera.updateProjectionMatrix();
 
   this.renderer.setSize( width, height);
   this.renderer.context.canvas.width = width;
   this.renderer.context.canvas.height = height;
+
+  this.viewManager.setWindowSize(width, height);
+
   this.render();
-};
-
-GZ3D.Scene.prototype.updateViewSize = function(view)
-{
-  var width = view.container.offsetWidth;
-  var height = view.container.offsetHeight;
-
-  view.canvas.width = width;
-  view.canvas.height = height;
-  view.camera.aspect = width / height;
-  view.camera.updateProjectionMatrix();
 };
 
 /**
@@ -5842,121 +6480,6 @@ GZ3D.Scene.prototype.remove = function(model)
 GZ3D.Scene.prototype.getByName = function(name)
 {
   return this.scene.getObjectByName(name, true);
-};
-
-/**
- * Update a light
- * @param {THREE.Object3D} model
- * @param {} light message
- */
-GZ3D.Scene.prototype.updateLight = function(model, light)
-{
-  var direction, lightType;
-  var lightObj = model.children[0];
-
-  if (this.modelManipulator && this.modelManipulator.object &&
-      this.modelManipulator.hovered)
-  {
-    return;
-  }
-
-  var matrixWorld;
-  if (light.pose) {
-    this.setPose(model, light.pose.position, light.pose.orientation);
-
-    // needed to update light's direction
-    model.updateMatrixWorld();
-    var quaternion = new THREE.Quaternion(
-         light.pose.orientation.x,
-         light.pose.orientation.y,
-         light.pose.orientation.z,
-         light.pose.orientation.w);
-
-    var translation = new THREE.Vector3(
-         light.pose.position.x,
-         light.pose.position.y,
-         light.pose.position.z);
-
-    matrixWorld = new THREE.Matrix4();
-    matrixWorld.compose(translation, quaternion, new THREE.Vector3(1,1,1));
-  }
-
-  if (lightObj instanceof THREE.PointLight)
-  {
-    direction = null;
-    lightType = this.POINT;
-  }
-  else if (lightObj instanceof THREE.SpotLight)
-  {
-    direction = light.direction;
-    lightType = this.SPOT;
-  }
-  else if (lightObj instanceof THREE.DirectionalLight)
-  {
-    direction = light.direction;
-    lightType = this.DIRECTIONAL;
-  }
-
-  if (light.diffuse) {
-    var color = new THREE.Color();
-
-    if (typeof(light.diffuse) === 'undefined')
-    {
-      light.diffuse = 0xffffff;
-    }
-    else if (typeof(light.diffuse) !== THREE.Color)
-    {
-      color.r = light.diffuse.r;
-      color.g = light.diffuse.g;
-      color.b = light.diffuse.b;
-      diffuse = color.clone();
-    }
-    lightObj.color = light.diffuse;
-  }
-  if (light.specular) {
-    // property not relevant in THREE.js
-  }
-  if (light.attenuation_constant) {
-    lightObj.intensity = this.attenuationToIntensity(light.attenuation_constant, lightType);
-  }
-  if (light.attenuation_linear) {
-    // property not relevant in THREE.js
-  }
-  if (light.attenuation_quadratic) {
-    // property not relevant in THREE.js
-  }
-  if (light.range) {
-    // THREE.js's light distance impacts the attenuation factor defined in the shader:
-    // attenuation factor = 1.0 - distance-to-enlighted-point / light.distance
-    // Gazebo's range (taken from OGRE 3D API) does not contribute to attenuation; it is a hard limit
-    // for light scope.
-    // Nevertheless, we identify them for sake of simplicity.
-    lightObj.distance = light.range;
-  }
-  if (lightObj instanceof THREE.SpotLight) {
-    if (light.spot_inner_angle) {
-      // property not relevant in THREE.js
-    }
-    if (light.spot_outer_angle) {
-      lightObj.angle = light.spot_outer_angle;
-    }
-    if (light.spot_falloff) {
-      lightObj.exponent = light.spot_falloff;
-    }
-  }
-
-  if (direction) {
-    var dir = new THREE.Vector3(direction.x, direction.y,
-        direction.z);
-    model.direction.copy(dir);
-    dir.applyMatrix4(matrixWorld); // localToWorld
-    lightObj.target.position.copy(dir);
-  } else if (light.type === this.POINT || light.type === this.SPOT) {
-    var dir = new THREE.Vector3(0,0,0);
-    dir.copy(model.direction);
-    model.localToWorld(dir);
-    lightObj.target.position.copy(dir);
-  }
 };
 
 /**
@@ -6112,13 +6635,16 @@ GZ3D.Scene.prototype.createBox = function(width, height, depth)
  * @param {} name
  * @param {} direction
  * @param {} specular
+ * @param {} attenuation_constant
  * @param {} attenuation_linear
  * @param {} attenuation_quadratic
+ * @param {} spot_angle
+ * @param {} spot_falloff
  * @returns {THREE.Object3D}
  */
 GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
-    distance, cast_shadows, name, direction, specular, attenuation_linear,
-    attenuation_quadratic, special_params)
+    distance, cast_shadows, name, direction, specular, attenuation_constant,
+    attenuation_linear, attenuation_quadratic, spot_angle, spot_falloff)
 {
   var obj = new THREE.Object3D();
   var color = new THREE.Color();
@@ -6134,16 +6660,16 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     color.b = diffuse.b;
     diffuse = color.clone();
   }
-
-  if (typeof(specular) === 'undefined') {
-    specular = 0xffffff;
-  }
   else if (typeof(specular) !== THREE.Color)
   {
     color.r = specular.r;
     color.g = specular.g;
     color.b = specular.b;
     specular = color.clone();
+  }
+
+  if (typeof(specular) === 'undefined') {
+    specular = 0xffffff;
   }
 
   var matrixWorld;
@@ -6169,21 +6695,20 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   }
 
   var elements;
-  if (type === this.POINT)
+  if (type === this.LIGHT_POINT)
   {
     elements = this.createPointLight(obj, diffuse, intensity,
         distance, cast_shadows);
   }
-  else if (type === this.SPOT)
+  else if (type === this.LIGHT_SPOT)
   {
     elements = this.createSpotLight(obj, diffuse, intensity,
-        distance, cast_shadows, special_params);
+        distance, cast_shadows, spot_angle, spot_falloff);
   }
-  else if (type === this.DIRECTIONAL)
+  else if (type === this.LIGHT_DIRECTIONAL)
   {
     elements = this.createDirectionalLight(obj, diffuse, intensity,
         cast_shadows);
-    elements[0].distance = distance;
   }
 
   var lightObj = elements[0];
@@ -6206,19 +6731,25 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
 
     dir.applyMatrix4(matrixWorld); // localToWorld
     lightObj.target.position.copy(dir);
+    lightObj.target.updateMatrixWorld();
   }
 
   // Add properties which exist on the server but have no meaning on THREE.js
   obj.serverProperties = {};
   obj.serverProperties.specular = specular;
+  obj.serverProperties.attenuation_constant = attenuation_constant;
   obj.serverProperties.attenuation_linear = attenuation_linear;
   obj.serverProperties.attenuation_quadratic = attenuation_quadratic;
+  obj.serverProperties.initial = {};
+  obj.serverProperties.initial.diffuse = diffuse;
 
   helper.visible = false;
-  lightObj.initialIntensity = lightObj.intensity; //TODO(Luc): retrieve initial intensity from .sdf by means of a service
+  lightObj.up = new THREE.Vector3(0,0,1);
+  lightObj.shadowBias = -0.0005;
 
   obj.add(lightObj);
   obj.add(helper);
+
   return obj;
 };
 
@@ -6229,7 +6760,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
  * @param {} intensity
  * @param {} distance
  * @param {} cast_shadows
- * @returns {[THREE.Light, THREE.Mesh]}
+ * @returns {Object.<THREE.Light, THREE.Mesh>}
  */
 GZ3D.Scene.prototype.createPointLight = function(obj, color, intensity,
     distance, cast_shadows)
@@ -6246,10 +6777,12 @@ GZ3D.Scene.prototype.createPointLight = function(obj, color, intensity,
   {
     lightObj.distance = distance;
   }
-  if (cast_shadows)
+
+  // point light shadow maps not supported yet, disable for now
+  /*if (cast_shadows)
   {
     lightObj.castShadow = cast_shadows;
-  }
+  }*/
 
   var helperGeometry = new THREE.OctahedronGeometry(0.25, 0);
   helperGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI/2));
@@ -6267,10 +6800,10 @@ GZ3D.Scene.prototype.createPointLight = function(obj, color, intensity,
  * @param {} intensity
  * @param {} distance
  * @param {} cast_shadows
- * @returns {[THREE.Light, THREE.Mesh]}
+ * @returns {Object.<THREE.Light, THREE.Mesh>}
  */
 GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
-    distance, cast_shadows, special_params)
+    distance, cast_shadows, angle, falloff)
 {
   if (typeof(intensity) === 'undefined')
   {
@@ -6280,13 +6813,26 @@ GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
   {
     distance = 20;
   }
-
-  var lightObj = new THREE.SpotLight(color, intensity, distance, special_params[1], special_params[2]);
-  if (distance) {
-    lightObj.distance = distance;
+  if (typeof(angle) === 'undefined')
+  {
+    angle = Math.PI/3;
   }
+  if (typeof(falloff) === 'undefined')
+  {
+    falloff = 1;
+  }
+
+  var lightObj = new THREE.SpotLight(color, intensity, distance, angle, falloff);
   lightObj.position.set(0,0,0);
   lightObj.shadowDarkness = 0.3;
+  lightObj.shadowBias = 0.0001;
+
+  lightObj.shadowCameraNear = 0.1;
+  lightObj.shadowCameraFar = 50;
+  lightObj.shadowCameraFov = (2 * angle / Math.PI) * 180;
+
+  lightObj.shadowMapWidth = 2048;
+  lightObj.shadowMapHeight = 2048;
 
   if (cast_shadows)
   {
@@ -6310,7 +6856,7 @@ GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
  * @param {} color
  * @param {} intensity
  * @param {} cast_shadows
- * @returns {[THREE.Light, THREE.Mesh]}
+ * @returns {Object.<THREE.Light, THREE.Mesh>}
  */
 GZ3D.Scene.prototype.createDirectionalLight = function(obj, color, intensity,
     cast_shadows)
@@ -6321,15 +6867,15 @@ GZ3D.Scene.prototype.createDirectionalLight = function(obj, color, intensity,
   }
 
   var lightObj = new THREE.DirectionalLight(color, intensity);
-  lightObj.shadowCameraNear = 1;
+  lightObj.shadowCameraNear = 0.1;
   lightObj.shadowCameraFar = 50;
-  lightObj.shadowMapWidth = 4094;
-  lightObj.shadowMapHeight = 4094;
+  lightObj.shadowMapWidth = 2048;
+  lightObj.shadowMapHeight = 2048;
   lightObj.shadowCameraVisible = false;
-  lightObj.shadowCameraBottom = -100;
-  lightObj.shadowCameraLeft = -100;
-  lightObj.shadowCameraRight = 100;
-  lightObj.shadowCameraTop = 100;
+  lightObj.shadowCameraBottom = -10;
+  lightObj.shadowCameraLeft = -10;
+  lightObj.shadowCameraRight = 10;
+  lightObj.shadowCameraTop = 10;
   lightObj.shadowBias = 0.0001;
   lightObj.position.set(0,0,0);
   lightObj.shadowDarkness = 0.3;
@@ -6495,7 +7041,7 @@ GZ3D.Scene.prototype.createRoads = function(points, width, texture)
  /* var ambient = mat['ambient'];
   if (ambient)
   {
-    material.ambient.setRGB(ambient[0], ambient[1], ambient[2]);
+    material.emissive.setRGB(ambient[0], ambient[1], ambient[2]);
   }
   var diffuse = mat['diffuse'];
   if (diffuse)
@@ -6599,10 +7145,12 @@ GZ3D.Scene.prototype.loadHeightmap = function(heights, width, height,
     {
       textureLoaded[tt] = textureLoaded[tt-1];
     }
-    for (var b = blends.length; tt < 2; ++b)
+
+    for (var b = blends.length; b < 2; ++b)
     {
       blends[b] = blends[b-1];
     }
+
     for (var rr = repeats.length; rr < 3; ++rr)
     {
       repeats[rr] = repeats[rr-1];
@@ -6618,7 +7166,7 @@ GZ3D.Scene.prototype.loadHeightmap = function(heights, width, height,
     {
       if (allObjects[l] instanceof THREE.DirectionalLight)
       {
-        lightDir = allObjects[l].position;
+        lightDir = allObjects[l].target.position;
         lightDiffuse = allObjects[l].color;
         break;
       }
@@ -6670,7 +7218,7 @@ GZ3D.Scene.prototype.loadHeightmap = function(heights, width, height,
  * @param {function} callback
  */
 GZ3D.Scene.prototype.loadMesh = function(uri, submesh, centerSubmesh,
-    callback, progressCalback)
+    callback, progressCallback)
 {
   var uriPath = uri.substring(0, uri.lastIndexOf('/'));
   var uriFile = uri.substring(uri.lastIndexOf('/') + 1);
@@ -6678,7 +7226,7 @@ GZ3D.Scene.prototype.loadMesh = function(uri, submesh, centerSubmesh,
   // load urdf model
   if (uriFile.substr(-4).toLowerCase() === '.dae')
   {
-    return this.loadCollada(uri, submesh, centerSubmesh, callback, progressCalback);
+    return this.loadCollada(uri, submesh, centerSubmesh, callback, progressCallback);
   }
   else if (uriFile.substr(-5).toLowerCase() === '.urdf')
   {
@@ -6746,8 +7294,8 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
   var thatURI = uri;
   var thatSubmesh = submesh;
   var thatCenterSubmesh = centerSubmesh;
-  var that = this;
 
+  var that = this;
   loader.load(uri, function(collada)
   {
     // check for a scale factor
@@ -7357,7 +7905,6 @@ GZ3D.Scene.prototype.selectEntity = function(object)
       this.scene.remove(this.modelManipulator.gizmo);
     }
     this.hideBoundingBox();
-
     this.selectedEntity = null;
     guiEvents.emit('setTreeDeselected');
   }
@@ -7533,6 +8080,156 @@ GZ3D.Scene.prototype.viewJoints = function(model)
 };
 
 /**
+ * Update a light entity from a message
+ * @param {} entity
+ * @param {} msg
+ */
+GZ3D.Scene.prototype.updateLight = function(entity, msg)
+{
+  // TODO: Generalize this and createLight
+  var lightObj = entity.children[0];
+  var dir;
+
+  var color = new THREE.Color();
+
+  if (msg.diffuse)
+  {
+    color.r = msg.diffuse.r;
+    color.g = msg.diffuse.g;
+    color.b = msg.diffuse.b;
+    lightObj.color = color.clone();
+  }
+  if (msg.specular)
+  {
+    color.r = msg.specular.r;
+    color.g = msg.specular.g;
+    color.b = msg.specular.b;
+    entity.serverProperties.specular = color.clone();
+  }
+
+  var matrixWorld;
+  if (msg.pose)
+  {
+    // needed to update light's direction
+    var quaternion = new THREE.Quaternion(
+        msg.pose.orientation.x,
+        msg.pose.orientation.y,
+        msg.pose.orientation.z,
+        msg.pose.orientation.w);
+
+    var translation = new THREE.Vector3(
+        msg.pose.position.x,
+        msg.pose.position.y,
+        msg.pose.position.z);
+
+    matrixWorld = new THREE.Matrix4();
+    matrixWorld.compose(translation, quaternion, new THREE.Vector3(1,1,1));
+
+    this.setPose(entity, msg.pose.position, msg.pose.orientation);
+    entity.matrixWorldNeedsUpdate = true;
+
+    if (entity.direction && lightObj.target)
+    {
+      dir = new THREE.Vector3(entity.direction.x, entity.direction.y,
+          entity.direction.z);
+
+      entity.direction = new THREE.Vector3();
+      entity.direction.copy(dir);
+
+      dir.applyMatrix4(matrixWorld); // localToWorld
+      lightObj.target.position.copy(dir);
+    }
+  }
+
+  if (msg.range)
+  {
+    // THREE.js's light distance impacts the attenuation factor defined in the shader:
+    // attenuation factor = 1.0 - distance-to-enlighted-point / light.distance
+    // Gazebo's range (taken from OGRE 3D API) does not contribute to attenuation;
+    // it is a hard limit for light scope.
+    // Nevertheless, we identify them for sake of simplicity.
+    lightObj.distance = msg.range;
+  }
+
+  if (msg.cast_shadows)
+  {
+    lightObj.castShadow = msg.cast_shadows;
+  }
+
+  if (msg.attenuation_constant)
+  {
+    entity.serverProperties.attenuation_constant = msg.attenuation_constant;
+  }
+  if (msg.attenuation_linear)
+  {
+    entity.serverProperties.attenuation_linear = msg.attenuation_linear;
+    lightObj.intensity = lightObj.intensity/(1+msg.attenuation_linear);
+  }
+  if (msg.attenuation_quadratic)
+  {
+    entity.serverProperties.attenuation_quadratic = msg.attenuation_quadratic;
+    lightObj.intensity = lightObj.intensity/(1+msg.attenuation_quadratic);
+  }
+  if (msg.attenuation_linear && msg.attenuation_quadratic)
+  {
+    // equation taken from
+    // http://wiki.blender.org/index.php/Doc:2.6/Manual/Lighting/Lights/Light_Attenuation
+    var E = 1;
+    var D = 1;
+    var r = 1;
+    var L = msg.attenuation_linear;
+    var Q = msg.attenuation_quadratic;
+    lightObj.intensity = E*(D/(D+L*r))*(Math.pow(D,2)/(Math.pow(D,2)+Q*Math.pow(r,2)));
+  }
+
+
+  if (lightObj instanceof THREE.SpotLight) {
+    if (msg.spot_outer_angle) {
+      lightObj.angle = msg.spot_outer_angle;
+      lightObj.shadowCameraFov = (2 * msg.spot_outer_angle / Math.PI) * 180;
+    }
+    if (msg.spot_falloff) {
+      lightObj.exponent = msg.spot_falloff;
+    }
+  }
+
+  if (msg.direction && lightObj.target)
+  {
+    dir = new THREE.Vector3(msg.direction.x, msg.direction.y,
+        msg.direction.z);
+
+    entity.direction = new THREE.Vector3();
+    entity.direction.copy(dir);
+
+    dir.applyMatrix4(matrixWorld); // localToWorld
+    lightObj.target.position.copy(dir);
+  }
+};
+
+GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
+  this.renderer.shadowMapEnabled = enabled;
+
+  var that = this;
+  this.scene.traverse(function(node) {
+    if (enabled) {
+      if (node.material) {
+        node.material.needsUpdate = true;
+        if (node.material.materials) {
+          for (var i = 0; i < node.material.materials.length; i = i+1) {
+            node.material.materials[i].needsUpdate = true;
+          }
+        }
+      }
+    } else {
+      if (node instanceof THREE.Light) {
+        if (node.shadowMap) {
+          that.renderer.clearTarget( node.shadowMap );
+        }
+      }
+    }
+  });
+};
+/**
  * SDF parser constructor initializes SDF parser with the given parameters
  * and defines a DOM parser function to parse SDF XML files
  * @param {object} scene - the gz3d scene object
@@ -7685,7 +8382,7 @@ GZ3D.SdfParser.prototype.spawnLightFromSDF = function(sdfObj)
 
   if (light['@type'] === 'point')
   {
-    lightObj = new THREE.AmbientLight(color.getHex());
+    lightObj = new THREE.PointLight(color.getHex());
     lightObj.distance = light.range;
     this.scene.setPose(lightObj, light.pose.position, light.pose.orientation);
   }
@@ -7717,8 +8414,8 @@ GZ3D.SdfParser.prototype.spawnLightFromSDF = function(sdfObj)
     lightObj.target.position = target;
     lightObj.shadowCameraNear = 1;
     lightObj.shadowCameraFar = 50;
-    lightObj.shadowMapWidth = 4094;
-    lightObj.shadowMapHeight = 4094;
+    lightObj.shadowMapWidth = 2048;
+    lightObj.shadowMapHeight = 2048;
     lightObj.shadowCameraVisible = false;
     lightObj.shadowCameraBottom = -100;
     lightObj.shadowCameraLeft = -100;
@@ -8279,24 +8976,28 @@ GZ3D.SdfParser.prototype.addModelByType = function(model, type)
   {
     var matrix = model.matrixWorld;
     translation = new THREE.Vector3();
-    euler = new THREE.Euler();
     var scale = new THREE.Vector3();
-    matrix.decompose(translation, euler, scale);
-    quaternion.setFromEuler(euler);
+    matrix.decompose(translation, quaternion, scale);
   }
 
   if (type === 'box')
   {
+    euler = new THREE.Euler();
+    euler.setFromQuaternion(quaternion);
     sdf = this.createBoxSDF(translation, euler);
     modelObj = this.spawnFromSDF(sdf);
   }
   else if (type === 'sphere')
   {
+    euler = new THREE.Euler();
+    euler.setFromQuaternion(quaternion);
     sdf = this.createSphereSDF(translation, euler);
     modelObj = this.spawnFromSDF(sdf);
   }
   else if (type === 'cylinder')
   {
+    euler = new THREE.Euler();
+    euler.setFromQuaternion(quaternion);
     sdf = this.createCylinderSDF(translation, euler);
     modelObj = this.spawnFromSDF(sdf);
   }
