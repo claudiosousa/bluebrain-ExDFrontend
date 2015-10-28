@@ -3126,43 +3126,70 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
   }
 
   if (sensor.type === 'camera') {
-    // if we have a camera sensor we have a potential view that could be rendered
-    // camera parameters are not published by gazebo right now, so hardcoded until fixed
-    var camResolution = [960, 600];
-    var camFOV = 60;
-    var camNear = 0.1;
-    var camFar = 100;
-
-    var displayParams = {
-      left: '5%',
-      top: '5%',
-      width: '20%',
-      height: '20%',
-      adjustable: true
-    };
+    // If we have a camera sensor we have a potential view that could be rendered
+    var camera = sensor.camera;
+    var imageSize = camera.image_size;
+    // The following parameters are available only for Gazebo versions >= 6.5
+    var camFOV = camera.horizontal_fov;
+    var camNear = camera.near_clip;
+    var camFar = camera.far_clip;
+    if (!angular.isDefined(camFOV)) {
+      camFOV = 60.0;
+    }
+    if (!angular.isDefined(camNear)) {
+      camNear = 0.1;
+    }
+    if (!angular.isDefined(camFar)) {
+      camFar = 100.0;
+    }
+    // If no rendering is available, image_size is set to { x: 0.0, y: 0.0 }, see
+    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
+    var camResolution = [imageSize.x, imageSize.y];
+    if (imageSize.x === 0.0 && imageSize.y === 0.0) {
+      camResolution = [960, 600];
+    }
+    var aspectRatio = camResolution[1] / camResolution[0];
     var cameraParams = {
       width: camResolution[0],
       height: camResolution[1],
+      aspectRatio: aspectRatio,
       fov: camFOV,
       near: camNear,
       far: camFar
     };
+    var viewManager = this.scene.viewManager;
+    var displayParams = undefined;
+    var widthPercentage = 0.2;// each view is afforded 20% of the mainContainer width
+    var width = widthPercentage * viewManager.mainContainer.clientWidth;
+    var height = Math.floor(width * aspectRatio);
+    var viewIndex = viewManager.views.length - 1;
+    if (viewIndex < 0) {
+      console.error('Negative view index: the main_view camera is probably missing');
+    }
+    var maxViewsPerLine = Math.floor(1.0 / widthPercentage);
+    var displayParams = {
+      // Align the new view with the previous ones, if any
+      left: Math.floor(width * (viewIndex % maxViewsPerLine)) + 'px',
+      top: height * Math.floor(viewIndex / maxViewsPerLine) + 'px',
+      zIndex: viewManager.mainContainer.style.zIndex + viewIndex + 1,
+      width: Math.floor(width) + 'px',
+      height: height + 'px',
+      adjustable: true
+    };
+
     var viewName = 'view_' + sensor.name;
-    var view = this.scene.viewManager.createView(viewName, displayParams, cameraParams);
+    var view = viewManager.createView(viewName, displayParams, cameraParams);
     if (!view) {
       console.error('GZ3D.GZIface.createSensorFromMsg() - failed to create view ' + viewName);
       return;
     }
 
-    // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
-    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
-
-    // camera sensors defined in gazebo .sdf seem to look along positive x axis, so need to adjust the rotation here
-    view.camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
-    view.camera.rotateOnAxis(new THREE.Vector3(0, 0, 1), -Math.PI / 2);
+    // camera sensors defined in gazebo .sdf look along positive x axis, so need to adjust the rotation here
+    view.camera.rotateOnAxis(new THREE.Vector3(0.0, 1.0, 0.0), -Math.PI / 2.0);
+    view.camera.rotateOnAxis(new THREE.Vector3(0.0, 0.0, 1.0), -Math.PI / 2.0);
 
     // set view inactive and hide at start
-    this.scene.viewManager.setViewVisibility(view, false);
+    viewManager.setViewVisibility(view, false);
 
     // visualization - Deactivated since it causes the robot to be very big and the user
     // can't barely select other objects on the scene. Reactivate for debug purposes !
@@ -5060,30 +5087,18 @@ GZ3D.MultiView.prototype.createView = function(name, displayParams, cameraParams
         console.warn('GZ3D.MultiView.createView() - creating new view will exceed MULTIVIEW_MAX_VIEW_COUNT(' + this.MULTIVIEW_MAX_VIEW_COUNT + '). This may cause z-ordering issues.');
     }
 
-    // There is a problem with the width and height; it should be read from the "sensor" object. Also see:
-    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
-    // Here we use (preliminary) percentual width and ignore the displayParams for now
-    if (this.views.length >= 1) {
-      var width = 0.2;
-      var height = (width * this.mainContainer.innerWidth / cameraParams.width) * cameraParams.height;
-      var max_views_per_line = Math.floor(1.0 / width);
-      var zIndex = this.mainContainer.style.zIndex + this.views.length;
-      var left = ((zIndex - 1) % max_views_per_line) * width;
-      var top = Math.floor((zIndex - 1) / max_views_per_line) * height;
-      displayParams.width = width * 100 + '%';
-      displayParams.height = height * 100 + '%';
-      displayParams.left = left * 100 + '%';
-      displayParams.top = top * 100 + '%';
-      displayParams.zIndex = zIndex;
-    }
-
     var container = this.createViewContainer(displayParams, name);
     if (container === null) {
         return;
     }
 
     // camera
-    var camera = new THREE.PerspectiveCamera(cameraParams.fov, cameraParams.width / cameraParams.height, cameraParams.near, cameraParams.far);
+    var camera = new THREE.PerspectiveCamera(
+      cameraParams.fov,
+      cameraParams.aspectRatio,
+      cameraParams.near,
+      cameraParams.far
+    );
     camera.name = name;
 
     // assemble view
@@ -5115,24 +5130,23 @@ GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
     }
 
     // z-index
-    var zIndexTop = parseInt(this.mainContainer.style.zIndex, 10) + this.views.length + 1;
-    viewContainer.style.zIndex = (displayParams.zIndex !== undefined) ? displayParams.zIndex : zIndexTop;
+    viewContainer.style.zIndex =  displayParams.zIndex;
 
     // positioning
-
     viewContainer.style.position = 'absolute';
     viewContainer.style.left = displayParams.left;
     viewContainer.style.top = displayParams.top;
-    viewContainer.style.width =  displayParams.width;
-    viewContainer.style.height =  displayParams.height;
+    viewContainer.style.width = displayParams.width;
+    viewContainer.style.height = displayParams.height;
 
     // We set 50px as a min-width for now and set the min height accordingly
     viewContainer.style.minWidth = '50px';
-    viewContainer.style.minHeight = (50 * (parseInt(displayParams.width, 10)/parseInt(displayParams.height, 10))) + 'px';
+    var aspectRatio = parseInt(displayParams.height, 10) / parseInt(displayParams.width, 10);
+    viewContainer.style.minHeight = Math.floor(50 * aspectRatio) + 'px';
     viewContainer.style.maxWidth = '100%';
     viewContainer.style.maxHeight = '100%';
 
-    // transparent view-container so we can render viewport with one renderer in the same context
+    // Transparent view-container so that we can render viewport with one renderer in the same context
     // view-container is only taken as reference for viewport
     viewContainer.style.boxShadow = '0px 0px 0px 3px rgba(0,0,0,0.3)';
     viewContainer.style.borderRadius = '2px';
