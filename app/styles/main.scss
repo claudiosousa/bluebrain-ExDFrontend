@@ -15,51 +15,6 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
     margin-top: 10px;
 }
 
-// Footer
-.footer {
-    padding: $padding-base-vertical 0;
-    font-size: 11px;
-    border-top: thin solid $hbp-color-border;
-    background: $hbp-color-shadow-light;
-}
-
-// Main nrp
-.nrp-main-thumbnail
-{
-  background-color : transparent;
-  border: 0 none;
-  box-shadow: none;
-}
-
-.nrp-main-title
-{
-  text-align: center;
-}
-
-.nrp-title-left-button
-{
-  float: left;
-  margin-left: 10px;
-  margin-top: 5px;
-  text-decoration: none;
-}
-
-.nrp-main-hints
-{
-  text-align:center;
-  margin-bottom: 22px;
-  font-size: 21px;
-  font-family: "Petit Formal Script", arial, cursive;
-  fill: #777;
-  transform: rotate(-5deg);
-}
-
-.nrp-main-hints-arrow
-{
-  text-align: center;
-  fill: #777;
-}
-
 .fadein,
 .fadeout {
   -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;

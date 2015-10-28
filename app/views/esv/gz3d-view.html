@@ -242,26 +242,26 @@
               </div>
 
               <!-- toggle spiketrain -->
-              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN}" ng-click="(!helpModeActivated) ? toggleSpikeTrain() : help(UI.SPIKETRAIN);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN, 'active': showSpikeTrain}" ng-click="(!helpModeActivated) ? toggleSpikeTrain() : help(UI.SPIKETRAIN);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <img src="img/esv/spiketrain_logo.png">
               </div>
               <!-- toggle spiketrain -->
 
               <!-- toggle jointPlot -->
-              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.JOINT_PLOT}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.JOINT_PLOT);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.JOINT_PLOT, 'active': showJointPlot}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.JOINT_PLOT);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <img src="img/esv/jointplot_logo.png">
               </div>
               <!-- toggle jointPlot -->
 
               <!-- toggle robot camera view -->
-              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW}" ng-click="(!helpModeActivated) ? toggleRobotView() : help(UI.ROBOT_VIEW);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW, 'active': showRobotView}" ng-click="(!helpModeActivated) ? toggleRobotView() : help(UI.ROBOT_VIEW);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <!--<img src="img/esv/robot_view_icon.png" width=32 height=32>-->
                 <i class="fa fa-eye fa-2x vertcenter"></i>
               </div>
               <!-- toggle robot camera view -->
 
               <!-- toggle graphics performance -->
-              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.GRAPHICS_PERFORMANCE}" ng-click="(!helpModeActivated) ? toggleGraphicsPerformance() : help(UI.GRAPHICS_PERFORMANCE);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.GRAPHICS_PERFORMANCE, 'active': showShadows}" ng-click="(!helpModeActivated) ? toggleGraphicsPerformance() : help(UI.GRAPHICS_PERFORMANCE);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <i class="fa fa-tachometer fa-2x vertcenter"></i>
               </div>
               <!-- toggle graphics performance -->
