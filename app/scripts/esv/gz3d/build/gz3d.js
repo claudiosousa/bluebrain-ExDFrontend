@@ -2034,7 +2034,7 @@ GZ3D.GZIface = function(scene, gui)
 
   this.init();
   this.visualsToAdd = [];
-  
+
   this.animatedModels = {};
 
   this.numConnectionTrials = 0;
@@ -2048,7 +2048,7 @@ GZ3D.GZIface = function(scene, gui)
 
   this.numConnectionTrials = 0;
   this.numConnectionTrials_Ros = 0;
-  
+
   this.maxConnectionTrials = 30; // try to connect 30 times
   this.timeToSleepBtwTrials = 1000; // wait 1 second between connection trials
 
@@ -2078,7 +2078,7 @@ GZ3D.GZIface.prototype.connect = function()
   var url = GZ3D.webSocketUrl;
   // TODO: Assign this the same way as GZ3D.webSocketUrl -- location of this variable definition/assignment is unknown!
   var url_ros = "ws://localhost:9091";
-  
+
   if (localStorage.getItem('localmode.forceuser') === 'false') {
     var token = [];
     if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
@@ -2097,7 +2097,7 @@ GZ3D.GZIface.prototype.connect = function()
   this.webSocket = new ROSLIB.Ros({
     url : url
   });
-  
+
   // Second WebSocket connection from gz3d to rosbridge - receives joint state (angle, rotation axis) from GazeboRosPackages
   // TODO: Replace ROS topic with ROS service (pull requests instead of push notifications to reduce traffic between Gazebo and web frontend)
   this.webSocket_ros = new ROSLIB.Ros({
@@ -2105,7 +2105,7 @@ GZ3D.GZIface.prototype.connect = function()
   });
 
   var that = this;
-  
+
   // The rosbridge WebSocket only uses a custom error handler for now, to re-establish the connection in case of a timeout
   this.webSocket_ros.on('connection', function() {
     console.log("'Connected to websocket server (rosbridge connection).");
@@ -2117,7 +2117,7 @@ GZ3D.GZIface.prototype.connect = function()
   this.webSocket_ros.on('close', function() {
     console.log('Connection closed to rosbridge websocket server: ' + that.webSocket_ros.socket.url);
   });
-  
+
   this.webSocket.on('connection', function() {
     that.onConnected();
   });
@@ -2324,25 +2324,25 @@ GZ3D.GZIface.prototype.onConnected = function()
   };
 
   poseTopic.subscribe(poseUpdate.bind(this));
-  
+
   // ROS topic subscription for joint_state messages
   var jointTopicSubscriber = new ROSLIB.Topic({ros: this.webSocket_ros,
                                               name: '/gazebo/joint_states',
-                                              message_type: 'gazebo_msgs/JointStates', 
+                                              message_type: 'gazebo_msgs/JointStates',
 					      throttle_rate: 1.0 / 25.0 * 1000.0,
                                               });
-  
+
   // function for updating transformations of bones in a client-side-only animated model
   var jointUpdate = function(message)
   {
     //console.log("=== Joint updates received: " + message.name.length + " ===");
-    
+
     // Loop over list of joints in simulation
     for (var k = 0; k < message.name.length; k++)
     {
       var robot_joint_ids = message.name[k].split("::");
       //console.log("  - robot model '" + robot_joint_ids[0] + "', joint '" + robot_joint_ids[1] + "': position/angle = " + message.position[k] + ", rate = " + message.rate[k]);
-      
+
       // Check if there is an animated model for it on the client side
       var entity = this.scene.getByName(robot_joint_ids[0] + "_animated");
       if (entity)
@@ -2351,35 +2351,35 @@ GZ3D.GZIface.prototype.onConnected = function()
 	if (entity.userData !== undefined && entity.userData !== null)
 	{
 	  var bone_name = robot_joint_ids[1];
-	  
+
 	  // Temporary fix for inconsistent naming conventions in SDF model and Blender model of the mouse
 	  // TODO: Make inconsistent names configurable on the server side
 	  if (bone_name === "mouse_head_joint")
 	    bone_name = "neck";
-	  
+
 	  // Retrieve bone instance from userData map of bone instances in animated model
 	  if (entity.userData[bone_name] !== undefined && entity.userData[bone_name] !== null)
 	  {
 	    var target_bone = entity.userData[bone_name];
-	    
+
 	    // TODO: Make the rotation axis in the animated model configurable on the server side
 	    // Temporary fix for incorrect rotation axis of the neck joint
 	    var rotation_axis = new THREE.Vector3(1,0,0); //message.axes[k * 2];
 	    var rotation_angle = message.position[k];
-	    
+
 	    //console.log("     rotation angle = " + rotation_angle + ", rotation_axis = " + rotation_axis.x + "," + rotation_axis.y + "," + rotation_axis.z);
-	    
+
 	    var correction_axis = new THREE.Vector3(0,-1,0);
 	    var correction_angle = -Math.PI/2.0;
-	    
+
 	    var rotation_matrix = new THREE.Matrix4();
 	    rotation_matrix.identity();
 	    rotation_matrix.makeRotationAxis(rotation_axis, rotation_angle);
-	    	    
+
 	    //console.log("     target bone found: " + target_bone.name + "; axis = " + rotation_axis.x + "," + rotation_axis.y + "," + rotation_axis.z + ", angle = " + rotation_angle);
-	    
+
 	    target_bone.setRotationFromMatrix(rotation_matrix);
-	    
+
 	    // Update animation handler and skeleton helper
 	    // TODO: Move this to the animation loop to synchronize animations with the actual frame rate.
 	    // Alternative: Use the clock helper class from three.js for retrieving the actual frame rate delta.
@@ -2388,13 +2388,13 @@ GZ3D.GZIface.prototype.onConnected = function()
 	  }
 	}
       }
-      
+
     }
   };
-  
+
   // Subscription to joint update topic
   jointTopicSubscriber.subscribe(jointUpdate.bind(this));
-  
+
   // Requests - for deleting models
   var requestTopic = new ROSLIB.Topic({
     ros : this.webSocket,
@@ -2581,13 +2581,13 @@ GZ3D.GZIface.prototype.onConnected = function()
     name : '/gazebo/get_joint_properties',
     serviceType : 'gazebo_msgs/GetJointProperties'
   });
-  
+
   var joint_state_request = new ROSLIB.ServiceRequest({
       joint_name: 'mouse_head_joint'
   });
-  
+
   console.log("BEFORE call to get_joint_properties service");
-  
+
   this.jointStateService.callService(joint_state_request,
   function(result)
   {
@@ -2595,9 +2595,9 @@ GZ3D.GZIface.prototype.onConnected = function()
     console.log("JointStateService request call result received: " + result);
     console.log("=======================================");
   });
-  
+
   console.log("AFTER  call to get_joint_properties service");*/
-  
+
   // Model modify messages - for modifying models
   this.modelModifyTopic = new ROSLIB.Topic({
     ros : this.webSocket,
@@ -2942,9 +2942,9 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   var modelObj = new THREE.Object3D();
   modelObj.name = model.name;
   modelObj.userData = model.id;
-  
+
   var uriPath = GZ3D.assetsPath;
-  
+
   if (model.pose)
   {
     this.scene.setPose(modelObj, model.pose.position, model.pose.orientation);
@@ -2953,33 +2953,33 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
   var visualsToHide = [];
   var hideLinkVisuals = false;
-  
+
   var modelUriAnimated = this.animatedModelAvailable(model, visualsToHide);
   var animatedModelFound = false; //= (modelUriAnimated !== undefined);
-  
+
   // TODO: Better check for visual instances from SDF model; prevent loading if there is a client-side-only COLLADA file
 
   for (var j = 0; j < model.link.length; ++j)
   {
     var link = model.link[j];
-    
+
     for (var k = 0; k < link.visual.length; k++)
     {
       var geom = link.visual[k].geometry;
       if (geom && geom.mesh)
       {
 	var meshUri = geom.mesh.filename;
-	
+
 	visualsToHide.push(geom.mesh.filename);
-	
+
 	var uriType = meshUri.substring(0, meshUri.indexOf('://'));
         if (uriType === 'file' || uriType === 'model')
 	{
 	  var modelUri = meshUri.substring(meshUri.indexOf('://') + 3);
 	  var modelName = modelUri.substring(0, modelUri.indexOf('/'));
-	  
+
 	  var modelUri_check = uriPath + '/' + modelName + '/meshes/' + modelName + '_animated.dae';
-	    
+
 	  var checkModel = new XMLHttpRequest();
 	  // We use a double technique to disable the cache for these requests:
 	  // 1. We create a custom url by adding the time as a parameter.
@@ -3004,7 +3004,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       }
     }
   }
-  
+
   if (animatedModelFound)
   {
     this.loadAnimatedModel(modelUri_animated, this.scene, model.name);
@@ -3014,7 +3014,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   for (var j = 0; j < model.link.length; ++j)
   {
     var link = model.link[j];
-    
+
     var linkObj = new THREE.Object3D();
     var hideVisualObj = false;  // !IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
 
@@ -3033,11 +3033,11 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
           link.pose.orientation);
     }
     modelObj.add(linkObj);
-    
-    
+
+
     for (var k = 0; k < link.visual.length; ++k)
     {
-      
+
       var visual = link.visual[k];
 
       /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
@@ -3045,13 +3045,13 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       {
         hideVisualObj = this.isVisualHidden(visual, visualsToHide);
       }*/
-      
+
       // Check if the current visual needs to be hidden
       // TODO: Use helper function isVisualHidden here
       var hideVisualObj = false;
       if (hideLinkVisuals)
       {
-        if (visual.geometry !== null && visual.geometry !== undefined && 
+        if (visual.geometry !== null && visual.geometry !== undefined &&
             visual.geometry.mesh !== null && visual.geometry.mesh !== undefined)
         {
             for (var k = 0; k < visualsToHide.length; k++)
@@ -3063,11 +3063,11 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
             }
         }
       }
-      
+
       /* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository*/
 
       var visualObj = this.createVisualFromMsg(visual);
-      
+
       // Hide object if it needs to be hidden
       // TODO: Do not add the visual in the first place!
       if (visualObj && !visualObj.parent)
@@ -3099,7 +3099,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     for (var l = 0; l < link.collision.length; ++l)
     {
       var collision = link.collision[l];
-      
+
       for (var m = 0; m < link.collision[l].visual.length; ++m)
       {
         if (!animatedModelFound) { //!IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
@@ -3158,7 +3158,7 @@ GZ3D.GZIface.prototype.animatedModelAvailable = function(model, visualsToHide) {
           var modelName = modelUri.substring(0, modelUri.indexOf('/'));
           var modelUriCheck = uriPath + '/' + modelName + '/meshes/' + modelName + '_animated.dae';
           var checkModel = new XMLHttpRequest();
-          
+
 	  checkModel.open('HEAD', modelUriCheck, false);
           try { checkModel.send(); } catch(err) { console.log(modelUriCheck + ': no animated version'); }
           if (checkModel.status === 404)
@@ -3181,25 +3181,25 @@ GZ3D.GZIface.prototype.animatedModelAvailable = function(model, visualsToHide) {
 // TODO: Move this function into a separate class to minimize changes in main gz3d script
 GZ3D.GZIface.prototype.loadAnimatedModel = function(modelUriAnimated, scene, modelName) {
   var loader = new THREE.ColladaLoader();
-  
+
   var animated_model = null;
 
   // Helper function to enable 'skinning' property so three.js treats meshes as deformable
-  var enableSkinning = function(skinnedMesh) { 
+  var enableSkinning = function(skinnedMesh) {
     var materials = skinnedMesh.material.materials;
     if (materials !== null && materials !== undefined)
     {
-      for (var i = 0,length = materials.length; i < length; i++) { 
-	  var mat = materials[i]; mat.skinning = true; 
+      for (var i = 0,length = materials.length; i < length; i++) {
+	  var mat = materials[i]; mat.skinning = true;
       }
     }
-    
+
     if (skinnedMesh.material !== undefined && skinnedMesh.material !== null)
     {
       skinnedMesh.material.skinning = true;
     }
   }
-  
+
   // Progress update: Add this asset to the assetProgressArray
   var that = this;
   var element = {};
@@ -3209,17 +3209,17 @@ GZ3D.GZIface.prototype.loadAnimatedModel = function(modelUriAnimated, scene, mod
   element.totalSize = 0;
   element.done = false;
   this.assetProgressData.assets.push(element);
-  
+
   // Load animated model with separate COLLADA loader instance
   loader.load(modelUriAnimated, function(collada)
   {
     var modelParent = new THREE.Object3D();
     modelParent.name = modelName + "_animated";
     var linkParent = new THREE.Object3D();
-    
+
     // Set gray, phong-shaded material for loaded model
     // TODO: Texturing/GLSL shading; find out what is available in the COLLADA loader implementation
-    collada.scene.traverse ( function (child) 
+    collada.scene.traverse ( function (child)
     {
       if (child instanceof THREE.Mesh)
       {
@@ -3229,58 +3229,58 @@ GZ3D.GZIface.prototype.loadAnimatedModel = function(modelUriAnimated, scene, mod
         console.log("  for child mesh " + child.name);
       }
     });
-    
+
     // Enable skinning for all child meshes
-    collada.scene.traverse( function ( child ) 
+    collada.scene.traverse( function ( child )
     {
-      if ( child instanceof THREE.SkinnedMesh ) 
+      if ( child instanceof THREE.SkinnedMesh )
       {
 	enableSkinning(child);
       }
     });
-    
+
     linkParent.add(collada.scene);
-    
+
     // Hide model coordinate frames for the time being; remove as soon as position offset and rotation axis issues are fixed
     /*var collada_scene_axes = new THREE.AxisHelper(2);
     linkParent.add(collada_scene_axes);*/
-    
+
     modelParent.add(linkParent);
-    
+
     // Hide model coordinate frames for the time being; remove as soon as position offset and rotation axis issues are fixed
     /*var model_parent_axes = new THREE.AxisHelper(4);
     modelParent.add(model_parent_axes);*/
-    
+
     // Temporary fix for offset between mouse model defined in SDF and client-side COLLADA model; cause remains to be investigated
     modelParent.position.y = modelParent.position.y + 6.0;
     modelParent.position.z = modelParent.position.z + 0.62;
 
     // Build list of bones in rig, and attach it to scene node (userData) for later retrieval in animation handling
-    var getBoneList = function( object ) 
+    var getBoneList = function( object )
     {
 	var boneList = [];
 
-	if ( object instanceof THREE.Bone ) 
+	if ( object instanceof THREE.Bone )
 	{
 		boneList.push( object );
 	}
 
-	for ( var i = 0; i < object.children.length; i ++ ) 
+	for ( var i = 0; i < object.children.length; i ++ )
 	{
 		boneList.push.apply( boneList, getBoneList( object.children[ i ] ) );
 	}
-	
+
 	return boneList;
     };
-  
+
     var boneList = getBoneList(collada.scene);
     var boneHash = {};
     for (var k = 0; k < boneList.length; k++)
       boneHash[boneList[k].name] = boneList[k];
-  
+
     // Skeleton visualization helper class
     var helper = new THREE.SkeletonHelper(collada.scene);
-    
+
     boneHash['Skeleton_Visual_Helper'] = helper;
     modelParent.userData = boneHash;
 
@@ -3288,10 +3288,10 @@ GZ3D.GZIface.prototype.loadAnimatedModel = function(modelUriAnimated, scene, mod
     // Hide skeleton helper for the time being
     // TODO: Make this configurable for visualizing the underlying skeleton
     helper.visible = false;
-    
+
     scene.add(helper);
     scene.add(modelParent);
-    
+
     animated_model = modelParent;
 
     element.done = true;
@@ -3302,7 +3302,7 @@ GZ3D.GZIface.prototype.loadAnimatedModel = function(modelUriAnimated, scene, mod
     element.error = progress.error;
     that.assetProgressCallback(that.assetProgressData);
   });
-  
+
   return animated_model;
 };
 
@@ -3438,8 +3438,7 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
   if (sensor.type === 'camera') {
     // If we have a camera sensor we have a potential view that could be rendered
     var camera = sensor.camera;
-    var imageSize = camera.image_size;
-    // The following parameters are available only for Gazebo versions >= 6.5
+    // The three following parameters are available only for Gazebo versions >= 6.5
     var camFOV = camera.horizontal_fov;
     var camNear = camera.near_clip;
     var camFar = camera.far_clip;
@@ -3452,7 +3451,8 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
     if (!angular.isDefined(camFar)) {
       camFar = 100.0;
     }
-    // If no rendering is available, image_size is set to { x: 0.0, y: 0.0 }, see
+    var imageSize = camera.image_size;
+    // If no rendering is available, imageSize is set to { x: 0.0, y: 0.0 }, see
     // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
     var camResolution = [imageSize.x, imageSize.y];
     if (imageSize.x === 0.0 && imageSize.y === 0.0) {
@@ -3468,7 +3468,6 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
       far: camFar
     };
     var viewManager = this.scene.viewManager;
-    var displayParams = undefined;
     var widthPercentage = 0.2;// each view is afforded 20% of the mainContainer width
     var width = widthPercentage * viewManager.mainContainer.clientWidth;
     var height = Math.floor(width * aspectRatio);
@@ -3607,7 +3606,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           parent.scale.y = geom.mesh.scale.y;
           parent.scale.z = geom.mesh.scale.z;
         }
-        
+
         console.log(" modelName: " + modelName);
 
         var modelUri = uriPath + '/' + modelName;
@@ -9120,9 +9119,9 @@ GZ3D.SdfParser.prototype.createVisual = function(visual)
 {
   //TODO: handle these node values
   // cast_shadow, receive_shadows
-  
+
   console.log("GZ3D.GZIface.createVisual(" + visual.name + ")");
-  
+
   if (visual.geometry)
   {
     var visualObj = new THREE.Object3D();
@@ -9206,9 +9205,9 @@ GZ3D.SdfParser.prototype.spawnModelFromSDF = function(sdfObj)
   // create the model
   var modelObj = new THREE.Object3D();
   modelObj.name = sdfObj.model['@name'];
-  
+
   console.log("GZ3D.SdfParser.spawnModelFromfSDF(" + modelObj.name + ")");
-  
+
   //TODO: is that needed
   //modelObj.userData = sdfObj.model.@id;
 
@@ -9255,7 +9254,7 @@ GZ3D.SdfParser.prototype.createLink = function(link)
   linkObj.name = link['@name'];
 
   console.log("GZ3D.SdfParser.createLink(" + linkObj.name + ")");
-  
+
   if (link.pose)
   {
     linkPose = this.parsePose(link.pose);
@@ -9270,7 +9269,7 @@ GZ3D.SdfParser.prototype.createLink = function(link)
     }
 
     console.log(" link visuals count = " + link.visual.length);
-    
+
     for (var i = 0; i < link.visual.length; ++i)
     {
       visualObj = this.createVisual(link.visual[i]);
@@ -9289,7 +9288,7 @@ GZ3D.SdfParser.prototype.createLink = function(link)
       {
         link.collision.visual = [link.collision.visual];
       }
-      
+
       console.log(" link collision object visuals count = " + link.collision.visual.length);
 
       for (var j = 0; j < link.collision.visual.length; ++j)
