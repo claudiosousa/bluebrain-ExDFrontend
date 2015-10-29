@@ -176,7 +176,7 @@
           // the chart needs a bit of time to adjust its size
           $timeout(function() {
             lineChartWrapper.css('visibility', 'visible');
-          }, 500);
+          }, 200);
         };
 
 
@@ -214,7 +214,9 @@
         scope.$watch(function() {
           return parent.height();
         }, function(newHeight) {
-          scope.chartHeight = Math.max(newHeight,80);
+          if (scope.ngShow) {
+            scope.chartHeight = Math.max(newHeight,80);
+          }
         });
 
         // clean plot when reinitialize the simulation
