@@ -4,8 +4,8 @@
   /* global console: false */
 
   angular.module('exdFrontendApp.Constants')
-    .constant('DEFAULT_RESOURCE_GET_TIMEOUT', 3000) // ms
-    .constant('EXPERIMENTS_GET_TIMEOUT', 30000); // ms
+    .constant('DEFAULT_RESOURCE_GET_TIMEOUT', 10000) // ms = 10sec
+    .constant('EXPERIMENTS_GET_TIMEOUT', 30000); // ms = 30sec
 
   var module = angular.module('simulationControlServices', ['ngResource',
     'exdFrontendApp.Constants',
@@ -272,6 +272,9 @@
         // end for indicating when all loading is done.
         var requests = [];
 
+        // This array stores if a server is available or not
+        var serverAvailableHash = {};
+
         // Query each server to get the updated data
         angular.forEach(serverIDs, function (serverID) {
           // if server was disabled in developer UI, then exclude it
@@ -286,6 +289,8 @@
               var activeSimulation = simulationService().getActiveSimulation(data);
               if (angular.isDefined(activeSimulation)) {
                 // There is an active Simulation on this server:
+                // Set the server as occupied
+                serverAvailableHash[serverID] = false;
                 // Search the data structure for an entry with this server
                 var found = searchAndUpdateExperimentTemplates(experimentTemplates, activeSimulation);
                 // Add simulation if it was not found
@@ -295,6 +300,8 @@
               }
               else {
                 // On this server no experiment is running:
+                // Set the server as available
+                serverAvailableHash[serverID] = true;
                 // Delete all elements in the data structure with this serverID
                 deleteSimulationFromTemplate(experimentTemplates, serverID);
               }
@@ -309,7 +316,8 @@
         // After all promises are "fulfilled" we know that all requests have been processed.
         // Now we can see if there is a available Server
         $q.all(requests).then(function () {
-          checkServerAvailability(experimentTemplates, serversEnabled, isServerAvailableCallback);
+          checkServerAvailability(experimentTemplates, serversEnabled, serverAvailableHash, isServerAvailableCallback);
+          queryingServersFinishedCallback();
         });
       };
 
@@ -387,60 +395,36 @@
       };
 
       // Checks if there is an available Server.
-      var checkServerAvailability = function (experimentTemplates, serversEnabled, isAvailableCallback) {
-        // We will use this array to collect promises. Those can then be used in the
-        // end for indicating when all loading is done.
-        var requests = [];
-
-
+      var checkServerAvailability = function (experimentTemplates, serversEnabled, serverAvailableHash, isAvailableCallback) {
         // for each experiment
         angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
-          experimentTemplate.numSupportingServers = 0;
-          experimentTemplate.numAvailableServers = 0;
-        });
 
-        // for each server
-        angular.forEach(serverIDs, function (serverID) {
-          // if server was disabled in developer UI, then exclude it
-          if (serversEnabled.indexOf(serverID) > -1) {
+          // calculate supporting servers
+          var supportingServerIDs = [];
+          angular.forEach(serversEnabled, function(serverID) {
+            // Does this server support this experiment?
+            if (experimentTemplate.serverPattern.indexOf(serverID) > -1) {
+              supportingServerIDs.push(serverID);
+            }
+          });
+          experimentTemplate.numSupportingServers = supportingServerIDs.length;
 
-            var serverURL = servers[serverID].gzweb['nrp-services'];
+          // calculate available servers
+          var availableServerCount = 0;
+          angular.forEach(supportingServerIDs, function(serverID) {
+            if (serverAvailableHash[serverID] === true) {
+              availableServerCount = availableServerCount + 1;
+            }
+          });
+          experimentTemplate.numAvailableServers = availableServerCount;
 
-            angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
-              if (experimentTemplate.serverPattern.indexOf(serverID) > -1) {
-                experimentTemplate.numSupportingServers = experimentTemplate.numSupportingServers + 1;
-                console.log('Server ' + serverURL + ' can host experiment ' + templateName);
-              }
-            });
-
-            // Create a deferred and store its promise.
-            var deferred = $q.defer();
-            requests.push(deferred.promise);
-
-            simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
-              var activeSimulation = simulationService().getActiveSimulation(data);
-              angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
-                // check if server can run experiment
-                if (experimentTemplate.serverPattern.indexOf(serverID) > -1 && !angular.isDefined(activeSimulation)) {
-                    // server is free
-                    experimentTemplate.numAvailableServers = experimentTemplate.numAvailableServers + 1;
-                    isAvailableCallback(templateName, true);
-                }
-              });
-            }).$promise.then(function () {
-                // Since we got an answer (this may either be a "positive" answer or a bad answer, i.e. a server that
-                // is offline), we resolve the respective deferred.
-                deferred.resolve();
-              });
+          // set if a server is available for running the experiment
+          if (availableServerCount > 0) {
+            isAvailableCallback(templateName, true);
+          } else {
+            isAvailableCallback(templateName, false);
           }
         });
-
-        // After all promises are "fulfilled" we know that all requests have been processed.
-        // Now we are done with all queries
-        $q.all(requests).then(function () {
-          queryingServersFinishedCallback();
-        });
-
       };
 
       var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, errorCallback) {
