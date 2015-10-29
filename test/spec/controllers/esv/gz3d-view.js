@@ -692,6 +692,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should toggle the robot camera views', function() {
+      expect(scope.showRobotView).toBe(undefined);
       expect(gz3d.scene.viewManager.views[0].type).toBe('camera');
       expect(gz3d.scene.viewManager.views[0].active).toBe(true);
       expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('visible');
@@ -699,6 +700,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.viewManager.views[1].active).toBe(false);
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
       scope.toggleRobotView();
+      expect(scope.showRobotView).toBe(true);
       expect(gz3d.scene.viewManager.views[0].active).toBe(false);
       expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('hidden');
       expect(gz3d.scene.viewManager.views[1].active).toBe(true);
@@ -707,8 +709,10 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should toggle the rendering performance', function() {
       expect(gz3d.scene.renderer.shadowMapEnabled).toBe(false);
+      expect(scope.showShadows).toBe(undefined);
       scope.toggleGraphicsPerformance();
       expect(gz3d.scene.setShadowMaps).toHaveBeenCalledWith(true);
+      expect(scope.showShadows).toBe(true);
     });
 
     it('should toggle the help mode variable', function() {

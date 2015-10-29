@@ -47,6 +47,10 @@
   box-shadow: inset 0px 0px 20px 10px rgba(150,220,150,1) !important;
 }
 
+.hbp-toolbar-action.active {
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
 
 .hbp-toolbar-large-tool-two-lines {
   @extend .hbp-toolbar-large-tool;

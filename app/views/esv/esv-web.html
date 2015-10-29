@@ -3,12 +3,6 @@
 <!-- endbuild -->
 
 <div class="container-with-navbar-margin">
-  <a ui-sref="home" class="fa fa-arrow-left fa-2x nrp-title-left-button"></a>
-
-  <h1 class="nrp-main-title">Experiment Simulation Viewer</h1>
-  <div ng-if="showAll">
-  <center><span style="color: red">Developer mode</span></center>
-  </div>
 
   <div class="list-container">
     <div class="form-group form-inline col-xs-12">
@@ -23,6 +17,7 @@
             <a><input type="checkbox" ng-checked="serversEnabled.indexOf(server) > -1" ng-click="toggleServer(server); $event.stopPropagation();"> {{server}}</a>
           </li>
         </ul>
+        <span class="label label-warning">Developer mode</span>
       </div>
       <div ng-show="!isQueryingServersFinished"><i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;<i>Loading list of experiments...</i></div>
     </div>

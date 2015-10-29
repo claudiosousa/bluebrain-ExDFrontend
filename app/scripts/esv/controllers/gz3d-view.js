@@ -444,6 +444,7 @@
 
       // robot view
       $scope.toggleRobotView = function() {
+        $scope.showRobotView = !$scope.showRobotView;
         gz3d.scene.viewManager.views.forEach(function(view) {
           if (angular.isDefined(view.type) && view.type === 'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
             view.active = !view.active;
@@ -455,7 +456,8 @@
       // graphics performance settings
       $scope.toggleGraphicsPerformance = function() {
         var isShadowsEnabled = gz3d.scene.renderer.shadowMapEnabled;
-        gz3d.scene.setShadowMaps(!isShadowsEnabled);
+        $scope.showShadows = !isShadowsEnabled;
+        gz3d.scene.setShadowMaps($scope.showShadows);
       };
 
       // help mode
