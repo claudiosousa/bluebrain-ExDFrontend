@@ -135,6 +135,8 @@
           angular.forEach(data.data, function(experimentTemplate, experimentID) {
             if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
               $scope.ExperimentDescription = experimentTemplate.description;
+              var cameraPose = experimentTemplate.cameraPose ? experimentTemplate.cameraPose : undefined;
+              $scope.updateInitialCameraPose(cameraPose);
               simulationInfo.experimentID = experimentID;
             }
           });
@@ -266,15 +268,17 @@
         stateService.setCurrentState(newState).then(
           function () {
             // Temporary fix for screen color update on reset event, see comments above
-            /* istanbul ignore next */
             if (newState === STATE.INITIALIZED) {
-              resetScreenColors();
+
               gz3d.scene.controls.onMouseDownManipulator('initPosition');
               gz3d.scene.controls.onMouseDownManipulator('initRotation');
               gz3d.scene.controls.update();
               gz3d.scene.controls.onMouseUpManipulator('initPosition');
               gz3d.scene.controls.onMouseUpManipulator('initRotation');
               $scope.sliderPosition = SLIDER_INITIAL_POSITION;
+              gz3d.scene.resetView(); //update the default camera position, if defined
+              /* istanbul ignore next */
+              resetScreenColors();
             }
           }
         );
@@ -429,6 +433,12 @@
         }
       };
 
+      $scope.updateInitialCameraPose = function(pose) {
+        if (angular.isDefined(pose)) {
+          $scope.cameraPose = pose;
+          gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
+        }
+      };
 
       // Spiketrain
       $scope.showSpikeTrain = false;

@@ -5766,6 +5766,7 @@ GZ3D.Scene.prototype.init = function()
   // camera
   this.camera = this.viewManager.getViewByName('main_view').camera;
   this.defaultCameraPosition = new THREE.Vector3(5, 0, 1);
+  this.defaultCameraLookAt = new THREE.Vector3(0.0, 0.0, 0.0);
   this.resetView();
 
   // Grid
@@ -7613,7 +7614,40 @@ GZ3D.Scene.prototype.resetView = function()
 {
   this.camera.position.copy(this.defaultCameraPosition);
   this.camera.up = new THREE.Vector3(0, 0, 1);
-  this.camera.lookAt(new THREE.Vector3( 0, 0, 0 ));
+  this.camera.lookAt(this.defaultCameraLookAt);
+  this.camera.updateMatrix();
+};
+
+ /**
+ * Set the camera pose and the default value (position and LookAt) and update the projection matrix
+ * @param {Float} xPos - x coordinate (camera position)
+ * @param {Float} yPos - y coordinate (camera position)
+ * @param {Float} zPos - z coordinate (camera position)
+ * @param {Float} xLookAt - x coordinate (LookAt position)
+ * @param {Float} yLookAt - y coordinate (LookAt position)
+ * @param {Float} zLookAt - z coordinate (LookAt position)
+ */
+GZ3D.Scene.prototype.setDefaultCameraPose = function(xPos, yPos, zPos, xLookAt, yLookAt, zLookAt)
+{
+  this.defaultCameraPosition = new THREE.Vector3(xPos, yPos, zPos);
+  this.defaultLookAt = new THREE.Vector3(xLookAt, yLookAt, zLookAt);
+  this.resetView();
+};
+
+
+ /**
+ * Set the camera pose (position and LookAt) and update the projection matrix
+ * @param {Float} xPos - x coordinate (camera position)
+ * @param {Float} yPos - y coordinate (camera position)
+ * @param {Float} zPos - z coordinate (camera position)
+ * @param {Float} xLookAt - x coordinate (LookAt position)
+ * @param {Float} yLookAt - y coordinate (LookAt position)
+ * @param {Float} zLookAt - z coordinate (LookAt position)
+ */
+GZ3D.Scene.prototype.setCameraPose = function(xPos, yPos, zPos, xLookAt, yLookAt, zLookAt)
+{
+  this.camera.position = new THREE.Vector3(xPos, yPos, zPos);
+  this.camera.lookAt(new THREE.Vector3(xLookAt, yLookAt, zLookAt));
   this.camera.updateMatrix();
 };
 

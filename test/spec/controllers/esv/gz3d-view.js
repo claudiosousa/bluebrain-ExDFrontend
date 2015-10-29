@@ -127,6 +127,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       Initialize : jasmine.createSpy('Initialize'),
       deInitialize : jasmine.createSpy('deInitialize'),
       scene : {
+        resetView: jasmine.createSpy('resetView'),
+        setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
+
         radialMenu : {
           showing: false
         },
@@ -440,6 +443,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       stateService.setCurrentState(STATE.INITIALIZED).then.mostRecentCall.args[0]();
       expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initPosition');
       expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initRotation');
+      expect(gz3d.scene.resetView).toHaveBeenCalled();
     });
 
     it('should register for status information', function() {
@@ -832,6 +836,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should go back to the esv-web page', function() {
       scope.exit('/fake_url');
       expect(location.path()).toEqual('/fake_url');
+    });
+
+    it('should update simulation\'s initial camera pose', function(){
+      scope.updateInitialCameraPose(undefined);
+      expect(gz3d.scene.setDefaultCameraPose).not.toHaveBeenCalled();
+      var camPose =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0];
+      scope.updateInitialCameraPose(camPose);
+      expect(gz3d.scene.setDefaultCameraPose).toHaveBeenCalled();
     });
   });
 
