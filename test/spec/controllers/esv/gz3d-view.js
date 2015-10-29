@@ -133,7 +133,9 @@ describe('Controller: Gz3dViewCtrl', function () {
         modelManipulator: {
           pickerNames: ''
         },
-        emitter: {},
+        emitter: {
+          emit: jasmine.createSpy('emit'),
+        },
         setManipulationMode : jasmine.createSpy('setManipulationMode'),
         controls: {
           onMouseDownManipulator: jasmine.createSpy('onMouseDownManipulator'),
@@ -552,11 +554,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should turn slider position into light intensities', function() {
-        expect(scope.updateLightIntensity).toEqual(jasmine.any(Function));
-        gz3d.scene.emitter.emit = jasmine.createSpy('emit');
-
-        scope.updateLightIntensity(60.0);
-
+        scope.sliderPosition = 60.0;
+        scope.$apply();
         expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 60 / 50);
         expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
     });

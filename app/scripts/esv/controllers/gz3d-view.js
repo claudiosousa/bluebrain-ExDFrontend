@@ -48,7 +48,8 @@
       CODE_EDITOR: 12,
       JOINT_PLOT: 13,
       GRAPHICS_PERFORMANCE: 14
-    });
+    })
+    .constant('SLIDER_INITIAL_POSITION', 50);
 
   angular.module('exdFrontendApp')
     // Panels
@@ -74,7 +75,7 @@
       'STATE', 'ERROR', 'nrpBackendVersions',
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
       'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
-      'simulationInfo',
+      'simulationInfo', 'SLIDER_INITIAL_POSITION',
         function ($rootScope, $scope, $timeout,
           $location, $http, $window, $document, bbpConfig,
           hbpUserDirectory, simulationGenerator, simulationService,
@@ -84,7 +85,7 @@
           STATE, ERROR, nrpBackendVersions,
           nrpFrontendVersion, panels, UI, OPERATION_MODE,
           gz3d, EDIT_MODE, stateService, contextMenuState,
-          simulationInfo) {
+          simulationInfo, SLIDER_INITIAL_POSITION) {
 
       // This is the only place where simulation info are, and should be, initialized
       simulationInfo.Initialize();
@@ -113,6 +114,8 @@
       $scope.stateService = stateService;
       $scope.EDIT_MODE = EDIT_MODE;
       $scope.contextMenuState = contextMenuState;
+
+      $scope.sliderPosition = SLIDER_INITIAL_POSITION;
 
       simulationInfo.experimentID = 'experiment-not-found';
       if (!bbpConfig.get('localmode.forceuser', false)) {
@@ -271,6 +274,7 @@
               gz3d.scene.controls.update();
               gz3d.scene.controls.onMouseUpManipulator('initPosition');
               gz3d.scene.controls.onMouseUpManipulator('initRotation');
+              $scope.sliderPosition = SLIDER_INITIAL_POSITION;
             }
           }
         );
@@ -378,11 +382,10 @@
 
 
       // Lights management
-      $scope.sliderPosition = 50;
-      $scope.updateLightIntensity = function(sliderPosition) {
-        var ratio = sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
+      $scope.$watch('sliderPosition', function() {
+        var ratio = $scope.sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
         gz3d.scene.emitter.emit('lightChanged', ratio);
-      };
+      });
 
       $scope.focus = function(id) {
         // timeout makes sure that it is invoked after any other event has been triggered.
