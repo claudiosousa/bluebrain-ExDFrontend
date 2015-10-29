@@ -839,7 +839,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should update simulation\'s initial camera pose', function(){
-      scope.updateInitialCameraPose(undefined);
+      scope.updateInitialCameraPose(null);
       expect(gz3d.scene.setDefaultCameraPose).not.toHaveBeenCalled();
       var camPose =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0];
       scope.updateInitialCameraPose(camPose);

@@ -135,8 +135,7 @@
           angular.forEach(data.data, function(experimentTemplate, experimentID) {
             if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
               $scope.ExperimentDescription = experimentTemplate.description;
-              var cameraPose = experimentTemplate.cameraPose ? experimentTemplate.cameraPose : undefined;
-              $scope.updateInitialCameraPose(cameraPose);
+              $scope.updateInitialCameraPose(experimentTemplate.cameraPose);
               simulationInfo.experimentID = experimentID;
             }
           });
@@ -434,8 +433,7 @@
       };
 
       $scope.updateInitialCameraPose = function(pose) {
-        if (angular.isDefined(pose)) {
-          $scope.cameraPose = pose;
+        if (pose !== null) {
           gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
         }
       };

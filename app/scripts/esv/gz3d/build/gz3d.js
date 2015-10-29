@@ -7643,7 +7643,7 @@ GZ3D.Scene.prototype.resetView = function()
 GZ3D.Scene.prototype.setDefaultCameraPose = function(xPos, yPos, zPos, xLookAt, yLookAt, zLookAt)
 {
   this.defaultCameraPosition = new THREE.Vector3(xPos, yPos, zPos);
-  this.defaultLookAt = new THREE.Vector3(xLookAt, yLookAt, zLookAt);
+  this.defaultCameraLookAt = new THREE.Vector3(xLookAt, yLookAt, zLookAt);
   this.resetView();
 };
 
