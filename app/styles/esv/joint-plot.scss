@@ -24,9 +24,13 @@ $jointPlotPadding: 10px;
   .property-selector, .joint-selector {
     padding-left: $jointPlotPadding;
     padding-top: $jointPlotPadding;
+    align-self: stretch;
   }
   .joint-selector {
     order: -1;
+    overflow-y: auto;
+    flex-basis: 230px;
+    flex-shrink: 0;
   }
   .linechart-wrapper {
     flex-shrink: 0;
