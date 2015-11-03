@@ -1,0 +1,43 @@
+<!-- build:css(.tmp) styles/esv/esv-web.css -->
+<link rel="stylesheet" href="styles/esv/esv-web.css" />
+<!-- endbuild -->
+
+<div class="container-with-navbar-margin">
+
+  <div class="list-container">
+    <div class="form-group form-inline col-xs-12">
+      <input ng-model="query" type="text" class="top-buttons form-control input-sm" placeholder="Experiment Filter...">
+      <div ng-show="!isQueryingServersFinished"><i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;<i>Loading list of experiments...</i></div>
+    </div>
+
+    <hr class="list-separator">
+
+    <a ng-show="!showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=true">developers</a>
+    <a ng-show="showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=false">users</a>
+
+    <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll"
+         ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
+      <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
+        <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
+          <img ng-src="data:image/png;base64,{{exp.imageData}}" />
+        </div>
+        <div class="list-entry-middle list-entry-container up-down">
+          <div class="list-entry-container left-right title-line">
+            <div class="h4">{{exp.name}}</div>
+          </div>
+          <div ng-if="exp.id == selectedIndex">{{exp.description}}</div>
+          <div ng-if="exp.id != selectedIndex">{{exp.description | limitTo: 200}}...</div>
+          <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
+            <div class="btn-group" role="group">
+              <button class="btn btn-default" ng-click="cloneExperiment(exp.id)">
+                <i class="fa fa-pencil"></i> Clone
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="list-separator">
+    </div>
+  </div>
+</div>

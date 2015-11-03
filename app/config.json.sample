@@ -1,23 +1,6 @@
 {
   "api": {
     "neurorobotics": {
-      "bbpce021": {
-        "gzweb": {
-          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/assets",
-          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api",
-          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws/gzbridge"
-        },
-        "rosbridge": {
-          "topics": {
-            "spikes": "/monitor/spike_recorder",
-            "joint": "/joint_states",
-            "status": "/ros_cle_simulation/status",
-            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
-          },
-          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
-        },
-        "serverJobLocation": "local"
-      },
       "bbpce022": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/2/assets",
@@ -68,10 +51,47 @@
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"
         },
         "serverJobLocation": "lugano"
+      },
+      "bbpsrvc29": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/5/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/5/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/5/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
+            "status": "/ros_cle_simulation/status",
+            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/5/ws"
+        },
+        "serverJobLocation": "lugano"
+      },
+      "bbpsrvc21": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/6/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/6/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/6/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
+            "status": "/ros_cle_simulation/status",
+            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/6/ws"
+        },
+        "serverJobLocation": "lugano"
       }
     },
     "user": {
       "v0": "https://services.humanbrainproject.eu/oidc/v0/api"
+    },
+    "collab": {
+      "url": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api"
     }
   },
   "auth": {
@@ -83,6 +103,6 @@
   },
   "localmode" : {
     "forceuser": false,
-    "ownerID": "vonarnim"
+    "ownerID": "localuser"
   }
 }

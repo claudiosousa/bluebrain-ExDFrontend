@@ -419,10 +419,12 @@
           experimentTemplate.numAvailableServers = availableServerCount;
 
           // set if a server is available for running the experiment
-          if (availableServerCount > 0) {
-            isAvailableCallback(templateName, true);
-          } else {
-            isAvailableCallback(templateName, false);
+          if (angular.isFunction(isAvailableCallback)) {
+            if (availableServerCount > 0) {
+              isAvailableCallback(templateName, true);
+            } else {
+              isAvailableCallback(templateName, false);
+            }
           }
         });
       };

@@ -33,6 +33,7 @@
                                    'contextMenuStateService',
                                    'pythonCodeHelperServices',
                                    'simulationInfoService',
+                                   'collabServices',
                                    'exdFrontendApp.Constants',
                                    'exdFrontendFilters',
                                    'nrpErrorHandlers',
@@ -51,6 +52,14 @@
               url: '/esv-web',
               templateUrl: 'views/esv/esv-web.html',
               controller: 'experimentCtrl'
+            }).state('esv-collab-edit', {
+              url: '/esv-collab/edit?ctx',
+              templateUrl: 'views/esv/esv-collab-edit.html',
+              controller: 'ESVCollabEditCtrl'
+            }).state('esv-collab-run', {
+              url: '/esv-collab/run?ctx',
+              templateUrl: 'views/esv/esv-collab-run.html',
+              controller: 'ESVCollabRunCtrl'
             }).state('home', {
               url: '/',
               templateUrl: 'views/common/home.html',
