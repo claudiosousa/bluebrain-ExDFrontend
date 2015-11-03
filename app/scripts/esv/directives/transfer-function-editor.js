@@ -56,6 +56,7 @@
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,
+          indentUnit: 4,
           mode: 'text/x-python'
         };
 

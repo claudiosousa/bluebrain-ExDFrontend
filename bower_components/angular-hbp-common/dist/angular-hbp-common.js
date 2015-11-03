@@ -279,7 +279,7 @@ angular.module('hbpCommon').service('hbpUiUtil', [
     //
     // Once this function is called it will first try to call the 'submitCall' function with
     // all the optional argument provided above.
-    // - If this succeeds then the close methode will be called.
+    // - If this succeeds then the close method will be called.
     // - If this fails then the error field of the provided scope will be filed with the
     //   error message
     var dialogSubmissionRestCallErrorHandler = function (submitCall, scope) {
@@ -292,7 +292,7 @@ angular.module('hbpCommon').service('hbpUiUtil', [
           if (response && response.data) {
             scope.error = response.data;
           } else {
-            scope.error = 'An unknown error occured';
+            scope.error = 'An unknown error occurred';
           }
         });
       };

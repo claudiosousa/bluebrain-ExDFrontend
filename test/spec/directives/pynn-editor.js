@@ -7,6 +7,10 @@
 
 describe('Directive: pynnEditor', function () {
 
+  String.prototype.repeat = function(num) {
+    return new Array( num + 1 ).join( this );
+  };
+
   var VIEW = 'views/esv/pynn-editor.html';
 
   var $rootScope,
@@ -22,6 +26,7 @@ describe('Directive: pynnEditor', function () {
 
   var backendInterfaceServiceMock = {
     getBrain: jasmine.createSpy('getBrain'),
+    setBrain: jasmine.createSpy('setBrain')
   };
 
   var documentationURLsMock =
@@ -37,6 +42,46 @@ describe('Directive: pynnEditor', function () {
       };
     }
   };
+
+  var docMock = {
+    clearHistory: function () {},
+    markClean: function () {}
+  };
+
+  var tokenMock = {
+    type: 'variable',
+    string: 'token'
+  };
+
+  var lineMock = {};
+
+  var cmMock = {
+    getDoc: function() { return docMock; },
+    getTokenAt: function() {return tokenMock; },
+    addLineClass: function(/*line, str, str2*/) { return lineMock; },
+    addLineWidget: function(/*line, node, boolean*/) {},
+    scrollIntoView: function(/*line*/) {},
+    removeLineClass: jasmine.createSpy('removeLineClass')
+  };
+
+  // @jshint: no i can't make that CamelCase without breaking it
+  /* jshint camelcase:false */
+  var errorMock1 = {
+    data: {
+      error_message: 'ERROR',
+      error_line: 0,
+      error_column: 1
+    }
+  };
+
+  var errorMock2 = {
+    data: {
+      error_message: 'Error Message: The name \'token\' is not defined',
+      error_line: 0,
+      error_column: 0
+    }
+  };
+
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
@@ -71,13 +116,17 @@ describe('Directive: pynnEditor', function () {
 
   it('should init the pynnScript variable', function () {
     $scope.control.refresh();
-    //console.log('SCOPE: ' + simpleStringify(isolateScope));
     expect(isolateScope.pynnScript).toBeUndefined();
     expect(backendInterfaceService.getBrain).toHaveBeenCalled();
   });
 
+  it('should return codemirror instance when already set', function() {
+    isolateScope.cm = 'CM';
+    var cm = isolateScope.getCM();
+    expect(cm).toEqual(isolateScope.cm);
+  });
 
-  describe('Retrieving, PyNN script', function () {
+  describe('Get/Set brain, PyNN script', function () {
     var data = {
       'brain_type': 'py',
       'data': '// A PyNN script',
@@ -93,7 +142,10 @@ describe('Directive: pynnEditor', function () {
     var expected = data.data;
 
     beforeEach(function () {
-      // Nothing to do here.
+      // Mock functions that access elements that are not available in test environment
+      isolateScope.getCM = jasmine.createSpy('getCM').andReturn(cmMock);
+      backendInterfaceService.getBrain.reset();
+      backendInterfaceService.setBrain.reset();
     });
 
     it('should handle the retrieved pynn script properly', function () {
@@ -104,12 +156,81 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.pynnScript).toEqual(expected);
     });
 
-    it('should not load a h5 brain properly', function () {
+    it('should not load a h5 brain', function () {
       // Mock getBrain Callback with data2 as return value
       backendInterfaceService.getBrain.andCallFake(function(f) { f(data2); });
       $scope.control.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toBeUndefined();
+    });
+
+    it('should handle send a pynn script properly', function () {
+      isolateScope.update('pynn script');
+      expect(backendInterfaceService.setBrain).toHaveBeenCalled();
+      expect(isolateScope.loading).toBe(true);
+      backendInterfaceService.setBrain.argsForCall[0][3](); // success callback
+      expect(isolateScope.loading).toBe(false);
+    });
+
+    it('should be able to repeat the same test twice', function () {
+      isolateScope.update('pynn script');
+      expect(backendInterfaceService.setBrain).toHaveBeenCalled();
+      expect(isolateScope.loading).toBe(true);
+      backendInterfaceService.setBrain.argsForCall[0][3](); // success callback
+      expect(isolateScope.loading).toBe(false);
+    });
+
+    it('should handle handle an error when sending a pynn script properly (1)', function () {
+      isolateScope.update('pynn script');
+      expect(backendInterfaceService.setBrain).toHaveBeenCalled();
+      expect(isolateScope.loading).toBe(true);
+      backendInterfaceService.setBrain.argsForCall[0][4](errorMock1); // error callback
+      expect(isolateScope.loading).toBe(false);
+    });
+
+    it('should handle handle an error when sending a pynn script properly (2)', function () {
+      isolateScope.update('search a\ntoken token\nanother line');
+      expect(backendInterfaceService.setBrain).toHaveBeenCalled();
+      expect(isolateScope.loading).toBe(true);
+      backendInterfaceService.setBrain.argsForCall[0][4](errorMock2); // error callback
+      expect(isolateScope.loading).toBe(false);
+    });
+
+  });
+
+
+  describe('Testing pynn-editor functions', function () {
+
+    beforeEach(function () {
+      // Mock functions that access elements that are not available in test environment
+      isolateScope.getCM = jasmine.createSpy('getCM').andReturn(cmMock);
+    });
+
+    it('should parse a token correctly', function() {
+      var token = isolateScope.parseName('Error Message: The name \'token\' is not defined');
+      expect(token).toEqual('token');
+    });
+
+    it('should not parse a token of an unknown error message', function() {
+      var token = isolateScope.parseName('Some other error message');
+      expect(token).toBe(false);
+    });
+
+    it('should search a token', function() {
+      isolateScope.pynnScript = 'search a\ntoken token\nanother line';
+      var pos = isolateScope.searchToken('token');
+      expect(pos.line).toBe(1);
+      expect(pos.ch).toBe(0);
+    });
+
+    it('should call clear functions', function() {
+      isolateScope.lineHandle = jasmine.createSpy('lineHandle');
+      isolateScope.lineWidget = jasmine.createSpy('lineWidget');
+      isolateScope.lineWidget.clear = jasmine.createSpy('clear');
+      isolateScope.cm = cmMock;
+      isolateScope.clearError();
+      expect(isolateScope.lineWidget.clear).toHaveBeenCalled();
+      expect(isolateScope.cm.removeLineClass).toHaveBeenCalled();
     });
 
   });

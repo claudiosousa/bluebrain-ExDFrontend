@@ -9,11 +9,19 @@
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">PyNN Script</span></code></h4>
   <hr>
-  <div ui-codemirror="{
-          lineWrapping : true,
+  <div id="codeEditor"  ui-codemirror ui-codemirror-opts="{
+          lineWrapping: true,
           lineNumbers: true,
-          readOnly: true,
+          readOnly: false,
+          indentUnit: 4,
           mode: 'text/x-python'
-      }" ng-model="pynnScript" ui-refresh="pynnScript">
+      }"
+       ng-model="pynnScript"
+       ui-refresh='refreshCodemirror'>
   </div>
+  <button type="button" class="btn btn-default btn-md"
+          ng-click="update(pynnScript)"
+          ng-disabled="doc.isClean() || loading || stateService.statePending">
+    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Update
+  </button>
 </div>

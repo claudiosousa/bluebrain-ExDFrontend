@@ -43,6 +43,19 @@
       };
 
       var resourceBrain = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/simulation/:sim_id/brain', {}, {
+          get: {
+            method: 'GET',
+            interceptor: {responseError: serverError.display}
+          },
+          put: {
+            method: 'PUT',
+            //interceptor: {responseError: serverError.display}
+          }
+        });
+      };
+
+      var resourceBrainExp = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/experiment/:exp_id/brain', {}, {
           get: {
             method: 'GET',
@@ -54,12 +67,27 @@
       return {
         getBrain: function (callback) {
           resourceBrain(simulationInfo.serverBaseUrl).get(
+            {sim_id: simulationInfo.simulationID},
+            function(response) {
+              callback(response);
+            }
+          );
+        },
+        setBrain: function (data, brain_type, data_type, successCallback, failureCallback) {
+          resourceBrain(simulationInfo.serverBaseUrl).put({
+            sim_id: simulationInfo.simulationID
+          }, {'data': data, 'brain_type': brain_type, 'data_type': data_type}, successCallback, failureCallback);
+        },
+
+        reloadBrain: function (callback) {
+          resourceBrainExp(simulationInfo.serverBaseUrl).get(
             {exp_id: simulationInfo.experimentID},
             function(response) {
               callback(response);
             }
           );
         },
+
         getStateMachines: function (callback) {
           resourceStateMachine(simulationInfo.serverBaseUrl).get(
             {sim_id: simulationInfo.simulationID},
