@@ -17,7 +17,7 @@ describe('Controller: experimentCtrl', function () {
     experimentSimulationService,
     simulationService,
     hbpUserDirectory,
-    REFRESH_UPDATE_RATE,
+    ESV_UPDATE_RATE,
     UPTIME_UPDATE_RATE,
     STATE;
 
@@ -45,11 +45,16 @@ describe('Controller: experimentCtrl', function () {
   var store = {};
   store['server-enabled'] = angular.toJson(serversEnabled);
 
+  var getExperimentsThenSpy = jasmine.createSpy('then');
+
   var experimentSimulationServiceMock = {
     setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
     startNewExperiments : jasmine.createSpy('startNewExperiments'),
-    getExperiments : jasmine.createSpy('getExperiments'),
+    getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
+      return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };
+    }),
     setInitializedCallback : jasmine.createSpy('setInitializedCallback'),
+    setProgressMessageCallback : jasmine.createSpy('setProgressMessageCallback'),
     existsAvailableServer : jasmine.createSpy('existsAvailableServer'),
     refreshExperiments : jasmine.createSpy('refreshExperiments'),
     getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
@@ -115,7 +120,7 @@ describe('Controller: experimentCtrl', function () {
       $scope: scope
     });
 
-    REFRESH_UPDATE_RATE = 30 * 1000; // 30 seconds
+    ESV_UPDATE_RATE = 30 * 1000; // 30 seconds
     UPTIME_UPDATE_RATE = 2 * 1000; // 2 seconds
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
@@ -226,9 +231,9 @@ describe('Controller: experimentCtrl', function () {
   });
 
   it('should get the experiments', function() {
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments, serversEnabled, scope.setProgressMessage, jasmine.any(Function), jasmine.any(Function));
-    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[3];
-    queryingServersFinishedCallback();
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments);
+    expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+    experimentSimulationService.refreshExperiments.mostRecentCall.args[3]();
     expect(scope.isQueryingServersFinished).toBe(true);
   });
 
@@ -262,17 +267,19 @@ describe('Controller: experimentCtrl', function () {
       }
     ));
 
-  it('should create the updatePromise and call refresh experiments after REFRESH_UPDATE_RATE seconds', function() {
-    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[3];
+  it('should create the updatePromise and call refresh experiments after ESV_UPDATE_RATE seconds', function() {
+    var refreshExperimentsFinishedCallback = experimentSimulationService.refreshExperiments.mostRecentCall.args[3];
     scope.updatePromise = undefined;
-    queryingServersFinishedCallback();
+    refreshExperimentsFinishedCallback();
+
+    experimentSimulationService.refreshExperiments.reset();
 
     expect(scope.updatePromise).toBeDefined();
-    // Should not have been called 1 second before REFRESH_UPDATE_RATE
-    timeout.flush(REFRESH_UPDATE_RATE - 1000);
+    // Should not have been called 1 second before ESV_UPDATE_RATE
+    timeout.flush(ESV_UPDATE_RATE - 1000);
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
 
-    // called after in total REFRESH_UPDATE_RATE seconds
+    // called after in total ESV_UPDATE_RATE seconds
     timeout.flush(1000);
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
   });
@@ -312,13 +319,13 @@ describe('Controller: experimentCtrl', function () {
   describe('Tests related to scope.$destroy()', function(){
     it('should stop updating after on $destroy', function() {
       // Querying servers finished
-      experimentSimulationService.getExperiments.mostRecentCall.args[2]();
-      scope.updatePromise = timeout(function(){}, REFRESH_UPDATE_RATE);
+      experimentSimulationService.refreshExperiments.mostRecentCall.args[3]();
+      experimentSimulationService.refreshExperiments.reset();
 
       scope.$destroy();
 
       // Should do nothing after 30 seconds
-      timeout.flush(REFRESH_UPDATE_RATE);
+      timeout.flush(ESV_UPDATE_RATE);
       interval.flush(UPTIME_UPDATE_RATE);
       expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
       expect(scope.updatePromise).not.toBeDefined();
@@ -328,10 +335,11 @@ describe('Controller: experimentCtrl', function () {
     it('should do nothing on $destroy', function() {
       scope.updatePromise = undefined;
       scope.updateUptimePromise = undefined;
+      experimentSimulationService.refreshExperiments.reset();
       scope.$destroy();
 
       // Should do nothing after 30 seconds
-      timeout.flush(REFRESH_UPDATE_RATE);
+      timeout.flush(ESV_UPDATE_RATE);
       interval.flush(UPTIME_UPDATE_RATE);
       expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
       expect(scope.updatePromise).not.toBeDefined();
@@ -344,7 +352,7 @@ describe('Controller: experimentCtrl', function () {
       scope.$destroy();
       expect(scope.isDestroyed).toBeTruthy();
       // Querying servers finished
-      experimentSimulationService.getExperiments.mostRecentCall.args[2]();
+      experimentSimulationService.refreshExperiments.mostRecentCall.args[3]();
       expect(scope.updatePromise).toBeUndefined();
     });
   });

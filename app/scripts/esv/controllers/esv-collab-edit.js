@@ -19,16 +19,12 @@
           $scope.selectedIndex = index;
         };
 
-        experimentSimulationService.getExperiments(
-          // This is the datastructure where all the templates and running experiments are stored
-          $scope.experiments,
-          $scope.serversEnabled,
-          undefined,
+        experimentSimulationService.getExperiments($scope.experiments).then(
           // This function is called when all servers responded to the query of running experiments
           function () {
             $scope.isQueryingServersFinished = true;
-          },
-          undefined);
+          }
+        );
 
         $scope.cloneExperiment = function (experimentId) {
           collabConfigService.clone({contextId: $stateParams.ctx}, {experimentId: experimentId}, function(response) {

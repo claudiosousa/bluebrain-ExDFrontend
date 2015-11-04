@@ -200,17 +200,20 @@
 
   module.factory('experimentSimulationService', ['$q', '$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError', 'simulationSDFWorld',
     function ($q, $http, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError, simulationSDFWorld) {
-      var setProgressMessageCallback;
-      var queryingServersFinishedCallback;
       var initializedCallback;
       var servers = bbpConfig.get('api.neurorobotics');
       var serverIDs = Object.keys(servers);
       var rosConnection;
       var statusListener;
       var shouldLaunchInEditMode = false;
+      var setProgressMessage;
 
       var setShouldLaunchInEditMode = function (value) {
         shouldLaunchInEditMode = value;
+      };
+
+      var setProgressMessageCallback = function (callback) {
+        setProgressMessage = callback;
       };
 
       var addSimulationToTemplate = function (experimentTemplates, activeSimulation) {
@@ -266,7 +269,7 @@
       };
 
       // Refresh the experiment data structure
-      var refreshExperiments = function (experimentTemplates, serversEnabled, isServerAvailableCallback) {
+      var refreshExperiments = function (experimentTemplates, serversEnabled, isServerAvailableCallback, refreshFinishedCallback) {
 
         // We will use this array to collect promises. Those can then be used in the
         // end for indicating when all loading is done.
@@ -317,16 +320,14 @@
         // Now we can see if there is a available Server
         $q.all(requests).then(function () {
           checkServerAvailability(experimentTemplates, serversEnabled, serverAvailableHash, isServerAvailableCallback);
-          queryingServersFinishedCallback();
+          if(angular.isFunction(refreshFinishedCallback)) {
+            refreshFinishedCallback();
+          }
         });
       };
 
       // Fetches the Experiments
-      var getExperiments = function (experimentTemplates, serversEnabled, progressMessageCallback, queryingServersFinishedCb, setIsServerAvailable) {
-        setProgressMessageCallback = progressMessageCallback;
-        queryingServersFinishedCallback = queryingServersFinishedCb;
-
-
+      var getExperiments = function (experimentTemplates) {
         // We will use this array to collect promises. Those can then be used in the
         // end for indicating when all loading is done.
         var requests = [];
@@ -358,11 +359,8 @@
             });
         });
 
-        // After all promises are "fulfilled" we know that all requests have been processed.
-        // Now we can see if there is a available Server
-        $q.all(requests).then(function () {
-          refreshExperiments(experimentTemplates, serversEnabled, setIsServerAvailable);
-        });
+        // Return the promise, which is resolved, when all of the request promises are resolved
+        return $q.all(requests);
       };
 
       var registerForStatusInformation = function (serverID, simulationID) {
@@ -381,14 +379,14 @@
               statusListener = undefined;
               rosConnection.close();
               rosConnection = undefined;
-              setProgressMessageCallback({main: 'Simulation initialized.'});
+              setProgressMessage({main: 'Simulation initialized.'});
               var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
               var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + operationMode;
               if (angular.isDefined(initializedCallback)) {
                 initializedCallback(url);
               }
             } else {
-              setProgressMessageCallback({main: message.progress.task, sub: message.progress.subtask});
+              setProgressMessage({main: message.progress.task, sub: message.progress.subtask});
             }
           }
         });
@@ -459,7 +457,7 @@
       };
 
       var launchExperimentOnServer = function (experimentConfiguration, environmentConfiguration, freeServerID, errorCallback) {
-        setProgressMessageCallback({main: 'Create new Simulation...'});
+        setProgressMessage({main: 'Create new Simulation...'});
         var serverURL = servers[freeServerID].gzweb['nrp-services'];
 
         // In case the config does specify where to run, we take the value from the config file. If there is no hint,
@@ -479,7 +477,7 @@
 
         // Create a new simulation.
         simulationGenerator(serverURL).create(simInitData, function (createData) {
-          setProgressMessageCallback({main: 'Initialize Simulation...'});
+          setProgressMessage({main: 'Initialize Simulation...'});
           // register for messages during initialization
           registerForStatusInformation(freeServerID, createData.simulationID);
 
@@ -539,6 +537,7 @@
         startNewExperiments: startNewExperiments,
         launchExperimentOnServer: launchExperimentOnServer,
         setInitializedCallback: setInitializedCallback,
+        setProgressMessageCallback: setProgressMessageCallback,
         setShouldLaunchInEditMode: setShouldLaunchInEditMode,
         getServersEnable: getServersEnable,
         startNewExperiment: startNewExperiment,

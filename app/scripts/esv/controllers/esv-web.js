@@ -137,27 +137,41 @@
           $scope.userID = bbpConfig.get('localmode.ownerID');
         }
 
-        experimentSimulationService.getExperiments(
-          // This is the datastructure where all the templates and running experiments are stored
-          $scope.experiments,
-          $scope.serversEnabled,
-          // Pass function to display the progress messages
-          $scope.setProgressMessage,
-          // This function is called when all servers responded to the query of running experiments
-          function () {
-            $scope.owners = simulationService().owners;
-            $scope.uptime = simulationService().uptime;
-            $scope.isQueryingServersFinished = true;
+        // This function is called when all servers responded to the query of running experiments
+        var getExperimentsFinishedCallback = function () {
+          $scope.owners = simulationService().owners;
+          $scope.uptime = simulationService().uptime;
+          $scope.isQueryingServersFinished = true;
 
-            // Schedule the update if the esv-web controller was not destroyed in the meantime
-            if(!$scope.isDestroyed) {
-              // Start to update the datastructure in regular intervals
-              $scope.updatePromise = $timeout(function () {
-                experimentSimulationService.refreshExperiments($scope.experiments, $scope.serversEnabled, setIsServerAvailable);
-              }, ESV_UPDATE_RATE);
-            }
-          },
-          setIsServerAvailable);
+          // Schedule the update if the esv-web controller was not destroyed in the meantime
+          if(!$scope.isDestroyed) {
+            // Start to update the datastructure in regular intervals
+            $scope.updatePromise = $timeout(function () {
+              experimentSimulationService.refreshExperiments(
+                $scope.experiments,
+                $scope.serversEnabled,
+                setIsServerAvailable,
+                getExperimentsFinishedCallback
+              );
+            }, ESV_UPDATE_RATE);
+          }
+        };
+
+        // Set the progress message callback function
+        experimentSimulationService.setProgressMessageCallback($scope.setProgressMessage);
+
+        // Get the list of experiments from all the servers
+        // $scope.experiments is the datastructure where all the templates and running experiments are stored
+        experimentSimulationService.getExperiments($scope.experiments).then(function () {
+          // After all promises are resolved we know that all requests have been processed.
+          // Now we can see if there is a available Server
+          experimentSimulationService.refreshExperiments(
+            $scope.experiments,
+            $scope.serversEnabled,
+            setIsServerAvailable,
+            getExperimentsFinishedCallback
+          );
+        });
 
         $scope.uploadEnvironmentAndStart = function(experiment) {
           $log.debug('Creating dummy input file');

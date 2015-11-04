@@ -30,10 +30,14 @@ describe('Controller: ESVCollabEditCtrl', function () {
 
   var store = {};
 
+  var getExperimentsThenSpy = jasmine.createSpy('then');
+
   var experimentSimulationServiceMock = {
     setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
     startNewExperiments : jasmine.createSpy('startNewExperiments'),
-    getExperiments : jasmine.createSpy('getExperiments'),
+    getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
+      return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };
+    }),
     setInitializedCallback : jasmine.createSpy('setInitializedCallback'),
     existsAvailableServer : jasmine.createSpy('existsAvailableServer'),
     refreshExperiments : jasmine.createSpy('refreshExperiments'),
@@ -91,7 +95,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
 
   it('should have initialized the variables correctly', function() {
     expect(scope.selectedIndex).toBe(-1);
-    expect(scope.isQueryingServersFinished).toBe(false);
+    expect(scope.isQueryingServersFinished).toBe(true); // Due to the immediate prommise-call after getExperiments
     expect(scope.experiments).toEqual({});
     expect(scope.serversEnabled).toBe(serversEnabled);
   });
@@ -103,9 +107,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
   });
 
   it('should get the experiments', function() {
-    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments, serversEnabled, undefined, jasmine.any(Function), undefined);
-    var queryingServersFinishedCallback = experimentSimulationService.getExperiments.mostRecentCall.args[3];
-    queryingServersFinishedCallback();
+    expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments);
     expect(scope.isQueryingServersFinished).toBe(true);
   });
 
