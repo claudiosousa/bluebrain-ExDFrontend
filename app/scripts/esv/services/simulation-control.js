@@ -269,8 +269,12 @@
       };
 
       // Refresh the experiment data structure
-      var refreshExperiments = function (experimentTemplates, serversEnabled, isServerAvailableCallback, refreshFinishedCallback) {
-
+      var refreshExperiments = function (
+        experimentTemplates,
+        serversEnabled,
+        isServerAvailableCallback,
+        refreshFinishedCallback
+      ) {
         // We will use this array to collect promises. Those can then be used in the
         // end for indicating when all loading is done.
         var requests = [];

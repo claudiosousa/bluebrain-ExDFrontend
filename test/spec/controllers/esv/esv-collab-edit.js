@@ -17,7 +17,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
-    get: jasmine.createSpy('get').andReturn({'experimentId': 1, 'contextId': 1})
+    get: jasmine.createSpy('get').andReturn({'experimentID': 1, 'contextID': 1})
   };
 
   var experimentTemplates = {
@@ -116,7 +116,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     spyOn(window.parent, 'postMessage');
     scope.cloneExperiment('FakeExperimentID');
     expect(collabConfigService.clone).toHaveBeenCalledWith(
-      {contextId: 'FakeContextID'}, {experimentId: 'FakeExperimentID'}, jasmine.any(Function)
+      {contextID: 'FakeContextID'}, {experimentID: 'FakeExperimentID'}, jasmine.any(Function)
     );
     var redirectionCallback = collabConfigService.clone.mostRecentCall.args[2];
     redirectionCallback();

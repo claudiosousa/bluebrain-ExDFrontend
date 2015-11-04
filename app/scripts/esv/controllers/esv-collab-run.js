@@ -1,53 +1,24 @@
 (function () {
   'use strict';
 
-  /* Controllers */
+  /* Controller */
 
-  angular.module('exdFrontendApp')
-    .filter('nameSnippet', function () {
-      return function (input, filter) {
-        var output = [];
-        var reFilter = new RegExp(filter, 'i');
-        angular.forEach(input, function (exp) {
-          if (exp.name.search(reFilter) !== -1 || exp.description.search(reFilter) !== -1) {
-            output.push(exp);
-          }
-        });
-        return output;
-      };
-    })
-    .filter('convertToArray', function () {
-      return function (items) {
-        var output = [];
-        angular.forEach(items, function (item, id) {
-          item.id = id;
-          output.push(item);
-        });
-        return output;
-      };
-    })
-    .filter('byMaturity', function ($filter) {
-      return function (input, isDev) {
-        if (isDev) {
-          return $filter('filter')(input, {maturity: '!production'}, true);
-        }
-        else {
-          return $filter('filter')(input, {maturity: 'production'}, true);
-        }
-      };
-    })
-    .controller('experimentCtrl', [
-      '$scope',
-      '$timeout',
-      '$interval',
-      '$location',
-      'simulationService',
-      'experimentSimulationService',
-      'STATE',
-      'OPERATION_MODE',
-      'bbpConfig',
-      'hbpUserDirectory',
-      'simulationSDFWorld',
+  angular.module('exdFrontendApp').controller('ESVCollabRunCtrl',
+    [
+    '$scope',
+    '$timeout',
+    '$interval',
+    '$location',
+    'simulationService',
+    'experimentSimulationService',
+    'STATE',
+    'OPERATION_MODE',
+    'bbpConfig',
+    'hbpUserDirectory',
+    'simulationSDFWorld',
+    '$stateParams',
+    'collabConfigService',
+    'serverError',
       function (
         $scope,
         $timeout,
@@ -59,11 +30,13 @@
         OPERATION_MODE,
         bbpConfig,
         hbpUserDirectory,
-        simulationSDFWorld)
-      {
-        $scope.selectedIndex = -1;
-        $scope.joinSelectedIndex = -1;
-        $scope.startNewExperimentSelectedIndex = -1;
+        simulationSDFWorld,
+        $stateParams,
+        collabConfigService,
+        serverError
+      ) {
+        $scope.joinSelected = false;
+        $scope.startNewExperimentSelected = false;
         $scope.isServerAvailable = {};
         $scope.isQueryingServersFinished = false;
         $scope.isDestroyed = false;
@@ -79,30 +52,19 @@
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
 
-        $scope.setSelected = function (index) {
-          if ($scope.startNewExperimentSelectedIndex !== -1) {
-            return;
-          }
-          if (index !== $scope.selectedIndex) {
-            $scope.selectedIndex = index;
-            $scope.joinSelectedIndex = -1;
-            $scope.startNewExperimentSelectedIndex = -1;
-          }
+        $scope.setJoinableVisible = function() {
+          $scope.joinSelected = true;
+          $scope.startNewExperimentSelected = false;
         };
 
-        $scope.setJoinableVisible = function (index) {
-          $scope.joinSelectedIndex = index;
-          $scope.startNewExperimentSelectedIndex = -1;
-        };
-
-        $scope.setProgressbarVisible = function (index) {
-          $scope.joinSelectedIndex = -1;
-          $scope.startNewExperimentSelectedIndex = index;
+        $scope.setProgressbarVisible = function() {
+          $scope.joinSelected = false;
+          $scope.startNewExperimentSelected = true;
         };
 
         $scope.setProgressbarInvisible = function () {
-          $scope.joinSelectedIndex = -1;
-          $scope.startNewExperimentSelectedIndex = -1;
+          $scope.joinSelected = false;
+          $scope.startNewExperimentSelected = true;
         };
 
         $scope.setProgressMessage = function (msg) {
@@ -123,19 +85,25 @@
             $scope.serversEnabled.push(server);
           }
 
-          experimentSimulationService.refreshExperiments($scope.experiments, $scope.serversEnabled, setIsServerAvailable);
+          experimentSimulationService.refreshExperiments(
+            $scope.experiments, $scope.serversEnabled, setIsServerAvailable
+          );
           localStorage.setItem('server-enabled', angular.toJson($scope.serversEnabled));
         };
 
         $scope.startNewExperiment = function(configuration, serverPattern) {
-          experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible);
+          experimentSimulationService.startNewExperiment(
+            configuration, null, serverPattern, $scope.setProgressbarInvisible
+          );
         };
 
         $scope.enterEditMode = function(configuration, serverPattern) {
-          experimentSimulationService.enterEditMode(configuration, null, serverPattern, $scope.setProgressbarInvisible);
+          experimentSimulationService.enterEditMode(
+            configuration, null, serverPattern, $scope.setProgressbarInvisible
+          );
         };
 
-        $scope.joinExperiment = function (url) {
+        $scope.joinExperiment = function(url) {
           var message = 'Joining experiment ' + url;
           $scope.setProgressMessage({main: message});
           $location.path(url);
@@ -143,7 +111,7 @@
 
         experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
-        var setIsServerAvailable = function (id, isAvailable) {
+        var setIsServerAvailable = function(id, isAvailable) {
           $scope.isServerAvailable[id] = isAvailable;
         };
 
@@ -161,23 +129,39 @@
         }
 
         // This function is called when all servers responded to the query of running experiments
-        var getExperimentsFinishedCallback = function () {
+        $scope.getExperimentsFinishedCallback = function () {
           $scope.owners = simulationService().owners;
           $scope.uptime = simulationService().uptime;
-          $scope.isQueryingServersFinished = true;
 
-          // Schedule the update if the esv-web controller was not destroyed in the meantime
-          if(!$scope.isDestroyed) {
-            // Start to update the datastructure in regular intervals
-            $scope.updatePromise = $timeout(function () {
-              experimentSimulationService.refreshExperiments(
-                $scope.experiments,
-                $scope.serversEnabled,
-                setIsServerAvailable,
-                getExperimentsFinishedCallback
-              );
-            }, ESV_UPDATE_RATE);
-          }
+          collabConfigService.get({contextID: $stateParams.ctx},
+            function(response) {
+              var experimentID = response.experimentID;
+              var defaultExperiment = { name: 'No experiment selected',
+                description: 'Please click on the Edit button'};
+              $scope.experiment = experimentID !== '' ? $scope.experiments[experimentID] : defaultExperiment;
+              $scope.experiment.id = experimentID;
+              $scope.isQueryingServersFinished = true;
+              // Schedule the update if the esv-web controller was not destroyed in the meantime
+              // TODO(Luc): check if can skip this block if an update is already planned
+              if(!$scope.isDestroyed) {
+                // Start to update the datastructure in regular intervals
+                $scope.updatePromise = $timeout(function () {
+                  experimentSimulationService.refreshExperiments(
+                    $scope.experiments,
+                    $scope.serversEnabled,
+                    setIsServerAvailable,
+                    $scope.getExperimentsFinishedCallback
+                  );
+                }, ESV_UPDATE_RATE);
+              }
+            },
+            function(data) {
+              $scope.isQueryingServersFinished = true;
+              $scope.experiment = { name: 'Internal Error',
+                description: 'Database unavailable'};
+              serverError.display(data);
+            }
+          );
         };
 
         // Set the progress message callback function
@@ -192,7 +176,7 @@
             $scope.experiments,
             $scope.serversEnabled,
             setIsServerAvailable,
-            getExperimentsFinishedCallback
+            $scope.getExperimentsFinishedCallback
           );
         });
 

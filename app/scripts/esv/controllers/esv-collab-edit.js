@@ -26,8 +26,9 @@
           }
         );
 
-        $scope.cloneExperiment = function (experimentId) {
-          collabConfigService.clone({contextId: $stateParams.ctx}, {experimentId: experimentId}, function(response) {
+        $scope.cloneExperiment = function (experimentID) {
+          collabConfigService.clone({contextID: $stateParams.ctx}, {experimentID: experimentID}, function(response) {
+            // Switch to the RUN-state
             window.parent.postMessage({
               apiVersion: 0,
               eventName: 'workspace.switchMode',
