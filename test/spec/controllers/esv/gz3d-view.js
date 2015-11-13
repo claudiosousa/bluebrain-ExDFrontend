@@ -76,6 +76,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
   beforeEach(module('simulationStateServices', function ($provide) {
     var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
     var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
@@ -368,7 +369,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.viewState.isJoiningStoppedSimulation).toBe(true);
     });
 
-    it('should set the assetLoadingSplash callback in gz3d', function(){
+    it('should set the assetLoadingSplash progress callback in gz3d', function(){
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
       expect(scope.assetLoadingSplashScreen).toEqual(assetLoadingSplashInstance);
@@ -557,11 +558,19 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     });
 
-    it('should turn slider position into light intensities', function() {
-        scope.sliderPosition = 60.0;
-        scope.$apply();
-        expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 60 / 50);
-        expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
+    it('should call asset loading callback and turn slider position into light intensities', function() {
+      scope.assetLoadingSplashScreen = undefined;
+      stateService.currentState = STATE.INITIALIZED;
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      expect(assetLoadingSplash.open).toHaveBeenCalled();
+      var callbackOnClose = assetLoadingSplash.open.mostRecentCall.args[0];
+      expect(callbackOnClose).toBeDefined();
+      expect(callbackOnClose).toBe(scope.onSceneLoaded);
+      callbackOnClose();
+      scope.sliderPosition = 60.0;
+      scope.$apply();
+      expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 60 / 50);
+      expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
     });
 
     it('should emit light intensity changes', function() {

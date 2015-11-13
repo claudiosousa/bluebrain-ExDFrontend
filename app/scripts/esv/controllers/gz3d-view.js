@@ -209,12 +209,21 @@
           stateService.addMessageCallback(messageCallback);
 
           // Show the splash screen for the progress of the asset loading
-          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open(resetScreenColors);
+          $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open($scope.onSceneLoaded);
           gz3d.iface.setAssetProgressCallback(function(data){
             assetLoadingSplash.setProgress(data);
           });
         }
       });
+
+      $scope.onSceneLoaded = function() {
+        // Lights management
+        $scope.$watch('sliderPosition', function() {
+          var ratio = $scope.sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
+          gz3d.scene.emitter.emit('lightChanged', ratio);
+        });
+        resetScreenColors();
+      };
 
       // The following lines allow the joining client to retrieve the actual screen color stored by the server.
       // The method below gets the 'server' color for each screen since it might have been changed
@@ -239,6 +248,8 @@
           }
         }
       };
+
+
       /* istanbul ignore next */
       var resetScreenColors = function() {
         simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function(data){
@@ -383,12 +394,6 @@
         }
       };
 
-
-      // Lights management
-      $scope.$watch('sliderPosition', function() {
-        var ratio = $scope.sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
-        gz3d.scene.emitter.emit('lightChanged', ratio);
-      });
 
       $scope.focus = function(id) {
         // timeout makes sure that it is invoked after any other event has been triggered.
