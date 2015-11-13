@@ -92,14 +92,14 @@ body > div {
   color: white;
 }
 
-.help-window {
+.description-window {
   position: absolute;
   left:0;
   right:0;
   margin-left:auto;
   margin-right:auto;
   top: 1%;
-  bottom: 47px; // we hardcode thevalue = toolbarheight (42px) + 5px until hbp-collaboratory-theme is made available
+  max-height: 70%;
   background:rgba(150, 220, 150, 0.95);
   width: 80%;
   border-radius: 8px;
@@ -107,7 +107,6 @@ body > div {
   border: 2px solid;
   transition: 0.5s linear all;
   opacity: 1;
-  white-space: pre-line;
   div {
     margin-left: 20px;
     margin-right: 20px;
@@ -115,7 +114,33 @@ body > div {
   }
 }
 
-.help-window.ng-hide {
+.description-window.ng-hide {
+  opacity: 0;
+}
+
+.toolbar-help-window {
+  position: absolute;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+  top: 75%;
+  bottom: 75px;
+  background:rgba(150, 220, 150, 0.95);
+  width: 80%;
+  border-radius: 8px;
+  border-color: green;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+  div {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+  }
+}
+
+.toolbar-help-window.ng-hide {
   opacity: 0;
 }
 
@@ -127,6 +152,19 @@ body > div {
 
 .help-text {
   font-size: medium;
+}
+
+.help-text.pre {
+  white-space: pre-line;
+}
+
+.borderless td, .borderless th {
+  border: none !important;
+}
+
+.table-compact td, .table-compact th {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .panels {

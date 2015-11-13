@@ -89,6 +89,7 @@
 
       // This is the only place where simulation info are, and should be, initialized
       simulationInfo.Initialize();
+      $scope.simulationInfo = simulationInfo;
 
       stateService.Initialize();
       var serverConfig = bbpConfig.get('api.neurorobotics')[simulationInfo.serverID];
@@ -108,7 +109,7 @@
       $scope.viewState = {
         isOwner: false,
         isInitialized : false,
-        isJoiningStoppedSimulation : false,
+        isJoiningStoppedSimulation : false
       };
       $scope.gz3d = gz3d;
       $scope.stateService = stateService;
@@ -129,12 +130,15 @@
       }
       simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function(data){
         $scope.ownerID = data.owner;
-        var experimentConfiguration = data.experimentConfiguration;
+        $scope.experimentConfiguration = data.experimentConfiguration;
+        $scope.environmentConfiguration = data.environmentConfiguration;
+        $scope.creationDate = data.creationDate;
         // get experiment list from current server
         experimentList(simulationInfo.serverBaseUrl).experiments(function (data) {
           angular.forEach(data.data, function(experimentTemplate, experimentID) {
-            if (experimentTemplate.experimentConfiguration === experimentConfiguration) {
+            if (experimentTemplate.experimentConfiguration === $scope.experimentConfiguration) {
               $scope.ExperimentDescription = experimentTemplate.description;
+              $scope.ExperimentName = experimentTemplate.name;
               $scope.updateInitialCameraPose(experimentTemplate.cameraPose);
               simulationInfo.experimentID = experimentID;
             }
