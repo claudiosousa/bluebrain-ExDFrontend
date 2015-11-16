@@ -25,15 +25,56 @@ module.exports = function(grunt) {
     var bbpConfig = grunt.file.readJSON((grunt.file.exists('app/config.json') ?
         'app/config.json' : 'app/config.json.sample'));
 
+    var secret = grunt.file.readJSON((grunt.file.exists('test_e2e/secret.json') ?
+        'test_e2e/secret.json' : 'test_e2e/secret.json.sample'));
+
+    var os=require('os');
+    var ifaces=os.networkInterfaces();
+    var lookupIpAddress = null;
+    var ipAddress = null;
+    for (var dev in ifaces) {
+        if(dev === "eth0") {
+            lookupIpAddress = ifaces[dev];
+        }
+    }
+    for (var details in lookupIpAddress) {
+        if (lookupIpAddress[details].family==='IPv4') {
+            ipAddress = lookupIpAddress[details].address;
+        }
+    }
+
     // Define the configuration for all the tasks
     grunt.initConfig({
 
         // Project settings
         yeoman: appConfig,
         bbpConfig: bbpConfig,
+        secret: secret,
         pkg: grunt.file.readJSON('package.json'),
         gerritBranch: process.env.GERRIT_BRANCH,
         noImagemin: false,
+
+        // Protractor settings
+        protractor: {
+            options: {
+                configFile: 'test_e2e/conf.js', // Default config file 
+                keepAlive: true, // If false, the grunt process stops when the test fails. 
+            },
+            remote: {
+                options: {
+                    args: {
+                        seleniumAddress: 'http://bbplxviz02.epfl.ch:4444/wd/hub',
+                        params:{
+                            ipAddress: ipAddress,
+                            login: {
+                                user: '<%= secret.username %>',
+                                password: '<%= secret.password %>'
+                            }
+                        }
+                    }
+                }
+            }
+        },
 
         // Watches files for changes and runs tasks based on the changed files
         watch: {
@@ -75,7 +116,6 @@ module.exports = function(grunt) {
         connect: {
             options: {
                 port: 9000,
-                // Change this to '0.0.0.0' to access the server from outside.
                 hostname: 'localhost',
                 protocol: 'http',
                 livereload: 35729
@@ -83,6 +123,21 @@ module.exports = function(grunt) {
             livereload: {
                 options: {
                     open: true,
+                    middleware: function(connect) {
+                        return [
+                            connect.static('.tmp'),
+                            connect().use(
+                                '/bower_components',
+                                connect.static('./bower_components')
+                            ),
+                            connect.static(appConfig.app)
+                        ];
+                    }
+                }
+            },
+            e2etest: {
+                options: {
+                    hostname: '0.0.0.0', // Accessible through 'localhost'
                     middleware: function(connect) {
                         return [
                             connect.static('.tmp'),
@@ -599,6 +654,20 @@ module.exports = function(grunt) {
         ]);
     });
 
+    grunt.registerTask('e2e', 'Run protractor e2e test', function(target) {
+        if (target === 'dist') {
+            return grunt.task.run(['build', 'connect:dist:keepalive']);
+        }
+        grunt.task.run([
+            'version:test',
+            'clean:server',
+            'wiredep',
+            'concurrent:server',
+            'autoprefixer',
+            'connect:e2etest',
+            'protractor:remote'
+        ]);
+    });
 
     grunt.registerMultiTask('version', 'Retrieve the version of the application and put it in version.json', function(){
        grunt.file.write(this.data.file, '{ \"hbp_nrp_esv\" : \"' + this.options().version + '\" }');
