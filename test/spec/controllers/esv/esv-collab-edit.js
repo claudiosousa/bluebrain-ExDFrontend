@@ -113,10 +113,17 @@ describe('Controller: ESVCollabEditCtrl', function () {
 
   it('should clone the experiment', function() {
     stateParams.ctx = 'FakeContextID';
+    spyOn(window.parent, 'postMessage');
     scope.cloneExperiment('FakeExperimentID');
-    expect(collabConfigService.clone).toHaveBeenCalledWith({contextId: 'FakeContextID'}, {experimentId: 'FakeExperimentID'}, jasmine.any(Function));
-    collabConfigService.clone.mostRecentCall.args[2]({msg: 'FakeMSG'});
-    expect(state.go).toHaveBeenCalledWith('esv-collab-run', {ctx: 'FakeContextID'});
+    expect(collabConfigService.clone).toHaveBeenCalledWith(
+      {contextId: 'FakeContextID'}, {experimentId: 'FakeExperimentID'}, jasmine.any(Function)
+    );
+    var redirectionCallback = collabConfigService.clone.mostRecentCall.args[2];
+    redirectionCallback();
+    var collabApiParams = window.parent.postMessage.mostRecentCall.args[0];
+    var targetWindowUri = window.parent.postMessage.mostRecentCall.args[1];
+    expect(collabApiParams.data.mode).toBe('run');
+    expect(targetWindowUri).toBe('*');
   });
 
   it('should filter the experiments',

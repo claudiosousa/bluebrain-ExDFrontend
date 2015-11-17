@@ -28,8 +28,13 @@
 
         $scope.cloneExperiment = function (experimentId) {
           collabConfigService.clone({contextId: $stateParams.ctx}, {experimentId: experimentId}, function(response) {
-            // Switch to the RUN-state and hand over the contextID
-            $state.go('esv-collab-run', {ctx: $stateParams.ctx});
+            window.parent.postMessage({
+              apiVersion: 0,
+              eventName: 'workspace.switchMode',
+              data: {
+                mode: 'run'
+              }
+            }, "*");
           });
         };
       }]);
