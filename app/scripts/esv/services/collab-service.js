@@ -5,7 +5,7 @@
     'nrpErrorHandlers']);
 
   module.factory('collabConfigService', ['$resource', 'serverError', 'bbpConfig', function ($resource, serverError, bbpConfig) {
-    var baseUrl = bbpConfig.get('api.collab.url');
+    var baseUrl = bbpConfig.get('api.collabContextManagement.url');
     return $resource(baseUrl + '/collab/configuration/:contextId', {}, {
       clone: {
         method: 'PUT',

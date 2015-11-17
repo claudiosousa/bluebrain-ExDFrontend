@@ -90,7 +90,7 @@
     "user": {
       "v0": "https://services.humanbrainproject.eu/oidc/v0/api"
     },
-    "collab": {
+    "collabContextManagement": {
       "url": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api"
     }
   },

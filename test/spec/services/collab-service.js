@@ -12,7 +12,7 @@ describe('Services: collab-service', function () {
     bbpConfig = _bbpConfig_;
     collabConfigService = _collabConfigService_;
 
-    restServiceUrl = bbpConfig.get('api.collab.url') + '/collab/configuration/1234';
+    restServiceUrl = bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration/1234';
 
     httpBackend.whenPUT(restServiceUrl).respond({code: 200, message: 'Success'});
     httpBackend.whenGET(restServiceUrl).respond({experimentId: 'FakeExperimentID'});

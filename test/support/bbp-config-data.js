@@ -24,7 +24,7 @@ window.bbpConfig = {
       'v1': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api',
       'v0': 'https://services-test.humanbrainproject-test.eu/provenance/v0/api'
     },
-    "collab": {
+    "collabContextManagement": {
       "url": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api"
     },
     "neurorobotics": {
