@@ -41,7 +41,7 @@ describe('testing the gz3d service', function () {
   var simulationInfo = {
     serverID: 'bbpce016',
     simulationID: 'mocked_simulation_id',
-    serverConfig: { gzweb: {assets: 'https://assets', websocket:'wss://websocket'} },
+    serverConfig: { gzweb: {assets: 'https://assets', websocket:'wss://websocket'}},
     Initialize: jasmine.createSpy('Initialize')
   };
 
