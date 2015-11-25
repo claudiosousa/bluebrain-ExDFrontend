@@ -271,14 +271,11 @@
 
       // play/pause/stop/initialize button handler
       $scope.simControlButtonHandler = function(newState) {
-
        $scope.updateSimulation(newState);
        $scope.setEditMode(EDIT_MODE.VIEW);
-
       };
 
       $scope.setEditMode = function (newMode) {
-
         //oldMode !== newMode
         if(gz3d.scene.manipulationMode !== newMode) {
             gz3d.scene.setManipulationMode(newMode);
@@ -307,7 +304,6 @@
 
       // for convenience we pass just a string as 'red' or 'blue' currently, this will be replaced later on
       $scope.setColorOnEntity = function (value) {
-
         var selectedEntity = gz3d.scene.selectedEntity;
 
         if(!selectedEntity) {

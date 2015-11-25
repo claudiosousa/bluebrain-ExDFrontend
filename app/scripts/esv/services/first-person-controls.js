@@ -7,6 +7,7 @@
  */
 
 /* global THREE: true */
+/* global console: false */
 
 THREE.FirstPersonControls = function(object, domElement, domElementForKeyBindings)
 {
@@ -26,6 +27,8 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.movementSpeed = 0.05;
   this.lookSpeed = 0.01;
+  this.touchSensitivity = 0.01;
+  this.mouseWheelSensitivity = 0.25;
 
   this.target = new THREE.Vector3();
   this.lookVertical = true;
@@ -59,8 +62,13 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.mousePosOnKeyDown = new THREE.Vector2();
   this.mousePosCurrent = new THREE.Vector2();
 
-  this.initialPosition = new THREE.Vector3().copy(this.object.position);
-  this.initialRotation = new THREE.Quaternion().copy(this.object.quaternion);
+  this.startTouchDistance = new THREE.Vector2();
+  this.startTouchMid = new THREE.Vector2();
+  this.startCameraPosition = new THREE.Vector3();
+  this.cameraLookDirection = new THREE.Vector3();
+
+  this.initialPosition = this.object.position.clone();
+  this.initialRotation = this.object.quaternion.clone();
 
   this.onMouseDown = function (event) {
     // HBP-NRP: The next three lines are commented since this leads to problems in chrome with respect
@@ -77,11 +85,11 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         case 0:
           this.updateSphericalAngles();
           this.mousePosOnKeyDown.set(event.pageX, event.pageY);
+          this.mousePosCurrent.copy(this.mousePosOnKeyDown);
           this.azimuthOnMouseDown = this.azimuth;
           this.zenithOnMouseDown = this.zenith;
           this.mouseDragOn = true;
           break;
-        case 2:
       }
     }
   };
@@ -101,13 +109,107 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
           this.azimuthOnMouseDown = this.azimuth;
           this.zenithOnMouseDown = this.zenith;
           break;
-        case 2:
       }
     }
   };
 
   this.onMouseMove = function (event) {
     this.mousePosCurrent.set(event.pageX, event.pageY);
+  };
+
+  this.onMouseWheel = function (event) {
+    var delta = Math.max(-1, Math.min(1, (-event.wheelDelta || event.detail)));
+    this.object.translateZ(delta * this.mouseWheelSensitivity);
+  };
+
+  this.onTouchStart = function (event) {
+    switch (event.touches.length) {
+      case 1:
+        // look around
+        this.updateSphericalAngles();
+        this.mousePosOnKeyDown.set(event.touches[0].pageX, event.touches[0].pageY);
+        this.mousePosCurrent.copy(this.mousePosOnKeyDown);
+        this.azimuthOnMouseDown = this.azimuth;
+        this.zenithOnMouseDown = this.zenith;
+        this.mouseDragOn = true;
+        break;
+      case 2:
+        this.endLookAround();
+
+        var touch1 = new THREE.Vector2(event.touches[0].pageX, event.touches[0].pageY);
+        var touch2 = new THREE.Vector2(event.touches[1].pageX, event.touches[1].pageY);
+
+        // Compute distance of both touches when they start touching the display
+        this.startTouchDistance = touch1.distanceTo(touch2);
+
+        // Compute the mid of both touches
+        this.startTouchMid.addVectors(touch1, touch2).divideScalar(2.0);
+
+        this.startCameraPosition.copy(this.object.position);
+        break;
+    }
+  };
+
+  this.onTouchMove = function (event) {
+    event.preventDefault();
+    switch (event.touches.length) {
+      case 1:
+        // look around
+        this.mousePosCurrent.set(event.touches[0].pageX, event.touches[0].pageY);
+        break;
+      case 2:
+        this.endLookAround();
+
+        // Compute distance of both touches
+        var touch1 = new THREE.Vector2(event.touches[0].pageX, event.touches[0].pageY);
+        var touch2 = new THREE.Vector2(event.touches[1].pageX, event.touches[1].pageY);
+        var distance = touch1.distanceTo(touch2);
+
+        // How much did the touches moved compared to the initial touch distances
+        var delta = distance - this.startTouchDistance;
+        var forwardDirection = new THREE.Vector3();
+        var straveDirection = new THREE.Vector3();
+
+        // Only do something when the change is above a threshold. This prevents unwanted movements
+        if (Math.abs(delta) >= 10) {
+          forwardDirection = this.cameraLookDirection.clone().setLength((delta-10) * this.touchSensitivity);
+        }
+
+        // Compute the mid of both touches
+        var touchMid = new THREE.Vector2().addVectors(touch1, touch2).divideScalar(2.0);
+        var touchMidDistance = touchMid.distanceTo(this.startTouchMid);
+
+        // Only strave when the change is above a threshold. This prevents unwanted movements
+        if (Math.abs(touchMidDistance) >= 10) {
+          var touchMidDelta = new THREE.Vector2().subVectors(touchMid, this.startTouchMid).multiplyScalar(this.touchSensitivity);
+          straveDirection.set(touchMidDelta.x, -touchMidDelta.y, 0.0).applyQuaternion(this.object.quaternion);
+        }
+
+        this.object.position.addVectors(this.startCameraPosition, forwardDirection).add(straveDirection);
+
+        break;
+    }
+  };
+
+  this.onTouchEnd = function (event) {
+    switch (event.touches.length) {
+      case 0:
+        // look around
+        this.endLookAround();
+        break;
+      case 1:
+        // Reset the start distance
+        this.startTouchDistance = new THREE.Vector2();
+        this.startCameraPosition = new THREE.Vector3();
+        this.startTouchMid = new THREE.Vector2();
+        break;
+    }
+  };
+
+  this.endLookAround = function() {
+    this.mouseDragOn = false;
+    this.azimuthOnMouseDown = this.azimuth;
+    this.zenithOnMouseDown = this.zenith;
   };
 
   this.onKeyDown = function (event) {
@@ -255,6 +357,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         targetPosition.z = position.z + Math.cos(this.zenith);
 
         this.object.lookAt(targetPosition);
+        this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.object.position);
       }
     }
   };
@@ -269,7 +372,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.updateSphericalAngles = function() {
     var vecForward = new THREE.Vector3();
-    vecForward.set(object.matrix.elements[8], object.matrix.elements[9], object.matrix.elements[10]);
+    vecForward.set(this.object.matrix.elements[8], this.object.matrix.elements[9], this.object.matrix.elements[10]);
     vecForward.normalize();
 
     this.zenith = Math.acos(-vecForward.z);
@@ -286,6 +389,11 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.domElement.addEventListener('mousemove', bind(this, this.onMouseMove), false);
   this.domElement.addEventListener('mousedown', bind(this, this.onMouseDown), false);
   this.domElement.addEventListener('mouseup', bind(this, this.onMouseUp), false);
+  this.domElement.addEventListener('touchstart', bind(this, this.onTouchStart), false);
+  this.domElement.addEventListener('touchmove', bind(this, this.onTouchMove), false);
+  this.domElement.addEventListener('touchend', bind(this, this.onTouchEnd), false);
+  this.domElement.addEventListener('mousewheel', bind(this, this.onMouseWheel), false);
+  this.domElement.addEventListener('DOMMouseScroll', bind(this, this.onMouseWheel), false);
 
   domElementForKeyBindings.addEventListener('keydown', bind(this, this.onKeyDown), false);
   domElementForKeyBindings.addEventListener('keyup', bind(this, this.onKeyUp), false);

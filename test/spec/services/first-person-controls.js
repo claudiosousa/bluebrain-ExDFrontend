@@ -20,6 +20,34 @@ function createMouseEvent(eventType, button, pageX, pageY) {
   return event;
 }
 
+function createZeroTouchEvent(targetElement, eventType) {
+  var event = document.createEvent('Event');
+  event.initEvent(eventType, true, true);
+  event.touches = [];
+  return event;
+}
+
+function createOneTouchEvent(targetElement, eventType, pageX, pageY) {
+  var event = document.createEvent('Event');
+  event.initEvent(eventType, true, true);
+  event.touches = [{pageX: pageX, pageY: pageY}];
+  return event;
+}
+
+function createTwoTouchEvent(targetElement, eventType, pageX1, pageY1, pageX2, pageY2) {
+  var event = document.createEvent('Event');
+  event.initEvent(eventType, true, true);
+  event.touches = [{pageX: pageX1, pageY: pageY1}, {pageX: pageX2, pageY: pageY2}];
+  return event;
+}
+
+function createMouseWheelEvent(targetElement, eventType, delta) {
+  var event = document.createEvent('Event');
+  event.initEvent(eventType, true, true);
+  event.wheelDelta = delta;
+  return event;
+}
+
 function triggerKeyEvent(targetElement, eventType, key) {
   var event = createKeyEvent(eventType, key);
   targetElement.dispatchEvent(event);
@@ -27,6 +55,26 @@ function triggerKeyEvent(targetElement, eventType, key) {
 
 function triggerMouseEvent(targetElement, eventType, button, x, y) {
   var event = createMouseEvent(eventType, button, x, y);
+  targetElement.dispatchEvent(event);
+}
+
+function triggerZeroTouchEvent(targetElement, eventType) {
+  var event = createZeroTouchEvent(targetElement, eventType);
+  targetElement.dispatchEvent(event);
+}
+
+function triggerOneTouchEvent(targetElement, eventType, x, y) {
+  var event = createOneTouchEvent(targetElement, eventType, x, y);
+  targetElement.dispatchEvent(event);
+}
+
+function triggerTwoTouchEvent(targetElement, eventType, x1, y1, x2, y2) {
+  var event = createTwoTouchEvent(targetElement, eventType, x1, y1, x2, y2);
+  targetElement.dispatchEvent(event);
+}
+
+function triggerMouseWheelEvent(targetElement, eventType, delta) {
+  var event = createMouseWheelEvent(targetElement, eventType, delta);
   targetElement.dispatchEvent(event);
 }
 
@@ -52,6 +100,10 @@ describe('FirstPersonControls', function () {
     spyOn(firstPersonControls, 'onMouseDown').andCallThrough();
     spyOn(firstPersonControls, 'onMouseUp').andCallThrough();
     spyOn(firstPersonControls, 'onMouseMove').andCallThrough();
+    spyOn(firstPersonControls, 'onTouchStart').andCallThrough();
+    spyOn(firstPersonControls, 'onTouchMove').andCallThrough();
+    spyOn(firstPersonControls, 'onTouchEnd').andCallThrough();
+    spyOn(firstPersonControls, 'onMouseWheel').andCallThrough();
   });
 
   it('should get initialized', inject(function () {
@@ -73,6 +125,11 @@ describe('FirstPersonControls', function () {
     expect(domElement.addEventListener.argsForCall[1][0]).toMatch(/mousemove/);
     expect(domElement.addEventListener.argsForCall[2][0]).toMatch(/mousedown/);
     expect(domElement.addEventListener.argsForCall[3][0]).toMatch(/mouseup/);
+    expect(domElement.addEventListener.argsForCall[4][0]).toMatch(/touchstart/);
+    expect(domElement.addEventListener.argsForCall[5][0]).toMatch(/touchmove/);
+    expect(domElement.addEventListener.argsForCall[6][0]).toMatch(/touchend/);
+    expect(domElement.addEventListener.argsForCall[7][0]).toMatch(/mousewheel/);
+    expect(domElement.addEventListener.argsForCall[8][0]).toMatch(/DOMMouseScroll/);
     expect(domElementForKeyBindings.addEventListener.argsForCall[0][0]).toMatch(/keydown/);
     expect(domElementForKeyBindings.addEventListener.argsForCall[1][0]).toMatch(/keyup/);
   }));
@@ -303,6 +360,152 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.azimuth).toBeCloseTo(expectedAzimuth, 5);
     var expectedZenith = firstPersonControls.zenithOnMouseDown + mouseDeltaY * firstPersonControls.lookSpeed;
     expect(firstPersonControls.zenith).toBeCloseTo(expectedZenith, 5);
+  }));
+
+  //#######################
+  // Touch with one finger
+  //#######################
+  it('should handle touchstart events', inject(function() {
+    spyOn(firstPersonControls, 'updateSphericalAngles').andCallThrough();
+
+    camera.position.copy(new THREE.Vector3(0,0,0));
+    camera.lookAt(new THREE.Vector3(1,0,0));
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.updateMatrix();
+
+    expect(firstPersonControls.activeLook).toBe(true);
+
+    triggerOneTouchEvent(domElement, 'touchstart', 10, 20);
+
+    expect(firstPersonControls.updateSphericalAngles).toHaveBeenCalled();
+    expect(firstPersonControls.azimuth).toEqual(Math.PI * 2);
+    expect(firstPersonControls.zenith).toBeCloseTo(Math.PI / 2, 5);
+    expect(firstPersonControls.azimuthOnMouseDown).toEqual(firstPersonControls.azimuth);
+    expect(firstPersonControls.zenithOnMouseDown).toBeCloseTo(firstPersonControls.zenith, 5);
+    expect(firstPersonControls.mousePosOnKeyDown.x).toEqual(10);
+    expect(firstPersonControls.mousePosOnKeyDown.y).toEqual(20);
+    expect(firstPersonControls.mouseDragOn).toEqual(true);
+  }));
+
+  it('should handle touchend events', inject(function() {
+    expect(firstPersonControls.activeLook).toBe(true);
+    firstPersonControls.mouseDragOn = true;
+
+    triggerZeroTouchEvent(domElement, 'touchend');
+
+    expect(firstPersonControls.mouseDragOn).toEqual(false);
+  }));
+
+  it('should handle touchmove events', inject(function() {
+    expect(firstPersonControls.activeLook).toBe(true);
+
+    triggerOneTouchEvent(domElement, 'touchmove', 20, 30);
+
+    expect(firstPersonControls.mousePosCurrent.x).toEqual(20);
+    expect(firstPersonControls.mousePosCurrent.y).toEqual(30);
+  }));
+
+  it('should rotate according to touch movement', inject(function() {
+    camera.position.copy(new THREE.Vector3(0,0,0));
+    camera.lookAt(new THREE.Vector3(1,0,0));
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.updateMatrix();
+
+    triggerOneTouchEvent(domElement, 'touchstart', 0, 0);
+
+    var mouseDeltaX = Math.PI / 2;
+    var mouseDeltaY = Math.PI / 4;
+
+    triggerOneTouchEvent(domElement, 'touchmove', mouseDeltaX, mouseDeltaY);
+
+    firstPersonControls.update();
+
+    var expectedAzimuth = (Math.PI * 2 - mouseDeltaX * firstPersonControls.lookSpeed) % (2 * Math.PI);
+    expect(firstPersonControls.azimuth).toBeCloseTo(expectedAzimuth, 5);
+    var expectedZenith = Math.PI / 2 + mouseDeltaY * firstPersonControls.lookSpeed;
+    expect(firstPersonControls.zenith).toBeCloseTo(expectedZenith, 5);
+  }));
+
+  //#######################
+  // Touch with two fingers
+  //#######################
+  it('should handle touchstart events 2 touches', inject(function() {
+    spyOn(firstPersonControls, 'updateSphericalAngles').andCallThrough();
+
+    camera.position.copy(new THREE.Vector3(0,0,0));
+    camera.lookAt(new THREE.Vector3(1,0,0));
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.updateMatrix();
+
+    expect(firstPersonControls.activeLook).toBe(true);
+    firstPersonControls.mouseDragOn = true;
+
+    triggerTwoTouchEvent(domElement, 'touchstart', 10, 20, 20, 30);
+
+    expect(firstPersonControls.mouseDragOn).toEqual(false);
+    expect(firstPersonControls.startTouchDistance).toBeCloseTo(Math.sqrt(10 * 10 + 10 * 10), 5);
+    expect(firstPersonControls.startTouchMid).toEqual(new THREE.Vector2(15, 25));
+    expect(firstPersonControls.startCameraPosition).toEqual(new THREE.Vector3(0,0,0));
+  }));
+
+  it('should handle touchend events 2 touches', inject(function() {
+    expect(firstPersonControls.activeLook).toBe(true);
+    firstPersonControls.mouseDragOn = true;
+
+    triggerOneTouchEvent(domElement, 'touchend');
+
+    expect(firstPersonControls.startTouchDistance).toEqual(new THREE.Vector2());
+    expect(firstPersonControls.startTouchMid).toEqual(new THREE.Vector2());
+    expect(firstPersonControls.startCameraPosition).toEqual(new THREE.Vector3());
+  }));
+
+  it('should handle move forward/backward touch gesture', inject(function() {
+    expect(firstPersonControls.activeLook).toBe(true);
+    camera.position.copy(new THREE.Vector3(0,0,0));
+    camera.lookAt(new THREE.Vector3(1,0,0));
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.updateMatrix();
+    firstPersonControls.cameraLookDirection = new THREE.Vector3(1,0,0);
+
+    triggerTwoTouchEvent(domElement, 'touchstart', 100, 100, 100, 110);
+    // Move both touches 50 pixels to each side
+    triggerTwoTouchEvent(domElement, 'touchmove', 100, 50, 100, 160);
+
+    expect(firstPersonControls.mouseDragOn).toEqual(false);
+    expect(camera.position).toEqual(new THREE.Vector3((100-10) * firstPersonControls.touchSensitivity, 0, 0));
+  }));
+
+  it('should handle move sidewards/upwards touch gesture', inject(function() {
+    expect(firstPersonControls.activeLook).toBe(true);
+    camera.position.copy(new THREE.Vector3(0,0,0));
+    camera.lookAt(new THREE.Vector3(1,0,0));
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.updateMatrix();
+    firstPersonControls.cameraLookDirection = new THREE.Vector3(1,0,0);
+
+    triggerTwoTouchEvent(domElement, 'touchstart', 100, 100, 100, 110);
+    // Move both touches 50 pixels = 0.5m to one side
+    triggerTwoTouchEvent(domElement, 'touchmove', 100, 150, 100, 160);
+
+    expect(firstPersonControls.mouseDragOn).toEqual(false);
+    expect(camera.position).toEqual(new THREE.Vector3(0, -50 * firstPersonControls.touchSensitivity, 0));
+  }));
+
+  //#######################
+  // Mouse wheel zooming
+  //#######################
+  it('should handle zome with mouse wheel', inject(function() {
+    camera.position.copy(new THREE.Vector3(0,0,0));
+    camera.lookAt(new THREE.Vector3(1,0,0));
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.updateMatrix();
+    firstPersonControls.cameraLookDirection = new THREE.Vector3(1,0,0);
+
+    triggerMouseWheelEvent(domElement, 'mousewheel', 1);
+
+    expect(camera.position.x).toEqual(firstPersonControls.mouseWheelSensitivity);
+    expect(camera.position.y).toBeCloseTo(0, 5);
+    expect(camera.position.z).toBeCloseTo(0, 5);
   }));
 
   it('should ignore everything when disabled or frozen', inject(function() {
