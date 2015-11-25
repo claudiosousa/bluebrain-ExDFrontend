@@ -149,7 +149,7 @@
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}"
-                 ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.INITIALIZED) : help(UI.RESET_BUTTON);"
+                 ng-click="(!helpModeActivated) ? resetButtonClickHandler() : help(UI.RESET_BUTTON);"
                  ng-show="(stateService.currentState === STATE.PAUSED)">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>

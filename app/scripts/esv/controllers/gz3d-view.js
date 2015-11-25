@@ -67,10 +67,11 @@
       'hbpUserDirectory', 'simulationService',
       'simulationControl', 'screenControl', 'experimentList',
       'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
-      'assetLoadingSplash','STATE', 'nrpBackendVersions',
+      'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
       'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
-      'simulationInfo', 'SLIDER_INITIAL_POSITION',
+      'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
+      'backendInterfaceService',
         function ($rootScope, $scope, $stateParams, $timeout,
           $location, $window, $document, bbpConfig,
           hbpUserDirectory, simulationService,
@@ -79,7 +80,8 @@
           assetLoadingSplash, STATE, nrpBackendVersions,
           nrpFrontendVersion, panels, UI, OPERATION_MODE,
           gz3d, EDIT_MODE, stateService, contextMenuState,
-          simulationInfo, SLIDER_INITIAL_POSITION) {
+          simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
+          backendInterfaceService) {
 
       // This is the only place where simulation info are, and should be, initialized
       simulationInfo.Initialize();
@@ -295,10 +297,34 @@
         });
       };
 
-      // play/pause/stop/initialize button handler
+      // play/pause/stop button handler
       $scope.simControlButtonHandler = function(newState) {
        $scope.updateSimulation(newState);
        $scope.setEditMode(EDIT_MODE.VIEW);
+      };
+
+      $scope.resetButtonClickHandler = function() {
+        $scope.checkboxes = {
+          oldReset: false,
+          robotPose: false,
+          fullReset: false
+        };
+
+        hbpDialogFactory.confirm({
+          'templateUrl': 'views/esv/reset-checklist-template.html',
+          'scope': $scope
+        })
+        .then(function() {
+          /* TODO: this should be removed as soon as some reset features are
+          correctly implemented and tested */
+          if ($scope.checkboxes.oldReset) {
+            $scope.updateSimulation(STATE.INITIALIZED);
+            $scope.setEditMode(EDIT_MODE.VIEW);
+          }
+          else {
+            backendInterfaceService.reset($scope.checkboxes);
+          }
+        });
       };
 
       $scope.setEditMode = function (newMode) {

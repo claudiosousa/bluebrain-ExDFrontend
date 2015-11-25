@@ -33,7 +33,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       EDIT_MODE,
       panels,
       gz3d,
-      experimentSimulationService;
+      experimentSimulationService,
+      hbpDialogFactory,
+      backendInterfaceService;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -214,6 +216,18 @@ describe('Controller: Gz3dViewCtrl', function () {
       mode: undefined
     };
     $provide.value('simulationInfo', simulationInfo);
+
+    var hbpDialogFactoryMock = {
+      confirm: jasmine.createSpy('confirm').andReturn({
+        then: jasmine.createSpy('then')
+      })
+    };
+    $provide.value('hbpDialogFactory', hbpDialogFactoryMock);
+    var backendInterfaceServiceMock = {
+      reset: jasmine.createSpy('reset')
+    };
+    $provide.value('backendInterfaceService', backendInterfaceServiceMock);
+
     simulationServiceObject.simulations.reset();
     simulationServiceObject.getUserName.reset();
     simulationStateObject.update.reset();
@@ -222,6 +236,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     screenControlObject.updateScreenColor.reset();
     assetLoadingSplashInstance.close.reset();
     nrpBackendVersionsObject.get.reset();
+    hbpDialogFactoryMock.confirm.reset();
+    hbpDialogFactoryMock.confirm().then.reset();
+    backendInterfaceServiceMock.reset.reset();
   }));
 
   // Initialize the controller and a mock scope
@@ -250,7 +267,9 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _EDIT_MODE_,
                               _panels_,
                               _gz3d_,
-                              _experimentSimulationService_) {
+                              _experimentSimulationService_,
+                              _hbpDialogFactory_,
+                              _backendInterfaceService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
@@ -278,6 +297,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     panels = _panels_;
     gz3d = _gz3d_;
     experimentSimulationService = _experimentSimulationService_;
+    hbpDialogFactory = _hbpDialogFactory_;
+    backendInterfaceService = _backendInterfaceService_;
 
     scope.viewState = {};
 
@@ -428,16 +449,30 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(simulationStateObject.update).not.toHaveBeenCalled();
     });
 
-    it('should reset everything on reset button pressed', function() {
-      scope.updateSimulation(STATE.INITIALIZED);
-      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.INITIALIZED);
-      stateService.setCurrentState(STATE.INITIALIZED).then.mostRecentCall.args[0]();
-      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initPosition');
-      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initRotation');
-      expect(gz3d.scene.resetView).toHaveBeenCalled();
-      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STARTED);
-      stateService.setCurrentState(STATE.STARTED).then.mostRecentCall.args[0]();
-      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.PAUSED);
+    it('should show a popup when the reset button is pressed', function() {
+      scope.resetButtonClickHandler();
+      expect(hbpDialogFactory.confirm).toHaveBeenCalled();
+    });
+
+    it('should pass the checkboxes\' value to resetService', function() {
+      scope.resetButtonClickHandler();
+      scope.checkboxes = {
+        robotPose: true,
+        fullReset: false
+      };
+      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      expect(backendInterfaceService.reset).toHaveBeenCalledWith(scope.checkboxes);
+    });
+
+    it('should call updateSimulation when the "OLD STYLE RESET" checkbox is clicked', function () {
+      spyOn(scope, 'updateSimulation');
+      spyOn(scope, 'setEditMode');
+
+      scope.resetButtonClickHandler();
+      scope.checkboxes = {oldReset: true};
+      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      expect(scope.updateSimulation).toHaveBeenCalledWith(STATE.INITIALIZED);
+      expect(scope.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
     });
 
     it('should register for status information', function() {
