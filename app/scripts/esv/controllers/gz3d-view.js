@@ -23,10 +23,6 @@
       STOPPED: 'stopped',
       UNDEFINED: 'undefined'
     })
-    .constant('ERROR', {
-      UNDEFINED_STATE: 'The latest active simulation is corrupted: undefined state.',
-      UNDEFINED_ID: 'The latest active simulation is corrupted: undefined id.'
-    })
     .constant('OPERATION_MODE', {
       VIEW : 'view',
       EDIT : 'edit'
@@ -67,22 +63,20 @@
     }])
     .controller('Gz3dViewCtrl',
       ['$rootScope', '$scope', '$timeout',
-      '$location', '$http', '$window', '$document', 'bbpConfig',
-      'hbpUserDirectory', 'simulationGenerator', 'simulationService',
-      'simulationControl', 'simulationState', 'serverError',
-      'screenControl', 'experimentList', 'experimentSimulationService',
-      'timeDDHHMMSSFilter', 'splash', 'assetLoadingSplash',
-      'STATE', 'ERROR', 'nrpBackendVersions',
+      '$location', '$window', '$document', 'bbpConfig',
+      'hbpUserDirectory', 'simulationService',
+      'simulationControl', 'screenControl', 'experimentList',
+      'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
+      'assetLoadingSplash','STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
       'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
       'simulationInfo', 'SLIDER_INITIAL_POSITION',
         function ($rootScope, $scope, $timeout,
-          $location, $http, $window, $document, bbpConfig,
-          hbpUserDirectory, simulationGenerator, simulationService,
-          simulationControl, simulationState, serverError,
-          screenControl, experimentList, experimentSimulationService,
-          timeDDHHMMSSFilter, splash, assetLoadingSplash,
-          STATE, ERROR, nrpBackendVersions,
+          $location, $window, $document, bbpConfig,
+          hbpUserDirectory, simulationService,
+          simulationControl, screenControl, experimentList,
+          experimentSimulationService, timeDDHHMMSSFilter, splash,
+          assetLoadingSplash, STATE, nrpBackendVersions,
           nrpFrontendVersion, panels, UI, OPERATION_MODE,
           gz3d, EDIT_MODE, stateService, contextMenuState,
           simulationInfo, SLIDER_INITIAL_POSITION) {
@@ -106,11 +100,27 @@
       $scope.STATE = STATE;
       $scope.OPERATION_MODE = OPERATION_MODE;
       $scope.UI = UI;
-      $scope.viewState = {
-        isOwner: false,
-        isInitialized : false,
-        isJoiningStoppedSimulation : false
-      };
+
+      function ViewState() {
+        this.isInitialized = false;
+        this.isJoiningStoppedSimulation = false;
+        this.isOwner = false;
+        var _userID, _ownerID;
+        Object.defineProperty(this, 'userID',
+        {
+          get: function(){ return _userID; },
+          set: function(val){ _userID = val; this.isOwner = (_ownerID === _userID);},
+          enumerable: true
+        });
+        Object.defineProperty(this, 'ownerID',
+        {
+          get: function(){ return _ownerID; },
+          set: function(val){ _ownerID = val; this.isOwner = (_ownerID === _userID);},
+          enumerable: true
+        });
+      }
+
+      $scope.viewState = new ViewState();
       $scope.gz3d = gz3d;
       $scope.stateService = stateService;
       $scope.EDIT_MODE = EDIT_MODE;
@@ -121,15 +131,13 @@
       simulationInfo.experimentID = 'experiment-not-found';
       if (!bbpConfig.get('localmode.forceuser', false)) {
         hbpUserDirectory.getCurrentUser().then(function (profile) {
-          $scope.userName = profile.displayName;
-          $scope.userID = profile.id;
+          $scope.viewState.userID = profile.id;
         });
       } else {
-        $scope.userName = bbpConfig.get('localmode.ownerID');
-        $scope.userID = bbpConfig.get('localmode.ownerID');
+        $scope.viewState.userID = bbpConfig.get('localmode.ownerID');
       }
       simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function(data){
-        $scope.ownerID = data.owner;
+        $scope.viewState.ownerID = data.owner;
         $scope.experimentConfiguration = data.experimentConfiguration;
         $scope.environmentConfiguration = data.environmentConfiguration;
         $scope.creationDate = data.creationDate;
@@ -148,7 +156,6 @@
           hbpUserDirectory.get([data.owner]).then(function (profile) {
             $scope.owner = simulationService().getUserName(profile);
           });
-          $scope.viewState.isOwner = ($scope.ownerID === $scope.userID);
         } else {
           $scope.owner = bbpConfig.get('localmode.ownerID');
           $scope.viewState.isOwner = true;
