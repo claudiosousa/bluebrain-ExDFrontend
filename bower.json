@@ -3,29 +3,29 @@
   "version": "0.6.3",
   "repository": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend",
   "dependencies": {
-    "angular": "~1.2.0",
-    "angular-animate": "~1.3.0",
+    "angular": "~1.4.8",
+    "angular-animate": "~1.4.8",
     "angular-bbp-config": "latest",
-    "angular-cookies": "~1.3.0",
+    "angular-cookies": "~1.4.8",
     "angular-hbp-common": "latest",
     "angular-hbp-document-client": "latest",
-    "angular-resource": "~1.3.0",
-    "angular-sanitize": "~1.3.0",
+    "angular-resource": "~1.4.8",
+    "angular-sanitize": "~1.4.8",
     "angular-toArrayFilter": "*",
-    "angular-touch": "~1.3.0",
+    "angular-touch": "~1.4.8",
     "angular-ui-bootstrap-bower": "latest",
     "angular-ui-codemirror": "latest",
     "angular-ui-router": "latest",
     "angular.panels": "*",
     "bbp-oidc-client": "~0.7.0",
-    "bootstrap-sass-official": "~3.2.0",
-    "es5-shim": "~3.1.0",
+    "bootstrap-sass-official": "~3.3.6",
+    "es5-shim": "~4.3.1",
     "font-awesome": "~4.1.0",
-    "json3": "~3.3.1",
+    "json3": "~3.3.2",
     "lodash": "latest",
     "n3-line-chart": "~1.1.11",
     "ng-file-upload": "~7.0.17",
-    "roslibjs": "~0.12.0",
+    "roslibjs": "~0.17.0",
     "stats.js": "latest",
     "threejs": "r71",
     "xml2json": "latest"
@@ -41,15 +41,16 @@
     }
   },
   "devDependencies": {
-    "angular-mocks": "~1.3.0",
-    "angular-scenario": "~1.3.0"
+    "angular-mocks": "~1.4.8",
+    "angular-scenario": "~1.4.8"
   },
   "appPath": "app",
   "private": false,
   "resolutions": {
-    "es5-shim": "~3.1.0",
-    "json3": "~3.3.1",
+    "angular": "~1.4.8",
     "angular-bbp-config": "0.2.0",
-    "angular-hbp-common": "~0.5.0"
+    "angular-hbp-common": "~0.5.0",
+    "es5-shim": "~4.3.1",
+    "json3": "~3.3.1"
   }
 }
