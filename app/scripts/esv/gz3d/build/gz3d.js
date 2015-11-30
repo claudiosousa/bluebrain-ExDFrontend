@@ -2042,10 +2042,10 @@ GZ3D.GZIface = function(scene, gui)
   this.maxConnectionTrials = 30; // try to connect 30 times
   this.timeToSleepBtwTrials = 1000; // wait 1 second between connection trials
 
-  this.assetProgressData = {};
-  this.assetProgressData.assets = [];
-  this.assetProgressData.prepared = false;
-  this.assetProgressCallback = undefined;
+  GZ3D.assetProgressData = {};
+  GZ3D.assetProgressData.assets = [];
+  GZ3D.assetProgressData.prepared = false;
+  GZ3D.assetProgressCallback = undefined;
 
   this.numConnectionTrials = 0;
   this.webSocketConnectionCallbacks = [];
@@ -2061,7 +2061,7 @@ GZ3D.GZIface.prototype.init = function()
 
 GZ3D.GZIface.prototype.setAssetProgressCallback = function(callback)
 {
-  this.assetProgressCallback = callback;
+  GZ3D.assetProgressCallback = callback;
 };
 
 GZ3D.GZIface.prototype.registerWebSocketConnectionCallback = function(callback) {
@@ -2240,9 +2240,9 @@ GZ3D.GZIface.prototype.onConnected = function()
       this.gui.setModelStats(model, 'update');
     }
 
-    this.assetProgressData.prepared = true;
-    if (this.assetProgressCallback) {
-      this.assetProgressCallback(this.assetProgressData);
+    GZ3D.assetProgressData.prepared = true;
+    if (GZ3D.assetProgressCallback) {
+      GZ3D.assetProgressCallback(GZ3D.assetProgressData);
     }
     this.gui.setSceneStats(message);
     this.sceneTopic.unsubscribe();
@@ -3258,7 +3258,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         element.progress = 0;
         element.totalSize = 0;
         element.done = false;
-        this.assetProgressData.assets.push(element);
+        GZ3D.assetProgressData.assets.push(element);
 
         this.scene.loadMesh(modelUri, submesh,
             centerSubmesh, function(dae) {
@@ -3281,15 +3281,15 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
 
               // Progress update: execute callback
               element.done = true;
-              if (that.assetProgressCallback) {
-                that.assetProgressCallback(that.assetProgressData);
+              if (GZ3D.assetProgressCallback) {
+                GZ3D.assetProgressCallback(GZ3D.assetProgressData);
               }
             }, function(progress){
               element.progress = progress.loaded;
               element.totalSize = progress.total;
               element.error = progress.error;
-              if (that.assetProgressCallback) {
-                that.assetProgressCallback(that.assetProgressData);
+              if (GZ3D.assetProgressCallback) {
+                GZ3D.assetProgressCallback(GZ3D.assetProgressData);
               }
             });
       }

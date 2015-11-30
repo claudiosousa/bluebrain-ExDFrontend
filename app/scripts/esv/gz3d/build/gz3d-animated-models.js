@@ -93,6 +93,14 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
 
   // Load animated model with separate COLLADA loader instance
   var that = this;
+  // Progress update: Add this asset to the assetProgressArray
+  var element = {};
+  element.id = modelName;
+  element.url = this.modelUri_animated;
+  element.progress = 0;
+  element.totalSize = 0;
+  element.done = false;
+  GZ3D.assetProgressData.assets.push(element);
   this.loader.load(this.modelUri_animated, function (collada) {
     var modelParent = new THREE.Object3D();
     modelParent.name = modelName + "_animated";
@@ -164,6 +172,19 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
 
     that.scene.add(helper);
     that.scene.add(modelParent);
+
+    // Progress update: execute callback
+    element.done = true;
+    if (GZ3D.assetProgressCallback) {
+      GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+    }
+  }, function(progress){
+    element.progress = progress.loaded;
+    element.totalSize = progress.total;
+    element.error = progress.error;
+    if (GZ3D.assetProgressCallback) {
+      GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+    }
   });
 };
 
