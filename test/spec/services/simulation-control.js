@@ -127,10 +127,8 @@ describe('Services: server-info-service', function () {
       httpBackend.expectGET(serverURL + '/simulation');
       httpBackend.flush();
       expect(hbpUserDirectory.get).not.toHaveBeenCalled();
-      expect(simulationService().owners['1234']).toBe('vonarnim');
-      expect(simulationService().owners['4321']).toBe('vonarnim');
-      expect(simulationService().owners['default-owner']).toBe('vonarnim');
-      expect(simulationService().owners['invalid-id']).toBe('vonarnim');
+      expect(Object.keys(simulationService().owners).length).toBe(1);
+      expect(simulationService().owners.vonarnim).toBe('vonarnim');
       window.bbpConfig.localmode.forceuser = false;
     });
 

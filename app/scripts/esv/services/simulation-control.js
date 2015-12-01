@@ -49,6 +49,7 @@
                     owners[element.owner] = getUserName(profile);
                   });
                 } else {
+                  element.owner = bbpConfig.get('localmode.ownerID');
                   owners[element.owner] = bbpConfig.get('localmode.ownerID');
                 }
               }
