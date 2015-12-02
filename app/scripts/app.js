@@ -45,7 +45,7 @@
             // Configuring routes using `angular-ui-router` states.
             // (See https://github.com/angular-ui/ui-router/wiki)
             $stateProvider.state('gz3d-view', {
-                url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode',
+                url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode?ctx',
                 templateUrl: 'views/esv/gz3d-view.html',
                 controller: 'Gz3dViewCtrl'
             }).state('esv-web', {

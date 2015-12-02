@@ -9,6 +9,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       window,
       document,
       location,
+      stateParams,
       cameraManipulation,
       splash,
       simulationService,
@@ -229,6 +230,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _$window_,
                               _$document_,
                               _$location_,
+                              _$stateParams_,
                               _cameraManipulation_,
                               _splash_,
                               _assetLoadingSplash_,
@@ -255,6 +257,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     window = _$window_;
     document = _$document_;
     location = _$location_;
+    stateParams = _$stateParams_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
     assetLoadingSplash = _assetLoadingSplash_;
@@ -827,9 +830,24 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.showKeyboardControlInfoDiv).toBe(false);
     });
 
-    it('should go back to the esv-web page', function() {
-      scope.exit('/fake_url');
-      expect(location.path()).toEqual('/fake_url');
+    it('should go back to the esv-web page when no "ctx" parameter was in the url', function() {
+      stateParams.ctx = undefined;
+      scope.exit();
+      expect(location.path()).toEqual('/esv-web');
+    });
+
+    it('should go back to the esv-collab-run page when a "ctx" parameter was in the url and in view-mode', function() {
+      stateParams.ctx = 'fake_ctx_id';
+      scope.operationMode = OPERATION_MODE.VIEW;
+      scope.exit();
+      expect(location.path()).toEqual('/esv-collab/run');
+    });
+
+    it('should go back to the esv-collab-edit page when a "ctx" parameter was in the url and in edit-mode', function() {
+      stateParams.ctx = 'fake_ctx_id';
+      scope.operationMode = OPERATION_MODE.EDIT;
+      scope.exit();
+      expect(location.path()).toEqual('/esv-collab/edit');
     });
 
     it('should update simulation\'s initial camera pose', function(){
