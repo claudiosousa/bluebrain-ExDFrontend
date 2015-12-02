@@ -44,28 +44,55 @@
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.
             // (See https://github.com/angular-ui/ui-router/wiki)
-            $stateProvider.state('gz3d-view', {
-                url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode?ctx',
-                templateUrl: 'views/esv/gz3d-view.html',
-                controller: 'Gz3dViewCtrl'
-            }).state('esv-web', {
-              url: '/esv-web',
-              templateUrl: 'views/esv/esv-web.html',
-              controller: 'experimentCtrl'
-            }).state('esv-collab-edit', {
-              url: '/esv-collab/edit?ctx',
-              templateUrl: 'views/esv/esv-collab-edit.html',
-              controller: 'ESVCollabEditCtrl'
-            }).state('esv-collab-run', {
-              url: '/esv-collab/run?ctx',
-              templateUrl: 'views/esv/esv-collab-run.html',
-              controller: 'ESVCollabRunCtrl'
-            }).state('home', {
+
+            var homeState = {
+              name: 'home',
               url: '/',
               templateUrl: 'views/common/home.html',
               controller: 'MainCtrl'
-            });
+            };
 
+            var gz3dViewState = {
+                name: 'gz3d-view',
+                url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode?ctx',
+                templateUrl: 'views/esv/gz3d-view.html',
+                controller: 'Gz3dViewCtrl'
+            };
+
+            var esvWebState = {
+              name: 'esv-web',
+              url: '/esv-web',
+              templateUrl: 'views/esv/esv-web.html',
+              controller: 'experimentCtrl'
+            };
+
+            var esvCollabEditState = {
+              name: 'esv-collab-edit',
+              url: '/esv-collab/edit?ctx',
+              templateUrl: 'views/esv/esv-collab-edit.html',
+              controller: 'ESVCollabEditCtrl'
+            };
+
+            var registeredEsvCollabEditState = {
+              name: 'registered-esv-collab-edit',
+              url: '/esv-collab/edit?ctx/:experimentID',
+              templateUrl: 'views/esv/esv-collab-run.html',
+              controller: 'ESVCollabRunCtrl'
+            };
+
+            var esvCollabRunState = {
+              name: 'esv-collab-run',
+              url: '/esv-collab/run?ctx',
+              templateUrl: 'views/esv/esv-collab-run.html',
+              controller: 'ESVCollabRunCtrl'
+            };
+
+            var home = $stateProvider.state(homeState);
+            home.state(esvWebState);
+            home.state(esvCollabEditState);
+            home.state(registeredEsvCollabEditState);
+            home.state(esvCollabRunState);
+            home.state(gz3dViewState);
             // Provide a default route.
             // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
             $urlRouterProvider.otherwise('/');

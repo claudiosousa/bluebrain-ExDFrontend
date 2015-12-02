@@ -199,8 +199,35 @@
     };
   }]);
 
-  module.factory('experimentSimulationService', ['$q', '$http', 'bbpConfig', 'simulationService', 'simulationState', 'simulationGenerator', 'experimentList', 'roslib', 'STATE', 'OPERATION_MODE', 'serverError', 'simulationSDFWorld',
-    function ($q, $http, bbpConfig, simulationService, simulationState, simulationGenerator, experimentList, roslib, STATE, OPERATION_MODE, serverError, simulationSDFWorld) {
+  module.factory('experimentSimulationService', [
+    '$q',
+    '$http',
+    '$stateParams',
+    'bbpConfig',
+    'simulationService',
+    'simulationState',
+    'simulationGenerator',
+    'experimentList',
+    'roslib',
+    'STATE',
+    'OPERATION_MODE',
+    'serverError',
+    'simulationSDFWorld',
+    function (
+      $q,
+      $http,
+      $stateParams,
+      bbpConfig,
+      simulationService,
+      simulationState,
+      simulationGenerator,
+      experimentList,
+      roslib,
+      STATE,
+      OPERATION_MODE,
+      serverError,
+      simulationSDFWorld)
+    {
       var initializedCallback;
       var servers = bbpConfig.get('api.neurorobotics');
       var serverIDs = Object.keys(servers);
@@ -461,7 +488,12 @@
         });
       };
 
-      var launchExperimentOnServer = function (experimentConfiguration, environmentConfiguration, freeServerID, errorCallback) {
+      var launchExperimentOnServer = function (
+        experimentConfiguration,
+        environmentConfiguration,
+        freeServerID,
+        errorCallback)
+      {
         setProgressMessage({main: 'Create new Simulation...'});
         var serverURL = servers[freeServerID].gzweb['nrp-services'];
 
@@ -473,7 +505,8 @@
         var simInitData = {
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
-          operationMode: operationMode
+          operationMode: operationMode,
+          contextID: $stateParams.ctx
         };
 
         if (angular.isDefined(environmentConfiguration) && environmentConfiguration !== null) {

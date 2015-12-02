@@ -105,3 +105,14 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 .self-center {
   max-width: 30%;
 }
+
+.table tbody tr td:nth-of-type(4) {
+    font-family: Courier, monospace;
+}
+
+.developpers-switch {
+  position: absolute;
+  top: 5pt;
+  right: 5pt;
+  font-size: xx-small;
+}

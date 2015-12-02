@@ -13,11 +13,12 @@ describe('Controller: ESVCollabEditCtrl', function () {
     state,
     experimentSimulationService,
     collabConfigService,
-    stateParams;
+    stateParams,
+    serverError;
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
-    get: jasmine.createSpy('get').andReturn({'experimentID': 1, 'contextID': 1})
+    get: jasmine.createSpy('get').andReturn({'experimentID': '', 'contextID': 1})
   };
 
   var experimentTemplates = {
@@ -68,12 +69,14 @@ describe('Controller: ESVCollabEditCtrl', function () {
                               $state,
                               _experimentSimulationService_,
                               _collabConfigService_,
-                              _$stateParams_) {
+                              _$stateParams_,
+                              _serverError_) {
     scope = $rootScope.$new();
     state = $state;
     experimentSimulationService = _experimentSimulationService_;
     collabConfigService = _collabConfigService_;
     stateParams = _$stateParams_;
+    serverError = _serverError_;
 
     store['server-enabled'] = angular.toJson(serversEnabled);
 
@@ -95,7 +98,8 @@ describe('Controller: ESVCollabEditCtrl', function () {
 
   it('should have initialized the variables correctly', function() {
     expect(scope.selectedIndex).toBe(-1);
-    expect(scope.isQueryingServersFinished).toBe(true); // Due to the immediate prommise-call after getExperiments
+    expect(scope.isQueryingServersFinished).toBe(false);
+    expect(scope.isCloneRequested).toBe(false);
     expect(scope.experiments).toEqual({});
     expect(scope.serversEnabled).toBe(serversEnabled);
   });
@@ -106,9 +110,40 @@ describe('Controller: ESVCollabEditCtrl', function () {
     expect(scope.selectedIndex).toEqual(1);
   });
 
-  it('should get the experiments', function() {
+  it('should get the registered experiment if any', function() {
+    expect(collabConfigService.get).toHaveBeenCalled();
+  });
+
+  it('should get the experiments if no experiment was registered in the database', function() {
+    var successCallback = collabConfigService.get.mostRecentCall.args[1];
+    successCallback({experimentID: ''}); // An experiment has not been registered yet
     expect(experimentSimulationService.getExperiments).toHaveBeenCalledWith(scope.experiments);
     expect(scope.isQueryingServersFinished).toBe(true);
+  });
+
+  it('should not try to get the experiments if one has been already registered', function() {
+    spyOn(scope, 'goToRegisteredState');
+    var successCallback = collabConfigService.get.mostRecentCall.args[1];
+    successCallback({experimentID: 'FakeExperimentID'}); // An experiment has been already registered.
+    expect(experimentSimulationService.getExperiments).not.toHaveBeenCalledWith();
+    expect(scope.goToRegisteredState).toHaveBeenCalledWith('FakeExperimentID');
+  });
+
+  it('should display an error message if the database is unavailable', function() {
+    var failureCallback = collabConfigService.get.mostRecentCall.args[2];
+    spyOn(serverError, 'display');
+    var data = {};
+    failureCallback(data);
+    expect(experimentSimulationService.getExperiments).not.toHaveBeenCalled();
+    expect(scope.isQueryingServersFinished).toBe(true);
+    expect(scope.experiments).toBeDefined(); // $scope.experiment contains an error message displayed in the html view
+    expect(serverError.display).toHaveBeenCalledWith(data);
+  });
+
+  it('should go to the registered edit page state', function() {
+    scope.goToRegisteredState('FakeExperimentID');
+    expect(state.go).toHaveBeenCalled();
+    expect(experimentSimulationService.getExperiments).not.toHaveBeenCalled();
   });
 
   it('should clone the experiment', function() {
@@ -118,12 +153,11 @@ describe('Controller: ESVCollabEditCtrl', function () {
     expect(collabConfigService.clone).toHaveBeenCalledWith(
       {contextID: 'FakeContextID'}, {experimentID: 'FakeExperimentID'}, jasmine.any(Function)
     );
+    spyOn(scope, 'goToRegisteredState');
     var redirectionCallback = collabConfigService.clone.mostRecentCall.args[2];
     redirectionCallback();
-    var collabApiParams = window.parent.postMessage.mostRecentCall.args[0];
-    var targetWindowUri = window.parent.postMessage.mostRecentCall.args[1];
-    expect(collabApiParams.data.mode).toBe('run');
-    expect(targetWindowUri).toBe('*');
+    expect(scope.goToRegisteredState).toHaveBeenCalledWith('FakeExperimentID');
+    expect(scope.isCloneRequested).toBe(true);
   });
 
   it('should filter the experiments',

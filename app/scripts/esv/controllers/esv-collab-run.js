@@ -1,7 +1,12 @@
 (function () {
   'use strict';
 
-  /* Controller */
+  /**
+   * # ESVCollabRunCtrl
+   * Controller of the Collab edit and run pages
+   * It allows to launch a registered Collab experiment either in edit mode (edit page)
+   * or read-only mode (run page)
+   */
 
   angular.module('exdFrontendApp').controller('ESVCollabRunCtrl',
     [
@@ -48,6 +53,9 @@
         $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         $scope.userID = undefined;
+        // The experiment may be viewed, after selection and clone, from the Collab Edit page.
+        // The edit (resp. launch) button is then enabled (resp. disabled).
+        $scope.isCollabEditPage = angular.isDefined($stateParams.experimentID);
 
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -128,37 +136,43 @@
           $scope.userID = bbpConfig.get('localmode.ownerID');
         }
 
-        // This function is called when all servers responded to the query of running experiments
-        $scope.getExperimentsFinishedCallback = function () {
+        $scope.updateExperiments = function() {
           $scope.owners = simulationService().owners;
           $scope.uptime = simulationService().uptime;
+        };
 
+        // This function is called when all servers responded to the query of running experiments
+        $scope.getExperimentsFinishedCallback = function () {
           collabConfigService.get({contextID: $stateParams.ctx},
             function(response) {
               var experimentID = response.experimentID;
-              var defaultExperiment = { name: 'No experiment selected',
-                description: 'Please click on the Edit button'};
+              var defaultExperiment = {
+                name: 'No experiment selected',
+                description: 'Please click on the Edit button'
+              };
               $scope.experiment = experimentID !== '' ? $scope.experiments[experimentID] : defaultExperiment;
               $scope.experiment.id = experimentID;
               $scope.isQueryingServersFinished = true;
               // Schedule the update if the esv-web controller was not destroyed in the meantime
-              // TODO(Luc): check if can skip this block if an update is already planned
               if(!$scope.isDestroyed) {
+                $scope.updateExperiments();
                 // Start to update the datastructure in regular intervals
                 $scope.updatePromise = $timeout(function () {
                   experimentSimulationService.refreshExperiments(
                     $scope.experiments,
                     $scope.serversEnabled,
                     setIsServerAvailable,
-                    $scope.getExperimentsFinishedCallback
+                    $scope.updateExperiments
                   );
                 }, ESV_UPDATE_RATE);
               }
             },
             function(data) {
               $scope.isQueryingServersFinished = true;
-              $scope.experiment = { name: 'Internal Error',
-                description: 'Database unavailable'};
+              $scope.experiment = {
+                name: 'Internal Error',
+                description: 'Database unavailable'
+              };
               serverError.display(data);
             }
           );
@@ -179,27 +193,6 @@
             $scope.getExperimentsFinishedCallback
           );
         });
-
-        $scope.uploadEnvironmentAndStart = function(experiment) {
-          var inputElement = angular.element('<input type="file" />');
-          inputElement.bind('change', function () {
-            // Showing the progress bar
-            $scope.setProgressbarVisible(experiment.id);
-            // Uploading the SDF file
-            var reader = new FileReader();
-            reader.readAsText(inputElement[0].files[0], "UTF-8");
-            reader.onload = function (evt) {
-              experimentSimulationService.startNewExperiments(
-                experiment.experimentConfiguration,
-                evt.target.result,
-                $scope.serversEnabled,
-                experiment.serverPattern,
-                $scope.setProgressbarInvisible
-              );
-            };
-          });
-          inputElement[0].click();
-        };
 
         // clean up on leaving
         $scope.$on("$destroy", function () {

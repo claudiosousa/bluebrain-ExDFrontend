@@ -259,7 +259,7 @@ describe('Services: experimentSimulationService', function () {
   // load the service to test and mock the necessary service
   beforeEach(module('simulationControlServices'));
 
-  var httpBackend;
+  var httpBackend, stateParams;
   var returnSimulations,
       experimentListCallBbpce014,
       experimentTemplates,
@@ -306,10 +306,6 @@ describe('Services: experimentSimulationService', function () {
   var roslibMock = {};
   var rosConnectionMock = {};
   var statusListenerMock;
-  var simulationGeneratorMockObject = { create: jasmine.createSpy('create')};
-  var simulationGeneratorMock = jasmine.createSpy('simulationGenerator').andReturn(simulationGeneratorMockObject);
-  var simulationStateMockObject = { update: jasmine.createSpy('update')};
-  var simulationStateMock = jasmine.createSpy('simulationState').andReturn(simulationStateMockObject);
   var experimentListMockObject = { experiments: jasmine.createSpy('experiments')};
   var experimentListMock = jasmine.createSpy('experimentList').andReturn(experimentListMockObject);
   var simulationSDFWorldObject = {
@@ -321,17 +317,36 @@ describe('Services: experimentSimulationService', function () {
     $provide.constant('bbpConfig', bbpConfigMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('roslib', roslibMock);
+    var simulationGeneratorMock = jasmine.createSpy('simulationGenerator').andReturn(
+      { create: jasmine.createSpy('create')}
+    );
     $provide.value('simulationGenerator', simulationGeneratorMock);
+    var simulationStateMock = jasmine.createSpy('simulationState').andReturn(
+      { update: jasmine.createSpy('update')}
+    );
     $provide.value('simulationState', simulationStateMock);
     $provide.value('experimentList', experimentListMock);
     $provide.value('simulationSDFWorld', simulationSDFWorldMock);
   }));
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _simulationService_, _simulationGenerator_,
-      _simulationState_, _experimentSimulationService_, _experimentList_, _bbpConfig_, _roslib_, _STATE_,
-      _simulationSDFWorld_) {
-    httpBackend = _$httpBackend_;
+  beforeEach(inject(function (
+    $httpBackend,
+    $rootScope,
+    $stateParams,
+    _simulationService_,
+    _simulationGenerator_,
+     _simulationState_,
+     _experimentSimulationService_,
+     _experimentList_,
+     _bbpConfig_,
+     _roslib_,
+     _STATE_,
+     _simulationSDFWorld_)
+  {
+    httpBackend = $httpBackend;
     scope = $rootScope.$new();
+    stateParams = $stateParams;
+    stateParams.ctx = undefined;
     simulationService = _simulationService_;
     simulationGenerator = _simulationGenerator_;
     experimentSimulationService = _experimentSimulationService_;
@@ -578,6 +593,7 @@ describe('Services: experimentSimulationService', function () {
     });
 
     it('should test the launch of an experiment on a given server', function() {
+      stateParams.ctx = '97923877-13ea-4b43-ac31-6b79e130d344';
       experimentSimulationService.setProgressMessageCallback(messageCallback);
 
       experimentSimulationService.setShouldLaunchInEditMode(true);
@@ -585,12 +601,16 @@ describe('Services: experimentSimulationService', function () {
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
 
-      expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
-        experimentConfiguration: 'mocked_experiment_conf',
-        /* jshint camelcase: false */
-        gzserverHost: 'lugano',
-        operationMode: 'edit'
-      }, jasmine.any(Function));
+      var simulationGeneratorMockObject = simulationGenerator();
+      expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith(
+        {
+          experimentConfiguration: 'mocked_experiment_conf',
+          /* jshint camelcase: false */
+          gzserverHost: 'lugano',
+          operationMode: 'edit',
+          contextID: stateParams.ctx
+        }, jasmine.any(Function)
+      );
       simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
 
       expect(messageCallback).toHaveBeenCalled();
@@ -601,6 +621,7 @@ describe('Services: experimentSimulationService', function () {
       experimentSimulationService.setProgressMessageCallback(messageCallback);
       experimentSimulationService.setShouldLaunchInEditMode(false);
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', null);
+      var simulationGeneratorMockObject = simulationGenerator();
       expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
         experimentConfiguration: 'mocked_experiment_conf',
         /* jshint camelcase: false */
@@ -658,7 +679,7 @@ describe('Services: experimentSimulationService', function () {
       experimentSimulationService.setProgressMessageCallback(messageCallback);
 
       experimentSimulationService.launchExperimentOnServer('experiment_conf', 'environment_conf', 'bbpce014', emptyCallback);
-
+      var simulationGeneratorMockObject = simulationGenerator();
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBe('environment_conf');

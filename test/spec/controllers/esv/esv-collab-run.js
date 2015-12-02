@@ -35,7 +35,11 @@ describe('Controller: ESVCollabRunCtrl', function () {
     get: jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2)
   };
 
-  var simulationServiceMockObject = { updateUptime: jasmine.createSpy('updateUptime') };
+  var simulationServiceMockObject = {
+    updateUptime: jasmine.createSpy('updateUptime'),
+    owners: { id1: 'John Doe', id2: 'John Don\'t' },
+    uptime: { date1: '100', date2: '200' }
+  };
   var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
 
   var serversEnabled = [ 'bbpce014', 'bbpce016', 'bbpce018' ];
@@ -135,6 +139,9 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.experiments).toEqual({});
       expect(scope.serversEnabled).toEqual(experimentSimulationService.getServersEnable());
       expect(scope.userID).not.toBeDefined();
+      expect(scope.isCollabEditPage).toBe(false);
+      expect(scope.owners).not.toBeDefined();
+      expect(scope.uptime).not.toBeDefined();
   });
 
   it('should fetch and set the current user id' , function () {
@@ -225,8 +232,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     );
   });
 
-
-it('should retrieve the specified experiment using its Collab context', function() {
+  it('should retrieve the specified experiment using its Collab context', function() {
     var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
     stateParams.ctx = context;
     var experimentID = 'ExDBraitenbergLauron';
@@ -235,9 +241,11 @@ it('should retrieve the specified experiment using its Collab context', function
     expect(collabConfigService.get.mostRecentCall.args[0].contextID).toEqual(context);
     var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
     var response = { experimentID: experimentID };
+    spyOn(scope, 'updateExperiments');
     getSuccessCallback(response);
     expect(scope.experiment).toEqual({id: response.experimentID});
     expect(scope.isQueryingServersFinished).toBe(true);
+    expect(scope.updateExperiments).toHaveBeenCalled();
 
     spyOn(serverError, 'display');
     scope.isQueryingServersFinished = false;
@@ -299,6 +307,12 @@ it('should retrieve the specified experiment using its Collab context', function
     scope.isServerAvailable = {};
     experimentSimulationService.refreshExperiments.mostRecentCall.args[2]('fakeId', true);
     expect(scope.isServerAvailable).toEqual({'fakeId': true});
+  });
+
+  it('should update scope.owners and scope.uptime', function() {
+    scope.updateExperiments();
+    expect(scope.owners).toBeDefined();
+    expect(scope.uptime).toBeDefined();
   });
 
   describe('Tests related to scope.$destroy()', function(){
@@ -378,24 +392,6 @@ it('should retrieve the specified experiment using its Collab context', function
       dummyFileReader.onload = undefined;
       spyOn($window, 'FileReader').andReturn(dummyFileReader);
     }));
-
-    it('should create a new inputElement and click it', function () {
-      scope.uploadEnvironmentAndStart('experiment');
-      expect(angular.element).toHaveBeenCalled();
-      expect(elementReturnVal.bind).toHaveBeenCalled();
-      expect(elementReturnVal.bind.mostRecentCall.args[0]).toBe('change');
-      expect(dummyInput.click).toHaveBeenCalled();
-    });
-
-    it('should read the uploaded file and forward the content to startNewExperiment', function () {
-      scope.uploadEnvironmentAndStart('experiment');
-      elementReturnVal.bind.mostRecentCall.args[1]();
-      expect(dummyFileReader.readAsText).toHaveBeenCalled();
-      expect(dummyFileReader.onload).toBeDefined();
-      dummyFileReader.onload({target: 'dummy'});
-      expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
-    });
-
   });
 
 });

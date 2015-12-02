@@ -6,17 +6,26 @@
 
   <div class="list-container">
     <div class="form-group form-inline col-xs-12">
-      <input ng-model="query" type="text" class="top-buttons form-control input-sm" placeholder="Experiment Filter...">
-      <div ng-show="!isQueryingServersFinished"><i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;<i>Loading list of experiments...</i></div>
+      <input ng-model="query" type="text"
+      class="top-buttons form-control input-sm" placeholder="Experiment Filter...">
+      <div ng-show="!isQueryingServersFinished">
+        <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;
+        <i>Loading list of experiments...</i>
+      </div>
     </div>
 
     <hr class="list-separator">
 
-    <a ng-show="!showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=true">developers</a>
-    <a ng-show="showAll" style="position: absolute; top: 5pt; right: 5pt; font-size: xx-small" ng-click="showAll=false">users</a>
+    <a ng-show="!showAll" class="developpers-switch" ng-click="showAll=true">
+      developers
+    </a>
+    <a ng-show="showAll" class="developpers-switch" ng-click="showAll=false">
+      users
+    </a>
 
     <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll"
-         ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
+         ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false"
+         ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
         <div class="list-entry-left" ng-class="{selected: exp.id == selectedIndex}">
           <img ng-src="data:image/png;base64,{{exp.imageData}}" />
@@ -27,6 +36,11 @@
           </div>
           <div ng-if="exp.id == selectedIndex">{{exp.description}}</div>
           <div ng-if="exp.id != selectedIndex">{{exp.description | limitTo: 200}}...</div>
+          <div collapse="(exp.id != selectedIndex) || !isCloneRequested">
+            <div class="list-entry-container center">
+              <i class="fa fa-spinner fa-spin"></i>&nbsp;<i>Copying files to Collab storage...</i>
+            </div>
+          </div>
           <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
             <div class="btn-group" role="group">
               <button class="btn btn-default" ng-click="cloneExperiment(exp.id)">
