@@ -3,6 +3,225 @@ var GZ3D = GZ3D || {
   assetsPath: 'http://localhost:8080/assets',
   webSocketUrl: 'ws://localhost:7681'
 };
+var GZ3D = GZ3D || {
+  REVISION : '1'
+};
+
+GZ3D.AnimatedModel = function(scene) {
+  this.scene = scene;
+  this.loader = null;
+
+  this.modelUri_animated = '';
+  this.animatedModelFound = false;
+  this.hideLinkVisuals = false;
+
+  this.modelName = '';
+
+  this.visualsToHide = [];
+
+  this.serverSideModel = null;
+};
+
+// Helper function to find Visuals that need to be hidden when loading a client-side-only animated model
+GZ3D.AnimatedModel.prototype.isVisualHidden = function(visual) {
+  if (visual.geometry && visual.geometry.mesh) {
+    for (var k = 0; k < this.visualsToHide.length; k++) {
+      if (this.visualsToHide[k] === visual.geometry.mesh.filename) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+// Function to check if a client-side-only file for an animated model is available
+GZ3D.AnimatedModel.prototype.animatedModelAvailable = function(model) {
+  var uriPath = GZ3D.assetsPath;
+
+  for (var j = 0; j < model.link.length; ++j) {
+    var link = model.link[j];
+
+    for (var k = 0; k < link.visual.length; k++) {
+      var geom = link.visual[k].geometry;
+      if (geom && geom.mesh) {
+        var meshUri = geom.mesh.filename;
+        // This saves all visuals of a model here because access to the loaded model after the loading
+        // process finished is more difficult to implement. The optimal solution would be to actually
+        // do this only after an animated model was found.
+        this.visualsToHide.push(geom.mesh.filename);
+        var uriType = meshUri.substring(0, meshUri.indexOf('://'));
+        if (uriType === 'file' || uriType === 'model') {
+          var modelUri = meshUri.substring(meshUri.indexOf('://') + 3);
+          var modelName = modelUri.substring(0, modelUri.indexOf('/'));
+          var modelUriCheck = uriPath + '/' + modelName + '/meshes/' + modelName + '_animated.dae';
+          var checkModel = new XMLHttpRequest();
+
+          checkModel.open('HEAD', modelUriCheck, false);
+          try {
+            checkModel.send();
+          } catch (err) {
+            console.log(modelUriCheck + ': no animated version');
+          }
+          if (checkModel.status !== 404) {
+            this.modelUri_animated = modelUriCheck;
+            this.animatedModelFound = true;
+            this.hideLinkVisuals = true;
+            this.modelName = model.name;
+            this.serverSideModel = model;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return this.animatedModelFound;
+};
+
+GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
+  this.loader = new THREE.ColladaLoader();
+
+  // Helper function to enable 'skinning' property so three.js treats meshes as deformable
+
+  var enableSkinning = function (skinnedMesh) {
+    var materials = skinnedMesh.material.materials;
+    if (materials !== null && materials !== undefined) {
+      for (var i = 0, length = materials.length; i < length; i++) {
+        var mat = materials[i];
+        mat.skinning = true;
+      }
+    }
+
+    if (skinnedMesh.material !== undefined && skinnedMesh.material !== null) {
+      skinnedMesh.material.skinning = true;
+    }
+  };
+
+  // Load animated model with separate COLLADA loader instance
+  var that = this;
+  // Progress update: Add this asset to the assetProgressArray
+  var element = {};
+  element.id = modelName;
+  element.url = this.modelUri_animated;
+  element.progress = 0;
+  element.totalSize = 0;
+  element.done = false;
+  GZ3D.assetProgressData.assets.push(element);
+  this.loader.load(this.modelUri_animated, function (collada) {
+    var modelParent = new THREE.Object3D();
+    modelParent.name = modelName + '_animated';
+    var linkParent = new THREE.Object3D();
+
+    // Set gray, phong-shaded material for loaded model
+    // TODO: Texturing/GLSL shading; find out what is available in the COLLADA loader implementation
+    collada.scene.traverse (function (child) {
+      if (child instanceof THREE.Mesh) {
+        var transparentMaterial = new THREE.MeshPhongMaterial({color: 0x707070});
+        transparentMaterial.wireframe = false;
+        child.material = transparentMaterial;
+      }
+    });
+
+    // Enable skinning for all child meshes
+    collada.scene.traverse(function (child) {
+      if (child instanceof THREE.SkinnedMesh) {
+        enableSkinning(child);
+      }
+    });
+
+    linkParent.add(collada.scene);
+
+    // Hide model coordinate frames for the time being; remove as soon as position offset and rotation axis issues are fixed
+    /*var collada_scene_axes = new THREE.AxisHelper(2);
+     linkParent.add(collada_scene_axes);*/
+
+    modelParent.add(linkParent);
+
+    // Hide model coordinate frames for the time being; remove as soon as position offset and rotation axis issues are fixed
+    /*var model_parent_axes = new THREE.AxisHelper(4);
+     modelParent.add(model_parent_axes);*/
+
+    // Temporary fix for offset between mouse model defined in SDF and client-side COLLADA model; cause remains to be investigated
+    modelParent.position.y = modelParent.position.y + 5;
+    modelParent.position.z = modelParent.position.z + 0.62;
+
+    // Build list of bones in rig, and attach it to scene node (userData) for later retrieval in animation handling
+    var getBoneList = function (object) {
+      var boneList = [];
+
+      if (object instanceof THREE.Bone) {
+        boneList.push(object);
+      }
+
+      for (var i = 0; i < object.children.length; i++) {
+        boneList.push.apply(boneList, getBoneList(object.children[i]));
+      }
+
+      return boneList;
+    };
+
+    var boneList = getBoneList(collada.scene);
+    var boneHash = {};
+    for (var k = 0; k < boneList.length; k++) {
+      boneHash[boneList[k].name] = boneList[k];
+    }
+    // Skeleton visualization helper class
+    var helper = new THREE.SkeletonHelper(collada.scene);
+
+    boneHash['Skeleton_Visual_Helper'] = helper;
+    modelParent.userData = boneHash;
+
+    helper.material.linewidth = 3;
+    // Hide skeleton helper for the time being
+    // TODO: Make this configurable for visualizing the underlying skeleton
+    helper.visible = false;
+
+    that.scene.add(helper);
+    that.scene.add(modelParent);
+
+    // Progress update: execute callback
+    element.done = true;
+    if (GZ3D.assetProgressCallback) {
+      GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+    }
+  }, function(progress){
+    element.progress = progress.loaded;
+    element.totalSize = progress.total;
+    element.error = progress.error;
+    if (GZ3D.assetProgressCallback) {
+      GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+    }
+  });
+};
+
+GZ3D.AnimatedModel.prototype.updateJoint = function(robotName, jointName, jointValue, jointAxis) {
+  // Check if there is an animated model for it on the client side
+  var entity = this.scene.getByName(robotName + '_animated');
+  if (entity) {
+    if (entity.userData !== undefined && entity.userData !== null) {
+      var boneName = jointName;
+
+      // Retrieve bone instance from userData map of bone instances in animated model
+      if (entity.userData[boneName] !== undefined && entity.userData[boneName] !== null) {
+        var targetBone = entity.userData[boneName];
+        var rotationAxis = jointAxis;
+        var rotationAngle = jointValue;
+
+        var rotationMatrix = new THREE.Matrix4();
+        rotationMatrix.identity();
+        rotationMatrix.makeRotationAxis(rotationAxis, rotationAngle);
+
+        targetBone.setRotationFromMatrix(rotationMatrix);
+
+        // Update animation handler and skeleton helper
+        // TODO: Move this to the animation loop to synchronize animations with the actual frame rate.
+        // Alternative: Use the clock helper class from three.js for retrieving the actual frame rate delta.
+        entity.userData['Skeleton_Visual_Helper'].update(0.016);
+        THREE.AnimationHandler.update(0.016);
+      }
+    }
+  }
+};
+
 
 /*global $:false */
 /*global angular*/
@@ -2047,7 +2266,6 @@ GZ3D.GZIface = function(scene, gui)
   GZ3D.assetProgressData.prepared = false;
   GZ3D.assetProgressCallback = undefined;
 
-  this.numConnectionTrials = 0;
   this.webSocketConnectionCallbacks = [];
 };
 
@@ -2056,7 +2274,7 @@ GZ3D.GZIface.prototype.init = function()
   this.material = [];
   this.entityMaterial = {};
 
-  this.connect(GZ3D.webSocketUrl);
+  this.connect();
 };
 
 GZ3D.GZIface.prototype.setAssetProgressCallback = function(callback)
@@ -2072,7 +2290,6 @@ GZ3D.GZIface.prototype.connect = function()
 {
   // connect to websocket
   var url = GZ3D.webSocketUrl;
-
   if (localStorage.getItem('localmode.forceuser') === 'false') {
     var token = [];
     if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
@@ -2092,7 +2309,6 @@ GZ3D.GZIface.prototype.connect = function()
   });
 
   var that = this;
-
   this.webSocket.on('connection', function() {
     that.onConnected();
   });
@@ -2108,7 +2324,6 @@ GZ3D.GZIface.prototype.connect = function()
 
 GZ3D.GZIface.prototype.onError = function()
 {
-  console.log("Connection to websocket server (gzbridge): Error occurred.");
   // init scene and show popup only for the first connection error
   if (this.numConnectionTrials === 1)
   {
@@ -2283,6 +2498,7 @@ GZ3D.GZIface.prototype.onConnected = function()
   poseTopic.subscribe(poseUpdate.bind(this));
 
   // ROS topic subscription for joint_state messages
+  // Requires gzserver version with support for joint state messages
   var jointTopicSubscriber = new ROSLIB.Topic({ros: this.webSocket,
                                               name: '~/joint_states',
                                               message_type: 'jointstates',
@@ -2826,15 +3042,12 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   var modelObj = new THREE.Object3D();
   modelObj.name = model.name;
   modelObj.userData = model.id;
-
-  var uriPath = GZ3D.assetsPath;
-
   if (model.pose)
   {
     this.scene.setPose(modelObj, model.pose.position, model.pose.orientation);
   }
 
-  /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
+  // Check for client-side-only animated model
   var animatedModel = new GZ3D.AnimatedModel(this.scene);
   var animatedModelExists = animatedModel.animatedModelAvailable(model);
 
@@ -2845,18 +3058,13 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   }
   else
   {
-    delete animatedModel;
     animatedModel = null;
   }
-
-  /* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository */
 
   for (var j = 0; j < model.link.length; ++j)
   {
     var link = model.link[j];
-
     var linkObj = new THREE.Object3D();
-
     linkObj.name = link.name;
     linkObj.userData = link.id;
     linkObj.serverProperties =
@@ -2871,14 +3079,10 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       this.scene.setPose(linkObj, link.pose.position,
           link.pose.orientation);
     }
-
     modelObj.add(linkObj);
     for (var k = 0; k < link.visual.length; ++k)
     {
       var visual = link.visual[k];
-
-      /* !IMPORTANT! START: this is only committed to ExDFrontend, not to gzweb repository*/
-
       // Check if the current visual needs to be hidden, i. e. is replaced by a client-side-only AnimatedModel
       var isVisual_Hidden = false;
       if (animatedModel !== null)
@@ -2886,11 +3090,10 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
         isVisual_Hidden = animatedModel.isVisualHidden(visual);
       }
 
-      /* !IMPORTANT! END: this is only committed to ExDFrontend, not to gzweb repository*/
-
       var visualObj = null;
-      if (!isVisual_Hidden)
+      if (!isVisual_Hidden) {
         visualObj = this.createVisualFromMsg(visual);
+      }
 
       // Hide object if it needs to be hidden: Don't add it to the scene in that case.
       if (visualObj && !visualObj.parent)
@@ -2902,17 +3105,16 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     for (var l = 0; l < link.collision.length; ++l)
     {
       var collision = link.collision[l];
-
       for (var m = 0; m < link.collision[l].visual.length; ++m)
       {
-
-        if (!animatedModelExists) { //!IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
+        // Only create collision visuals if this is not an animated model
+        if (!animatedModelExists) {
           var collisionVisual = link.collision[l].visual[m];
           var collisionVisualObj = this.createVisualFromMsg(collisionVisual);
           if (collisionVisualObj && !collisionVisualObj.parent) {
             linkObj.add(collisionVisualObj);
           }
-        } // !IMPORTANT! this is only committed to ExDFrontend, not to gzweb repository*/
+        }
       }
     }
 
@@ -4950,6 +5152,7 @@ GZ3D.Manipulator.prototype = Object.create(THREE.EventDispatcher.prototype);
  */
 
 GZ3D.MULTIVIEW_MAX_VIEW_COUNT = 10;
+GZ3D.MULTIVIEW_MAINVIEW_NAME = 'main_view';
 
 /**
  * GZ3D.MULTIVIEW_RENDER_VIEWPORTS uses view containers as transparent references to determine viewports for rendering (one single canvas).
@@ -4964,11 +5167,10 @@ GZ3D.MULTIVIEW_RENDER_VIEWPORTS = 1;
  */
 GZ3D.MULTIVIEW_RENDER_COPY2CANVAS = 2;
 
-GZ3D.MultiView = function(gz3dScene, mainContainer, callbackCreateRenderContainer)
+GZ3D.MultiView = function(gz3dScene, mainContainer)
 {
     this.gz3dScene = gz3dScene;
     this.mainContainer = mainContainer;
-    this.createRenderContainerCallback = callbackCreateRenderContainer;
 
     this.init();
 };
@@ -4983,11 +5185,38 @@ GZ3D.MultiView.prototype.init = function()
     if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_VIEWPORTS) {
         this.mainContainer.appendChild(this.gz3dScene.getDomElement());
     }
+
+    this.createMainUserView();
 };
 
 GZ3D.MultiView.prototype.setCallbackCreateRenderContainer = function(callback)
 {
     this.createRenderContainerCallback = callback;
+};
+
+/**
+ * This creates the main view the user will interact with and should always be there.
+ */
+GZ3D.MultiView.prototype.createMainUserView = function()
+{
+    var displayParams = {
+        left: '0px',
+        top: '0px',
+        width: '100%',
+        height: '100%',
+        adjustable: false
+    };
+    var cameraParams = {
+        width: 960,
+        height: 600,
+        fov: 60,
+        near: 0.1,
+        far: 100
+    };
+
+    this.mainUserView = this.createView(GZ3D.MULTIVIEW_MAINVIEW_NAME, displayParams, cameraParams);
+
+    return this.mainUserView;
 };
 
 /**
@@ -4998,9 +5227,9 @@ GZ3D.MultiView.prototype.setCallbackCreateRenderContainer = function(callback)
  */
 GZ3D.MultiView.prototype.createView = function(name, displayParams, cameraParams)
 {
-    if (this.getViewByName(name) !== undefined) {
+    if (angular.isDefined(this.getViewByName(name))) {
         console.error('GZ3D.MultiView.createView() - a view of that name already exists (' + name + ')');
-        return null;
+        return undefined;
     }
 
     if (this.views.length >= this.MULTIVIEW_MAX_VIEW_COUNT) {
@@ -5008,8 +5237,8 @@ GZ3D.MultiView.prototype.createView = function(name, displayParams, cameraParams
     }
 
     var container = this.createViewContainer(displayParams, name);
-    if (container === null) {
-        return;
+    if (!angular.isDefined(container)) {
+        return undefined;
     }
 
     // camera
@@ -5037,20 +5266,27 @@ GZ3D.MultiView.prototype.createView = function(name, displayParams, cameraParams
 
 GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
 {
-    if (this.createRenderContainerCallback === undefined) {
-        console.error('GZ3D.MultiView.createViewContainer() - no callback for creating view reference container defined');
-        return null;
+    // container div
+    var viewContainer;
+    if (name === GZ3D.MULTIVIEW_MAINVIEW_NAME) {
+        viewContainer = document.createElement('div');
+    } else {
+        if (!angular.isDefined(this.createRenderContainerCallback)) {
+            console.error('GZ3D.MultiView.createViewContainer() - no callback for creating view reference container defined');
+            return undefined;
+        } else {
+            viewContainer = this.createRenderContainerCallback(displayParams.adjustable, name);
+        }
+    }
+    if (!angular.isDefined(viewContainer)) {
+        console.error('GZ3D.MultiView.createViewContainer() - could not create view container via callback');
+        return undefined;
     }
 
-    // container div
-    var viewContainer = this.createRenderContainerCallback(displayParams.adjustable, name);
-    if (!viewContainer) {
-        console.error('GZ3D.MultiView.createViewContainer() - could not create view container via callback');
-        return null;
-    }
 
     // z-index
-    viewContainer.style.zIndex =  displayParams.zIndex;
+    var zIndexTop = parseInt(this.mainContainer.style.zIndex, 10) + this.views.length + 1;
+    viewContainer.style.zIndex = angular.isDefined(displayParams.zIndex) ? displayParams.zIndex : zIndexTop;
 
     // positioning
     viewContainer.style.position = 'absolute';
@@ -5673,32 +5909,14 @@ GZ3D.Scene.prototype.init = function()
   this.container = document.getElementById( 'container' );
 
   // create views manager
-  this.viewManager = new GZ3D.MultiView(this, this.container, function(adjustable, name){
-    return document.createElement('div');
-  });
-  // create main view
-  var displayParams = {
-    left: '0px',
-    top: '0px',
-    width: '100%',
-    height: '100%',
-    adjustable: false
-  };
-  var cameraParams = {
-    width: 960,
-    height: 600,
-    fov: 60,
-    near: 0.1,
-    far: 100
-  };
-  this.viewManager.createView('main_view', displayParams, cameraParams);
+  this.viewManager = new GZ3D.MultiView(this, this.container);
 
   // lights
   this.ambient = new THREE.AmbientLight( 0x666666 );
   this.scene.add(this.ambient);
 
   // camera
-  this.camera = this.viewManager.getViewByName('main_view').camera;
+  this.camera = this.viewManager.mainUserView.camera;
   this.defaultCameraPosition = new THREE.Vector3(5, 0, 1);
   this.defaultCameraLookAt = new THREE.Vector3(0.0, 0.0, 0.0);
   this.resetView();
@@ -7552,7 +7770,7 @@ GZ3D.Scene.prototype.resetView = function()
   this.camera.updateMatrix();
 };
 
- /**
+/**
  * Set the camera pose and the default value (position and LookAt) and update the projection matrix
  * @param {Float} xPos - x coordinate (camera position)
  * @param {Float} yPos - y coordinate (camera position)
@@ -8197,6 +8415,7 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
     }
   });
 };
+
 /**
  * SDF parser constructor initializes SDF parser with the given parameters
  * and defines a DOM parser function to parse SDF XML files
@@ -8757,7 +8976,6 @@ GZ3D.SdfParser.prototype.createVisual = function(visual)
 {
   //TODO: handle these node values
   // cast_shadow, receive_shadows
-
   if (visual.geometry)
   {
     var visualObj = new THREE.Object3D();
@@ -8837,7 +9055,6 @@ GZ3D.SdfParser.prototype.spawnModelFromSDF = function(sdfObj)
   // create the model
   var modelObj = new THREE.Object3D();
   modelObj.name = sdfObj.model['@name'];
-
   //TODO: is that needed
   //modelObj.userData = sdfObj.model.@id;
 
