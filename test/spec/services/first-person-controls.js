@@ -13,6 +13,11 @@ function createKeyEvent(eventType, key) {
 function createMouseEvent(eventType, button, pageX, pageY) {
   var event = document.createEvent('Event');
   event.button = button;
+  // -1 means: no button was pressed
+  if (button === -1) {
+    event.button = 0;
+    event.buttons = 0;
+  }
   event.pageX = pageX;
   event.pageY = pageY;
   event.initEvent(eventType, true, true);
@@ -334,6 +339,17 @@ describe('FirstPersonControls', function () {
 
     expect(firstPersonControls.mousePosCurrent.x).toEqual(10);
     expect(firstPersonControls.mousePosCurrent.y).toEqual(20);
+  }));
+
+  it('should handle mousemove events when no button was pressed', inject(function() {
+    expect(firstPersonControls.activeLook).toBe(true);
+    firstPersonControls.mousePosCurrent.x = 0;
+    firstPersonControls.mousePosCurrent.y = 0;
+
+    triggerMouseEvent(domElement, 'mousemove', -1, 10, 20);
+
+    expect(firstPersonControls.mousePosCurrent.x).toEqual(0);
+    expect(firstPersonControls.mousePosCurrent.y).toEqual(0);
   }));
 
   it('should rotate according to mouse movement', inject(function() {
