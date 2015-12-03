@@ -104,7 +104,7 @@
               <tr ng-repeat="simul in exp.simulations">
                 <td>{{simul.serverID}}</td>
                 <td>{{owners[simul.owner]}}</td>
-                <td>{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
+                <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
                 <td>{{simul.state}}</td>
                 <td>
                   <a ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
