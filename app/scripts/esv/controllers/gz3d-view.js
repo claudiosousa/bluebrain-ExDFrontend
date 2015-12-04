@@ -62,7 +62,7 @@
         });
     }])
     .controller('Gz3dViewCtrl',
-      ['$rootScope', '$scope', '$timeout',
+      ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$window', '$document', 'bbpConfig',
       'hbpUserDirectory', 'simulationService',
       'simulationControl', 'screenControl', 'experimentList',
@@ -71,7 +71,7 @@
       'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
       'gz3d', 'EDIT_MODE', 'stateService','contextMenuState',
       'simulationInfo', 'SLIDER_INITIAL_POSITION',
-        function ($rootScope, $scope, $timeout,
+        function ($rootScope, $scope, $stateParams, $timeout,
           $location, $window, $document, bbpConfig,
           hbpUserDirectory, simulationService,
           simulationControl, screenControl, experimentList,
@@ -173,16 +173,11 @@
       /* by a progressbar somewhere else. */
       /* Timeout messages are displayed in the toolbar. */
       var messageCallback = function(message) {
-        var callbackOnClose = function() {
-          $scope.splashScreen = undefined;
-          $location.path("esv-web");
-        };
-
         /* Progress messages (apart start state progress messages which are handled by another progress bar) */
         if (angular.isDefined(message.progress) && message.state !== STATE.STARTED ) {
           $scope.splashScreen = $scope.splashScreen || splash.open(
               !message.progress.block_ui,
-              ((stateService.currentState === STATE.STOPPED) ? callbackOnClose : undefined));
+              ((stateService.currentState === STATE.STOPPED) ? $scope.exit : undefined));
           if (angular.isDefined(message.progress.done) && message.progress.done) {
             splash.spin = false;
             splash.setMessage({ headline: 'Finished' });
@@ -536,8 +531,17 @@
         panels.open('code-editor');
       };
 
-      $scope.exit = function(path) {
-        $location.path(path);
+      $scope.exit = function() {
+        $scope.splashScreen = undefined;
+        if (angular.isDefined($stateParams.ctx) && $stateParams.ctx !== '') {
+          if ($scope.operationMode === OPERATION_MODE.EDIT) {
+            $location.path("esv-collab/edit");
+          } else {
+            $location.path("esv-collab/run");
+          }
+        } else {
+          $location.path("esv-web");
+        }
       };
     }])
     ;
