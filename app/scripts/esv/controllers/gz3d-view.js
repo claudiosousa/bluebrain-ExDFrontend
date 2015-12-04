@@ -207,6 +207,37 @@
           // Initialize GZ3D and so on...
           gz3d.Initialize();
 
+          // Handle touch clicks to toggle the context menu
+          // This is used to save the position of a touch start event used for content menu toggling
+          var touchStart = {clientX: 0, clientY: 0};
+          var touchMove = {clientX: 0, clientY: 0};
+
+          gz3d.scene.container.addEventListener('touchstart', function(event) {
+            touchStart.clientX = event.touches[0].clientX;
+            touchStart.clientY = event.touches[0].clientY;
+            touchMove.clientX = touchStart.clientX;
+            touchMove.clientY = touchStart.clientY;
+          }, false);
+
+          gz3d.scene.container.addEventListener('touchmove', function(event) {
+            touchMove.clientX = event.touches[0].clientX;
+            touchMove.clientY = event.touches[0].clientY;
+          }, false);
+
+          gz3d.scene.container.addEventListener('touchend', function(event) {
+            var deltaX = touchMove.clientX - touchStart.clientX;
+            var deltaY = touchMove.clientY - touchStart.clientY;
+            var touchDistance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+            // if the touch distance was small
+            if (touchDistance <= 20) {
+              event.clientX = touchMove.clientX;
+              event.clientY = touchMove.clientY;
+              contextMenuState.toggleContextMenu(true, event);
+            }
+            touchStart = {clientX: 0, clientY: 0};
+            touchMove = {clientX: 0, clientY: 0};
+          }, false);
+
           // Register for the status updates as well as the timing stats
           // Note that we have two different connections here, hence we only put one as a callback for
           // $rootScope.iface and the other one not!
@@ -376,12 +407,10 @@
       };
       contextMenuState.pushItemGroup(screenChangeMenuItemGroup);
 
-
       //main context menu handler
       $scope.toggleContextMenu = function (show, event) {
-
         if($scope.viewState.isOwner) {
-           switch (event.button) {
+          switch (event.button) {
             case 2:
               //right click -> show menu
               contextMenuState.toggleContextMenu(show, event);
@@ -392,7 +421,7 @@
             case 1:
               contextMenuState.toggleContextMenu(false);
               break;
-           }
+          }
         }
       };
 
