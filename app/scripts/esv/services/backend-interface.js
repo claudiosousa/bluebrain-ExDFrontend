@@ -49,8 +49,7 @@
             interceptor: {responseError: serverError.display}
           },
           put: {
-            method: 'PUT',
-            //interceptor: {responseError: serverError.display}
+            method: 'PUT'
           }
         });
       };
@@ -59,6 +58,15 @@
         return $resource(backendBaseUrl + '/experiment/:exp_id/brain', {}, {
           get: {
             method: 'GET',
+            interceptor: {responseError: serverError.display}
+          }
+        });
+      };
+
+      var resourceSDF = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/experiment/:context_id/sdf_world', {}, {
+          save: {
+            method: 'PUT',
             interceptor: {responseError: serverError.display}
           }
         });
@@ -138,6 +146,9 @@
         },
         getServerBaseUrl: function () {
           return simulationInfo.serverBaseUrl;
+        },
+        saveSDF: function(contextID) {
+          return resourceSDF(simulationInfo.serverBaseUrl).save({ context_id: contextID }, { context_id: contextID });
         }
       };
 

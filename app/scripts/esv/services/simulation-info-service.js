@@ -20,6 +20,8 @@
         thisService.mode = $stateParams.mode;
         thisService.serverConfig = bbpConfig.get('api.neurorobotics')[thisService.serverID];
         thisService.serverBaseUrl = thisService.serverConfig.gzweb['nrp-services'];
+        thisService.contextID = $stateParams.ctx;
+        thisService.isCollabExperiment = angular.isDefined(thisService.contextID) ? true : false;
       };
 
       return thisService;

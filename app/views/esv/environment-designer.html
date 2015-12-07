@@ -37,12 +37,18 @@
 <hr>
 <h4>Save or Load environment definition file to and from your computer</h4>
 <div class="btn-group" role="group">
-  <button type="button" class="btn btn-default" 
-          ng-click="exportSDFWorld()"
+  <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+          ng-click="saveSDFIntoCollabStorage()"
           ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
     <i class="glyphicon glyphicon-save"></i>
-    <span>Save SDF locally</span>
+    <span>Save SDF</span>
   </button>
+  <button type="button" class="btn btn-default"
+        ng-click="exportSDFWorld()"
+        ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
+  <i class="glyphicon glyphicon-save"></i>
+  <span>Download SDF</span>
+</button>
 </div>
 <hr>
 

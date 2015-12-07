@@ -589,7 +589,8 @@ describe('Services: experimentSimulationService', function () {
       var dataDone = { data : '{"progress": {"done": "true"}}'};
       statusListenerMock.subscribe.mostRecentCall.args[0](dataDone);
       expect(messageCallback).toHaveBeenCalledWith({ main: 'Simulation initialized.' });
-      expect(initializedCallback).toHaveBeenCalledWith('esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode);
+      var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode;
+      expect(initializedCallback).toHaveBeenCalledWith(url);
     });
 
     it('should test the launch of an experiment on a given server', function() {
