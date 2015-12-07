@@ -122,7 +122,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       scene : {
         resetView: jasmine.createSpy('resetView'),
         setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
-
+        container : {
+          addEventListener : jasmine.createSpy('addEventListener')
+        },
         radialMenu : {
           showing: false
         },
@@ -521,13 +523,9 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
       expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'RightScreenToBlue'});
-
-
     });
 
-
     it('should call context menu service if user is the simulation owner', function() {
-
       var event = {button : 2};
 
       //false case
@@ -543,7 +541,54 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.toggleContextMenu(true, event);//call the function under test
 
       expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, event);
+    });
 
+    it('should register touch events for the context menu', function() {
+      gz3d.scene.container.addEventListener.reset();
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      expect(gz3d.scene.container.addEventListener.calls[0].args[0]).toBe('touchstart');
+      expect(gz3d.scene.container.addEventListener.calls[1].args[0]).toBe('touchmove');
+      expect(gz3d.scene.container.addEventListener.calls[2].args[0]).toBe('touchend');
+    });
+
+    it('should toggle the context menu on touch tap', function() {
+      gz3d.scene.container.addEventListener.reset();
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
+      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+
+      touchstart({touches: [{clientX: 10, clientY: 20}]});
+      touchend({});
+
+      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, {clientX: 10, clientY: 20});
+    });
+
+    it('should toggle the context menu on touch with a bit move', function() {
+      gz3d.scene.container.addEventListener.reset();
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
+      var touchmove = gz3d.scene.container.addEventListener.calls[1].args[1];
+      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+
+      touchstart({touches: [{clientX: 10, clientY: 20}]});
+      touchmove({touches: [{clientX: 15, clientY: 25}]});
+      touchend({});
+
+      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, {clientX: 15, clientY: 25});
+    });
+
+    it('should not toggle the context menu on touch with a large movement', function() {
+      gz3d.scene.container.addEventListener.reset();
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
+      var touchmove = gz3d.scene.container.addEventListener.calls[1].args[1];
+      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+
+      touchstart({touches: [{clientX: 10, clientY: 20}]});
+      touchmove({touches: [{clientX: 100, clientY: 200}]});
+      touchend({});
+
+      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
     });
 
     it('should call asset loading callback and turn slider position into light intensities', function() {
