@@ -114,7 +114,13 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.onMouseMove = function (event) {
-    this.mousePosCurrent.set(event.pageX, event.pageY);
+    // only update the position, when a mouse button is pressed
+    // else end the lookAround-mode
+    if (event.buttons !== 0) {
+      this.mousePosCurrent.set(event.pageX, event.pageY);
+    } else {
+      this.endLookAround();
+    }
   };
 
   this.onMouseWheel = function (event) {
