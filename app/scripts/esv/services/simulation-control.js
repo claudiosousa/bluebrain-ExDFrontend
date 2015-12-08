@@ -330,6 +330,7 @@
                 var found = searchAndUpdateExperimentTemplates(experimentTemplates, activeSimulation);
                 // Add simulation if it was not found
                 if (!found) {
+                  activeSimulation.stopping = false;
                   addSimulationToTemplate(experimentTemplates, activeSimulation);
                 }
               }
@@ -534,6 +535,35 @@
         });
       };
 
+      var stopExperimentOnServer = function (
+        experimentTemplates,
+        serverID,
+        simulationID)
+      {
+        var serverURL = servers[serverID].gzweb['nrp-services'];
+        var simStateInstance = simulationState(serverURL);
+
+        simStateInstance.state({sim_id: simulationID}, function(data){
+          switch (data.state) {
+            case STATE.INITIALIZED:
+              simStateInstance.update({sim_id: simulationID}, {state: STATE.STARTED}, function () {
+                simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
+                  // Delete all elements in the data structure with this serverID
+                  deleteSimulationFromTemplate(experimentTemplates, serverID);
+                });
+              });
+              break;
+            case STATE.STARTED:
+            case STATE.PAUSED:
+              simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
+                // Delete all elements in the data structure with this serverID
+                deleteSimulationFromTemplate(experimentTemplates, serverID);
+              });
+              break;
+          }
+        });
+      };
+
       var setInitializedCallback = function (callback) {
         initializedCallback = callback;
       };
@@ -574,6 +604,7 @@
         existsAvailableServer: checkServerAvailability,
         startNewExperiments: startNewExperiments,
         launchExperimentOnServer: launchExperimentOnServer,
+        stopExperimentOnServer: stopExperimentOnServer,
         setInitializedCallback: setInitializedCallback,
         setProgressMessageCallback: setProgressMessageCallback,
         setShouldLaunchInEditMode: setShouldLaunchInEditMode,

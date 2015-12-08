@@ -2,6 +2,8 @@
 
 describe('Controller: ESVCollabRunCtrl', function () {
 
+  var TestDataGenerator = window.TestDataGenerator;
+
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
@@ -62,6 +64,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
       refreshExperiments : jasmine.createSpy('refreshExperiments'),
       getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
       startNewExperiment : jasmine.createSpy('startNewExperiment'),
+      stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer'),
       enterEditMode : jasmine.createSpy('enterEditMode')
     };
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
@@ -313,6 +316,20 @@ describe('Controller: ESVCollabRunCtrl', function () {
     scope.updateExperiments();
     expect(scope.owners).toBeDefined();
     expect(scope.uptime).toBeDefined();
+  });
+
+  it('should stop a running experiment', function() {
+    var experimentTemplates = {
+      '1': TestDataGenerator.createTestExperiment(),
+      '2': TestDataGenerator.createTestExperiment(),
+      '3': TestDataGenerator.createTestExperiment()
+    };
+    scope.experiments = experimentTemplates;
+    scope.experiments['1'].simulations = [];
+    scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
+    scope.experiment = scope.experiments['1'];
+    scope.stopSimulation('1', 0);
+    expect(experimentSimulationService.stopExperimentOnServer).toHaveBeenCalledWith(scope.experiments, 'fakeserverID', 'fakeID');
   });
 
   describe('Tests related to scope.$destroy()', function(){

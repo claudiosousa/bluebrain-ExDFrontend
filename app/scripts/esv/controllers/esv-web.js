@@ -196,6 +196,13 @@
           );
         });
 
+        // Stop an already initialized or running experiment
+        $scope.stopSimulation = function(experimentID, index) {
+          var simulation = $scope.experiments[experimentID].simulations[index];
+          simulation.stopping = true;
+          experimentSimulationService.stopExperimentOnServer($scope.experiments, simulation.serverID, simulation.simulationID);
+        };
+
         $scope.uploadEnvironmentAndStart = function(experiment) {
           var inputElement = angular.element('<input type="file" />');
           inputElement.bind('change', function () {

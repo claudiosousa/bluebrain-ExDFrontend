@@ -59,6 +59,7 @@ describe('Controller: experimentCtrl', function () {
     refreshExperiments : jasmine.createSpy('refreshExperiments'),
     getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
     startNewExperiment : jasmine.createSpy('startNewExperiment'),
+    stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer'),
     enterEditMode : jasmine.createSpy('enterEditMode')
   };
 
@@ -314,6 +315,14 @@ describe('Controller: experimentCtrl', function () {
     scope.isServerAvailable = {};
     experimentSimulationService.refreshExperiments.mostRecentCall.args[2]('fakeId', true);
     expect(scope.isServerAvailable).toEqual({'fakeId': true});
+  });
+
+  it('should stop a running experiment', function() {
+    scope.experiments = experimentTemplates;
+    scope.experiments['1'].simulations = [];
+    scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
+    scope.stopSimulation('1', 0);
+    expect(experimentSimulationService.stopExperimentOnServer).toHaveBeenCalledWith(scope.experiments, 'fakeserverID', 'fakeID');
   });
 
   describe('Tests related to scope.$destroy()', function(){

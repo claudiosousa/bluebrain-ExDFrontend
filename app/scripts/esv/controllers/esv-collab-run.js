@@ -117,6 +117,14 @@
           $location.path(url); // changing page --> esv-web/gz3d-view/*/*/*?ctx=*
         };
 
+        // Stop an already initialized or running experiment
+        $scope.stopSimulation = function(experimentID, index) {
+          var simulation = $scope.experiment.simulations[index];
+          simulation.stopping = true;
+          experimentSimulationService.stopExperimentOnServer($scope.experiments, simulation.serverID, simulation.simulationID);
+        };
+
+
         experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
         var setIsServerAvailable = function(id, isAvailable) {
