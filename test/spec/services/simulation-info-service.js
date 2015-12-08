@@ -10,7 +10,8 @@ describe('Services: server-info-service', function () {
       {
         serverID : 'bbpce016',
         simulationID : 'mocked_simulation_id',
-        mode: 'mockedMode'
+        mode: 'mockedMode',
+        ctx: 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6'
       }
     );
     $provide.value('bbpConfig', {
@@ -49,6 +50,8 @@ describe('Services: server-info-service', function () {
     expect(simulationInfo.mode).toEqual(stateParams.mode);
     expect(simulationInfo.serverConfig).toBeDefined();
     expect(simulationInfo.serverBaseUrl).toBeDefined();
+    expect(simulationInfo.contextID).toBe(stateParams.ctx);
+    expect(simulationInfo.isCollabExperiment).toBe(true);
   });
 
   it('should throw an error when simulationInfo.Initialize() is called with no prior knowledge of serverID or simulationID', function () {

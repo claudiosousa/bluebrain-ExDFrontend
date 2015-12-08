@@ -114,7 +114,7 @@
         $scope.joinExperiment = function(url) {
           var message = 'Joining experiment ' + url;
           $scope.setProgressMessage({main: message});
-          $location.path(url);
+          $location.path(url); // changing page --> esv-web/gz3d-view/*/*/*?ctx=*
         };
 
         experimentSimulationService.setInitializedCallback($scope.joinExperiment);

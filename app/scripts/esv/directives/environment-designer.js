@@ -9,12 +9,33 @@
   });
 
   angular.module('exdFrontendApp')
-  .directive('environmentDesigner', ['$log', 'EDIT_MODE', 'panels', 'simulationSDFWorld', 'STATE',
-                                     'bbpConfig', '$rootScope', 'gz3d', 'stateService', 'simulationInfo',
-                                     '$document', 'OPERATION_MODE','contextMenuState',
-  function ($log, EDIT_MODE, panels, simulationSDFWorld, STATE,
-            bbpConfig, $rootScope, gz3d, stateService, simulationInfo,
-            $document, OPERATION_MODE, contextMenuState) {
+  .directive('environmentDesigner', [
+    '$document',
+    'STATE',
+    'EDIT_MODE',
+    'OPERATION_MODE',
+    'panels',
+    'simulationSDFWorld',
+    'bbpConfig',
+    'gz3d',
+    'stateService',
+    'simulationInfo',
+    'contextMenuState',
+    'backendInterfaceService',
+  function (
+    $document,
+    STATE,
+    EDIT_MODE,
+    OPERATION_MODE,
+    panels,
+    simulationSDFWorld,
+    bbpConfig,
+    gz3d,
+    stateService,
+    simulationInfo,
+    contextMenuState,
+    backendInterfaceService
+  ) {
     return {
       templateUrl: 'views/esv/environment-designer.html',
       restrict: 'E',
@@ -23,10 +44,11 @@
         scope.STATE = STATE;
 
         var serverConfig = simulationInfo.serverConfig;
-        scope.assetsPath = serverConfig.gzweb.assets;//used by the view
-
+        // Used by the view
+        scope.assetsPath = serverConfig.gzweb.assets;
         scope.EDIT_MODE = EDIT_MODE;
         scope.gz3d = gz3d;
+        scope.isCollabExperiment = simulationInfo.isCollabExperiment;
 
         scope.setEditMode = function (mode) {
           var setMode = function(m) {
@@ -108,13 +130,16 @@
 
 
         scope.exportSDFWorld = function () {
-          $log.debug('ED: Querying server for SDF world export.');
-          simulationSDFWorld(scope.serverBaseUrl).export({}, function (data) {
+          simulationSDFWorld(simulationInfo.serverBaseUrl).export({}, function (data) {
             angular.element('<a ' +
               'href="data:text/xml;charset=utf-8,' + encodeURIComponent(data.sdf) + '" ' +
               'download="world.sdf" />')[0]
             .click();
           });
+        };
+
+        scope.saveSDFIntoCollabStorage = function () {
+          backendInterfaceService.saveSDF(simulationInfo.contextID);
         };
       }
     };

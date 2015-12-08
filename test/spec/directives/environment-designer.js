@@ -3,30 +3,29 @@
 describe('Directive: environment-designer', function () {
 
 
-  var $rootScope, $compile, $scope, $document, element, stateService,
+  var $scope, element, stateService,
     panels, currentStateMock, gz3dMock, contextMenuState, simulationSDFWorld,
-    simulationInfo;
-
-  var simulationInfoMock =
-  {
-    mode : undefined,
-    serverID : 'bbpce016',
-    simulationID : 'mocked_simulation_id',
-    serverConfig: {
-      gzweb: {},
-      rosbridge: {
-        topics: {
-          transferFunctionError: {}
-        }
-      }
-    }
-  };
+    simulationInfo, backendInterfaceService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('currentStateMockFactory'));
   beforeEach(module(function ($provide) {
     $provide.value('stateService', currentStateMock);
+    var simulationInfoMock = {
+      mode : undefined,
+      contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+      serverID : 'bbpce016',
+      simulationID : 'mocked_simulation_id',
+      serverConfig: {
+        gzweb: { assets: {} },
+        rosbridge: {
+          topics: {
+            transferFunctionError: {}
+          }
+        }
+      }
+    };
     $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('gz3d', gz3dMock);
     $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').andCallThrough());
@@ -52,9 +51,9 @@ describe('Directive: environment-designer', function () {
   }));
 
   beforeEach(inject(function (
-    _$rootScope_,
-    _$compile_,
-    _$document_,
+    $rootScope,
+    $compile,
+    $document,
     EDIT_MODE,
     STATE,
     OPERATION_MODE,
@@ -63,21 +62,20 @@ describe('Directive: environment-designer', function () {
     _contextMenuState_,
     _panels_,
     _simulationSDFWorld_,
-    _simulationInfo_) {
+    _simulationInfo_,
+    _backendInterfaceService_) {
 
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $document = _$document_;
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
     $scope.STATE = STATE;
     contextMenuState = _contextMenuState_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
-    simulationInfoMock.mode = OPERATION_MODE.EDIT;
     simulationInfo = _simulationInfo_;
+    simulationInfo.mode = OPERATION_MODE.EDIT;
     panels = _panels_;
     simulationSDFWorld = _simulationSDFWorld_;
+    backendInterfaceService = _backendInterfaceService_;
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
     var sceneMock = {
@@ -94,6 +92,11 @@ describe('Directive: environment-designer', function () {
       toggleScreenChangeMenu: jasmine.createSpy('toggleScreenChangeMenu')
     };
   }));
+
+  it('should initialize scope variables correctly', function () {
+    expect($scope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
+    expect($scope.assetsPath).toBeDefined();
+  });
 
   it('should replace the element with the appropriate content', function () {
     expect(element.prop('outerHTML')).toContain('<!-- TEST: Environment Designer loaded correctly -->');
@@ -283,6 +286,13 @@ describe('Directive: environment-designer', function () {
     //should toggle menu
     expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
 
+  });
+
+
+  it('should correctly saveSDFIntoCollabStorage', function () {
+    spyOn(backendInterfaceService, 'saveSDF');
+    $scope.saveSDFIntoCollabStorage();
+    expect(backendInterfaceService.saveSDF).toHaveBeenCalledWith(simulationInfo.contextID);
   });
 
 });
