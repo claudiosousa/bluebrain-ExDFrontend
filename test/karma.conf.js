@@ -132,7 +132,8 @@ module.exports = function(config) {
     ],
 
     junitReporter: {
-        outputFile: 'reports/unit-test.xml',
+        outputDir: 'reports/coverage/',
+        outputFile: 'unit-test.xml',
         suite: 'unit'
     },
 
