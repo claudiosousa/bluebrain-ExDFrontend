@@ -5,8 +5,14 @@
 function createKeyEvent(eventType, key) {
   var event = document.createEvent('Event');
   event.keyCode = key;
+  event.shiftKey = false;
   event.initEvent(eventType, true, true);
+  return event;
+}
 
+function createKeyEventWithShift(eventType, key) {
+  var event = createKeyEvent(eventType, key);
+  event.shiftKey = true;
   return event;
 }
 
@@ -55,6 +61,11 @@ function createMouseWheelEvent(targetElement, eventType, delta) {
 
 function triggerKeyEvent(targetElement, eventType, key) {
   var event = createKeyEvent(eventType, key);
+  targetElement.dispatchEvent(event);
+}
+
+function triggerKeyEventWithShift(targetElement, eventType, key) {
+  var event = createKeyEventWithShift(eventType, key);
   targetElement.dispatchEvent(event);
 }
 
@@ -184,7 +195,7 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 39/*right*/);
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 33/*pageup*/);
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 34/*pagedown*/);
-
+    expect(firstPersonControls.shiftHold).toEqual(false);
     expect(firstPersonControls.moveForward).toEqual(true);
     expect(firstPersonControls.moveLeft).toEqual(true);
     expect(firstPersonControls.moveBackward).toEqual(true);
@@ -205,6 +216,64 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveRight).toEqual(false);
     expect(firstPersonControls.moveUp).toEqual(false);
     expect(firstPersonControls.moveDown).toEqual(false);
+  }));
+
+  it('should handle key events for up/left/down/right/pageup/pagedown with Shift modifier', inject(function() {
+    //spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
+
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 38/*up*/);
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 37/*left*/);
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 40/*down*/);
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 39/*right*/);
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 33/*pageup*/);
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 34/*pagedown*/);
+
+    expect(firstPersonControls.shiftHold).toEqual(true);
+    expect(firstPersonControls.moveForward).toEqual(true);
+    expect(firstPersonControls.moveLeft).toEqual(true);
+    expect(firstPersonControls.moveBackward).toEqual(true);
+    expect(firstPersonControls.moveRight).toEqual(true);
+    expect(firstPersonControls.moveUp).toEqual(true);
+    expect(firstPersonControls.moveDown).toEqual(true);
+
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 38/*up*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 37/*left*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 40/*down*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 39/*right*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 33/*pageup*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 34/*pagedown*/);
+
+    expect(firstPersonControls.shiftHold).toEqual(false);
+    expect(firstPersonControls.moveForward).toEqual(false);
+    expect(firstPersonControls.moveLeft).toEqual(false);
+    expect(firstPersonControls.moveBackward).toEqual(false);
+    expect(firstPersonControls.moveRight).toEqual(false);
+    expect(firstPersonControls.moveUp).toEqual(false);
+    expect(firstPersonControls.moveDown).toEqual(false);
+  }));
+
+  it('should navigate faster with Shift modifier and according key pressed', inject(function() {
+    camera.position.set(0, 0, 10);
+    camera.lookAt(new THREE.Vector3(0,0,0));
+    var posStart = new THREE.Vector3();
+
+    expect(firstPersonControls.enabled).toBe(true);
+
+    posStart.copy(camera.position);
+    firstPersonControls.moveForward = true;
+    firstPersonControls.update();
+    firstPersonControls.moveForward = false;
+    var posDiffNoShift = Math.abs(camera.position.z - posStart.z);
+
+    posStart.copy(camera.position);
+    firstPersonControls.moveForward = true;
+    firstPersonControls.shiftHold = true;
+    firstPersonControls.update();
+    firstPersonControls.moveForward = false;
+    firstPersonControls.shiftHold = false;
+    var posDiffWithShift = Math.abs(camera.position.z - posStart.z);
+
+    expect(posDiffWithShift / posDiffNoShift).toBeCloseTo(firstPersonControls.speedUpFactor);
   }));
 
   it('should translate according to the keys pressed', inject(function() {
