@@ -435,6 +435,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initPosition');
       expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('initRotation');
       expect(gz3d.scene.resetView).toHaveBeenCalled();
+      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STARTED);
+      stateService.setCurrentState(STATE.STARTED).then.mostRecentCall.args[0]();
+      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.PAUSED);
     });
 
     it('should register for status information', function() {

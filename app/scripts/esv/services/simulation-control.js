@@ -413,11 +413,6 @@
               rosConnection.close();
               rosConnection = undefined;
               setProgressMessage({main: 'Simulation initialized.'});
-              var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
-              var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + operationMode;
-              if (angular.isDefined(initializedCallback)) {
-                initializedCallback(url);
-              }
             } else {
               setProgressMessage({main: message.progress.task, sub: message.progress.subtask});
             }
@@ -510,6 +505,11 @@
           contextID: $stateParams.ctx
         };
 
+        var errorDisplayFunction = function (errorData) {
+          serverError.display(errorData);
+          errorCallback();
+        };
+
         if (angular.isDefined(environmentConfiguration) && environmentConfiguration !== null) {
           simInitData.environmentConfiguration = environmentConfiguration;
         }
@@ -520,17 +520,26 @@
           // register for messages during initialization
           registerForStatusInformation(freeServerID, createData.simulationID);
 
-          // initialize the newly created simulation
+          // initialize the newly created simulation, then goto STARTED and then PAUSED
           simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED},
-            /* istanbul ignore next */
             function () {
-              // This function is just a dummy and not used
-              // Going to the GZ3D-Page is done in the "registerForStatusInformation" function on success
+              simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.STARTED},
+                function () {
+                  simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.PAUSED},
+                    // Now join the simulation
+                    function () {
+                      var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID + '/' + operationMode;
+                      if (angular.isDefined(initializedCallback)) {
+                        initializedCallback(url);
+                      }
+                    },
+                    errorDisplayFunction
+                  );
+                },
+                errorDisplayFunction
+              );
             },
-            function (updateData) {
-              serverError.display(updateData);
-              errorCallback();
-            }
+            errorDisplayFunction
           );
         });
       };
