@@ -594,6 +594,20 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
     });
 
+    it('should not toggle the context menu on touches with clientX and clientY = 0', function() {
+      gz3d.scene.container.addEventListener.reset();
+      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
+      var touchmove = gz3d.scene.container.addEventListener.calls[1].args[1];
+      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+
+      touchstart({touches: [{clientX: 0, clientY: 0}]});
+      touchmove({touches: [{clientX: 0, clientY: 0}]});
+      touchend({});
+
+      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
+    });
+
     it('should call asset loading callback and turn slider position into light intensities', function() {
       scope.assetLoadingSplashScreen = undefined;
       stateService.currentState = STATE.INITIALIZED;
