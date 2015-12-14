@@ -46,4 +46,30 @@ describe('Services: backendInterfaceService', function () {
     expect(serverError.display).toHaveBeenCalled();
   });
 
+  it('should make a PUT request on /experiment/:context_id/transfer_functions', function () {
+    var tfMock = [ 'someTF1', 'someTF2' ];
+    $httpBackend.whenPUT(/()/).respond(200);
+    simulationInfo.serverBaseUrl = 'http://bbpce014.epfl.ch:8080';
+    var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
+
+    backendInterfaceService.saveTF(contextID, tfMock);
+    $httpBackend.flush();
+    /*jshint camelcase: false */
+    var contextObject = {context_id: contextID};
+    var tfObject = { transfer_functions: tfMock };
+
+    $httpBackend.expectPUT(
+      simulationInfo.serverBaseUrl + '/experiment/' +
+        contextID + '/tf_world', contextObject , angular.extend(contextObject, tfObject)
+    );
+  });
+
+  it('should call serverError.display when the saveTF PUT request fails', function () {
+    $httpBackend.whenPUT(/()/).respond(500);
+    simulationInfo.serverBaseUrl = 'http://bbpce014.epfl.ch:8080';
+    backendInterfaceService.saveTF('97923877-13ea-4b43-ac31-6b79e130d344');
+    $httpBackend.flush();
+    expect(serverError.display).toHaveBeenCalled();
+  });
+
 });

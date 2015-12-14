@@ -5,7 +5,13 @@
 <button type="button" class="btn btn-default btn-md" ng-disabled="(stateService.currentState === STATE.INITIALIZED)" ng-click="create()">
   <span class="glyphicon glyphicon-add"></span> New transfer function
 </button>
-<a id="save-transfer-functions" href="" class="btn btn-default btn-md" ng-click="save()" download="transferFunctions.py">Save</a>
+<a id="download-transfer-functions" href="" class="btn btn-default btn-md" ng-click="download()" download="transferFunctions.py">Download</a>
+<button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+        ng-click="saveTFIntoCollabStorage()"
+        ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
+  <i class="glyphicon glyphicon-save"></i>
+  <span>Save TF</span>
+</button>
 <button class="btn btn-default btn-md" type="file"
         ngf-select="loadTransferFunctions($file)" accept=".py"
         ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending">

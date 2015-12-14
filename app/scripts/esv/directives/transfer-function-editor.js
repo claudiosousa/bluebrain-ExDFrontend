@@ -20,6 +20,7 @@
       '$timeout',
       'documentationURLs',
       'SIMULATION_FACTORY_CLE_ERROR',
+      'simulationInfo',
     function (
         $log,
         backendInterfaceService,
@@ -30,7 +31,8 @@
         serverError,
         $timeout,
         documentationURLs,
-        SIMULATION_FACTORY_CLE_ERROR
+        SIMULATION_FACTORY_CLE_ERROR,
+        simulationInfo
     ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
@@ -40,6 +42,7 @@
       },
       link: function (scope, element, attrs) {
 
+        scope.isCollabExperiment = simulationInfo.isCollabExperiment;
         scope.refreshLayout = function(editor) {
           // This updates the layout of the editor also onLoad
           // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
@@ -214,13 +217,18 @@
           return loadedTransferFunctions;
         };
 
-        scope.save = function () {
+        scope.download = function () {
           var file = new Blob([
             scope.buildTransferFunctionFile(scope.transferFunctions)
           ], {type: "plain/text", endings: 'native'});
 
-          var button = angular.element(document.querySelector('#save-transfer-functions'));
+          var button = angular.element(document.querySelector('#download-transfer-functions'));
           button.attr("href", URL.createObjectURL(file));
+        };
+        scope.saveTFIntoCollabStorage = function () {
+          // update all transfer functions
+          _.forEach(scope.transferFunctions, scope.update);
+          backendInterfaceService.saveTF(simulationInfo.contextID, scope.transferFunctions);
         };
 
         scope.loadTransferFunctions = function(file) {
@@ -231,9 +239,7 @@
                 var content = e.target.result;
                 var loadedTransferFunctions = splitCodeFile(content);
                 // Removes all TFs
-                _.forEach(scope.transferFunctions, function(tf) {
-                    scope.delete(tf);
-                });
+                _.forEach(scope.transferFunctions, scope.delete);
                 // Upload new TFs to back-end
                 scope.transferFunctions = loadedTransferFunctions;
                 scope.transferFunctions.forEach(function(tf) {
