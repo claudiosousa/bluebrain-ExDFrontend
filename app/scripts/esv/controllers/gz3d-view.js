@@ -323,6 +323,13 @@
               gz3d.scene.resetView(); //update the default camera position, if defined
               /* istanbul ignore next */
               resetScreenColors();
+
+              // Don't stay in INITIALIZED, but switch to STARTED->PAUSED
+              stateService.setCurrentState(STATE.STARTED).then(
+                function() {
+                  stateService.setCurrentState(STATE.PAUSED);
+                }
+              );
             }
           }
         );

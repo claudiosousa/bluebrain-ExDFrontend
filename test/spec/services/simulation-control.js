@@ -613,13 +613,9 @@ describe('Services: experimentSimulationService', function () {
     it('should register for status information', function() {
       var simulationID = 0;
       var serverID = 'bbpce016';
-      var expectedOperatingMode = 'view';
 
       // register our callback for progress messages
-      var initializedCallback = jasmine.createSpy('initializedCallback');
       experimentSimulationService.setProgressMessageCallback(messageCallback);
-      experimentSimulationService.setInitializedCallback(initializedCallback);
-
       experimentSimulationService.registerForStatusInformation(serverID, simulationID);
 
       expect(roslib.getOrCreateConnectionTo).toHaveBeenCalledWith('ws://bbpce016.epfl.ch:9090');
@@ -634,16 +630,19 @@ describe('Services: experimentSimulationService', function () {
       var dataDone = { data : '{"progress": {"done": "true"}}'};
       statusListenerMock.subscribe.mostRecentCall.args[0](dataDone);
       expect(messageCallback).toHaveBeenCalledWith({ main: 'Simulation initialized.' });
-      var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode;
-      expect(initializedCallback).toHaveBeenCalledWith(url);
     });
 
     it('should test the launch of an experiment on a given server', function() {
+      var expectedOperatingMode = 'edit';
+      var serverID = 'bbpce014';
+      var simulationID = 'mocked_sim_id';
       stateParams.ctx = '97923877-13ea-4b43-ac31-6b79e130d344';
       experimentSimulationService.setProgressMessageCallback(messageCallback);
+      var initializedCallback = jasmine.createSpy('initializedCallback');
+      experimentSimulationService.setInitializedCallback(initializedCallback);
 
       experimentSimulationService.setShouldLaunchInEditMode(true);
-      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', null);
+      experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, serverID, null);
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
 
@@ -653,14 +652,33 @@ describe('Services: experimentSimulationService', function () {
           experimentConfiguration: 'mocked_experiment_conf',
           /* jshint camelcase: false */
           gzserverHost: 'lugano',
-          operationMode: 'edit',
+          operationMode: expectedOperatingMode,
           contextID: stateParams.ctx
         }, jasmine.any(Function)
       );
-      simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : 'mocked_sim_id'});
+      simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : simulationID});
 
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080');
+      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.INITIALIZED}, jasmine.any(Function), jasmine.any(Function));
+      var updateFunction = simulationState().update.mostRecentCall.args[2];
+      simulationState().update.reset();
+      updateFunction();
+      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.STARTED}, jasmine.any(Function), jasmine.any(Function));
+      updateFunction = simulationState().update.mostRecentCall.args[2];
+      simulationState().update.reset();
+      updateFunction();
+      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.PAUSED}, jasmine.any(Function), jasmine.any(Function));
+      updateFunction = simulationState().update.mostRecentCall.args[2];
+
+      // Test for initialized Callback
+      updateFunction();
+      var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode;
+      expect(initializedCallback).toHaveBeenCalledWith(url);
+
+      // Should not throw an error when the callback is not defined
+      experimentSimulationService.setInitializedCallback(undefined);
+      expect(updateFunction).not.toThrow();
     });
 
     it('should start the experiment in view mode', function() {
