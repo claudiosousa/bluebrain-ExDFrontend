@@ -17,7 +17,7 @@
     return {
       httpError: function (response) {
         var error = new NrpError({ code: undefined });
-        if (angular.isDefined(response)) {
+        if (response) {
           error.code = response.status;
           if (response.data) {
             var errorSource = response.data;
@@ -40,10 +40,10 @@
   });
 
   module.factory('serverError', [
-    'nrpErrorService', 
-    'hbpDialogFactory', 
+    'nrpErrorService',
+    'hbpDialogFactory',
     function(
-      nrpErrorService, 
+      nrpErrorService,
       hbpDialogFactory
     ) {
       var filter = function(response) {
@@ -51,11 +51,11 @@
           // we ignore errors due to GET requests on  unvailaible servers
           if (response.status === 0) {
             return false;
-          } 
+          }
           // we ignore errors due to transfer function updates as they are catched by a
           // dedicated ROS topic
-          if (angular.isDefined(response.data) && response.data.type === "Transfer function error") {
-            return false;  
+          if (response.data && response.data.type === "Transfer function error") {
+            return false;
           }
         }
         return true;

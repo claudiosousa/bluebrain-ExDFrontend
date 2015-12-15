@@ -5,13 +5,14 @@ describe('Directive: transferFunctionEditor', function () {
   var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, isolateScope,
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
-    SIMULATION_FACTORY_CLE_ERROR, pythonCodeHelper, ScriptObject;
+    SIMULATION_FACTORY_CLE_ERROR, pythonCodeHelper, ScriptObject, simulationInfo;
 
   var backendInterfaceServiceMock = {
     getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
     setTransferFunction: jasmine.createSpy('setTransferFunction'),
     deleteTransferFunction: jasmine.createSpy('deleteTransferFunction'),
-    getServerBaseUrl: jasmine.createSpy('getServerBaseUrl')
+    getServerBaseUrl: jasmine.createSpy('getServerBaseUrl'),
+    saveTF: jasmine.createSpy('saveTF')
   };
 
   var documentationURLsMock =
@@ -23,6 +24,12 @@ describe('Directive: transferFunctionEditor', function () {
             backendDocumentationURL: 'backendDocumentationURL'});}
       };
     }
+  };
+
+  var simulationInfoMock = {
+    contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+    simulationID : 'mocked_simulation_id',
+    isCollabExperiment: true
   };
 
   var roslibMock = {};
@@ -39,6 +46,7 @@ describe('Directive: transferFunctionEditor', function () {
     $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('stateService', currentStateMock);
     $provide.value('roslib', roslibMock);
+    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
   var editorMock = {};
@@ -55,7 +63,9 @@ describe('Directive: transferFunctionEditor', function () {
                               _stateService_,
                               _STATE_,
                               _SIMULATION_FACTORY_CLE_ERROR_,
-                              _pythonCodeHelper_) {
+                              _pythonCodeHelper_,
+                              _simulationInfo_) {
+    simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $httpBackend = _$httpBackend_;
@@ -379,8 +389,17 @@ describe('Directive: transferFunctionEditor', function () {
       spyOn(document, 'querySelector');
       var button = { attr: jasmine.createSpy('attr')};
       spyOn(angular, 'element').andReturn(button);
-      isolateScope.save();
+      isolateScope.download();
       expect(button.attr).toHaveBeenCalled();
+    });
+
+    it('should initialize scope variables correctly', function () {
+      expect(isolateScope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
+    });
+
+    it('should correctly saveTFIntoCollabStorage', function () {
+      isolateScope.saveTFIntoCollabStorage();
+      expect(backendInterfaceService.saveTF).toHaveBeenCalledWith(simulationInfo.contextID, isolateScope.transferFunctions);
     });
 
   });

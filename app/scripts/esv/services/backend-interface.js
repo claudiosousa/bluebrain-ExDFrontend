@@ -72,6 +72,15 @@
         });
       };
 
+      var resourceTF = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/experiment/:context_id/transfer-functions', {}, {
+          save: {
+            method: 'PUT',
+            interceptor: {responseError: serverError.display}
+          }
+        });
+      };
+
       return {
         getBrain: function (callback) {
           resourceBrain(simulationInfo.serverBaseUrl).get(
@@ -149,6 +158,13 @@
         },
         saveSDF: function(contextID) {
           return resourceSDF(simulationInfo.serverBaseUrl).save({ context_id: contextID }, { context_id: contextID });
+        },
+        saveTF: function(contextID, transferFunctions) {
+          var data = {
+            context_id: contextID,
+            transfer_functions: transferFunctions
+          };
+          return resourceTF(simulationInfo.serverBaseUrl).save({ context_id: contextID }, data);
         }
       };
 

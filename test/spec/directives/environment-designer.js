@@ -24,7 +24,8 @@ describe('Directive: environment-designer', function () {
             transferFunctionError: {}
           }
         }
-      }
+      },
+      isCollabExperiment: true
     };
     $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('gz3d', gz3dMock);
@@ -94,6 +95,7 @@ describe('Directive: environment-designer', function () {
   }));
 
   it('should initialize scope variables correctly', function () {
+    expect($scope.isCollabExperiment).toBeDefined();
     expect($scope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
     expect($scope.assetsPath).toBeDefined();
   });
