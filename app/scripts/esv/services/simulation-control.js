@@ -549,6 +549,8 @@
         serverID,
         simulationID)
       {
+        var deferred = $q.defer();
+
         var serverURL = servers[serverID].gzweb['nrp-services'];
         var simStateInstance = simulationState(serverURL);
 
@@ -559,6 +561,7 @@
                 simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
                   // Delete all elements in the data structure with this serverID
                   deleteSimulationFromTemplate(experimentTemplates, serverID);
+                  deferred.resolve();
                 });
               });
               break;
@@ -567,10 +570,12 @@
               simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
                 // Delete all elements in the data structure with this serverID
                 deleteSimulationFromTemplate(experimentTemplates, serverID);
+                deferred.resolve();
               });
               break;
           }
         });
+        return deferred.promise;
       };
 
       var setInitializedCallback = function (callback) {

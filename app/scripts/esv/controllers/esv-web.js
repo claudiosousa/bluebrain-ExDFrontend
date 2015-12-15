@@ -197,8 +197,7 @@
         });
 
         // Stop an already initialized or running experiment
-        $scope.stopSimulation = function(experimentID, index) {
-          var simulation = $scope.experiments[experimentID].simulations[index];
+        $scope.stopSimulation = function(simulation) {
           simulation.stopping = true;
           experimentSimulationService.stopExperimentOnServer($scope.experiments, simulation.serverID, simulation.simulationID);
         };
