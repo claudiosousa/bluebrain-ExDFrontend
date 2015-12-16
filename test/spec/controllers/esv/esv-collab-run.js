@@ -21,6 +21,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     ESV_UPDATE_RATE,
     UPTIME_UPDATE_RATE,
     STATE,
+    OPERATION_MODE,
     stateParams,
     collabConfigService,
     serverError;
@@ -52,6 +53,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
 
   beforeEach(module(function ($provide) {
     var getExperimentsThenSpy = jasmine.createSpy('then');
+    var stopExperimentsThenSpy = jasmine.createSpy('then');
     var experimentSimulationServiceMock = {
       setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
       startNewExperiments : jasmine.createSpy('startNewExperiments'),
@@ -64,7 +66,9 @@ describe('Controller: ESVCollabRunCtrl', function () {
       refreshExperiments : jasmine.createSpy('refreshExperiments'),
       getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
       startNewExperiment : jasmine.createSpy('startNewExperiment'),
-      stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer'),
+      stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer').andCallFake(function () {
+        return { then: stopExperimentsThenSpy.andCallFake(function (f) { f(); }) };
+      }),
       enterEditMode : jasmine.createSpy('enterEditMode')
     };
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
@@ -93,6 +97,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
                               _simulationService_,
                               _hbpUserDirectory_,
                               _STATE_,
+                              _OPERATION_MODE_,
                               _collabConfigService_,
                               _$stateParams_,
                               _serverError_) {
@@ -106,6 +111,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     simulationService = _simulationService_;
     hbpUserDirectory = _hbpUserDirectory_;
     STATE = _STATE_;
+    OPERATION_MODE = _OPERATION_MODE_;
     stateParams = _$stateParams_;
     collabConfigService = _collabConfigService_;
     serverError = _serverError_;
@@ -312,10 +318,48 @@ describe('Controller: ESVCollabRunCtrl', function () {
     expect(scope.isServerAvailable).toEqual({'fakeId': true});
   });
 
-  it('should update scope.owners and scope.uptime', function() {
-    scope.updateExperiments();
-    expect(scope.owners).toBeDefined();
-    expect(scope.uptime).toBeDefined();
+  describe('Tests related to updateExperiments', function() {
+    beforeEach(function(){
+      var experimentTemplates = {
+        '1': TestDataGenerator.createTestExperiment(),
+        '2': TestDataGenerator.createTestExperiment(),
+        '3': TestDataGenerator.createTestExperiment()
+      };
+      scope.experiments = experimentTemplates;
+      scope.experiments['1'].simulations = [];
+      scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
+      scope.experiment = scope.experiments['1'];
+    });
+
+    it('should update scope.owners and scope.uptime', function() {
+      scope.updateExperiments();
+      expect(scope.owners).toBeDefined();
+      expect(scope.uptime).toBeDefined();
+    });
+
+    it('should set the isAlreadyEditing variable to true if the user owns an edit simulation', function() {
+      scope.updateExperiments();
+      expect(scope.isAlreadyEditing).toBe(false);
+
+      scope.userID = 'fakeUserID';
+      scope.experiments['1'].simulations[0].owner = 'fakeUserID';
+      scope.experiments['1'].simulations[0].operationMode = OPERATION_MODE.EDIT;
+
+      scope.updateExperiments();
+      expect(scope.isAlreadyEditing).toBe(true);
+    });
+
+    it('should set the isAlreadyEditing variable and update the userID if it was undefined', function() {
+      scope.isAlreadyEditing = false;
+      scope.userID = undefined;
+      scope.experiments['1'].simulations[0].owner = 'fakeUserID';
+      scope.experiments['1'].simulations[0].operationMode = OPERATION_MODE.EDIT;
+      hbpUserDirectoryPromiseObject.then.reset();
+
+      scope.updateExperiments();
+      hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0]({id: 'fakeUserID'});
+      expect(scope.userID).toBe('fakeUserID');
+    });
   });
 
   it('should stop a running experiment', function() {
@@ -327,9 +371,15 @@ describe('Controller: ESVCollabRunCtrl', function () {
     scope.experiments = experimentTemplates;
     scope.experiments['1'].simulations = [];
     scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
-    scope.experiment = scope.experiments['1'];
-    scope.stopSimulation('1', 0);
+    var updateExperiments = scope.updateExperiments;
+    scope.updateExperiments = jasmine.createSpy('updateExperiments');
+
+    scope.stopSimulation(scope.experiments['1'].simulations[0]);
     expect(experimentSimulationService.stopExperimentOnServer).toHaveBeenCalledWith(scope.experiments, 'fakeserverID', 'fakeID');
+    expect(scope.updateExperiments).toHaveBeenCalled();
+
+    // restore original function
+    scope.updateExperiments = updateExperiments;
   });
 
   describe('Tests related to scope.$destroy()', function(){

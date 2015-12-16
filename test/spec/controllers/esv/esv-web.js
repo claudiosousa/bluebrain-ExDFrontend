@@ -321,7 +321,7 @@ describe('Controller: experimentCtrl', function () {
     scope.experiments = experimentTemplates;
     scope.experiments['1'].simulations = [];
     scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
-    scope.stopSimulation('1', 0);
+    scope.stopSimulation(scope.experiments['1'].simulations[0]);
     expect(experimentSimulationService.stopExperimentOnServer).toHaveBeenCalledWith(scope.experiments, 'fakeserverID', 'fakeID');
   });
 

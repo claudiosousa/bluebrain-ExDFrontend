@@ -10,6 +10,7 @@
 
   angular.module('exdFrontendApp').controller('ESVCollabRunCtrl',
     [
+    '$q',
     '$scope',
     '$timeout',
     '$interval',
@@ -25,6 +26,7 @@
     'collabConfigService',
     'serverError',
       function (
+        $q,
         $scope,
         $timeout,
         $interval,
@@ -45,6 +47,7 @@
         $scope.isServerAvailable = {};
         $scope.isQueryingServersFinished = false;
         $scope.isDestroyed = false;
+        $scope.isAlreadyEditing = false;
         $scope.STATE = STATE;
         $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.updatePromise = undefined;
@@ -118,10 +121,11 @@
         };
 
         // Stop an already initialized or running experiment
-        $scope.stopSimulation = function(experimentID, index) {
-          var simulation = $scope.experiment.simulations[index];
+        $scope.stopSimulation = function(simulation) {
           simulation.stopping = true;
-          experimentSimulationService.stopExperimentOnServer($scope.experiments, simulation.serverID, simulation.simulationID);
+          experimentSimulationService.stopExperimentOnServer($scope.experiments, simulation.serverID, simulation.simulationID).then(function() {
+            $scope.updateExperiments();
+          });
         };
 
 
@@ -136,17 +140,47 @@
           simulationService().updateUptime();
         }, UPTIME_UPDATE_RATE);
 
-        if (!bbpConfig.get('localmode.forceuser', false)) {
-          hbpUserDirectory.getCurrentUser().then(function (profile) {
-            $scope.userID = profile.id;
+        // Update the userID
+        $scope.updateUserID = function () {
+          var deferred = $q.defer();
+          if (!bbpConfig.get('localmode.forceuser', false)) {
+            hbpUserDirectory.getCurrentUser().then(function (profile) {
+              $scope.userID = profile.id;
+              deferred.resolve();
+            });
+          } else {
+            $scope.userID = bbpConfig.get('localmode.ownerID');
+            deferred.resolve();
+          }
+          return deferred.promise;
+        };
+
+        $scope.updateUserID();
+
+        // Function to determine if the current user owns an experiment which is in edit mode
+        $scope.isUserEditingExperiment = function() {
+          var userEditsExperiment = false;
+          angular.forEach($scope.experiment.simulations, function(simulation) {
+            if ((simulation.owner === $scope.userID)&&(simulation.operationMode === OPERATION_MODE.EDIT)) {
+              userEditsExperiment = true;
+            }
           });
-        } else {
-          $scope.userID = bbpConfig.get('localmode.ownerID');
-        }
+          return userEditsExperiment;
+        };
 
         $scope.updateExperiments = function() {
           $scope.owners = simulationService().owners;
           $scope.uptime = simulationService().uptime;
+
+          // get userID if not yet done...
+          if (!angular.isDefined($scope.userID)) {
+            $scope.updateUserID().then(function() {
+              // and save if the user owns an experiment which is in edit mode
+              $scope.isAlreadyEditing = $scope.isUserEditingExperiment();
+            });
+          } else {
+            $scope.isAlreadyEditing = $scope.isUserEditingExperiment();
+          }
         };
 
         // This function is called when all servers responded to the query of running experiments
