@@ -81,6 +81,15 @@
         });
       };
 
+     var resourceReset = function (backendBaseUrl) {
+        return $resource(backendBaseUrl + '/simulation/:sim_id/reset', {}, {
+          reset: {
+            method: 'PUT',
+            interceptor: {responseError: serverError.display}
+          }
+        });
+      };
+
       return {
         getBrain: function (callback) {
           resourceBrain(simulationInfo.serverBaseUrl).get(
@@ -165,6 +174,10 @@
             transfer_functions: transferFunctions
           };
           return resourceTF(simulationInfo.serverBaseUrl).save({ context_id: contextID }, data);
+        },
+        reset: function(resetData) {
+          return resourceReset(simulationInfo.serverBaseUrl).reset(
+            {sim_id: simulationInfo.simulationID}, resetData);
         }
       };
 

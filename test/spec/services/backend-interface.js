@@ -72,4 +72,15 @@ describe('Services: backendInterfaceService', function () {
     expect(serverError.display).toHaveBeenCalled();
   });
 
+  it('should call /simulation/:sim_id/reset with the right params when calling reset from a given simulation', function() {
+    $httpBackend.whenPUT(/()/).respond(200);
+    simulationInfo.serverBaseUrl = 'http://bbpce014.epfl.ch:8080';
+    simulationInfo.simulationID = 1;
+    var resetParams = {checkbox1: true, checkbox2: false};
+    backendInterfaceService.reset(resetParams);
+    $httpBackend.expectPUT(simulationInfo.serverBaseUrl + '/simulation/' + 
+      simulationInfo.simulationID + '/reset', resetParams);
+    $httpBackend.flush();
+  });
+
 });

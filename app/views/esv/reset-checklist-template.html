@@ -1,0 +1,54 @@
+<fieldset>
+    <ul style="list-style: none">
+        <li>
+            <input type="checkbox" ng-model="checkboxes.oldReset"
+            ng-true-value="true" ng-false-value="false" >*TEMPORARY* Old reset behaviour *TEMPORARY*</input>
+        </li>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" ng-model="checkboxes.fullReset"
+            ng-true-value="true" ng-false-value="false"
+            disabled="true"> Reset everything</input>
+        </li>
+        <br/>
+        <b>Brain</b>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Reset entirely the neural network</input>
+        </li>
+        <br/>
+        <b>State machines</b>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Restart the state machine process</input>
+        </li>
+        <br/>
+        <b>Environment</b>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Reset initial pose for all the objects</input></li>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Spawn back initial objects and remove the new ones</input>
+        </li>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Reset dynamic object's aspect (light, screens, etc.)</input></li>
+        <br/>
+        <b>Robot</b>
+        <li>
+            <input type="checkbox" ng-model="checkboxes.robotPose"
+            ng-true-value="true" ng-false-value="false"> Reset robot pose</input>
+        </li>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Reset robot controllers</input>
+        </li>
+        <br/>
+        <b>Transfer functions</b>
+        <li class="enable-tooltip"
+            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <input type="checkbox" disabled="true"> Reset transfer function globals</input>
+        </li>
+    </ul>
+</fieldset>
