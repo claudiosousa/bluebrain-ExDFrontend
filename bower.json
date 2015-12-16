@@ -21,13 +21,13 @@
     "bootstrap-sass-official": "~3.3.6",
     "es5-shim": "~4.3.1",
     "font-awesome": "~4.1.0",
+    "gz3d-hbp": "latest",
     "json3": "~3.3.2",
     "lodash": "latest",
     "n3-line-chart": "~1.1.11",
     "ng-file-upload": "~7.0.17",
     "roslibjs": "~0.17.0",
     "stats.js": "latest",
-    "threejs": "r71",
     "xml2json": "latest"
   },
   "overrides": {

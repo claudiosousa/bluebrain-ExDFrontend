@@ -1,0 +1,58 @@
+{
+  "name": "gz3d-hbp",
+  "description": "3D rendering component of gzweb, modified for HBP",
+  "version": "0.1.10",
+  "private": true,
+  "repository": {
+    "url": "git+ssh://bbpcode.epfl.ch/neurorobotics/gzweb",
+    "type": "git"
+  },
+  "main": [
+    "gz3d/build/gz3d.js"
+  ],
+  "dependencies": {
+    "threejs": "r71",
+    "eventemitter2": "latest"
+  },
+  "keywords": [
+    "gzweb",
+    "rendering",
+    "webgl",
+    "three.js",
+    "hbp"
+  ],
+  "authors": [
+    "Sandro Weber <webers@in.tum.de>"
+  ],
+  "ignore": [
+    "**/.*",
+    "bower_components/",
+    "build/",
+    "cmake/",
+    "gz3d/client/js/external/",
+    "gz3d/http/",
+    "gz3d/src/",
+    "gz3d/utils/",
+    "gzbridge/",
+    "hbp/",
+    "http/",
+    "node_modules/",
+    "tools/",
+    "Gruntfile.js",
+    "package.json",
+    "*.sh",
+    "*.py",
+    "*.html",
+    "README",
+    "CMakeLists.txt"
+  ],
+  "_release": "0.1.10",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.10",
+    "commit": "bca981cb8557d09e4c7f04c03310578358c945de"
+  },
+  "_source": "ssh://bbpcode.epfl.ch/neurorobotics/gzweb",
+  "_target": "*",
+  "_originalSource": "gz3d-hbp"
+}
