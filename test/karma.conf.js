@@ -61,9 +61,10 @@ module.exports = function(config) {
       'bower_components/threejs/examples/js/postprocessing/RenderPass.js',
       'bower_components/threejs/examples/js/postprocessing/MaskPass.js',
       'bower_components/threejs/examples/js/postprocessing/ShaderPass.js',
-      'scripts/esv/gz3d/client/js/include/ThreeBackwardsCompatibility.js',
-      'scripts/esv/gz3d/client/js/include/ColladaLoader.js',
-      'app/scripts/esv/gz3d/build/gz3d.js',
+      'bower_components/gz3d-hbp/gz3d/client/js/include/ThreeBackwardsCompatibility.js',
+      'bower_components/gz3d-hbp/gz3d/client/js/include/ColladaLoader.js',
+      'bower_components/gz3d-hbp/gz3d/client/js/include/first-person-controls.js',
+      'bower_components/gz3d-hbp/gz3d/build/gz3d.js',
       'test/support/**/*.js',
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
       'app/scripts/**/*.js',

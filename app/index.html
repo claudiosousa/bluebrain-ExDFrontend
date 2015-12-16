@@ -88,9 +88,7 @@
     <script src="bower_components/codemirror/mode/shell/shell.js"></script>
     <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
     <script src="bower_components/angular.panels/dist/angular.panels.min.js"></script>
-    <script src="bower_components/threejs/build/three.js"></script>
     <script src="bower_components/eventemitter2/lib/eventemitter2.js"></script>
-    <script src="bower_components/gz3d-hbp/gz3d/build/gz3d.js"></script>
     <script src="bower_components/d3/d3.js"></script>
     <script src="bower_components/moment/moment.js"></script>
     <script src="bower_components/n3-line-chart/build/line-chart.min.js"></script>
@@ -102,6 +100,7 @@
     <!-- endbuild -->
 
     <!-- build:js({app,.tmp,.}) scripts/gz3d.js -->
+    <script src="bower_components/threejs/build/three.js"></script>
     <script src="bower_components/threejs/examples/js/controls/OrbitControls.js"></script>
     <script src="bower_components/threejs/examples/js/Detector.js"></script>
     <script src="bower_components/threejs/examples/js/shaders/CopyShader.js"></script>
@@ -110,14 +109,14 @@
     <script src="bower_components/threejs/examples/js/postprocessing/RenderPass.js"></script>
     <script src="bower_components/threejs/examples/js/postprocessing/MaskPass.js"></script>
     <script src="bower_components/threejs/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/ThreeBackwardsCompatibility.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/ColladaLoader.js"></script>
-    <script src="scripts/esv/gz3d/client/js/include/xml2json.js"></script>
+    <script src="bower_components/gz3d-hbp/gz3d/build/gz3d.js"></script>
+    <script src="bower_components/gz3d-hbp/gz3d/client/js/include/ColladaLoader.js"></script>
+    <script src="bower_components/gz3d-hbp/gz3d/client/js/include/first-person-controls.js"></script>
+    <script src="bower_components/gz3d-hbp/gz3d/client/js/include/ThreeBackwardsCompatibility.js"></script>
     <!-- endbuild -->
 
     <!-- build:js({app,.tmp,.}) scripts/app.js -->
     <script src="scripts/app.js"></script>
-    <script src="scripts/esv/gz3d/build/gz3d.js"></script>
     <script src="scripts/common/services/nrp-browser-detection.js"></script>
     <script src="scripts/common/controllers/main.js"></script>
     <script src="scripts/common/services/splash.js"></script>
@@ -150,7 +149,6 @@
     <script src="scripts/esv/services/simulation-info-service.js"></script>
     <script src="scripts/esv/services/simstate-angular.js"></script>
     <script src="scripts/esv/services/python-code-helper.js"></script>
-    <script src="scripts/esv/services/first-person-controls.js"></script>
     <script src="scripts/esv/services/nrp-versions.js"></script>
     <!-- endbuild -->
 </body>

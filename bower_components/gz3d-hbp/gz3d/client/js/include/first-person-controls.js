@@ -41,7 +41,9 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.zenithMax = Math.PI;
   this.azimuthOnMouseDown = 0.0;
   this.zenithOnMouseDown = 0.0;
+  this.speedUpFactor = 3.0;
 
+  this.shiftHold = false;
   this.moveForward = false;
   this.moveBackward = false;
   this.moveLeft = false;
@@ -222,6 +224,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     if(this.keyBindingsEnabled === false) {
       return;
     }
+    this.shiftHold = event.shiftKey;
     switch(event.keyCode) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break;
@@ -247,6 +250,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     if(this.keyBindingsEnabled === false) {
       return;
     }
+    this.shiftHold = event.shiftKey;
     switch(event.keyCode) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
@@ -299,6 +303,9 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       }
 
       speed = delta * this.movementSpeed;
+      if (this.shiftHold) {
+        speed = speed * this.speedUpFactor;
+      }
 
       if (this.moveForward) {
         this.object.translateZ(-speed);

@@ -1,5523 +1,5502 @@
 /**
- * @author Tim Knip / http://www.floorplanner.com/ / tim at floorplanner.com
- * @author Tony Parisi / http://www.tonyparisi.com/
- */
+* @author Tim Knip / http://www.floorplanner.com/ / tim at floorplanner.com
+* @author Tony Parisi / http://www.tonyparisi.com/
+*/
 
 THREE.ColladaLoader = function () {
 
-  var COLLADA = null;
-  var scene = null;
-  var visualScene;
-  var kinematicsModel;
+	var COLLADA = null;
+	var scene = null;
+	var visualScene;
+	var kinematicsModel;
 
-  var readyCallbackFunc = null;
+	var readyCallbackFunc = null;
 
-  var sources = {};
-  var images = {};
-  var animations = {};
-  var controllers = {};
-  var geometries = {};
-  var materials = {};
-  var effects = {};
-  var cameras = {};
-  var lights = {};
+	var sources = {};
+	var images = {};
+	var animations = {};
+	var controllers = {};
+	var geometries = {};
+	var materials = {};
+	var effects = {};
+	var cameras = {};
+	var lights = {};
 
-  var animData;
-  var kinematics;
-  var visualScenes;
-  var kinematicsModels;
-  var baseUrl;
-  var morphs;
-  var skins;
+	var animData;
+	var kinematics;
+	var visualScenes;
+	var kinematicsModels;
+	var baseUrl;
+	var morphs;
+	var skins;
 
-  var flip_uv = true;
-  var preferredShading = THREE.SmoothShading;
+	var flip_uv = true;
+	var preferredShading = THREE.SmoothShading;
 
-  var options = {
-    // Force Geometry to always be centered at the local origin of the
-    // containing Mesh.
-    centerGeometry: false,
+	var options = {
+		// Force Geometry to always be centered at the local origin of the
+		// containing Mesh.
+		centerGeometry: false,
 
-    // Axis conversion is done for geometries, animations, and controllers.
-    // If we ever pull cameras or lights out of the COLLADA file, they'll
-    // need extra work.
-    convertUpAxis: false,
+		// Axis conversion is done for geometries, animations, and controllers.
+		// If we ever pull cameras or lights out of the COLLADA file, they'll
+		// need extra work.
+		convertUpAxis: false,
 
-    subdivideFaces: true,
+		subdivideFaces: true,
 
-    upAxis: 'Y',
+		upAxis: 'Y',
 
-    // For reflective or refractive materials we'll use this cubemap
-    defaultEnvMap: null
+		// For reflective or refractive materials we'll use this cubemap
+		defaultEnvMap: null
 
-  };
+	};
 
-  var colladaUnit = 1.0;
-  var colladaUp = 'Y';
-  var upConversion = null;
+	var colladaUnit = 1.0;
+	var colladaUp = 'Y';
+	var upConversion = null;
 
-  function load(url, readyCallback, progressCallback, failCallback) {
+	function load ( url, readyCallback, progressCallback, failCallback ) {
 
-    var length = 0;
+		var length = 0;
 
-    if (document.implementation && document.implementation.createDocument) {
+		if (document.implementation && document.implementation.createDocument) {
 
-      var request = new XMLHttpRequest();
+		  var request = new XMLHttpRequest();
 
-      request.onreadystatechange = function () {
+		  request.onreadystatechange = function () {
 
-        if (request.readyState === 4) {
+		    if (request.readyState === 4) {
 
-          if (request.status === 0 || request.status === 200) {
+		      if (request.status === 0 || request.status === 200) {
 
 
-            if (request.responseXML) {
+		        if (request.responseXML) {
 
-              readyCallbackFunc = readyCallback;
-              parse(request.responseXML, undefined, url);
+		          readyCallbackFunc = readyCallback;
+		          parse(request.responseXML, undefined, url);
 
-            } else if (request.responseText) {
+		        } else if (request.responseText) {
 
-              readyCallbackFunc = readyCallback;
-              var xmlParser = new DOMParser();
-              var responseXML = xmlParser.parseFromString(request.responseText, "application/xml");
-              parse(responseXML, undefined, url);
+		          readyCallbackFunc = readyCallback;
+		          var xmlParser = new DOMParser();
+		          var responseXML = xmlParser.parseFromString(request.responseText, "application/xml");
+		          parse(responseXML, undefined, url);
 
-            } else {
+		        } else {
 
-              if (failCallback) {
+		          if (failCallback) {
 
-                failCallback();
+		            failCallback();
 
-              } else {
+		          } else {
 
-                console.error("ColladaLoader: Empty or non-existing file (" + url + ")");
+		            console.error("ColladaLoader: Empty or non-existing file (" + url + ")");
 
-              }
+		          }
 
-            }
+		        }
 
-          }
+		      }
 
-        } else if (request.status === 404) { // HBP Fix: we support 404 errors.
-          if (failCallback) {
-            failCallback();
-          } else {
-            console.error("ColladaLoader: Received 404 for (" + url + ")");
-          }
-        } else if (request.readyState === 3) {
+		    } else if (request.status === 404) { // HBP Fix: we support 404 errors.
+		      if (failCallback) {
+		        failCallback();
+		      } else {
+		        console.error("ColladaLoader: Received 404 for (" + url + ")");
+		      }
+		    } else if (request.readyState === 3) {
 
-          if (progressCallback) {
+		      if (progressCallback) {
 
-            if (length === 0) {
+		        if (length === 0) {
 
               // HBP Fix: we do use parseInt here,
-              length = parseInt(request.getResponseHeader("Content-Length"));
+              length = parseInt(request.getResponseHeader( "Content-Length" ));
 
-            }
+		        }
 
-            progressCallback({total: length, loaded: request.responseText.length});
+		        progressCallback({total: length, loaded: request.responseText.length});
 
-          }
+		      }
 
-        }
+		    }
 
-      }
+		  }
 
-      request.open("GET", url, true);
-      request.send(null);
+		  request.open("GET", url, true);
+		  request.send(null);
 
-    } else {
+		} else {
 
-      alert("Don't know how to parse XML!");
+		  alert("Don't know how to parse XML!");
 
-    }
+		}
 
-  }
+	}
 
-  function parse(doc, callBack, url) {
+	function parse( doc, callBack, url ) {
 
-    COLLADA = doc;
-    callBack = callBack || readyCallbackFunc;
+		COLLADA = doc;
+		callBack = callBack || readyCallbackFunc;
 
-    if (url !== undefined) {
+		if ( url !== undefined ) {
 
-      var parts = url.split('/');
-      parts.pop();
-      baseUrl = ( parts.length < 1 ? '.' : parts.join('/') ) + '/';
+			var parts = url.split( '/' );
+			parts.pop();
+			baseUrl = ( parts.length < 1 ? '.' : parts.join( '/' ) ) + '/';
 
-    }
+		}
 
-    parseAsset();
-    setUpConversion();
-    images = parseLib("library_images image", _Image, "image");
-    materials = parseLib("library_materials material", Material, "material");
-    effects = parseLib("library_effects effect", Effect, "effect");
-    geometries = parseLib("library_geometries geometry", Geometry, "geometry");
-    cameras = parseLib("library_cameras camera", Camera, "camera");
-    lights = parseLib("library_lights light", Light, "light");
-    controllers = parseLib("library_controllers controller", Controller, "controller");
-    animations = parseLib("library_animations animation", Animation, "animation");
-    visualScenes = parseLib("library_visual_scenes visual_scene", VisualScene, "visual_scene");
-    kinematicsModels = parseLib("library_kinematics_models kinematics_model", KinematicsModel, "kinematics_model");
+		parseAsset();
+		setUpConversion();
+		images = parseLib( "library_images image", _Image, "image" );
+		materials = parseLib( "library_materials material", Material, "material" );
+		effects = parseLib( "library_effects effect", Effect, "effect" );
+		geometries = parseLib( "library_geometries geometry", Geometry, "geometry" );
+		cameras = parseLib( "library_cameras camera", Camera, "camera" );
+		lights = parseLib( "library_lights light", Light, "light" );
+		controllers = parseLib( "library_controllers controller", Controller, "controller" );
+		animations = parseLib( "library_animations animation", Animation, "animation" );
+		visualScenes = parseLib( "library_visual_scenes visual_scene", VisualScene, "visual_scene" );
+		kinematicsModels = parseLib( "library_kinematics_models kinematics_model", KinematicsModel, "kinematics_model" );
 
-    morphs = [];
-    skins = [];
+		morphs = [];
+		skins = [];
 
-    visualScene = parseScene();
-    scene = new THREE.Group();
+		visualScene = parseScene();
+		scene = new THREE.Group();
 
-    for (var i = 0; i < visualScene.nodes.length; i++) {
+		for ( var i = 0; i < visualScene.nodes.length; i ++ ) {
 
-      scene.add(createSceneGraph(visualScene.nodes[i]));
+			scene.add( createSceneGraph( visualScene.nodes[ i ] ) );
 
-    }
+		}
 
-    // unit conversion
-    scene.scale.multiplyScalar(colladaUnit);
+		// unit conversion
+		scene.scale.multiplyScalar( colladaUnit );
 
-    createAnimations();
+		createAnimations();
 
-    kinematicsModel = parseKinematicsModel();
-    createKinematics();
+		kinematicsModel = parseKinematicsModel();
+		createKinematics();
 
-    var result = {
+		var result = {
 
-      scene: scene,
-      morphs: morphs,
-      skins: skins,
-      animations: animData,
-      kinematics: kinematics,
-      dae: {
-        images: images,
-        materials: materials,
-        cameras: cameras,
-        lights: lights,
-        effects: effects,
-        geometries: geometries,
-        controllers: controllers,
-        animations: animations,
-        visualScenes: visualScenes,
-        visualScene: visualScene,
-        scene: visualScene,
-        kinematicsModels: kinematicsModels,
-        kinematicsModel: kinematicsModel
-      }
+			scene: scene,
+			morphs: morphs,
+			skins: skins,
+			animations: animData,
+			kinematics: kinematics,
+			dae: {
+				images: images,
+				materials: materials,
+				cameras: cameras,
+				lights: lights,
+				effects: effects,
+				geometries: geometries,
+				controllers: controllers,
+				animations: animations,
+				visualScenes: visualScenes,
+				visualScene: visualScene,
+				scene: visualScene,
+				kinematicsModels: kinematicsModels,
+				kinematicsModel: kinematicsModel
+			}
 
-    };
+		};
 
-    if (callBack) {
+		if ( callBack ) {
 
-      callBack(result);
+			callBack( result );
 
-    }
+		}
 
-    return result;
+		return result;
 
-  }
+	}
 
-  function setPreferredShading(shading) {
+	function setPreferredShading ( shading ) {
 
-    preferredShading = shading;
+		preferredShading = shading;
 
-  }
+	}
 
-  function parseAsset() {
+	function parseAsset () {
 
-    var elements = COLLADA.querySelectorAll('asset');
+		var elements = COLLADA.querySelectorAll('asset');
 
-    var element = elements[0];
+		var element = elements[0];
 
-    if (element && element.childNodes) {
+		if ( element && element.childNodes ) {
 
-      for (var i = 0; i < element.childNodes.length; i++) {
+			for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        var child = element.childNodes[i];
+				var child = element.childNodes[ i ];
 
-        switch (child.nodeName) {
+				switch ( child.nodeName ) {
 
-          case 'unit':
+					case 'unit':
 
-            var meter = child.getAttribute('meter');
+						var meter = child.getAttribute( 'meter' );
 
-            if (meter) {
+						if ( meter ) {
 
-              colladaUnit = parseFloat(meter);
+							colladaUnit = parseFloat( meter );
 
-            }
+						}
 
-            break;
+						break;
 
-          case 'up_axis':
+					case 'up_axis':
 
-            colladaUp = child.textContent.charAt(0);
-            break;
+						colladaUp = child.textContent.charAt(0);
+						break;
 
-        }
+				}
 
-      }
+			}
 
-    }
+		}
 
-  }
+	}
 
-  function parseLib(q, classSpec, prefix) {
+	function parseLib ( q, classSpec, prefix ) {
 
-    var elements = COLLADA.querySelectorAll(q);
+		var elements = COLLADA.querySelectorAll(q);
 
-    var lib = {};
+		var lib = {};
 
-    var i = 0;
+		var i = 0;
 
-    var elementsLength = elements.length;
+		var elementsLength = elements.length;
 
-    for (var j = 0; j < elementsLength; j++) {
+		for ( var j = 0; j < elementsLength; j ++ ) {
 
-      var element = elements[j];
-      var daeElement = ( new classSpec() ).parse(element);
+			var element = elements[j];
+			var daeElement = ( new classSpec() ).parse( element );
 
-      if (!daeElement.id || daeElement.id.length === 0) daeElement.id = prefix + ( i++ );
-      lib[daeElement.id] = daeElement;
+			if ( !daeElement.id || daeElement.id.length === 0 ) daeElement.id = prefix + ( i ++ );
+			lib[ daeElement.id ] = daeElement;
 
-    }
+		}
 
-    return lib;
+		return lib;
 
-  }
+	}
 
-  function parseScene() {
+	function parseScene() {
 
-    var sceneElement = COLLADA.querySelectorAll('scene instance_visual_scene')[0];
+		var sceneElement = COLLADA.querySelectorAll('scene instance_visual_scene')[0];
 
-    if (sceneElement) {
+		if ( sceneElement ) {
 
-      var url = sceneElement.getAttribute('url').replace(/^#/, '');
-      return visualScenes[url.length > 0 ? url : 'visual_scene0'];
+			var url = sceneElement.getAttribute( 'url' ).replace( /^#/, '' );
+			return visualScenes[ url.length > 0 ? url : 'visual_scene0' ];
 
-    } else {
+		} else {
 
-      return null;
+			return null;
 
-    }
+		}
 
-  }
+	}
 
-  function parseKinematicsModel() {
+	function parseKinematicsModel() {
 
-    var kinematicsModelElement = COLLADA.querySelectorAll('instance_kinematics_model')[0];
+		var kinematicsModelElement = COLLADA.querySelectorAll('instance_kinematics_model')[0];
 
-    if (kinematicsModelElement) {
+		if ( kinematicsModelElement ) {
 
-      var url = kinematicsModelElement.getAttribute('url').replace(/^#/, '');
-      return kinematicsModels[url.length > 0 ? url : 'kinematics_model0'];
+			var url = kinematicsModelElement.getAttribute( 'url' ).replace(/^#/, '');
+			return kinematicsModels[ url.length > 0 ? url : 'kinematics_model0' ];
 
-    } else {
+		} else {
 
-      return null;
+			return null;
 
-    }
+		}
 
-  }
+	}
 
-  function createAnimations() {
+	function createAnimations() {
 
-    animData = [];
+		animData = [];
 
-    // fill in the keys
-    recurseHierarchy(scene);
+		// fill in the keys
+		recurseHierarchy( scene );
 
-  }
+	}
 
-  function recurseHierarchy(node) {
+	function recurseHierarchy( node ) {
 
-    var n = visualScene.getChildById(node.colladaId, true),
-      newData = null;
+		var n = visualScene.getChildById( node.colladaId, true ),
+			newData = null;
 
-    if (n && n.keys) {
+		if ( n && n.keys ) {
 
-      newData = {
-        fps: 60,
-        hierarchy: [{
-          node: n,
-          keys: n.keys,
-          sids: n.sids
-        }],
-        node: node,
-        name: 'animation_' + node.name,
-        length: 0
-      };
+			newData = {
+				fps: 60,
+				hierarchy: [ {
+					node: n,
+					keys: n.keys,
+					sids: n.sids
+				} ],
+				node: node,
+				name: 'animation_' + node.name,
+				length: 0
+			};
 
-      animData.push(newData);
+			animData.push(newData);
 
-      for (var i = 0, il = n.keys.length; i < il; i++) {
+			for ( var i = 0, il = n.keys.length; i < il; i ++ ) {
 
-        newData.length = Math.max(newData.length, n.keys[i].time);
+				newData.length = Math.max( newData.length, n.keys[i].time );
 
-      }
+			}
 
-    } else {
+		} else {
 
-      newData = {
-        hierarchy: [{
-          keys: [],
-          sids: []
-        }]
-      }
+			newData = {
+				hierarchy: [ {
+					keys: [],
+					sids: []
+				} ]
+			}
 
-    }
+		}
 
-    for (var i = 0, il = node.children.length; i < il; i++) {
+		for ( var i = 0, il = node.children.length; i < il; i ++ ) {
 
-      var d = recurseHierarchy(node.children[i]);
+			var d = recurseHierarchy( node.children[i] );
 
-      for (var j = 0, jl = d.hierarchy.length; j < jl; j++) {
+			for ( var j = 0, jl = d.hierarchy.length; j < jl; j ++ ) {
 
-        newData.hierarchy.push({
-          keys: [],
-          sids: []
-        });
+				newData.hierarchy.push( {
+					keys: [],
+					sids: []
+				} );
 
-      }
+			}
 
-    }
+		}
 
-    return newData;
+		return newData;
 
-  }
+	}
 
-  function calcAnimationBounds() {
+	function calcAnimationBounds () {
 
-    var start = 1000000;
-    var end = -start;
-    var frames = 0;
-    var ID;
-    for (var id in animations) {
+		var start = 1000000;
+		var end = -start;
+		var frames = 0;
+		var ID;
+		for ( var id in animations ) {
 
-      var animation = animations[id];
-      ID = ID || animation.id;
-      for (var i = 0; i < animation.sampler.length; i++) {
+			var animation = animations[ id ];
+			ID = ID || animation.id;
+			for ( var i = 0; i < animation.sampler.length; i ++ ) {
 
-        var sampler = animation.sampler[i];
+				var sampler = animation.sampler[ i ];
 
-        sampler.create();
+				sampler.create();
 
-        start = Math.min(start, sampler.startTime);
-        end = Math.max(end, sampler.endTime);
-        frames = Math.max(frames, sampler.input.length);
+				start = Math.min( start, sampler.startTime );
+				end = Math.max( end, sampler.endTime );
+				frames = Math.max( frames, sampler.input.length );
 
-      }
+			}
 
-    }
+		}
 
-    return {start: start, end: end, frames: frames, ID: ID};
+		return { start:start, end:end, frames:frames,ID:ID };
 
-  }
+	}
 
-  function createMorph(geometry, ctrl) {
+	function createMorph ( geometry, ctrl ) {
 
-    var morphCtrl = ctrl instanceof InstanceController ? controllers[ctrl.url] : ctrl;
+		var morphCtrl = ctrl instanceof InstanceController ? controllers[ ctrl.url ] : ctrl;
 
-    if (!morphCtrl || !morphCtrl.morph) {
+		if ( !morphCtrl || !morphCtrl.morph ) {
 
-      console.log("could not find morph controller!");
-      return;
+			console.log("could not find morph controller!");
+			return;
 
-    }
+		}
 
-    var morph = morphCtrl.morph;
+		var morph = morphCtrl.morph;
 
-    for (var i = 0; i < morph.targets.length; i++) {
+		for ( var i = 0; i < morph.targets.length; i ++ ) {
 
-      var target_id = morph.targets[i];
-      var daeGeometry = geometries[target_id];
+			var target_id = morph.targets[ i ];
+			var daeGeometry = geometries[ target_id ];
 
-      if (!daeGeometry.mesh || !daeGeometry.mesh.primitives || !daeGeometry.mesh.primitives.length) {
-        continue;
-      }
+			if ( !daeGeometry.mesh ||
+				 !daeGeometry.mesh.primitives ||
+				 !daeGeometry.mesh.primitives.length ) {
+				 continue;
+			}
 
-      var target = daeGeometry.mesh.primitives[0].geometry;
+			var target = daeGeometry.mesh.primitives[ 0 ].geometry;
 
-      if (target.vertices.length === geometry.vertices.length) {
+			if ( target.vertices.length === geometry.vertices.length ) {
 
-        geometry.morphTargets.push({name: "target_1", vertices: target.vertices});
+				geometry.morphTargets.push( { name: "target_1", vertices: target.vertices } );
 
-      }
+			}
 
-    }
+		}
 
-    geometry.morphTargets.push({name: "target_Z", vertices: geometry.vertices});
+		geometry.morphTargets.push( { name: "target_Z", vertices: geometry.vertices } );
 
-  };
+	};
 
-  function createSkin(geometry, ctrl, applyBindShape) {
+	function createSkin ( geometry, ctrl, applyBindShape ) {
 
-    var skinCtrl = controllers[ctrl.url];
+		var skinCtrl = controllers[ ctrl.url ];
 
-    if (!skinCtrl || !skinCtrl.skin) {
+		if ( !skinCtrl || !skinCtrl.skin ) {
 
-      console.log("could not find skin controller!");
-      return;
+			console.log( "could not find skin controller!" );
+			return;
 
-    }
+		}
 
-    if (!ctrl.skeleton || !ctrl.skeleton.length) {
+		if ( !ctrl.skeleton || !ctrl.skeleton.length ) {
 
-      console.log("could not find the skeleton for the skin!");
-      return;
+			console.log( "could not find the skeleton for the skin!" );
+			return;
 
-    }
+		}
 
-    var skin = skinCtrl.skin;
-    var skeleton = visualScene.getChildById(ctrl.skeleton[0]);
-    var hierarchy = [];
+		var skin = skinCtrl.skin;
+		var skeleton = visualScene.getChildById( ctrl.skeleton[ 0 ] );
+		var hierarchy = [];
 
-    applyBindShape = applyBindShape !== undefined ? applyBindShape : true;
+		applyBindShape = applyBindShape !== undefined ? applyBindShape : true;
 
-    var bones = [];
-    geometry.skinWeights = [];
-    geometry.skinIndices = [];
+		var bones = [];
+		geometry.skinWeights = [];
+		geometry.skinIndices = [];
 
-    //createBones( geometry.bones, skin, hierarchy, skeleton, null, -1 );
-    //createWeights( skin, geometry.bones, geometry.skinIndices, geometry.skinWeights );
+		//createBones( geometry.bones, skin, hierarchy, skeleton, null, -1 );
+		//createWeights( skin, geometry.bones, geometry.skinIndices, geometry.skinWeights );
 
-    /*
-     geometry.animation = {
-     name: 'take_001',
-     fps: 30,
-     length: 2,
-     JIT: true,
-     hierarchy: hierarchy
-     };
-     */
+		/*
+		geometry.animation = {
+			name: 'take_001',
+			fps: 30,
+			length: 2,
+			JIT: true,
+			hierarchy: hierarchy
+		};
+		*/
 
-    if (applyBindShape) {
+		if ( applyBindShape ) {
 
-      for (var i = 0; i < geometry.vertices.length; i++) {
+			for ( var i = 0; i < geometry.vertices.length; i ++ ) {
 
-        geometry.vertices[i].applyMatrix4(skin.bindShapeMatrix);
+				geometry.vertices[ i ].applyMatrix4( skin.bindShapeMatrix );
 
-      }
+			}
 
-    }
+		}
 
-  }
+	}
 
-  function setupSkeleton(node, bones, frame, parent) {
+	function setupSkeleton ( node, bones, frame, parent ) {
 
-    node.world = node.world || new THREE.Matrix4();
-    node.localworld = node.localworld || new THREE.Matrix4();
-    node.world.copy(node.matrix);
-    node.localworld.copy(node.matrix);
+		node.world = node.world || new THREE.Matrix4();
+		node.localworld = node.localworld || new THREE.Matrix4();
+		node.world.copy( node.matrix );
+		node.localworld.copy( node.matrix );
 
-    if (node.channels && node.channels.length) {
+		if ( node.channels && node.channels.length ) {
 
-      var channel = node.channels[0];
-      var m = channel.sampler.output[frame];
+			var channel = node.channels[ 0 ];
+			var m = channel.sampler.output[ frame ];
 
-      if (m instanceof THREE.Matrix4) {
+			if ( m instanceof THREE.Matrix4 ) {
 
-        node.world.copy(m);
-        node.localworld.copy(m);
-        if (frame === 0)
-          node.matrix.copy(m);
-      }
+				node.world.copy( m );
+				node.localworld.copy(m);
+				if (frame === 0)
+					node.matrix.copy(m);
+			}
 
-    }
+		}
 
-    if (parent) {
+		if ( parent ) {
 
-      node.world.multiplyMatrices(parent, node.world);
+			node.world.multiplyMatrices( parent, node.world );
 
-    }
+		}
 
-    bones.push(node);
+		bones.push( node );
 
-    for (var i = 0; i < node.nodes.length; i++) {
+		for ( var i = 0; i < node.nodes.length; i ++ ) {
 
-      setupSkeleton(node.nodes[i], bones, frame, node.world);
+			setupSkeleton( node.nodes[ i ], bones, frame, node.world );
 
-    }
+		}
 
-  }
+	}
 
-  function setupSkinningMatrices(bones, skin) {
+	function setupSkinningMatrices ( bones, skin ) {
 
-    // FIXME: this is dumb...
+		// FIXME: this is dumb...
 
-    for (var i = 0; i < bones.length; i++) {
+		for ( var i = 0; i < bones.length; i ++ ) {
 
-      var bone = bones[i];
-      var found = -1;
+			var bone = bones[ i ];
+			var found = -1;
 
-      if (bone.type != 'JOINT') continue;
+			if ( bone.type != 'JOINT' ) continue;
 
-      for (var j = 0; j < skin.joints.length; j++) {
+			for ( var j = 0; j < skin.joints.length; j ++ ) {
 
-        if (bone.sid === skin.joints[j]) {
+				if ( bone.sid === skin.joints[ j ] ) {
 
-          found = j;
-          break;
+					found = j;
+					break;
 
-        }
+				}
 
-      }
+			}
 
-      if (found >= 0) {
+			if ( found >= 0 ) {
 
-        var inv = skin.invBindMatrices[found];
+				var inv = skin.invBindMatrices[ found ];
 
-        bone.invBindMatrix = inv;
-        bone.skinningMatrix = new THREE.Matrix4();
-        bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
-        bone.animatrix = new THREE.Matrix4();
+				bone.invBindMatrix = inv;
+				bone.skinningMatrix = new THREE.Matrix4();
+				bone.skinningMatrix.multiplyMatrices(bone.world, inv); // (IBMi * JMi)
+				bone.animatrix = new THREE.Matrix4();
 
-        bone.animatrix.copy(bone.localworld);
-        bone.weights = [];
+				bone.animatrix.copy(bone.localworld);
+				bone.weights = [];
 
-        for (var j = 0; j < skin.weights.length; j++) {
+				for ( var j = 0; j < skin.weights.length; j ++ ) {
 
-          for (var k = 0; k < skin.weights[j].length; k++) {
+					for (var k = 0; k < skin.weights[ j ].length; k ++ ) {
 
-            var w = skin.weights[j][k];
+						var w = skin.weights[ j ][ k ];
 
-            if (w.joint === found) {
+						if ( w.joint === found ) {
 
-              bone.weights.push(w);
+							bone.weights.push( w );
 
-            }
+						}
 
-          }
+					}
 
-        }
+				}
 
-      } else {
+			} else {
 
-        console.warn("ColladaLoader: Could not find joint '" + bone.sid + "'.");
+				console.warn( "ColladaLoader: Could not find joint '" + bone.sid + "'." );
 
-        bone.skinningMatrix = new THREE.Matrix4();
-        bone.weights = [];
+				bone.skinningMatrix = new THREE.Matrix4();
+				bone.weights = [];
 
-      }
-    }
+			}
+		}
 
-  }
+	}
 
-  //Walk the Collada tree and flatten the bones into a list, extract the position, quat and scale from the matrix
-  function flattenSkeleton(skeleton) {
+	//Walk the Collada tree and flatten the bones into a list, extract the position, quat and scale from the matrix
+	function flattenSkeleton(skeleton) {
 
-    var list = [];
-    var walk = function (parentid, node, list) {
+		var list = [];
+		var walk = function(parentid, node, list) {
 
-      var bone = {};
-      bone.name = node.sid;
-      bone.parent = parentid;
-      bone.matrix = node.matrix;
-      var data = [new THREE.Vector3(), new THREE.Quaternion(), new THREE.Vector3()];
-      bone.matrix.decompose(data[0], data[1], data[2]);
+			var bone = {};
+			bone.name = node.sid;
+			bone.parent = parentid;
+			bone.matrix = node.matrix;
+			var data = [ new THREE.Vector3(),new THREE.Quaternion(),new THREE.Vector3() ];
+			bone.matrix.decompose(data[0], data[1], data[2]);
 
-      bone.pos = [data[0].x, data[0].y, data[0].z];
+			bone.pos = [ data[0].x,data[0].y,data[0].z ];
 
-      bone.scl = [data[2].x, data[2].y, data[2].z];
-      bone.rotq = [data[1].x, data[1].y, data[1].z, data[1].w];
-      list.push(bone);
+			bone.scl = [ data[2].x,data[2].y,data[2].z ];
+			bone.rotq = [ data[1].x,data[1].y,data[1].z,data[1].w ];
+			list.push(bone);
 
-      for (var i in node.nodes) {
+			for (var i in node.nodes) {
 
-        walk(node.sid, node.nodes[i], list);
+				walk(node.sid, node.nodes[i], list);
 
-      }
+			}
 
-    };
+		};
 
-    walk(-1, skeleton, list);
-    return list;
+		walk(-1, skeleton, list);
+		return list;
 
-  }
+	}
 
-  //Move the vertices into the pose that is proper for the start of the animation
-  function skinToBindPose(geometry, skeleton, skinController) {
+	//Move the vertices into the pose that is proper for the start of the animation
+	function skinToBindPose(geometry,skeleton,skinController) {
 
-    var bones = [];
-    setupSkeleton(skeleton, bones, -1);
-    setupSkinningMatrices(bones, skinController.skin);
-    v = new THREE.Vector3();
-    var skinned = [];
+		var bones = [];
+		setupSkeleton( skeleton, bones, -1 );
+		setupSkinningMatrices( bones, skinController.skin );
+		v = new THREE.Vector3();
+		var skinned = [];
 
-    for (var i = 0; i < geometry.vertices.length; i++) {
+		for (var i = 0; i < geometry.vertices.length; i ++) {
 
-      skinned.push(new THREE.Vector3());
+			skinned.push(new THREE.Vector3());
 
-    }
+		}
 
-    for (i = 0; i < bones.length; i++) {
+		for ( i = 0; i < bones.length; i ++ ) {
 
-      if (bones[i].type != 'JOINT') continue;
+			if ( bones[ i ].type != 'JOINT' ) continue;
 
-      for (j = 0; j < bones[i].weights.length; j++) {
+			for ( j = 0; j < bones[ i ].weights.length; j ++ ) {
 
-        w = bones[i].weights[j];
-        vidx = w.index;
-        weight = w.weight;
+				w = bones[ i ].weights[ j ];
+				vidx = w.index;
+				weight = w.weight;
 
-        o = geometry.vertices[vidx];
-        s = skinned[vidx];
+				o = geometry.vertices[vidx];
+				s = skinned[vidx];
 
-        v.x = o.x;
-        v.y = o.y;
-        v.z = o.z;
+				v.x = o.x;
+				v.y = o.y;
+				v.z = o.z;
 
-        v.applyMatrix4(bones[i].skinningMatrix);
+				v.applyMatrix4( bones[i].skinningMatrix );
 
-        s.x += (v.x * weight);
-        s.y += (v.y * weight);
-        s.z += (v.z * weight);
-      }
+				s.x += (v.x * weight);
+				s.y += (v.y * weight);
+				s.z += (v.z * weight);
+			}
 
-    }
+		}
 
-    for (var i = 0; i < geometry.vertices.length; i++) {
+		for (var i = 0; i < geometry.vertices.length; i ++) {
 
-      geometry.vertices[i] = skinned[i];
+			geometry.vertices[i] = skinned[i];
 
-    }
+		}
 
-  }
+	}
 
-  function applySkin(geometry, instanceCtrl, frame) {
+	function applySkin ( geometry, instanceCtrl, frame ) {
 
-    var skinController = controllers[instanceCtrl.url];
+		var skinController = controllers[ instanceCtrl.url ];
 
-    frame = frame !== undefined ? frame : 40;
+		frame = frame !== undefined ? frame : 40;
 
-    if (!skinController || !skinController.skin) {
+		if ( !skinController || !skinController.skin ) {
 
-      console.log('ColladaLoader: Could not find skin controller.');
-      return;
+			console.log( 'ColladaLoader: Could not find skin controller.' );
+			return;
 
-    }
+		}
 
-    if (!instanceCtrl.skeleton || !instanceCtrl.skeleton.length) {
+		if ( !instanceCtrl.skeleton || !instanceCtrl.skeleton.length ) {
 
-      console.log('ColladaLoader: Could not find the skeleton for the skin. ');
-      return;
+			console.log( 'ColladaLoader: Could not find the skeleton for the skin. ' );
+			return;
 
-    }
+		}
 
-    var animationBounds = calcAnimationBounds();
-    var skeleton = visualScene.getChildById(instanceCtrl.skeleton[0], true) || visualScene.getChildBySid(instanceCtrl.skeleton[0], true);
+		var animationBounds = calcAnimationBounds();
+		var skeleton = visualScene.getChildById( instanceCtrl.skeleton[0], true ) || visualScene.getChildBySid( instanceCtrl.skeleton[0], true );
 
-    //flatten the skeleton into a list of bones
-    var bonelist = flattenSkeleton(skeleton);
-    var joints = skinController.skin.joints;
+		//flatten the skeleton into a list of bones
+		var bonelist = flattenSkeleton(skeleton);
+		var joints = skinController.skin.joints;
 
-    //sort that list so that the order reflects the order in the joint list
-    var sortedbones = [];
-    for (var i = 0; i < joints.length; i++) {
+		//sort that list so that the order reflects the order in the joint list
+		var sortedbones = [];
+		for (var i = 0; i < joints.length; i ++) {
 
-      for (var j = 0; j < bonelist.length; j++) {
+			for (var j = 0; j < bonelist.length; j ++) {
 
-        if (bonelist[j].name === joints[i]) {
+				if (bonelist[j].name === joints[i]) {
 
-          sortedbones[i] = bonelist[j];
+					sortedbones[i] = bonelist[j];
 
-        }
+				}
 
-      }
+			}
 
-    }
+		}
 
-    //hook up the parents by index instead of name
-    for (var i = 0; i < sortedbones.length; i++) {
+		//hook up the parents by index instead of name
+		for (var i = 0; i < sortedbones.length; i ++) {
 
-      for (var j = 0; j < sortedbones.length; j++) {
+			for (var j = 0; j < sortedbones.length; j ++) {
 
-        if (sortedbones[i].parent === sortedbones[j].name) {
+				if (sortedbones[i].parent === sortedbones[j].name) {
 
-          sortedbones[i].parent = j;
+					sortedbones[i].parent = j;
 
-        }
+				}
 
-      }
+			}
 
-    }
+		}
 
 
-    var i, j, w, vidx, weight;
-    var v = new THREE.Vector3(), o, s;
+		var i, j, w, vidx, weight;
+		var v = new THREE.Vector3(), o, s;
 
-    // move vertices to bind shape
-    for (i = 0; i < geometry.vertices.length; i++) {
-      geometry.vertices[i].applyMatrix4(skinController.skin.bindShapeMatrix);
-    }
+		// move vertices to bind shape
+		for ( i = 0; i < geometry.vertices.length; i ++ ) {
+			geometry.vertices[i].applyMatrix4( skinController.skin.bindShapeMatrix );
+		}
 
-    var skinIndices = [];
-    var skinWeights = [];
-    var weights = skinController.skin.weights;
+		var skinIndices = [];
+		var skinWeights = [];
+		var weights = skinController.skin.weights;
 
-    // hook up the skin weights
-    // TODO - this might be a good place to choose greatest 4 weights
-    for (var i = 0; i < weights.length; i++) {
+		// hook up the skin weights
+		// TODO - this might be a good place to choose greatest 4 weights
+		for ( var i =0; i < weights.length; i ++ ) {
 
-      var indicies = new THREE.Vector4(weights[i][0] ? weights[i][0].joint : 0, weights[i][1] ? weights[i][1].joint : 0, weights[i][2] ? weights[i][2].joint : 0, weights[i][3] ? weights[i][3].joint : 0);
-      var weight = new THREE.Vector4(weights[i][0] ? weights[i][0].weight : 0, weights[i][1] ? weights[i][1].weight : 0, weights[i][2] ? weights[i][2].weight : 0, weights[i][3] ? weights[i][3].weight : 0);
+			var indicies = new THREE.Vector4(weights[i][0] ? weights[i][0].joint : 0,weights[i][1] ? weights[i][1].joint : 0,weights[i][2] ? weights[i][2].joint : 0,weights[i][3] ? weights[i][3].joint : 0);
+			var weight = new THREE.Vector4(weights[i][0] ? weights[i][0].weight : 0,weights[i][1] ? weights[i][1].weight : 0,weights[i][2] ? weights[i][2].weight : 0,weights[i][3] ? weights[i][3].weight : 0);
 
-      skinIndices.push(indicies);
-      skinWeights.push(weight);
+			skinIndices.push(indicies);
+			skinWeights.push(weight);
 
-    }
+		}
 
-    geometry.skinIndices = skinIndices;
-    geometry.skinWeights = skinWeights;
-    geometry.bones = sortedbones;
-    // process animation, or simply pose the rig if no animation
+		geometry.skinIndices = skinIndices;
+		geometry.skinWeights = skinWeights;
+		geometry.bones = sortedbones;
+		// process animation, or simply pose the rig if no animation
 
-    //create an animation for the animated bones
-    //NOTE: this has no effect when using morphtargets
-    var animationdata = {
-      "name": animationBounds.ID,
-      "fps": 30,
-      "length": animationBounds.frames / 30,
-      "hierarchy": []
-    };
+		//create an animation for the animated bones
+		//NOTE: this has no effect when using morphtargets
+		var animationdata = { "name":animationBounds.ID,"fps":30,"length":animationBounds.frames / 30,"hierarchy":[] };
 
-    for (var j = 0; j < sortedbones.length; j++) {
+		for (var j = 0; j < sortedbones.length; j ++) {
 
-      animationdata.hierarchy.push({parent: sortedbones[j].parent, name: sortedbones[j].name, keys: []});
+			animationdata.hierarchy.push({ parent:sortedbones[j].parent, name:sortedbones[j].name, keys:[] });
 
-    }
+		}
 
-    console.log('ColladaLoader:', animationBounds.ID + ' has ' + sortedbones.length + ' bones.');
+		console.log( 'ColladaLoader:', animationBounds.ID + ' has ' + sortedbones.length + ' bones.' );
 
 
-    skinToBindPose(geometry, skeleton, skinController);
 
+		skinToBindPose(geometry, skeleton, skinController);
 
-    for (frame = 0; frame < animationBounds.frames; frame++) {
 
-      var bones = [];
-      var skinned = [];
-      // process the frame and setup the rig with a fresh
-      // transform, possibly from the bone's animation channel(s)
+		for ( frame = 0; frame < animationBounds.frames; frame ++ ) {
 
-      setupSkeleton(skeleton, bones, frame);
-      setupSkinningMatrices(bones, skinController.skin);
+			var bones = [];
+			var skinned = [];
+			// process the frame and setup the rig with a fresh
+			// transform, possibly from the bone's animation channel(s)
 
-      for (var i = 0; i < bones.length; i++) {
+			setupSkeleton( skeleton, bones, frame );
+			setupSkinningMatrices( bones, skinController.skin );
 
-        for (var j = 0; j < animationdata.hierarchy.length; j++) {
+			for (var i = 0; i < bones.length; i ++) {
 
-          if (animationdata.hierarchy[j].name === bones[i].sid) {
+				for (var j = 0; j < animationdata.hierarchy.length; j ++) {
 
-            var key = {};
-            key.time = (frame / 30);
-            key.matrix = bones[i].animatrix;
+					if (animationdata.hierarchy[j].name === bones[i].sid) {
 
-            if (frame === 0)
-              bones[i].matrix = key.matrix;
+						var key = {};
+						key.time = (frame / 30);
+						key.matrix = bones[i].animatrix;
 
-            var data = [new THREE.Vector3(), new THREE.Quaternion(), new THREE.Vector3()];
-            key.matrix.decompose(data[0], data[1], data[2]);
+						if (frame === 0)
+							bones[i].matrix = key.matrix;
 
-            key.pos = [data[0].x, data[0].y, data[0].z];
+						var data = [ new THREE.Vector3(),new THREE.Quaternion(),new THREE.Vector3() ];
+						key.matrix.decompose(data[0], data[1], data[2]);
 
-            key.scl = [data[2].x, data[2].y, data[2].z];
-            key.rot = data[1];
+						key.pos = [ data[0].x,data[0].y,data[0].z ];
 
-            animationdata.hierarchy[j].keys.push(key);
+						key.scl = [ data[2].x,data[2].y,data[2].z ];
+						key.rot = data[1];
 
-          }
+						animationdata.hierarchy[j].keys.push(key);
 
-        }
+					}
 
-      }
+				}
 
-      geometry.animation = animationdata;
+			}
 
-    }
+			geometry.animation = animationdata;
 
-  };
+		}
 
-  function createKinematics() {
+	};
 
-    if (kinematicsModel && kinematicsModel.joints.length === 0) {
-      kinematics = undefined;
-      return;
-    }
+	function createKinematics() {
 
-    var jointMap = {};
+		if ( kinematicsModel && kinematicsModel.joints.length === 0 ) {
+			kinematics = undefined;
+			return;
+		}
 
-    var _addToMap = function (jointIndex, parentVisualElement) {
+		var jointMap = {};
 
-      var parentVisualElementId = parentVisualElement.getAttribute('id');
-      var colladaNode = visualScene.getChildById(parentVisualElementId, true);
-      var joint = kinematicsModel.joints[jointIndex];
+		var _addToMap = function( jointIndex, parentVisualElement ) {
 
-      scene.traverse(function (node) {
+			var parentVisualElementId = parentVisualElement.getAttribute( 'id' );
+			var colladaNode = visualScene.getChildById( parentVisualElementId, true );
+			var joint = kinematicsModel.joints[ jointIndex ];
 
-        if (node.colladaId == parentVisualElementId) {
+			scene.traverse(function( node ) {
 
-          jointMap[jointIndex] = {
-            node: node,
-            transforms: colladaNode.transforms,
-            joint: joint,
-            position: joint.zeroPosition
-          };
+				if ( node.colladaId == parentVisualElementId ) {
 
-        }
+					jointMap[ jointIndex ] = {
+						node: node,
+						transforms: colladaNode.transforms,
+						joint: joint,
+						position: joint.zeroPosition
+					};
 
-      });
+				}
 
-    };
+			});
 
-    kinematics = {
+		};
 
-      joints: kinematicsModel && kinematicsModel.joints,
+		kinematics = {
 
-      getJointValue: function (jointIndex) {
+			joints: kinematicsModel && kinematicsModel.joints,
 
-        var jointData = jointMap[jointIndex];
+			getJointValue: function( jointIndex ) {
 
-        if (jointData) {
+				var jointData = jointMap[ jointIndex ];
 
-          return jointData.position;
+				if ( jointData ) {
 
-        } else {
+					return jointData.position;
 
-          console.log('getJointValue: joint ' + jointIndex + ' doesn\'t exist');
+				} else {
 
-        }
+					console.log( 'getJointValue: joint ' + jointIndex + ' doesn\'t exist' );
 
-      },
+				}
 
-      setJointValue: function (jointIndex, value) {
+			},
 
-        var jointData = jointMap[jointIndex];
+			setJointValue: function( jointIndex, value ) {
 
-        if (jointData) {
+				var jointData = jointMap[ jointIndex ];
 
-          var joint = jointData.joint;
+				if ( jointData ) {
 
-          if (value > joint.limits.max || value < joint.limits.min) {
+					var joint = jointData.joint;
 
-            console.log('setJointValue: joint ' + jointIndex + ' value ' + value + ' outside of limits (min: ' + joint.limits.min + ', max: ' + joint.limits.max + ')');
+					if ( value > joint.limits.max || value < joint.limits.min ) {
 
-          } else if (joint.static) {
+						console.log( 'setJointValue: joint ' + jointIndex + ' value ' + value + ' outside of limits (min: ' + joint.limits.min + ', max: ' + joint.limits.max + ')' );
 
-            console.log('setJointValue: joint ' + jointIndex + ' is static');
+					} else if ( joint.static ) {
 
-          } else {
+						console.log( 'setJointValue: joint ' + jointIndex + ' is static' );
 
-            var threejsNode = jointData.node;
-            var axis = joint.axis;
-            var transforms = jointData.transforms;
+					} else {
 
-            var matrix = new THREE.Matrix4();
+						var threejsNode = jointData.node;
+						var axis = joint.axis;
+						var transforms = jointData.transforms;
 
-            for (i = 0; i < transforms.length; i++) {
+						var matrix = new THREE.Matrix4();
 
-              var transform = transforms[i];
+						for (i = 0; i < transforms.length; i ++ ) {
 
-              // kinda ghetto joint detection
-              if (transform.sid && transform.sid.indexOf('joint' + jointIndex) !== -1) {
+							var transform = transforms[ i ];
 
-                // apply actual joint value here
-                switch (joint.type) {
+							// kinda ghetto joint detection
+							if ( transform.sid && transform.sid.indexOf( 'joint' + jointIndex ) !== -1 ) {
 
-                  case 'revolute':
+								// apply actual joint value here
+								switch ( joint.type ) {
 
-                    matrix.multiply(m1.makeRotationAxis(axis, THREE.Math.degToRad(value)));
-                    break;
+									case 'revolute':
 
-                  case 'prismatic':
+										matrix.multiply( m1.makeRotationAxis( axis, THREE.Math.degToRad(value) ) );
+										break;
 
-                    matrix.multiply(m1.makeTranslation(axis.x * value, axis.y * value, axis.z * value));
-                    break;
+									case 'prismatic':
 
-                  default:
+										matrix.multiply( m1.makeTranslation(axis.x * value, axis.y * value, axis.z * value ) );
+										break;
 
-                    console.warn('setJointValue: unknown joint type: ' + joint.type);
-                    break;
+									default:
 
-                }
+										console.warn( 'setJointValue: unknown joint type: ' + joint.type );
+										break;
 
-              } else {
+								}
 
-                var m1 = new THREE.Matrix4();
+							} else {
 
-                switch (transform.type) {
+								var m1 = new THREE.Matrix4();
 
-                  case 'matrix':
+								switch ( transform.type ) {
 
-                    matrix.multiply(transform.obj);
+									case 'matrix':
 
-                    break;
+										matrix.multiply( transform.obj );
 
-                  case 'translate':
+										break;
 
-                    matrix.multiply(m1.makeTranslation(transform.obj.x, transform.obj.y, transform.obj.z));
+									case 'translate':
 
-                    break;
+										matrix.multiply( m1.makeTranslation( transform.obj.x, transform.obj.y, transform.obj.z ) );
 
-                  case 'rotate':
+										break;
 
-                    matrix.multiply(m1.makeRotationAxis(transform.obj, transform.angle));
+									case 'rotate':
 
-                    break;
+										matrix.multiply( m1.makeRotationAxis( transform.obj, transform.angle ) );
 
-                }
-              }
-            }
+										break;
 
-            // apply the matrix to the threejs node
-            var elementsFloat32Arr = matrix.elements;
-            var elements = Array.prototype.slice.call(elementsFloat32Arr);
+								}
+							}
+						}
 
-            var elementsRowMajor = [
-              elements[0],
-              elements[4],
-              elements[8],
-              elements[12],
-              elements[1],
-              elements[5],
-              elements[9],
-              elements[13],
-              elements[2],
-              elements[6],
-              elements[10],
-              elements[14],
-              elements[3],
-              elements[7],
-              elements[11],
-              elements[15]
-            ];
+						// apply the matrix to the threejs node
+						var elementsFloat32Arr = matrix.elements;
+						var elements = Array.prototype.slice.call( elementsFloat32Arr );
 
-            threejsNode.matrix.set.apply(threejsNode.matrix, elementsRowMajor);
-            threejsNode.matrix.decompose(threejsNode.position, threejsNode.quaternion, threejsNode.scale);
-          }
+						var elementsRowMajor = [
+							elements[ 0 ],
+							elements[ 4 ],
+							elements[ 8 ],
+							elements[ 12 ],
+							elements[ 1 ],
+							elements[ 5 ],
+							elements[ 9 ],
+							elements[ 13 ],
+							elements[ 2 ],
+							elements[ 6 ],
+							elements[ 10 ],
+							elements[ 14 ],
+							elements[ 3 ],
+							elements[ 7 ],
+							elements[ 11 ],
+							elements[ 15 ]
+						];
 
-        } else {
+						threejsNode.matrix.set.apply( threejsNode.matrix, elementsRowMajor );
+						threejsNode.matrix.decompose( threejsNode.position, threejsNode.quaternion, threejsNode.scale );
+					}
 
-          console.log('setJointValue: joint ' + jointIndex + ' doesn\'t exist');
+				} else {
 
-        }
+					console.log( 'setJointValue: joint ' + jointIndex + ' doesn\'t exist' );
 
-      }
+				}
 
-    };
+			}
 
-    var element = COLLADA.querySelector('scene instance_kinematics_scene');
+		};
 
-    if (element) {
+		var element = COLLADA.querySelector('scene instance_kinematics_scene');
 
-      for (var i = 0; i < element.childNodes.length; i++) {
+		if ( element ) {
 
-        var child = element.childNodes[i];
+			for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        if (child.nodeType != 1) continue;
+				var child = element.childNodes[ i ];
 
-        switch (child.nodeName) {
+				if ( child.nodeType != 1 ) continue;
 
-          case 'bind_joint_axis':
+				switch ( child.nodeName ) {
 
-            var visualTarget = child.getAttribute('target').split('/').pop();
-            var axis = child.querySelector('axis param').textContent;
-            var jointIndex = parseInt(axis.split('joint').pop().split('.')[0]);
-            var visualTargetElement = COLLADA.querySelector('[sid="' + visualTarget + '"]');
+					case 'bind_joint_axis':
 
-            if (visualTargetElement) {
-              var parentVisualElement = visualTargetElement.parentElement;
-              _addToMap(jointIndex, parentVisualElement);
-            }
+						var visualTarget = child.getAttribute( 'target' ).split( '/' ).pop();
+						var axis = child.querySelector('axis param').textContent;
+						var jointIndex = parseInt( axis.split( 'joint' ).pop().split( '.' )[0] );
+						var visualTargetElement = COLLADA.querySelector( '[sid="' + visualTarget + '"]' );
 
-            break;
+						if ( visualTargetElement ) {
+							var parentVisualElement = visualTargetElement.parentElement;
+							_addToMap(jointIndex, parentVisualElement);
+						}
 
-          default:
+						break;
 
-            break;
+					default:
 
-        }
+						break;
 
-      }
-    }
+				}
 
-  };
+			}
+		}
 
-  function createSceneGraph(node, parent) {
+	};
 
-    var obj = new THREE.Object3D();
-    var skinned = false;
-    var skinController;
-    var morphController;
-    var i, j;
+	function createSceneGraph ( node, parent ) {
 
-    // FIXME: controllers
+		var obj = new THREE.Object3D();
+		var skinned = false;
+		var skinController;
+		var morphController;
+		var i, j;
 
-    for (i = 0; i < node.controllers.length; i++) {
+		// FIXME: controllers
 
-      var controller = controllers[node.controllers[i].url];
+		for ( i = 0; i < node.controllers.length; i ++ ) {
 
-      switch (controller.type) {
+			var controller = controllers[ node.controllers[ i ].url ];
 
-        case 'skin':
+			switch ( controller.type ) {
 
-          if (geometries[controller.skin.source]) {
+				case 'skin':
 
-            var inst_geom = new InstanceGeometry();
+					if ( geometries[ controller.skin.source ] ) {
 
-            inst_geom.url = controller.skin.source;
-            inst_geom.instance_material = node.controllers[i].instance_material;
+						var inst_geom = new InstanceGeometry();
 
-            node.geometries.push(inst_geom);
-            skinned = true;
-            skinController = node.controllers[i];
+						inst_geom.url = controller.skin.source;
+						inst_geom.instance_material = node.controllers[ i ].instance_material;
 
-          } else if (controllers[controller.skin.source]) {
+						node.geometries.push( inst_geom );
+						skinned = true;
+						skinController = node.controllers[ i ];
 
-            // urgh: controller can be chained
-            // handle the most basic case...
+					} else if ( controllers[ controller.skin.source ] ) {
 
-            var second = controllers[controller.skin.source];
-            morphController = second;
-            //	skinController = node.controllers[i];
+						// urgh: controller can be chained
+						// handle the most basic case...
 
-            if (second.morph && geometries[second.morph.source]) {
+						var second = controllers[ controller.skin.source ];
+						morphController = second;
+					//	skinController = node.controllers[i];
 
-              var inst_geom = new InstanceGeometry();
+						if ( second.morph && geometries[ second.morph.source ] ) {
 
-              inst_geom.url = second.morph.source;
-              inst_geom.instance_material = node.controllers[i].instance_material;
+							var inst_geom = new InstanceGeometry();
 
-              node.geometries.push(inst_geom);
+							inst_geom.url = second.morph.source;
+							inst_geom.instance_material = node.controllers[ i ].instance_material;
 
-            }
+							node.geometries.push( inst_geom );
 
-          }
+						}
 
-          break;
+					}
 
-        case 'morph':
+					break;
 
-          if (geometries[controller.morph.source]) {
+				case 'morph':
 
-            var inst_geom = new InstanceGeometry();
+					if ( geometries[ controller.morph.source ] ) {
 
-            inst_geom.url = controller.morph.source;
-            inst_geom.instance_material = node.controllers[i].instance_material;
+						var inst_geom = new InstanceGeometry();
 
-            node.geometries.push(inst_geom);
-            morphController = node.controllers[i];
+						inst_geom.url = controller.morph.source;
+						inst_geom.instance_material = node.controllers[ i ].instance_material;
 
-          }
+						node.geometries.push( inst_geom );
+						morphController = node.controllers[ i ];
 
-          console.log('ColladaLoader: Morph-controller partially supported.');
+					}
 
-        default:
-          break;
+					console.log( 'ColladaLoader: Morph-controller partially supported.' );
 
-      }
+				default:
+					break;
 
-    }
+			}
 
-    // geometries
+		}
 
-    var double_sided_materials = {};
+		// geometries
 
-    for (i = 0; i < node.geometries.length; i++) {
+		var double_sided_materials = {};
 
-      var instance_geometry = node.geometries[i];
-      var instance_materials = instance_geometry.instance_material;
-      var geometry = geometries[instance_geometry.url];
-      var used_materials = {};
-      var used_materials_array = [];
-      var num_materials = 0;
-      var first_material;
+		for ( i = 0; i < node.geometries.length; i ++ ) {
 
-      if (geometry) {
+			var instance_geometry = node.geometries[i];
+			var instance_materials = instance_geometry.instance_material;
+			var geometry = geometries[ instance_geometry.url ];
+			var used_materials = {};
+			var used_materials_array = [];
+			var num_materials = 0;
+			var first_material;
 
-        if (!geometry.mesh || !geometry.mesh.primitives)
-          continue;
+			if ( geometry ) {
 
-        if (obj.name.length === 0) {
+				if ( !geometry.mesh || !geometry.mesh.primitives )
+					continue;
 
-          obj.name = geometry.id;
+				if ( obj.name.length === 0 ) {
 
-        }
+					obj.name = geometry.id;
 
-        // collect used fx for this geometry-instance
+				}
 
-        if (instance_materials) {
+				// collect used fx for this geometry-instance
 
-          for (j = 0; j < instance_materials.length; j++) {
+				if ( instance_materials ) {
 
-            var instance_material = instance_materials[j];
-            var mat = materials[instance_material.target];
-            var effect_id = mat.instance_effect.url;
-            var shader = effects[effect_id].shader;
-            var material3js = shader.material;
+					for ( j = 0; j < instance_materials.length; j ++ ) {
 
-            if (geometry.doubleSided) {
+						var instance_material = instance_materials[ j ];
+						var mat = materials[ instance_material.target ];
+						var effect_id = mat.instance_effect.url;
+						var shader = effects[ effect_id ].shader;
+						var material3js = shader.material;
 
-              if (!( instance_material.symbol in double_sided_materials )) {
+						if ( geometry.doubleSided ) {
 
-                var _copied_material = material3js.clone();
-                _copied_material.side = THREE.DoubleSide;
-                double_sided_materials[instance_material.symbol] = _copied_material;
+							if ( !( instance_material.symbol in double_sided_materials ) ) {
 
-              }
+								var _copied_material = material3js.clone();
+								_copied_material.side = THREE.DoubleSide;
+								double_sided_materials[ instance_material.symbol ] = _copied_material;
 
-              material3js = double_sided_materials[instance_material.symbol];
+							}
 
-            }
+							material3js = double_sided_materials[ instance_material.symbol ];
 
-            material3js.opacity = !material3js.opacity ? 1 : material3js.opacity;
-            used_materials[instance_material.symbol] = num_materials;
-            used_materials_array.push(material3js);
-            first_material = material3js;
-            first_material.name = mat.name === null || mat.name === '' ? mat.id : mat.name;
-            num_materials++;
+						}
 
-          }
+						material3js.opacity = !material3js.opacity ? 1 : material3js.opacity;
+						used_materials[ instance_material.symbol ] = num_materials;
+						used_materials_array.push( material3js );
+						first_material = material3js;
+						first_material.name = mat.name === null || mat.name === '' ? mat.id : mat.name;
+						num_materials ++;
 
-        }
+					}
 
-        var mesh;
-        var material = first_material || new THREE.MeshLambertMaterial({
-            color: 0xdddddd,
-            side: geometry.doubleSided ? THREE.DoubleSide : THREE.FrontSide
-          });
-        var geom = geometry.mesh.geometry3js;
+				}
 
-        if (num_materials > 1) {
+				var mesh;
+				var material = first_material || new THREE.MeshLambertMaterial( { color: 0xdddddd, side: geometry.doubleSided ? THREE.DoubleSide : THREE.FrontSide } );
+				var geom = geometry.mesh.geometry3js;
 
-          material = new THREE.MeshFaceMaterial(used_materials_array);
+				if ( num_materials > 1 ) {
 
-          for (j = 0; j < geom.faces.length; j++) {
+					material = new THREE.MeshFaceMaterial( used_materials_array );
 
-            var face = geom.faces[j];
-            face.materialIndex = used_materials[face.daeMaterial]
+					for ( j = 0; j < geom.faces.length; j ++ ) {
 
-          }
+						var face = geom.faces[ j ];
+						face.materialIndex = used_materials[ face.daeMaterial ]
 
-        }
+					}
 
-        if (skinController !== undefined) {
+				}
 
+				if ( skinController !== undefined ) {
 
-          applySkin(geom, skinController);
 
-          if (geom.morphTargets.length > 0) {
+					applySkin( geom, skinController );
 
-            material.morphTargets = true;
-            material.skinning = false;
+					if ( geom.morphTargets.length > 0 ) {
 
-          } else {
+						material.morphTargets = true;
+						material.skinning = false;
 
-            material.morphTargets = false;
-            material.skinning = true;
+					} else {
 
-          }
+						material.morphTargets = false;
+						material.skinning = true;
 
+					}
 
-          mesh = new THREE.SkinnedMesh(geom, material, false);
 
+					mesh = new THREE.SkinnedMesh( geom, material, false );
 
-          //mesh.skeleton = skinController.skeleton;
-          //mesh.skinController = controllers[ skinController.url ];
-          //mesh.skinInstanceController = skinController;
-          mesh.name = 'skin_' + skins.length;
 
+					//mesh.skeleton = skinController.skeleton;
+					//mesh.skinController = controllers[ skinController.url ];
+					//mesh.skinInstanceController = skinController;
+					mesh.name = 'skin_' + skins.length;
 
-          //mesh.animationHandle.setKey(0);
-          skins.push(mesh);
 
-        } else if (morphController !== undefined) {
 
-          createMorph(geom, morphController);
+					//mesh.animationHandle.setKey(0);
+					skins.push( mesh );
 
-          material.morphTargets = true;
+				} else if ( morphController !== undefined ) {
 
-          mesh = new THREE.Mesh(geom, material);
-          mesh.name = 'morph_' + morphs.length;
+					createMorph( geom, morphController );
 
-          morphs.push(mesh);
+					material.morphTargets = true;
 
-        } else {
+					mesh = new THREE.Mesh( geom, material );
+					mesh.name = 'morph_' + morphs.length;
 
-          if (geom.isLineStrip === true) {
+					morphs.push( mesh );
 
-            mesh = new THREE.Line(geom);
+				} else {
 
-          } else {
+					if ( geom.isLineStrip === true ) {
 
-            mesh = new THREE.Mesh(geom, material);
+						mesh = new THREE.Line( geom );
 
-          }
+					} else {
 
-        }
+						mesh = new THREE.Mesh( geom, material );
 
-        obj.add(mesh);
+					}
 
-      }
+				}
 
-    }
+				obj.add(mesh);
 
-    for (i = 0; i < node.cameras.length; i++) {
+			}
 
-      var instance_camera = node.cameras[i];
-      var cparams = cameras[instance_camera.url];
+		}
 
-      var cam = new THREE.PerspectiveCamera(cparams.yfov, parseFloat(cparams.aspect_ratio),
-        parseFloat(cparams.znear), parseFloat(cparams.zfar));
+		for ( i = 0; i < node.cameras.length; i ++ ) {
 
-      obj.add(cam);
-    }
+			var instance_camera = node.cameras[i];
+			var cparams = cameras[instance_camera.url];
 
-    for (i = 0; i < node.lights.length; i++) {
+			var cam = new THREE.PerspectiveCamera(cparams.yfov, parseFloat(cparams.aspect_ratio),
+					parseFloat(cparams.znear), parseFloat(cparams.zfar));
 
-      var light = null;
-      var instance_light = node.lights[i];
-      var lparams = lights[instance_light.url];
+			obj.add(cam);
+		}
 
-      if (lparams && lparams.technique) {
+		for ( i = 0; i < node.lights.length; i ++ ) {
 
-        var color = lparams.color.getHex();
-        var intensity = lparams.intensity;
-        var distance = lparams.distance;
-        var angle = lparams.falloff_angle;
-        var exponent; // Intentionally undefined, don't know what this is yet
+			var light = null;
+			var instance_light = node.lights[i];
+			var lparams = lights[instance_light.url];
 
-        switch (lparams.technique) {
+			if ( lparams && lparams.technique ) {
 
-          case 'directional':
+				var color = lparams.color.getHex();
+				var intensity = lparams.intensity;
+				var distance = lparams.distance;
+				var angle = lparams.falloff_angle;
+				var exponent; // Intentionally undefined, don't know what this is yet
 
-            light = new THREE.DirectionalLight(color, intensity, distance);
-            light.position.set(0, 0, 1);
-            break;
+				switch ( lparams.technique ) {
 
-          case 'point':
+					case 'directional':
 
-            light = new THREE.PointLight(color, intensity, distance);
-            break;
+						light = new THREE.DirectionalLight( color, intensity, distance );
+						light.position.set(0, 0, 1);
+						break;
 
-          case 'spot':
+					case 'point':
 
-            light = new THREE.SpotLight(color, intensity, distance, angle, exponent);
-            light.position.set(0, 0, 1);
-            break;
+						light = new THREE.PointLight( color, intensity, distance );
+						break;
 
-          case 'ambient':
+					case 'spot':
 
-            light = new THREE.AmbientLight(color);
-            break;
+						light = new THREE.SpotLight( color, intensity, distance, angle, exponent );
+						light.position.set(0, 0, 1);
+						break;
 
-        }
+					case 'ambient':
 
-      }
+						light = new THREE.AmbientLight( color );
+						break;
 
-      if (light) {
-        obj.add(light);
-      }
-    }
+				}
 
-    obj.name = node.name || node.id || "";
-    obj.colladaId = node.id || "";
-    obj.layer = node.layer || "";
-    obj.matrix = node.matrix;
-    obj.matrix.decompose(obj.position, obj.quaternion, obj.scale);
+			}
 
-    if (options.centerGeometry && obj.geometry) {
+			if (light) {
+				obj.add(light);
+			}
+		}
 
-      var delta = obj.geometry.center();
-      delta.multiply(obj.scale);
-      delta.applyQuaternion(obj.quaternion);
+		obj.name = node.name || node.id || "";
+		obj.colladaId = node.id || "";
+		obj.layer = node.layer || "";
+		obj.matrix = node.matrix;
+		obj.matrix.decompose( obj.position, obj.quaternion, obj.scale );
 
-      obj.position.sub(delta);
+		if ( options.centerGeometry && obj.geometry ) {
 
-    }
+			var delta = obj.geometry.center();
+			delta.multiply( obj.scale );
+			delta.applyQuaternion( obj.quaternion );
 
-    for (i = 0; i < node.nodes.length; i++) {
+			obj.position.sub( delta );
 
-      obj.add(createSceneGraph(node.nodes[i], node));
+		}
 
-    }
+		for ( i = 0; i < node.nodes.length; i ++ ) {
 
-    return obj;
+			obj.add( createSceneGraph( node.nodes[i], node ) );
 
-  };
+		}
 
-  function getJointId(skin, id) {
+		return obj;
 
-    for (var i = 0; i < skin.joints.length; i++) {
+	};
 
-      if (skin.joints[i] === id) {
+	function getJointId( skin, id ) {
 
-        return i;
+		for ( var i = 0; i < skin.joints.length; i ++ ) {
 
-      }
+			if ( skin.joints[ i ] === id ) {
 
-    }
+				return i;
 
-  };
+			}
 
-  function getLibraryNode(id) {
+		}
 
-    var nodes = COLLADA.querySelectorAll('library_nodes node');
+	};
 
-    for (var i = 0; i < nodes.length; i++) {
+	function getLibraryNode( id ) {
 
-      var attObj = nodes[i].attributes.getNamedItem('id');
+		var nodes = COLLADA.querySelectorAll('library_nodes node');
 
-      if (attObj && attObj.value === id) {
+		for ( var i = 0; i < nodes.length; i++ ) {
 
-        return nodes[i];
+			var attObj = nodes[i].attributes.getNamedItem('id');
 
-      }
+			if ( attObj && attObj.value === id ) {
 
-    }
+				return nodes[i];
 
-    return undefined;
+			}
 
-  };
+		}
 
-  function getChannelsForNode(node) {
+		return undefined;
 
-    var channels = [];
-    var startTime = 1000000;
-    var endTime = -1000000;
+	};
 
-    for (var id in animations) {
+	function getChannelsForNode ( node ) {
 
-      var animation = animations[id];
+		var channels = [];
+		var startTime = 1000000;
+		var endTime = -1000000;
 
-      for (var i = 0; i < animation.channel.length; i++) {
+		for ( var id in animations ) {
 
-        var channel = animation.channel[i];
-        var sampler = animation.sampler[i];
-        var id = channel.target.split('/')[0];
+			var animation = animations[id];
 
-        if (id == node.id) {
+			for ( var i = 0; i < animation.channel.length; i ++ ) {
 
-          sampler.create();
-          channel.sampler = sampler;
-          startTime = Math.min(startTime, sampler.startTime);
-          endTime = Math.max(endTime, sampler.endTime);
-          channels.push(channel);
+				var channel = animation.channel[i];
+				var sampler = animation.sampler[i];
+				var id = channel.target.split('/')[0];
 
-        }
+				if ( id == node.id ) {
 
-      }
+					sampler.create();
+					channel.sampler = sampler;
+					startTime = Math.min(startTime, sampler.startTime);
+					endTime = Math.max(endTime, sampler.endTime);
+					channels.push(channel);
 
-    }
+				}
 
-    if (channels.length) {
+			}
 
-      node.startTime = startTime;
-      node.endTime = endTime;
+		}
 
-    }
+		if ( channels.length ) {
 
-    return channels;
+			node.startTime = startTime;
+			node.endTime = endTime;
 
-  };
+		}
 
-  function calcFrameDuration(node) {
+		return channels;
 
-    var minT = 10000000;
+	};
 
-    for (var i = 0; i < node.channels.length; i++) {
+	function calcFrameDuration( node ) {
 
-      var sampler = node.channels[i].sampler;
+		var minT = 10000000;
 
-      for (var j = 0; j < sampler.input.length - 1; j++) {
+		for ( var i = 0; i < node.channels.length; i ++ ) {
 
-        var t0 = sampler.input[j];
-        var t1 = sampler.input[j + 1];
-        minT = Math.min(minT, t1 - t0);
+			var sampler = node.channels[i].sampler;
 
-      }
-    }
+			for ( var j = 0; j < sampler.input.length - 1; j ++ ) {
 
-    return minT;
+				var t0 = sampler.input[ j ];
+				var t1 = sampler.input[ j + 1 ];
+				minT = Math.min( minT, t1 - t0 );
 
-  };
+			}
+		}
 
-  function calcMatrixAt(node, t) {
+		return minT;
 
-    var animated = {};
+	};
 
-    var i, j;
+	function calcMatrixAt( node, t ) {
 
-    for (i = 0; i < node.channels.length; i++) {
+		var animated = {};
 
-      var channel = node.channels[i];
-      animated[channel.sid] = channel;
+		var i, j;
 
-    }
+		for ( i = 0; i < node.channels.length; i ++ ) {
 
-    var matrix = new THREE.Matrix4();
+			var channel = node.channels[ i ];
+			animated[ channel.sid ] = channel;
 
-    for (i = 0; i < node.transforms.length; i++) {
+		}
 
-      var transform = node.transforms[i];
-      var channel = animated[transform.sid];
+		var matrix = new THREE.Matrix4();
 
-      if (channel !== undefined) {
+		for ( i = 0; i < node.transforms.length; i ++ ) {
 
-        var sampler = channel.sampler;
-        var value;
+			var transform = node.transforms[ i ];
+			var channel = animated[ transform.sid ];
 
-        for (j = 0; j < sampler.input.length - 1; j++) {
+			if ( channel !== undefined ) {
 
-          if (sampler.input[j + 1] > t) {
+				var sampler = channel.sampler;
+				var value;
 
-            value = sampler.output[j];
-            //console.log(value.flatten)
-            break;
+				for ( j = 0; j < sampler.input.length - 1; j ++ ) {
 
-          }
+					if ( sampler.input[ j + 1 ] > t ) {
 
-        }
+						value = sampler.output[ j ];
+						//console.log(value.flatten)
+						break;
 
-        if (value !== undefined) {
+					}
 
-          if (value instanceof THREE.Matrix4) {
+				}
 
-            matrix.multiplyMatrices(matrix, value);
+				if ( value !== undefined ) {
 
-          } else {
+					if ( value instanceof THREE.Matrix4 ) {
 
-            // FIXME: handle other types
+						matrix.multiplyMatrices( matrix, value );
 
-            matrix.multiplyMatrices(matrix, transform.matrix);
+					} else {
 
-          }
+						// FIXME: handle other types
 
-        } else {
+						matrix.multiplyMatrices( matrix, transform.matrix );
 
-          matrix.multiplyMatrices(matrix, transform.matrix);
+					}
 
-        }
+				} else {
 
-      } else {
+					matrix.multiplyMatrices( matrix, transform.matrix );
 
-        matrix.multiplyMatrices(matrix, transform.matrix);
+				}
 
-      }
+			} else {
 
-    }
+				matrix.multiplyMatrices( matrix, transform.matrix );
 
-    return matrix;
+			}
 
-  };
+		}
 
-  function bakeAnimations(node) {
+		return matrix;
 
-    if (node.channels && node.channels.length) {
+	};
 
-      var keys = [],
-        sids = [];
+	function bakeAnimations ( node ) {
 
-      for (var i = 0, il = node.channels.length; i < il; i++) {
+		if ( node.channels && node.channels.length ) {
 
-        var channel = node.channels[i],
-          fullSid = channel.fullSid,
-          sampler = channel.sampler,
-          input = sampler.input,
-          transform = node.getTransformBySid(channel.sid),
-          member;
+			var keys = [],
+				sids = [];
 
-        if (channel.arrIndices) {
+			for ( var i = 0, il = node.channels.length; i < il; i ++ ) {
 
-          member = [];
+				var channel = node.channels[i],
+					fullSid = channel.fullSid,
+					sampler = channel.sampler,
+					input = sampler.input,
+					transform = node.getTransformBySid( channel.sid ),
+					member;
 
-          for (var j = 0, jl = channel.arrIndices.length; j < jl; j++) {
+				if ( channel.arrIndices ) {
 
-            member[j] = getConvertedIndex(channel.arrIndices[j]);
+					member = [];
 
-          }
+					for ( var j = 0, jl = channel.arrIndices.length; j < jl; j ++ ) {
 
-        } else {
+						member[ j ] = getConvertedIndex( channel.arrIndices[ j ] );
 
-          member = getConvertedMember(channel.member);
+					}
 
-        }
+				} else {
 
-        if (transform) {
+					member = getConvertedMember( channel.member );
 
-          if (sids.indexOf(fullSid) === -1) {
+				}
 
-            sids.push(fullSid);
+				if ( transform ) {
 
-          }
+					if ( sids.indexOf( fullSid ) === -1 ) {
 
-          for (var j = 0, jl = input.length; j < jl; j++) {
+						sids.push( fullSid );
 
-            var time = input[j],
-              data = sampler.getData(transform.type, j, member),
-              key = findKey(keys, time);
+					}
 
-            if (!key) {
+					for ( var j = 0, jl = input.length; j < jl; j ++ ) {
 
-              key = new Key(time);
-              var timeNdx = findTimeNdx(keys, time);
-              keys.splice(timeNdx === -1 ? keys.length : timeNdx, 0, key);
+						var time = input[j],
+							data = sampler.getData( transform.type, j, member ),
+							key = findKey( keys, time );
 
-            }
+						if ( !key ) {
 
-            key.addTarget(fullSid, transform, member, data);
+							key = new Key( time );
+							var timeNdx = findTimeNdx( keys, time );
+							keys.splice( timeNdx === -1 ? keys.length : timeNdx, 0, key );
 
-          }
+						}
 
-        } else {
+						key.addTarget( fullSid, transform, member, data );
 
-          console.log('Could not find transform "' + channel.sid + '" in node ' + node.id);
+					}
 
-        }
+				} else {
 
-      }
+					console.log( 'Could not find transform "' + channel.sid + '" in node ' + node.id );
 
-      // post process
-      for (var i = 0; i < sids.length; i++) {
+				}
 
-        var sid = sids[i];
+			}
 
-        for (var j = 0; j < keys.length; j++) {
+			// post process
+			for ( var i = 0; i < sids.length; i ++ ) {
 
-          var key = keys[j];
+				var sid = sids[ i ];
 
-          if (!key.hasTarget(sid)) {
+				for ( var j = 0; j < keys.length; j ++ ) {
 
-            interpolateKeys(keys, key, j, sid);
+					var key = keys[ j ];
 
-          }
+					if ( !key.hasTarget( sid ) ) {
 
-        }
+						interpolateKeys( keys, key, j, sid );
 
-      }
+					}
 
-      node.keys = keys;
-      node.sids = sids;
+				}
 
-    }
+			}
 
-  };
+			node.keys = keys;
+			node.sids = sids;
 
-  function findKey(keys, time) {
+		}
 
-    var retVal = null;
+	};
 
-    for (var i = 0, il = keys.length; i < il && retVal === null; i++) {
+	function findKey ( keys, time) {
 
-      var key = keys[i];
+		var retVal = null;
 
-      if (key.time === time) {
+		for ( var i = 0, il = keys.length; i < il && retVal === null; i ++ ) {
 
-        retVal = key;
+			var key = keys[i];
 
-      } else if (key.time > time) {
+			if ( key.time === time ) {
 
-        break;
+				retVal = key;
 
-      }
+			} else if ( key.time > time ) {
 
-    }
+				break;
 
-    return retVal;
+			}
 
-  };
+		}
 
-  function findTimeNdx(keys, time) {
+		return retVal;
 
-    var ndx = -1;
+	};
 
-    for (var i = 0, il = keys.length; i < il && ndx === -1; i++) {
+	function findTimeNdx ( keys, time) {
 
-      var key = keys[i];
+		var ndx = -1;
 
-      if (key.time >= time) {
+		for ( var i = 0, il = keys.length; i < il && ndx === -1; i ++ ) {
 
-        ndx = i;
+			var key = keys[i];
 
-      }
+			if ( key.time >= time ) {
 
-    }
+				ndx = i;
 
-    return ndx;
+			}
 
-  };
+		}
 
-  function interpolateKeys(keys, key, ndx, fullSid) {
+		return ndx;
 
-    var prevKey = getPrevKeyWith(keys, fullSid, ndx ? ndx - 1 : 0),
-      nextKey = getNextKeyWith(keys, fullSid, ndx + 1);
+	};
 
-    if (prevKey && nextKey) {
+	function interpolateKeys ( keys, key, ndx, fullSid ) {
 
-      var scale = (key.time - prevKey.time) / (nextKey.time - prevKey.time),
-        prevTarget = prevKey.getTarget(fullSid),
-        nextData = nextKey.getTarget(fullSid).data,
-        prevData = prevTarget.data,
-        data;
+		var prevKey = getPrevKeyWith( keys, fullSid, ndx ? ndx - 1 : 0 ),
+			nextKey = getNextKeyWith( keys, fullSid, ndx + 1 );
 
-      if (prevTarget.type === 'matrix') {
+		if ( prevKey && nextKey ) {
 
-        data = prevData;
+			var scale = (key.time - prevKey.time) / (nextKey.time - prevKey.time),
+				prevTarget = prevKey.getTarget( fullSid ),
+				nextData = nextKey.getTarget( fullSid ).data,
+				prevData = prevTarget.data,
+				data;
 
-      } else if (prevData.length) {
+			if ( prevTarget.type === 'matrix' ) {
 
-        data = [];
+				data = prevData;
 
-        for (var i = 0; i < prevData.length; ++i) {
+			} else if ( prevData.length ) {
 
-          data[i] = prevData[i] + ( nextData[i] - prevData[i] ) * scale;
+				data = [];
 
-        }
+				for ( var i = 0; i < prevData.length; ++ i ) {
 
-      } else {
+					data[ i ] = prevData[ i ] + ( nextData[ i ] - prevData[ i ] ) * scale;
 
-        data = prevData + ( nextData - prevData ) * scale;
+				}
 
-      }
+			} else {
 
-      key.addTarget(fullSid, prevTarget.transform, prevTarget.member, data);
+				data = prevData + ( nextData - prevData ) * scale;
 
-    }
+			}
 
-  };
+			key.addTarget( fullSid, prevTarget.transform, prevTarget.member, data );
 
-  // Get next key with given sid
+		}
 
-  function getNextKeyWith(keys, fullSid, ndx) {
+	};
 
-    for (; ndx < keys.length; ndx++) {
+	// Get next key with given sid
 
-      var key = keys[ndx];
+	function getNextKeyWith( keys, fullSid, ndx ) {
 
-      if (key.hasTarget(fullSid)) {
+		for ( ; ndx < keys.length; ndx ++ ) {
 
-        return key;
+			var key = keys[ ndx ];
 
-      }
+			if ( key.hasTarget( fullSid ) ) {
 
-    }
+				return key;
 
-    return null;
+			}
 
-  };
+		}
 
-  // Get previous key with given sid
+		return null;
 
-  function getPrevKeyWith(keys, fullSid, ndx) {
+	};
 
-    ndx = ndx >= 0 ? ndx : ndx + keys.length;
+	// Get previous key with given sid
 
-    for (; ndx >= 0; ndx--) {
+	function getPrevKeyWith( keys, fullSid, ndx ) {
 
-      var key = keys[ndx];
+		ndx = ndx >= 0 ? ndx : ndx + keys.length;
 
-      if (key.hasTarget(fullSid)) {
+		for ( ; ndx >= 0; ndx -- ) {
 
-        return key;
+			var key = keys[ ndx ];
 
-      }
+			if ( key.hasTarget( fullSid ) ) {
 
-    }
+				return key;
 
-    return null;
+			}
 
-  };
+		}
 
-  function _Image() {
+		return null;
 
-    this.id = "";
-    this.init_from = "";
+	};
 
-  };
+	function _Image() {
 
-  _Image.prototype.parse = function (element) {
+		this.id = "";
+		this.init_from = "";
 
-    this.id = element.getAttribute('id');
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	_Image.prototype.parse = function(element) {
 
-      var child = element.childNodes[i];
+		this.id = element.getAttribute('id');
 
-      if (child.nodeName === 'init_from') {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        this.init_from = child.textContent;
+			var child = element.childNodes[ i ];
 
-      }
+			if ( child.nodeName === 'init_from' ) {
 
-    }
+				this.init_from = child.textContent;
 
-    return this;
+			}
 
-  };
+		}
 
-  function Controller() {
+		return this;
 
-    this.id = "";
-    this.name = "";
-    this.type = "";
-    this.skin = null;
-    this.morph = null;
+	};
 
-  };
+	function Controller() {
 
-  Controller.prototype.parse = function (element) {
+		this.id = "";
+		this.name = "";
+		this.type = "";
+		this.skin = null;
+		this.morph = null;
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
-    this.type = "none";
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Controller.prototype.parse = function( element ) {
 
-      var child = element.childNodes[i];
+		this.id = element.getAttribute('id');
+		this.name = element.getAttribute('name');
+		this.type = "none";
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'skin':
+			var child = element.childNodes[ i ];
 
-          this.skin = (new Skin()).parse(child);
-          this.type = child.nodeName;
-          break;
+			switch ( child.nodeName ) {
 
-        case 'morph':
+				case 'skin':
 
-          this.morph = (new Morph()).parse(child);
-          this.type = child.nodeName;
-          break;
+					this.skin = (new Skin()).parse(child);
+					this.type = child.nodeName;
+					break;
 
-        default:
-          break;
+				case 'morph':
 
-      }
-    }
+					this.morph = (new Morph()).parse(child);
+					this.type = child.nodeName;
+					break;
 
-    return this;
+				default:
+					break;
 
-  };
+			}
+		}
 
-  function Morph() {
+		return this;
 
-    this.method = null;
-    this.source = null;
-    this.targets = null;
-    this.weights = null;
+	};
 
-  };
+	function Morph() {
 
-  Morph.prototype.parse = function (element) {
+		this.method = null;
+		this.source = null;
+		this.targets = null;
+		this.weights = null;
 
-    var sources = {};
-    var inputs = [];
-    var i;
+	};
 
-    this.method = element.getAttribute('method');
-    this.source = element.getAttribute('source').replace(/^#/, '');
+	Morph.prototype.parse = function( element ) {
 
-    for (i = 0; i < element.childNodes.length; i++) {
+		var sources = {};
+		var inputs = [];
+		var i;
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		this.method = element.getAttribute( 'method' );
+		this.source = element.getAttribute( 'source' ).replace( /^#/, '' );
 
-      switch (child.nodeName) {
+		for ( i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'source':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          var source = ( new Source() ).parse(child);
-          sources[source.id] = source;
-          break;
+			switch ( child.nodeName ) {
 
-        case 'targets':
+				case 'source':
 
-          inputs = this.parseInputs(child);
-          break;
+					var source = ( new Source() ).parse( child );
+					sources[ source.id ] = source;
+					break;
 
-        default:
+				case 'targets':
 
-          console.log(child.nodeName);
-          break;
+					inputs = this.parseInputs( child );
+					break;
 
-      }
+				default:
 
-    }
+					console.log( child.nodeName );
+					break;
 
-    for (i = 0; i < inputs.length; i++) {
+			}
 
-      var input = inputs[i];
-      var source = sources[input.source];
+		}
 
-      switch (input.semantic) {
+		for ( i = 0; i < inputs.length; i ++ ) {
 
-        case 'MORPH_TARGET':
+			var input = inputs[ i ];
+			var source = sources[ input.source ];
 
-          this.targets = source.read();
-          break;
+			switch ( input.semantic ) {
 
-        case 'MORPH_WEIGHT':
+				case 'MORPH_TARGET':
 
-          this.weights = source.read();
-          break;
+					this.targets = source.read();
+					break;
 
-        default:
-          break;
+				case 'MORPH_WEIGHT':
 
-      }
-    }
+					this.weights = source.read();
+					break;
 
-    return this;
+				default:
+					break;
 
-  };
+			}
+		}
 
-  Morph.prototype.parseInputs = function (element) {
+		return this;
 
-    var inputs = [];
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Morph.prototype.parseInputs = function(element) {
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		var inputs = [];
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'input':
+			var child = element.childNodes[i];
+			if ( child.nodeType != 1) continue;
 
-          inputs.push((new Input()).parse(child));
-          break;
+			switch ( child.nodeName ) {
 
-        default:
-          break;
-      }
-    }
+				case 'input':
 
-    return inputs;
+					inputs.push( (new Input()).parse(child) );
+					break;
 
-  };
+				default:
+					break;
+			}
+		}
 
-  function Skin() {
+		return inputs;
 
-    this.source = "";
-    this.bindShapeMatrix = null;
-    this.invBindMatrices = [];
-    this.joints = [];
-    this.weights = [];
+	};
 
-  };
+	function Skin() {
 
-  Skin.prototype.parse = function (element) {
+		this.source = "";
+		this.bindShapeMatrix = null;
+		this.invBindMatrices = [];
+		this.joints = [];
+		this.weights = [];
 
-    var sources = {};
-    var joints, weights;
+	};
 
-    this.source = element.getAttribute('source').replace(/^#/, '');
-    this.invBindMatrices = [];
-    this.joints = [];
-    this.weights = [];
+	Skin.prototype.parse = function( element ) {
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+		var sources = {};
+		var joints, weights;
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		this.source = element.getAttribute( 'source' ).replace( /^#/, '' );
+		this.invBindMatrices = [];
+		this.joints = [];
+		this.weights = [];
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'bind_shape_matrix':
+			var child = element.childNodes[i];
+			if ( child.nodeType != 1 ) continue;
 
-          var f = _floats(child.textContent);
-          this.bindShapeMatrix = getConvertedMat4(f);
-          break;
+			switch ( child.nodeName ) {
 
-        case 'source':
+				case 'bind_shape_matrix':
 
-          var src = new Source().parse(child);
-          sources[src.id] = src;
-          break;
+					var f = _floats(child.textContent);
+					this.bindShapeMatrix = getConvertedMat4( f );
+					break;
 
-        case 'joints':
+				case 'source':
 
-          joints = child;
-          break;
+					var src = new Source().parse(child);
+					sources[ src.id ] = src;
+					break;
 
-        case 'vertex_weights':
+				case 'joints':
 
-          weights = child;
-          break;
+					joints = child;
+					break;
 
-        default:
+				case 'vertex_weights':
 
-          console.log(child.nodeName);
-          break;
+					weights = child;
+					break;
 
-      }
-    }
+				default:
 
-    this.parseJoints(joints, sources);
-    this.parseWeights(weights, sources);
+					console.log( child.nodeName );
+					break;
 
-    return this;
+			}
+		}
 
-  };
+		this.parseJoints( joints, sources );
+		this.parseWeights( weights, sources );
 
-  Skin.prototype.parseJoints = function (element, sources) {
+		return this;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	};
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+	Skin.prototype.parseJoints = function ( element, sources ) {
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'input':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          var input = ( new Input() ).parse(child);
-          var source = sources[input.source];
+			switch ( child.nodeName ) {
 
-          if (input.semantic === 'JOINT') {
+				case 'input':
 
-            this.joints = source.read();
+					var input = ( new Input() ).parse( child );
+					var source = sources[ input.source ];
 
-          } else if (input.semantic === 'INV_BIND_MATRIX') {
+					if ( input.semantic === 'JOINT' ) {
 
-            this.invBindMatrices = source.read();
+						this.joints = source.read();
 
-          }
+					} else if ( input.semantic === 'INV_BIND_MATRIX' ) {
 
-          break;
+						this.invBindMatrices = source.read();
 
-        default:
-          break;
-      }
+					}
 
-    }
+					break;
 
-  };
+				default:
+					break;
+			}
 
-  Skin.prototype.parseWeights = function (element, sources) {
+		}
 
-    var v, vcount, inputs = [];
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Skin.prototype.parseWeights = function ( element, sources ) {
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		var v, vcount, inputs = [];
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'input':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          inputs.push(( new Input() ).parse(child));
-          break;
+			switch ( child.nodeName ) {
 
-        case 'v':
+				case 'input':
 
-          v = _ints(child.textContent);
-          break;
+					inputs.push( ( new Input() ).parse( child ) );
+					break;
 
-        case 'vcount':
+				case 'v':
 
-          vcount = _ints(child.textContent);
-          break;
+					v = _ints( child.textContent );
+					break;
 
-        default:
-          break;
+				case 'vcount':
 
-      }
+					vcount = _ints( child.textContent );
+					break;
 
-    }
+				default:
+					break;
 
-    var index = 0;
+			}
 
-    for (var i = 0; i < vcount.length; i++) {
+		}
 
-      var numBones = vcount[i];
-      var vertex_weights = [];
+		var index = 0;
 
-      for (var j = 0; j < numBones; j++) {
+		for ( var i = 0; i < vcount.length; i ++ ) {
 
-        var influence = {};
+			var numBones = vcount[i];
+			var vertex_weights = [];
 
-        for (var k = 0; k < inputs.length; k++) {
+			for ( var j = 0; j < numBones; j ++ ) {
 
-          var input = inputs[k];
-          var value = v[index + input.offset];
+				var influence = {};
 
-          switch (input.semantic) {
+				for ( var k = 0; k < inputs.length; k ++ ) {
 
-            case 'JOINT':
+					var input = inputs[ k ];
+					var value = v[ index + input.offset ];
 
-              influence.joint = value;//this.joints[value];
-              break;
+					switch ( input.semantic ) {
 
-            case 'WEIGHT':
+						case 'JOINT':
 
-              influence.weight = sources[input.source].data[value];
-              break;
+							influence.joint = value;//this.joints[value];
+							break;
 
-            default:
-              break;
+						case 'WEIGHT':
 
-          }
+							influence.weight = sources[ input.source ].data[ value ];
+							break;
 
-        }
+						default:
+							break;
 
-        vertex_weights.push(influence);
-        index += inputs.length;
-      }
+					}
 
-      for (var j = 0; j < vertex_weights.length; j++) {
+				}
 
-        vertex_weights[j].index = i;
+				vertex_weights.push( influence );
+				index += inputs.length;
+			}
 
-      }
+			for ( var j = 0; j < vertex_weights.length; j ++ ) {
 
-      this.weights.push(vertex_weights);
+				vertex_weights[ j ].index = i;
 
-    }
+			}
 
-  };
+			this.weights.push( vertex_weights );
 
-  function VisualScene() {
+		}
 
-    this.id = "";
-    this.name = "";
-    this.nodes = [];
-    this.scene = new THREE.Group();
+	};
 
-  };
+	function VisualScene () {
 
-  VisualScene.prototype.getChildById = function (id, recursive) {
+		this.id = "";
+		this.name = "";
+		this.nodes = [];
+		this.scene = new THREE.Group();
 
-    for (var i = 0; i < this.nodes.length; i++) {
+	};
 
-      var node = this.nodes[i].getChildById(id, recursive);
+	VisualScene.prototype.getChildById = function( id, recursive ) {
 
-      if (node) {
+		for ( var i = 0; i < this.nodes.length; i ++ ) {
 
-        return node;
+			var node = this.nodes[ i ].getChildById( id, recursive );
 
-      }
+			if ( node ) {
 
-    }
+				return node;
 
-    return null;
+			}
 
-  };
+		}
 
-  VisualScene.prototype.getChildBySid = function (sid, recursive) {
+		return null;
 
-    for (var i = 0; i < this.nodes.length; i++) {
+	};
 
-      var node = this.nodes[i].getChildBySid(sid, recursive);
+	VisualScene.prototype.getChildBySid = function( sid, recursive ) {
 
-      if (node) {
+		for ( var i = 0; i < this.nodes.length; i ++ ) {
 
-        return node;
+			var node = this.nodes[ i ].getChildBySid( sid, recursive );
 
-      }
+			if ( node ) {
 
-    }
+				return node;
 
-    return null;
+			}
 
-  };
+		}
 
-  VisualScene.prototype.parse = function (element) {
+		return null;
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
-    this.nodes = [];
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	VisualScene.prototype.parse = function( element ) {
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		this.id = element.getAttribute( 'id' );
+		this.name = element.getAttribute( 'name' );
+		this.nodes = [];
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'node':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          this.nodes.push(( new Node() ).parse(child));
-          break;
+			switch ( child.nodeName ) {
 
-        default:
-          break;
+				case 'node':
 
-      }
+					this.nodes.push( ( new Node() ).parse( child ) );
+					break;
 
-    }
+				default:
+					break;
 
-    return this;
+			}
 
-  };
+		}
 
-  function Node() {
+		return this;
 
-    this.id = "";
-    this.name = "";
-    this.sid = "";
-    this.nodes = [];
-    this.controllers = [];
-    this.transforms = [];
-    this.geometries = [];
-    this.channels = [];
-    this.matrix = new THREE.Matrix4();
+	};
 
-  };
+	function Node() {
 
-  Node.prototype.getChannelForTransform = function (transformSid) {
+		this.id = "";
+		this.name = "";
+		this.sid = "";
+		this.nodes = [];
+		this.controllers = [];
+		this.transforms = [];
+		this.geometries = [];
+		this.channels = [];
+		this.matrix = new THREE.Matrix4();
 
-    for (var i = 0; i < this.channels.length; i++) {
+	};
 
-      var channel = this.channels[i];
-      var parts = channel.target.split('/');
-      var id = parts.shift();
-      var sid = parts.shift();
-      var dotSyntax = (sid.indexOf(".") >= 0);
-      var arrSyntax = (sid.indexOf("(") >= 0);
-      var arrIndices;
-      var member;
+	Node.prototype.getChannelForTransform = function( transformSid ) {
 
-      if (dotSyntax) {
+		for ( var i = 0; i < this.channels.length; i ++ ) {
 
-        parts = sid.split(".");
-        sid = parts.shift();
-        member = parts.shift();
+			var channel = this.channels[i];
+			var parts = channel.target.split('/');
+			var id = parts.shift();
+			var sid = parts.shift();
+			var dotSyntax = (sid.indexOf(".") >= 0);
+			var arrSyntax = (sid.indexOf("(") >= 0);
+			var arrIndices;
+			var member;
 
-      } else if (arrSyntax) {
+			if ( dotSyntax ) {
 
-        arrIndices = sid.split("(");
-        sid = arrIndices.shift();
+				parts = sid.split(".");
+				sid = parts.shift();
+				member = parts.shift();
 
-        for (var j = 0; j < arrIndices.length; j++) {
+			} else if ( arrSyntax ) {
 
-          arrIndices[j] = parseInt(arrIndices[j].replace(/\)/, ''));
+				arrIndices = sid.split("(");
+				sid = arrIndices.shift();
 
-        }
+				for ( var j = 0; j < arrIndices.length; j ++ ) {
 
-      }
+					arrIndices[ j ] = parseInt( arrIndices[ j ].replace( /\)/, '' ) );
 
-      if (sid === transformSid) {
+				}
 
-        channel.info = {sid: sid, dotSyntax: dotSyntax, arrSyntax: arrSyntax, arrIndices: arrIndices};
-        return channel;
+			}
 
-      }
+			if ( sid === transformSid ) {
 
-    }
+				channel.info = { sid: sid, dotSyntax: dotSyntax, arrSyntax: arrSyntax, arrIndices: arrIndices };
+				return channel;
 
-    return null;
+			}
 
-  };
+		}
 
-  Node.prototype.getChildById = function (id, recursive) {
+		return null;
 
-    if (this.id === id) {
+	};
 
-      return this;
+	Node.prototype.getChildById = function ( id, recursive ) {
 
-    }
+		if ( this.id === id ) {
 
-    if (recursive) {
+			return this;
 
-      for (var i = 0; i < this.nodes.length; i++) {
+		}
 
-        var n = this.nodes[i].getChildById(id, recursive);
+		if ( recursive ) {
 
-        if (n) {
+			for ( var i = 0; i < this.nodes.length; i ++ ) {
 
-          return n;
+				var n = this.nodes[ i ].getChildById( id, recursive );
 
-        }
+				if ( n ) {
 
-      }
+					return n;
 
-    }
+				}
 
-    return null;
+			}
 
-  };
+		}
 
-  Node.prototype.getChildBySid = function (sid, recursive) {
+		return null;
 
-    if (this.sid === sid) {
+	};
 
-      return this;
+	Node.prototype.getChildBySid = function ( sid, recursive ) {
 
-    }
+		if ( this.sid === sid ) {
 
-    if (recursive) {
+			return this;
 
-      for (var i = 0; i < this.nodes.length; i++) {
+		}
 
-        var n = this.nodes[i].getChildBySid(sid, recursive);
+		if ( recursive ) {
 
-        if (n) {
+			for ( var i = 0; i < this.nodes.length; i ++ ) {
 
-          return n;
+				var n = this.nodes[ i ].getChildBySid( sid, recursive );
 
-        }
+				if ( n ) {
 
-      }
-    }
+					return n;
 
-    return null;
+				}
 
-  };
+			}
+		}
 
-  Node.prototype.getTransformBySid = function (sid) {
+		return null;
 
-    for (var i = 0; i < this.transforms.length; i++) {
+	};
 
-      if (this.transforms[i].sid === sid) return this.transforms[i];
+	Node.prototype.getTransformBySid = function ( sid ) {
 
-    }
+		for ( var i = 0; i < this.transforms.length; i ++ ) {
 
-    return null;
+			if ( this.transforms[ i ].sid === sid ) return this.transforms[ i ];
 
-  };
+		}
 
-  Node.prototype.parse = function (element) {
+		return null;
 
-    var url;
+	};
 
-    this.id = element.getAttribute('id');
-    this.sid = element.getAttribute('sid');
-    this.name = element.getAttribute('name');
-    this.type = element.getAttribute('type');
-    this.layer = element.getAttribute('layer');
+	Node.prototype.parse = function( element ) {
 
-    this.type = this.type === 'JOINT' ? this.type : 'NODE';
+		var url;
 
-    this.nodes = [];
-    this.transforms = [];
-    this.geometries = [];
-    this.cameras = [];
-    this.lights = [];
-    this.controllers = [];
-    this.matrix = new THREE.Matrix4();
+		this.id = element.getAttribute('id');
+		this.sid = element.getAttribute('sid');
+		this.name = element.getAttribute('name');
+		this.type = element.getAttribute('type');
+		this.layer = element.getAttribute('layer');
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+		this.type = this.type === 'JOINT' ? this.type : 'NODE';
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		this.nodes = [];
+		this.transforms = [];
+		this.geometries = [];
+		this.cameras = [];
+		this.lights = [];
+		this.controllers = [];
+		this.matrix = new THREE.Matrix4();
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'node':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          this.nodes.push(( new Node() ).parse(child));
-          break;
+			switch ( child.nodeName ) {
 
-        case 'instance_camera':
+				case 'node':
 
-          this.cameras.push(( new InstanceCamera() ).parse(child));
-          break;
+					this.nodes.push( ( new Node() ).parse( child ) );
+					break;
 
-        case 'instance_controller':
+				case 'instance_camera':
 
-          this.controllers.push(( new InstanceController() ).parse(child));
-          break;
+					this.cameras.push( ( new InstanceCamera() ).parse( child ) );
+					break;
 
-        case 'instance_geometry':
+				case 'instance_controller':
 
-          this.geometries.push(( new InstanceGeometry() ).parse(child));
-          break;
+					this.controllers.push( ( new InstanceController() ).parse( child ) );
+					break;
 
-        case 'instance_light':
+				case 'instance_geometry':
 
-          this.lights.push(( new InstanceLight() ).parse(child));
-          break;
+					this.geometries.push( ( new InstanceGeometry() ).parse( child ) );
+					break;
 
-        case 'instance_node':
+				case 'instance_light':
 
-          url = child.getAttribute('url').replace(/^#/, '');
-          var iNode = getLibraryNode(url);
+					this.lights.push( ( new InstanceLight() ).parse( child ) );
+					break;
 
-          if (iNode) {
+				case 'instance_node':
 
-            this.nodes.push(( new Node() ).parse(iNode));
+					url = child.getAttribute( 'url' ).replace( /^#/, '' );
+					var iNode = getLibraryNode( url );
 
-          }
+					if ( iNode ) {
 
-          break;
+						this.nodes.push( ( new Node() ).parse( iNode )) ;
 
-        case 'rotate':
-        case 'translate':
-        case 'scale':
-        case 'matrix':
-        case 'lookat':
-        case 'skew':
+					}
 
-          this.transforms.push(( new Transform() ).parse(child));
-          break;
+					break;
 
-        case 'extra':
-          break;
+				case 'rotate':
+				case 'translate':
+				case 'scale':
+				case 'matrix':
+				case 'lookat':
+				case 'skew':
 
-        default:
+					this.transforms.push( ( new Transform() ).parse( child ) );
+					break;
 
-          console.log(child.nodeName);
-          break;
+				case 'extra':
+					break;
 
-      }
+				default:
 
-    }
+					console.log( child.nodeName );
+					break;
 
-    this.channels = getChannelsForNode(this);
-    bakeAnimations(this);
+			}
 
-    this.updateMatrix();
+		}
 
-    return this;
+		this.channels = getChannelsForNode( this );
+		bakeAnimations( this );
 
-  };
+		this.updateMatrix();
 
-  Node.prototype.updateMatrix = function () {
+		return this;
 
-    this.matrix.identity();
+	};
 
-    for (var i = 0; i < this.transforms.length; i++) {
+	Node.prototype.updateMatrix = function () {
 
-      this.transforms[i].apply(this.matrix);
+		this.matrix.identity();
 
-    }
+		for ( var i = 0; i < this.transforms.length; i ++ ) {
 
-  };
+			this.transforms[ i ].apply( this.matrix );
 
-  function Transform() {
+		}
 
-    this.sid = "";
-    this.type = "";
-    this.data = [];
-    this.obj = null;
+	};
 
-  };
+	function Transform () {
 
-  Transform.prototype.parse = function (element) {
+		this.sid = "";
+		this.type = "";
+		this.data = [];
+		this.obj = null;
 
-    this.sid = element.getAttribute('sid');
-    this.type = element.nodeName;
-    this.data = _floats(element.textContent);
-    this.convert();
+	};
 
-    return this;
+	Transform.prototype.parse = function ( element ) {
 
-  };
+		this.sid = element.getAttribute( 'sid' );
+		this.type = element.nodeName;
+		this.data = _floats( element.textContent );
+		this.convert();
 
-  Transform.prototype.convert = function () {
+		return this;
 
-    switch (this.type) {
+	};
 
-      case 'matrix':
+	Transform.prototype.convert = function () {
 
-        this.obj = getConvertedMat4(this.data);
-        break;
+		switch ( this.type ) {
 
-      case 'rotate':
+			case 'matrix':
 
-        this.angle = THREE.Math.degToRad(this.data[3]);
+				this.obj = getConvertedMat4( this.data );
+				break;
 
-      case 'translate':
+			case 'rotate':
 
-        fixCoords(this.data, -1);
-        this.obj = new THREE.Vector3(this.data[0], this.data[1], this.data[2]);
-        break;
+				this.angle = THREE.Math.degToRad( this.data[3] );
 
-      case 'scale':
+			case 'translate':
 
-        fixCoords(this.data, 1);
-        this.obj = new THREE.Vector3(this.data[0], this.data[1], this.data[2]);
-        break;
+				fixCoords( this.data, -1 );
+				this.obj = new THREE.Vector3( this.data[ 0 ], this.data[ 1 ], this.data[ 2 ] );
+				break;
 
-      default:
-        console.log('Can not convert Transform of type ' + this.type);
-        break;
+			case 'scale':
 
-    }
+				fixCoords( this.data, 1 );
+				this.obj = new THREE.Vector3( this.data[ 0 ], this.data[ 1 ], this.data[ 2 ] );
+				break;
 
-  };
+			default:
+				console.log( 'Can not convert Transform of type ' + this.type );
+				break;
 
-  Transform.prototype.apply = function () {
+		}
 
-    var m1 = new THREE.Matrix4();
+	};
 
-    return function (matrix) {
+	Transform.prototype.apply = function () {
 
-      switch (this.type) {
+		var m1 = new THREE.Matrix4();
 
-        case 'matrix':
+		return function ( matrix ) {
 
-          matrix.multiply(this.obj);
+			switch ( this.type ) {
 
-          break;
+				case 'matrix':
 
-        case 'translate':
+					matrix.multiply( this.obj );
 
-          matrix.multiply(m1.makeTranslation(this.obj.x, this.obj.y, this.obj.z));
+					break;
 
-          break;
+				case 'translate':
 
-        case 'rotate':
+					matrix.multiply( m1.makeTranslation( this.obj.x, this.obj.y, this.obj.z ) );
 
-          matrix.multiply(m1.makeRotationAxis(this.obj, this.angle));
+					break;
 
-          break;
+				case 'rotate':
 
-        case 'scale':
+					matrix.multiply( m1.makeRotationAxis( this.obj, this.angle ) );
 
-          matrix.scale(this.obj);
+					break;
 
-          break;
+				case 'scale':
 
-      }
+					matrix.scale( this.obj );
 
-    };
+					break;
 
-  }();
+			}
 
-  Transform.prototype.update = function (data, member) {
+		};
 
-    var members = ['X', 'Y', 'Z', 'ANGLE'];
+	}();
 
-    switch (this.type) {
+	Transform.prototype.update = function ( data, member ) {
 
-      case 'matrix':
+		var members = [ 'X', 'Y', 'Z', 'ANGLE' ];
 
-        if (!member) {
+		switch ( this.type ) {
 
-          this.obj.copy(data);
+			case 'matrix':
 
-        } else if (member.length === 1) {
+				if ( ! member ) {
 
-          switch (member[0]) {
+					this.obj.copy( data );
 
-            case 0:
+				} else if ( member.length === 1 ) {
 
-              this.obj.n11 = data[0];
-              this.obj.n21 = data[1];
-              this.obj.n31 = data[2];
-              this.obj.n41 = data[3];
+					switch ( member[ 0 ] ) {
 
-              break;
+						case 0:
 
-            case 1:
+							this.obj.n11 = data[ 0 ];
+							this.obj.n21 = data[ 1 ];
+							this.obj.n31 = data[ 2 ];
+							this.obj.n41 = data[ 3 ];
 
-              this.obj.n12 = data[0];
-              this.obj.n22 = data[1];
-              this.obj.n32 = data[2];
-              this.obj.n42 = data[3];
+							break;
 
-              break;
+						case 1:
 
-            case 2:
+							this.obj.n12 = data[ 0 ];
+							this.obj.n22 = data[ 1 ];
+							this.obj.n32 = data[ 2 ];
+							this.obj.n42 = data[ 3 ];
 
-              this.obj.n13 = data[0];
-              this.obj.n23 = data[1];
-              this.obj.n33 = data[2];
-              this.obj.n43 = data[3];
+							break;
 
-              break;
+						case 2:
 
-            case 3:
+							this.obj.n13 = data[ 0 ];
+							this.obj.n23 = data[ 1 ];
+							this.obj.n33 = data[ 2 ];
+							this.obj.n43 = data[ 3 ];
 
-              this.obj.n14 = data[0];
-              this.obj.n24 = data[1];
-              this.obj.n34 = data[2];
-              this.obj.n44 = data[3];
+							break;
 
-              break;
+						case 3:
 
-          }
+							this.obj.n14 = data[ 0 ];
+							this.obj.n24 = data[ 1 ];
+							this.obj.n34 = data[ 2 ];
+							this.obj.n44 = data[ 3 ];
 
-        } else if (member.length === 2) {
+							break;
 
-          var propName = 'n' + ( member[0] + 1 ) + ( member[1] + 1 );
-          this.obj[propName] = data;
+					}
 
-        } else {
+				} else if ( member.length === 2 ) {
 
-          console.log('Incorrect addressing of matrix in transform.');
+					var propName = 'n' + ( member[ 0 ] + 1 ) + ( member[ 1 ] + 1 );
+					this.obj[ propName ] = data;
 
-        }
+				} else {
 
-        break;
+					console.log('Incorrect addressing of matrix in transform.');
 
-      case 'translate':
-      case 'scale':
+				}
 
-        if (Object.prototype.toString.call(member) === '[object Array]') {
+				break;
 
-          member = members[member[0]];
+			case 'translate':
+			case 'scale':
 
-        }
+				if ( Object.prototype.toString.call( member ) === '[object Array]' ) {
 
-        switch (member) {
+					member = members[ member[ 0 ] ];
 
-          case 'X':
+				}
 
-            this.obj.x = data;
-            break;
+				switch ( member ) {
 
-          case 'Y':
+					case 'X':
 
-            this.obj.y = data;
-            break;
+						this.obj.x = data;
+						break;
 
-          case 'Z':
+					case 'Y':
 
-            this.obj.z = data;
-            break;
+						this.obj.y = data;
+						break;
 
-          default:
+					case 'Z':
 
-            this.obj.x = data[0];
-            this.obj.y = data[1];
-            this.obj.z = data[2];
-            break;
+						this.obj.z = data;
+						break;
 
-        }
+					default:
 
-        break;
+						this.obj.x = data[ 0 ];
+						this.obj.y = data[ 1 ];
+						this.obj.z = data[ 2 ];
+						break;
 
-      case 'rotate':
+				}
 
-        if (Object.prototype.toString.call(member) === '[object Array]') {
+				break;
 
-          member = members[member[0]];
+			case 'rotate':
 
-        }
+				if ( Object.prototype.toString.call( member ) === '[object Array]' ) {
 
-        switch (member) {
+					member = members[ member[ 0 ] ];
 
-          case 'X':
+				}
 
-            this.obj.x = data;
-            break;
+				switch ( member ) {
 
-          case 'Y':
+					case 'X':
 
-            this.obj.y = data;
-            break;
+						this.obj.x = data;
+						break;
 
-          case 'Z':
+					case 'Y':
 
-            this.obj.z = data;
-            break;
+						this.obj.y = data;
+						break;
 
-          case 'ANGLE':
+					case 'Z':
 
-            this.angle = THREE.Math.degToRad(data);
-            break;
+						this.obj.z = data;
+						break;
 
-          default:
+					case 'ANGLE':
 
-            this.obj.x = data[0];
-            this.obj.y = data[1];
-            this.obj.z = data[2];
-            this.angle = THREE.Math.degToRad(data[3]);
-            break;
+						this.angle = THREE.Math.degToRad( data );
+						break;
 
-        }
-        break;
+					default:
 
-    }
+						this.obj.x = data[ 0 ];
+						this.obj.y = data[ 1 ];
+						this.obj.z = data[ 2 ];
+						this.angle = THREE.Math.degToRad( data[ 3 ] );
+						break;
 
-  };
+				}
+				break;
 
-  function InstanceController() {
+		}
 
-    this.url = "";
-    this.skeleton = [];
-    this.instance_material = [];
+	};
 
-  };
+	function InstanceController() {
 
-  InstanceController.prototype.parse = function (element) {
+		this.url = "";
+		this.skeleton = [];
+		this.instance_material = [];
 
-    this.url = element.getAttribute('url').replace(/^#/, '');
-    this.skeleton = [];
-    this.instance_material = [];
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	InstanceController.prototype.parse = function ( element ) {
 
-      var child = element.childNodes[i];
-      if (child.nodeType !== 1) continue;
+		this.url = element.getAttribute('url').replace(/^#/, '');
+		this.skeleton = [];
+		this.instance_material = [];
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'skeleton':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType !== 1 ) continue;
 
-          this.skeleton.push(child.textContent.replace(/^#/, ''));
-          break;
+			switch ( child.nodeName ) {
 
-        case 'bind_material':
+				case 'skeleton':
 
-          var instances = child.querySelectorAll('instance_material');
+					this.skeleton.push( child.textContent.replace(/^#/, '') );
+					break;
 
-          for (var j = 0; j < instances.length; j++) {
+				case 'bind_material':
 
-            var instance = instances[j];
-            this.instance_material.push((new InstanceMaterial()).parse(instance));
+					var instances = child.querySelectorAll('instance_material');
 
-          }
+					for ( var j = 0; j < instances.length; j ++ ) {
 
+						var instance = instances[j];
+						this.instance_material.push( (new InstanceMaterial()).parse(instance) );
 
-          break;
+					}
 
-        case 'extra':
-          break;
 
-        default:
-          break;
+					break;
 
-      }
-    }
+				case 'extra':
+					break;
 
-    return this;
+				default:
+					break;
 
-  };
+			}
+		}
 
-  function InstanceMaterial() {
+		return this;
 
-    this.symbol = "";
-    this.target = "";
+	};
 
-  };
+	function InstanceMaterial () {
 
-  InstanceMaterial.prototype.parse = function (element) {
+		this.symbol = "";
+		this.target = "";
 
-    this.symbol = element.getAttribute('symbol');
-    this.target = element.getAttribute('target').replace(/^#/, '');
-    return this;
+	};
 
-  };
+	InstanceMaterial.prototype.parse = function ( element ) {
 
-  function InstanceGeometry() {
+		this.symbol = element.getAttribute('symbol');
+		this.target = element.getAttribute('target').replace(/^#/, '');
+		return this;
 
-    this.url = "";
-    this.instance_material = [];
+	};
 
-  };
+	function InstanceGeometry() {
 
-  InstanceGeometry.prototype.parse = function (element) {
+		this.url = "";
+		this.instance_material = [];
 
-    this.url = element.getAttribute('url').replace(/^#/, '');
-    this.instance_material = [];
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	InstanceGeometry.prototype.parse = function ( element ) {
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		this.url = element.getAttribute('url').replace(/^#/, '');
+		this.instance_material = [];
 
-      if (child.nodeName === 'bind_material') {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        var instances = child.querySelectorAll('instance_material');
+			var child = element.childNodes[i];
+			if ( child.nodeType != 1 ) continue;
 
-        for (var j = 0; j < instances.length; j++) {
+			if ( child.nodeName === 'bind_material' ) {
 
-          var instance = instances[j];
-          this.instance_material.push((new InstanceMaterial()).parse(instance));
+				var instances = child.querySelectorAll('instance_material');
 
-        }
+				for ( var j = 0; j < instances.length; j ++ ) {
 
-        break;
+					var instance = instances[j];
+					this.instance_material.push( (new InstanceMaterial()).parse(instance) );
 
-      }
+				}
 
-    }
+				break;
 
-    return this;
+			}
 
-  };
+		}
 
-  function Geometry() {
+		return this;
 
-    this.id = "";
-    this.mesh = null;
+	};
 
-  };
+	function Geometry() {
 
-  Geometry.prototype.parse = function (element) {
+		this.id = "";
+		this.mesh = null;
 
-    this.id = element.getAttribute('id');
+	};
 
-    extractDoubleSided(this, element);
+	Geometry.prototype.parse = function ( element ) {
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+		this.id = element.getAttribute('id');
 
-      var child = element.childNodes[i];
+		extractDoubleSided( this, element );
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'mesh':
+			var child = element.childNodes[i];
 
-          this.mesh = (new Mesh(this)).parse(child);
-          break;
+			switch ( child.nodeName ) {
 
-        case 'extra':
+				case 'mesh':
 
-          // console.log( child );
-          break;
+					this.mesh = (new Mesh(this)).parse(child);
+					break;
 
-        default:
-          break;
-      }
-    }
+				case 'extra':
 
-    return this;
+					// console.log( child );
+					break;
 
-  };
+				default:
+					break;
+			}
+		}
 
-  function Mesh(geometry) {
+		return this;
 
-    this.geometry = geometry.id;
-    this.primitives = [];
-    this.vertices = null;
-    this.geometry3js = null;
+	};
 
-  };
+	function Mesh( geometry ) {
 
-  Mesh.prototype.parse = function (element) {
+		this.geometry = geometry.id;
+		this.primitives = [];
+		this.vertices = null;
+		this.geometry3js = null;
 
-    this.primitives = [];
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Mesh.prototype.parse = function ( element ) {
 
-      var child = element.childNodes[i];
+		this.primitives = [];
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'source':
+			var child = element.childNodes[ i ];
 
-          _source(child);
-          break;
+			switch ( child.nodeName ) {
 
-        case 'vertices':
+				case 'source':
 
-          this.vertices = ( new Vertices() ).parse(child);
-          break;
+					_source( child );
+					break;
 
-        case 'linestrips':
+				case 'vertices':
 
-          this.primitives.push(( new LineStrips().parse(child) ));
-          break;
+					this.vertices = ( new Vertices() ).parse( child );
+					break;
 
-        case 'triangles':
+				case 'linestrips':
 
-          this.primitives.push(( new Triangles().parse(child) ));
-          break;
+					this.primitives.push( ( new LineStrips().parse( child ) ) );
+					break;
 
-        case 'polygons':
+				case 'triangles':
 
-          this.primitives.push(( new Polygons().parse(child) ));
-          break;
+					this.primitives.push( ( new Triangles().parse( child ) ) );
+					break;
 
-        case 'polylist':
+				case 'polygons':
 
-          this.primitives.push(( new Polylist().parse(child) ));
-          break;
+					this.primitives.push( ( new Polygons().parse( child ) ) );
+					break;
 
-        default:
-          break;
+				case 'polylist':
 
-      }
+					this.primitives.push( ( new Polylist().parse( child ) ) );
+					break;
 
-    }
+				default:
+					break;
 
-    this.geometry3js = new THREE.Geometry();
+			}
 
-    if (this.vertices === null) {
+		}
 
-      // TODO (mrdoob): Study case when this is null (carrier.dae)
+		this.geometry3js = new THREE.Geometry();
 
-      return this;
+		if ( this.vertices === null ) {
 
-    }
+			// TODO (mrdoob): Study case when this is null (carrier.dae)
 
-    var vertexData = sources[this.vertices.input['POSITION'].source].data;
+			return this;
 
-    for (var i = 0; i < vertexData.length; i += 3) {
+		}
 
-      this.geometry3js.vertices.push(getConvertedVec3(vertexData, i).clone());
+		var vertexData = sources[ this.vertices.input['POSITION'].source ].data;
 
-    }
+		for ( var i = 0; i < vertexData.length; i += 3 ) {
 
-    for (var i = 0; i < this.primitives.length; i++) {
+			this.geometry3js.vertices.push( getConvertedVec3( vertexData, i ).clone() );
 
-      var primitive = this.primitives[i];
-      primitive.setVertices(this.vertices);
-      this.handlePrimitive(primitive, this.geometry3js);
+		}
 
-    }
+		for ( var i = 0; i < this.primitives.length; i ++ ) {
 
-    if (this.geometry3js.calcNormals) {
+			var primitive = this.primitives[ i ];
+			primitive.setVertices( this.vertices );
+			this.handlePrimitive( primitive, this.geometry3js );
 
-      this.geometry3js.computeVertexNormals();
-      delete this.geometry3js.calcNormals;
+		}
 
-    }
+		if ( this.geometry3js.calcNormals ) {
 
-    return this;
+			this.geometry3js.computeVertexNormals();
+			delete this.geometry3js.calcNormals;
 
-  };
+		}
 
-  Mesh.prototype.handlePrimitive = function (primitive, geom) {
+		return this;
 
-    if (primitive instanceof LineStrips) {
+	};
 
-      // TODO: Handle indices. Maybe easier with BufferGeometry?
+	Mesh.prototype.handlePrimitive = function ( primitive, geom ) {
 
-      geom.isLineStrip = true;
-      return;
+		if ( primitive instanceof LineStrips ) {
 
-    }
+			// TODO: Handle indices. Maybe easier with BufferGeometry?
 
-    var j, k, pList = primitive.p, inputs = primitive.inputs;
-    var input, index, idx32;
-    var source, numParams;
-    var vcIndex = 0, vcount = 3, maxOffset = 0;
-    var texture_sets = [];
+			geom.isLineStrip = true;
+			return;
 
-    for (j = 0; j < inputs.length; j++) {
+		}
 
-      input = inputs[j];
+		var j, k, pList = primitive.p, inputs = primitive.inputs;
+		var input, index, idx32;
+		var source, numParams;
+		var vcIndex = 0, vcount = 3, maxOffset = 0;
+		var texture_sets = [];
 
-      var offset = input.offset + 1;
-      maxOffset = (maxOffset < offset) ? offset : maxOffset;
+		for ( j = 0; j < inputs.length; j ++ ) {
 
-      switch (input.semantic) {
+			input = inputs[ j ];
 
-        case 'TEXCOORD':
-          texture_sets.push(input.set);
-          break;
+			var offset = input.offset + 1;
+			maxOffset = (maxOffset < offset) ? offset : maxOffset;
 
-      }
+			switch ( input.semantic ) {
 
-    }
+				case 'TEXCOORD':
+					texture_sets.push( input.set );
+					break;
 
-    for (var pCount = 0; pCount < pList.length; ++pCount) {
+			}
 
-      var p = pList[pCount], i = 0;
+		}
 
-      while (i < p.length) {
+		for ( var pCount = 0; pCount < pList.length; ++ pCount ) {
 
-        var vs = [];
-        var ns = [];
-        var ts = null;
-        var cs = [];
+			var p = pList[ pCount ], i = 0;
 
-        if (primitive.vcount) {
+			while ( i < p.length ) {
 
-          vcount = primitive.vcount.length ? primitive.vcount[vcIndex++] : primitive.vcount;
+				var vs = [];
+				var ns = [];
+				var ts = null;
+				var cs = [];
 
-        } else {
+				if ( primitive.vcount ) {
 
-          vcount = p.length / maxOffset;
+					vcount = primitive.vcount.length ? primitive.vcount[ vcIndex ++ ] : primitive.vcount;
 
-        }
+				} else {
 
+					vcount = p.length / maxOffset;
 
-        for (j = 0; j < vcount; j++) {
+				}
 
-          for (k = 0; k < inputs.length; k++) {
 
-            input = inputs[k];
-            source = sources[input.source];
+				for ( j = 0; j < vcount; j ++ ) {
 
-            index = p[i + ( j * maxOffset ) + input.offset];
-            numParams = source.accessor.params.length;
-            idx32 = index * numParams;
+					for ( k = 0; k < inputs.length; k ++ ) {
 
-            switch (input.semantic) {
+						input = inputs[ k ];
+						source = sources[ input.source ];
 
-              case 'VERTEX':
+						index = p[ i + ( j * maxOffset ) + input.offset ];
+						numParams = source.accessor.params.length;
+						idx32 = index * numParams;
 
-                vs.push(index);
+						switch ( input.semantic ) {
 
-                break;
+							case 'VERTEX':
 
-              case 'NORMAL':
+								vs.push( index );
 
-                ns.push(getConvertedVec3(source.data, idx32));
+								break;
 
-                break;
+							case 'NORMAL':
 
-              case 'TEXCOORD':
+								ns.push( getConvertedVec3( source.data, idx32 ) );
 
-                ts = ts || {};
-                if (ts[input.set] === undefined) ts[input.set] = [];
-                // invert the V
-                ts[input.set].push(new THREE.Vector2(source.data[idx32], source.data[idx32 + 1]));
+								break;
 
-                break;
+							case 'TEXCOORD':
 
-              case 'COLOR':
+								ts = ts || { };
+								if ( ts[ input.set ] === undefined ) ts[ input.set ] = [];
+								// invert the V
+								ts[ input.set ].push( new THREE.Vector2( source.data[ idx32 ], source.data[ idx32 + 1 ] ) );
 
-                cs.push(new THREE.Color().setRGB(source.data[idx32], source.data[idx32 + 1], source.data[idx32 + 2]));
+								break;
 
-                break;
+							case 'COLOR':
 
-              default:
+								cs.push( new THREE.Color().setRGB( source.data[ idx32 ], source.data[ idx32 + 1 ], source.data[ idx32 + 2 ] ) );
 
-                break;
+								break;
 
-            }
+							default:
 
-          }
+								break;
 
-        }
+						}
 
-        if (ns.length === 0) {
+					}
 
-          // check the vertices inputs
-          input = this.vertices.input.NORMAL;
+				}
 
-          if (input) {
+				if ( ns.length === 0 ) {
 
-            source = sources[input.source];
-            numParams = source.accessor.params.length;
+					// check the vertices inputs
+					input = this.vertices.input.NORMAL;
 
-            for (var ndx = 0, len = vs.length; ndx < len; ndx++) {
+					if ( input ) {
 
-              ns.push(getConvertedVec3(source.data, vs[ndx] * numParams));
+						source = sources[ input.source ];
+						numParams = source.accessor.params.length;
 
-            }
+						for ( var ndx = 0, len = vs.length; ndx < len; ndx ++ ) {
 
-          } else {
+							ns.push( getConvertedVec3( source.data, vs[ ndx ] * numParams ) );
 
-            geom.calcNormals = true;
+						}
 
-          }
+					} else {
 
-        }
+						geom.calcNormals = true;
 
-        if (!ts) {
+					}
 
-          ts = {};
-          // check the vertices inputs
-          input = this.vertices.input.TEXCOORD;
+				}
 
-          if (input) {
+				if ( !ts ) {
 
-            texture_sets.push(input.set);
-            source = sources[input.source];
-            numParams = source.accessor.params.length;
+					ts = { };
+					// check the vertices inputs
+					input = this.vertices.input.TEXCOORD;
 
-            for (var ndx = 0, len = vs.length; ndx < len; ndx++) {
+					if ( input ) {
 
-              idx32 = vs[ndx] * numParams;
-              if (ts[input.set] === undefined) ts[input.set] = [];
-              // invert the V
-              ts[input.set].push(new THREE.Vector2(source.data[idx32], 1.0 - source.data[idx32 + 1]));
+						texture_sets.push( input.set );
+						source = sources[ input.source ];
+						numParams = source.accessor.params.length;
 
-            }
+						for ( var ndx = 0, len = vs.length; ndx < len; ndx ++ ) {
 
-          }
+							idx32 = vs[ ndx ] * numParams;
+							if ( ts[ input.set ] === undefined ) ts[ input.set ] = [ ];
+							// invert the V
+							ts[ input.set ].push( new THREE.Vector2( source.data[ idx32 ], 1.0 - source.data[ idx32 + 1 ] ) );
 
-        }
+						}
 
-        if (cs.length === 0) {
+					}
 
-          // check the vertices inputs
-          input = this.vertices.input.COLOR;
+				}
 
-          if (input) {
+				if ( cs.length === 0 ) {
 
-            source = sources[input.source];
-            numParams = source.accessor.params.length;
+					// check the vertices inputs
+					input = this.vertices.input.COLOR;
 
-            for (var ndx = 0, len = vs.length; ndx < len; ndx++) {
+					if ( input ) {
 
-              idx32 = vs[ndx] * numParams;
-              cs.push(new THREE.Color().setRGB(source.data[idx32], source.data[idx32 + 1], source.data[idx32 + 2]));
+						source = sources[ input.source ];
+						numParams = source.accessor.params.length;
 
-            }
+						for ( var ndx = 0, len = vs.length; ndx < len; ndx ++ ) {
 
-          }
+							idx32 = vs[ ndx ] * numParams;
+							cs.push( new THREE.Color().setRGB( source.data[ idx32 ], source.data[ idx32 + 1 ], source.data[ idx32 + 2 ] ) );
 
-        }
+						}
 
-        var face = null, faces = [], uv, uvArr;
+					}
 
-        if (vcount === 3) {
+				}
 
-          faces.push(new THREE.Face3(vs[0], vs[1], vs[2], ns, cs.length ? cs : new THREE.Color()));
+				var face = null, faces = [], uv, uvArr;
 
-        } else if (vcount === 4) {
+				if ( vcount === 3 ) {
 
-          faces.push(new THREE.Face3(vs[0], vs[1], vs[3], [ns[0].clone(), ns[1].clone(), ns[3].clone()], cs.length ? [cs[0], cs[1], cs[3]] : new THREE.Color()));
+					faces.push( new THREE.Face3( vs[0], vs[1], vs[2], ns, cs.length ? cs : new THREE.Color() ) );
 
-          faces.push(new THREE.Face3(vs[1], vs[2], vs[3], [ns[1].clone(), ns[2].clone(), ns[3].clone()], cs.length ? [cs[1], cs[2], cs[3]] : new THREE.Color()));
+				} else if ( vcount === 4 ) {
 
-        } else if (vcount > 4 && options.subdivideFaces) {
+					faces.push( new THREE.Face3( vs[0], vs[1], vs[3], [ ns[0].clone(), ns[1].clone(), ns[3].clone() ], cs.length ? [ cs[0], cs[1], cs[3] ] : new THREE.Color() ) );
 
-          var clr = cs.length ? cs : new THREE.Color(),
-            vec1, vec2, vec3, v1, v2, norm;
+					faces.push( new THREE.Face3( vs[1], vs[2], vs[3], [ ns[1].clone(), ns[2].clone(), ns[3].clone() ], cs.length ? [ cs[1], cs[2], cs[3] ] : new THREE.Color() ) );
 
-          // subdivide into multiple Face3s
+				} else if ( vcount > 4 && options.subdivideFaces ) {
 
-          for (k = 1; k < vcount - 1;) {
+					var clr = cs.length ? cs : new THREE.Color(),
+						vec1, vec2, vec3, v1, v2, norm;
 
-            faces.push(new THREE.Face3(vs[0], vs[k], vs[k + 1], [ns[0].clone(), ns[k++].clone(), ns[k].clone()], clr));
+					// subdivide into multiple Face3s
 
-          }
+					for ( k = 1; k < vcount - 1; ) {
 
-        }
+						faces.push( new THREE.Face3( vs[0], vs[k], vs[k + 1], [ ns[0].clone(), ns[k ++].clone(), ns[k].clone() ], clr ) );
 
-        if (faces.length) {
+					}
 
-          for (var ndx = 0, len = faces.length; ndx < len; ndx++) {
+				}
 
-            face = faces[ndx];
-            face.daeMaterial = primitive.material;
-            geom.faces.push(face);
+				if ( faces.length ) {
 
-            for (k = 0; k < texture_sets.length; k++) {
+					for ( var ndx = 0, len = faces.length; ndx < len; ndx ++ ) {
 
-              uv = ts[texture_sets[k]];
+						face = faces[ndx];
+						face.daeMaterial = primitive.material;
+						geom.faces.push( face );
 
-              if (vcount > 4) {
+						for ( k = 0; k < texture_sets.length; k ++ ) {
 
-                // Grab the right UVs for the vertices in this face
-                uvArr = [uv[0], uv[ndx + 1], uv[ndx + 2]];
+							uv = ts[ texture_sets[k] ];
 
-              } else if (vcount === 4) {
+							if ( vcount > 4 ) {
 
-                if (ndx === 0) {
+								// Grab the right UVs for the vertices in this face
+								uvArr = [ uv[0], uv[ndx + 1], uv[ndx + 2] ];
 
-                  uvArr = [uv[0], uv[1], uv[3]];
+							} else if ( vcount === 4 ) {
 
-                } else {
+								if ( ndx === 0 ) {
 
-                  uvArr = [uv[1].clone(), uv[2], uv[3].clone()];
+									uvArr = [ uv[0], uv[1], uv[3] ];
 
-                }
+								} else {
 
-              } else {
+									uvArr = [ uv[1].clone(), uv[2], uv[3].clone() ];
 
-                uvArr = [uv[0], uv[1], uv[2]];
+								}
 
-              }
+							} else {
 
-              if (geom.faceVertexUvs[k] === undefined) {
+								uvArr = [ uv[0], uv[1], uv[2] ];
 
-                geom.faceVertexUvs[k] = [];
+							}
 
-              }
+							if ( geom.faceVertexUvs[k] === undefined ) {
 
-              geom.faceVertexUvs[k].push(uvArr);
+								geom.faceVertexUvs[k] = [];
 
-            }
+							}
 
-          }
+							geom.faceVertexUvs[k].push( uvArr );
 
-        } else {
+						}
 
-          console.log('dropped face with vcount ' + vcount + ' for geometry with id: ' + geom.id);
+					}
 
-        }
+				} else {
 
-        i += maxOffset * vcount;
+					console.log( 'dropped face with vcount ' + vcount + ' for geometry with id: ' + geom.id );
 
-      }
+				}
 
-    }
+				i += maxOffset * vcount;
 
-  };
+			}
 
-  function Polygons() {
+		}
 
-    this.material = "";
-    this.count = 0;
-    this.inputs = [];
-    this.vcount = null;
-    this.p = [];
-    this.geometry = new THREE.Geometry();
+	};
 
-  };
+	function Polygons () {
 
-  Polygons.prototype.setVertices = function (vertices) {
+		this.material = "";
+		this.count = 0;
+		this.inputs = [];
+		this.vcount = null;
+		this.p = [];
+		this.geometry = new THREE.Geometry();
 
-    for (var i = 0; i < this.inputs.length; i++) {
+	};
 
-      if (this.inputs[i].source === vertices.id) {
+	Polygons.prototype.setVertices = function ( vertices ) {
 
-        this.inputs[i].source = vertices.input['POSITION'].source;
+		for ( var i = 0; i < this.inputs.length; i ++ ) {
 
-      }
+			if ( this.inputs[ i ].source === vertices.id ) {
 
-    }
+				this.inputs[ i ].source = vertices.input[ 'POSITION' ].source;
 
-  };
+			}
 
-  Polygons.prototype.parse = function (element) {
+		}
 
-    this.material = element.getAttribute('material');
-    this.count = _attr_as_int(element, 'count', 0);
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Polygons.prototype.parse = function ( element ) {
 
-      var child = element.childNodes[i];
+		this.material = element.getAttribute( 'material' );
+		this.count = _attr_as_int( element, 'count', 0 );
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'input':
+			var child = element.childNodes[ i ];
 
-          this.inputs.push(( new Input() ).parse(element.childNodes[i]));
-          break;
+			switch ( child.nodeName ) {
 
-        case 'vcount':
+				case 'input':
 
-          this.vcount = _ints(child.textContent);
-          break;
+					this.inputs.push( ( new Input() ).parse( element.childNodes[ i ] ) );
+					break;
 
-        case 'p':
+				case 'vcount':
 
-          this.p.push(_ints(child.textContent));
-          break;
+					this.vcount = _ints( child.textContent );
+					break;
 
-        case 'ph':
+				case 'p':
 
-          console.warn('polygon holes not yet supported!');
-          break;
+					this.p.push( _ints( child.textContent ) );
+					break;
 
-        default:
-          break;
+				case 'ph':
 
-      }
+					console.warn( 'polygon holes not yet supported!' );
+					break;
 
-    }
+				default:
+					break;
 
-    return this;
+			}
 
-  };
+		}
 
-  function Polylist() {
+		return this;
 
-    Polygons.call(this);
+	};
 
-    this.vcount = [];
+	function Polylist () {
 
-  };
+		Polygons.call( this );
 
-  Polylist.prototype = Object.create(Polygons.prototype);
-  Polylist.prototype.constructor = Polylist;
+		this.vcount = [];
 
-  function LineStrips() {
+	};
 
-    Polygons.call(this);
+	Polylist.prototype = Object.create( Polygons.prototype );
+	Polylist.prototype.constructor = Polylist;
 
-    this.vcount = 1;
+	function LineStrips() {
 
-  };
+		Polygons.call( this );
 
-  LineStrips.prototype = Object.create(Polygons.prototype);
-  LineStrips.prototype.constructor = LineStrips;
+		this.vcount = 1;
 
-  function Triangles() {
+	};
 
-    Polygons.call(this);
+	LineStrips.prototype = Object.create( Polygons.prototype );
+	LineStrips.prototype.constructor = LineStrips;
 
-    this.vcount = 3;
+	function Triangles () {
 
-  };
+		Polygons.call( this );
 
-  Triangles.prototype = Object.create(Polygons.prototype);
-  Triangles.prototype.constructor = Triangles;
+		this.vcount = 3;
 
-  function Accessor() {
+	};
 
-    this.source = "";
-    this.count = 0;
-    this.stride = 0;
-    this.params = [];
+	Triangles.prototype = Object.create( Polygons.prototype );
+	Triangles.prototype.constructor = Triangles;
 
-  };
+	function Accessor() {
 
-  Accessor.prototype.parse = function (element) {
+		this.source = "";
+		this.count = 0;
+		this.stride = 0;
+		this.params = [];
 
-    this.params = [];
-    this.source = element.getAttribute('source');
-    this.count = _attr_as_int(element, 'count', 0);
-    this.stride = _attr_as_int(element, 'stride', 0);
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Accessor.prototype.parse = function ( element ) {
 
-      var child = element.childNodes[i];
+		this.params = [];
+		this.source = element.getAttribute( 'source' );
+		this.count = _attr_as_int( element, 'count', 0 );
+		this.stride = _attr_as_int( element, 'stride', 0 );
 
-      if (child.nodeName === 'param') {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        var param = {};
-        param['name'] = child.getAttribute('name');
-        param['type'] = child.getAttribute('type');
-        this.params.push(param);
+			var child = element.childNodes[ i ];
 
-      }
+			if ( child.nodeName === 'param' ) {
 
-    }
+				var param = {};
+				param[ 'name' ] = child.getAttribute( 'name' );
+				param[ 'type' ] = child.getAttribute( 'type' );
+				this.params.push( param );
 
-    return this;
+			}
 
-  };
+		}
 
-  function Vertices() {
+		return this;
 
-    this.input = {};
+	};
 
-  };
+	function Vertices() {
 
-  Vertices.prototype.parse = function (element) {
+		this.input = {};
 
-    this.id = element.getAttribute('id');
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Vertices.prototype.parse = function ( element ) {
 
-      if (element.childNodes[i].nodeName === 'input') {
+		this.id = element.getAttribute('id');
 
-        var input = ( new Input() ).parse(element.childNodes[i]);
-        this.input[input.semantic] = input;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			if ( element.childNodes[i].nodeName === 'input' ) {
 
-    }
+				var input = ( new Input() ).parse( element.childNodes[ i ] );
+				this.input[ input.semantic ] = input;
 
-    return this;
+			}
 
-  };
+		}
 
-  function Input() {
+		return this;
 
-    this.semantic = "";
-    this.offset = 0;
-    this.source = "";
-    this.set = 0;
+	};
 
-  };
+	function Input () {
 
-  Input.prototype.parse = function (element) {
+		this.semantic = "";
+		this.offset = 0;
+		this.source = "";
+		this.set = 0;
 
-    this.semantic = element.getAttribute('semantic');
-    this.source = element.getAttribute('source').replace(/^#/, '');
-    this.set = _attr_as_int(element, 'set', -1);
-    this.offset = _attr_as_int(element, 'offset', 0);
+	};
 
-    if (this.semantic === 'TEXCOORD' && this.set < 0) {
+	Input.prototype.parse = function ( element ) {
 
-      this.set = 0;
+		this.semantic = element.getAttribute('semantic');
+		this.source = element.getAttribute('source').replace(/^#/, '');
+		this.set = _attr_as_int(element, 'set', -1);
+		this.offset = _attr_as_int(element, 'offset', 0);
 
-    }
+		if ( this.semantic === 'TEXCOORD' && this.set < 0 ) {
 
-    return this;
+			this.set = 0;
 
-  };
+		}
 
-  function Source(id) {
+		return this;
 
-    this.id = id;
-    this.type = null;
+	};
 
-  };
+	function Source ( id ) {
 
-  Source.prototype.parse = function (element) {
+		this.id = id;
+		this.type = null;
 
-    this.id = element.getAttribute('id');
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Source.prototype.parse = function ( element ) {
 
-      var child = element.childNodes[i];
+		this.id = element.getAttribute( 'id' );
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'bool_array':
+			var child = element.childNodes[i];
 
-          this.data = _bools(child.textContent);
-          this.type = child.nodeName;
-          break;
+			switch ( child.nodeName ) {
 
-        case 'float_array':
+				case 'bool_array':
 
-          this.data = _floats(child.textContent);
-          this.type = child.nodeName;
-          break;
+					this.data = _bools( child.textContent );
+					this.type = child.nodeName;
+					break;
 
-        case 'int_array':
+				case 'float_array':
 
-          this.data = _ints(child.textContent);
-          this.type = child.nodeName;
-          break;
+					this.data = _floats( child.textContent );
+					this.type = child.nodeName;
+					break;
 
-        case 'IDREF_array':
-        case 'Name_array':
+				case 'int_array':
 
-          this.data = _strings(child.textContent);
-          this.type = child.nodeName;
-          break;
+					this.data = _ints( child.textContent );
+					this.type = child.nodeName;
+					break;
 
-        case 'technique_common':
+				case 'IDREF_array':
+				case 'Name_array':
 
-          for (var j = 0; j < child.childNodes.length; j++) {
+					this.data = _strings( child.textContent );
+					this.type = child.nodeName;
+					break;
 
-            if (child.childNodes[j].nodeName === 'accessor') {
+				case 'technique_common':
 
-              this.accessor = ( new Accessor() ).parse(child.childNodes[j]);
-              break;
+					for ( var j = 0; j < child.childNodes.length; j ++ ) {
 
-            }
-          }
-          break;
+						if ( child.childNodes[ j ].nodeName === 'accessor' ) {
 
-        default:
-          // console.log(child.nodeName);
-          break;
+							this.accessor = ( new Accessor() ).parse( child.childNodes[ j ] );
+							break;
 
-      }
+						}
+					}
+					break;
 
-    }
+				default:
+					// console.log(child.nodeName);
+					break;
 
-    return this;
+			}
 
-  };
+		}
 
-  Source.prototype.read = function () {
+		return this;
 
-    var result = [];
+	};
 
-    //for (var i = 0; i < this.accessor.params.length; i++) {
+	Source.prototype.read = function () {
 
-    var param = this.accessor.params[0];
+		var result = [];
 
-    //console.log(param.name + " " + param.type);
+		//for (var i = 0; i < this.accessor.params.length; i++) {
 
-    switch (param.type) {
+		var param = this.accessor.params[ 0 ];
 
-      case 'IDREF':
-      case 'Name':
-      case 'name':
-      case 'float':
+			//console.log(param.name + " " + param.type);
 
-        return this.data;
+		switch ( param.type ) {
 
-      case 'float4x4':
+			case 'IDREF':
+			case 'Name': case 'name':
+			case 'float':
 
-        for (var j = 0; j < this.data.length; j += 16) {
+				return this.data;
 
-          var s = this.data.slice(j, j + 16);
-          var m = getConvertedMat4(s);
-          result.push(m);
-        }
+			case 'float4x4':
 
-        break;
+				for ( var j = 0; j < this.data.length; j += 16 ) {
 
-      default:
+					var s = this.data.slice( j, j + 16 );
+					var m = getConvertedMat4( s );
+					result.push( m );
+				}
 
-        console.log('ColladaLoader: Source: Read dont know how to read ' + param.type + '.');
-        break;
+				break;
 
-    }
+			default:
 
-    //}
+				console.log( 'ColladaLoader: Source: Read dont know how to read ' + param.type + '.' );
+				break;
 
-    return result;
+		}
 
-  };
+		//}
 
-  function Material() {
+		return result;
 
-    this.id = "";
-    this.name = "";
-    this.instance_effect = null;
+	};
 
-  };
+	function Material () {
 
-  Material.prototype.parse = function (element) {
+		this.id = "";
+		this.name = "";
+		this.instance_effect = null;
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
+	};
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	Material.prototype.parse = function ( element ) {
 
-      if (element.childNodes[i].nodeName === 'instance_effect') {
+		this.id = element.getAttribute( 'id' );
+		this.name = element.getAttribute( 'name' );
 
-        this.instance_effect = ( new InstanceEffect() ).parse(element.childNodes[i]);
-        break;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			if ( element.childNodes[ i ].nodeName === 'instance_effect' ) {
 
-    }
+				this.instance_effect = ( new InstanceEffect() ).parse( element.childNodes[ i ] );
+				break;
 
-    return this;
+			}
 
-  };
+		}
 
-  function ColorOrTexture() {
+		return this;
 
-    this.color = new THREE.Color();
-    this.color.setRGB(Math.random(), Math.random(), Math.random());
-    this.color.a = 1.0;
+	};
 
-    this.texture = null;
-    this.texcoord = null;
-    this.texOpts = null;
+	function ColorOrTexture () {
 
-  };
+		this.color = new THREE.Color();
+		this.color.setRGB( Math.random(), Math.random(), Math.random() );
+		this.color.a = 1.0;
 
-  ColorOrTexture.prototype.isColor = function () {
+		this.texture = null;
+		this.texcoord = null;
+		this.texOpts = null;
 
-    return ( this.texture === null );
+	};
 
-  };
+	ColorOrTexture.prototype.isColor = function () {
 
-  ColorOrTexture.prototype.isTexture = function () {
+		return ( this.texture === null );
 
-    return ( this.texture != null );
+	};
 
-  };
+	ColorOrTexture.prototype.isTexture = function () {
 
-  ColorOrTexture.prototype.parse = function (element) {
+		return ( this.texture != null );
 
-    if (element.nodeName === 'transparent') {
+	};
 
-      this.opaque = element.getAttribute('opaque');
+	ColorOrTexture.prototype.parse = function ( element ) {
 
-    }
+		if (element.nodeName === 'transparent') {
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			this.opaque = element.getAttribute('opaque');
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		}
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'color':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          var rgba = _floats(child.textContent);
-          this.color = new THREE.Color();
-          this.color.setRGB(rgba[0], rgba[1], rgba[2]);
-          this.color.a = rgba[3];
-          break;
+			switch ( child.nodeName ) {
 
-        case 'texture':
+				case 'color':
 
-          this.texture = child.getAttribute('texture');
-          this.texcoord = child.getAttribute('texcoord');
-          // Defaults from:
-          // https://collada.org/mediawiki/index.php/Maya_texture_placement_MAYA_extension
-          this.texOpts = {
-            offsetU: 0,
-            offsetV: 0,
-            repeatU: 1,
-            repeatV: 1,
-            wrapU: 1,
-            wrapV: 1
-          };
-          this.parseTexture(child);
-          break;
+					var rgba = _floats( child.textContent );
+					this.color = new THREE.Color();
+					this.color.setRGB( rgba[0], rgba[1], rgba[2] );
+					this.color.a = rgba[3];
+					break;
 
-        default:
-          break;
+				case 'texture':
 
-      }
+					this.texture = child.getAttribute('texture');
+					this.texcoord = child.getAttribute('texcoord');
+					// Defaults from:
+					// https://collada.org/mediawiki/index.php/Maya_texture_placement_MAYA_extension
+					this.texOpts = {
+						offsetU: 0,
+						offsetV: 0,
+						repeatU: 1,
+						repeatV: 1,
+						wrapU: 1,
+						wrapV: 1
+					};
+					this.parseTexture( child );
+					break;
 
-    }
+				default:
+					break;
 
-    return this;
+			}
 
-  };
+		}
 
-  ColorOrTexture.prototype.parseTexture = function (element) {
+		return this;
 
-    if (!element.childNodes) return this;
+	};
 
-    // This should be supported by Maya, 3dsMax, and MotionBuilder
+	ColorOrTexture.prototype.parseTexture = function ( element ) {
 
-    if (element.childNodes[1] && element.childNodes[1].nodeName === 'extra') {
+		if ( ! element.childNodes ) return this;
 
-      element = element.childNodes[1];
+		// This should be supported by Maya, 3dsMax, and MotionBuilder
 
-      if (element.childNodes[1] && element.childNodes[1].nodeName === 'technique') {
+		if ( element.childNodes[1] && element.childNodes[1].nodeName === 'extra' ) {
 
-        element = element.childNodes[1];
+			element = element.childNodes[1];
 
-      }
+			if ( element.childNodes[1] && element.childNodes[1].nodeName === 'technique' ) {
 
-    }
+				element = element.childNodes[1];
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			}
 
-      var child = element.childNodes[i];
+		}
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'offsetU':
-        case 'offsetV':
-        case 'repeatU':
-        case 'repeatV':
+			var child = element.childNodes[ i ];
 
-          this.texOpts[child.nodeName] = parseFloat(child.textContent);
+			switch ( child.nodeName ) {
 
-          break;
+				case 'offsetU':
+				case 'offsetV':
+				case 'repeatU':
+				case 'repeatV':
 
-        case 'wrapU':
-        case 'wrapV':
+					this.texOpts[ child.nodeName ] = parseFloat( child.textContent );
 
-          // some dae have a value of true which becomes NaN via parseInt
+					break;
 
-          if (child.textContent.toUpperCase() === 'TRUE') {
+				case 'wrapU':
+				case 'wrapV':
 
-            this.texOpts[child.nodeName] = 1;
+					// some dae have a value of true which becomes NaN via parseInt
 
-          } else {
+					if ( child.textContent.toUpperCase() === 'TRUE' ) {
 
-            this.texOpts[child.nodeName] = parseInt(child.textContent);
+						this.texOpts[ child.nodeName ] = 1;
 
-          }
-          break;
+					} else {
 
-        default:
+						this.texOpts[ child.nodeName ] = parseInt( child.textContent );
 
-          this.texOpts[child.nodeName] = child.textContent;
+					}
+					break;
 
-          break;
+				default:
 
-      }
+					this.texOpts[ child.nodeName ] = child.textContent;
 
-    }
+					break;
 
-    return this;
+			}
 
-  };
+		}
 
-  function Shader(type, effect) {
+		return this;
 
-    this.type = type;
-    this.effect = effect;
-    this.material = null;
+	};
 
-  };
+	function Shader ( type, effect ) {
 
-  Shader.prototype.parse = function (element) {
+		this.type = type;
+		this.effect = effect;
+		this.material = null;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	};
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+	Shader.prototype.parse = function ( element ) {
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'emission':
-        case 'diffuse':
-        case 'specular':
-        case 'transparent':
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-          this[child.nodeName] = ( new ColorOrTexture() ).parse(child);
-          break;
+			switch ( child.nodeName ) {
 
-        case 'bump':
+				case 'emission':
+				case 'diffuse':
+				case 'specular':
+				case 'transparent':
 
-          // If 'bumptype' is 'heightfield', create a 'bump' property
-          // Else if 'bumptype' is 'normalmap', create a 'normal' property
-          // (Default to 'bump')
-          var bumpType = child.getAttribute('bumptype');
-          if (bumpType) {
-            if (bumpType.toLowerCase() === "heightfield") {
-              this['bump'] = ( new ColorOrTexture() ).parse(child);
-            } else if (bumpType.toLowerCase() === "normalmap") {
-              this['normal'] = ( new ColorOrTexture() ).parse(child);
-            } else {
-              console.error("Shader.prototype.parse: Invalid value for attribute 'bumptype' (" + bumpType + ") - valid bumptypes are 'HEIGHTFIELD' and 'NORMALMAP' - defaulting to 'HEIGHTFIELD'");
-              this['bump'] = ( new ColorOrTexture() ).parse(child);
-            }
-          } else {
-            console.warn("Shader.prototype.parse: Attribute 'bumptype' missing from bump node - defaulting to 'HEIGHTFIELD'");
-            this['bump'] = ( new ColorOrTexture() ).parse(child);
-          }
+					this[ child.nodeName ] = ( new ColorOrTexture() ).parse( child );
+					break;
 
-          break;
+				case 'bump':
 
-        case 'shininess':
-        case 'reflectivity':
-        case 'index_of_refraction':
-        case 'transparency':
+					// If 'bumptype' is 'heightfield', create a 'bump' property
+					// Else if 'bumptype' is 'normalmap', create a 'normal' property
+					// (Default to 'bump')
+					var bumpType = child.getAttribute( 'bumptype' );
+					if ( bumpType ) {
+						if ( bumpType.toLowerCase() === "heightfield" ) {
+							this[ 'bump' ] = ( new ColorOrTexture() ).parse( child );
+						} else if ( bumpType.toLowerCase() === "normalmap" ) {
+							this[ 'normal' ] = ( new ColorOrTexture() ).parse( child );
+						} else {
+							console.error( "Shader.prototype.parse: Invalid value for attribute 'bumptype' (" + bumpType + ") - valid bumptypes are 'HEIGHTFIELD' and 'NORMALMAP' - defaulting to 'HEIGHTFIELD'" );
+							this[ 'bump' ] = ( new ColorOrTexture() ).parse( child );
+						}
+					} else {
+						console.warn( "Shader.prototype.parse: Attribute 'bumptype' missing from bump node - defaulting to 'HEIGHTFIELD'" );
+						this[ 'bump' ] = ( new ColorOrTexture() ).parse( child );
+					}
 
-          var f = child.querySelectorAll('float');
+					break;
 
-          if (f.length > 0)
-            this[child.nodeName] = parseFloat(f[0].textContent);
+				case 'shininess':
+				case 'reflectivity':
+				case 'index_of_refraction':
+				case 'transparency':
 
-          break;
+					var f = child.querySelectorAll('float');
 
-        default:
-          break;
+					if ( f.length > 0 )
+						this[ child.nodeName ] = parseFloat( f[ 0 ].textContent );
 
-      }
+					break;
 
-    }
+				default:
+					break;
 
-    this.create();
-    return this;
+			}
 
-  };
+		}
 
-  Shader.prototype.create = function () {
+		this.create();
+		return this;
 
-    var props = {};
+	};
 
-    var transparent = false;
+	Shader.prototype.create = function() {
 
-    if (this['transparency'] !== undefined && this['transparent'] !== undefined) {
-      // convert transparent color RBG to average value
-      var transparentColor = this['transparent'];
-      var transparencyLevel = (this.transparent.color.r + this.transparent.color.g + this.transparent.color.b) / 3 * this.transparency;
+		var props = {};
 
-      if (transparencyLevel > 0) {
-        transparent = true;
-        props['transparent'] = true;
-        props['opacity'] = 1 - transparencyLevel;
+		var transparent = false;
 
-      }
+		if (this['transparency'] !== undefined && this['transparent'] !== undefined) {
+			// convert transparent color RBG to average value
+			var transparentColor = this['transparent'];
+			var transparencyLevel = (this.transparent.color.r + this.transparent.color.g + this.transparent.color.b) / 3 * this.transparency;
 
-    }
+			if (transparencyLevel > 0) {
+				transparent = true;
+				props[ 'transparent' ] = true;
+				props[ 'opacity' ] = 1 - transparencyLevel;
 
-    var keys = {
-      'diffuse': 'map',
-      'ambient': 'lightMap',
-      'specular': 'specularMap',
-      'emission': 'emissionMap',
-      'bump': 'bumpMap',
-      'normal': 'normalMap'
-    };
+			}
 
-    for (var prop in this) {
+		}
 
-      switch (prop) {
+		var keys = {
+			'diffuse':'map',
+			'ambient':'lightMap',
+			'specular':'specularMap',
+			'emission':'emissionMap',
+			'bump':'bumpMap',
+			'normal':'normalMap'
+			};
 
-        case 'ambient':
-        case 'emission':
-        case 'diffuse':
-        case 'specular':
-        case 'bump':
-        case 'normal':
+		for ( var prop in this ) {
 
-          var cot = this[prop];
+			switch ( prop ) {
 
-          if (cot instanceof ColorOrTexture) {
+				case 'ambient':
+				case 'emission':
+				case 'diffuse':
+				case 'specular':
+				case 'bump':
+				case 'normal':
 
-            if (cot.isTexture()) {
+					var cot = this[ prop ];
 
-              var samplerId = cot.texture;
-              var surfaceId = this.effect.sampler[samplerId];
+					if ( cot instanceof ColorOrTexture ) {
 
-              if (surfaceId !== undefined && surfaceId.source !== undefined) {
+						if ( cot.isTexture() ) {
 
-                var surface = this.effect.surface[surfaceId.source];
+							var samplerId = cot.texture;
+							var surfaceId = this.effect.sampler[samplerId];
 
-                if (surface !== undefined) {
+							if ( surfaceId !== undefined && surfaceId.source !== undefined ) {
 
-                  var image = images[surface.init_from];
+								var surface = this.effect.surface[surfaceId.source];
 
-                  if (image) {
+								if ( surface !== undefined ) {
 
-                    var url = baseUrl + image.init_from;
+									var image = images[ surface.init_from ];
 
-                    var texture;
-                    var loader = THREE.Loader.Handlers.get(url);
+									if ( image ) {
 
-                    if (loader !== null) {
+                    var texture = THREE.ImageUtils.loadTexture(baseUrl + image.init_from);
+										texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+										texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+										texture.offset.x = cot.texOpts.offsetU;
+										texture.offset.y = cot.texOpts.offsetV;
+										texture.repeat.x = cot.texOpts.repeatU;
+										texture.repeat.y = cot.texOpts.repeatV;
+										props[keys[prop]] = texture;
 
-                      texture = loader.load(url);
+										// Texture with baked lighting?
+										if (prop === 'emission') props['emissive'] = 0xffffff;
 
-                    } else {
+									}
 
-                      texture = new THREE.Texture();
+								}
 
-                      loadTextureImage(texture, url);
+							}
 
-                    }
+						} else if ( prop === 'diffuse' || !transparent ) {
 
-                    texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
-                    texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
-                    texture.offset.x = cot.texOpts.offsetU;
-                    texture.offset.y = cot.texOpts.offsetV;
-                    texture.repeat.x = cot.texOpts.repeatU;
-                    texture.repeat.y = cot.texOpts.repeatV;
-                    props[keys[prop]] = texture;
+							if ( prop === 'emission' ) {
 
-                    // Texture with baked lighting?
-                    if (prop === 'emission') props['emissive'] = 0xffffff;
+								props[ 'emissive' ] = cot.color.getHex();
 
-                  }
+							} else {
 
-                }
+								props[ prop ] = cot.color.getHex();
 
-              }
+							}
 
-            } else if (prop === 'diffuse' || !transparent) {
+						}
 
-              if (prop === 'emission') {
+					}
 
-                props['emissive'] = cot.color.getHex();
+					break;
 
-              } else {
+				case 'shininess':
 
-                props[prop] = cot.color.getHex();
+					props[ prop ] = this[ prop ];
+					break;
 
-              }
+				case 'reflectivity':
 
-            }
+					props[ prop ] = this[ prop ];
+					if ( props[ prop ] > 0.0 ) props['envMap'] = options.defaultEnvMap;
+					props['combine'] = THREE.MixOperation;	//mix regular shading with reflective component
+					break;
 
-          }
+				case 'index_of_refraction':
 
-          break;
+					props[ 'refractionRatio' ] = this[ prop ]; //TODO: "index_of_refraction" becomes "refractionRatio" in shader, but I'm not sure if the two are actually comparable
+					if ( this[ prop ] !== 1.0 ) props['envMap'] = options.defaultEnvMap;
+					break;
 
-        case 'shininess':
+				case 'transparency':
+					// gets figured out up top
+					break;
 
-          props[prop] = this[prop];
-          break;
+				default:
+					break;
 
-        case 'reflectivity':
+			}
 
-          props[prop] = this[prop];
-          if (props[prop] > 0.0) props['envMap'] = options.defaultEnvMap;
-          props['combine'] = THREE.MixOperation;	//mix regular shading with reflective component
-          break;
+		}
 
-        case 'index_of_refraction':
+		props[ 'shading' ] = preferredShading;
+		props[ 'side' ] = this.effect.doubleSided ? THREE.DoubleSide : THREE.FrontSide;
 
-          props['refractionRatio'] = this[prop]; //TODO: "index_of_refraction" becomes "refractionRatio" in shader, but I'm not sure if the two are actually comparable
-          if (this[prop] !== 1.0) props['envMap'] = options.defaultEnvMap;
-          break;
+		switch ( this.type ) {
 
-        case 'transparency':
-          // gets figured out up top
-          break;
+			case 'constant':
 
-        default:
-          break;
+				if (props.emissive != undefined) props.color = props.emissive;
+				this.material = new THREE.MeshBasicMaterial( props );
+				break;
 
-      }
+			case 'phong':
+			case 'blinn':
 
-    }
+				if (props.diffuse != undefined) props.color = props.diffuse;
+				this.material = new THREE.MeshPhongMaterial( props );
+				break;
 
-    props['shading'] = preferredShading;
-    props['side'] = this.effect.doubleSided ? THREE.DoubleSide : THREE.FrontSide;
+			case 'lambert':
+			default:
 
-    switch (this.type) {
+				if (props.diffuse != undefined) props.color = props.diffuse;
+				this.material = new THREE.MeshLambertMaterial( props );
+				break;
 
-      case 'constant':
+		}
 
-        if (props.emissive != undefined) props.color = props.emissive;
-        this.material = new THREE.MeshBasicMaterial(props);
-        break;
+		return this.material;
 
-      case 'phong':
-      case 'blinn':
+	};
 
-        if (props.diffuse != undefined) props.color = props.diffuse;
-        this.material = new THREE.MeshPhongMaterial(props);
-        break;
+	function Surface ( effect ) {
 
-      case 'lambert':
-      default:
+		this.effect = effect;
+		this.init_from = null;
+		this.format = null;
 
-        if (props.diffuse != undefined) props.color = props.diffuse;
-        this.material = new THREE.MeshLambertMaterial(props);
-        break;
+	};
 
-    }
+	Surface.prototype.parse = function ( element ) {
 
-    return this.material;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  };
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-  function Surface(effect) {
+			switch ( child.nodeName ) {
 
-    this.effect = effect;
-    this.init_from = null;
-    this.format = null;
+				case 'init_from':
 
-  };
+					this.init_from = child.textContent;
+					break;
 
-  Surface.prototype.parse = function (element) {
+				case 'format':
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+					this.format = child.textContent;
+					break;
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+				default:
 
-      switch (child.nodeName) {
+					console.log( "unhandled Surface prop: " + child.nodeName );
+					break;
 
-        case 'init_from':
+			}
 
-          this.init_from = child.textContent;
-          break;
+		}
 
-        case 'format':
+		return this;
 
-          this.format = child.textContent;
-          break;
+	};
 
-        default:
+	function Sampler2D ( effect ) {
 
-          console.log("unhandled Surface prop: " + child.nodeName);
-          break;
+		this.effect = effect;
+		this.source = null;
+		this.wrap_s = null;
+		this.wrap_t = null;
+		this.minfilter = null;
+		this.magfilter = null;
+		this.mipfilter = null;
 
-      }
+	};
 
-    }
+	Sampler2D.prototype.parse = function ( element ) {
 
-    return this;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  };
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-  function Sampler2D(effect) {
+			switch ( child.nodeName ) {
 
-    this.effect = effect;
-    this.source = null;
-    this.wrap_s = null;
-    this.wrap_t = null;
-    this.minfilter = null;
-    this.magfilter = null;
-    this.mipfilter = null;
+				case 'source':
 
-  };
+					this.source = child.textContent;
+					break;
 
-  Sampler2D.prototype.parse = function (element) {
+				case 'minfilter':
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+					this.minfilter = child.textContent;
+					break;
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+				case 'magfilter':
 
-      switch (child.nodeName) {
+					this.magfilter = child.textContent;
+					break;
 
-        case 'source':
+				case 'mipfilter':
 
-          this.source = child.textContent;
-          break;
+					this.mipfilter = child.textContent;
+					break;
 
-        case 'minfilter':
+				case 'wrap_s':
 
-          this.minfilter = child.textContent;
-          break;
+					this.wrap_s = child.textContent;
+					break;
 
-        case 'magfilter':
+				case 'wrap_t':
 
-          this.magfilter = child.textContent;
-          break;
+					this.wrap_t = child.textContent;
+					break;
 
-        case 'mipfilter':
+				default:
 
-          this.mipfilter = child.textContent;
-          break;
+					console.log( "unhandled Sampler2D prop: " + child.nodeName );
+					break;
 
-        case 'wrap_s':
+			}
 
-          this.wrap_s = child.textContent;
-          break;
+		}
 
-        case 'wrap_t':
+		return this;
 
-          this.wrap_t = child.textContent;
-          break;
+	};
 
-        default:
+	function Effect () {
 
-          console.log("unhandled Sampler2D prop: " + child.nodeName);
-          break;
+		this.id = "";
+		this.name = "";
+		this.shader = null;
+		this.surface = {};
+		this.sampler = {};
 
-      }
+	};
 
-    }
+	Effect.prototype.create = function () {
 
-    return this;
+		if ( this.shader === null ) {
 
-  };
+			return null;
 
-  function Effect() {
+		}
 
-    this.id = "";
-    this.name = "";
-    this.shader = null;
-    this.surface = {};
-    this.sampler = {};
+	};
 
-  };
+	Effect.prototype.parse = function ( element ) {
 
-  Effect.prototype.create = function () {
+		this.id = element.getAttribute( 'id' );
+		this.name = element.getAttribute( 'name' );
 
-    if (this.shader === null) {
+		extractDoubleSided( this, element );
 
-      return null;
+		this.shader = null;
 
-    }
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  };
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-  Effect.prototype.parse = function (element) {
+			switch ( child.nodeName ) {
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
+				case 'profile_COMMON':
 
-    extractDoubleSided(this, element);
+					this.parseTechnique( this.parseProfileCOMMON( child ) );
+					break;
 
-    this.shader = null;
+				default:
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			}
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		}
 
-      switch (child.nodeName) {
+		return this;
 
-        case 'profile_COMMON':
+	};
 
-          this.parseTechnique(this.parseProfileCOMMON(child));
-          break;
+	Effect.prototype.parseNewparam = function ( element ) {
 
-        default:
-          break;
+		var sid = element.getAttribute( 'sid' );
 
-      }
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-    }
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    return this;
+			switch ( child.nodeName ) {
 
-  };
+				case 'surface':
 
-  Effect.prototype.parseNewparam = function (element) {
+					this.surface[sid] = ( new Surface( this ) ).parse( child );
+					break;
 
-    var sid = element.getAttribute('sid');
+				case 'sampler2D':
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+					this.sampler[sid] = ( new Sampler2D( this ) ).parse( child );
+					break;
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+				case 'extra':
 
-      switch (child.nodeName) {
+					break;
 
-        case 'surface':
+				default:
 
-          this.surface[sid] = ( new Surface(this) ).parse(child);
-          break;
+					console.log( child.nodeName );
+					break;
 
-        case 'sampler2D':
+			}
 
-          this.sampler[sid] = ( new Sampler2D(this) ).parse(child);
-          break;
+		}
 
-        case 'extra':
+	};
 
-          break;
+	Effect.prototype.parseProfileCOMMON = function ( element ) {
 
-        default:
+		var technique;
 
-          console.log(child.nodeName);
-          break;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			var child = element.childNodes[ i ];
 
-    }
+			if ( child.nodeType != 1 ) continue;
 
-  };
+			switch ( child.nodeName ) {
 
-  Effect.prototype.parseProfileCOMMON = function (element) {
+				case 'profile_COMMON':
 
-    var technique;
+					this.parseProfileCOMMON( child );
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+				case 'technique':
 
-      var child = element.childNodes[i];
+					technique = child;
+					break;
 
-      if (child.nodeType != 1) continue;
+				case 'newparam':
 
-      switch (child.nodeName) {
+					this.parseNewparam( child );
+					break;
 
-        case 'profile_COMMON':
+				case 'image':
 
-          this.parseProfileCOMMON(child);
-          break;
+					var _image = ( new _Image() ).parse( child );
+					images[ _image.id ] = _image;
+					break;
 
-        case 'technique':
+				case 'extra':
+					break;
 
-          technique = child;
-          break;
+				default:
 
-        case 'newparam':
+					console.log( child.nodeName );
+					break;
 
-          this.parseNewparam(child);
-          break;
+			}
 
-        case 'image':
+		}
 
-          var _image = ( new _Image() ).parse(child);
-          images[_image.id] = _image;
-          break;
+		return technique;
 
-        case 'extra':
-          break;
+	};
 
-        default:
+	Effect.prototype.parseTechnique = function ( element ) {
 
-          console.log(child.nodeName);
-          break;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			var child = element.childNodes[i];
+			if ( child.nodeType != 1 ) continue;
 
-    }
+			switch ( child.nodeName ) {
 
-    return technique;
+				case 'constant':
+				case 'lambert':
+				case 'blinn':
+				case 'phong':
 
-  };
+					this.shader = ( new Shader( child.nodeName, this ) ).parse( child );
+					break;
+				case 'extra':
+					this.parseExtra(child);
+					break;
+				default:
+					break;
 
-  Effect.prototype.parseTechnique = function (element) {
+			}
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+		}
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+	};
 
-      switch (child.nodeName) {
+	Effect.prototype.parseExtra = function ( element ) {
 
-        case 'constant':
-        case 'lambert':
-        case 'blinn':
-        case 'phong':
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-          this.shader = ( new Shader(child.nodeName, this) ).parse(child);
-          break;
-        case 'extra':
-          this.parseExtra(child);
-          break;
-        default:
-          break;
+			var child = element.childNodes[i];
+			if ( child.nodeType != 1 ) continue;
 
-      }
+			switch ( child.nodeName ) {
 
-    }
+				case 'technique':
+					this.parseExtraTechnique( child );
+					break;
+				default:
+					break;
 
-  };
+			}
 
-  Effect.prototype.parseExtra = function (element) {
+		}
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	};
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+	Effect.prototype.parseExtraTechnique = function ( element ) {
 
-      switch (child.nodeName) {
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-        case 'technique':
-          this.parseExtraTechnique(child);
-          break;
-        default:
-          break;
+			var child = element.childNodes[i];
+			if ( child.nodeType != 1 ) continue;
 
-      }
+			switch ( child.nodeName ) {
 
-    }
+				case 'bump':
+					this.shader.parse( element );
+					break;
+				default:
+					break;
 
-  };
+			}
 
-  Effect.prototype.parseExtraTechnique = function (element) {
+		}
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+	};
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+	function InstanceEffect () {
 
-      switch (child.nodeName) {
+		this.url = "";
 
-        case 'bump':
-          this.shader.parse(element);
-          break;
-        default:
-          break;
+	};
 
-      }
+	InstanceEffect.prototype.parse = function ( element ) {
 
-    }
+		this.url = element.getAttribute( 'url' ).replace( /^#/, '' );
+		return this;
 
-  };
+	};
 
-  function InstanceEffect() {
+	function Animation() {
 
-    this.url = "";
+		this.id = "";
+		this.name = "";
+		this.source = {};
+		this.sampler = [];
+		this.channel = [];
 
-  };
+	};
 
-  InstanceEffect.prototype.parse = function (element) {
+	Animation.prototype.parse = function ( element ) {
 
-    this.url = element.getAttribute('url').replace(/^#/, '');
-    return this;
+		this.id = element.getAttribute( 'id' );
+		this.name = element.getAttribute( 'name' );
+		this.source = {};
 
-  };
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  function Animation() {
+			var child = element.childNodes[ i ];
 
-    this.id = "";
-    this.name = "";
-    this.source = {};
-    this.sampler = [];
-    this.channel = [];
+			if ( child.nodeType != 1 ) continue;
 
-  };
+			switch ( child.nodeName ) {
 
-  Animation.prototype.parse = function (element) {
+				case 'animation':
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
-    this.source = {};
+					var anim = ( new Animation() ).parse( child );
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+					for ( var src in anim.source ) {
 
-      var child = element.childNodes[i];
+						this.source[ src ] = anim.source[ src ];
 
-      if (child.nodeType != 1) continue;
+					}
 
-      switch (child.nodeName) {
+					for ( var j = 0; j < anim.channel.length; j ++ ) {
 
-        case 'animation':
+						this.channel.push( anim.channel[ j ] );
+						this.sampler.push( anim.sampler[ j ] );
 
-          var anim = ( new Animation() ).parse(child);
+					}
 
-          for (var src in anim.source) {
+					break;
 
-            this.source[src] = anim.source[src];
+				case 'source':
 
-          }
+					var src = ( new Source() ).parse( child );
+					this.source[ src.id ] = src;
+					break;
 
-          for (var j = 0; j < anim.channel.length; j++) {
+				case 'sampler':
 
-            this.channel.push(anim.channel[j]);
-            this.sampler.push(anim.sampler[j]);
+					this.sampler.push( ( new Sampler( this ) ).parse( child ) );
+					break;
 
-          }
+				case 'channel':
 
-          break;
+					this.channel.push( ( new Channel( this ) ).parse( child ) );
+					break;
 
-        case 'source':
+				default:
+					break;
 
-          var src = ( new Source() ).parse(child);
-          this.source[src.id] = src;
-          break;
+			}
 
-        case 'sampler':
+		}
 
-          this.sampler.push(( new Sampler(this) ).parse(child));
-          break;
+		return this;
 
-        case 'channel':
+	};
 
-          this.channel.push(( new Channel(this) ).parse(child));
-          break;
+	function Channel( animation ) {
 
-        default:
-          break;
+		this.animation = animation;
+		this.source = "";
+		this.target = "";
+		this.fullSid = null;
+		this.sid = null;
+		this.dotSyntax = null;
+		this.arrSyntax = null;
+		this.arrIndices = null;
+		this.member = null;
 
-      }
+	};
 
-    }
+	Channel.prototype.parse = function ( element ) {
 
-    return this;
+		this.source = element.getAttribute( 'source' ).replace( /^#/, '' );
+		this.target = element.getAttribute( 'target' );
 
-  };
+		var parts = this.target.split( '/' );
 
-  function Channel(animation) {
+		var id = parts.shift();
+		var sid = parts.shift();
 
-    this.animation = animation;
-    this.source = "";
-    this.target = "";
-    this.fullSid = null;
-    this.sid = null;
-    this.dotSyntax = null;
-    this.arrSyntax = null;
-    this.arrIndices = null;
-    this.member = null;
+		var dotSyntax = ( sid.indexOf(".") >= 0 );
+		var arrSyntax = ( sid.indexOf("(") >= 0 );
 
-  };
+		if ( dotSyntax ) {
 
-  Channel.prototype.parse = function (element) {
+			parts = sid.split(".");
+			this.sid = parts.shift();
+			this.member = parts.shift();
 
-    this.source = element.getAttribute('source').replace(/^#/, '');
-    this.target = element.getAttribute('target');
+		} else if ( arrSyntax ) {
 
-    var parts = this.target.split('/');
+			var arrIndices = sid.split("(");
+			this.sid = arrIndices.shift();
 
-    var id = parts.shift();
-    var sid = parts.shift();
+			for (var j = 0; j < arrIndices.length; j ++ ) {
 
-    var dotSyntax = ( sid.indexOf(".") >= 0 );
-    var arrSyntax = ( sid.indexOf("(") >= 0 );
+				arrIndices[j] = parseInt( arrIndices[j].replace(/\)/, '') );
 
-    if (dotSyntax) {
+			}
 
-      parts = sid.split(".");
-      this.sid = parts.shift();
-      this.member = parts.shift();
+			this.arrIndices = arrIndices;
 
-    } else if (arrSyntax) {
+		} else {
 
-      var arrIndices = sid.split("(");
-      this.sid = arrIndices.shift();
+			this.sid = sid;
 
-      for (var j = 0; j < arrIndices.length; j++) {
+		}
 
-        arrIndices[j] = parseInt(arrIndices[j].replace(/\)/, ''));
+		this.fullSid = sid;
+		this.dotSyntax = dotSyntax;
+		this.arrSyntax = arrSyntax;
 
-      }
+		return this;
 
-      this.arrIndices = arrIndices;
+	};
 
-    } else {
+	function Sampler ( animation ) {
 
-      this.sid = sid;
+		this.id = "";
+		this.animation = animation;
+		this.inputs = [];
+		this.input = null;
+		this.output = null;
+		this.strideOut = null;
+		this.interpolation = null;
+		this.startTime = null;
+		this.endTime = null;
+		this.duration = 0;
 
-    }
+	};
 
-    this.fullSid = sid;
-    this.dotSyntax = dotSyntax;
-    this.arrSyntax = arrSyntax;
+	Sampler.prototype.parse = function ( element ) {
 
-    return this;
+		this.id = element.getAttribute( 'id' );
+		this.inputs = [];
 
-  };
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  function Sampler(animation) {
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    this.id = "";
-    this.animation = animation;
-    this.inputs = [];
-    this.input = null;
-    this.output = null;
-    this.strideOut = null;
-    this.interpolation = null;
-    this.startTime = null;
-    this.endTime = null;
-    this.duration = 0;
+			switch ( child.nodeName ) {
 
-  };
+				case 'input':
 
-  Sampler.prototype.parse = function (element) {
+					this.inputs.push( (new Input()).parse( child ) );
+					break;
 
-    this.id = element.getAttribute('id');
-    this.inputs = [];
+				default:
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			}
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		}
 
-      switch (child.nodeName) {
+		return this;
 
-        case 'input':
+	};
 
-          this.inputs.push((new Input()).parse(child));
-          break;
+	Sampler.prototype.create = function () {
 
-        default:
-          break;
+		for ( var i = 0; i < this.inputs.length; i ++ ) {
 
-      }
+			var input = this.inputs[ i ];
+			var source = this.animation.source[ input.source ];
 
-    }
+			switch ( input.semantic ) {
 
-    return this;
+				case 'INPUT':
 
-  };
+					this.input = source.read();
+					break;
 
-  Sampler.prototype.create = function () {
+				case 'OUTPUT':
 
-    for (var i = 0; i < this.inputs.length; i++) {
+					this.output = source.read();
+					this.strideOut = source.accessor.stride;
+					break;
 
-      var input = this.inputs[i];
-      var source = this.animation.source[input.source];
+				case 'INTERPOLATION':
 
-      switch (input.semantic) {
+					this.interpolation = source.read();
+					break;
 
-        case 'INPUT':
+				case 'IN_TANGENT':
 
-          this.input = source.read();
-          break;
+					break;
 
-        case 'OUTPUT':
+				case 'OUT_TANGENT':
 
-          this.output = source.read();
-          this.strideOut = source.accessor.stride;
-          break;
+					break;
 
-        case 'INTERPOLATION':
+				default:
 
-          this.interpolation = source.read();
-          break;
+					console.log(input.semantic);
+					break;
 
-        case 'IN_TANGENT':
+			}
 
-          break;
+		}
 
-        case 'OUT_TANGENT':
+		this.startTime = 0;
+		this.endTime = 0;
+		this.duration = 0;
 
-          break;
+		if ( this.input.length ) {
 
-        default:
+			this.startTime = 100000000;
+			this.endTime = -100000000;
 
-          console.log(input.semantic);
-          break;
+			for ( var i = 0; i < this.input.length; i ++ ) {
 
-      }
+				this.startTime = Math.min( this.startTime, this.input[ i ] );
+				this.endTime = Math.max( this.endTime, this.input[ i ] );
 
-    }
+			}
 
-    this.startTime = 0;
-    this.endTime = 0;
-    this.duration = 0;
+			this.duration = this.endTime - this.startTime;
 
-    if (this.input.length) {
+		}
 
-      this.startTime = 100000000;
-      this.endTime = -100000000;
+	};
 
-      for (var i = 0; i < this.input.length; i++) {
+	Sampler.prototype.getData = function ( type, ndx, member ) {
 
-        this.startTime = Math.min(this.startTime, this.input[i]);
-        this.endTime = Math.max(this.endTime, this.input[i]);
+		var data;
 
-      }
+		if ( type === 'matrix' && this.strideOut === 16 ) {
 
-      this.duration = this.endTime - this.startTime;
+			data = this.output[ ndx ];
 
-    }
+		} else if ( this.strideOut > 1 ) {
 
-  };
+			data = [];
+			ndx *= this.strideOut;
 
-  Sampler.prototype.getData = function (type, ndx, member) {
+			for ( var i = 0; i < this.strideOut; ++ i ) {
 
-    var data;
+				data[ i ] = this.output[ ndx + i ];
 
-    if (type === 'matrix' && this.strideOut === 16) {
+			}
 
-      data = this.output[ndx];
+			if ( this.strideOut === 3 ) {
 
-    } else if (this.strideOut > 1) {
+				switch ( type ) {
 
-      data = [];
-      ndx *= this.strideOut;
+					case 'rotate':
+					case 'translate':
 
-      for (var i = 0; i < this.strideOut; ++i) {
+						fixCoords( data, -1 );
+						break;
 
-        data[i] = this.output[ndx + i];
+					case 'scale':
 
-      }
+						fixCoords( data, 1 );
+						break;
 
-      if (this.strideOut === 3) {
+				}
 
-        switch (type) {
+			} else if ( this.strideOut === 4 && type === 'matrix' ) {
 
-          case 'rotate':
-          case 'translate':
+				fixCoords( data, -1 );
 
-            fixCoords(data, -1);
-            break;
+			}
 
-          case 'scale':
+		} else {
 
-            fixCoords(data, 1);
-            break;
+			data = this.output[ ndx ];
 
-        }
+			if ( member && type === 'translate' ) {
+				data = getConvertedTranslation( member, data );
+			}
 
-      } else if (this.strideOut === 4 && type === 'matrix') {
+		}
 
-        fixCoords(data, -1);
+		return data;
 
-      }
+	};
 
-    } else {
+	function Key ( time ) {
 
-      data = this.output[ndx];
+		this.targets = [];
+		this.time = time;
 
-      if (member && type === 'translate') {
-        data = getConvertedTranslation(member, data);
-      }
+	};
 
-    }
+	Key.prototype.addTarget = function ( fullSid, transform, member, data ) {
 
-    return data;
+		this.targets.push( {
+			sid: fullSid,
+			member: member,
+			transform: transform,
+			data: data
+		} );
 
-  };
+	};
 
-  function Key(time) {
+	Key.prototype.apply = function ( opt_sid ) {
 
-    this.targets = [];
-    this.time = time;
+		for ( var i = 0; i < this.targets.length; ++ i ) {
 
-  };
+			var target = this.targets[ i ];
 
-  Key.prototype.addTarget = function (fullSid, transform, member, data) {
+			if ( !opt_sid || target.sid === opt_sid ) {
 
-    this.targets.push({
-      sid: fullSid,
-      member: member,
-      transform: transform,
-      data: data
-    });
+				target.transform.update( target.data, target.member );
 
-  };
+			}
 
-  Key.prototype.apply = function (opt_sid) {
+		}
 
-    for (var i = 0; i < this.targets.length; ++i) {
+	};
 
-      var target = this.targets[i];
+	Key.prototype.getTarget = function ( fullSid ) {
 
-      if (!opt_sid || target.sid === opt_sid) {
+		for ( var i = 0; i < this.targets.length; ++ i ) {
 
-        target.transform.update(target.data, target.member);
+			if ( this.targets[ i ].sid === fullSid ) {
 
-      }
+				return this.targets[ i ];
 
-    }
+			}
 
-  };
+		}
 
-  Key.prototype.getTarget = function (fullSid) {
+		return null;
 
-    for (var i = 0; i < this.targets.length; ++i) {
+	};
 
-      if (this.targets[i].sid === fullSid) {
+	Key.prototype.hasTarget = function ( fullSid ) {
 
-        return this.targets[i];
+		for ( var i = 0; i < this.targets.length; ++ i ) {
 
-      }
+			if ( this.targets[ i ].sid === fullSid ) {
 
-    }
+				return true;
 
-    return null;
+			}
 
-  };
+		}
 
-  Key.prototype.hasTarget = function (fullSid) {
+		return false;
 
-    for (var i = 0; i < this.targets.length; ++i) {
+	};
 
-      if (this.targets[i].sid === fullSid) {
+	// TODO: Currently only doing linear interpolation. Should support full COLLADA spec.
+	Key.prototype.interpolate = function ( nextKey, time ) {
 
-        return true;
+		for ( var i = 0, l = this.targets.length; i < l; i ++ ) {
 
-      }
+			var target = this.targets[ i ],
+				nextTarget = nextKey.getTarget( target.sid ),
+				data;
 
-    }
+			if ( target.transform.type !== 'matrix' && nextTarget ) {
 
-    return false;
+				var scale = ( time - this.time ) / ( nextKey.time - this.time ),
+					nextData = nextTarget.data,
+					prevData = target.data;
 
-  };
+				if ( scale < 0 ) scale = 0;
+				if ( scale > 1 ) scale = 1;
 
-  // TODO: Currently only doing linear interpolation. Should support full COLLADA spec.
-  Key.prototype.interpolate = function (nextKey, time) {
+				if ( prevData.length ) {
 
-    for (var i = 0, l = this.targets.length; i < l; i++) {
+					data = [];
 
-      var target = this.targets[i],
-        nextTarget = nextKey.getTarget(target.sid),
-        data;
+					for ( var j = 0; j < prevData.length; ++ j ) {
 
-      if (target.transform.type !== 'matrix' && nextTarget) {
+						data[ j ] = prevData[ j ] + ( nextData[ j ] - prevData[ j ] ) * scale;
 
-        var scale = ( time - this.time ) / ( nextKey.time - this.time ),
-          nextData = nextTarget.data,
-          prevData = target.data;
+					}
 
-        if (scale < 0) scale = 0;
-        if (scale > 1) scale = 1;
+				} else {
 
-        if (prevData.length) {
+					data = prevData + ( nextData - prevData ) * scale;
 
-          data = [];
+				}
 
-          for (var j = 0; j < prevData.length; ++j) {
+			} else {
 
-            data[j] = prevData[j] + ( nextData[j] - prevData[j] ) * scale;
+				data = target.data;
 
-          }
+			}
 
-        } else {
+			target.transform.update( data, target.member );
 
-          data = prevData + ( nextData - prevData ) * scale;
+		}
 
-        }
+	};
 
-      } else {
+	// Camera
+	function Camera() {
 
-        data = target.data;
+		this.id = "";
+		this.name = "";
+		this.technique = "";
 
-      }
+	};
 
-      target.transform.update(data, target.member);
+	Camera.prototype.parse = function ( element ) {
 
-    }
+		this.id = element.getAttribute( 'id' );
+		this.name = element.getAttribute( 'name' );
 
-  };
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  // Camera
-  function Camera() {
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    this.id = "";
-    this.name = "";
-    this.technique = "";
+			switch ( child.nodeName ) {
 
-  };
+				case 'optics':
 
-  Camera.prototype.parse = function (element) {
+					this.parseOptics( child );
+					break;
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
+				default:
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			}
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		}
 
-      switch (child.nodeName) {
+		return this;
 
-        case 'optics':
+	};
 
-          this.parseOptics(child);
-          break;
+	Camera.prototype.parseOptics = function ( element ) {
 
-        default:
-          break;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			if ( element.childNodes[ i ].nodeName === 'technique_common' ) {
 
-    }
+				var technique = element.childNodes[ i ];
 
-    return this;
+				for ( var j = 0; j < technique.childNodes.length; j ++ ) {
 
-  };
+					this.technique = technique.childNodes[ j ].nodeName;
 
-  Camera.prototype.parseOptics = function (element) {
+					if ( this.technique === 'perspective' ) {
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+						var perspective = technique.childNodes[ j ];
 
-      if (element.childNodes[i].nodeName === 'technique_common') {
+						for ( var k = 0; k < perspective.childNodes.length; k ++ ) {
 
-        var technique = element.childNodes[i];
+							var param = perspective.childNodes[ k ];
 
-        for (var j = 0; j < technique.childNodes.length; j++) {
+							switch ( param.nodeName ) {
 
-          this.technique = technique.childNodes[j].nodeName;
+								case 'yfov':
+									this.yfov = param.textContent;
+									break;
+								case 'xfov':
+									this.xfov = param.textContent;
+									break;
+								case 'znear':
+									this.znear = param.textContent;
+									break;
+								case 'zfar':
+									this.zfar = param.textContent;
+									break;
+								case 'aspect_ratio':
+									this.aspect_ratio = param.textContent;
+									break;
 
-          if (this.technique === 'perspective') {
+							}
 
-            var perspective = technique.childNodes[j];
+						}
 
-            for (var k = 0; k < perspective.childNodes.length; k++) {
+					} else if ( this.technique === 'orthographic' ) {
 
-              var param = perspective.childNodes[k];
+						var orthographic = technique.childNodes[ j ];
 
-              switch (param.nodeName) {
+						for ( var k = 0; k < orthographic.childNodes.length; k ++ ) {
 
-                case 'yfov':
-                  this.yfov = param.textContent;
-                  break;
-                case 'xfov':
-                  this.xfov = param.textContent;
-                  break;
-                case 'znear':
-                  this.znear = param.textContent;
-                  break;
-                case 'zfar':
-                  this.zfar = param.textContent;
-                  break;
-                case 'aspect_ratio':
-                  this.aspect_ratio = param.textContent;
-                  break;
+							var param = orthographic.childNodes[ k ];
 
-              }
+							switch ( param.nodeName ) {
 
-            }
+								case 'xmag':
+									this.xmag = param.textContent;
+									break;
+								case 'ymag':
+									this.ymag = param.textContent;
+									break;
+								case 'znear':
+									this.znear = param.textContent;
+									break;
+								case 'zfar':
+									this.zfar = param.textContent;
+									break;
+								case 'aspect_ratio':
+									this.aspect_ratio = param.textContent;
+									break;
 
-          } else if (this.technique === 'orthographic') {
+							}
 
-            var orthographic = technique.childNodes[j];
+						}
 
-            for (var k = 0; k < orthographic.childNodes.length; k++) {
+					}
 
-              var param = orthographic.childNodes[k];
+				}
 
-              switch (param.nodeName) {
+			}
 
-                case 'xmag':
-                  this.xmag = param.textContent;
-                  break;
-                case 'ymag':
-                  this.ymag = param.textContent;
-                  break;
-                case 'znear':
-                  this.znear = param.textContent;
-                  break;
-                case 'zfar':
-                  this.zfar = param.textContent;
-                  break;
-                case 'aspect_ratio':
-                  this.aspect_ratio = param.textContent;
-                  break;
+		}
 
-              }
+		return this;
 
-            }
+	};
 
-          }
+	function InstanceCamera() {
 
-        }
+		this.url = "";
 
-      }
+	};
 
-    }
+	InstanceCamera.prototype.parse = function ( element ) {
 
-    return this;
+		this.url = element.getAttribute('url').replace(/^#/, '');
 
-  };
+		return this;
 
-  function InstanceCamera() {
+	};
 
-    this.url = "";
+	// Light
 
-  };
+	function Light() {
 
-  InstanceCamera.prototype.parse = function (element) {
+		this.id = "";
+		this.name = "";
+		this.technique = "";
 
-    this.url = element.getAttribute('url').replace(/^#/, '');
+	};
 
-    return this;
+	Light.prototype.parse = function ( element ) {
 
-  };
+		this.id = element.getAttribute( 'id' );
+		this.name = element.getAttribute( 'name' );
 
-  // Light
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-  function Light() {
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    this.id = "";
-    this.name = "";
-    this.technique = "";
+			switch ( child.nodeName ) {
 
-  };
+				case 'technique_common':
 
-  Light.prototype.parse = function (element) {
+					this.parseCommon( child );
+					break;
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
+				case 'technique':
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+					this.parseTechnique( child );
+					break;
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+				default:
+					break;
 
-      switch (child.nodeName) {
+			}
 
-        case 'technique_common':
+		}
 
-          this.parseCommon(child);
-          break;
+		return this;
 
-        case 'technique':
+	};
 
-          this.parseTechnique(child);
-          break;
+	Light.prototype.parseCommon = function ( element ) {
 
-        default:
-          break;
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			switch ( element.childNodes[ i ].nodeName ) {
 
-    }
+				case 'directional':
+				case 'point':
+				case 'spot':
+				case 'ambient':
 
-    return this;
+					this.technique = element.childNodes[ i ].nodeName;
 
-  };
+					var light = element.childNodes[ i ];
 
-  Light.prototype.parseCommon = function (element) {
+					for ( var j = 0; j < light.childNodes.length; j ++ ) {
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+						var child = light.childNodes[j];
 
-      switch (element.childNodes[i].nodeName) {
+						switch ( child.nodeName ) {
 
-        case 'directional':
-        case 'point':
-        case 'spot':
-        case 'ambient':
+							case 'color':
 
-          this.technique = element.childNodes[i].nodeName;
+								var rgba = _floats( child.textContent );
+								this.color = new THREE.Color(0);
+								this.color.setRGB( rgba[0], rgba[1], rgba[2] );
+								this.color.a = rgba[3];
+								break;
 
-          var light = element.childNodes[i];
+							case 'falloff_angle':
 
-          for (var j = 0; j < light.childNodes.length; j++) {
+								this.falloff_angle = parseFloat( child.textContent );
+								break;
 
-            var child = light.childNodes[j];
+							case 'quadratic_attenuation':
+								var f = parseFloat( child.textContent );
+								this.distance = f ? Math.sqrt( 1 / f ) : 0;
+						}
 
-            switch (child.nodeName) {
+					}
 
-              case 'color':
+			}
 
-                var rgba = _floats(child.textContent);
-                this.color = new THREE.Color(0);
-                this.color.setRGB(rgba[0], rgba[1], rgba[2]);
-                this.color.a = rgba[3];
-                break;
+		}
 
-              case 'falloff_angle':
+		return this;
 
-                this.falloff_angle = parseFloat(child.textContent);
-                break;
+	};
 
-              case 'quadratic_attenuation':
-                var f = parseFloat(child.textContent);
-                this.distance = f ? Math.sqrt(1 / f) : 0;
-            }
+	Light.prototype.parseTechnique = function ( element ) {
 
-          }
+		this.profile = element.getAttribute( 'profile' );
 
-      }
+		for ( var i = 0; i < element.childNodes.length; i ++ ) {
 
-    }
+			var child = element.childNodes[ i ];
 
-    return this;
+			switch ( child.nodeName ) {
 
-  };
+				case 'intensity':
 
-  Light.prototype.parseTechnique = function (element) {
+					this.intensity = parseFloat(child.textContent);
+					break;
 
-    this.profile = element.getAttribute('profile');
+			}
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+		}
 
-      var child = element.childNodes[i];
+		return this;
 
-      switch (child.nodeName) {
+	};
 
-        case 'intensity':
+	function InstanceLight() {
 
-          this.intensity = parseFloat(child.textContent);
-          break;
+		this.url = "";
 
-      }
+	};
 
-    }
+	InstanceLight.prototype.parse = function ( element ) {
 
-    return this;
+		this.url = element.getAttribute('url').replace(/^#/, '');
 
-  };
+		return this;
 
-  function InstanceLight() {
+	};
 
-    this.url = "";
+	function KinematicsModel( ) {
 
-  };
+		this.id = '';
+		this.name = '';
+		this.joints = [];
+		this.links = [];
 
-  InstanceLight.prototype.parse = function (element) {
+	}
 
-    this.url = element.getAttribute('url').replace(/^#/, '');
+	KinematicsModel.prototype.parse = function( element ) {
 
-    return this;
+		this.id = element.getAttribute('id');
+		this.name = element.getAttribute('name');
+		this.joints = [];
+		this.links = [];
 
-  };
+		for (var i = 0; i < element.childNodes.length; i ++ ) {
 
-  function KinematicsModel() {
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    this.id = '';
-    this.name = '';
-    this.joints = [];
-    this.links = [];
+			switch ( child.nodeName ) {
 
-  }
+				case 'technique_common':
 
-  KinematicsModel.prototype.parse = function (element) {
+					this.parseCommon(child);
+					break;
 
-    this.id = element.getAttribute('id');
-    this.name = element.getAttribute('name');
-    this.joints = [];
-    this.links = [];
+				default:
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			}
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		}
 
-      switch (child.nodeName) {
+		return this;
 
-        case 'technique_common':
+	};
 
-          this.parseCommon(child);
-          break;
+	KinematicsModel.prototype.parseCommon = function( element ) {
 
-        default:
-          break;
+		for (var i = 0; i < element.childNodes.length; i ++ ) {
 
-      }
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    }
+			switch ( element.childNodes[ i ].nodeName ) {
 
-    return this;
+				case 'joint':
+					this.joints.push( (new Joint()).parse(child) );
+					break;
 
-  };
+				case 'link':
+					this.links.push( (new Link()).parse(child) );
+					break;
 
-  KinematicsModel.prototype.parseCommon = function (element) {
+				default:
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+			}
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+		}
 
-      switch (element.childNodes[i].nodeName) {
+		return this;
 
-        case 'joint':
-          this.joints.push((new Joint()).parse(child));
-          break;
+	};
 
-        case 'link':
-          this.links.push((new Link()).parse(child));
-          break;
+	function Joint( ) {
 
-        default:
-          break;
+		this.sid = '';
+		this.name = '';
+		this.axis = new THREE.Vector3();
+		this.limits = {
+			min: 0,
+			max: 0
+		};
+		this.type = '';
+		this.static = false;
+		this.zeroPosition = 0.0;
+		this.middlePosition = 0.0;
 
-      }
+	}
 
-    }
+	Joint.prototype.parse = function( element ) {
 
-    return this;
+		this.sid = element.getAttribute('sid');
+		this.name = element.getAttribute('name');
+		this.axis = new THREE.Vector3();
+		this.limits = {
+			min: 0,
+			max: 0
+		};
+		this.type = '';
+		this.static = false;
+		this.zeroPosition = 0.0;
+		this.middlePosition = 0.0;
 
-  };
+		var axisElement = element.querySelector('axis');
+		var _axis = _floats(axisElement.textContent);
+		this.axis = getConvertedVec3(_axis, 0);
 
-  function Joint() {
+		var min = element.querySelector('limits min') ? parseFloat(element.querySelector('limits min').textContent) : -360;
+		var max = element.querySelector('limits max') ? parseFloat(element.querySelector('limits max').textContent) : 360;
 
-    this.sid = '';
-    this.name = '';
-    this.axis = new THREE.Vector3();
-    this.limits = {
-      min: 0,
-      max: 0
-    };
-    this.type = '';
-    this.static = false;
-    this.zeroPosition = 0.0;
-    this.middlePosition = 0.0;
+		this.limits = {
+			min: min,
+			max: max
+		};
 
-  }
+		var jointTypes = [ 'prismatic', 'revolute' ];
+		for (var i = 0; i < jointTypes.length; i ++ ) {
 
-  Joint.prototype.parse = function (element) {
+			var type = jointTypes[ i ];
 
-    this.sid = element.getAttribute('sid');
-    this.name = element.getAttribute('name');
-    this.axis = new THREE.Vector3();
-    this.limits = {
-      min: 0,
-      max: 0
-    };
-    this.type = '';
-    this.static = false;
-    this.zeroPosition = 0.0;
-    this.middlePosition = 0.0;
+			var jointElement = element.querySelector(type);
 
-    var axisElement = element.querySelector('axis');
-    var _axis = _floats(axisElement.textContent);
-    this.axis = getConvertedVec3(_axis, 0);
+			if ( jointElement ) {
 
-    var min = element.querySelector('limits min') ? parseFloat(element.querySelector('limits min').textContent) : -360;
-    var max = element.querySelector('limits max') ? parseFloat(element.querySelector('limits max').textContent) : 360;
+				this.type = type;
 
-    this.limits = {
-      min: min,
-      max: max
-    };
+			}
 
-    var jointTypes = ['prismatic', 'revolute'];
-    for (var i = 0; i < jointTypes.length; i++) {
+		}
 
-      var type = jointTypes[i];
+		// if the min is equal to or somehow greater than the max, consider the joint static
+		if ( this.limits.min >= this.limits.max ) {
 
-      var jointElement = element.querySelector(type);
+			this.static = true;
 
-      if (jointElement) {
+		}
 
-        this.type = type;
+		this.middlePosition = (this.limits.min + this.limits.max) / 2.0;
+		return this;
 
-      }
+	};
 
-    }
+	function Link( ) {
 
-    // if the min is equal to or somehow greater than the max, consider the joint static
-    if (this.limits.min >= this.limits.max) {
+		this.sid = '';
+		this.name = '';
+		this.transforms = [];
+		this.attachments = [];
 
-      this.static = true;
+	}
 
-    }
+	Link.prototype.parse = function( element ) {
 
-    this.middlePosition = (this.limits.min + this.limits.max) / 2.0;
-    return this;
+		this.sid = element.getAttribute('sid');
+		this.name = element.getAttribute('name');
+		this.transforms = [];
+		this.attachments = [];
 
-  };
+		for (var i = 0; i < element.childNodes.length; i ++ ) {
 
-  function Link() {
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    this.sid = '';
-    this.name = '';
-    this.transforms = [];
-    this.attachments = [];
+			switch ( child.nodeName ) {
 
-  }
+				case 'attachment_full':
+					this.attachments.push( (new Attachment()).parse(child) );
+					break;
 
-  Link.prototype.parse = function (element) {
+				case 'rotate':
+				case 'translate':
+				case 'matrix':
 
-    this.sid = element.getAttribute('sid');
-    this.name = element.getAttribute('name');
-    this.transforms = [];
-    this.attachments = [];
+					this.transforms.push( (new Transform()).parse(child) );
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+				default:
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+					break;
 
-      switch (child.nodeName) {
+			}
 
-        case 'attachment_full':
-          this.attachments.push((new Attachment()).parse(child));
-          break;
+		}
 
-        case 'rotate':
-        case 'translate':
-        case 'matrix':
+		return this;
 
-          this.transforms.push((new Transform()).parse(child));
-          break;
+	};
 
-        default:
+	function Attachment( ) {
 
-          break;
+		this.joint = '';
+		this.transforms = [];
+		this.links = [];
 
-      }
+	}
 
-    }
+	Attachment.prototype.parse = function( element ) {
 
-    return this;
+		this.joint = element.getAttribute('joint').split('/').pop();
+		this.links = [];
 
-  };
+		for (var i = 0; i < element.childNodes.length; i ++ ) {
 
-  function Attachment() {
+			var child = element.childNodes[ i ];
+			if ( child.nodeType != 1 ) continue;
 
-    this.joint = '';
-    this.transforms = [];
-    this.links = [];
+			switch ( child.nodeName ) {
 
-  }
+				case 'link':
+					this.links.push( (new Link()).parse(child) );
+					break;
 
-  Attachment.prototype.parse = function (element) {
+				case 'rotate':
+				case 'translate':
+				case 'matrix':
 
-    this.joint = element.getAttribute('joint').split('/').pop();
-    this.links = [];
+					this.transforms.push( (new Transform()).parse(child) );
+					break;
 
-    for (var i = 0; i < element.childNodes.length; i++) {
+				default:
 
-      var child = element.childNodes[i];
-      if (child.nodeType != 1) continue;
+					break;
 
-      switch (child.nodeName) {
+			}
 
-        case 'link':
-          this.links.push((new Link()).parse(child));
-          break;
+		}
 
-        case 'rotate':
-        case 'translate':
-        case 'matrix':
+		return this;
 
-          this.transforms.push((new Transform()).parse(child));
-          break;
+	};
 
-        default:
+	function _source( element ) {
 
-          break;
+		var id = element.getAttribute( 'id' );
 
-      }
+		if ( sources[ id ] != undefined ) {
 
-    }
+			return sources[ id ];
 
-    return this;
+		}
 
-  };
+		sources[ id ] = ( new Source(id )).parse( element );
+		return sources[ id ];
 
-  function _source(element) {
+	};
 
-    var id = element.getAttribute('id');
+	function _nsResolver( nsPrefix ) {
 
-    if (sources[id] != undefined) {
+		if ( nsPrefix === "dae" ) {
 
-      return sources[id];
+			return "http://www.collada.org/2005/11/COLLADASchema";
 
-    }
+		}
 
-    sources[id] = ( new Source(id)).parse(element);
-    return sources[id];
+		return null;
 
-  };
+	};
 
-  function _nsResolver(nsPrefix) {
+	function _bools( str ) {
 
-    if (nsPrefix === "dae") {
+		var raw = _strings( str );
+		var data = [];
 
-      return "http://www.collada.org/2005/11/COLLADASchema";
+		for ( var i = 0, l = raw.length; i < l; i ++ ) {
 
-    }
+			data.push( (raw[i] === 'true' || raw[i] === '1') ? true : false );
 
-    return null;
+		}
 
-  };
+		return data;
 
-  function _bools(str) {
+	};
 
-    var raw = _strings(str);
-    var data = [];
+	function _floats( str ) {
 
-    for (var i = 0, l = raw.length; i < l; i++) {
+		var raw = _strings(str);
+		var data = [];
 
-      data.push((raw[i] === 'true' || raw[i] === '1') ? true : false);
+		for ( var i = 0, l = raw.length; i < l; i ++ ) {
 
-    }
+			data.push( parseFloat( raw[ i ] ) );
 
-    return data;
+		}
 
-  };
+		return data;
 
-  function _floats(str) {
+	};
 
-    var raw = _strings(str);
-    var data = [];
+	function _ints( str ) {
 
-    for (var i = 0, l = raw.length; i < l; i++) {
+		var raw = _strings( str );
+		var data = [];
 
-      data.push(parseFloat(raw[i]));
+		for ( var i = 0, l = raw.length; i < l; i ++ ) {
 
-    }
+			data.push( parseInt( raw[ i ], 10 ) );
 
-    return data;
+		}
 
-  };
+		return data;
 
-  function _ints(str) {
+	};
 
-    var raw = _strings(str);
-    var data = [];
+	function _strings( str ) {
 
-    for (var i = 0, l = raw.length; i < l; i++) {
+		return ( str.length > 0 ) ? _trimString( str ).split( /\s+/ ) : [];
 
-      data.push(parseInt(raw[i], 10));
+	};
 
-    }
+	function _trimString( str ) {
 
-    return data;
+		return str.replace( /^\s+/, "" ).replace( /\s+$/, "" );
 
-  };
+	};
 
-  function _strings(str) {
+	function _attr_as_float( element, name, defaultValue ) {
 
-    return ( str.length > 0 ) ? _trimString(str).split(/\s+/) : [];
+		if ( element.hasAttribute( name ) ) {
 
-  };
+			return parseFloat( element.getAttribute( name ) );
 
-  function _trimString(str) {
+		} else {
 
-    return str.replace(/^\s+/, "").replace(/\s+$/, "");
+			return defaultValue;
 
-  };
+		}
 
-  function _attr_as_float(element, name, defaultValue) {
+	};
 
-    if (element.hasAttribute(name)) {
+	function _attr_as_int( element, name, defaultValue ) {
 
-      return parseFloat(element.getAttribute(name));
+		if ( element.hasAttribute( name ) ) {
 
-    } else {
+			return parseInt( element.getAttribute( name ), 10) ;
 
-      return defaultValue;
+		} else {
 
-    }
+			return defaultValue;
 
-  };
+		}
 
-  function _attr_as_int(element, name, defaultValue) {
+	};
 
-    if (element.hasAttribute(name)) {
+	function _attr_as_string( element, name, defaultValue ) {
 
-      return parseInt(element.getAttribute(name), 10);
+		if ( element.hasAttribute( name ) ) {
 
-    } else {
+			return element.getAttribute( name );
 
-      return defaultValue;
+		} else {
 
-    }
+			return defaultValue;
 
-  };
+		}
 
-  function _attr_as_string(element, name, defaultValue) {
+	};
 
-    if (element.hasAttribute(name)) {
+	function _format_float( f, num ) {
 
-      return element.getAttribute(name);
+		if ( f === undefined ) {
 
-    } else {
+			var s = '0.';
 
-      return defaultValue;
+			while ( s.length < num + 2 ) {
 
-    }
+				s += '0';
 
-  };
+			}
 
-  function _format_float(f, num) {
+			return s;
 
-    if (f === undefined) {
+		}
 
-      var s = '0.';
+		num = num || 2;
 
-      while (s.length < num + 2) {
+		var parts = f.toString().split( '.' );
+		parts[ 1 ] = parts.length > 1 ? parts[ 1 ].substr( 0, num ) : "0";
 
-        s += '0';
+		while ( parts[ 1 ].length < num ) {
 
-      }
+			parts[ 1 ] += '0';
 
-      return s;
+		}
 
-    }
+		return parts.join( '.' );
 
-    num = num || 2;
+	};
 
-    var parts = f.toString().split('.');
-    parts[1] = parts.length > 1 ? parts[1].substr(0, num) : "0";
+	function loadTextureImage ( texture, url ) {
 
-    while (parts[1].length < num) {
+		loader = new THREE.ImageLoader();
 
-      parts[1] += '0';
+		loader.load( url, function ( image ) {
 
-    }
+			texture.image = image;
+			texture.needsUpdate = true;
 
-    return parts.join('.');
+		} );
 
-  };
+	};
 
-  function loadTextureImage(texture, url) {
+	function extractDoubleSided( obj, element ) {
 
-    loader = new THREE.ImageLoader();
+		obj.doubleSided = false;
 
-    loader.load(url, function (image) {
+		var node = element.querySelectorAll('extra double_sided')[0];
 
-      texture.image = image;
-      texture.needsUpdate = true;
+		if ( node ) {
 
-    });
+			if ( node && parseInt( node.textContent, 10 ) === 1 ) {
 
-  };
+				obj.doubleSided = true;
 
-  function extractDoubleSided(obj, element) {
+			}
 
-    obj.doubleSided = false;
+		}
 
-    var node = element.querySelectorAll('extra double_sided')[0];
+	};
 
-    if (node) {
+	// Up axis conversion
 
-      if (node && parseInt(node.textContent, 10) === 1) {
+	function setUpConversion() {
 
-        obj.doubleSided = true;
+		if ( options.convertUpAxis !== true || colladaUp === options.upAxis ) {
 
-      }
+			upConversion = null;
 
-    }
+		} else {
 
-  };
+			switch ( colladaUp ) {
 
-  // Up axis conversion
+				case 'X':
 
-  function setUpConversion() {
+					upConversion = options.upAxis === 'Y' ? 'XtoY' : 'XtoZ';
+					break;
 
-    if (options.convertUpAxis !== true || colladaUp === options.upAxis) {
+				case 'Y':
 
-      upConversion = null;
+					upConversion = options.upAxis === 'X' ? 'YtoX' : 'YtoZ';
+					break;
 
-    } else {
+				case 'Z':
 
-      switch (colladaUp) {
+					upConversion = options.upAxis === 'X' ? 'ZtoX' : 'ZtoY';
+					break;
 
-        case 'X':
+			}
 
-          upConversion = options.upAxis === 'Y' ? 'XtoY' : 'XtoZ';
-          break;
+		}
 
-        case 'Y':
+	};
 
-          upConversion = options.upAxis === 'X' ? 'YtoX' : 'YtoZ';
-          break;
+	function fixCoords( data, sign ) {
 
-        case 'Z':
+		if ( options.convertUpAxis !== true || colladaUp === options.upAxis ) {
 
-          upConversion = options.upAxis === 'X' ? 'ZtoX' : 'ZtoY';
-          break;
+			return;
 
-      }
+		}
 
-    }
+		switch ( upConversion ) {
 
-  };
+			case 'XtoY':
 
-  function fixCoords(data, sign) {
+				var tmp = data[ 0 ];
+				data[ 0 ] = sign * data[ 1 ];
+				data[ 1 ] = tmp;
+				break;
 
-    if (options.convertUpAxis !== true || colladaUp === options.upAxis) {
+			case 'XtoZ':
 
-      return;
+				var tmp = data[ 2 ];
+				data[ 2 ] = data[ 1 ];
+				data[ 1 ] = data[ 0 ];
+				data[ 0 ] = tmp;
+				break;
 
-    }
+			case 'YtoX':
 
-    switch (upConversion) {
+				var tmp = data[ 0 ];
+				data[ 0 ] = data[ 1 ];
+				data[ 1 ] = sign * tmp;
+				break;
 
-      case 'XtoY':
+			case 'YtoZ':
 
-        var tmp = data[0];
-        data[0] = sign * data[1];
-        data[1] = tmp;
-        break;
+				var tmp = data[ 1 ];
+				data[ 1 ] = sign * data[ 2 ];
+				data[ 2 ] = tmp;
+				break;
 
-      case 'XtoZ':
+			case 'ZtoX':
 
-        var tmp = data[2];
-        data[2] = data[1];
-        data[1] = data[0];
-        data[0] = tmp;
-        break;
+				var tmp = data[ 0 ];
+				data[ 0 ] = data[ 1 ];
+				data[ 1 ] = data[ 2 ];
+				data[ 2 ] = tmp;
+				break;
 
-      case 'YtoX':
+			case 'ZtoY':
 
-        var tmp = data[0];
-        data[0] = data[1];
-        data[1] = sign * tmp;
-        break;
+				var tmp = data[ 1 ];
+				data[ 1 ] = data[ 2 ];
+				data[ 2 ] = sign * tmp;
+				break;
 
-      case 'YtoZ':
+		}
 
-        var tmp = data[1];
-        data[1] = sign * data[2];
-        data[2] = tmp;
-        break;
+	};
 
-      case 'ZtoX':
+	function getConvertedTranslation( axis, data ) {
 
-        var tmp = data[0];
-        data[0] = data[1];
-        data[1] = data[2];
-        data[2] = tmp;
-        break;
+		if ( options.convertUpAxis !== true || colladaUp === options.upAxis ) {
 
-      case 'ZtoY':
+			return data;
 
-        var tmp = data[1];
-        data[1] = data[2];
-        data[2] = sign * tmp;
-        break;
+		}
 
-    }
+		switch ( axis ) {
+			case 'X':
+				data = upConversion === 'XtoY' ? data * -1 : data;
+				break;
+			case 'Y':
+				data = upConversion === 'YtoZ' || upConversion === 'YtoX' ? data * -1 : data;
+				break;
+			case 'Z':
+				data = upConversion === 'ZtoY' ? data * -1 : data ;
+				break;
+			default:
+				break;
+		}
 
-  };
+		return data;
+	};
 
-  function getConvertedTranslation(axis, data) {
+	function getConvertedVec3( data, offset ) {
 
-    if (options.convertUpAxis !== true || colladaUp === options.upAxis) {
+		var arr = [ data[ offset ], data[ offset + 1 ], data[ offset + 2 ] ];
+		fixCoords( arr, -1 );
+		return new THREE.Vector3( arr[ 0 ], arr[ 1 ], arr[ 2 ] );
 
-      return data;
+	};
 
-    }
+	function getConvertedMat4( data ) {
 
-    switch (axis) {
-      case 'X':
-        data = upConversion === 'XtoY' ? data * -1 : data;
-        break;
-      case 'Y':
-        data = upConversion === 'YtoZ' || upConversion === 'YtoX' ? data * -1 : data;
-        break;
-      case 'Z':
-        data = upConversion === 'ZtoY' ? data * -1 : data;
-        break;
-      default:
-        break;
-    }
+		if ( options.convertUpAxis ) {
 
-    return data;
-  };
+			// First fix rotation and scale
 
-  function getConvertedVec3(data, offset) {
+			// Columns first
+			var arr = [ data[ 0 ], data[ 4 ], data[ 8 ] ];
+			fixCoords( arr, -1 );
+			data[ 0 ] = arr[ 0 ];
+			data[ 4 ] = arr[ 1 ];
+			data[ 8 ] = arr[ 2 ];
+			arr = [ data[ 1 ], data[ 5 ], data[ 9 ] ];
+			fixCoords( arr, -1 );
+			data[ 1 ] = arr[ 0 ];
+			data[ 5 ] = arr[ 1 ];
+			data[ 9 ] = arr[ 2 ];
+			arr = [ data[ 2 ], data[ 6 ], data[ 10 ] ];
+			fixCoords( arr, -1 );
+			data[ 2 ] = arr[ 0 ];
+			data[ 6 ] = arr[ 1 ];
+			data[ 10 ] = arr[ 2 ];
+			// Rows second
+			arr = [ data[ 0 ], data[ 1 ], data[ 2 ] ];
+			fixCoords( arr, -1 );
+			data[ 0 ] = arr[ 0 ];
+			data[ 1 ] = arr[ 1 ];
+			data[ 2 ] = arr[ 2 ];
+			arr = [ data[ 4 ], data[ 5 ], data[ 6 ] ];
+			fixCoords( arr, -1 );
+			data[ 4 ] = arr[ 0 ];
+			data[ 5 ] = arr[ 1 ];
+			data[ 6 ] = arr[ 2 ];
+			arr = [ data[ 8 ], data[ 9 ], data[ 10 ] ];
+			fixCoords( arr, -1 );
+			data[ 8 ] = arr[ 0 ];
+			data[ 9 ] = arr[ 1 ];
+			data[ 10 ] = arr[ 2 ];
 
-    var arr = [data[offset], data[offset + 1], data[offset + 2]];
-    fixCoords(arr, -1);
-    return new THREE.Vector3(arr[0], arr[1], arr[2]);
+			// Now fix translation
+			arr = [ data[ 3 ], data[ 7 ], data[ 11 ] ];
+			fixCoords( arr, -1 );
+			data[ 3 ] = arr[ 0 ];
+			data[ 7 ] = arr[ 1 ];
+			data[ 11 ] = arr[ 2 ];
 
-  };
+		}
 
-  function getConvertedMat4(data) {
+		return new THREE.Matrix4().set(
+			data[0], data[1], data[2], data[3],
+			data[4], data[5], data[6], data[7],
+			data[8], data[9], data[10], data[11],
+			data[12], data[13], data[14], data[15]
+			);
 
-    if (options.convertUpAxis) {
+	};
 
-      // First fix rotation and scale
+	function getConvertedIndex( index ) {
 
-      // Columns first
-      var arr = [data[0], data[4], data[8]];
-      fixCoords(arr, -1);
-      data[0] = arr[0];
-      data[4] = arr[1];
-      data[8] = arr[2];
-      arr = [data[1], data[5], data[9]];
-      fixCoords(arr, -1);
-      data[1] = arr[0];
-      data[5] = arr[1];
-      data[9] = arr[2];
-      arr = [data[2], data[6], data[10]];
-      fixCoords(arr, -1);
-      data[2] = arr[0];
-      data[6] = arr[1];
-      data[10] = arr[2];
-      // Rows second
-      arr = [data[0], data[1], data[2]];
-      fixCoords(arr, -1);
-      data[0] = arr[0];
-      data[1] = arr[1];
-      data[2] = arr[2];
-      arr = [data[4], data[5], data[6]];
-      fixCoords(arr, -1);
-      data[4] = arr[0];
-      data[5] = arr[1];
-      data[6] = arr[2];
-      arr = [data[8], data[9], data[10]];
-      fixCoords(arr, -1);
-      data[8] = arr[0];
-      data[9] = arr[1];
-      data[10] = arr[2];
+		if ( index > -1 && index < 3 ) {
 
-      // Now fix translation
-      arr = [data[3], data[7], data[11]];
-      fixCoords(arr, -1);
-      data[3] = arr[0];
-      data[7] = arr[1];
-      data[11] = arr[2];
+			var members = [ 'X', 'Y', 'Z' ],
+				indices = { X: 0, Y: 1, Z: 2 };
 
-    }
+			index = getConvertedMember( members[ index ] );
+			index = indices[ index ];
 
-    return new THREE.Matrix4().set(
-      data[0], data[1], data[2], data[3],
-      data[4], data[5], data[6], data[7],
-      data[8], data[9], data[10], data[11],
-      data[12], data[13], data[14], data[15]
-    );
+		}
 
-  };
+		return index;
 
-  function getConvertedIndex(index) {
+	};
 
-    if (index > -1 && index < 3) {
+	function getConvertedMember( member ) {
 
-      var members = ['X', 'Y', 'Z'],
-        indices = {X: 0, Y: 1, Z: 2};
+		if ( options.convertUpAxis ) {
 
-      index = getConvertedMember(members[index]);
-      index = indices[index];
+			switch ( member ) {
 
-    }
+				case 'X':
 
-    return index;
+					switch ( upConversion ) {
 
-  };
+						case 'XtoY':
+						case 'XtoZ':
+						case 'YtoX':
 
-  function getConvertedMember(member) {
+							member = 'Y';
+							break;
 
-    if (options.convertUpAxis) {
+						case 'ZtoX':
 
-      switch (member) {
+							member = 'Z';
+							break;
 
-        case 'X':
+					}
 
-          switch (upConversion) {
+					break;
 
-            case 'XtoY':
-            case 'XtoZ':
-            case 'YtoX':
+				case 'Y':
 
-              member = 'Y';
-              break;
+					switch ( upConversion ) {
 
-            case 'ZtoX':
+						case 'XtoY':
+						case 'YtoX':
+						case 'ZtoX':
 
-              member = 'Z';
-              break;
+							member = 'X';
+							break;
 
-          }
+						case 'XtoZ':
+						case 'YtoZ':
+						case 'ZtoY':
 
-          break;
+							member = 'Z';
+							break;
 
-        case 'Y':
+					}
 
-          switch (upConversion) {
+					break;
 
-            case 'XtoY':
-            case 'YtoX':
-            case 'ZtoX':
+				case 'Z':
 
-              member = 'X';
-              break;
+					switch ( upConversion ) {
 
-            case 'XtoZ':
-            case 'YtoZ':
-            case 'ZtoY':
+						case 'XtoZ':
 
-              member = 'Z';
-              break;
+							member = 'X';
+							break;
 
-          }
+						case 'YtoZ':
+						case 'ZtoX':
+						case 'ZtoY':
 
-          break;
+							member = 'Y';
+							break;
 
-        case 'Z':
+					}
 
-          switch (upConversion) {
+					break;
 
-            case 'XtoZ':
+			}
 
-              member = 'X';
-              break;
+		}
 
-            case 'YtoZ':
-            case 'ZtoX':
-            case 'ZtoY':
+		return member;
 
-              member = 'Y';
-              break;
+	};
 
-          }
+	return {
 
-          break;
+		load: load,
+		parse: parse,
+		setPreferredShading: setPreferredShading,
+		applySkin: applySkin,
+		geometries : geometries,
+		options: options
 
-      }
-
-    }
-
-    return member;
-
-  };
-
-  return {
-
-    load: load,
-    parse: parse,
-    setPreferredShading: setPreferredShading,
-    applySkin: applySkin,
-    geometries: geometries,
-    options: options
-
-  };
+	};
 
 };
