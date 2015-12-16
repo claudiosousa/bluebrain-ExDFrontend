@@ -231,7 +231,9 @@
             var deltaY = touchMove.clientY - touchStart.clientY;
             var touchDistance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
             // if the touch distance was small
-            if (touchDistance <= 20) {
+            // Also test on clientX/clientY greater 0 (Because 'touchend' can sometimes be called without 'touchstart')
+            // ...and so clientX and clientY are in their initial state '0'
+            if ((touchDistance <= 20) && (touchStart.clientX > 0) && (touchStart.clientY > 0)) {
               event.clientX = touchMove.clientX;
               event.clientY = touchMove.clientY;
               contextMenuState.toggleContextMenu(true, event);
