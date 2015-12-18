@@ -579,14 +579,14 @@ describe('Controller: Gz3dViewCtrl', function () {
       //false case
       scope.viewState.isOwner = false;
 
-      scope.toggleContextMenu(true, event);//call the function under test
+      scope.onContainerMouseDown(event); //call the function under test
 
       expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
 
       //true case
       scope.viewState.isOwner = true;
 
-      scope.toggleContextMenu(true, event);//call the function under test
+      scope.onContainerMouseDown(event);//call the function under test
 
       expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, event);
     });

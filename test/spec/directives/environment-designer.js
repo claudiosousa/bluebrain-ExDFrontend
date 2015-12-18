@@ -4,7 +4,7 @@ describe('Directive: environment-designer', function () {
 
 
   var $scope, element, stateService,
-    panels, currentStateMock, gz3dMock, contextMenuState, simulationSDFWorld,
+    panels, currentStateMock, gz3dMock, contextMenuState, objectEditorService, simulationSDFWorld,
     simulationInfo, backendInterfaceService, hbpDialogFactory;
 
   beforeEach(module('exdFrontendApp'));
@@ -13,12 +13,12 @@ describe('Directive: environment-designer', function () {
   beforeEach(module(function ($provide) {
     $provide.value('stateService', currentStateMock);
     var simulationInfoMock = {
-      mode : undefined,
+      mode: undefined,
       contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
-      serverID : 'bbpce016',
-      simulationID : 'mocked_simulation_id',
+      serverID: 'bbpce016',
+      simulationID: 'mocked_simulation_id',
       serverConfig: {
-        gzweb: { assets: {} },
+        gzweb: {assets: {}},
         rosbridge: {
           topics: {
             transferFunctionError: {}
@@ -32,7 +32,10 @@ describe('Directive: environment-designer', function () {
     $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').andCallThrough());
     $provide.value('contextMenuState', {
       toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
-      pushItemGroup : jasmine.createSpy('pushItemGroup')
+      pushItemGroup: jasmine.createSpy('pushItemGroup')
+    });
+    $provide.value('objectEditorService', {
+      toggleView: jasmine.createSpy('toggleView')
     });
     $provide.value('bbpConfig', {
       get: jasmine.createSpy('get').andReturn(
@@ -51,26 +54,27 @@ describe('Directive: environment-designer', function () {
     });
   }));
 
-  beforeEach(inject(function (
-    $rootScope,
-    $compile,
-    $document,
-    EDIT_MODE,
-    STATE,
-    OPERATION_MODE,
-    _currentStateMockFactory_,
-    _stateService_,
-    _contextMenuState_,
-    _panels_,
-    _simulationSDFWorld_,
-    _simulationInfo_,
-    _backendInterfaceService_,
-    _hbpDialogFactory_) {
+  beforeEach(inject(function ($rootScope,
+                              $compile,
+                              $document,
+                              EDIT_MODE,
+                              STATE,
+                              OPERATION_MODE,
+                              _currentStateMockFactory_,
+                              _stateService_,
+                              _contextMenuState_,
+                              _objectEditorService_,
+                              _panels_,
+                              _simulationSDFWorld_,
+                              _simulationInfo_,
+                              _backendInterfaceService_,
+                              _hbpDialogFactory_) {
 
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
     $scope.STATE = STATE;
     contextMenuState = _contextMenuState_;
+    objectEditorService = _objectEditorService_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
     simulationInfo = _simulationInfo_;
@@ -83,14 +87,14 @@ describe('Directive: environment-designer', function () {
     $scope.$digest();
     var sceneMock = {
       setManipulationMode: jasmine.createSpy('setManipulationMode').
-        andCallFake(function (m) {
-          this.manipulationMode = m;
-        }),
+      andCallFake(function (m) {
+        this.manipulationMode = m;
+      }),
 
       manipulationMode: undefined
     };
     gz3dMock = {
-      gui: { emitter: { emit: jasmine.createSpy('emit') } },
+      gui: {emitter: {emit: jasmine.createSpy('emit')}},
       scene: sceneMock,
       toggleScreenChangeMenu: jasmine.createSpy('toggleScreenChangeMenu')
     };
@@ -110,9 +114,9 @@ describe('Directive: environment-designer', function () {
     spyOn($scope, 'setEditMode');
 
     var btns = element.find('button');
-    var viewBtn      = angular.element(btns[0]),
-        translateBtn = angular.element(btns[1]),
-        rotateBtn    = angular.element(btns[2]);
+    var viewBtn = angular.element(btns[0]),
+      translateBtn = angular.element(btns[1]),
+      rotateBtn = angular.element(btns[2]);
 
     viewBtn.triggerHandler('click');
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.VIEW);
@@ -142,22 +146,47 @@ describe('Directive: environment-designer', function () {
   it('should call correctly contextMenuState.pushItemGroup', function () {
     stateService.currentState = $scope.STATE.PAUSED;
     var itemGroup = contextMenuState.pushItemGroup.mostRecentCall.args[0];
+
+    // initial structure
     expect(itemGroup.visible).toBe(false);
+    expect(itemGroup.items[0].text).toEqual('Edit');
     expect(itemGroup.items[0].visible).toBe(false);
+    expect(itemGroup.items[1].text).toEqual('Delete');
+    expect(itemGroup.items[1].visible).toBe(false);
+
+    // check hide()
     itemGroup.visible = true;
     itemGroup.items[0].visible = true;
+    itemGroup.items[1].visible = true;
     itemGroup.hide();
     expect(itemGroup.visible).toBe(false);
     expect(itemGroup.items[0].visible).toBe(false);
-    var eventMock = { stopPropagation: jasmine.createSpy('stopPropagation') };
-    spyOn($scope, 'deleteModel');
+    expect(itemGroup.items[1].visible).toBe(false);
+
+    var eventMock = {stopPropagation: jasmine.createSpy('stopPropagation')};
+    // check call to edit item
     itemGroup.items[0].callback(eventMock);
+    expect(objectEditorService.toggleView).toHaveBeenCalled();
+    expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
+    expect(eventMock.stopPropagation).toHaveBeenCalled();
+
+    // check call to delete item
+    spyOn($scope, 'deleteModel');
+    itemGroup.items[1].callback(eventMock);
     expect($scope.deleteModel).toHaveBeenCalled();
     expect(eventMock.stopPropagation).toHaveBeenCalled();
-    var modelMock = { name: 'my_robot'};
-    expect(itemGroup.show(modelMock)).toBe(false);
+
+    // see that anyhting containing 'robot' can't be deleted
+    var modelMock = {name: 'my_robot'};
+    itemGroup.show(modelMock);
+    expect(itemGroup.visible).toBe(true);
+    expect(itemGroup.items[0].visible).toBe(true);
+    expect(itemGroup.items[1].visible).toBe(false);
     modelMock.name = 'iAmNotARobot';
-    expect(itemGroup.show(modelMock)).toBe(true);
+    itemGroup.show(modelMock);
+    expect(itemGroup.visible).toBe(true);
+    expect(itemGroup.items[0].visible).toBe(true);
+    expect(itemGroup.items[1].visible).toBe(true);
   });
 
   it('should pause the simulation when needed', function () {
@@ -185,11 +214,12 @@ describe('Directive: environment-designer', function () {
   it('should call the right REST API for the SDF export process', function () {
     var exportSpy = jasmine.createSpy('export');
     simulationSDFWorld.andCallFake(
-    function () {
-      return {
-        export: exportSpy.andCallFake(function(){})
-      };
-    });
+      function () {
+        return {
+          export: exportSpy.andCallFake(function () {
+          })
+        };
+      });
 
     $scope.exportSDFWorld();
     expect(simulationSDFWorld).toHaveBeenCalled();
@@ -200,9 +230,9 @@ describe('Directive: environment-designer', function () {
     spyOn($scope, 'setEditMode');
 
     var btns = element.find('button');
-    var viewBtn      = angular.element(btns[0]),
-        translateBtn = angular.element(btns[1]),
-        rotateBtn    = angular.element(btns[2]);
+    var viewBtn = angular.element(btns[0]),
+      translateBtn = angular.element(btns[1]),
+      rotateBtn = angular.element(btns[2]);
 
     viewBtn.triggerHandler('click');
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.VIEW);
@@ -213,6 +243,7 @@ describe('Directive: environment-designer', function () {
     rotateBtn.triggerHandler('click');
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.ROTATE);
   });
+
 
   it('should call correctly addModel("box")', function () {
     spyOn($scope, 'addModel');
@@ -233,7 +264,7 @@ describe('Directive: environment-designer', function () {
 
     addBoxBtn.triggerHandler('mousedown');
     expect($scope.addModel).toHaveBeenCalledWith('box');
-    expect(window.guiEvents.emit).not.toHaveBeenCalledWith('spawn_entity_start','box');
+    expect(window.guiEvents.emit).not.toHaveBeenCalledWith('spawn_entity_start', 'box');
 
   });
 
@@ -248,7 +279,7 @@ describe('Directive: environment-designer', function () {
     addBoxBtn.triggerHandler('mousedown');
 
     //should emit 'spawn_entity_start'
-    expect(window.guiEvents.emit).toHaveBeenCalledWith('spawn_entity_start','box');
+    expect(window.guiEvents.emit).toHaveBeenCalledWith('spawn_entity_start', 'box');
 
     //should set translate mode
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
@@ -262,7 +293,9 @@ describe('Directive: environment-designer', function () {
     var exportSpy = jasmine.createSpy('export');
     simulationSDFWorld.andCallFake(function () {
       return {
-        export: exportSpy.andCallFake(function (args, cb) { cb({'sdf': 'dummysdf'}); })
+        export: exportSpy.andCallFake(function (args, cb) {
+          cb({'sdf': 'dummysdf'});
+        })
       };
     });
 
@@ -274,7 +307,9 @@ describe('Directive: environment-designer', function () {
       click: jasmine.createSpy('click')
     };
 
-    spyOn(angular, 'element').andCallFake(function () { return [dummyAnchorElement]; });
+    spyOn(angular, 'element').andCallFake(function () {
+      return [dummyAnchorElement];
+    });
 
     $scope.exportSDFWorld();
     expect(exportSpy).toHaveBeenCalled();
@@ -308,7 +343,6 @@ describe('Directive: environment-designer', function () {
     backendInterfaceService.saveSDF.argsForCall[0][2]();
     expect($scope.isSavingToCollab).toBe(false);
     expect(hbpDialogFactory.alert).toHaveBeenCalled();
-
   });
 
 });

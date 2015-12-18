@@ -1,0 +1,68 @@
+@import "pop-over-viewer.scss";
+
+$objectEditorMinWidth: 350px;
+$objectEditorMinHeight: 320px;
+
+.object-editor-widget {
+  @extend .pop-over-viewer;
+  display: flex !important;
+  top: 2%;
+  left: unset;
+  right: 2%;
+  width: $objectEditorMinWidth;
+  height: $objectEditorMinHeight;
+  min-width: $objectEditorMinWidth;
+  min-height: $objectEditorMinHeight;
+
+  .selected-object-name {
+    text-align: center;
+  }
+
+  .sections-list {
+    position: relative;
+    list-style-type: none;
+    padding: 0px;
+    width: 100%;
+
+    .section-item {
+      display: block;
+      border-bottom: thin solid black;
+      padding: 10px;
+
+      .sub-sections-list {
+        list-style-type: none;
+        padding: 0px;
+
+        .sub-section-item {
+          display: block;
+          padding: 5px;
+        }
+      }
+
+      .vec3-num-input-list {
+        list-style-type: none;
+        padding-left: 0px;
+
+        .vec3-num-input-item {
+          display: inline;
+
+          .vec3-num-input {
+            min-width: 50px;
+            width: 29%;
+          }
+        }
+      }
+
+      .viewmode-input {
+        margin-left: 5px;
+        margin-right: 2px;
+      }
+    }
+  }
+
+  .button-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+}

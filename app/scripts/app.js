@@ -10,137 +10,139 @@
      * Main module of the application.
      */
 
-    var app = angular
-        .module('exdFrontendApp', ['ngAnimate',
-                                   'ngCookies',
-                                   'ngResource',
-                                   'n3-line-chart',
-                                   'ngSanitize',
-                                   'ngTouch',
-                                   'ui.router',
-                                   'ui.bootstrap',
-                                   'ui.codemirror',
-                                   'angular.panels',
-                                   'angular-toArrayFilter',
-                                   'bbpOidcClient',
-                                   'hbpCommon',
-                                   'bbpConfig',
-                                   'hbpDocumentClient',
-                                   'gzangular',
-                                   'gz3dServices',
-                                   'simulationControlServices',
-                                   'simulationStateServices',
-                                   'contextMenuStateService',
-                                   'pythonCodeHelperServices',
-                                   'simulationInfoService',
-                                   'collabServices',
-                                   'exdFrontendApp.Constants',
-                                   'exdFrontendFilters',
-                                   'nrpErrorHandlers',
-                                   'nrpBackendAbout',
-                                   'ngFileUpload',
-                                   'nrpBrowserDetection',
-                                   'vButton'])
-        // Routes
-        .config(function($stateProvider, $urlRouterProvider) {
-            // Configuring routes using `angular-ui-router` states.
-            // (See https://github.com/angular-ui/ui-router/wiki)
+  var app = angular
+    .module('exdFrontendApp', [
+      'ngAnimate',
+      'ngCookies',
+      'ngResource',
+      'n3-line-chart',
+      'ngSanitize',
+      'ngTouch',
+      'ui.router',
+      'ui.bootstrap',
+      'ui.codemirror',
+      'angular.panels',
+      'angular-toArrayFilter',
+      'bbpOidcClient',
+      'hbpCommon',
+      'bbpConfig',
+      'hbpDocumentClient',
+      'gzangular',
+      'gz3dServices',
+      'simulationControlServices',
+      'simulationStateServices',
+      'contextMenuStateService',
+      'objectEditorModule',
+      'pythonCodeHelperServices',
+      'simulationInfoService',
+      'collabServices',
+      'exdFrontendApp.Constants',
+      'exdFrontendFilters',
+      'nrpErrorHandlers',
+      'nrpBackendAbout',
+      'ngFileUpload',
+      'nrpBrowserDetection',
+      'vButton'])
+    // Routes
+    .config(function ($stateProvider, $urlRouterProvider) {
+      // Configuring routes using `angular-ui-router` states.
+      // (See https://github.com/angular-ui/ui-router/wiki)
 
-            var homeState = {
-              name: 'home',
-              url: '/',
-              templateUrl: 'views/common/home.html',
-              controller: 'MainCtrl'
-            };
+      var homeState = {
+        name: 'home',
+        url: '/',
+        templateUrl: 'views/common/home.html',
+        controller: 'MainCtrl'
+      };
 
-            var gz3dViewState = {
-                name: 'gz3d-view',
-                url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode?ctx',
-                templateUrl: 'views/esv/gz3d-view.html',
-                controller: 'Gz3dViewCtrl'
-            };
+      var gz3dViewState = {
+        name: 'gz3d-view',
+        url: '/esv-web/gz3d-view/:serverID/:simulationID/:mode?ctx',
+        templateUrl: 'views/esv/gz3d-view.html',
+        controller: 'Gz3dViewCtrl'
+      };
 
-            var esvWebState = {
-              name: 'esv-web',
-              url: '/esv-web',
-              templateUrl: 'views/esv/esv-web.html',
-              controller: 'experimentCtrl'
-            };
+      var esvWebState = {
+        name: 'esv-web',
+        url: '/esv-web',
+        templateUrl: 'views/esv/esv-web.html',
+        controller: 'experimentCtrl'
+      };
 
-            var esvCollabEditState = {
-              name: 'esv-collab-edit',
-              url: '/esv-collab/edit?ctx',
-              templateUrl: 'views/esv/esv-collab-edit.html',
-              controller: 'ESVCollabEditCtrl'
-            };
+      var esvCollabEditState = {
+        name: 'esv-collab-edit',
+        url: '/esv-collab/edit?ctx',
+        templateUrl: 'views/esv/esv-collab-edit.html',
+        controller: 'ESVCollabEditCtrl'
+      };
 
-            var registeredEsvCollabEditState = {
-              name: 'registered-esv-collab-edit',
-              url: '/esv-collab/edit?ctx/:experimentID',
-              templateUrl: 'views/esv/esv-collab-run.html',
-              controller: 'ESVCollabRunCtrl'
-            };
+      var registeredEsvCollabEditState = {
+        name: 'registered-esv-collab-edit',
+        url: '/esv-collab/edit?ctx/:experimentID',
+        templateUrl: 'views/esv/esv-collab-run.html',
+        controller: 'ESVCollabRunCtrl'
+      };
 
-            var esvCollabRunState = {
-              name: 'esv-collab-run',
-              url: '/esv-collab/run?ctx',
-              templateUrl: 'views/esv/esv-collab-run.html',
-              controller: 'ESVCollabRunCtrl'
-            };
+      var esvCollabRunState = {
+        name: 'esv-collab-run',
+        url: '/esv-collab/run?ctx',
+        templateUrl: 'views/esv/esv-collab-run.html',
+        controller: 'ESVCollabRunCtrl'
+      };
 
-            var home = $stateProvider.state(homeState);
-            home.state(esvWebState);
-            home.state(esvCollabEditState);
-            home.state(registeredEsvCollabEditState);
-            home.state(esvCollabRunState);
-            home.state(gz3dViewState);
-            // Provide a default route.
-            // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
-            $urlRouterProvider.otherwise('/');
-        }).config(function(bbpOidcSessionProvider, bbpConfig) {
-          // Set to true if you want to check for the existence of
-          // a token while loading.
-          if (!bbpConfig.get('localmode.forceuser', false)) {
-            bbpOidcSessionProvider.ensureToken(true);
-            localStorage.setItem('localmode.forceuser', false);
-          } else {
-            localStorage.setItem('localmode.forceuser', true);
-          }
-        });
+      var home = $stateProvider.state(homeState);
+      home.state(esvWebState);
+      home.state(esvCollabEditState);
+      home.state(registeredEsvCollabEditState);
+      home.state(esvCollabRunState);
+      home.state(gz3dViewState);
+      // Provide a default route.
+      // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
+      $urlRouterProvider.otherwise('/');
+    }).config(function (bbpOidcSessionProvider, bbpConfig) {
+      // Set to true if you want to check for the existence of
+      // a token while loading.
+      if (!bbpConfig.get('localmode.forceuser', false)) {
+        bbpOidcSessionProvider.ensureToken(true);
+        localStorage.setItem('localmode.forceuser', false);
+      } else {
+        localStorage.setItem('localmode.forceuser', true);
+      }
+    });
 
-    // load the configuration used by bbpConfig
-    // and then bootstrap the application.
-    angular.bootstrap().invoke(['$http', function($http) {
-        var boot = function() {
-            angular.element(document).ready(function() {
-                angular.bootstrap(document, ['exdFrontendApp']);
-            });
-        };
+  // load the configuration used by bbpConfig
+  // and then bootstrap the application.
+  angular.bootstrap().invoke(['$http', function ($http) {
+    var boot = function () {
+      angular.element(document).ready(function () {
+        angular.bootstrap(document, ['exdFrontendApp']);
+      });
+    };
 
-        if (window.bbpConfig) {
-            boot();
-        } else {
-            $http.get('./config.json').then(function(res) {
-                window.bbpConfig = res.data;
-            }).then(boot);
-        }
-    }]);
+    if (window.bbpConfig) {
+      boot();
+    } else {
+      $http.get('./config.json').then(function (res) {
+        window.bbpConfig = res.data;
+      }).then(boot);
+    }
+  }]);
 
   // Create the constant modules at the beginning so everyone can access it and
   // use it to define its own constants.
   angular.module('exdFrontendApp.Constants', []);
 
-    // Since angular is a "single page" application (navigating never trigger a reload of index.html),
-    // we have to notify Google Analytics when the page change. For that, we register on
-    // $stateChangeSuccess which is an UI router event.
-    app.run(['$rootScope', '$location', '$window', function($rootScope, $location, $window){
-      $rootScope.$on('$stateChangeSuccess',
-        function(event){
-          if ($window.ga) {
-            $window.ga('send', 'pageview', {page: $location.path()});
-          }
-        });
-    }]);
+  // Since angular is a "single page" application (navigating never trigger a reload of index.html),
+  // we have to notify Google Analytics when the page change. For that, we register on
+  // $stateChangeSuccess which is an UI router event.
+  app.run(['$rootScope', '$location', '$window', function ($rootScope, $location, $window) {
+    $rootScope.$on('$stateChangeSuccess',
+      function (event) {
+        if ($window.ga) {
+          $window.ga('send', 'pageview', {page: $location.path()});
+        }
+      });
+  }]);
 }());
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately
@@ -151,8 +153,13 @@
 // our case.
 
 /* global $: false */
-$.fn.buttonMarkup = function(){};
-$.fn.popup = function(){};
-$.fn.checkboxradio = function(){};
-$.fn.touchstart = function(){};
-$.fn.touchend = function(){};
+$.fn.buttonMarkup = function () {
+};
+$.fn.popup = function () {
+};
+$.fn.checkboxradio = function () {
+};
+$.fn.touchstart = function () {
+};
+$.fn.touchend = function () {
+};

@@ -46,32 +46,13 @@ describe('Services: contextMenuState', function (){
       items: []
     };
 
-    contextMenuState.pushItemGroup(dummyItemGroup);//push once
-
-    expect(contextMenuState.itemsGroups.length).toBe(1);//pushed successfully
-
-    contextMenuState.pushItemGroup(dummyItemGroup);//push it again
-
-    expect(contextMenuState.itemsGroups.length).toBe(1);//pushed failed
-
-  });
-
-    it('should not allow itemGroup duplicates', function () {
-
-    var dummyItemGroup = {
-      label: 'Sample',
-      visible: false,
-      items: []
-    };
+    var originalItemGroupLength = contextMenuState.itemsGroups.length;
 
     contextMenuState.pushItemGroup(dummyItemGroup);//push once
-
-    expect(contextMenuState.itemsGroups.length).toBe(1);//pushed successfully
+    expect(contextMenuState.itemsGroups.length).toBe(originalItemGroupLength+1);//pushed successfully
 
     contextMenuState.pushItemGroup(dummyItemGroup);//push it again
-
-    //second push failed, still 1 itemGroup in the menu
-    expect(contextMenuState.itemsGroups.length).toBe(1);
+    expect(contextMenuState.itemsGroups.length).toBe(originalItemGroupLength+1);//pushed failed
 
   });
 

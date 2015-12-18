@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="styles/esv/gz3d-view.css" />
 <link rel="stylesheet" href="styles/esv/spiketrain.css" />
 <link rel="stylesheet" href="styles/esv/joint-plot.css" />
+<link rel="stylesheet" href="styles/esv/object-editor.css" />
 <!-- endbuild -->
 
   <script id="heightmapVS" type="x-shader/x-vertex">
@@ -94,13 +95,12 @@
       <!-- container -->
       <div class="esv-flex-container esv-flex-greedy-element">
         <!-- WEBGL-context   -->
-        <div data-role="content" id="container" class="esv-flex-container esv-flex-greedy-element" ng-mousedown="toggleContextMenu(true, $event);"></div>
+        <div data-role="content" id="container" class="esv-flex-container esv-flex-greedy-element" ng-mousedown="onContainerMouseDown($event);" ng-mouseup="onContainerMouseUp($event);"></div>
         <!-- WEBGL-context -->
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
         <spiketrain server="{{rosbridgeWebsocketUrl}}" topic="{{spikeTopic}}" movable ng-show="showSpikeTrain"></spiketrain>
         <joint-plot server="{{rosbridgeWebsocketUrl}}" topic="{{jointTopic}}" movable ng-show="showJointPlot"></joint-plot>
-
         <!-- HelpText -->
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PAUSE_BUTTON]='Here you can pause the simulation on the server.'">
@@ -117,7 +117,6 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EXIT_BUTTON]='Here you can leave the simulation.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CODE_EDITOR]='Toggle the experiment designer. Choose between the environment designer and the transfer function (TF) editor in the tabs above.\n- The environment designer allows to add, move, rotate and scale objects during the simulation. The environment model can be saved or loaded using the SDF format.\n- The TF editor allows to re-define or add new transfer functions into the current simulation. The transfer functions represent the main interface between the robot and the spiking neural network and define the conversion from the sensory input to the sensory neurons and from the network output to the robot control properties. A transfer function can be defined, loaded and saved as a Python script.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.GRAPHICS_PERFORMANCE]='This Button toggles the performance hungry graphic options (shadows, ...)'">
-
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
           <div class="hbp-toolbar" ng-mousedown="toggleContextMenu(false, $event);">
@@ -251,6 +250,7 @@
               <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.JOINT_PLOT, 'active': showJointPlot}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.JOINT_PLOT);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <img src="img/esv/jointplot_logo.png">
               </div>
+
               <!-- toggle jointPlot -->
 
               <!-- toggle robot camera view -->
@@ -297,6 +297,8 @@
         <!-- overlay -->
 
         <context-menu></context-menu>
+        <object-editor></object-editor>
+
         <!-- large top-right help icon -->
         <div ng-if="helpModeActivated" class="fa fa-question-circle fa-5x help-icon active" ng-click="toggleHelpMode()"></div>
         <div ng-if="helpModeActivated" class="fa fa-question fa-4x help-icon-inner" ng-click="toggleHelpMode()"></div>

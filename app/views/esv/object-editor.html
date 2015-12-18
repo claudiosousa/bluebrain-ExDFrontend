@@ -1,0 +1,87 @@
+<div id="object-editor" class="object-editor-widget" movable resizeable ng-show="objectEditorService.isShown">
+  <!-- sections of the object editor -->
+  <ol class="sections-list">
+    <!-- section - object identifier -->
+    <li class="section-item">
+      <h3 class="selected-object-name">{{objectEditorService.selectedObject ? objectEditorService.selectedObject.name :
+        'nothing selected'}}</h3>
+    </li>
+    <!-- section - transform -->
+    <li class="section-item" ng-show="objectEditorService.selectedObject">
+      <ol class="sub-sections-list">
+        <!-- sub-section - translate -->
+        <li class="sub-section-item" ng-show="objectEditorService.selectedObject.position">
+          <h5>Translate</h5>
+          <ol class="vec3-num-input-list">
+            <li class="vec3-num-input-item">
+              <button type="button" class="btn btn-xs"
+                      ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
+                      ng-click="objectEditorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
+                <i class="glyphicon glyphicon-move"></i>
+              </button>
+            </li>
+            <li class="vec3-num-input-item">
+              <input transform-input-num id="oe-translate-x" type="number" name="translate-x" class="vec3-num-input"
+                     ng-model="objectEditorService.translation.x"
+                     ng-change="objectEditorService.onObjectChange()">
+            </li>
+            <li class="vec3-num-input-item">
+              <input transform-input-num id="oe-translate-y" type="number" name="translate-y" class="vec3-num-input"
+                     ng-model="objectEditorService.translation.y"
+                     ng-change="objectEditorService.onObjectChange()">
+            </li>
+            <li class="vec3-num-input-item">
+              <input transform-input-num id="oe-translate-z" type="number" name="translate-z" class="vec3-num-input"
+                     ng-model="objectEditorService.translation.z"
+                     ng-change="objectEditorService.onObjectChange()">
+            </li>
+          </ol>
+        </li>
+        <!-- sub-section - rotate -->
+        <li class="sub-section-item" ng-show="objectEditorService.selectedObject.rotation">
+          <h5>Rotate</h5>
+          <ol class="vec3-num-input-list">
+            <li class="vec3-num-input-item">
+              <button type="button" class="btn btn-xs"
+                      ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
+                      ng-click="objectEditorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
+                <i class="glyphicon glyphicon-repeat"></i>
+              </button>
+            </li>
+            <li class="vec3-num-input-item">
+              <input transform-input-num id="oe-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
+                     ng-model="objectEditorService.rotationEuler.x"
+                     ng-change="objectEditorService.onObjectChange()">
+            </li>
+            <li class="vec3-num-input-item">
+              <input transform-input-num id="oe-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
+                     ng-model="objectEditorService.rotationEuler.y"
+                     ng-change="objectEditorService.onObjectChange()">
+            </li>
+            <li class="vec3-num-input-item">
+              <input transform-input-num id="oe-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
+                     ng-model="objectEditorService.rotationEuler.z"
+                     ng-change="objectEditorService.onObjectChange()">
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <!-- section - view modes -->
+    <li class="section-item" ng-show="objectEditorService.selectedObject">
+      <label for="oe-viewmode-normal"><input id="oe-viewmode-normal" type="radio" name="viewmode-normal"
+                                             class="viewmode-input"
+                                             ng-click="objectEditorService.setViewMode(OBJECT_VIEW_MODE.NORMAL)">Normal</label>
+      <label for="oe-viewmode-transparent"><input id="oe-viewmode-transparent" type="radio" name="viewmode-normal"
+                                                  class="viewmode-input"
+                                                  ng-click="objectEditorService.setViewMode(OBJECT_VIEW_MODE.TRANSPARENT)">Transparent</label>
+      <label for="oe-viewmode-wireframe"><input id="oe-viewmode-wireframe" type="radio" name="viewmode-normal"
+                                                class="viewmode-input"
+                                                ng-click="objectEditorService.setViewMode(OBJECT_VIEW_MODE.WIREFRAME)">Wireframe</label>
+    </li>
+  </ol>
+  <button type="button" class="button-close" ng-click="objectEditorService.toggleView(false)">
+    <i class="glyphicon glyphicon-remove"></i>
+  </button>
+</div>
+
