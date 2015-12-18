@@ -57,8 +57,8 @@ module.exports = function(grunt) {
         // Protractor settings
         protractor: {
             options: {
-                configFile: 'test_e2e/conf.js', // Default config file 
-                keepAlive: true, // If false, the grunt process stops when the test fails. 
+                configFile: 'test_e2e/conf.js', // Default config file
+                keepAlive: true, // If false, the grunt process stops when the test fails.
             },
             remote: {
                 options: {
@@ -115,14 +115,30 @@ module.exports = function(grunt) {
         // The actual grunt server settings
         connect: {
             options: {
-                port: 9000,
-                hostname: 'localhost',
-                protocol: 'http',
-                livereload: 35729
+              port: 9000,
+              hostname: 'localhost',
+              livereload: 35729
             },
             livereload: {
                 options: {
                     open: true,
+                    protocol: 'http',
+                    middleware: function(connect) {
+                        return [
+                            connect.static('.tmp'),
+                            connect().use(
+                                '/bower_components',
+                                connect.static('./bower_components')
+                            ),
+                            connect.static(appConfig.app)
+                        ];
+                    }
+                }
+            },
+            livereload_https: {
+                options: {
+                    open: true,
+                    protocol: 'https',
                     middleware: function(connect) {
                         return [
                             connect.static('.tmp'),
@@ -650,6 +666,22 @@ module.exports = function(grunt) {
             'concurrent:server',
             'autoprefixer',
             'connect:livereload',
+            'watch'
+        ]);
+    });
+
+    grunt.registerTask('serve_https', 'Compile then start a connect https web server', function(target) {
+        if (target === 'dist') {
+            return grunt.task.run(['build', 'connect:dist:keepalive']);
+        }
+
+        grunt.task.run([
+            'version:test',
+            'clean:server',
+            'wiredep',
+            'concurrent:server',
+            'autoprefixer',
+            'connect:livereload_https',
             'watch'
         ]);
     });
