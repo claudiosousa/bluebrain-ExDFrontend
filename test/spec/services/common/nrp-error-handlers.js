@@ -19,6 +19,36 @@ describe('Services: nrp-error-handlers', function () {
     expect(result.template).toEqual(error);
   });
 
+  it('should translate ngninx nrp errors properly', function() {
+    var htmlTitle = 'General Error';
+    var nginxString = 'nginx/2.4.2';
+    var error = 'I am an error';
+    var type = 'I am a type';
+    var response = {data: {message : error, type: type}};
+    response.data.message = 'some text before' +
+        '<html>' +
+        '<head>' +
+        '<title>' + htmlTitle + '</title>' +
+        '<head>' +
+        '<body>' +
+        '<center>' + nginxString + '</center>' +
+        '</body>' +
+        '</html>' + 'some text after';
+    var result = nrpErrorService.httpError(response);
+    expect(result.template).toBe(htmlTitle + ' (' + nginxString + ').');
+
+    response.data.message = 'some text before' + '<html></html>';
+    result = nrpErrorService.httpError(response);
+    expect(result.template).toBe(response.data.message);
+  });
+
+  it('should display non formatted nrp errors as is (default behaviour)', function() {
+    var response = {data: {message : 'defined error', type: 'defined type'}};
+    response.data.message = 'some text before' + '<html></html>' + 'some text after';
+    var result = nrpErrorService.httpError(response);
+    expect(result.template).toBe(response.data.message);
+  });
+
   it('should translate non nrp errors properly', function() {
     var error = 'I am an error';
     var response = {data: error};
@@ -36,6 +66,50 @@ describe('Services: nrp-error-handlers', function () {
     expect(result.template).toEqual('The request could not be understood by the server');
   });
 
+  it('should extract the title content correctly (getHtmlTitle)', function() {
+    var errorTitle = 'Major Failure 666';
+    var htmlString = 'some text' +
+        '<html>' +
+        '<head>' +
+        '<title>' + errorTitle + '</title>' +
+        '</head>' +
+        '<body>' +
+        '<h1>Some description</h1>' +
+        '<p>Some comment</p>' +
+        '</body>' +
+        '</html>' + 'some text';
+    expect(nrpErrorService.getHtmlTitle(htmlString)).toBe(errorTitle);
+
+    htmlString = 'some text' +
+        '<html>' +
+        '<head>' +
+        '</head>' +
+        '<body>' +
+        '</body>' +
+        '</html>';
+
+    expect(nrpErrorService.getHtmlTitle(htmlString)).toBe(null);
+
+    htmlString = 'some text';
+    expect(nrpErrorService.getHtmlTitle(htmlString)).toBe(null);
+  });
+
+  it('should extract the nginx string correctly (getNginxString)', function() {
+    var htmlString = 'some text' +
+        '<html>' +
+        '<head>' +
+        '<title>Very Bad Error</title>' +
+        '<head>' +
+        '<body>' +
+        '<center>nginx/2.5.5</center>' +
+        '<p>Some comment</p>' +
+        '</body>' +
+        '</html>' + 'some text';
+    expect(nrpErrorService.getNginxString(htmlString)).toBe('nginx/2.5.5');
+
+    htmlString = 'some text';
+    expect(nrpErrorService.getNginxString(htmlString)).toBe(null);
+  });
 });
 
 describe('Services: nrp-error-handlers', function () {
@@ -56,23 +130,23 @@ describe('Services: nrp-error-handlers', function () {
   });
 
   it('should filter out errors due to GET requests on unavailable servers', function() {
-    var response = { 
-      data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, 
-      status: 0 
+    var response = {
+      data: { code: 0, message: 'Server Unavailable', type: 'innocuous'},
+      status: 0
     };
     expect(serverError.filter(response)).toBe(false);
   });
 
   it('should filter out transfer function errors', function() {
-    var response = { 
-      data: { code: 400, message: 'Syntax Error', type: 'Transfer function error'}, 
-      status: 0 
+    var response = {
+      data: { code: 400, message: 'Syntax Error', type: 'Transfer function error'},
+      status: 400
     };
     serverError.display(response);
     expect(serverError.filter(response)).toBe(false);
   });
 
-  it('should call once nrpErrorService.httpError and hbpDialogFactory.error', function() {
+  it('should call once nrpErrorService.httpError and hbpDialogFactory.alert', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.display(response);
     expect(hbpDialogFactory.alert.callCount).toBe(1);
@@ -80,7 +154,7 @@ describe('Services: nrp-error-handlers', function () {
     expect(nrpErrorService.httpError.callCount).toBe(1);
   });
 
-  it('should call neither nrpErrorService.httpError nor hbpDialogFactory.error', function() {
+  it('should call neither nrpErrorService.httpError nor hbpDialogFactory.alert', function() {
     var response = { data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, status: 0 };
     serverError.display(response);
     expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
