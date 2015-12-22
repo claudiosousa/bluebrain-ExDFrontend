@@ -51,6 +51,7 @@ describe('Directive: joint-plot', function () {
       jointc: false
     };
     $scope.selectedProperty = { name: 'position' };
+    $scope.minYIntervalWidth = 1.0;
   }));
 
   it('should replace the element with the appropriate content', function () {
@@ -90,6 +91,32 @@ describe('Directive: joint-plot', function () {
     expect($scope.curves[0].jointc_position).toBeUndefined();
     expect($scope.curves[0].jointc_velocity).toBeUndefined();
     expect($scope.curves[0].jointc_effort).toBeUndefined();
+  });
+
+
+
+  it('should increase its y interval', function() {
+    messageMock.position[0] = -5;
+    messageMock.position[1] = 7;
+    $scope.onNewJointMessageReceived(messageMock);
+    expect($scope.plotOptions.axes.y.min).toBe(-5);
+    expect($scope.plotOptions.axes.y.max).toBe(7);
+  });
+
+  it('should not decrease its y interval below min interval width', function() {
+    messageMock.position[0] = -8.0;
+    messageMock.position[1] = -7.5;
+    $scope.onNewJointMessageReceived(messageMock);
+    expect($scope.plotOptions.axes.y.min).toBe(-8.25);
+    expect($scope.plotOptions.axes.y.max).toBe(-7.25);
+  });
+
+  it('should not take undefined into account for computing its y interval', function() {
+    messageMock.position[0] = undefined;
+    messageMock.position[1] = 5;
+    $scope.onNewJointMessageReceived(messageMock);
+    expect($scope.plotOptions.axes.y.min).toBe(4.5);
+    expect($scope.plotOptions.axes.y.max).toBe(5.5);
   });
 
 

@@ -11,6 +11,7 @@
     scope.indexToColor = d3.scale.category10();
     scope.curveToColorIdx = {};
     scope.timeWindow = 10;
+    scope.minYIntervalWidth = 1.0;
 
     scope.getCurveColor = function(joint) {
       var cssRet = {};
@@ -47,15 +48,20 @@
       return colorIdx;
     };
 
-    var updateSeries = function() {
-      var jointToPlot =  _.pick(scope.selectedJoints, _.identity); // filter out falsy values
-
+    // return concatenation of all jointNames with name of selected property
+    function getCurveNamesToPlot(jointNames, propertyName) {
+      var jointToPlot =  _.pick(jointNames, _.identity); // filter out falsy values
       var curveNamesToPlot = [];
 
       _.forOwn(jointToPlot, function(trueBool, joint) {
-        curveNamesToPlot.push(joint + '_' + scope.selectedProperty.name);
+        curveNamesToPlot.push(joint + '_' + propertyName);
       });
+      return curveNamesToPlot;
+    }
 
+
+    var updateSeries = function() {
+      var curveNamesToPlot = getCurveNamesToPlot(scope.selectedJoints, scope.selectedProperty.name);
 
       // unregister curve in colormap if not selected for plotting
       _.forOwn(scope.curveToColorIdx, function(colorIdx, curveName) {
@@ -78,6 +84,39 @@
       });
 
       scope.plotOptions.series = newSeries;
+    };
+
+    scope.updateVerticalInterval = function() {
+      var curveNamesToPlot = getCurveNamesToPlot(scope.selectedJoints, scope.selectedProperty.name);
+
+      // find min and max yValue in all our datapoints
+      var targetYInterval = _.reduce(scope.curves, function(interval, point) {
+        var ret = interval.slice(); // copy original interval
+        _.forEach(curveNamesToPlot, function(key) {
+          var yVal = point[key];
+          if (_.isNumber(yVal) && !_.isNaN(yVal)) {
+            ret[0] = Math.min(ret[0], yVal);
+            ret[1] = Math.max(ret[1], yVal);
+          }
+        });
+        return ret;
+      }, [Infinity, -Infinity]);
+
+      if (targetYInterval[0] === Infinity) {
+        // no yValues in our curves: don't adjust the interval
+        return;
+      }
+
+      var intervalWidth = targetYInterval[1] - targetYInterval[0];
+      var padding = scope.minYIntervalWidth - intervalWidth;
+      if (padding > 0) {
+        // the intervalWidth is too small: we add some padding
+        targetYInterval[0] -= padding/2.0;
+        targetYInterval[1] += padding/2.0;
+      }
+
+      scope.plotOptions.axes.y.min = targetYInterval[0];
+      scope.plotOptions.axes.y.max = targetYInterval[1];
     };
 
     scope.$watch('selectedProperty.name', requireUpdateSerie);
@@ -122,7 +161,7 @@
 
       _.forEach(messageByJoint, function (joint) {
         if (scope.selectedJoints[joint.name]) {
-          // that joint is selected
+          // that joint is selected: set its yValue
           newDataPoint[joint.name + '_' + scope.selectedProperty.name] = joint[scope.selectedProperty.name];
         }
       });
@@ -133,6 +172,8 @@
         scope.updateSerieRequired = false;
         updateSeries();
       }
+
+      scope.updateVerticalInterval();
     };
 
     // Unsubscribe to the ROS topic
