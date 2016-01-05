@@ -205,7 +205,7 @@ describe('Services: simulation state', function () {
   });
 
   it('should call "update" when setting', function () {
-    stateService.setCurrentState(STATE.PAUSED);
+    stateService.setCurrentState(STATE.STARTED);
     expect(updateSpy).toHaveBeenCalled();
   });
 
