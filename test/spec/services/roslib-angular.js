@@ -4,7 +4,7 @@ describe('Services: roslib-angular', function () {
 
   var roslib;
   var testURL = 'ws://fu.bar:123';
-  var tokenKey = 'tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc';
+  var tokenKey = 'tokens-test-client-id@https://services.humanbrainproject.eu/oidc';
 
   // Unfortunately we have to mock a global variable here.
   var mockedOn = jasmine.createSpy('on');

@@ -28,9 +28,11 @@
       var ros;
       if (!bbpConfig.get('localmode.forceuser', false)) {
         var token = [];
-        if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
+        var clientID = bbpConfig.get('auth.clientId', '');
+        var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
+        if (localStorage.getItem(localStorageTokenKey)) {
           try {
-            token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
+            token = JSON.parse(localStorage.getItem(localStorageTokenKey));
           } catch(e) {
             // this token will be rejected by the server and the client will get a proper auth error
             token[0] = { access_token : 'malformed-token' };
