@@ -50,6 +50,7 @@ module.exports = function(config) {
       'bower_components/ng-file-upload/ng-file-upload.js',
       'bower_components/roslibjs/build/roslib.js',
       'bower_components/stats.js/build/stats.min.js',
+      'bower_components/v-button/dist/v-button.js',
       'bower_components/xml2json/xml2json.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower

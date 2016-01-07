@@ -5,7 +5,8 @@
     'backendInterfaceService',
     'documentationURLs',
     'hbpDialogFactory',
-    function (backendInterfaceService, documentationURLs, hbpDialogFactory) {
+    'simulationInfo',
+    function (backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo) {
       return {
         templateUrl: 'views/esv/pynn-editor.html',
         restrict: 'E',
@@ -14,8 +15,10 @@
         },
         link: function (scope, element, attrs) {
 
+          scope.isCollabExperiment = simulationInfo.isCollabExperiment;
           scope.loading = false;
           scope.refreshCodemirror = false;
+          scope.isSavingToCollab = false;
 
           scope.getCM = function() {
             if(!scope.cm) {
@@ -61,12 +64,29 @@
                 scope.clearError();
                 hbpDialogFactory.alert({title: "Success.", template: "Successfully updated brain."});
               },
-              function(result) { // Fail callback
+              function(result) { // Failure callback
                 scope.loading = false;
                 scope.clearError();
                 scope.markError(pynnScript, result.data.error_message, result.data.error_line, result.data.error_column);
                 hbpDialogFactory.alert({title: "Error.", template: result.data.error_message});
               });
+          };
+
+          scope.saveIntoCollabStorage = function (pynnScript) {
+            scope.isSavingToCollab = true;
+            backendInterfaceService.saveBrain(
+              simulationInfo.contextID,
+              pynnScript,
+              function() { // Success callback
+                scope.isSavingToCollab = false;
+              },function() { // Failure callback
+                hbpDialogFactory.alert({
+                  title: "Error.",
+                  template: "Error while saving pyNN script to Collab storage."
+                });
+                scope.isSavingToCollab = false;
+              }
+            );
           };
 
           scope.searchToken = function(name) {

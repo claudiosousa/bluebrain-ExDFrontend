@@ -2,21 +2,7 @@
 <p>The transfer functions describe how spikes from the neuronal simulation are to be translated into commands for a robot and how the sensor data from the robot should be translated back to spikes. Help on transfer functions could be obtained <a target="_blank" href="{{cleDocumentationURL}}/transfer_functions.html">here</a>. Transfer function syntax is described in more details <a target="_blank" href="{{cleDocumentationURL}}/tutorials/robot2neuron.html#specification-in-python">here (robot to neuron)</a> and <a target="_blank" href="{{cleDocumentationURL}}/tutorials/neuron2robot.html#specification-in-python">here (neuron to robot).</a></p>
 <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable transfer function edition.</div>
 <hr>
-<button type="button" class="btn btn-default btn-md" ng-disabled="(stateService.currentState === STATE.INITIALIZED)" ng-click="create()">
-  <span class="glyphicon glyphicon-add"></span> New transfer function
-</button>
-<a id="download-transfer-functions" href="" class="btn btn-default btn-md" ng-click="download()" download="transferFunctions.py">Download</a>
-<button ng-show="isCollabExperiment" type="button" class="btn btn-default"
-        ng-click="saveTFIntoCollabStorage()"
-        ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-  <i class="glyphicon glyphicon-save"></i>
-  <span>Save TF</span>
-</button>
-<button class="btn btn-default btn-md" type="file"
-        ngf-select="loadTransferFunctions($file)" accept=".py"
-        ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending">
-  Load
-</button>
+<div ng-include src="'views/esv/transfer-function-editor-buttons.html'"></div>
 <div ng-repeat="transferFunction in transferFunctions">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
@@ -25,20 +11,25 @@
     ng-change="onTransferFunctionChange(transferFunction)"
     ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
-
- <div ng-repeat="(type, error) in transferFunction.error">
-   <div class="alert alert-danger" role="alert">
-    {{error.message}} <b>({{type}})</b>
-   </div>
- </div>
+  <div ng-repeat="(type, error) in transferFunction.error">
+    <div class="alert alert-danger" role="alert">
+      {{error.message}} <b>({{type}})</b>
+    </div>
+  </div>
 
   <button type="button" class="btn btn-default btn-md"
     ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
-    ng-click="update(transferFunction)">
-    <span class="glyphicon glyphicon-save"></span> Update
+    ng-click="update(transferFunction)"
+    v-busy="transferFunction.dirty && stateService.statePending"
+    v-busy-label="Applying changes"
+    v-pressable>
+    <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
   </button>
   <button type="button" class="btn btn-default btn-md"
-    ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending" ng-click="delete(transferFunction)">
-    <span class="glyphicon glyphicon-remove"></span> Delete
+    ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+    ng-click="delete(transferFunction)">
+    <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
   </button>
 </div>
+<hr>
+<div ng-show="transferFunctions[0]" ng-include src="'views/esv/transfer-function-editor-buttons.html'"></div>

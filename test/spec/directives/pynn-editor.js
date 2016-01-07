@@ -22,11 +22,19 @@ describe('Directive: pynnEditor', function () {
     backendInterfaceService,
     pythonCodeHelper,
     ScriptObject,
-    $timeout;
+    $timeout,
+    hbpDialogFactory;
 
   var backendInterfaceServiceMock = {
-    getBrain: jasmine.createSpy('getBrain'),
-    setBrain: jasmine.createSpy('setBrain')
+    getBrain:  jasmine.createSpy('getBrain'),
+    setBrain:  jasmine.createSpy('setBrain'),
+    saveBrain: jasmine.createSpy('saveBrain')
+  };
+
+  var simulationInfoMock = {
+    contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+    simulationID : 'mocked_simulation_id',
+    isCollabExperiment: true
   };
 
   var documentationURLsMock =
@@ -88,6 +96,7 @@ describe('Directive: pynnEditor', function () {
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
+    $provide.value('simulationInfo' , simulationInfoMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,
@@ -96,7 +105,8 @@ describe('Directive: pynnEditor', function () {
                               _backendInterfaceService_,
                               $templateCache,
                               _pythonCodeHelper_,
-                              _$timeout_) {
+                              _$timeout_,
+                              _hbpDialogFactory_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -104,6 +114,7 @@ describe('Directive: pynnEditor', function () {
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
     $timeout = _$timeout_;
+    hbpDialogFactory = _hbpDialogFactory_;
 
     $scope = $rootScope.$new();
     $templateCache.put(VIEW, '');
@@ -164,12 +175,32 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.pynnScript).toBeUndefined();
     });
 
-    it('should handle send a pynn script properly', function () {
+    it('should update a pynn script properly', function () {
       isolateScope.update('pynn script');
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
       backendInterfaceService.setBrain.argsForCall[0][3](); // success callback
       expect(isolateScope.loading).toBe(false);
+    });
+
+    it('should save a pynn script properly', function () {
+      var script = '# some dummy pynn script';
+      expect(isolateScope.isSavingToCollab).toBe(false);
+      isolateScope.saveIntoCollabStorage(script);
+      expect(backendInterfaceService.saveBrain).toHaveBeenCalledWith(
+        simulationInfoMock.contextID,
+        script,
+        jasmine.any(Function),
+        jasmine.any(Function)
+      );
+      expect(isolateScope.isSavingToCollab).toBe(true);
+      backendInterfaceService.saveBrain.argsForCall[0][2]();
+      expect(isolateScope.isSavingToCollab).toBe(false);
+      isolateScope.isSavingToCollab = true;
+      spyOn(hbpDialogFactory, 'alert');
+      backendInterfaceService.saveBrain.argsForCall[0][3]();
+      expect(isolateScope.isSavingToCollab).toBe(false);
+      expect(hbpDialogFactory.alert).toHaveBeenCalled();
     });
 
     it('should be able to repeat the same test twice', function () {

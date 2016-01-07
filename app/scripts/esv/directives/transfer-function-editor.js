@@ -21,6 +21,7 @@
       'documentationURLs',
       'SIMULATION_FACTORY_CLE_ERROR',
       'simulationInfo',
+      'hbpDialogFactory',
     function (
         $log,
         backendInterfaceService,
@@ -32,7 +33,8 @@
         $timeout,
         documentationURLs,
         SIMULATION_FACTORY_CLE_ERROR,
-        simulationInfo
+        simulationInfo,
+        hbpDialogFactory
     ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
@@ -43,6 +45,7 @@
       link: function (scope, element, attrs) {
 
         scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+        scope.isSavingToCollab = false;
         scope.refreshLayout = function(editor) {
           // This updates the layout of the editor also onLoad
           // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
@@ -226,9 +229,22 @@
           button.attr("href", URL.createObjectURL(file));
         };
         scope.saveTFIntoCollabStorage = function () {
+          scope.isSavingToCollab = true;
           // update all transfer functions
           _.forEach(scope.transferFunctions, scope.update);
-          backendInterfaceService.saveTF(simulationInfo.contextID, scope.transferFunctions);
+          backendInterfaceService.saveTransferFunctions(
+            simulationInfo.contextID,
+            _.pluck(scope.transferFunctions, 'code'),
+            function() { // Success callback
+              scope.isSavingToCollab = false;
+            },function() { // Failure callback
+              hbpDialogFactory.alert({
+                title: "Error.",
+                template: "Error while saving transfer functions to Collab storage."
+              });
+              scope.isSavingToCollab = false;
+            }
+          );
         };
 
         scope.loadTransferFunctions = function(file) {

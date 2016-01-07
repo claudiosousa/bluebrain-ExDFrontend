@@ -28,6 +28,7 @@
     "ng-file-upload": "~7.0.17",
     "roslibjs": "~0.17.0",
     "stats.js": "latest",
+    "v-button": "~1.1.1",
     "xml2json": "latest"
   },
   "overrides": {

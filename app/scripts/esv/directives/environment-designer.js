@@ -22,6 +22,7 @@
     'simulationInfo',
     'contextMenuState',
     'backendInterfaceService',
+    'hbpDialogFactory',
   function (
     $document,
     STATE,
@@ -34,7 +35,8 @@
     stateService,
     simulationInfo,
     contextMenuState,
-    backendInterfaceService
+    backendInterfaceService,
+    hbpDialogFactory
   ) {
     return {
       templateUrl: 'views/esv/environment-designer.html',
@@ -49,6 +51,7 @@
         scope.EDIT_MODE = EDIT_MODE;
         scope.gz3d = gz3d;
         scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+        scope.isSavingToCollab = false;
 
         scope.setEditMode = function (mode) {
           var setMode = function(m) {
@@ -139,7 +142,19 @@
         };
 
         scope.saveSDFIntoCollabStorage = function () {
-          backendInterfaceService.saveSDF(simulationInfo.contextID);
+          scope.isSavingToCollab = true;
+          backendInterfaceService.saveSDF(
+            simulationInfo.contextID,
+            function() { // Success callback
+              scope.isSavingToCollab = false;
+            },function() { // Failure callback
+              hbpDialogFactory.alert(
+                {title: "Error.",
+                template: "Error while saving SDF to Collab storage."
+              });
+              scope.isSavingToCollab = false;
+            }
+          );
         };
       }
     };

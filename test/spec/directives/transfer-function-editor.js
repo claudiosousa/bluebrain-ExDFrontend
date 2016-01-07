@@ -5,14 +5,15 @@ describe('Directive: transferFunctionEditor', function () {
   var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, isolateScope,
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
-    SIMULATION_FACTORY_CLE_ERROR, pythonCodeHelper, ScriptObject, simulationInfo;
+    SIMULATION_FACTORY_CLE_ERROR, pythonCodeHelper, ScriptObject, simulationInfo,
+    hbpDialogFactory;
 
   var backendInterfaceServiceMock = {
     getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
     setTransferFunction: jasmine.createSpy('setTransferFunction'),
     deleteTransferFunction: jasmine.createSpy('deleteTransferFunction'),
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl'),
-    saveTF: jasmine.createSpy('saveTF')
+    saveTransferFunctions: jasmine.createSpy('saveTransferFunctions')
   };
 
   var documentationURLsMock =
@@ -64,7 +65,8 @@ describe('Directive: transferFunctionEditor', function () {
                               _STATE_,
                               _SIMULATION_FACTORY_CLE_ERROR_,
                               _pythonCodeHelper_,
-                              _simulationInfo_) {
+                              _simulationInfo_,
+                              _hbpDialogFactory_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -83,6 +85,7 @@ describe('Directive: transferFunctionEditor', function () {
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
+    hbpDialogFactory = _hbpDialogFactory_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
@@ -398,8 +401,17 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should correctly saveTFIntoCollabStorage', function () {
+      expect(isolateScope.isSavingToCollab).toEqual(false);
       isolateScope.saveTFIntoCollabStorage();
-      expect(backendInterfaceService.saveTF).toHaveBeenCalledWith(simulationInfo.contextID, isolateScope.transferFunctions);
+      expect(backendInterfaceService.saveTransferFunctions).toHaveBeenCalledWith(simulationInfo.contextID, _.pluck(isolateScope.transferFunctions, 'code'), jasmine.any(Function), jasmine.any(Function));
+      expect(isolateScope.isSavingToCollab).toEqual(true);
+      backendInterfaceService.saveTransferFunctions.argsForCall[0][2]();
+      expect(isolateScope.isSavingToCollab).toBe(false);
+      isolateScope.isSavingToCollab = true;
+      spyOn(hbpDialogFactory, 'alert');
+      backendInterfaceService.saveTransferFunctions.argsForCall[0][3]();
+      expect(isolateScope.isSavingToCollab).toBe(false);
+      expect(hbpDialogFactory.alert).toHaveBeenCalled();
     });
 
   });
