@@ -84,7 +84,7 @@ window.bbpConfig = {
   },
   'auth': {
     'url': 'https://services-test.humanbrainproject-test.eu/oidc',
-    'clientId': 'portal-client'
+    'clientId': 'test-client-id'
   },
   'oidc': {
     'debug': false

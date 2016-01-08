@@ -45,10 +45,15 @@ describe('testing the gz3d service', function () {
     Initialize: jasmine.createSpy('Initialize')
   };
 
+  var bbpConfig = {};
+  bbpConfig.get = jasmine.createSpy('get').andReturn('toto');
+
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {
     $provide.value('simulationInfo', simulationInfo);
+    $provide.value('bbpConfig', bbpConfig);
   }));
+
   beforeEach(inject(function ($rootScope, $compile, _gz3d_) {
     rootScope = $rootScope;
     gz3d = _gz3d_;

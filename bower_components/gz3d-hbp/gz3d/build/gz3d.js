@@ -1,7 +1,8 @@
 var GZ3D = GZ3D || {
-  REVISION : '1',
-  assetsPath: 'http://localhost:8080/assets',
-  webSocketUrl: 'ws://localhost:7681'
+    REVISION : '1',
+    assetsPath: 'http://localhost:8080/assets',
+    webSocketUrl: 'ws://localhost:7681',
+    webSocketToken: undefined,
 };
 
 GZ3D.AnimatedModel = function(scene) {
@@ -2283,22 +2284,15 @@ GZ3D.GZIface.prototype.registerWebSocketConnectionCallback = function(callback) 
   this.webSocketConnectionCallbacks.push(callback);
 };
 
-GZ3D.GZIface.prototype.connect = function()
-{
+GZ3D.GZIface.prototype.connect = function() {
   // connect to websocket
   var url = GZ3D.webSocketUrl;
-  if (localStorage.getItem('localmode.forceuser') === 'false') {
-    var token = [];
-    if (localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc')) {
-      try {
-        token = JSON.parse(localStorage.getItem('tokens-neurorobotics-ui@https://services.humanbrainproject.eu/oidc'));
-      } catch(e) {
-        token[0] = { access_token : 'notoken' };
-      }
-      url = url + '/?token=' + token[0].access_token;
-    } else {
-      url = 'ws://' + location.hostname + ':7681';
-    }
+
+  if (GZ3D.webSocketToken !== undefined) {
+    url = url + '/?token=' + GZ3D.webSocketToken;
+  }
+  else {
+    url = 'ws://' + location.hostname + ':7681';
   }
 
   this.webSocket = new ROSLIB.Ros({

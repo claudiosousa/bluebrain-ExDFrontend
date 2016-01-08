@@ -59,8 +59,8 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
-  gz3dServices.factory('gz3d', ['$rootScope', '$window', '$compile', 'simulationInfo',
-    function ($rootScope, $window, $compile, simulationInfo) {
+  gz3dServices.factory('gz3d', ['$rootScope', '$window', '$compile', 'simulationInfo', 'bbpConfig',
+    function ($rootScope, $window, $compile, simulationInfo, bbpConfig) {
     /* moved from the gz3d-view.html*/
     if (!Detector.webgl) {
       Detector.addGetWebGLMessage();
@@ -83,6 +83,24 @@
 
       GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
       GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
+
+      if (bbpConfig.get('localmode.forceuser', true)) {
+        var token;
+        var clientID = bbpConfig.get('auth.clientId', '');
+        var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
+        if (localStorage.getItem(localStorageTokenKey)) {
+          try {
+            token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0].access_token;
+          } catch(e) {
+            // this token will be rejected by the server and the client will get a proper auth error
+            token = 'malformed-token';
+          }
+        } else {
+          // this token will be rejected by the server and the client will get a proper auth error
+          token = 'no-token';
+        }
+        GZ3D.webSocketToken = token;
+      }
 
       returnValue.createRenderContainer = function(adjustable, name) {
         if (adjustable) {
