@@ -18,13 +18,15 @@
      'nrpErrorHandlers'
     ]);
   module.factory('stateService',
-    ['simulationState',
+    ['simulationState', 'STATE',
     '$log', 'bbpConfig', '$q', 'serverError', 'roslib',
     'simulationInfo',
-    function (simulationState,
+    function (simulationState, STATE,
       $log, bbpConfig, $q, serverError, roslib,
       simulationInfo) {
-      var thisStateService = {};
+      // Initialized the state to "paused" so that a view that loads before the
+      // first message update from our websocket can properly render the buttons
+      var thisStateService = {currentState: STATE.PAUSED};
       var stateCallbacks = [];
       var messageCallbacks = [];
       thisStateService.statePending = false;
