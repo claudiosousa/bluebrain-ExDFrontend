@@ -84,7 +84,7 @@
       GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
       GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
 
-      if (bbpConfig.get('localmode.forceuser', true)) {
+      if (!bbpConfig.get('localmode.forceuser', false)) {
         var token;
         var clientID = bbpConfig.get('auth.clientId', '');
         var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
