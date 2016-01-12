@@ -264,6 +264,13 @@
           gz3d.scene.emitter.emit('lightChanged', ratio);
         });
         resetScreenColors();
+
+        // when in edit mode make light's helper geometry visible
+        if ($scope.operationMode === OPERATION_MODE.EDIT) {
+          $scope.setLightHelperVisibility(true);
+        } else {
+          $scope.setLightHelperVisibility(false);
+        }
       };
 
       // The following lines allow the joining client to retrieve the actual screen color stored by the server.
@@ -334,6 +341,14 @@
         if(gz3d.scene.manipulationMode !== newMode) {
             gz3d.scene.setManipulationMode(newMode);
         }
+      };
+
+      $scope.setLightHelperVisibility = function(visible) {
+        gz3d.scene.scene.traverse(function(node) {
+          if (node.name.indexOf('_lightHelper') > -1) {
+            node.visible = visible;
+          }
+        });
       };
 
       $scope.updateSimulation = function (newState) {

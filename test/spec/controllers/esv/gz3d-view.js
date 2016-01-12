@@ -1,3 +1,5 @@
+/* global THREE: false */
+
 'use strict';
 
 describe('Controller: Gz3dViewCtrl', function () {
@@ -154,7 +156,8 @@ describe('Controller: Gz3dViewCtrl', function () {
             {type: 'camera', active: true, container: {style: {visibility: 'visible'}}},
             {type: 'camera', active: false, container: {style: {visibility: 'hidden'}}}
           ]
-        }
+        },
+        scene: new THREE.Scene()
       },
       iface: {
         setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
@@ -164,8 +167,15 @@ describe('Controller: Gz3dViewCtrl', function () {
         }
       }
     };
+    // set up test lightHelper object
+    var testLightHelper = new THREE.Object3D();
+    testLightHelper.name = 'test_lightHelper';
+    testLightHelper.visible = false;
+    gz3dMock.scene.scene.add(testLightHelper);
+    //provide gz3dMock
     $provide.value('gz3d', gz3dMock);
-     var cameraManipulationMock = {
+
+    var cameraManipulationMock = {
       firstPersonRotate : jasmine.createSpy('firstPersonRotate'),
       firstPersonTranslate : jasmine.createSpy('firstPersonTranslate'),
       lookAtOrigin : jasmine.createSpy('lookAtOrigin'),
@@ -954,11 +964,23 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.updateInitialCameraPose(camPose);
       expect(gz3d.scene.setDefaultCameraPose).toHaveBeenCalled();
     });
+
+    it('should make lightHelpers invisible', function(){
+      spyOn(scope, 'setLightHelperVisibility').andCallThrough();
+      spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
+
+      scope.onSceneLoaded();
+
+      expect(scope.setLightHelperVisibility).toHaveBeenCalledWith(false);
+      expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
+      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
+    });
   });
 
   describe('(EditMode)', function () {
     beforeEach(function(){
       simulationInfo.mode = OPERATION_MODE.EDIT;
+
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope
@@ -972,6 +994,28 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should call the panels.open() function', function() {
       scope.edit();
       expect(panels.open).toHaveBeenCalledWith('code-editor');
+    });
+
+    it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function() {
+      spyOn(scope, 'setLightHelperVisibility').andCallThrough();
+      spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
+
+      scope.onSceneLoaded();
+
+      expect(scope.setLightHelperVisibility).toHaveBeenCalledWith(true);
+      expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
+      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
+    });
+
+    it(' - setLightHelperVisibility() should work', function() {
+      spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
+
+      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
+
+      scope.setLightHelperVisibility(true);
+
+      expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
+      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
     });
   });
 });
