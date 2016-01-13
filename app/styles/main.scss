@@ -122,3 +122,8 @@ margin:0px 0px 0px 0px !important;
 .monospace-text {
   font-family: monospace;
 }
+
+[v-busy].is-busy::before {
+  border-top-color: black;
+  border-left-color: black;
+}

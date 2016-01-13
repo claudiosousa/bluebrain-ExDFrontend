@@ -5,7 +5,7 @@
     ['$resource', '$stateParams', 'bbpConfig', 'serverError', 'simulationInfo',
     function ($resource, $stateParams, bbpConfig, serverError, simulationInfo) {
 
-      var resourceStateMachine = function(backendBaseUrl) {
+      var resourceStateMachineSimulation = function(backendBaseUrl) {
           return $resource(backendBaseUrl + '/simulation/:sim_id/state-machines', {}, {
             get: {
               method: 'GET',
@@ -24,7 +24,7 @@
         });
       };
 
-      var resourceTransferFunction = function(backendBaseUrl) {
+      var resourceTransferFunctionSimulation = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/simulation/:sim_id/transfer-functions', {}, {
           transferFunctions: {
             method: 'GET',
@@ -42,7 +42,7 @@
         });
       };
 
-      var resourceBrain = function(backendBaseUrl) {
+      var resourceBrainSimulation = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/simulation/:sim_id/brain', {}, {
           get: {
             method: 'GET',
@@ -54,16 +54,16 @@
         });
       };
 
-      var resourceBrainExp = function(backendBaseUrl) {
-        return $resource(backendBaseUrl + '/experiment/:exp_id/brain', {}, {
-          get: {
-            method: 'GET',
+      var resourceBrainExperiment = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/experiment/:context_id/brain', {}, {
+          save: {
+            method: 'PUT',
             interceptor: {responseError: serverError.display}
           }
         });
       };
 
-      var resourceSDF = function(backendBaseUrl) {
+      var resourceSDFExperiment = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/experiment/:context_id/sdf_world', {}, {
           save: {
             method: 'PUT',
@@ -72,7 +72,7 @@
         });
       };
 
-      var resourceTF = function(backendBaseUrl) {
+      var resourceTransferFunctionExperiment = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/experiment/:context_id/transfer-functions', {}, {
           save: {
             method: 'PUT',
@@ -92,7 +92,7 @@
 
       return {
         getBrain: function (callback) {
-          resourceBrain(simulationInfo.serverBaseUrl).get(
+          resourceBrainSimulation(simulationInfo.serverBaseUrl).get(
             {sim_id: simulationInfo.simulationID},
             function(response) {
               callback(response);
@@ -100,13 +100,16 @@
           );
         },
         setBrain: function (data, brain_type, data_type, successCallback, failureCallback) {
-          resourceBrain(simulationInfo.serverBaseUrl).put({
+          resourceBrainSimulation(simulationInfo.serverBaseUrl).put({
             sim_id: simulationInfo.simulationID
           }, {'data': data, 'brain_type': brain_type, 'data_type': data_type}, successCallback, failureCallback);
         },
-
+        saveBrain: function(contextID, source, successCallback, failureCallback) {
+          return resourceBrainExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID }, {data: source},
+            successCallback, failureCallback);
+        },
         reloadBrain: function (callback) {
-          resourceBrainExp(simulationInfo.serverBaseUrl).get(
+          resourceBrainExperiment(simulationInfo.serverBaseUrl).get(
             {exp_id: simulationInfo.experimentID},
             function(response) {
               callback(response);
@@ -115,7 +118,7 @@
         },
 
         getStateMachines: function (callback) {
-          resourceStateMachine(simulationInfo.serverBaseUrl).get(
+          resourceStateMachineSimulation(simulationInfo.serverBaseUrl).get(
             {sim_id: simulationInfo.simulationID},
             function (response) {
               callback(response);
@@ -123,20 +126,21 @@
           );
         },
         setStateMachine: function (name, data, successCallback) {
-          resourceStateMachine(simulationInfo.serverBaseUrl).put({
+          resourceStateMachineSimulation(simulationInfo.serverBaseUrl).put({
             sim_id: simulationInfo.simulationID,
             state_machine_name: name
           }, data, successCallback);
         },
         deleteStateMachine: function (name, callback) {
-          resourceStateMachine(simulationInfo.serverBaseUrl).delete(
+          resourceStateMachineSimulation(simulationInfo.serverBaseUrl).delete(
             {
               sim_id: simulationInfo.simulationID, state_machine_name: name
             }, callback
           );
         },
+
         getTransferFunctions: function (callback) {
-          resourceTransferFunction(simulationInfo.serverBaseUrl).transferFunctions(
+          resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).transferFunctions(
             {
               sim_id: simulationInfo.simulationID
             }, function (data) {
@@ -145,7 +149,7 @@
           );
         },
         setTransferFunction: function (name, data, successCallback, errorCallback) {
-          resourceTransferFunction(simulationInfo.serverBaseUrl).patch(
+          resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).patch(
           {
             sim_id: simulationInfo.simulationID,
             transfer_function_name: name
@@ -156,24 +160,26 @@
           );
         },
         deleteTransferFunction: function (name, callback) {
-          resourceTransferFunction(simulationInfo.serverBaseUrl).delete(
+          resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).delete(
             {
               sim_id: simulationInfo.simulationID, transfer_function_name: name
             }, callback
           );
         },
-        getServerBaseUrl: function () {
-          return simulationInfo.serverBaseUrl;
-        },
-        saveSDF: function(contextID) {
-          return resourceSDF(simulationInfo.serverBaseUrl).save({ context_id: contextID }, { context_id: contextID });
-        },
-        saveTF: function(contextID, transferFunctions) {
+        saveTransferFunctions: function(contextID, transferFunctions, successCallback, errorCallback) {
           var data = {
             context_id: contextID,
             transfer_functions: transferFunctions
           };
-          return resourceTF(simulationInfo.serverBaseUrl).save({ context_id: contextID }, data);
+          return resourceTransferFunctionExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID }, data,
+            successCallback, errorCallback);
+        },
+        getServerBaseUrl: function () {
+          return simulationInfo.serverBaseUrl;
+        },
+        saveSDF: function(contextID, successCallback, errorCallback) {
+          return resourceSDFExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID },
+            { context_id: contextID }, successCallback, errorCallback);
         },
         reset: function(resetData) {
           return resourceReset(simulationInfo.serverBaseUrl).reset(

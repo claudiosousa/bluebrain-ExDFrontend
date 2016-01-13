@@ -5,7 +5,7 @@ describe('Directive: environment-designer', function () {
 
   var $scope, element, stateService,
     panels, currentStateMock, gz3dMock, contextMenuState, simulationSDFWorld,
-    simulationInfo, backendInterfaceService;
+    simulationInfo, backendInterfaceService, hbpDialogFactory;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -64,7 +64,8 @@ describe('Directive: environment-designer', function () {
     _panels_,
     _simulationSDFWorld_,
     _simulationInfo_,
-    _backendInterfaceService_) {
+    _backendInterfaceService_,
+    _hbpDialogFactory_) {
 
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
@@ -77,6 +78,7 @@ describe('Directive: environment-designer', function () {
     panels = _panels_;
     simulationSDFWorld = _simulationSDFWorld_;
     backendInterfaceService = _backendInterfaceService_;
+    hbpDialogFactory = _hbpDialogFactory_;
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
     var sceneMock = {
@@ -212,7 +214,6 @@ describe('Directive: environment-designer', function () {
     expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.ROTATE);
   });
 
-
   it('should call correctly addModel("box")', function () {
     spyOn($scope, 'addModel');
 
@@ -290,11 +291,24 @@ describe('Directive: environment-designer', function () {
 
   });
 
-
   it('should correctly saveSDFIntoCollabStorage', function () {
     spyOn(backendInterfaceService, 'saveSDF');
+    expect($scope.isSavingToCollab).toEqual(false);
     $scope.saveSDFIntoCollabStorage();
-    expect(backendInterfaceService.saveSDF).toHaveBeenCalledWith(simulationInfo.contextID);
+    expect(backendInterfaceService.saveSDF).toHaveBeenCalledWith(
+      simulationInfo.contextID,
+      jasmine.any(Function),
+      jasmine.any(Function)
+    );
+    expect($scope.isSavingToCollab).toEqual(true);
+    backendInterfaceService.saveSDF.argsForCall[0][1]();
+    expect($scope.isSavingToCollab).toBe(false);
+    $scope.isSavingToCollab = true;
+    spyOn(hbpDialogFactory, 'alert');
+    backendInterfaceService.saveSDF.argsForCall[0][2]();
+    expect($scope.isSavingToCollab).toBe(false);
+    expect(hbpDialogFactory.alert).toHaveBeenCalled();
+
   });
 
 });

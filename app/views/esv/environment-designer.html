@@ -10,7 +10,6 @@
   assets).
 <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
 <hr>
-<h4>View, Move or Rotate objects on the scene:</h4>
 <div class="btn-group" role="group">
   <button type="button" class="btn btn-default"
           ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.VIEW}"
@@ -35,21 +34,21 @@
   </button>
 </div>
 <hr>
-<h4>Save or Load environment definition file to and from your computer</h4>
-<div class="btn-group" role="group">
   <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
           ng-click="saveSDFIntoCollabStorage()"
-          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-    <i class="glyphicon glyphicon-save"></i>
-    <span>Save SDF</span>
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
+          v-busy="isSavingToCollab"
+          v-busy-label="Saving to Collab"
+          v-pressable>
+    <i class="glyphicon glyphicon-book"></i>
+    <span> Save to Collab</span>
   </button>
   <button type="button" class="btn btn-default"
         ng-click="exportSDFWorld()"
         ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-  <i class="glyphicon glyphicon-save"></i>
-  <span>Download SDF</span>
+  <i class="glyphicon glyphicon-download"></i>
+  <span> Download</span>
 </button>
-</div>
 <hr>
 
 <div ng-controller="insertControl">

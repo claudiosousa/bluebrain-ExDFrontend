@@ -39,7 +39,8 @@
                                    'nrpErrorHandlers',
                                    'nrpBackendAbout',
                                    'ngFileUpload',
-                                   'nrpBrowserDetection'])
+                                   'nrpBrowserDetection',
+                                   'vButton'])
         // Routes
         .config(function($stateProvider, $urlRouterProvider) {
             // Configuring routes using `angular-ui-router` states.

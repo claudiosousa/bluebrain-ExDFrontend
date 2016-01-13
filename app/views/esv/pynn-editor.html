@@ -7,6 +7,8 @@
 </div>
 <div ng-show="pynnScript !== undefined" >
   <hr>
+  <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
+  <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">PyNN Script</span></code></h4>
   <hr>
   <div id="codeEditor"  ui-codemirror ui-codemirror-opts="{
@@ -19,9 +21,6 @@
        ng-model="pynnScript"
        ui-refresh='refreshCodemirror'>
   </div>
-  <button type="button" class="btn btn-default btn-md"
-          ng-click="update(pynnScript)"
-          ng-disabled="doc.isClean() || loading || stateService.statePending">
-    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Update
-  </button>
+  <hr>
+  <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
 </div>
