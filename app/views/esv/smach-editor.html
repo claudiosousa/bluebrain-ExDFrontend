@@ -9,13 +9,8 @@
 <div ng-show="stateMachines.length === 0" class="alert alert-info" role="alert">
   There is no SMACH script available for this experiment.
 </div>
-<button type="button" class="btn btn-default btn-md" ng-click="create()">
-  <span class="glyphicon glyphicon-add"></span> New state machine
-</button>
-<button class="btn btn-default btn-md" type="file"
-      ngf-select="loadStateMachine($file)" accept=".py"
-      ng-disabled="stateService.statePending"> Load
-</button>
+<hr>
+<div ng-include src="'views/esv/smach-editor-buttons.html'"></div>
 <div ng-repeat="stateMachine in stateMachines">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
@@ -34,17 +29,19 @@
   <button type="button" class="btn btn-default btn-md"
     ng-click="update(stateMachine)"
     ng-disabled="!stateMachine.dirty || stateService.statePending">
-    <span class="glyphicon glyphicon-save" aria-hidden="true"></span> Update
+    <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
   </button>
   <button type="button" class="btn btn-default btn-md"
     ng-disabled="stateService.statePending"
     ng-click="delete(stateMachine)">
-    <span class="glyphicon glyphicon-remove"></span> Delete
+    <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
   </button>
   <a id="save-state-machine-to-file-{{stateMachine.id}}"
     href=""
     class="btn btn-default btn-md"
     ng-click="save(stateMachine)"
-    download="{{stateMachine.id}}.py">Save
+    download="{{stateMachine.id}}.py"><i class="glyphicon glyphicon-download"></i><span> Download</span>
   </a>
 </div>
+<hr>
+<div ng-include src="'views/esv/smach-editor-buttons.html'"></div>

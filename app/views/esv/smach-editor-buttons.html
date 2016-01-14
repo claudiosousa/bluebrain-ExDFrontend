@@ -1,0 +1,8 @@
+<button type="button" class="btn btn-default btn-md" ng-click="create()">
+  <i class="glyphicon glyphicon-star"></i><span> New</span>
+</button>
+<button class="btn btn-default btn-md" type="file"
+        ngf-select="loadStateMachine($file)" accept=".py"
+        ng-disabled="stateService.statePending">
+  <i class="glyphicon glyphicon-upload"></i><span> Upload</span>
+</button>
