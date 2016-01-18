@@ -959,10 +959,16 @@ describe('Services: error handling', function () {
     expect(serverError.display.callCount).toBe(1);
   });
 
-  it('should not call serverError for a failing GET /simulation request with 504 status', function() {
+  it('should not call serverError for a failing GET /simulation request with 504 or a -1 status', function() {
     var serverURL = 'http://bbpce014.epfl.ch:8080';
     var serverID = 'bbpce014';
     httpBackend.whenGET(/\/simulation/).respond(504);
+    simulationService({serverURL: serverURL, serverID: serverID}).simulations();
+    httpBackend.expectGET(serverURL + '/simulation');
+    httpBackend.flush();
+    expect(serverError.display.callCount).toBe(0);
+
+    httpBackend.whenGET(/\/simulation/).respond(-1);
     simulationService({serverURL: serverURL, serverID: serverID}).simulations();
     httpBackend.expectGET(serverURL + '/simulation');
     httpBackend.flush();

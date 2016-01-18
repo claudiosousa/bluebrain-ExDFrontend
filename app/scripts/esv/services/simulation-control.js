@@ -104,7 +104,9 @@
             interceptor: {
               responseError: function (response) {
                 // Prevent 504 Gateway Timeout errors to be displayed
-                if (response.status !== 504) {
+                // as well as timeout that occurs when the server is busy doing
+                // something else such as starting a simulation
+                if (response.status !== 504 && response.status > 0) {
                   serverError.display(response);
                 }
               }
