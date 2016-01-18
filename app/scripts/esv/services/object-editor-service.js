@@ -3,14 +3,14 @@
 (function () {
     'use strict';
 
-    angular.module('exdFrontendApp.Constants')
+    angular.module('objectEditorModule', [])
+
       .constant('OBJECT_VIEW_MODE', {
         NORMAL: 'normal',
         TRANSPARENT: 'transparent',
         WIREFRAME: 'wireframe'
-      });
+      })
 
-    angular.module('objectEditorModule', [])
       .factory('objectEditorService', [
         'EDIT_MODE',
         'STATE',

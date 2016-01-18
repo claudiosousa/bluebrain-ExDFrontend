@@ -3,8 +3,9 @@
 
   angular.module('exdFrontendApp')
     .directive('objectEditor', [
+      'OBJECT_VIEW_MODE',
       'objectEditorService',
-      function (objectEditorService) {
+      function (OBJECT_VIEW_MODE, objectEditorService) {
         return {
           templateUrl: 'views/esv/object-editor.html',
           restrict: 'E',
@@ -14,6 +15,8 @@
               // remove the callback
               objectEditorService.isShown = false;
             });
+
+            scope.OBJECT_VIEW_MODE = OBJECT_VIEW_MODE;
           }
         };
       }]);
