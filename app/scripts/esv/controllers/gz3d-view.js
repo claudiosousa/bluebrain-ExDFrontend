@@ -316,7 +316,6 @@
             }
           };
 
-
           /* istanbul ignore next */
           var resetScreenColors = function () {
             simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function (data) {
@@ -335,17 +334,21 @@
             $scope.checkboxes = {
               oldReset: false,
               robotPose: false,
-              fullReset: false
+              fullReset: false,
+              viewReset: false
             };
 
             hbpDialogFactory.confirm({
-                'templateUrl': 'views/esv/reset-checklist-template.html',
-                'scope': $scope
-              })
-              .then(function () {
-                /* TODO: this should be removed as soon as some reset features are
-                 correctly implemented and tested */
-                if ($scope.checkboxes.oldReset) {
+              'templateUrl': 'views/esv/reset-checklist-template.html',
+              'scope': $scope
+            })
+            .then(function() {
+              /* TODO: this should be removed as soon as some reset features are
+              correctly implemented and tested */
+              if($scope.checkboxes.viewReset){
+                gz3d.scene.resetView();
+              }
+              else if ($scope.checkboxes.oldReset) {
                   $scope.updateSimulation(STATE.INITIALIZED);
                   $scope.setEditMode(EDIT_MODE.VIEW);
                 }

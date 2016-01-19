@@ -485,6 +485,15 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
     });
 
+     it('should call resetView() when "Reset Camera view" checkbox is checked', function () {
+      //gz3d.scene.resetView is already being spied on
+
+      scope.resetButtonClickHandler();
+      scope.checkboxes = {viewReset: true};
+      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      expect(gz3d.scene.resetView).toHaveBeenCalled();
+    });
+
     it('should register for status information', function() {
       scope.state = STATE.UNDEFINED;
       stateService.currentState = STATE.STARTED;
