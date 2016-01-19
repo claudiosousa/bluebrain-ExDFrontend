@@ -5928,6 +5928,8 @@ GZ3D.Scene.prototype.init = function()
 
   this.showCollisions = false;
 
+  this.showLightHelpers = false;
+
   this.spawnModel = new GZ3D.SpawnModel(
       this, this.getDomElement());
   // Material for simple shapes being spawned (grey transparent)
@@ -6891,7 +6893,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   obj.serverProperties.initial = {};
   obj.serverProperties.initial.diffuse = diffuse;
 
-  helper.visible = false;
+  helper.visible = this.showLightHelpers;
   lightObj.up = new THREE.Vector3(0,0,1);
   lightObj.shadowBias = -0.0005;
 

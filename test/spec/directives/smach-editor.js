@@ -151,10 +151,9 @@ describe('Directive: smachEditor', function () {
 
       it('should save state machine code to a file', function() {
         var buttonMock = { attr: jasmine.createSpy('attr') };
-        var URLMock = { createObjectURL: jasmine.createSpy('createObjectURL') };
         spyOn(document, 'querySelector').andReturn(buttonMock);
         spyOn(window, 'Blob').andReturn({});
-        expect(window.URL).not.toBeDefined();
+        var URLMock = { createObjectURL: jasmine.createSpy('createObjectURL') }; 
         window.URL = URLMock;
         isolateScope.save(new ScriptObject('stateMachineId','Some code'));
         expect(document.querySelector).toHaveBeenCalled();

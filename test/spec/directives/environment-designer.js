@@ -85,6 +85,7 @@ describe('Directive: environment-designer', function () {
     hbpDialogFactory = _hbpDialogFactory_;
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
+
     var sceneMock = {
       setManipulationMode: jasmine.createSpy('setManipulationMode').
       andCallFake(function (m) {

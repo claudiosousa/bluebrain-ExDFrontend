@@ -366,6 +366,8 @@
           };
 
           $scope.setLightHelperVisibility = function (visible) {
+            gz3d.scene.showLightHelpers = visible;
+
             gz3d.scene.scene.traverse(function (node) {
               if (node.name.indexOf('_lightHelper') > -1) {
                 node.visible = visible;

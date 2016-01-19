@@ -1,7 +1,7 @@
 {
   "name": "gz3d-hbp",
   "description": "3D rendering component of gzweb, modified for HBP",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": true,
   "repository": {
     "url": "git+ssh://bbpcode.epfl.ch/neurorobotics/gzweb",
@@ -46,11 +46,11 @@
     "README",
     "CMakeLists.txt"
   ],
-  "_release": "0.1.17",
+  "_release": "0.1.18",
   "_resolution": {
     "type": "version",
-    "tag": "0.1.17",
-    "commit": "f8529c0af14902068e771391b569530d6bf07120"
+    "tag": "0.1.18",
+    "commit": "0d78e48d7167df6afb091e26571346380ae19374"
   },
   "_source": "ssh://bbpcode.epfl.ch/neurorobotics/gzweb",
   "_target": "*",
