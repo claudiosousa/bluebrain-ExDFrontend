@@ -54,7 +54,9 @@ describe('Services: documentation-urls', function () {
 
     expect(documentationURLs.getDocumentationURLs()).toEqual(
       { cleDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.2.3',
-        backendDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp_nrp_backend/1.3.3'}
+        backendDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp_nrp_backend/1.3.3',
+        platformDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/Neurorobotics%20Platform/1.3'
+      }
     );
 
   });
@@ -76,7 +78,9 @@ describe('Services: documentation-urls', function () {
 
     expect(documentationURLs.getDocumentationURLs()).toEqual(
       { cleDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/1.2.4',
-        backendDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp_nrp_backend/1.3.4'}
+        backendDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp_nrp_backend/1.3.4',
+        platformDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/Neurorobotics%20Platform/1.3'
+      }
     );
 
   });
@@ -100,7 +104,9 @@ describe('Services: documentation-urls', function () {
 
     expect(documentationURLs.getDocumentationURLs()).toEqual(
       { cleDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp-nrp-cle/latest',
-        backendDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp_nrp_backend/latest'}
+        backendDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/hbp_nrp_backend/latest',
+        platformDocumentationURL : 'https://developer.humanbrainproject.eu/docs/projects/Neurorobotics%20Platform/1.3'
+      }
     );
 
   });

@@ -162,6 +162,7 @@
 
           documentationURLs.getDocumentationURLs().then(function(data) {
             scope.backendDocumentationURL = data.backendDocumentationURL;
+            scope.platformDocumentationURL = data.platformDocumentationURL;
           });
 
         }

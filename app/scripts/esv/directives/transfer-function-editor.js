@@ -76,6 +76,7 @@
 
         documentationURLs.getDocumentationURLs().then(function(data) {
           scope.cleDocumentationURL = data.cleDocumentationURL;
+          scope.platformDocumentationURL = data.platformDocumentationURL;
         });
 
         scope.getTransferFunctionEditor = function(transferFunction) {
