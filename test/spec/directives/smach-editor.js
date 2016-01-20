@@ -90,7 +90,7 @@ describe('Directive: smachEditor', function () {
         for (var i = 0; i < 3; ++i) {
           var smId = 'SM' + i;
           var sm = new ScriptObject(smId, data[smId]);
-          sm.name = isolateScope.getStateMachinePythonClassName(data[smId]);
+          sm.name = isolateScope.getStateMachineName(smId);
           expected.push(sm);
         }
         isolateScope.stateMachines = angular.copy(expected);
@@ -174,12 +174,12 @@ describe('Directive: smachEditor', function () {
         }
         var n = numberOfNewStateMachines - 1;
         var sm = stateMachines[0];
-        expect(sm.name).toEqual('MyStateMachine_' + n);
-        expect(sm.id).toEqual('statemachine_' + n + '_' + date);
+        var name = 'statemachine_' + n;
+        expect(sm.name).toEqual(name);
+        expect(sm.id).toEqual(name + '_' + date + '_front-end_generated');
         expect(sm.code).toContain('import smach_ros');
-        expect(sm.code).toContain('import DefaultStateMachine');
-        expect(sm.code).toContain('def populate():\n');
-        expect(sm.code).toContain('(DefaultStateMachine)');
+        expect(sm.code).toContain('from smach import StateMachine');
+        expect(sm.code).toContain('StateMachine.add(');
       });
 
       it('should update script flags properly when editing the state machine code', function() {
@@ -195,18 +195,16 @@ describe('Directive: smachEditor', function () {
           ]);
       });
 
-      it('should retrieve the class name of the state from its code', function() {
-        var className = 'MyStateMachine';
-        var smCode = 'class   ' + className + '   ( DefaultStateMachine ):\n    def populate():\n        return []';
-        expect(isolateScope.getStateMachinePythonClassName(smCode)).toEqual(className);
-        smCode = 'def ' + className + '(DefaultStateMachine):\n return 0';
-        expect(isolateScope.getStateMachinePythonClassName(smCode)).not.toBeDefined();
+      it('should retrieve the name of the state from its id', function() {
+        var name = 'statemachine_3';
+        var id = name + '_1000234677_front-end_generated';
+        expect(isolateScope.getStateMachineName(id)).toEqual(name);
       });
 
       it('should load to back-end memory a state machine from file', function() {
         var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
-        var expectedName = 'Enigma';
-        var stateMachineCode = 'class ' + expectedName + ' (DefaultStateMachine):\n';
+        var expectedName = 'statemachine_0';
+        var stateMachineCode = 'some code';
         var fileReaderMock = {
           readAsText: readAsTextSpy
         };
@@ -223,7 +221,7 @@ describe('Directive: smachEditor', function () {
         expect(stateMachines).toEqual([]);
         $timeout.flush();
         stateMachines = isolateScope.stateMachines;
-        var expectedStateMachineId = 'statemachine_0_666';
+        var expectedStateMachineId = expectedName + '_666_front-end_generated';
         var sm = stateMachines[0];
         expect(sm.id).toEqual(expectedStateMachineId);
         expect(sm.name).toEqual(expectedName);
