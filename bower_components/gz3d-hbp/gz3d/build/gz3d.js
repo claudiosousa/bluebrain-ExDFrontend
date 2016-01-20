@@ -1,8 +1,8 @@
 var GZ3D = GZ3D || {
-    REVISION : '1',
-    assetsPath: 'http://localhost:8080/assets',
-    webSocketUrl: 'ws://localhost:7681',
-    webSocketToken: undefined,
+  REVISION : '1',
+  assetsPath: 'http://localhost:8080/assets',
+  webSocketUrl: 'ws://localhost:7681',
+  webSocketToken: undefined
 };
 
 GZ3D.AnimatedModel = function(scene) {
@@ -2291,9 +2291,6 @@ GZ3D.GZIface.prototype.connect = function() {
   if (GZ3D.webSocketToken !== undefined) {
     url = url + '/?token=' + GZ3D.webSocketToken;
   }
-  else {
-    url = 'ws://' + location.hostname + ':7681';
-  }
 
   this.webSocket = new ROSLIB.Ros({
     url : url
@@ -3242,39 +3239,47 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
   if (sensor.type === 'camera') {
     // If we have a camera sensor we have a potential view that could be rendered
     var camera = sensor.camera;
-    // The following three parameters are available only for Gazebo versions >= 6.5
-    var camFOV = camera.horizontal_fov;
+
+    // The following camera parameters are available only for Gazebo versions >= 6.5 (imageSize exists but always 0x0)
+
+    // set to default values if not available
+    // If no rendering is available, image_size is set to { x: 0.0, y: 0.0 }, see
+    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
+    if (!angular.isDefined(camera.image_size) || (camera.image_size.x === 0.0 && camera.image_size.y === 0.0)) {
+      camera.image_size = {};
+      camera.image_size.x = 960; // width
+      camera.image_size.y = 600; // height
+    }
+    if (!angular.isDefined(camera.horizontal_fov)) {
+      camera.horizontal_fov = Math.PI * 0.3;
+    }
+    if (!angular.isDefined(camera.near_clip)) {
+      camera.near_clip = 0.1;
+    }
+    if (!angular.isDefined(camera.far_clip)) {
+      camera.far_clip = 100.0;
+    }
+
+    var aspectRatio = camera.image_size.x / camera.image_size.y;
+
+    // FOV: THREE uses 1) vertical instead of horizontal FOV, 2) half the angle, 3) degree instead of radians,
+    var camFOV = THREE.Math.radToDeg((camera.horizontal_fov / aspectRatio) / 2);
     var camNear = camera.near_clip;
     var camFar = camera.far_clip;
-    if (!angular.isDefined(camFOV)) {
-      camFOV = 60.0;
-    }
-    if (!angular.isDefined(camNear)) {
-      camNear = 0.1;
-    }
-    if (!angular.isDefined(camFar)) {
-      camFar = 100.0;
-    }
-    var imageSize = camera.image_size;
-    // If no rendering is available, imageSize is set to { x: 0.0, y: 0.0 }, see
-    // https://bitbucket.org/osrf/gazebo/issues/1663/sensor-camera-elements-from-sdf-not-being
-    var camResolution = [imageSize.x, imageSize.y];
-    if (imageSize.x === 0.0 && imageSize.y === 0.0) {
-      camResolution = [960, 600];
-    }
-    var aspectRatio = camResolution[1] / camResolution[0];
+
     var cameraParams = {
-      width: camResolution[0],
-      height: camResolution[1],
+      width: camera.image_size.x,
+      height: camera.image_size.y,
       aspectRatio: aspectRatio,
       fov: camFOV,
       near: camNear,
       far: camFar
     };
+
     var viewManager = this.scene.viewManager;
-    var widthPercentage = 0.2;// each view is afforded 20% of the mainContainer width
+    var widthPercentage = 0.2;  // each view is afforded 20% of the mainContainer width
     var width = widthPercentage * viewManager.mainContainer.clientWidth;
-    var height = Math.floor(width * aspectRatio);
+    var height = Math.floor(width / aspectRatio);
     var viewIndex = viewManager.views.length - 1;
     if (viewIndex < 0) {
       console.error('Negative view index: the main_view camera is probably missing');
@@ -3296,20 +3301,22 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
       console.error('GZ3D.GZIface.createSensorFromMsg() - failed to create view ' + viewName);
       return;
     }
-
-    // camera sensors defined in gazebo .sdf look along positive x axis, so need to adjust the rotation here
-    view.camera.rotateOnAxis(new THREE.Vector3(0.0, 1.0, 0.0), -Math.PI / 2.0);
-    view.camera.rotateOnAxis(new THREE.Vector3(0.0, 0.0, 1.0), -Math.PI / 2.0);
+    view.type = sensor.type;
+    view.camera.up = new THREE.Vector3(0, 0, 1);  // gazebo's up vector
+    // gazebo's transform for the sensor object is different for some reason
+    // or the camera sensor looks along the x-axis by default instead of negative z-axis
+    view.camera.lookAt(view.camera.localToWorld(new THREE.Vector3(1, 0, 0)));
+    view.camera.updateMatrixWorld();
 
     // set view inactive and hide at start
     viewManager.setViewVisibility(view, false);
 
-    // visualization - Deactivated since it causes the robot to be very big and the user
-    // can't barely select other objects on the scene. Reactivate for debug purposes !
-    // var cameraHelper = new THREE.CameraHelper(view.camera);
-    // view.camera.add( cameraHelper );
-
-    view.type = sensor.type;
+    // camera visualization
+    var cameraHelper = new THREE.CameraHelper(view.camera);
+    cameraHelper.visible = false;
+    view.camera.cameraHelper = cameraHelper;
+    this.scene.scene.add( cameraHelper );
+    cameraHelper.update();
 
     sensorObj.add(view.camera);
   }
@@ -5178,7 +5185,8 @@ GZ3D.MultiView.prototype.init = function()
     }
 
     this.createRenderContainerCallback = function() {
-        return document.createElement('div');
+        var renderContainer = document.createElement('div');
+        return renderContainer;
     };
 
     this.createMainUserView();
@@ -5278,30 +5286,20 @@ GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
         return undefined;
     }
 
+    viewContainer.className += (viewContainer.className.length > 0) ? ' viewContainer' : 'viewContainer';
 
     // z-index
     var zIndexTop = parseInt(this.mainContainer.style.zIndex, 10) + this.views.length + 1;
     viewContainer.style.zIndex = angular.isDefined(displayParams.zIndex) ? displayParams.zIndex : zIndexTop;
 
     // positioning
-    viewContainer.style.position = 'absolute';
     viewContainer.style.left = displayParams.left;
     viewContainer.style.top = displayParams.top;
     viewContainer.style.width = displayParams.width;
     viewContainer.style.height = displayParams.height;
 
-    // We set 50px as a min-width for now and set the min height accordingly
-    viewContainer.style.minWidth = '50px';
     var aspectRatio = parseInt(displayParams.height, 10) / parseInt(displayParams.width, 10);
-    viewContainer.style.minHeight = Math.floor(50 * aspectRatio) + 'px';
-    viewContainer.style.maxWidth = '100%';
-    viewContainer.style.maxHeight = '100%';
-
-    // Transparent view-container so that we can render viewport with one renderer in the same context
-    // view-container is only taken as reference for viewport
-    viewContainer.style.boxShadow = '0px 0px 0px 3px rgba(0,0,0,0.3)';
-    viewContainer.style.borderRadius = '2px';
-    viewContainer.style.background = 'rgba(0,0,0,0)';
+    viewContainer.style.minHeight = Math.floor(parseInt(viewContainer.style.minWidth, 10) * aspectRatio) + 'px';
 
     if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_COPY2CANVAS) {
         // canvas
@@ -6867,6 +6865,8 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     lightObj.name = name;
     obj.name = name;
     helper.name = name + '_lightHelper';
+  } else {
+    helper.name = '_lightHelper';
   }
 
   if (direction)

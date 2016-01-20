@@ -97,11 +97,15 @@ describe('testing the gz3d service', function () {
     expect(testRenderContainerAdjustable.className).toEqual('camera-view ng-scope');
     expect(testRenderContainerAdjustable.innerHTML).toContain('class="camera-view-label"');
     expect(testRenderContainerAdjustable.innerHTML).toContain('test_rendercontainer_adjustable');
-
+    expect(testRenderContainerAdjustable.innerHTML).toContain('<input type="checkbox" name="test_rendercontainer_adjustable_options" value="show_frustum" id="test_rendercontainer_adjustable_show_frustum" class="frustumCheckbox">');
+    expect(testRenderContainerAdjustable.innerHTML).toContain('<label for="test_rendercontainer_adjustable_show_frustum" class="frustumLabel">show frustum</label>');
     expect(testRenderContainerNotAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
     expect(testRenderContainerNotAdjustable.className).toEqual('camera-view ng-scope');
     expect(testRenderContainerNotAdjustable.innerHTML).toContain('class="camera-view-label"');
     expect(testRenderContainerNotAdjustable.innerHTML).toContain('test_rendercontainer_unadjustable');
+    expect(testRenderContainerNotAdjustable.innerHTML).toContain('<input type="checkbox" name="test_rendercontainer_unadjustable_options" value="show_frustum" id="test_rendercontainer_unadjustable_show_frustum" class="frustumCheckbox">');
+    expect(testRenderContainerNotAdjustable.innerHTML).toContain('<label for="test_rendercontainer_unadjustable_show_frustum" class="frustumLabel">show frustum</label>');
+
   });
 
   it('should not initialize when already initialized', function() {
