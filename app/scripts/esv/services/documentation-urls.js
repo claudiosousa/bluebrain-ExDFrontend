@@ -36,16 +36,18 @@
       return {
         getDocumentationURLs: function() {
           var promise = nrpBackendVersions(backendInterfaceService.getServerBaseUrl()).get().$promise.then(function(data) {
-            var cleDocumentationVersion, backendDocumentationVersion = 'latest';
+            var cleDocumentationVersion, backendDocumentationVersion, platformDocumentationVersion = 'latest';
             if ('hbp_nrp_cle_components' in data) {
               cleDocumentationVersion = getDocumentVersion(data.hbp_nrp_cle_components);
             }
             if ('hbp_nrp_backend_components' in data) {
               backendDocumentationVersion = getDocumentVersion(data.hbp_nrp_backend_components);
+              platformDocumentationVersion = data.hbp_nrp_backend_components.major + '.' + data.hbp_nrp_backend_components.minor;
             }
             return {
                 cleDocumentationURL:  HELP_BASE_URL + '/projects/hbp-nrp-cle/' + cleDocumentationVersion,
-                backendDocumentationURL:  HELP_BASE_URL + '/projects/hbp_nrp_backend/' + backendDocumentationVersion
+                backendDocumentationURL:  HELP_BASE_URL + '/projects/hbp_nrp_backend/' + backendDocumentationVersion,
+                platformDocumentationURL: HELP_BASE_URL + '/projects/Neurorobotics%20Platform/' + platformDocumentationVersion
             };
           });
           return promise;
