@@ -1,0 +1,126 @@
+$hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
+
+$addObjectIconWidth: 100px;
+$addObjectIconHeight: 100px;
+
+/* panel */
+#ed-left-panel
+{
+  height: 100%;
+  position: absolute;
+  left: 0;
+  z-index: 1002;
+}
+
+.ed-panels-group
+{
+  margin-left: 1em;
+  height: 100%;
+  position: absolute;
+  top: 0;
+}
+
+.ed-left-panels
+{
+  display: none;
+  height: 100%;
+  width: 23em;
+}
+
+.ed-panel-content
+{
+  height: calc(100% - 2.51em);
+  margin-top: 0.01em;
+}
+
+.ed-panel-title
+{
+  width: 100%;
+  height: 2.5em;
+  line-height: 1.8em;
+}
+
+.ed-panel-title h3
+{
+  margin: 0.3em;
+  float: left;
+  width: calc(100% - 1.5em);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ed-panel-title img
+{
+  height: 1.2em;
+  margin: 0.3em;
+  position: absolute;
+  right: 0;
+  top: 0.3em;
+}
+
+.ed-left-panels ul
+{
+  list-style: none;
+  width: 21em;
+  padding: 0em;
+  padding-left: 1em;
+  margin: 0em;
+}
+
+.clickable:hover
+{
+  cursor: pointer;
+}
+
+.ed-insert-menus
+{
+  display : none;
+}
+
+.ed-objectlist
+{
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.ed-objectlist-item
+{
+  display: inline-block;
+  overflow: auto;
+  margin: 2px;
+  width: $addObjectIconWidth;
+  height: $addObjectIconHeight;
+}
+
+.ed-objectlist-content
+{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: 3px solid gainsboro;
+  border-radius: 5px;
+}
+
+.ed-objectlist-content:hover
+{
+  background-color: gainsboro;
+}
+
+.ed-img-thumbnail {
+  padding: 4px;
+  line-height: 1.428571429;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.ed-environment-thumbnail {
+  border: 0 none;
+  box-shadow: none;
+}
