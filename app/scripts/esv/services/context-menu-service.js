@@ -2,8 +2,8 @@
 (function () {
   'use strict';
 
-  angular.module('contextMenuStateService', [])
-    .factory('contextMenuState', ['gz3d',  function (gz3d) {
+  angular.module('contextMenuStateService', ['nrpAngulartics'])
+    .factory('contextMenuState', ['gz3d', 'nrpAnalytics', function (gz3d, nrpAnalytics) {
 
       return {
         //whether the context menu should be displayed
@@ -82,6 +82,9 @@
         },
 
         toggleContextMenu: function (show, event) {
+          nrpAnalytics.eventTrack('Toggle-context-menu', {
+            category: 'Simulation-GUI'
+          });
 
           if (show && !this.isShown) {
             var model = this._getModelUnderMouse(event);
@@ -128,4 +131,3 @@
       };
     }]);
 }());
-

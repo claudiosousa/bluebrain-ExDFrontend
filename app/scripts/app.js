@@ -24,6 +24,8 @@
       'ui.codemirror',
       'angular.panels',
       'angular-toArrayFilter',
+      'angulartics',
+      'angulartics.google.analytics',
       'bbpOidcClient',
       'hbpCommon',
       'bbpConfig',
@@ -43,6 +45,7 @@
       'exdFrontendFilters',
       'nrpErrorHandlers',
       'nrpBackendAbout',
+      'nrpAngulartics',
       'ngFileUpload',
       'nrpBrowserDetection',
       'vButton'])
@@ -136,17 +139,6 @@
   // use it to define its own constants.
   angular.module('exdFrontendApp.Constants', []);
 
-  // Since angular is a "single page" application (navigating never trigger a reload of index.html),
-  // we have to notify Google Analytics when the page change. For that, we register on
-  // $stateChangeSuccess which is an UI router event.
-  app.run(['$rootScope', '$location', '$window', function ($rootScope, $location, $window) {
-    $rootScope.$on('$stateChangeSuccess',
-      function (event) {
-        if ($window.ga) {
-          $window.ga('send', 'pageview', {page: $location.path()});
-        }
-      });
-  }]);
 }());
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately
