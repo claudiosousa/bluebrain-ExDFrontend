@@ -7978,15 +7978,6 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
             material.originalOpacity ?
             material.originalOpacity : 1.0;
       }
-
-      if (viewAs === 'wireframe')
-      {
-        material.visible = false;
-      }
-      else
-      {
-        material.visible = true;
-      }
     }
   }
 
@@ -8015,29 +8006,18 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
         materialViewAs(descendants[i].material);
       }
 
-      if (viewAs === 'wireframe')
+      // wireframe handling
+      var showWireframe = (viewAs === 'wireframe');
+      if (descendants[i].material instanceof THREE.MeshFaceMaterial)
       {
-        wireframe = descendants[i].getObjectByName('wireframe');
-        if (wireframe)
+        for (var m = 0; m < descendants[i].material.materials.length; m=m+1)
         {
-          wireframe.visible = true;
-        }
-        else
-        {
-          var mesh = new THREE.Mesh( descendants[i].geometry,
-              new THREE.MeshBasicMaterial({color: 0xffffff}));
-          wireframe = new THREE.WireframeHelper( mesh );
-          wireframe.name = 'wireframe';
-          descendants[i].add( wireframe );
+          descendants[i].material.materials[m].wireframe = showWireframe;
         }
       }
       else
       {
-        wireframe = descendants[i].getObjectByName('wireframe');
-        if (wireframe)
-        {
-          wireframe.visible = false;
-        }
+        descendants[i].material.wireframe = showWireframe;
       }
     }
   }
@@ -9002,21 +8982,10 @@ GZ3D.SdfParser.prototype.createVisual = function(visual)
  */
 GZ3D.SdfParser.prototype.spawnFromSDF = function(sdf)
 {
-  //parse sdfXML
-  var sdfXML;
-  if ((typeof sdf) === 'string')
-  {
-    sdfXML = this.parseXML(sdf);
-  }
-  else
-  {
-    sdfXML = sdf;
-  }
-
-  //convert SDF XML to Json string and parse JSON string to object
-  //TODO: we need better xml 2 json object convertor
-  var myjson = xml2json(sdfXML, '\t');
-  var sdfObj = JSON.parse(myjson).sdf;
+  //convert SDF to Json object
+  //TODO: we need better xml 2 json object convertor (done?)
+  var jsonObj = xml2json.parser(sdf);
+  var sdfObj = jsonObj.sdf;
   // it is easier to manipulate json object
 
   if (sdfObj.model)
@@ -9321,7 +9290,7 @@ GZ3D.SdfParser.prototype.loadModel = function(modelName)
   xhttp.overrideMimeType('text/xml');
   xhttp.open('GET', modelFile, false);
   xhttp.send();
-  return xhttp.responseXML;
+  return xhttp.responseText;
 };
 
 /**
