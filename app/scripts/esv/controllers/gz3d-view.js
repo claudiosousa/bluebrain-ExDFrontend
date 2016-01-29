@@ -331,11 +331,18 @@
           };
 
           $scope.resetButtonClickHandler = function () {
+
             $scope.checkboxes = {
               oldReset: false,
               robotPose: false,
-              fullReset: false,
-              viewReset: false
+              fullReset: false
+            };
+
+            //frontend-bound reset checkboxes
+            $scope.frontend = {
+              checkboxes: {
+                viewReset: false
+              }
             };
 
             hbpDialogFactory.confirm({
@@ -345,7 +352,7 @@
             .then(function() {
               /* TODO: this should be removed as soon as some reset features are
               correctly implemented and tested */
-              if($scope.checkboxes.viewReset){
+              if($scope.frontend.checkboxes.viewReset){
                 gz3d.scene.resetView();
               }
               else if ($scope.checkboxes.oldReset) {

@@ -489,7 +489,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       //gz3d.scene.resetView is already being spied on
 
       scope.resetButtonClickHandler();
-      scope.checkboxes = {viewReset: true};
+      scope.frontend.checkboxes = {viewReset: true};
       hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
       expect(gz3d.scene.resetView).toHaveBeenCalled();
     });
