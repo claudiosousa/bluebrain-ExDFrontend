@@ -4,7 +4,7 @@ describe('Directive: environment-designer', function () {
 
 
   var $scope, element, stateService,
-    panels, currentStateMock, gz3dMock, contextMenuState, objectEditorService, simulationSDFWorld,
+    panels, currentStateMock, gz3dMock, contextMenuState, objectInspectorService, simulationSDFWorld,
     simulationInfo, backendInterfaceService, hbpDialogFactory;
 
   beforeEach(module('exdFrontendApp'));
@@ -34,7 +34,7 @@ describe('Directive: environment-designer', function () {
       toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
       pushItemGroup: jasmine.createSpy('pushItemGroup')
     });
-    $provide.value('objectEditorService', {
+    $provide.value('objectInspectorService', {
       toggleView: jasmine.createSpy('toggleView')
     });
     $provide.value('bbpConfig', {
@@ -63,7 +63,7 @@ describe('Directive: environment-designer', function () {
                               _currentStateMockFactory_,
                               _stateService_,
                               _contextMenuState_,
-                              _objectEditorService_,
+                              _objectInspectorService_,
                               _panels_,
                               _simulationSDFWorld_,
                               _simulationInfo_,
@@ -74,7 +74,7 @@ describe('Directive: environment-designer', function () {
     $scope.EDIT_MODE = EDIT_MODE;
     $scope.STATE = STATE;
     contextMenuState = _contextMenuState_;
-    objectEditorService = _objectEditorService_;
+    objectInspectorService = _objectInspectorService_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
     simulationInfo = _simulationInfo_;
@@ -150,7 +150,7 @@ describe('Directive: environment-designer', function () {
 
     // initial structure
     expect(itemGroup.visible).toBe(false);
-    expect(itemGroup.items[0].text).toEqual('Edit');
+    expect(itemGroup.items[0].text).toEqual('Inspect');
     expect(itemGroup.items[0].visible).toBe(false);
     expect(itemGroup.items[1].text).toEqual('Delete');
     expect(itemGroup.items[1].visible).toBe(false);
@@ -167,7 +167,7 @@ describe('Directive: environment-designer', function () {
     var eventMock = {stopPropagation: jasmine.createSpy('stopPropagation')};
     // check call to edit item
     itemGroup.items[0].callback(eventMock);
-    expect(objectEditorService.toggleView).toHaveBeenCalled();
+    expect(objectInspectorService.toggleView).toHaveBeenCalled();
     expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
     expect(eventMock.stopPropagation).toHaveBeenCalled();
 

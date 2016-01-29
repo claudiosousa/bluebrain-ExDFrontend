@@ -2,8 +2,8 @@
 
 'use strict';
 
-describe('Services: objectEditorService', function () {
-  var objectEditorService;
+describe('Services: objectInspectorService', function () {
+  var objectInspectorService;
   var gz3d, stateService, EDIT_MODE, STATE;
 
   var gz3dMock = {
@@ -34,6 +34,11 @@ describe('Services: objectEditorService', function () {
   dummyObject.position.set(1, 2, 3);
   dummyObject.rotation.set(4, 5, 6);
   dummyObject.updateMatrixWorld();
+  var collisionVisualMock = new THREE.Object3D();
+  collisionVisualMock.name = 'test_COLLISION_VISUAL';
+  dummyObject.add(collisionVisualMock);
+  var meshMock = new THREE.Mesh();
+  collisionVisualMock.add(meshMock);
 
   // provide mock objects
   beforeEach(module(function ($provide) {
@@ -43,12 +48,12 @@ describe('Services: objectEditorService', function () {
 
   beforeEach(function () {
     // load the module.
-    module('objectEditorModule');
+    module('objectInspectorModule');
     module('exdFrontendApp.Constants');
 
     // inject service for testing.
-    inject(function (_objectEditorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_) {
-      objectEditorService = _objectEditorService_;
+    inject(function (_objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_) {
+      objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
       stateService = _stateService_;
       EDIT_MODE = _EDIT_MODE_;
@@ -59,30 +64,30 @@ describe('Services: objectEditorService', function () {
 
   // check to see if it has the expected function
   it('should be initialized correctly', function () {
-    expect(objectEditorService.isShown).toBe(false);
-    expect(objectEditorService.selectedObject).not.toBeDefined();
+    expect(objectInspectorService.isShown).toBe(false);
+    expect(objectInspectorService.selectedObject).not.toBeDefined();
   });
 
   it('should allow to toggle/set its display', function () {
-    spyOn(objectEditorService, 'update').andCallThrough();
-    spyOn(objectEditorService, 'setManipulationMode').andCallThrough();
+    spyOn(objectInspectorService, 'update').andCallThrough();
+    spyOn(objectInspectorService, 'setManipulationMode').andCallThrough();
 
-    objectEditorService.toggleView();
-    expect(objectEditorService.update).toHaveBeenCalled();
-    expect(objectEditorService.isShown).toBe(true);
+    objectInspectorService.toggleView();
+    expect(objectInspectorService.update).toHaveBeenCalled();
+    expect(objectInspectorService.isShown).toBe(true);
 
-    objectEditorService.update.reset();
+    objectInspectorService.update.reset();
 
-    objectEditorService.toggleView(false);
-    expect(objectEditorService.update).not.toHaveBeenCalled();
-    expect(objectEditorService.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
-    expect(objectEditorService.isShown).toBe(false);
+    objectInspectorService.toggleView(false);
+    expect(objectInspectorService.update).not.toHaveBeenCalled();
+    expect(objectInspectorService.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
+    expect(objectInspectorService.isShown).toBe(false);
   });
 
   it('should be able to round numbers to displayable precisions', function() {
     var number = 1.23456789;
-    var rounded = objectEditorService.roundToPrecision(number);
-    expect(rounded).toBeCloseTo(number, objectEditorService.floatPrecision);
+    var rounded = objectInspectorService.roundToPrecision(number);
+    expect(rounded).toBeCloseTo(number, objectInspectorService.floatPrecision);
   });
 
   it('should update() correctly', function () {
@@ -93,73 +98,81 @@ describe('Services: objectEditorService', function () {
       }
       return htmlMock[id];
     });
-    spyOn(objectEditorService, 'roundToPrecision').andCallThrough();
+    spyOn(objectInspectorService, 'roundToPrecision').andCallThrough();
 
     expect(gz3d.scene.selectedEntity).not.toBeDefined();
-    objectEditorService.update();
-    expect(objectEditorService.selectedObject).not.toBeDefined();
+    objectInspectorService.update();
+    expect(objectInspectorService.selectedObject).not.toBeDefined();
 
     gz3d.scene.selectedEntity = dummyObject;
+    expect(dummyObject.showCollision).not.toBeDefined();
+    objectInspectorService.update();
+    expect(objectInspectorService.selectedObject).toBe(dummyObject);
+    // translation and rotation are being rounded on update
+    expect(objectInspectorService.roundToPrecision.calls.length).toBe(6);
+    expect(dummyObject.showCollision).toBe(false);
+    expect(objectInspectorService.showCollision).toBe(false);
 
     dummyObject.viewAs = 'normal';
-    objectEditorService.update();
-    expect(objectEditorService.selectedObject).toBe(dummyObject);
-    // translation and rotation are being rounded on update
-    expect(objectEditorService.roundToPrecision.calls.length).toBe(6);
+    objectInspectorService.update();
     expect(document.getElementById('oe-viewmode-normal').checked).toBe(true);
 
     dummyObject.viewAs = 'transparent';
-    objectEditorService.update();
+    objectInspectorService.update();
     expect(document.getElementById('oe-viewmode-transparent').checked).toBe(true);
 
     dummyObject.viewAs = 'wireframe';
-    objectEditorService.update();
+    objectInspectorService.update();
     expect(document.getElementById('oe-viewmode-wireframe').checked).toBe(true);
+
+    dummyObject.showCollision = true;
+    objectInspectorService.update();
+    expect(objectInspectorService.showCollision).toBe(true);
   });
 
   it('should react correctly to changes to the object', function () {
     spyOn(dummyObject, 'updateMatrixWorld').andCallThrough();
 
-    objectEditorService.selectedObject = dummyObject;
+    objectInspectorService.selectedObject = dummyObject;
     var position = new THREE.Vector3(1, 2, 3);
     dummyObject.position.copy(position);
-    objectEditorService.onObjectChange();
+    objectInspectorService.onObjectChange();
 
     expect(dummyObject.updateMatrixWorld).toHaveBeenCalled();
     expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('entityChanged', dummyObject);
   });
 
   it('should set the view mode correctly', function () {
-    objectEditorService.selectedObject = dummyObject;
+    objectInspectorService.selectedObject = dummyObject;
     dummyObject.viewAs = 'normal';
 
-    objectEditorService.setViewMode('normal');
+    objectInspectorService.setViewMode('normal');
     expect(gz3d.scene.setViewAs).not.toHaveBeenCalled();
 
-    objectEditorService.setViewMode('transparent');
+    objectInspectorService.setViewMode('transparent');
     expect(gz3d.scene.setViewAs).toHaveBeenCalledWith(dummyObject, 'transparent');
   });
 
   it('should set the manipulation mode correctly', function () {
     gz3d.scene.setManipulationMode.reset();
 
-    objectEditorService.selectedObject = dummyObject;
+    objectInspectorService.selectedObject = dummyObject;
 
     // setting same view mode should do nothing
     gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
-    objectEditorService.setManipulationMode(EDIT_MODE.VIEW);
+    objectInspectorService.setManipulationMode(EDIT_MODE.VIEW);
     expect(gz3d.scene.setManipulationMode).not.toHaveBeenCalled();
 
     // set to view mode
     gz3d.scene.manipulationMode = EDIT_MODE.TRANSLATE;
-    objectEditorService.setManipulationMode(EDIT_MODE.VIEW);
+    objectInspectorService.setManipulationMode(EDIT_MODE.VIEW);
     expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
 
     gz3d.scene.setManipulationMode.reset();
 
     // set to translate mode
     gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
-    objectEditorService.setManipulationMode(EDIT_MODE.TRANSLATE);
+    objectInspectorService.setManipulationMode(EDIT_MODE.TRANSLATE);
     expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.TRANSLATE);
     expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(dummyObject);
@@ -169,9 +182,23 @@ describe('Services: objectEditorService', function () {
     gz3d.scene.selectEntity.reset();
 
     // set to rotate mode
-    objectEditorService.setManipulationMode(EDIT_MODE.ROTATE);
+    objectInspectorService.setManipulationMode(EDIT_MODE.ROTATE);
     expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.ROTATE);
     expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(dummyObject);
+  });
+
+  it('should change collision geometry visibility', function() {
+    spyOn(collisionVisualMock, 'traverse').andCallThrough();
+
+    objectInspectorService.selectedObject = dummyObject;
+    meshMock.visible = false;
+    objectInspectorService.showCollision = objectInspectorService.selectedObject.showCollision = false;
+
+    objectInspectorService.showCollision = true;
+    objectInspectorService.onShowCollisionChange();
+    expect(dummyObject.showCollision).toBe(true);
+    expect(collisionVisualMock.traverse).toHaveBeenCalled();
+    expect(meshMock.visible).toBe(true);
   });
 });

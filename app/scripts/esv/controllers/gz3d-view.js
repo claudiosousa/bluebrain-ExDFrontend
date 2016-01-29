@@ -69,7 +69,7 @@
         'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
         'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
         'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
-        'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectEditorService',
+        'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
         'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
         'backendInterfaceService',
         function ($rootScope, $scope, $stateParams, $timeout,
@@ -79,7 +79,7 @@
                   experimentSimulationService, timeDDHHMMSSFilter, splash,
                   assetLoadingSplash, STATE, nrpBackendVersions,
                   nrpFrontendVersion, panels, UI, OPERATION_MODE,
-                  gz3d, EDIT_MODE, stateService, contextMenuState, objectEditorService,
+                  gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
                   simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
                   backendInterfaceService) {
 
@@ -137,7 +137,7 @@
           $scope.stateService = stateService;
           $scope.EDIT_MODE = EDIT_MODE;
           $scope.contextMenuState = contextMenuState;
-          $scope.objectEditorService = objectEditorService;
+          $scope.objectInspectorService = objectInspectorService;
 
           $scope.sliderPosition = SLIDER_INITIAL_POSITION;
 
@@ -522,8 +522,8 @@
                 case 0:
                 case 1:
                   // left click
-                  if (objectEditorService.isShown) {
-                    objectEditorService.update();
+                  if (objectInspectorService.isShown) {
+                    objectInspectorService.update();
                   }
 
                   break;

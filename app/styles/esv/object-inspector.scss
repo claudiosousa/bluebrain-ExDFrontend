@@ -1,18 +1,18 @@
 @import "pop-over-viewer.scss";
 
-$objectEditorMinWidth: 350px;
-$objectEditorMinHeight: 320px;
+$objectInspectorMinWidth: 350px;
+$objectInspectorMinHeight: 360px;
 
-.object-editor-widget {
+.object-inspector-widget {
   @extend .pop-over-viewer;
   display: flex !important;
   top: 2%;
   left: unset;
   right: 2%;
-  width: $objectEditorMinWidth;
-  height: $objectEditorMinHeight;
-  min-width: $objectEditorMinWidth;
-  min-height: $objectEditorMinHeight;
+  width: $objectInspectorMinWidth;
+  height: $objectInspectorMinHeight;
+  min-width: $objectInspectorMinWidth;
+  min-height: $objectInspectorMinHeight;
 
   .selected-object-name {
     text-align: center;
@@ -53,7 +53,7 @@ $objectEditorMinHeight: 320px;
         }
       }
 
-      .viewmode-input {
+      .input-radio-check {
         margin-left: 5px;
         margin-right: 2px;
       }

@@ -32,7 +32,7 @@
       'simulationControlServices',
       'simulationStateServices',
       'contextMenuStateService',
-      'objectEditorModule',
+      'objectInspectorModule',
       'pythonCodeHelperServices',
       'simulationInfoService',
       'collabServices',

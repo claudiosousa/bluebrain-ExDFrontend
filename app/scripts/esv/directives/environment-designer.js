@@ -21,7 +21,7 @@
       'stateService',
       'simulationInfo',
       'contextMenuState',
-      'objectEditorService',
+      'objectInspectorService',
       'backendInterfaceService',
       'hbpDialogFactory',
       function ($document,
@@ -35,7 +35,7 @@
                 stateService,
                 simulationInfo,
                 contextMenuState,
-                objectEditorService,
+                objectInspectorService,
                 backendInterfaceService,
                 hbpDialogFactory) {
         return {
@@ -101,9 +101,9 @@
                 visible: false,
                 items: [
                   {
-                    text: 'Edit',
+                    text: 'Inspect',
                     callback: function (event) {
-                      objectEditorService.toggleView(true);
+                      objectInspectorService.toggleView(true);
                       contextMenuState.toggleContextMenu(false);
                       event.stopPropagation();
                     },
@@ -128,10 +128,10 @@
                   var isPaused = (stateService.currentState === STATE.PAUSED);
                   var isRobot = model.name.indexOf('robot') !== -1;
 
-                  var show = inEditMode && isPaused;
+                  var show = isPaused;
                   this.visible = show;
                   this.items[0].visible = show;
-                  this.items[1].visible = show && !isRobot; //don't delete the robot
+                  this.items[1].visible = show && inEditMode && !isRobot; //don't delete the robot
 
                   return show;
                 }
