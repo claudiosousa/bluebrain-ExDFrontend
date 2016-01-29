@@ -335,7 +335,8 @@
             $scope.checkboxes = {
               oldReset: false,
               robotPose: false,
-              fullReset: false
+              fullReset: false,
+              worldReset: false
             };
 
             //frontend-bound reset checkboxes
