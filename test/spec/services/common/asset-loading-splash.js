@@ -125,7 +125,10 @@
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
 
       timeout.mostRecentCall.args[0]();
-      scope.$apply.mostRecentCall.args[0]();
+
+      var ncalls = scope.$apply.calls.length;
+      scope.$apply.calls[ncalls-2].args[0]();
+      scope.$apply.calls[ncalls-1].args[0]();
 
       expect(scope.progressData).toBe(exampleData);
       expect(scope.loadedAssets).toEqual(1);
@@ -146,7 +149,10 @@
       expect(assetLoadingSplash.close).toHaveBeenCalled();
 
       timeout.mostRecentCall.args[0]();
-      scope.$apply.mostRecentCall.args[0]();
+
+      var ncalls = scope.$apply.calls.length;
+      scope.$apply.calls[ncalls-2].args[0]();
+      scope.$apply.calls[ncalls-1].args[0]();
 
       expect(scope.loadedAssets).toEqual(3);
       expect(scope.totalAssets).toEqual(3);

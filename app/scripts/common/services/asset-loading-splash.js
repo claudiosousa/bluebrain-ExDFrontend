@@ -70,6 +70,8 @@
       var isDone = true;
       var loadedAssets = 0;
 
+      $scope.$apply(function() { $scope.totalAssets = data.assets.length; });
+
       angular.forEach(data.assets, function(element, index) {
         loadedAssets += element.done ? 1 : 0;
         isDone = isDone && element.done;
@@ -80,10 +82,9 @@
       }
       // We use $timeout to prevent "digest already in progress" error.
       $timeout(function() {
-        $scope.$apply(function () {
+        $scope.$apply(function() {
           $scope.progressData = data;
           $scope.loadedAssets = loadedAssets;
-          $scope.totalAssets = data.assets.length;
         });
       });
     });
