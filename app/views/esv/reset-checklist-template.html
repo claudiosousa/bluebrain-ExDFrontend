@@ -29,17 +29,10 @@
         </li>
         <br/>
         <b>Environment</b>
-        <li class="enable-tooltip"
-            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Reset initial pose for all the objects</s></input></li>
-        <li class="enable-tooltip"
-            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Spawn back initial objects and remove the new ones</s></input>
+        <li>
+            <input ng-model="checkboxes.worldReset" ng-true-value="true" ng-false-value="false"
+                type="checkbox"> Reset the environment to its initial status.</input>
         </li>
-        <li class="enable-tooltip"
-            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Reset dynamic object's aspect (light, screens, etc.)</s></input></li>
-        <br/>
         <b>Robot</b>
         <li>
             <input type="checkbox" ng-model="checkboxes.robotPose"
