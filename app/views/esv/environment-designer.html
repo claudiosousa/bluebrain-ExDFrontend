@@ -14,30 +14,6 @@
   assets).
 <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
 <hr>
-<div class="btn-group" role="group">
-  <button type="button" class="btn btn-default"
-          ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.VIEW}"
-          ng-click="setEditMode(EDIT_MODE.VIEW)"
-          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-    <i class="glyphicon glyphicon-eye-open"></i>
-    <span>View mode</span>
-  </button>
-  <button type="button" class="btn btn-default"
-          ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
-          ng-click="setEditMode(EDIT_MODE.TRANSLATE)"
-          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-    <i class="glyphicon glyphicon-move"></i>
-    <span>Move objects</span>
-  </button>
-  <button type="button" class="btn btn-default"
-          ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
-          ng-click="setEditMode(EDIT_MODE.ROTATE)"
-          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-    <i class="glyphicon glyphicon-repeat"></i>
-    <span>Rotate objects</span>
-  </button>
-</div>
-<hr>
   <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
           ng-click="saveSDFIntoCollabStorage()"
           ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
