@@ -1,6 +1,6 @@
 <button type="button" class="btn btn-default btn-md"
         ng-click="update(pynnScript)"
-        ng-disabled="doc.isClean() || loading || stateService.statePending"
+        ng-disabled="doc.isClean() || loading || stateService.statePending || !populationForm.$valid"
         v-busy="loading || stateService.statePending"
         v-busy-label="Applying changes"
         v-pressable>
@@ -9,10 +9,11 @@
 </button>
 <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
         ng-click="saveIntoCollabStorage(pynnScript)"
-        ng-disabled="loading || stateService.statePending"
+        ng-disabled="loading || stateService.statePending || !populationForm.$valid"
         v-busy="isSavingToCollab"
         v-busy-label="Saving to Collab"
         v-pressable>
   <i class="glyphicon glyphicon-book"></i>
   <span> Save to Collab</span>
 </button>
+<span class="alert alert-danger" ng-if="!populationForm.$valid">Invalid population definition.</span>

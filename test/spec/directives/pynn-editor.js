@@ -125,9 +125,10 @@ describe('Directive: pynnEditor', function () {
     isolateScope = element.isolateScope();
   }));
 
-  it('should init the pynnScript variable', function () {
+  it('should set the pynnScript and the populations variables to undefined by default', function () {
     $scope.control.refresh();
     expect(isolateScope.pynnScript).toBeUndefined();
+    expect(isolateScope.populations).toBeUndefined();
     expect(backendInterfaceService.getBrain).toHaveBeenCalled();
   });
 
@@ -142,15 +143,22 @@ describe('Directive: pynnEditor', function () {
       'brain_type': 'py',
       'data': '// A PyNN script',
       'data_type': 'text',
-      'filename': '/path/filename.py'
+      'filename': '/path/filename.py',
+      'brain_populations': {
+        'list1': [1, 2, 3],
+        'index1': 9,
+        'slice0': {'from': 0, 'to':10, 'step':2 }
+      }
     };
     var data2 = {
       'brain_type': 'h5',
       'data': '// binary h5 data',
       'data_type': 'base64',
-      'filename': '/path/filename.h5'
+      'filename': '/path/filename.h5',
+      'brain_populations': { 'index': 0}
     };
-    var expected = data.data;
+    var expected_script = data.data;
+    var expected_populations = data.brain_populations;
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
@@ -159,12 +167,13 @@ describe('Directive: pynnEditor', function () {
       backendInterfaceService.setBrain.reset();
     });
 
-    it('should handle the retrieved pynn script properly', function () {
+    it('should handle the retrieved populations and pynn script properly', function () {
       // Mock getBrain Callback with data as return value
       backendInterfaceService.getBrain.andCallFake(function(f) { f(data); });
       $scope.control.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
-      expect(isolateScope.pynnScript).toEqual(expected);
+      expect(isolateScope.pynnScript).toEqual(expected_script);
+      expect(isolateScope.populations).toEqual(expected_populations);
     });
 
     it('should not load a h5 brain', function () {
@@ -262,6 +271,84 @@ describe('Directive: pynnEditor', function () {
       isolateScope.clearError();
       expect(isolateScope.lineWidget.clear).toHaveBeenCalled();
       expect(isolateScope.cm.removeLineClass).toHaveBeenCalled();
+    });
+
+  });
+
+  describe('Testing GUI operations on brain populations', function () {
+
+    beforeEach(function () {
+      isolateScope.populations = {
+            'population1': 1,
+            'population2': 2,
+            'population_2': 2,
+            'population_6': [4, 5],
+            'population_10': { 'from': 1, 'to': 10, 'step':1},
+            'list_1': [1, 2, 3],
+            'slice1': { 'from': 1, 'to': 10, 'step':1},
+            'slice2': { 'from': 2, 'to': 10, 'step':5}
+          };
+    });
+
+    it('should delete a population in the scope.populations object', function() {
+      isolateScope.deletePopulation('population1');
+      isolateScope.deletePopulation('slice2');
+      expect(Object.keys(isolateScope.populations).length).toBe(6);
+      expect(isolateScope.populations.population1).toBeUndefined();
+      expect(isolateScope.populations.slice2).toBeUndefined();
+    });
+
+   it('should generate a new population name', function() {
+      expect(isolateScope.populations.population_2).toBeDefined();
+      var neuronName = isolateScope.generatePopulationName();
+      expect(neuronName).toBe('population_0');
+      expect(isolateScope.generatePopulationName()).toBe(neuronName);
+      isolateScope.populations.population_0 = 15;
+      expect(isolateScope.generatePopulationName()).toBe('population_1');
+      isolateScope.populations.population_1 = 150;
+      expect(isolateScope.generatePopulationName()).toBe('population_3');
+    });
+
+    it('should add a population in the scope.populations object', function() {
+      // Add a single index that defaults to 0, with name of the form population_<number>
+      expect(isolateScope.populations.population_2).toBeDefined();
+      isolateScope.addIndex();
+      expect(isolateScope.populations.population_0).toBe(0);
+      isolateScope.addIndex();
+      expect(isolateScope.populations.population_1).toBe(0);
+      isolateScope.addIndex();
+      expect(isolateScope.populations.population_3).toBe(0);
+      expect(Object.keys(isolateScope.populations).length).toBe(11);
+
+      // Add a list with default value [] and default name of form population_<number>
+      var defaultList = [0, 1, 2];
+      isolateScope.addList();
+      expect(isolateScope.populations.population_4).toEqual(defaultList);
+      isolateScope.addList();
+      expect(isolateScope.populations.population_5).toEqual(defaultList);
+      isolateScope.addList();
+      expect(isolateScope.populations.population_7).toEqual(defaultList);
+      expect(Object.keys(isolateScope.populations).length).toBe(14);
+
+      // Add a slice with default value {'from': 0, 'to': 0, 'step': 0 } and default name of form population_<number>
+      var defaultSlice = {
+        'from': 0,
+        'to': 0,
+        'step': 0
+      };
+      isolateScope.addSlice();
+      expect(isolateScope.populations.population_8).toEqual(defaultSlice);
+      isolateScope.addSlice();
+      expect(isolateScope.populations.population_9).toEqual(defaultSlice);
+      isolateScope.addSlice();
+      expect(isolateScope.populations.population_11).toEqual(defaultSlice);
+      expect(Object.keys(isolateScope.populations).length).toBe(17);
+    });
+
+    it('should test whether a population is a slice or not', function() {
+      expect(isolateScope.isSlice([1, 2, 3])).toBe(false);
+      expect(isolateScope.isSlice(1)).toBe(false);
+      expect(isolateScope.isSlice({})).toBe(true);
     });
 
   });

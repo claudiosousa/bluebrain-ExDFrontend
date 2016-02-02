@@ -40,6 +40,7 @@
             backendInterfaceService.getBrain(function(response) {
               if (response.brain_type === "py") {
                 scope.pynnScript = response.data;
+                scope.populations = response.brain_populations;
                 scope.refreshCodemirror = !scope.refreshCodemirror; // just toggle it to refresh
                 setTimeout(function () {
                   scope.loading = false;
@@ -49,6 +50,7 @@
                 }, 100);
               } else {
                 scope.pynnScript = undefined;
+                scope.populations = undefined;
                 scope.refreshCodemirror = !scope.refreshCodemirror;
               }
             });
@@ -112,6 +114,44 @@
               l += 1;
             });
             return ret;
+          };
+
+          scope.isSlice = function(indices) {
+            return (typeof(indices) === 'object') && (indices.constructor !== Array);
+          };
+
+          scope.deletePopulation = function(population) {
+            delete scope.populations[population];
+          };
+
+          scope.addIndex = function() {
+            var neuronName = scope.generatePopulationName();
+            scope.populations[neuronName] = 0;
+          };
+
+          scope.addList = function() {
+            var neuronName = scope.generatePopulationName();
+            scope.populations[neuronName] = [0, 1, 2];
+          };
+
+          var defaultSlice = {
+            'from': 0,
+            'to': 0,
+            'step': 0
+          };
+
+          scope.addSlice = function() {
+            var neuronName = scope.generatePopulationName();
+            scope.populations[neuronName] = defaultSlice;
+          };
+
+          scope.generatePopulationName = function() {
+            var prefix = 'population_';
+            var suffix = 0;
+            while(prefix + suffix in scope.populations) {
+              suffix += 1;
+            }
+            return prefix + suffix;
           };
 
           scope.parseName = function(error){

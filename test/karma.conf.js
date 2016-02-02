@@ -43,6 +43,7 @@ module.exports = function(config) {
       'bower_components/angular.panels/dist/angular.panels.min.js',
       'bower_components/threejs/build/three.js',
       'bower_components/eventemitter2/lib/eventemitter2.js',
+      'bower_components/xml2json/xml2json.js',
       'bower_components/gz3d-hbp/gz3d/build/gz3d.js',
       'bower_components/d3/d3.js',
       'bower_components/moment/moment.js',
@@ -51,7 +52,6 @@ module.exports = function(config) {
       'bower_components/roslibjs/build/roslib.js',
       'bower_components/stats.js/build/stats.min.js',
       'bower_components/v-button/dist/v-button.js',
-      'bower_components/xml2json/xml2json.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'bower_components/threejs/examples/js/controls/OrbitControls.js',

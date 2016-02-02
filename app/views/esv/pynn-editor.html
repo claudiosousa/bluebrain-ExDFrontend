@@ -1,7 +1,8 @@
+<!-- build:css(.tmp) styles/esv/pynn-editor.css -->
+<link rel="stylesheet" href="styles/esv/pynn-editor.css" />
+<!-- endbuild -->
 <h3>PyNN Brain Editor</h3>
 <p>PyNN (pronounced 'pine') is a simulator-independent language for building neuronal network models.</p>
-<p>When the experiment contains a PyNN script, you can see the code here.</a>
-</p>
 <div ng-show="pynnScript === undefined" class="alert alert-info" role="alert">
   There is no PyNN script available for this experiment.
 </div>
@@ -9,7 +10,59 @@
   <hr>
   <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
   <hr>
-  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">PyNN Script</span></code></h4>
+  <p>Populations (set of neurons indices) can be defined here and referred to in transfer functions:
+  </p>
+  <form name="populationForm">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th colspan="3">Neuron indices</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="(population, indices) in populations">
+        <td>
+          <input type="text" size="25" type="text" value="{{population}}">
+          </input>
+        </td>
+        <td ng-if-start="isSlice(indices)"><label>from</label>
+          <input size="5" type="text" ng-model="indices.from" ng-pattern="/^\d+$/">
+          </input>
+        </td>
+        <td><label>to</label>
+          <input size="5" type="text" ng-model="indices.to" ng-pattern="/^\d+$/">
+          </input>
+        </td>
+        <td ng-if-end><label>step</label>
+          <input size="5" type="text" ng-model="indices.step" ng-pattern="/^\d+$/">
+          </input>
+        </td>
+        <td ng-if="!isSlice(indices)" colspan="3">
+          <input type="text" size="40" type="text" ng-model="indices"
+            ng-pattern="/^\s*\d+\s*(\,\s*\d+\s*)*$/">
+          </input>
+        </td>
+        <td>
+          <button type="button" class="btn btn-default btn-md" ng-click="deletePopulation(population);">
+          <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-default btn-md"
+  ng-click="addIndex()">
+  <i class="glyphicon glyphicon-star"></i><span> New index</span>
+ </button>
+ <button type="button" class="btn btn-default btn-md" ng-click="addList()">
+  <i class="glyphicon glyphicon-star"></i><span> New list</span>
+ </button>
+  <button type="button" class="btn btn-default btn-md" ng-click="addSlice()">
+  <i class="glyphicon glyphicon-star"></i><span> New slice</span>
+ </button>
+</form>
   <hr>
   <div id="codeEditor"  ui-codemirror ui-codemirror-opts="{
           lineWrapping: true,
