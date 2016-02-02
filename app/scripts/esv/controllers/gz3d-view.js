@@ -71,7 +71,7 @@
         'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'SCREEN_GLASS_STRING',
         'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
         'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
-        'backendInterfaceService',
+        'backendInterfaceService', 'RESET_TYPE',
         function ($rootScope, $scope, $stateParams, $timeout,
                   $location, $window, $document, bbpConfig,
                   hbpUserDirectory, simulationService,
@@ -81,7 +81,7 @@
                   nrpFrontendVersion, panels, UI, OPERATION_MODE, SCREEN_GLASS_STRING,
                   gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
                   simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
-                  backendInterfaceService) {
+                  backendInterfaceService, RESET_TYPE) {
 
           // This is the only place where simulation info are, and should be, initialized
           simulationInfo.Initialize();
@@ -102,6 +102,7 @@
           $scope.STATE = STATE;
           $scope.OPERATION_MODE = OPERATION_MODE;
           $scope.UI = UI;
+          $scope.RESET_TYPE = RESET_TYPE;
 
           function ViewState() {
             this.isInitialized = false;
@@ -298,12 +299,8 @@
           };
 
           $scope.resetButtonClickHandler = function () {
-
-            $scope.checkboxes = {
-              oldReset: false,
-              robotPose: false,
-              fullReset: false,
-              worldReset: false
+            $scope.request = {
+              resetType: RESET_TYPE.NO_RESET
             };
 
             //frontend-bound reset checkboxes
@@ -318,19 +315,25 @@
               'scope': $scope
             })
             .then(function() {
-              /* TODO: this should be removed as soon as some reset features are
-              correctly implemented and tested */
-              if($scope.frontend.checkboxes.viewReset){
-                gz3d.scene.resetView();
-              }
-              else if ($scope.checkboxes.oldReset) {
+              var rst = $scope.request.resetType;
+              if (rst === RESET_TYPE.NO_RESET) { return; }
+              else if (rst < 256) { // Backend message
+                /* TODO: this should be removed as soon as some reset features are
+                correctly implemented and tested */
+                if (rst === RESET_TYPE.RESET_OLD) { // Old reset
                   $scope.updateSimulation(STATE.INITIALIZED);
                   $scope.setEditMode(EDIT_MODE.VIEW);
                 }
-                else {
-                  backendInterfaceService.reset($scope.checkboxes);
+                else { // Just forward the reset value to the backend
+                  backendInterfaceService.reset($scope.request);
                 }
-              });
+              }
+              else {
+                if (rst === RESET_TYPE.RESET_CAMERA_VIEW) {
+                  gz3d.scene.resetView();
+                }
+              }
+            });
           };
 
           $scope.setEditMode = function (newMode) {

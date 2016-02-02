@@ -38,7 +38,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       gz3d,
       experimentSimulationService,
       hbpDialogFactory,
-      backendInterfaceService;
+      backendInterfaceService,
+      RESET_TYPE;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -281,7 +282,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _gz3d_,
                               _experimentSimulationService_,
                               _hbpDialogFactory_,
-                              _backendInterfaceService_) {
+                              _backendInterfaceService_,
+                              _RESET_TYPE_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
@@ -312,6 +314,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     experimentSimulationService = _experimentSimulationService_;
     hbpDialogFactory = _hbpDialogFactory_;
     backendInterfaceService = _backendInterfaceService_;
+    RESET_TYPE = _RESET_TYPE_;
 
     scope.viewState = {};
 
@@ -467,14 +470,18 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(hbpDialogFactory.confirm).toHaveBeenCalled();
     });
 
-    it('should pass the checkboxes\' value to resetService', function() {
+    it('should pass the radio button value to resetService', function() {
       scope.resetButtonClickHandler();
-      scope.checkboxes = {
-        robotPose: true,
-        fullReset: false
-      };
+      scope.request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
       hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
-      expect(backendInterfaceService.reset).toHaveBeenCalledWith(scope.checkboxes);
+      expect(backendInterfaceService.reset).toHaveBeenCalledWith(scope.request);
+    });
+
+    it('shouldn\'t do anything if no radio button is set', function() {
+      scope.resetButtonClickHandler();
+      scope.request = { resetType: RESET_TYPE.NO_RESET };
+      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      expect(backendInterfaceService.reset.calls.length).toBe(0);
     });
 
     it('should call updateSimulation when the "OLD STYLE RESET" checkbox is clicked', function () {
@@ -482,7 +489,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       spyOn(scope, 'setEditMode');
 
       scope.resetButtonClickHandler();
-      scope.checkboxes = {oldReset: true};
+      scope.request = { resetType: RESET_TYPE.RESET_OLD };
+
       hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
       expect(scope.updateSimulation).toHaveBeenCalledWith(STATE.INITIALIZED);
       expect(scope.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
@@ -492,7 +500,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       //gz3d.scene.resetView is already being spied on
 
       scope.resetButtonClickHandler();
-      scope.frontend.checkboxes = {viewReset: true};
+      scope.request = { resetType: RESET_TYPE.RESET_CAMERA_VIEW };
+
       hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
       expect(gz3d.scene.resetView).toHaveBeenCalled();
     });

@@ -1,52 +1,55 @@
 <fieldset>
     <ul style="list-style: none">
         <li>
-            <input type="checkbox" ng-model="checkboxes.oldReset"
-            ng-true-value="true" ng-false-value="false" >*TEMPORARY* Old reset behaviour *TEMPORARY*</input>
+            <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_OLD}}">
+                Old reset behaviour (temporary backwards compatibility)
+            </input>
         </li>
         <li>
-            <input type="checkbox" ng-model="frontend.checkboxes.viewReset"
-                   tooltip="Reset the Camera View" tooltip-trigger="mouseenter" tooltip-placement="top"
-                   ng-true-value="true" ng-false-value="false"> Reset Camera View</input>
+            <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_CAMERA_VIEW}}">
+                Reset Camera View
+            </input>
         </li>
         <li class="enable-tooltip"
             tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" ng-model="checkboxes.fullReset"
-            ng-true-value="true" ng-false-value="false"
-            disabled="true"> <s>Reset everything</s></input>
+            <input  ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}" type="radio">
+                <s>Reset everything</s>
+            </input>
         </li>
         <br/>
         <b>Brain</b>
         <li class="enable-tooltip"
             tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Reset entirely the neural network</s></input>
+            <input type="radio" disabled="true"> <s>Reset entirely the neural network</s></input>
         </li>
         <br/>
         <b>State machines</b>
         <li class="enable-tooltip"
             tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Restart the state machine process</s></input>
+            <input type="radio" disabled="true"> <s>Restart the state machine process</s></input>
         </li>
         <br/>
         <b>Environment</b>
         <li>
-            <input ng-model="checkboxes.worldReset" ng-true-value="true" ng-false-value="false"
-                type="checkbox"> Reset the environment to its initial status.</input>
+            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio">
+                Reset the environment to its initial status.
+            </input>
         </li>
         <b>Robot</b>
         <li>
-            <input type="checkbox" ng-model="checkboxes.robotPose"
-            ng-true-value="true" ng-false-value="false"> Reset robot pose</input>
+            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_ROBOT_POSE}}" type="radio">
+                Reset robot pose
+            </input>
         </li>
         <li class="enable-tooltip"
             tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Reset robot controllers</s></input>
+            <input type="radio" disabled="true"> <s>Reset robot controllers</s></input>
         </li>
         <br/>
         <b>Transfer functions</b>
         <li class="enable-tooltip"
             tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="checkbox" disabled="true"> <s>Reset transfer function globals</s></input>
+            <input type="radio" disabled="true"> <s>Reset transfer function globals</s></input>
         </li>
     </ul>
 </fieldset>

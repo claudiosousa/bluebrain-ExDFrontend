@@ -1,6 +1,20 @@
 (function () {
   'use strict';
 
+  angular.module('exdFrontendApp.Constants')
+    // constants for Reset type.
+    // WARNING: these values must match the ones in
+    // GazeboRosPackages/src/cle_ros_msgs/srv/ResetSimulation.srv
+    .constant('RESET_TYPE', {
+      NO_RESET: -1,
+      RESET_ROBOT_POSE: 0,
+      RESET_FULL: 1,
+      RESET_WORLD: 2,
+      RESET_BRAIN: 3,
+      RESET_OLD: 255,
+      RESET_CAMERA_VIEW: 1000
+    });
+
   angular.module('exdFrontendApp').factory('backendInterfaceService',
     ['$resource', '$stateParams', 'bbpConfig', 'serverError', 'simulationInfo',
     function ($resource, $stateParams, bbpConfig, serverError, simulationInfo) {
