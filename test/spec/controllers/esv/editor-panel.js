@@ -147,12 +147,12 @@ describe('Controller: editorPanelCtrl', function () {
     expect(scope.reenableKeyBindings).not.toThrow();
   });
 
-  it('should set the variable isClosing to be true', function () {
-    expect(scope.isClosing).toBeFalsy();
+  it('should set the variable showEditorPanel to be false', function () {
+    scope.showEditorPanel = true;
 
     scope.$destroy();
 
-    expect(scope.isClosing).toBeTruthy();
+    expect(scope.showEditorPanel).toBeFalsy();
   });
 
 });

@@ -48,19 +48,6 @@
     .constant('SCREEN_GLASS_STRING', '::screen_glass');
 
   angular.module('exdFrontendApp')
-    // Panels
-    .config(['panelsProvider', function (panelsProvider) {
-      panelsProvider
-        .add({
-          id: 'code-editor',
-          position: 'left',
-          size: '50%',
-          templateUrl: 'views/esv/editor-panel.html',
-          controller: 'editorPanelCtrl',
-          openCallbackFunction: 'openCallback',
-          closeCallbackFunction: 'closeCallback'
-        });
-    }])
     .controller('Gz3dViewCtrl',
       ['$rootScope', '$scope', '$stateParams', '$timeout',
         '$location', '$window', '$document', 'bbpConfig',
@@ -68,7 +55,7 @@
         'simulationControl', 'screenControl', 'experimentList',
         'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
         'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
-        'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'SCREEN_GLASS_STRING',
+        'nrpFrontendVersion', 'UI', 'OPERATION_MODE', 'SCREEN_GLASS_STRING',
         'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
         'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
         'backendInterfaceService', 'RESET_TYPE',
@@ -78,7 +65,7 @@
                   simulationControl, screenControl, experimentList,
                   experimentSimulationService, timeDDHHMMSSFilter, splash,
                   assetLoadingSplash, STATE, nrpBackendVersions,
-                  nrpFrontendVersion, panels, UI, OPERATION_MODE, SCREEN_GLASS_STRING,
+                  nrpFrontendVersion, UI, OPERATION_MODE, SCREEN_GLASS_STRING,
                   gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
                   simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
                   backendInterfaceService, RESET_TYPE) {
@@ -454,13 +441,6 @@
                   this.items[1].visible = show);
             }
           };
-
-
-          $window.oncontextmenu = function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            return false;
-          };
           contextMenuState.pushItemGroup(screenChangeMenuItemGroup);
 
           //main context menu handler
@@ -489,10 +469,10 @@
                   // right click
                   break;
 
-                //other buttons
                 case 0:
-                case 1:
                   // left click
+                case 1:
+                  // middle mouse button
                   if (objectInspectorService.isShown) {
                     objectInspectorService.update();
                   }
@@ -500,7 +480,6 @@
               }
             }
           };
-
 
           $scope.focus = function (id) {
             // timeout makes sure that it is invoked after any other event has been triggered.
@@ -631,8 +610,9 @@
             }
           };
 
+          $scope.showEditorPanel = false;
           $scope.edit = function () {
-            panels.open('code-editor');
+            $scope.showEditorPanel = !$scope.showEditorPanel;
           };
 
           $scope.exit = function () {

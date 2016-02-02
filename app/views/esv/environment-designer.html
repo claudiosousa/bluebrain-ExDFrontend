@@ -2,18 +2,19 @@
 <link rel="stylesheet" href="styles/esv/environment-designer.css" />
 <!-- endbuild -->
 
-<!-- TEST: Environment Designer loaded correctly -->
-<h3>Environment Editor</h3>
-<p>The Neurorobotics Platform is built on top of <a target="_blank" href="http://gazebosim.org/">Gazebo</a> <img
-  src="img/common/gazebo-logo.png"/>. Any environment created for Gazebo (and made of simple primitives or Collada
-  objects) is therefore compatible with the platform.
-  Gazebo uses the <a target="_blank" href="http://sdformat.org/">SDF format</a>.
-  If you want your environments to be
-  available, <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the
-  corresponding SDF file(s) and
-  assets).
-<div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
-<hr>
+<div class="environment-designer-container">
+  <!-- TEST: Environment Designer loaded correctly -->
+  <h3>Environment Editor</h3>
+  <p>The Neurorobotics Platform is built on top of <a target="_blank" href="http://gazebosim.org/">Gazebo</a> <img
+          src="img/common/gazebo-logo.png"/>. Any environment created for Gazebo (and made of simple primitives or Collada
+    objects) is therefore compatible with the platform.
+    Gazebo uses the <a target="_blank" href="http://sdformat.org/">SDF format</a>.
+    If you want your environments to be
+    available, <a href="mailto:neurorobotics@humanbrainproject.eu">get in contact with us!</a> (we only need the
+    corresponding SDF file(s) and
+    assets).
+  <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
+  <hr>
   <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
           ng-click="saveSDFIntoCollabStorage()"
           ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
@@ -24,98 +25,100 @@
     <span> Save to Collab</span>
   </button>
   <button type="button" class="btn btn-default"
-        ng-click="exportSDFWorld()"
-        ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-  <i class="glyphicon glyphicon-download"></i>
-  <span> Download</span>
-</button>
-<hr>
+          ng-click="exportSDFWorld()"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
+    <i class="glyphicon glyphicon-download"></i>
+    <span> Download</span>
+  </button>
+  <hr>
 
-<div ng-controller="insertControl">
-  <div id="insertMenu-simple_shapes">
-    <div class="ed-panel-title"  title="Simple Shapes">
-      <h4>Insert simple Shapes</h4>
+  <div ng-controller="insertControl">
+    <div id="insertMenu-simple_shapes">
+      <div class="ed-panel-title"  title="Simple Shapes">
+        <h4>Insert simple Shapes</h4>
+      </div>
+      <div class="ed-panel-content">
+        <ul class="ed-objectlist">
+          <li id="insert-entity-box" class="ed-objectlist-item"
+              ng-mousedown="addModel('box');"
+              data-role="button">
+            <div class="ed-objectlist-content">
+              <img src="img/esv/objects/box.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail" alt="Box"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
+            </div>
+          </li>
+          <li id="insert-entity-sphere" class="ed-objectlist-item"
+              ng-mousedown="addModel('sphere');"
+              data-role="button">
+            <div class="ed-objectlist-content">
+              <img src="img/esv/objects/sphere.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
+            </div>
+          </li>
+          <li id="insert-entity-cylinder" class="ed-objectlist-item"
+              ng-mousedown="addModel('cylinder');" data-role="button">
+            <div class="ed-objectlist-content">
+              <img src="img/esv/objects/cylinder.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div class="ed-panel-content">
-      <ul class="ed-objectlist">
-        <li id="insert-entity-box" class="ed-objectlist-item"
-           ng-mousedown="addModel('box');"
-           data-role="button">
-          <div class="ed-objectlist-content">
-            <img src="img/esv/objects/box.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail" alt="Box"
-                 ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
-          </div>
-        </li>
-        <li id="insert-entity-sphere" class="ed-objectlist-item"
-           ng-mousedown="addModel('sphere');"
-           data-role="button">
-          <div class="ed-objectlist-content">
-            <img src="img/esv/objects/sphere.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
-                 ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
-          </div>
-        </li>
-        <li id="insert-entity-cylinder" class="ed-objectlist-item"
-           ng-mousedown="addModel('cylinder');" data-role="button">
-          <div class="ed-objectlist-content">
-            <img src="img/esv/objects/cylinder.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
-                 ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
-          </div>
-        </li>
-      </ul>
+    <hr>
+    <div id="insertMenu-lights" class="">
+      <div class="ed-panel-title" title="Lights">
+        <h4>Insert Lights</h4>
+      </div>
+      <div class="ed-panel-content">
+        <ul class="ed-objectlist">
+          <li id="insert-entity-pointlight" class="ed-objectlist-item"
+              ng-mousedown="addModel('pointlight');" data-role="button">
+            <div class="ed-objectlist-content">
+              <img src="img/esv/objects/pointlight.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
+            </div>
+          </li>
+          <li id="insert-entity-spotlight" class="ed-objectlist-item"
+              ng-mousedown="addModel('spotlight');" data-role="button">
+            <div class="ed-objectlist-content">
+              <img src="img/esv/objects/spotlight.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
+            </div>
+          </li>
+          <li id="insert-entity-directionallight" class="ed-objectlist-item"
+              ng-mousedown="addModel('directionallight');"
+              data-role="button">
+            <div class="ed-objectlist-content">
+              <img src="img/esv/objects/directionallight.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-  <hr>
-  <div id="insertMenu-lights" class="">
-    <div class="ed-panel-title" title="Lights">
-      <h4>Insert Lights</h4>
-    </div>
-    <div class="ed-panel-content">
-      <ul class="ed-objectlist">
-        <li id="insert-entity-pointlight" class="ed-objectlist-item"
-           ng-mousedown="addModel('pointlight');" data-role="button">
-          <div class="ed-objectlist-content">
-            <img src="img/esv/objects/pointlight.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
-                                                  ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
-          </div>
-        </li>
-        <li id="insert-entity-spotlight" class="ed-objectlist-item"
-           ng-mousedown="addModel('spotlight');" data-role="button">
-          <div class="ed-objectlist-content">
-            <img src="img/esv/objects/spotlight.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
-                 ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
-          </div>
-        </li>
-        <li id="insert-entity-directionallight" class="ed-objectlist-item"
-           ng-mousedown="addModel('directionallight');"
-           data-role="button">
-          <div class="ed-objectlist-content">
-            <img src="img/esv/objects/directionallight.png" draggable="false" class="ed-img-thumbnail ed-environment-thumbnail"
-                 ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'">
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <hr>
-  <div ng-repeat="category in categories" id="insertMenu-{{category.path}}">
-    <div class="ed-panel-title"  title="{{category.title}}">
-      <h4>Insert {{category.title}}</h4>
-    </div>
-    <div class="ed-panel-content">
-      <ul class="ed-objectlist">
-        <li ng-repeat="model in category.models" id="insert-entity-{{model.modelPath}}"
-           ng-mousedown="addModel(model.modelPath);"
-           data-role="button" class="ed-objectlist-item">
-          <div class="ed-objectlist-content">
-            <img ng-src="{{assetsPath}}/{{model.modelPath}}/thumbnail.png"
-                 draggable="false"
-                 class="ed-img-thumbnail ed-environment-thumbnail"
-                 ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'"
-                 alt="{{model.modelPath}}">
-          </div>
-        </li>
-      </ul>
+    <hr>
+    <div ng-repeat="category in categories" id="insertMenu-{{category.path}}">
+      <div class="ed-panel-title"  title="{{category.title}}">
+        <h4>Insert {{category.title}}</h4>
+      </div>
+      <div class="ed-panel-content">
+        <ul class="ed-objectlist">
+          <li ng-repeat="model in category.models" id="insert-entity-{{model.modelPath}}"
+              ng-mousedown="addModel(model.modelPath);"
+              data-role="button" class="ed-objectlist-item">
+            <div class="ed-objectlist-content">
+              <img ng-src="{{assetsPath}}/{{model.modelPath}}/thumbnail.png"
+                   draggable="false"
+                   class="ed-img-thumbnail ed-environment-thumbnail"
+                   ng-class="stateService.currentState === STATE.INITIALIZED ? 'disabled-image' : 'clickable'"
+                   alt="{{model.modelPath}}">
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
+
 

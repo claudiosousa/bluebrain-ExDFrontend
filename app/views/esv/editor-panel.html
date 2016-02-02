@@ -1,20 +1,32 @@
-<div class="panel-heading">
-  <button type="button" class="close" data-ng-click="panels.close();">×</button>
-</div>
-<div class="panel-body">
-  <tabset>
-    <tab heading="Environment" active="activeTab.environment">
-      <environment-designer />
-    </tab>
-    <tab heading="Transfer Functions" active="activeTab.transferfunction" select="!isClosing && disableKeyBindings(); !isClosing && controls.transferfunction.refresh()" deselect="reenableKeyBindings()">
-      <transfer-function-editor topic="{{transferFunctionErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
-        control="controls.transferfunction" />
-    </tab>
-    <tab heading="State Machine (SMACH)" active="activeTab.statemachine" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.statemachine.refresh()" deselect="reenableKeyBindings()">
-      <smach-editor control="controls.statemachine"/>
-    </tab>
-    <tab heading="Brain Editor" active="activeTab.pynneditor" select=" !isClosing && disableKeyBindings(); !isClosing &&  controls.pynneditor.refresh()" deselect="reenableKeyBindings()">
-      <pynn-editor control="controls.pynneditor"/>
-    </tab>
-  </tabset>
+<!-- build:css(.tmp) styles/esv/editor-panel.css -->
+<link rel="stylesheet" href="styles/esv/editor-panel.css"/>
+<!-- endbuild -->
+
+<div resizeable id="editor-panel" class="editor-panel-widget" ng-show="showEditorPanel" ng-controller="editorPanelCtrl">
+  <div class="editor-panel-header" movable-anchor-for-id="editor-panel">
+    <h5 class="editor-panel-title">Editors</h5>
+  </div>
+  <div class="editor-panel-content">
+    <tabset>
+      <tab heading="Environment" active="activeTab.environment">
+        <environment-designer/>
+      </tab>
+      <tab heading="Transfer Functions" active="activeTab.transferfunction"
+           select="disableKeyBindings(); controls.transferfunction.refresh()"
+           deselect="reenableKeyBindings()">
+        <transfer-function-editor topic="{{transferFunctionErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
+                                  control="controls.transferfunction"/>
+      </tab>
+      <tab heading="State Machine (SMACH)" active="activeTab.statemachine"
+           select="disableKeyBindings(); controls.statemachine.refresh()"
+           deselect="reenableKeyBindings()">
+        <smach-editor control="controls.statemachine"/>
+      </tab>
+      <tab heading="Brain Editor" active="activeTab.pynneditor"
+           select="disableKeyBindings(); controls.pynneditor.refresh()"
+           deselect="reenableKeyBindings()">
+        <pynn-editor control="controls.pynneditor"/>
+      </tab>
+    </tabset>
+  </div>
 </div>
