@@ -99,14 +99,27 @@
             }
           );
         },
-        setBrain: function (data, brain_type, data_type, successCallback, failureCallback) {
+        setBrain: function (
+          data,
+          brain_populations,
+          brain_type,
+          data_type,
+          successCallback,
+          failureCallback
+        ) {
           resourceBrainSimulation(simulationInfo.serverBaseUrl).put({
             sim_id: simulationInfo.simulationID
-          }, {'data': data, 'brain_type': brain_type, 'data_type': data_type}, successCallback, failureCallback);
+          }, {'data': data, 'brain_type': brain_type, 'data_type': data_type, 'brain_populations': brain_populations},
+          successCallback, failureCallback);
         },
-        saveBrain: function(contextID, source, successCallback, failureCallback) {
-          return resourceBrainExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID }, {data: source},
-            successCallback, failureCallback);
+        saveBrain: function(contextID, pynnScript, brainPopulations, successCallback, failureCallback) {
+          return resourceBrainExperiment(
+            simulationInfo.serverBaseUrl).save(
+            { context_id: contextID },
+            {data: pynnScript, brain_populations: brainPopulations},
+            successCallback,
+            failureCallback
+          );
         },
         reloadBrain: function (callback) {
           resourceBrainExperiment(simulationInfo.serverBaseUrl).get(

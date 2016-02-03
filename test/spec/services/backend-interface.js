@@ -43,7 +43,8 @@ describe('Services: backendInterfaceService', function () {
   it('should make a PUT request on /experiment/:context_id/brain', function () {
     $httpBackend.whenPUT(urlRegex).respond(200);
     var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
-    backendInterfaceService.saveBrain(contextID, 'some source');
+    var somePopulations = {'population1': [1, 2, 3], 'population2': [3, 4, 5] };
+    backendInterfaceService.saveBrain(contextID, 'some source', somePopulations);
     $httpBackend.flush();
     /*jshint camelcase: false */
     var contextObject = {context_id: contextID};
@@ -168,7 +169,7 @@ describe('Services: backendInterfaceService', function () {
   it('should call the failure callback when the setBrain PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     var callback = jasmine.createSpy('callback');
-    backendInterfaceService.setBrain(undefined, undefined, undefined, function(){}, callback);
+    backendInterfaceService.setBrain(undefined, undefined, undefined, undefined, function(){}, callback);
     $httpBackend.flush();
     expect(callback).toHaveBeenCalled();
   });
