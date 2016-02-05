@@ -1,9 +1,9 @@
 'use strict';
 
-describe('Directive: object-editor', function () {
+describe('Directive: object-inspector', function () {
 
   var $rootScope, $compile, $scope, $document;
-  var objectEditorElement;
+  var objectInspectorElement;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -14,13 +14,13 @@ describe('Directive: object-editor', function () {
     $compile = _$compile_;
     $document = _$document_;
     $scope = $rootScope.$new();
-    objectEditorElement = $compile('<object-editor />')($scope);
+    objectInspectorElement = $compile('<object-inspector />')($scope);
     $scope.$digest();
   }));
 
   it('should produce an element that is movable and resizeable', function () {
-    expect(objectEditorElement.prop('outerHTML')).toContain('movable');
-    expect(objectEditorElement.prop('outerHTML')).toContain('resizeable');
+    expect(objectInspectorElement.prop('outerHTML')).toContain('movable');
+    expect(objectInspectorElement.prop('outerHTML')).toContain('resizeable');
   });
 
 });

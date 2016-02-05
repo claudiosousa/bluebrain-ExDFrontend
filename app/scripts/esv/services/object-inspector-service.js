@@ -3,7 +3,7 @@
 (function () {
     'use strict';
 
-    angular.module('objectEditorModule', [])
+    angular.module('objectInspectorModule', [])
 
       .constant('OBJECT_VIEW_MODE', {
         NORMAL: 'normal',
@@ -11,7 +11,7 @@
         WIREFRAME: 'wireframe'
       })
 
-      .factory('objectEditorService', [
+      .factory('objectInspectorService', [
         'EDIT_MODE',
         'STATE',
         'OBJECT_VIEW_MODE',
@@ -25,6 +25,7 @@
             translation: new THREE.Vector3(),
             rotationEuler: new THREE.Euler(),
             floatPrecision: 5,
+            showCollision: undefined,
 
             toggleView: function (show) {
               var showing;
@@ -84,6 +85,13 @@
                     break;
                 }
               }
+
+              // update show collisions
+              if (!angular.isDefined(this.selectedObject.showCollision)) {
+                this.showCollision = this.selectedObject.showCollision = false;
+              } else {
+                this.showCollision = this.selectedObject.showCollision;
+              }
             },
 
             onObjectChange: function () {
@@ -123,6 +131,22 @@
                     break;
                 }
               }
+            },
+
+            onShowCollisionChange: function() {
+              this.selectedObject.showCollision = this.showCollision;
+
+              var that = this;
+              this.selectedObject.traverse(function(node) {
+                if (node.name.indexOf('COLLISION_VISUAL') >= 0) {
+                  // found collision geometry node, get all meshes attached
+                  node.traverse(function(subnode) {
+                    if (subnode instanceof THREE.Mesh) {
+                      subnode.visible = that.showCollision;
+                    }
+                  });
+                }
+              });
             }
           };
         }

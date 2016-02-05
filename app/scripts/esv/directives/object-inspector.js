@@ -2,18 +2,18 @@
   'use strict';
 
   angular.module('exdFrontendApp')
-    .directive('objectEditor', [
+    .directive('objectInspector', [
       'OBJECT_VIEW_MODE',
-      'objectEditorService',
-      function (OBJECT_VIEW_MODE, objectEditorService) {
+      'objectInspectorService',
+      function (OBJECT_VIEW_MODE, objectInspectorService) {
         return {
-          templateUrl: 'views/esv/object-editor.html',
+          templateUrl: 'views/esv/object-inspector.html',
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs) {
             scope.$on("$destroy", function() {
               // remove the callback
-              objectEditorService.isShown = false;
+              objectInspectorService.isShown = false;
             });
 
             scope.OBJECT_VIEW_MODE = OBJECT_VIEW_MODE;
