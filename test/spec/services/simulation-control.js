@@ -940,7 +940,7 @@ describe('Services: error handling', function () {
     serverError.display.reset();
 
     screenControl(serverURL).updateScreenColor(simulationID, {});
-    httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction', {});
+    httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/material_change', {});
     httpBackend.flush();
     expect(serverError.display.callCount).toBe(1);
     response = serverError.display.mostRecentCall.args[0];
