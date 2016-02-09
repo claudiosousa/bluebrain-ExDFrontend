@@ -24,7 +24,7 @@
     $scope.controls.statemachine = {};
     $scope.controls.pynneditor = {};
 
-    $scope.transferFunctionErrorTopic = serverConfig.rosbridge.topics.transferFunctionError;
+    $scope.cleErrorTopic = serverConfig.rosbridge.topics.cleError;
     $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
 
     $scope.openCallback = function() {

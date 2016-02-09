@@ -12,7 +12,7 @@
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
             "status": "/ros_cle_simulation/status",
-            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+            "cleError": "/ros_cle_simulation/cle_error"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/2/ws"
         },
@@ -29,7 +29,7 @@
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
             "status": "/ros_cle_simulation/status",
-            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+            "cleError": "/ros_cle_simulation/cle_error"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/3/ws"
         },
@@ -46,7 +46,7 @@
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
             "status": "/ros_cle_simulation/status",
-            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+            "cleError": "/ros_cle_simulation/cle_error"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/4/ws"
         },
@@ -63,7 +63,7 @@
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
             "status": "/ros_cle_simulation/status",
-            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+            "cleError": "/ros_cle_simulation/cle_error"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/5/ws"
         },
@@ -80,7 +80,7 @@
             "spikes": "/monitor/spike_recorder",
             "joint": "/joint_states",
             "status": "/ros_cle_simulation/status",
-            "transferFunctionError": "/ros_cle_simulation/cle_error/transfer_function"
+            "cleError": "/ros_cle_simulation/cle_error"
           },
           "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/6/ws"
         },

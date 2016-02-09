@@ -43,7 +43,7 @@ describe('Controller: editorPanelCtrl', function () {
         gzweb: {},
         rosbridge: {
           topics: {
-            transferFunctionError: {}
+            cleError: {}
           }
         }
       }

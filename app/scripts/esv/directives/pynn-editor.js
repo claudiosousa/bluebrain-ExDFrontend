@@ -40,7 +40,7 @@
             backendInterfaceService.getBrain(function(response) {
               if (response.brain_type === "py") {
                 scope.pynnScript = response.data;
-                scope.populations = scope.preprocessPopulations(response.brain_populations);
+                scope.populations = scope.preprocessPopulations(response.additional_populations);
                 scope.refreshCodemirror = !scope.refreshCodemirror; // just toggle it to refresh
                 scope.loading = false;
                 setTimeout(function () {

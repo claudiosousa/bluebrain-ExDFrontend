@@ -14,7 +14,7 @@
       <tab heading="Transfer Functions" active="activeTab.transferfunction"
            select="disableKeyBindings(); controls.transferfunction.refresh()"
            deselect="reenableKeyBindings()">
-        <transfer-function-editor topic="{{transferFunctionErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
+        <transfer-function-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
                                   control="controls.transferfunction"/>
       </tab>
       <tab heading="State Machine (SMACH)" active="activeTab.statemachine"

@@ -225,7 +225,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should fill the error field of the flawed transfer function', function () {
       var errorType = isolateScope.ERROR.RUNTIME;
-      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType };
+      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1 };
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
       msg.functionName = 'tf2';
@@ -252,7 +252,7 @@ describe('Directive: transferFunctionEditor', function () {
     it('should report syntax error', function () {
       var firstTFName = transferFunctions[0].name;
       var errorType = isolateScope.ERROR.COMPILE;
-      var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3, errorType: errorType };
+      var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3, errorType: errorType, severity: 1 };
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
@@ -274,7 +274,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should highlight the error line in the transfer function editor', function () {
       var compile = isolateScope.ERROR.COMPILE;
-      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile };
+      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1 };
       var tf1 = transferFunctions[0];
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
@@ -284,7 +284,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should call the compile error clean-up callback if a new compile error is received', function () {
       var compile = isolateScope.ERROR.COMPILE;
-      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile };
+      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1 };
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       isolateScope.onNewErrorMessageReceived(msg);
