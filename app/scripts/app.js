@@ -35,6 +35,7 @@
       'objectInspectorModule',
       'pythonCodeHelperServices',
       'simulationInfoService',
+      'slurminfoService',
       'collabServices',
       'exdFrontendApp.Constants',
       'exdFrontendFilters',
