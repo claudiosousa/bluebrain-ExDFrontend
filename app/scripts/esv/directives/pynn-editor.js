@@ -40,10 +40,10 @@
             backendInterfaceService.getBrain(function(response) {
               if (response.brain_type === "py") {
                 scope.pynnScript = response.data;
-                scope.populations = response.brain_populations;
+                scope.populations = scope.preprocessPopulations(response.brain_populations);
                 scope.refreshCodemirror = !scope.refreshCodemirror; // just toggle it to refresh
+                scope.loading = false;
                 setTimeout(function () {
-                  scope.loading = false;
                   scope.getDoc().clearHistory();
                   scope.getDoc().markClean();
                   scope.searchToken("si");
@@ -56,29 +56,67 @@
             });
           };
 
-          scope.update = function(pynnScript) {
+          scope.preprocessPopulations = function(neuronPopulations) {
+            angular.forEach(neuronPopulations, function(population, name){
+              var isSlice = scope.isSlice(population);
+              // If the step field of a slice is undefined, we set it to its default value, i.e., 1.
+              // This way the population form remains valid.
+              if (isSlice && !population.step) {
+                population.step = 1;
+              }
+              if (!isSlice) {
+                // It must be a list.
+                // We convert a JS array into a string for display in HTML input tag: [1,2,3] --> '1,2,3'
+                var str = population.toString();
+                neuronPopulations[name] = {list: str};
+              }
+            });
+            return neuronPopulations;
+          };
+
+          scope.stringsToLists = function(neuronPopulations) {
+            var populations = angular.copy(neuronPopulations);
+            angular.forEach(populations, function(population, name){
+              var isList = !scope.isSlice(population);
+              if (isList) {
+                var stringList = population.list.split(',');
+                var numberList = _.map(stringList, function(item){
+                  return Number(item);
+                });
+                populations[name] = numberList;
+              }
+            });
+            return populations;
+          };
+
+          scope.apply = function() {
             scope.loading = true;
             backendInterfaceService.setBrain(
-              pynnScript, "py", "text",
+              scope.pynnScript, scope.stringsToLists(scope.populations), 'py', 'text',
               function() { // Success callback
                 scope.loading = false;
                 scope.getDoc().markClean();
                 scope.clearError();
-                hbpDialogFactory.alert({title: "Success.", template: "Successfully updated brain."});
+                hbpDialogFactory.alert({title: 'Success.', template: 'Successfully updated brain.'});
               },
               function(result) { // Failure callback
                 scope.loading = false;
                 scope.clearError();
-                scope.markError(pynnScript, result.data.error_message, result.data.error_line, result.data.error_column);
-                hbpDialogFactory.alert({title: "Error.", template: result.data.error_message});
+                scope.markError(
+                  result.data.error_message,
+                  result.data.error_line,
+                  result.data.error_column
+                );
+                hbpDialogFactory.alert({title: 'Error.', template: result.data.error_message});
               });
           };
 
-          scope.saveIntoCollabStorage = function (pynnScript) {
+          scope.saveIntoCollabStorage = function() {
             scope.isSavingToCollab = true;
             backendInterfaceService.saveBrain(
               simulationInfo.contextID,
-              pynnScript,
+              scope.pynnScript,
+              scope.stringsToLists(scope.populations),
               function() { // Success callback
                 scope.isSavingToCollab = false;
               },function() { // Failure callback
@@ -117,32 +155,27 @@
           };
 
           scope.isSlice = function(indices) {
-            return (typeof(indices) === 'object') && (indices.constructor !== Array);
+            return indices.hasOwnProperty('from') && indices.hasOwnProperty('to');
           };
 
           scope.deletePopulation = function(population) {
             delete scope.populations[population];
           };
 
-          scope.addIndex = function() {
-            var neuronName = scope.generatePopulationName();
-            scope.populations[neuronName] = 0;
-          };
-
           scope.addList = function() {
             var neuronName = scope.generatePopulationName();
-            scope.populations[neuronName] = [0, 1, 2];
+            scope.populations[neuronName] = { list: '0, 1, 2' };
           };
 
           var defaultSlice = {
             'from': 0,
-            'to': 0,
-            'step': 0
+            'to': 1,
+            'step': 1
           };
 
           scope.addSlice = function() {
             var neuronName = scope.generatePopulationName();
-            scope.populations[neuronName] = defaultSlice;
+            scope.populations[neuronName] = angular.copy(defaultSlice);
           };
 
           scope.generatePopulationName = function() {
@@ -164,8 +197,10 @@
             }
           };
 
-          scope.markError = function(pynnScript, error_message, line, column) {
-            scope.pynnScript = pynnScript;
+          scope.markError = function(error_message, line, column) {
+            if (isNaN(line) || isNaN(column)) {
+              return;
+            }
             if (line === 0 && column === 0) {
               var tokenname = scope.parseName(error_message);
               if (!tokenname) { return; }

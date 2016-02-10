@@ -1,6 +1,6 @@
 <button type="button" class="btn btn-default btn-md"
-        ng-click="update(pynnScript)"
-        ng-disabled="doc.isClean() || loading || stateService.statePending || !populationForm.$valid"
+        ng-click="apply()"
+        ng-disabled="loading || stateService.statePending || !populationForm.$valid"
         v-busy="loading || stateService.statePending"
         v-busy-label="Applying changes"
         v-pressable>
@@ -8,7 +8,7 @@
   <span> Apply</span>
 </button>
 <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
-        ng-click="saveIntoCollabStorage(pynnScript)"
+        ng-click="saveIntoCollabStorage()"
         ng-disabled="loading || stateService.statePending || !populationForm.$valid"
         v-busy="isSavingToCollab"
         v-busy-label="Saving to Collab"
