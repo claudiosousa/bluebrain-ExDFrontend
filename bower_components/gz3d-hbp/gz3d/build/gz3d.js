@@ -6255,88 +6255,7 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
     return;
   }
 
-  var mainPointer = true;
-  var pos;
-  if (event.touches)
-  {
-    if (event.touches.length === 1)
-    {
-      pos = new THREE.Vector2(
-          event.touches[0].clientX, event.touches[0].clientY);
-    }
-    else if (event.touches.length === 2)
-    {
-      pos = new THREE.Vector2(
-          (event.touches[0].clientX + event.touches[1].clientX)/2,
-          (event.touches[0].clientY + event.touches[1].clientY)/2);
-    }
-    else
-    {
-      return;
-    }
-  }
-  else
-  {
-    pos = new THREE.Vector2(
-          event.clientX, event.clientY);
-    if (event.which !== 1)
-    {
-      mainPointer = false;
-    }
-  }
-
-  var intersect = new THREE.Vector3();
-  var model = this.getRayCastModel(pos, intersect);
-
-  if (intersect)
-  {
-    this.controls.target = intersect;
-  }
-
-  // Cancel in case of multitouch
-  if (event.touches && event.touches.length !== 1)
-  {
-    return;
-  }
-
-  // Manipulation modes
-  // Model found
-  if (model)
-  {
-    // Do nothing to the floor plane
-    if (model.name === 'plane')
-    {
-      this.timeDown = new Date().getTime();
-    }
-    else if (this.modelManipulator.pickerNames.indexOf(model.name) >= 0)
-    {
-      // Do not attach manipulator to itself
-    }
-    // Attach manipulator to model
-    else if (model.name !== '')
-    {
-      if (mainPointer && model.parent === this.scene)
-      {
-        this.selectEntity(model);
-      }
-    }
-    // Manipulator pickers, for mouse
-    else if (this.modelManipulator.hovered)
-    {
-      this.modelManipulator.update();
-      this.modelManipulator.object.updateMatrixWorld();
-    }
-    // Sky
-    else
-    {
-      this.timeDown = new Date().getTime();
-    }
-  }
-  // Plane from below, for example
-  else
-  {
-    this.timeDown = new Date().getTime();
-  }
+  this.timeDown = new Date().getTime();
 };
 
 /**
@@ -6345,16 +6264,96 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
  */
 GZ3D.Scene.prototype.onPointerUp = function(event)
 {
-  //event.preventDefault();
+  event.preventDefault();
 
-  // Clicks (<150ms) outside any models trigger view mode
   var millisecs = new Date().getTime();
   if (millisecs - this.timeDown < 150)
   {
-    this.setManipulationMode('view');
-    $( '#view-mode' ).click();
-    $('input[type="radio"]').checkboxradio('refresh');
+    // check for model selection
+    var mainPointer = true;
+    var pos;
+    if (event.touches)
+    {
+      if (event.touches.length === 1)
+      {
+        pos = new THREE.Vector2(
+            event.touches[0].clientX, event.touches[0].clientY);
+      }
+      else if (event.touches.length === 2)
+      {
+        pos = new THREE.Vector2(
+            (event.touches[0].clientX + event.touches[1].clientX)/2,
+            (event.touches[0].clientY + event.touches[1].clientY)/2);
+      }
+      else
+      {
+        return;
+      }
+    }
+    else
+    {
+      pos = new THREE.Vector2(
+          event.clientX, event.clientY);
+      if (event.button !== 0)
+      {
+        mainPointer = false;
+      }
+    }
+
+    var intersect = new THREE.Vector3();
+    var model = this.getRayCastModel(pos, intersect);
+
+    if (intersect)
+    {
+      this.controls.target = intersect;
+    }
+
+    // Cancel in case of multitouch
+    if (event.touches && event.touches.length !== 1)
+    {
+      return;
+    }
+
+    // Manipulation modes
+    // Model found
+    if (model)
+    {
+      if (model.name === 'plane')
+      {
+        // Do nothing to the floor plane
+      }
+      else if (this.modelManipulator.pickerNames.indexOf(model.name) >= 0)
+      {
+        // Do not attach manipulator to itself
+      }
+      // Attach manipulator to model
+      else if (model.name !== '')
+      {
+        if (mainPointer && model.parent === this.scene)
+        {
+          this.selectEntity(model);
+        }
+      }
+      // Manipulator pickers, for mouse
+      else if (this.modelManipulator.hovered)
+      {
+        this.modelManipulator.update();
+        this.modelManipulator.object.updateMatrixWorld();
+      }
+      // Sky
+      else
+      {
+        // Do nothing
+      }
+    }
+    else {
+      // Clicks (<150ms) outside any models trigger view mode
+      this.setManipulationMode('view');
+      $( '#view-mode' ).click();
+      $('input[type="radio"]').checkboxradio('refresh');
+    }
   }
+
   this.timeDown = null;
 };
 
