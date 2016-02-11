@@ -21,7 +21,6 @@
       PAUSED: 'paused',
       INITIALIZED: 'initialized',
       STOPPED: 'stopped',
-      UNDEFINED: 'undefined'
     })
     .constant('OPERATION_MODE', {
       VIEW: 'view',
@@ -45,7 +44,8 @@
       JOINT_PLOT: 13,
       GRAPHICS_PERFORMANCE: 14
     })
-    .constant('SLIDER_INITIAL_POSITION', 50);
+    .constant('SLIDER_INITIAL_POSITION', 50)
+    .constant('SCREEN_GLASS_STRING', '::screen_glass');
 
   angular.module('exdFrontendApp')
     // Panels
@@ -68,7 +68,7 @@
         'simulationControl', 'screenControl', 'experimentList',
         'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
         'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
-        'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE',
+        'nrpFrontendVersion', 'panels', 'UI', 'OPERATION_MODE', 'SCREEN_GLASS_STRING',
         'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
         'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
         'backendInterfaceService',
@@ -78,7 +78,7 @@
                   simulationControl, screenControl, experimentList,
                   experimentSimulationService, timeDDHHMMSSFilter, splash,
                   assetLoadingSplash, STATE, nrpBackendVersions,
-                  nrpFrontendVersion, panels, UI, OPERATION_MODE,
+                  nrpFrontendVersion, panels, UI, OPERATION_MODE, SCREEN_GLASS_STRING,
                   gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
                   simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
                   backendInterfaceService) {
@@ -282,7 +282,6 @@
               var ratio = $scope.sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
               gz3d.scene.emitter.emit('lightChanged', ratio);
             });
-            resetScreenColors();
 
             // when in edit mode make light's helper geometry visible
             if ($scope.operationMode === OPERATION_MODE.EDIT) {
@@ -290,38 +289,6 @@
             } else {
               $scope.setLightHelperVisibility(false);
             }
-          };
-
-          // The following lines allow the joining client to retrieve the actual screen color stored by the server.
-          // The method below gets the 'server' color for each screen since it might have been changed
-          // by another client connected earlier to the same simulation.
-          // This is a fix for Bug [NRRPLT-1899] that should be addressed properly on Gazebo's side:
-          // https://bitbucket.org/osrf/gazebo/issue/1573/scene_info-does-not-reflect-older-changes
-          // The lines following the /* istanbul ignore next */ comments will be removed once the Gazebo bug is fixed.
-          /* istanbul ignore next */
-          $scope.updateScreenColor = function (simulation, screenString) { // screenString must be either 'left' or 'right'
-            var colors = {'Gazebo/Red': 0xff0000, 'Gazebo/Blue': 0x0000ff};
-            var scene = gz3d.scene;// scene is undefined when closing and destroying the asset-loading splah screen
-            var entity = scene ? scene.getByName(screenString + '_vr_screen::body::screen_glass') : undefined;
-            if (entity) {
-              var child = entity.children ? entity.children[0] : undefined;
-              var material = child ? child.material : undefined;
-              var value = simulation[screenString + '_screen_color'];
-              var color = colors[value];
-              if (angular.isDefined(material) && angular.isDefined(color)) {
-                material.color.setHex(color);
-                material.emissive.setHex(color);
-                material.specular.setHex(color);
-              }
-            }
-          };
-
-          /* istanbul ignore next */
-          var resetScreenColors = function () {
-            simulationControl(simulationInfo.serverBaseUrl).simulation({sim_id: simulationInfo.simulationID}, function (data) {
-              $scope.updateScreenColor(data, 'left');
-              $scope.updateScreenColor(data, 'right');
-            });
           };
 
           // play/pause/stop button handler
@@ -396,8 +363,6 @@
                   gz3d.scene.controls.onMouseUpManipulator('initRotation');
                   $scope.sliderPosition = SLIDER_INITIAL_POSITION;
                   gz3d.scene.resetView(); //update the default camera position, if defined
-                  /* istanbul ignore next */
-                  resetScreenColors();
 
                   // Don't stay in INITIALIZED, but switch to STARTED->PAUSED
                   stateService.setCurrentState(STATE.STARTED).then(
@@ -410,38 +375,42 @@
             );
           };
 
-          // for convenience we pass just a string as 'red' or 'blue' currently, this will be replaced later on
-          $scope.setColorOnEntity = function (value) {
+          // We restrict material changes to screen glasses found in screen models of the 3D scene,
+          // i.e., only visuals bearing the name screen_glass can be modified by this function.
+          $scope.setMaterialOnEntity = function(value) {
             var selectedEntity = gz3d.scene.selectedEntity;
 
             if (!selectedEntity) {
               console.error('Could not change screen color since there was no object selected');
               return;
             }
-            // send RESTful commands to server
-            var screenParams = {};
-            var name = selectedEntity.name;
+            var screenGlass = $scope.getScreenGlass(selectedEntity);
+            var materialChange = { 'visual_path': screenGlass.name, 'material': value };
+            // Request color change through RESTful call
+            screenControl(simulationInfo.serverBaseUrl).updateScreenColor(
+              {sim_id: simulationInfo.simulationID}, materialChange
+            );
 
-            if ((name === 'right_vr_screen') && (value === 'red')) {
-              screenParams.name = 'RightScreenToRed';
-            }
-            else if ((name === 'left_vr_screen') && (value === 'red')) {
-              screenParams.name = 'LeftScreenToRed';
-            }
-            else if ((name === 'right_vr_screen') && (value === 'blue')) {
-              screenParams.name = 'RightScreenToBlue';
-            }
-            else if ((name === 'left_vr_screen') && (value === 'blue')) {
-              screenParams.name = 'LeftScreenToBlue';
-            }
-
-            screenControl(simulationInfo.serverBaseUrl).updateScreenColor({sim_id: simulationInfo.simulationID}, screenParams);
-
-            // hide context menu after a color was assigned
+            // Hide context menu after a color was assigned
             contextMenuState.toggleContextMenu(false);
           };
 
-          //ScreenChange context Menu setup
+          $scope.getScreenGlass = function(entity) {
+            var screenGlass;
+            entity.traverse(function(node) {
+                var index = node.name.length - SCREEN_GLASS_STRING.length;
+                // Check whether the current node name ends with SCREEN_GLASS_STRING
+                // (Note that string.endsWith() doesn't exist yet but ECMA6 will add this function, see
+                // http://stackoverflow.com/questions/280634/endswith-in-javascript)
+                if (node.name.indexOf(SCREEN_GLASS_STRING, index) !== -1) {
+                  screenGlass = node;
+                  return node;
+                }
+            });
+            return screenGlass;
+          };
+
+          // ScreenChange context Menu setup
           var screenChangeMenuItemGroup = {
             label: 'Change Color',
             visible: false,
@@ -449,7 +418,7 @@
               {
                 text: 'Red',
                 callback: function (event) {
-                  $scope.setColorOnEntity("red");
+                  $scope.setMaterialOnEntity('Gazebo/Red');
                   event.stopPropagation();
                 },
                 visible: false
@@ -457,7 +426,7 @@
               {
                 text: 'Blue',
                 callback: function (event) {
-                  $scope.setColorOnEntity("blue");
+                  $scope.setMaterialOnEntity('Gazebo/Blue');
                   event.stopPropagation();
                 },
                 visible: false
@@ -472,9 +441,7 @@
               var shouldShowOnlyInViewMode =
                 (gz3d.scene.manipulationMode === EDIT_MODE.VIEW);
 
-              var shouldShowOnlyOnScreens =
-                model.name.indexOf('screen') !== -1;
-
+              var shouldShowOnlyOnScreens = angular.isDefined($scope.getScreenGlass(model));
               var show =
                 shouldShowOnlyInViewMode &&
                 shouldShowOnlyOnScreens;
@@ -526,7 +493,6 @@
                   if (objectInspectorService.isShown) {
                     objectInspectorService.update();
                   }
-
                   break;
               }
             }

@@ -179,7 +179,7 @@
 
   module.factory('screenControl', ['$resource', 'serverError', function ($resource, serverError) {
     return function (baseUrl) {
-      return $resource(baseUrl + '/simulation/:sim_id/interaction', {}, {
+      return $resource(baseUrl + '/simulation/:sim_id/interaction/material_change', {}, {
         updateScreenColor: {
           method: 'PUT',
           interceptor: {responseError: serverError.display}

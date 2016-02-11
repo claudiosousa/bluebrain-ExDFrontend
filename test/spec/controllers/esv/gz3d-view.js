@@ -33,6 +33,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       UI,
       OPERATION_MODE,
       EDIT_MODE,
+      SCREEN_GLASS_STRING,
       panels,
       gz3d,
       experimentSimulationService,
@@ -275,6 +276,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _UI_,
                               _OPERATION_MODE_,
                               _EDIT_MODE_,
+                              _SCREEN_GLASS_STRING_,
                               _panels_,
                               _gz3d_,
                               _experimentSimulationService_,
@@ -304,6 +306,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     UI = _UI_;
     OPERATION_MODE = _OPERATION_MODE_;
     EDIT_MODE = _EDIT_MODE_;
+    SCREEN_GLASS_STRING = _SCREEN_GLASS_STRING_;
     panels = _panels_;
     gz3d = _gz3d_;
     experimentSimulationService = _experimentSimulationService_;
@@ -549,37 +552,24 @@ describe('Controller: Gz3dViewCtrl', function () {
       // prepare the test: create mockups
       var entityToChange = { 'children' : [ { 'material' : {} } ] };
       gz3d.scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
-
       // actual test
       // currently no element is selected, hence we want a console.error message
-      scope.setColorOnEntity('value_does_not_matter_here');
+      gz3d.scene.selectedEntity = undefined;
+      scope.setMaterialOnEntity('value_does_not_matter_here');
       expect(console.error).toHaveBeenCalled();
       expect(console.error.callCount).toEqual(1);
 
       // pretend we selected a screen now
+      var screenGlassName = 'left_vr_screen::body::screen_glass';
+      spyOn(scope, 'getScreenGlass').andReturn({name: screenGlassName});
       gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
-      scope.setColorOnEntity('red');
+      scope.setMaterialOnEntity('Gazebo/Red');
 
       expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
-      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToRed'});
-
-      gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
-      scope.setColorOnEntity('blue');
-
-      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
-      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'LeftScreenToBlue'});
-
-      gz3d.scene.selectedEntity = { 'name' : 'right_vr_screen' };
-      scope.setColorOnEntity('red');
-
-      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
-      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'RightScreenToRed'});
-
-      gz3d.scene.selectedEntity = { 'name' : 'right_vr_screen' };
-      scope.setColorOnEntity('blue');
-
-      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
-      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith({sim_id: 'mocked_simulation_id'}, {'name':'RightScreenToBlue'});
+      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith(
+        { sim_id: 'mocked_simulation_id' },
+        { 'visual_path': screenGlassName, 'material': 'Gazebo/Red' }
+      );
     });
 
     it('should call context menu service if user is the simulation owner', function() {
@@ -723,23 +713,6 @@ describe('Controller: Gz3dViewCtrl', function () {
         //gz3d.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
         //scope.incrementLightIntensities(-0.5);
     });
-
-    // Commented out for the moment. This will be redesigned in the next sprint
-    //it('should call the camera manipulation service methods correctly', function() {
-    //  var right = 1, up = 2, forward = 3;
-    //  scope.cameraTranslate(right, up, forward);
-    //  expect(cameraManipulation.firstPersonTranslate).toHaveBeenCalledWith(right, up, forward);
-    //
-    //  var degreeRight = 15, degreeUp = 30;
-    //  scope.cameraRotate(degreeRight, degreeUp);
-    //  expect(cameraManipulation.firstPersonRotate).toHaveBeenCalledWith(degreeRight, degreeUp);
-    //
-    //  scope.cameraLookAtOrigin();
-    //  expect(cameraManipulation.lookAtOrigin).toHaveBeenCalled();
-    //
-    //  scope.cameraResetToInitPose();
-    //  expect(cameraManipulation.resetToInitialPose).toHaveBeenCalled();
-    //});
 
     it('should call or skip camera controls according to mouse events and help mode status', function() {
       var e = { which: 1 }; // 1 for left mouse button
@@ -892,13 +865,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(document.execCommand).toHaveBeenCalled();
     });
 
-/*    it('should call newExp if necessary on destroy', function () {
-      var dummyNewExp = jasmine.createSpy('dummyNewExp');
-      experimentSimulationService.setExperimentForRestart(stateParams.serverID, dummyNewExp);
-      scope.$destroy();
-      expect(dummyNewExp).toHaveBeenCalled();
-    }); */
-
     it('should do nothing on $destroy when all is undefined', function() {
       scope.assetLoadingSplashScreen = undefined;
       gz3d.iface.webSocket = undefined;
@@ -1026,5 +992,15 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
       expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
     });
+
+    it('should get the screen glass entity if any', function() {
+      var entity = { traverse: jasmine.createSpy('traverse') };
+      scope.getScreenGlass(entity);
+      var traverseCallback = entity.traverse.mostRecentCall.args[0];
+      var node = {name: 'vr_screen::body::screen_glass'};
+      expect(traverseCallback(node)).toEqual(node);
+    });
+
   });
+
 });
