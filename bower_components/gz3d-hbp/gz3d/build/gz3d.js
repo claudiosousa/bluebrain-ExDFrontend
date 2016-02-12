@@ -3561,7 +3561,7 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
           allChildren[c].receiveShadow = visualObj.receiveShadows;
         }
 
-        if (visualObj.name.indexOf('COLLISION_VISUAL') >= 0)
+        if (visualObj.name !== undefined && visualObj.name.indexOf('COLLISION_VISUAL') >= 0)
         {
           allChildren[c].castShadow = false;
           allChildren[c].receiveShadow = false;
