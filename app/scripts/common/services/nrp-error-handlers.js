@@ -46,30 +46,33 @@
             // The error is, or contains, an HTML message that was not
             // necessarily written by our back-end
             // (e.g., 'Bad Gateway Error')
-            var titleNodeContent = this.getHtmlTitle(errorSource.message);
+            error.template = errorSource; // default value of the displayed error message
+            var message;
+            if (typeof(errorSource) === 'string') {
+              // It could be an nginx 'Bad Gateway Error'
+              message = errorSource;
+            } else {
+              message = errorSource.message;
+            }
+            var titleNodeContent = this.getHtmlTitle(message);
             if (!_.isNull(titleNodeContent)) {
               error.template = titleNodeContent;
+              // If the error message is a default ngninx message,
+              // it may contain HTML code with useful information
+              var nginxString = this.getNginxString(message);
+              if (!_.isNull(nginxString)) {
+                 error.template = error.template + ' (' + nginxString + ').';
+              }
             }
             if (errorSource.type && errorSource.message) {
               // The error was formatted by our back-end python code
               error.title = errorSource.type;
-              // If the error message is a default ngninx message,
-              // it may contain HTML code with useful information
-              if (!_.isNull(titleNodeContent)) {
-                var nginxString = this.getNginxString(errorSource.message);
-                if (!_.isNull(nginxString)) {
-                  error.template = error.template + ' (' + nginxString + ').';
-                }
-              }
-              else {
+              if (_.isNull(titleNodeContent)) {
                 error.template = errorSource.message;
               }
             }
             else if (errorSource.status === 400) {
               error.template = 'The request could not be understood by the server';
-            }
-            else {
-              error.template = errorSource;
             }
           }
         }

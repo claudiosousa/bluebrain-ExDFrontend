@@ -66,6 +66,25 @@ describe('Services: nrp-error-handlers', function () {
     expect(result.template).toEqual('The request could not be understood by the server');
   });
 
+  it('should translate errors for which response.data is an HTML string properly (e.g., ngninx\'s 502 Bad Gateway Error)', function() {
+    var htmlTitle = '502 Bad Gateway Error';
+    var nginxString = 'nginx/2.4.2';
+    var response = {};
+    response.data = 'some text before' +
+        '<html>' +
+        '<head>' +
+        '<title>' + htmlTitle + '</title>' +
+        '<head>' +
+        '<body>' +
+        '<center>' + nginxString + '</center>' +
+        '</body>' +
+        '</html>' + 'some text after';
+    var result = nrpErrorService.httpError(response);
+    expect(result.title).toEqual('Error');
+    expect(result.label).toEqual('OK');
+    expect(result.template).toEqual(htmlTitle + ' (' +  'nginx/2.4.2' + ').');
+  });
+
   it('should extract the title content correctly (getHtmlTitle)', function() {
     var errorTitle = 'Major Failure 666';
     var htmlString = 'some text' +
