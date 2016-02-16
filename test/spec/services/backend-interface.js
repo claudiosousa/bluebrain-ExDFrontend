@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Services: backendInterfaceService', function () {
-  var backendInterfaceService, simulationInfo, $httpBackend, serverError;
+  var backendInterfaceService, simulationInfo, $httpBackend, serverError, RESET_TYPE;
   var urlRegex;
 
   beforeEach(module('exdFrontendApp'));
@@ -14,13 +14,15 @@ describe('Services: backendInterfaceService', function () {
     _backendInterfaceService_,
     _simulationInfo_,
     _$httpBackend_,
-    _serverError_) {
+    _serverError_,
+    _RESET_TYPE_) {
     backendInterfaceService = _backendInterfaceService_;
     simulationInfo = _simulationInfo_;
     $httpBackend = _$httpBackend_;
     serverError = _serverError_;
     simulationInfo.serverBaseUrl = 'http://bbpce014.epfl.ch:8080';
     urlRegex = /^http:\/\/bbpce014\.epfl\.ch:8080/;
+    RESET_TYPE = _RESET_TYPE_;
   }));
 
   it('should set the server base URL correctly', function () {
@@ -112,10 +114,24 @@ describe('Services: backendInterfaceService', function () {
   it('should call /simulation/:sim_id/reset with the right params when calling reset from a given simulation', function() {
     $httpBackend.whenPUT(urlRegex).respond(200);
     simulationInfo.simulationID = 1;
-    var resetParams = {checkbox1: true, checkbox2: false};
-    backendInterfaceService.reset(resetParams);
-    $httpBackend.expectPUT(simulationInfo.serverBaseUrl + '/simulation/' +
-      simulationInfo.simulationID + '/reset', resetParams);
+    var request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
+    backendInterfaceService.reset(request);
+    $httpBackend.expectPUT(simulationInfo.serverBaseUrl +
+      '/simulation/' + simulationInfo.simulationID + '/reset', request);
+    $httpBackend.flush();
+  });
+
+  it('should call /simulation/:sim_id/:context_id/reset with the right params when calling reset from a given simulation', function() {
+    $httpBackend.whenPUT(urlRegex).respond(200);
+    simulationInfo.simulationID = 1;
+    var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
+    var request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
+
+    backendInterfaceService.resetCollab(contextID, request);
+
+    $httpBackend.expectPUT(simulationInfo.serverBaseUrl +
+      '/simulation/' + simulationInfo.simulationID + '/' +
+      contextID + '/reset', request);
     $httpBackend.flush();
   });
 

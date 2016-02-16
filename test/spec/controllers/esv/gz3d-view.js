@@ -230,18 +230,21 @@ describe('Controller: Gz3dViewCtrl', function () {
       simulationID : stateParamsMock.simulationID,
       serverBaseUrl : 'http://bbpce016.epfl.ch:8080',
       Initialize: jasmine.createSpy('Initialize'),
-      mode: undefined
+      mode: undefined,
+      contextID: '97923877-13ea-4b43-ac31-6b79e130d344'
     };
     $provide.value('simulationInfo', simulationInfo);
 
     var hbpDialogFactoryMock = {
       confirm: jasmine.createSpy('confirm').andReturn({
         then: jasmine.createSpy('then')
-      })
+      }),
+      alert: jasmine.createSpy('alert')
     };
     $provide.value('hbpDialogFactory', hbpDialogFactoryMock);
     var backendInterfaceServiceMock = {
-      reset: jasmine.createSpy('reset')
+      reset: jasmine.createSpy('reset'),
+      resetCollab: jasmine.createSpy('resetCollab')
     };
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
 
@@ -258,6 +261,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     hbpDialogFactoryMock.confirm.reset();
     hbpDialogFactoryMock.confirm().then.reset();
     backendInterfaceServiceMock.reset.reset();
+    backendInterfaceServiceMock.resetCollab.reset();
   }));
 
   // Initialize the controller and a mock scope
@@ -479,11 +483,70 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(hbpDialogFactory.confirm).toHaveBeenCalled();
     });
 
-    it('should pass the radio button value to resetService', function() {
+    it('should pass the radio button value to resetService when Collab not available', function() {
       scope.resetButtonClickHandler();
       scope.request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
+
+      scope.isCollabExperiment = false; //Collab IS NOT available
+
       hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
-      expect(backendInterfaceService.reset).toHaveBeenCalledWith(scope.request);
+      expect(backendInterfaceService.reset).toHaveBeenCalledWith(
+        scope.request,
+        jasmine.any(Function),
+        jasmine.any(Function));
+    });
+
+    it('should pass the radio button value to resetCollabService when Collab is available', function() {
+      spyOn(_, 'defer');
+
+      scope.resetButtonClickHandler();
+      scope.request = { resetType: RESET_TYPE.RESET_WORLD };
+      scope.isCollabExperiment = true; //Collab IS available
+      scope.splashScreen = undefined;
+
+      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+
+      //open splash
+      expect(splash.open).toHaveBeenCalled();
+
+      //defer call
+      expect(_.defer).toHaveBeenCalled();
+      _.defer.mostRecentCall.args[0](); // call deferred function
+
+      expect(splash.spin).toBe(true);
+      expect(splash.setMessage).toHaveBeenCalledWith(
+        { headline: 'Resetting Environment',
+          subHeadline: 'Downloading World SDF from the Collab'
+        }
+      );
+
+      expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
+        simulationInfo.contextID,
+        scope.request,
+        jasmine.any(Function),
+        jasmine.any(Function)
+      );
+
+      backendInterfaceService.resetCollab.mostRecentCall.args[2](); //2 is the success callback
+
+      expect(splash.close).toHaveBeenCalled();
+      expect(scope.splashScreen).not.toBeDefined();
+
+      //reset spies
+      splash.close.reset();
+      scope.splashScreen = 'isDefined';
+
+      backendInterfaceService.resetCollab.mostRecentCall.args[3](); //3 is the failure callback
+
+      expect(hbpDialogFactory.alert).toHaveBeenCalledWith(
+        { title: 'Error.',
+          template: 'Error while resetting from Collab storage.'
+        }
+      );
+
+      expect(splash.close).toHaveBeenCalled();
+      expect(scope.splashScreen).not.toBeDefined();
+
     });
 
     it('shouldn\'t do anything if no radio button is set', function() {

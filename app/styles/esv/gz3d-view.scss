@@ -186,6 +186,12 @@ body > div {
   filter: alpha(opacity=40); /* msie */
 }
 
+.disabled {
+  opacity: 0.6;
+  filter: alpha(opacity=60); /* msie */
+}
+
+
 .camera-view {
   border: 2px solid black;
 }
