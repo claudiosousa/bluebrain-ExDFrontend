@@ -27,6 +27,9 @@ window.bbpConfig = {
     "collabContextManagement": {
       "url": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api"
     },
+    "slurmmonitor": {
+      "url": "http://bbpsrvc44.cscs.ch:8080"
+    },
     "neurorobotics": {
       "bbpce014": {
         "gzweb": {

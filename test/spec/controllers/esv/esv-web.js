@@ -16,6 +16,7 @@ describe('Controller: experimentCtrl', function () {
     interval,
     experimentSimulationService,
     simulationService,
+    slurminfoService,
     hbpUserDirectory,
     ESV_UPDATE_RATE,
     UPTIME_UPDATE_RATE,
@@ -30,6 +31,8 @@ describe('Controller: experimentCtrl', function () {
   hbpUserDirectoryMock.get = jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2);
 
   var simulationServiceMockObject = {};
+  var slurminfoServiceMockObject = {};
+  slurminfoServiceMockObject.get = jasmine.createSpy('get').andReturn({'foo':'bar'});
   simulationServiceMockObject.updateUptime = jasmine.createSpy('updateUptime');
   var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
 
@@ -77,6 +80,7 @@ describe('Controller: experimentCtrl', function () {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
     $provide.value('simulationService', simulationServiceMock);
+    $provide.value('slurminfoService', slurminfoServiceMockObject);
     for (var mock in experimentSimulationServiceMock) {
       experimentSimulationServiceMock[mock].reset();
     }
@@ -97,6 +101,7 @@ describe('Controller: experimentCtrl', function () {
                               _$interval_,
                               _experimentSimulationService_,
                               _simulationService_,
+                              _slurminfoService_,
                               _hbpUserDirectory_,
                               _STATE_) {
     scope = $rootScope.$new();
@@ -107,6 +112,7 @@ describe('Controller: experimentCtrl', function () {
     interval = _$interval_;
     experimentSimulationService = _experimentSimulationService_;
     simulationService = _simulationService_;
+    slurminfoService = _slurminfoService_;
     hbpUserDirectory = _hbpUserDirectory_;
     STATE = _STATE_;
 
@@ -274,15 +280,19 @@ describe('Controller: experimentCtrl', function () {
     refreshExperimentsFinishedCallback();
 
     experimentSimulationService.refreshExperiments.reset();
-
+    slurminfoService.get.reset();
     expect(scope.updatePromise).toBeDefined();
     // Should not have been called 1 second before ESV_UPDATE_RATE
     timeout.flush(ESV_UPDATE_RATE - 1000);
     expect(experimentSimulationService.refreshExperiments).not.toHaveBeenCalled();
+    expect(slurminfoService.get).not.toHaveBeenCalled();
 
     // called after in total ESV_UPDATE_RATE seconds
     timeout.flush(1000);
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+    expect(slurminfoService.get).toHaveBeenCalled();
+
+    expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
   });
 
   it('should create the updateUptimePromise and update the uptime after UPTIME_UPDATE_RATE seconds', function() {
