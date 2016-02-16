@@ -151,11 +151,13 @@ describe('Controller: experimentCtrl', function () {
 
   it('should set the forced user id in full local mode' , function () {
     window.bbpConfig.localmode.forceuser = true;
+    slurminfoService.get.reset();
     controller('experimentCtrl', {
       $scope: scope
     });
     expect(hbpUserDirectory.get).not.toHaveBeenCalled();
     expect(scope.userID).toEqual('vonarnim');
+    expect(slurminfoService.get).not.toHaveBeenCalled();
     window.bbpConfig.localmode.forceuser = false;
   });
 
@@ -293,6 +295,13 @@ describe('Controller: experimentCtrl', function () {
     expect(slurminfoService.get).toHaveBeenCalled();
 
     expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
+
+    // if in full local mode, slurm service should not be called
+    slurminfoService.get.reset();
+    window.bbpConfig.localmode.forceuser = true;
+    timeout.flush(1000);
+    expect(slurminfoService.get).not.toHaveBeenCalled();
+    window.bbpConfig.localmode.forceuser = false;
   });
 
   it('should create the updateUptimePromise and update the uptime after UPTIME_UPDATE_RATE seconds', function() {

@@ -77,7 +77,10 @@
         $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         $scope.userID = undefined;
-        $scope.clusterPartAvailInfo = slurminfoService.get();
+        $scope.clusterPartAvailInfo = undefined;
+        if (!bbpConfig.get('localmode.forceuser', false)) {
+          $scope.clusterPartAvailInfo = slurminfoService.get();
+        }
 
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -173,7 +176,9 @@
           if(!$scope.isDestroyed) {
             // Start to update the datastructure in regular intervals
             $scope.updatePromise = $timeout(function () {
-              $scope.clusterPartAvailInfo = slurminfoService.get();
+              if (!bbpConfig.get('localmode.forceuser', false)) {
+                $scope.clusterPartAvailInfo = slurminfoService.get();
+              }
               experimentSimulationService.refreshExperiments(
                 $scope.experiments,
                 $scope.serversEnabled,
