@@ -6,12 +6,12 @@
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
     ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d',
     function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d) {
+
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
     $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
     $scope.panelIsOpen = false;
-    $scope.isClosing = false;
     $scope.activeTab = {};
     $scope.activeTab.transferfunction = false;
     $scope.activeTab.environment = false;
@@ -50,7 +50,9 @@
     $scope.closeCallback = function() {
       // The Panel is closed
       $scope.panelIsOpen = false;
-      gz3d.scene.controls.keyBindingsEnabled = true;
+      if (angular.isDefined(gz3d.scene)) {
+        gz3d.scene.controls.keyBindingsEnabled = true;
+      }
     };
 
     $scope.disableKeyBindings = function() {
@@ -71,7 +73,15 @@
     // clean up on leaving
     $scope.$on("$destroy", function() {
       // prevent calling the select functions of the tabs
-      $scope.isClosing = true;
+      $scope.showEditorPanel = false;
+    });
+
+    $scope.$watch('showEditorPanel', function() {
+      if ($scope.showEditorPanel) {
+        $scope.openCallback();
+      } else {
+        $scope.closeCallback();
+      }
     });
   }]);
 }());

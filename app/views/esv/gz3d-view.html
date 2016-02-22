@@ -268,7 +268,7 @@
 
 
               <!-- code editor icon-->
-              <div ng-if="operationMode === OPERATION_MODE.EDIT" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR}" ng-click="(!helpModeActivated) ? edit() : help(UI.CODE_EDITOR)">
+              <div ng-if="operationMode === OPERATION_MODE.EDIT" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel}" ng-click="(!helpModeActivated) ? edit() : help(UI.CODE_EDITOR)">
                 <i class="fa fa-pencil-square-o fa-2x vertcenter"></i>
               </div>
               <!-- code editor icon-->
@@ -365,7 +365,7 @@
         <!-- Toolbar-Help window --->
 
         <!-- Code editor panel --->
-        <div data-panels="true"></div>
+        <editor-panel></editor-panel>
         <!-- Code editor panel --->
       </div>
       <!-- container -->

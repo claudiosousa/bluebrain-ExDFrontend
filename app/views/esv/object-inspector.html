@@ -22,17 +22,17 @@
               </button>
             </li>
             <li class="vec3-num-input-item">
-              <input transform-input-num id="oe-translate-x" type="number" name="translate-x" class="vec3-num-input"
+              <input interactive id="oe-translate-x" type="number" name="translate-x" class="vec3-num-input"
                      ng-model="objectInspectorService.translation.x"
                      ng-change="objectInspectorService.onObjectChange()">
             </li>
             <li class="vec3-num-input-item">
-              <input transform-input-num id="oe-translate-y" type="number" name="translate-y" class="vec3-num-input"
+              <input interactive id="oe-translate-y" type="number" name="translate-y" class="vec3-num-input"
                      ng-model="objectInspectorService.translation.y"
                      ng-change="objectInspectorService.onObjectChange()">
             </li>
             <li class="vec3-num-input-item">
-              <input transform-input-num id="oe-translate-z" type="number" name="translate-z" class="vec3-num-input"
+              <input interactive id="oe-translate-z" type="number" name="translate-z" class="vec3-num-input"
                      ng-model="objectInspectorService.translation.z"
                      ng-change="objectInspectorService.onObjectChange()">
             </li>
@@ -50,17 +50,17 @@
               </button>
             </li>
             <li class="vec3-num-input-item">
-              <input transform-input-num id="oe-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
+              <input interactive id="oe-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
                      ng-model="objectInspectorService.rotationEuler.x"
                      ng-change="objectInspectorService.onObjectChange()">
             </li>
             <li class="vec3-num-input-item">
-              <input transform-input-num id="oe-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
+              <input interactive id="oe-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
                      ng-model="objectInspectorService.rotationEuler.y"
                      ng-change="objectInspectorService.onObjectChange()">
             </li>
             <li class="vec3-num-input-item">
-              <input transform-input-num id="oe-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
+              <input interactive id="oe-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
                      ng-model="objectInspectorService.rotationEuler.z"
                      ng-change="objectInspectorService.onObjectChange()">
             </li>
@@ -88,8 +88,6 @@
                                             ng-change="objectInspectorService.onShowCollisionChange()">Show Collision Geometry</label>
     </li>
   </ol>
-  <button type="button" class="button-close" ng-click="objectInspectorService.toggleView(false)">
-    <i class="glyphicon glyphicon-remove"></i>
-  </button>
+  <button type="button" class="button-close" data-ng-click="objectInspectorService.toggleView(false)">×</button>
 </div>
 

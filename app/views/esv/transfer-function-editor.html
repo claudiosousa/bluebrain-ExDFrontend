@@ -7,9 +7,9 @@
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
   <div ng-attr-id="transfer-function-{{transferFunction.id}}"
-    ui-codemirror ui-codemirror-opts="editorOptions"
-    ng-change="onTransferFunctionChange(transferFunction)"
-    ng-model="transferFunction.code" ui-refresh="transferFunction.code">
+       ui-codemirror ui-codemirror-opts="editorOptions"
+       ng-change="onTransferFunctionChange(transferFunction)"
+       ng-model="transferFunction.code" ui-refresh="transferFunction.code">
   </div>
   <div ng-repeat="(type, error) in transferFunction.error">
     <div class="alert alert-danger" role="alert">

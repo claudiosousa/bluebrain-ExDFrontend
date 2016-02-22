@@ -1,0 +1,49 @@
+@import "pop-over-viewer.scss";
+
+$editorPanelMinWidth: 750px;
+$editorPanelMinHeight: 500px;
+$editorPanelHeadingHeight: 25px;
+$editorPanelHeadingMargin: 5px;
+$editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHeadingMargin;
+
+.editor-panel-widget {
+  @extend .pop-over-viewer;
+  display: flex !important;
+  top: 2%;
+  left: 2%;
+  width: $editorPanelMinWidth;
+  height: $editorPanelMinHeight;
+  min-width: $editorPanelMinWidth;
+  min-height: $editorPanelMinHeight;
+  background: white;
+
+  .editor-panel-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+  .editor-panel-header {
+    width: 90%;
+    width: calc(100% - 10px);
+    height: $editorPanelHeadingHeight;
+    margin: $editorPanelHeadingMargin;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #e1e1e1;
+    background: #f8f8f8;
+  }
+
+  .editor-panel-title {
+    padding-left: 10px;
+    margin: $editorPanelHeadingMargin;
+  }
+
+  .editor-panel-content {
+    overflow: auto;
+    width: 100%;
+    padding: 10px;
+    margin: $editorPanelHeadingHeightTotal 10px 10px 10px;
+  }
+}

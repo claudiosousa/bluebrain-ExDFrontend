@@ -39,7 +39,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       experimentSimulationService,
       hbpDialogFactory,
       backendInterfaceService,
-      RESET_TYPE;
+      RESET_TYPE,
+      objectInspectorService;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -69,6 +70,10 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   var nrpBackendVersionsObject = {
     get: jasmine.createSpy('get')
+  };
+
+  var objectInspectorServiceMock = {
+    update: jasmine.createSpy('update')
   };
 
 
@@ -240,6 +245,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     };
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
 
+    $provide.value('objectInspectorService', objectInspectorServiceMock);
+
     simulationServiceObject.simulations.reset();
     simulationServiceObject.getUserName.reset();
     simulationStateObject.update.reset();
@@ -283,7 +290,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _experimentSimulationService_,
                               _hbpDialogFactory_,
                               _backendInterfaceService_,
-                              _RESET_TYPE_) {
+                              _RESET_TYPE_,
+                              _objectInspectorService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
@@ -315,6 +323,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     hbpDialogFactory = _hbpDialogFactory_;
     backendInterfaceService = _backendInterfaceService_;
     RESET_TYPE = _RESET_TYPE_;
+    objectInspectorService = _objectInspectorService_;
 
     scope.viewState = {};
 
@@ -975,9 +984,10 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.operationMode).toBe(OPERATION_MODE.EDIT);
     });
 
-    it('should call the panels.open() function', function() {
+    it('should enable display of the editor panel', function() {
+      scope.showEditorPanel = false;
       scope.edit();
-      expect(panels.open).toHaveBeenCalledWith('code-editor');
+      expect(scope.showEditorPanel).toBe(true);
     });
 
     it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function() {
@@ -1010,6 +1020,58 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(traverseCallback(node)).toEqual(node);
     });
 
+    it(' - onContainerMouseDown() should make the right calls', function() {
+      var eventMock = {};
+
+      scope.onContainerMouseDown(eventMock);
+      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
+
+      scope.viewState.isOwner = true;
+
+      eventMock.button = 0;  // left mouse
+      scope.onContainerMouseDown(eventMock);
+      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
+
+      eventMock.button = 1;  // left mouse
+      scope.onContainerMouseDown(eventMock);
+      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
+
+      eventMock.button = 2;  // left mouse
+      scope.onContainerMouseDown(eventMock);
+      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, eventMock);
+    });
+
+    it(' - onContainerMouseUp() should make the right calls', function() {
+      var eventMock = {};
+
+      objectInspectorService.update.reset();
+      scope.viewState.isOwner = false;
+      scope.onContainerMouseUp(eventMock);
+      expect(objectInspectorService.update).not.toHaveBeenCalled();
+
+      objectInspectorService.update.reset();
+      scope.viewState.isOwner = true;
+      objectInspectorService.isShown = false;
+      eventMock.button = 0;  // left mouse
+      scope.onContainerMouseUp(eventMock);
+      expect(objectInspectorService.update).not.toHaveBeenCalled();
+
+      objectInspectorService.update.reset();
+      objectInspectorService.isShown = true;
+      eventMock.button = 0;  // left mouse
+      scope.onContainerMouseUp(eventMock);
+      expect(objectInspectorService.update).toHaveBeenCalled();
+
+      objectInspectorService.update.reset();
+      eventMock.button = 1;  // left mouse
+      scope.onContainerMouseUp(eventMock);
+      expect(objectInspectorService.update).toHaveBeenCalled();
+
+      objectInspectorService.update.reset();
+      eventMock.button = 2;  // left mouse
+      scope.onContainerMouseUp(eventMock);
+      expect(objectInspectorService.update).not.toHaveBeenCalled();
+    });
   });
 
 });
