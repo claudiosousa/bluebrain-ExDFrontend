@@ -24,7 +24,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
     OPERATION_MODE,
     stateParams,
     collabConfigService,
-    serverError;
+    serverError,
+    slurminfoService;
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
@@ -51,6 +52,9 @@ describe('Controller: ESVCollabRunCtrl', function () {
   var store = {};
   store['server-enabled'] = angular.toJson(serversEnabled);
 
+  var slurminfoServiceMockObject = {};
+  slurminfoServiceMockObject.get = jasmine.createSpy('get').andReturn({'foo':'bar'});
+
   beforeEach(module(function ($provide) {
     var getExperimentsThenSpy = jasmine.createSpy('then');
     var stopExperimentsThenSpy = jasmine.createSpy('then');
@@ -75,6 +79,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('collabConfigService', collabConfigServiceMock);
+    $provide.value('slurminfoService', slurminfoServiceMockObject);
     for (var mock in experimentSimulationServiceMock) {
       experimentSimulationServiceMock[mock].reset();
     }
@@ -95,6 +100,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
                               _$interval_,
                               _experimentSimulationService_,
                               _simulationService_,
+                              _slurminfoService_,
                               _hbpUserDirectory_,
                               _STATE_,
                               _OPERATION_MODE_,
@@ -109,6 +115,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     interval = _$interval_;
     experimentSimulationService = _experimentSimulationService_;
     simulationService = _simulationService_;
+    slurminfoService = _slurminfoService_;
     hbpUserDirectory = _hbpUserDirectory_;
     STATE = _STATE_;
     OPERATION_MODE = _OPERATION_MODE_;
@@ -151,6 +158,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.isCollabEditPage).toBe(false);
       expect(scope.owners).not.toBeDefined();
       expect(scope.uptime).not.toBeDefined();
+      expect(slurminfoService.get).toHaveBeenCalled();
+      expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
   });
 
   it('should fetch and set the current user id' , function () {

@@ -29,6 +29,9 @@
       </div>
     </div>
 
+    <div class="form-group form-inline col-xs-12">Robotic simulation cluster availability: <span class="label"
+        ng-class="clusterPartAvailInfo.nodes[1] > 2 ? 'label-success' : clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">{{clusterPartAvailInfo.nodes[1]}}/{{clusterPartAvailInfo.nodes[3]}}</span></div>
+
     <hr class="list-separator">
 
     <a ng-show="!showAll" class="developpers-switch" ng-click="showAll=true">
