@@ -16,6 +16,7 @@
     '$interval',
     '$location',
     'simulationService',
+    'slurminfoService',
     'experimentSimulationService',
     'STATE',
     'OPERATION_MODE',
@@ -32,6 +33,7 @@
         $interval,
         $location,
         simulationService,
+        slurminfoService,
         experimentSimulationService,
         STATE,
         OPERATION_MODE,
@@ -59,6 +61,9 @@
         // The experiment may be viewed, after selection and clone, from the Collab Edit page.
         // The edit (resp. launch) button is then enabled (resp. disabled).
         $scope.isCollabEditPage = angular.isDefined($stateParams.experimentID);
+        if (!bbpConfig.get('localmode.forceuser', false)) {
+          $scope.clusterPartAvailInfo = slurminfoService.get();
+        }
 
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second

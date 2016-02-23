@@ -23,6 +23,12 @@
       users
     </a>
 
+    <div class="form-group form-inline col-xs-12">Robotic simulation cluster availability:
+      <span class="label" ng-class="clusterPartAvailInfo.nodes[1] > 2 ? 'label-success' : clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">{{clusterPartAvailInfo.nodes[1]}}/{{clusterPartAvailInfo.nodes[3]}}</span>
+    </div>
+
+    <hr class="list-separator">
+
     <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll"
          ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false"
          ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">

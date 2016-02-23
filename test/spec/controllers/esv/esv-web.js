@@ -31,10 +31,10 @@ describe('Controller: experimentCtrl', function () {
   hbpUserDirectoryMock.get = jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2);
 
   var simulationServiceMockObject = {};
-  var slurminfoServiceMockObject = {};
-  slurminfoServiceMockObject.get = jasmine.createSpy('get').andReturn({'foo':'bar'});
   simulationServiceMockObject.updateUptime = jasmine.createSpy('updateUptime');
   var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
+  var slurminfoServiceMockObject = {};
+  slurminfoServiceMockObject.get = jasmine.createSpy('get').andReturn({'foo':'bar'});
 
   var experimentTemplates = {
     '1': TestDataGenerator.createTestExperiment(),

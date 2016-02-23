@@ -10,6 +10,7 @@
                 '$stateParams',
                 '$state',
                 'experimentSimulationService',
+                'slurminfoService',
                 'bbpConfig',
                 'collabConfigService',
                 'serverError',
@@ -17,6 +18,7 @@
                 $stateParams,
                 $state,
                 experimentSimulationService,
+                slurminfoService,
                 bbpConfig,
                 collabConfigService,
                 serverError)
@@ -27,6 +29,9 @@
         $scope.experiments = {};
         $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
+        if (!bbpConfig.get('localmode.forceuser', false)) {
+          $scope.clusterPartAvailInfo = slurminfoService.get();
+        }
 
         $scope.goToRegisteredState = function(experimentID) {
           $state.go('registered-esv-collab-edit', {ctx: $stateParams.ctx, experimentID: experimentID});

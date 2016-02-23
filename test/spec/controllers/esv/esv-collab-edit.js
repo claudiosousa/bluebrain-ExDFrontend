@@ -14,6 +14,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     experimentSimulationService,
     collabConfigService,
     stateParams,
+    slurminfoService,
     serverError;
 
   var collabConfigServiceMock = {
@@ -32,6 +33,9 @@ describe('Controller: ESVCollabEditCtrl', function () {
   var store = {};
 
   var getExperimentsThenSpy = jasmine.createSpy('then');
+
+  var slurminfoServiceMockObject = {};
+  slurminfoServiceMockObject.get = jasmine.createSpy('get').andReturn({'foo':'bar'});
 
   var experimentSimulationServiceMock = {
     setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
@@ -59,6 +63,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     angular.forEach(experimentSimulationServiceMock, function(mockObject){
       mockObject.reset();
     });
+    $provide.value('slurminfoService', slurminfoServiceMockObject);
     collabConfigServiceMock.clone.reset();
     collabConfigServiceMock.get.reset();
   }));
@@ -69,6 +74,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
                               $state,
                               _experimentSimulationService_,
                               _collabConfigService_,
+                              _slurminfoService_,
                               _$stateParams_,
                               _serverError_) {
     scope = $rootScope.$new();
@@ -77,6 +83,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     collabConfigService = _collabConfigService_;
     stateParams = _$stateParams_;
     serverError = _serverError_;
+    slurminfoService = _slurminfoService_;
 
     store['server-enabled'] = angular.toJson(serversEnabled);
 
@@ -102,6 +109,8 @@ describe('Controller: ESVCollabEditCtrl', function () {
     expect(scope.isCloneRequested).toBe(false);
     expect(scope.experiments).toEqual({});
     expect(scope.serversEnabled).toBe(serversEnabled);
+    expect(slurminfoService.get).toHaveBeenCalled();
+    expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
   });
 
   it('should select the correct entry', function() {
