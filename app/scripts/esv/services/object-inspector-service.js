@@ -69,19 +69,19 @@
               this.rotationEuler.z = this.roundToPrecision(this.rotationEuler.z);
 
               // update view mode radio buttons
-              document.getElementById('oe-viewmode-normal').checked = false;
-              document.getElementById('oe-viewmode-transparent').checked = false;
-              document.getElementById('oe-viewmode-wireframe').checked = false;
+              document.getElementById('oi-viewmode-normal').checked = false;
+              document.getElementById('oi-viewmode-transparent').checked = false;
+              document.getElementById('oi-viewmode-wireframe').checked = false;
               if (angular.isDefined(this.selectedObject.viewAs)) {
                 switch (this.selectedObject.viewAs) {
                   case OBJECT_VIEW_MODE.NORMAL :
-                    document.getElementById('oe-viewmode-normal').checked = true;
+                    document.getElementById('oi-viewmode-normal').checked = true;
                     break;
                   case OBJECT_VIEW_MODE.TRANSPARENT :
-                    document.getElementById('oe-viewmode-transparent').checked = true;
+                    document.getElementById('oi-viewmode-transparent').checked = true;
                     break;
                   case OBJECT_VIEW_MODE.WIREFRAME :
-                    document.getElementById('oe-viewmode-wireframe').checked = true;
+                    document.getElementById('oi-viewmode-wireframe').checked = true;
                     break;
                 }
               }

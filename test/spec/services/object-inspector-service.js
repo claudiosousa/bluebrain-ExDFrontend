@@ -115,15 +115,15 @@ describe('Services: objectInspectorService', function () {
 
     dummyObject.viewAs = 'normal';
     objectInspectorService.update();
-    expect(document.getElementById('oe-viewmode-normal').checked).toBe(true);
+    expect(document.getElementById('oi-viewmode-normal').checked).toBe(true);
 
     dummyObject.viewAs = 'transparent';
     objectInspectorService.update();
-    expect(document.getElementById('oe-viewmode-transparent').checked).toBe(true);
+    expect(document.getElementById('oi-viewmode-transparent').checked).toBe(true);
 
     dummyObject.viewAs = 'wireframe';
     objectInspectorService.update();
-    expect(document.getElementById('oe-viewmode-wireframe').checked).toBe(true);
+    expect(document.getElementById('oi-viewmode-wireframe').checked).toBe(true);
 
     dummyObject.showCollision = true;
     objectInspectorService.update();

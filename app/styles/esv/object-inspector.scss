@@ -1,7 +1,7 @@
 @import "pop-over-viewer.scss";
 
-$objectInspectorMinWidth: 350px;
-$objectInspectorMinHeight: 360px;
+$objectInspectorMinWidth: 360px;
+$objectInspectorMinHeight: 380px;
 
 .object-inspector-widget {
   @extend .pop-over-viewer;
@@ -39,16 +39,51 @@ $objectInspectorMinHeight: 360px;
         }
       }
 
-      .vec3-num-input-list {
+      .transform-elements-list {
         list-style-type: none;
         padding-left: 0px;
 
-        .vec3-num-input-item {
+        .transform-elements-listitem {
           display: inline;
+          margin-right: 5px;
 
-          .vec3-num-input {
-            min-width: 50px;
-            width: 29%;
+          .vec3-num-input-list {
+            display: inline;
+            list-style-type: none;
+            padding-left: 0px;
+
+            .vec3-num-input-item {
+              display: inline;
+
+              .vec3-num-input {
+                min-width: 50px;
+                width: 29%;
+              }
+
+              #oi-translate-x {
+                border-bottom: 2px solid red;
+              }
+
+              #oi-translate-y {
+                border-bottom: 2px solid green;
+              }
+
+              #oi-translate-z {
+                border-bottom: 2px solid blue;
+              }
+
+              #oi-rot-euler-x {
+                border-bottom: 2px solid red;
+              }
+
+              #oi-rot-euler-y {
+                border-bottom: 2px solid green;
+              }
+
+              #oi-rot-euler-z {
+                border-bottom: 2px solid blue;
+              }
+            }
           }
         }
       }
@@ -64,5 +99,14 @@ $objectInspectorMinHeight: 360px;
     position: absolute;
     top: 5px;
     right: 5px;
+  }
+
+  .btn-rounded {
+    box-shadow: inset -2px -2px 10px 0px rgba(0,0,0,0.2);
+  }
+
+  .btn-rounded:active,
+  .btn-rounded.active {
+    box-shadow: inset 3px 3px 10px 0px rgba(0,0,0,0.3);
   }
 }
