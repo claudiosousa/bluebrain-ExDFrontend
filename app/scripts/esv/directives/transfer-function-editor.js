@@ -86,18 +86,20 @@
         };
 
         scope.onNewErrorMessageReceived = function(msg) {
-          var flawedTransferFunction = _.find(scope.transferFunctions, {'name':  msg.functionName});
-          // Remove error line highlighting if a new compile error is received
-          if (msg.errorType === scope.ERROR.COMPILE) {
-            scope.cleanCompileError(flawedTransferFunction);
-          }
-          flawedTransferFunction.error[msg.errorType] = msg;
-          if (msg.lineNumber >= 0) { // Python Syntax Error
-            // Error line highlighting
-            var editor = scope.getTransferFunctionEditor(flawedTransferFunction);
-            var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
-            flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = editor.getLineHandle(codeMirrorLineNumber);
-            editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
+          if (msg.severity < 2) { // Error message is not critical and can be fixed
+            var flawedTransferFunction = _.find(scope.transferFunctions, {'name': msg.functionName});
+            // Remove error line highlighting if a new compile error is received
+            if (msg.errorType === scope.ERROR.COMPILE) {
+              scope.cleanCompileError(flawedTransferFunction);
+            }
+            flawedTransferFunction.error[msg.errorType] = msg;
+            if (msg.lineNumber >= 0) { // Python Syntax Error
+              // Error line highlighting
+              var editor = scope.getTransferFunctionEditor(flawedTransferFunction);
+              var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
+              flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = editor.getLineHandle(codeMirrorLineNumber);
+              editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
+            }
           }
         };
 

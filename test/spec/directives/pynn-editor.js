@@ -144,7 +144,7 @@ describe('Directive: pynnEditor', function () {
       'data': '// A PyNN script',
       'data_type': 'text',
       'filename': '/path/filename.py',
-      'brain_populations': {
+      'additional_populations': {
         'list1': [1, 2, 3],
         'index1': [9],
         'slice0': {'from': 0, 'to':10}
@@ -155,7 +155,7 @@ describe('Directive: pynnEditor', function () {
       'data': '// binary h5 data',
       'data_type': 'base64',
       'filename': '/path/filename.h5',
-      'brain_populations': {'short_list': [0]}
+      'additional_populations': {'short_list': [0]}
     };
     var expected_script = data.data;
     var expected_populations;
@@ -165,7 +165,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.getCM = jasmine.createSpy('getCM').andReturn(cmMock);
       backendInterfaceService.getBrain.reset();
       backendInterfaceService.setBrain.reset();
-      expected_populations = data.brain_populations;
+      expected_populations = data.additional_populations;
     });
 
     it('should handle the retrieved populations and pynn script properly', function () {

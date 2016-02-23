@@ -21,7 +21,7 @@ describe('Directive: environment-designer', function () {
         gzweb: {assets: {}},
         rosbridge: {
           topics: {
-            transferFunctionError: {}
+            cleError: {}
           }
         }
       },
