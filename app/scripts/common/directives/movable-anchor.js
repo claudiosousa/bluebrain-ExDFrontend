@@ -12,8 +12,7 @@
         scope.targetY = 0;
 
         element.css({
-          cursor: 'move',
-          position: 'absolute'
+          cursor: 'move'
         });
 
         scope.targetElement = document.getElementById(attrs.movableAnchorForId);

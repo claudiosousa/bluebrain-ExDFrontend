@@ -1,8 +1,8 @@
-<div id="object-inspector" class="object-inspector-widget" movable resizeable ng-show="objectInspectorService.isShown">
+<div id="object-inspector" class="object-inspector-widget" resizeable ng-show="objectInspectorService.isShown">
   <!-- sections of the object inspector -->
   <ol class="sections-list">
     <!-- section - object identifier -->
-    <li class="section-item">
+    <li class="section-item" movable-anchor-for-id="object-inspector">
       <h3 class="selected-object-name">{{objectInspectorService.selectedObject ?
         objectInspectorService.selectedObject.name :
         'nothing selected'}}</h3>

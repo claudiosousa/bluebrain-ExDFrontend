@@ -93,7 +93,6 @@ describe('Directive: movable-anchor', function () {
 
   it('should change the cursor to be the movable-cursor', function () {
     expect(anchorDOM.style.cursor).toBe('move');
-    expect(anchorDOM.style.position).toBe('absolute');
   });
 
   it(' - getEventCoordinates() should return correct coordinates for mouse events', function () {
