@@ -147,6 +147,7 @@
                 function(){
                   transferFunction.dirty = false;
                   transferFunction.local = false;
+                  transferFunction.id = pythonCodeHelper.getFunctionName(transferFunction.code);
                   scope.cleanCompileError(transferFunction);
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);

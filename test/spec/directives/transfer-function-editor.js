@@ -150,7 +150,7 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should save back the tf properly', function () {
-      var newCode = 'New code';
+      var newCode = 'def toto(): \nNew code';
       var tf1 = isolateScope.transferFunctions[0];
       tf1.code = newCode;
       tf1.dirty = true;
@@ -162,6 +162,7 @@ describe('Directive: transferFunctionEditor', function () {
       backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
       expect(tf1.dirty).toEqual(false);
       expect(tf1.local).toEqual(false);
+      expect(tf1.id).toEqual('toto');
     });
 
 
