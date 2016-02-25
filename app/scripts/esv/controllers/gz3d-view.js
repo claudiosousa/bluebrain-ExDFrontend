@@ -51,7 +51,7 @@
     .controller('Gz3dViewCtrl',
       ['$rootScope', '$scope', '$stateParams', '$timeout',
         '$location', '$window', '$document', 'bbpConfig',
-        'hbpUserDirectory', 'simulationService',
+        'hbpIdentityUserDirectory', 'simulationService',
         'simulationControl', 'screenControl', 'experimentList',
         'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
         'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
@@ -61,7 +61,7 @@
         'backendInterfaceService', 'RESET_TYPE',
         function ($rootScope, $scope, $stateParams, $timeout,
                   $location, $window, $document, bbpConfig,
-                  hbpUserDirectory, simulationService,
+                  hbpIdentityUserDirectory, simulationService,
                   simulationControl, screenControl, experimentList,
                   experimentSimulationService, timeDDHHMMSSFilter, splash,
                   assetLoadingSplash, STATE, nrpBackendVersions,
@@ -131,7 +131,7 @@
 
           simulationInfo.experimentID = 'experiment-not-found';
           if (!bbpConfig.get('localmode.forceuser', false)) {
-            hbpUserDirectory.getCurrentUser().then(function (profile) {
+            hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
               $scope.viewState.userID = profile.id;
             });
           } else {
@@ -154,7 +154,7 @@
               });
             });
             if (!bbpConfig.get('localmode.forceuser', false)) {
-              hbpUserDirectory.get([data.owner]).then(function (profile) {
+              hbpIdentityUserDirectory.get([data.owner]).then(function (profile) {
                 $scope.owner = simulationService().getUserName(profile);
               });
             } else {

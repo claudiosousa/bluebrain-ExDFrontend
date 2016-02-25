@@ -47,7 +47,7 @@
       'STATE',
       'OPERATION_MODE',
       'bbpConfig',
-      'hbpUserDirectory',
+      'hbpIdentityUserDirectory',
       'simulationSDFWorld',
       function (
         $scope,
@@ -60,7 +60,7 @@
         STATE,
         OPERATION_MODE,
         bbpConfig,
-        hbpUserDirectory,
+        hbpIdentityUserDirectory,
         simulationSDFWorld)
       {
         $scope.selectedIndex = -1;
@@ -159,7 +159,7 @@
         }, UPTIME_UPDATE_RATE);
 
         if (!bbpConfig.get('localmode.forceuser', false)) {
-          hbpUserDirectory.getCurrentUser().then(function (profile) {
+          hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
             $scope.userID = profile.id;
           });
         } else {

@@ -1,48 +1,49 @@
 {
   "name": "angular-hbp-common",
-  "version": "0.2.7",
+  "description": "Common components for HBP websites.",
+  "version": "2.0.1-dev.0",
   "private": true,
   "repository": {
-    "url": "ssh://amblet@bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
+    "url": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
   },
   "dependencies": {
-    "angular": "~1.2.16",
-    "json3": "~3.2.6",
-    "es5-shim": "~2.1.0",
-    "jquery": "~1.11.0",
-    "bootstrap-sass-official": "~3.2.0",
-    "angular-ui-router": "~0.2.10",
-    "angular-bbp-config": "~0.1.2",
-    "bbp-oidc-client": "~0.5.0",
-    "lodash": "~2.4.1",
-    "angular-ui-bootstrap-bower": "~0.11.0"
+    "angular": "~1.4.6",
+    "angular-bbp-config": "~0.3.0",
+    "angular-ui-router": "~0.2.15",
+    "angular-bootstrap": "~0.13.4",
+    "bbp-oidc-client": "~0.8.1",
+    "jquery": "~1.11.3",
+    "lodash": "~3.10.1",
+    "marked-hbp": "~0.3.3"
   },
   "devDependencies": {
-    "angular-mocks": "~1.2.16",
-    "angular-scenario": "~1.2.16"
+    "angular-mocks": "~1.4.6"
   },
   "main": [
-    "dist/angular-hbp-common.js",
-    "dist/hbp-common.css",
-    "dist/scss/hbp-common.scss"
+    "dist/angular-hbp-common.js"
   ],
   "ignore": [
-    "test",
+    "/test",
     ".*",
     "Gruntfile.js",
     "karma*.*",
     "package.json",
-    "bower_components",
-    "src",
-    "Gemfile*.*"
+    "/bower_components",
+    "/src",
+    "Gemfile*.*",
+    "/reports"
   ],
-  "_release": "0.2.7",
+  "resolutions": {
+    "angular": "~1.4.6"
+  },
+  "_release": "2.0.1-dev.0",
   "_resolution": {
     "type": "version",
-    "tag": "0.2.7",
-    "commit": "7b8ef8d12b2bb8ac8ab74e52b341cee5eec99da5"
+    "tag": "2.0.1-dev.0",
+    "commit": "fa05440124bdbcc70c8b5a6f6af05e3bbb49bf1d"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon",
-  "_target": "~0.2.1",
-  "_originalSource": "angular-hbp-common"
+  "_target": "2.0.1-dev.0",
+  "_originalSource": "angular-hbp-common",
+  "_direct": true
 }

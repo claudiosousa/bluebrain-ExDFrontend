@@ -285,7 +285,7 @@ module.exports = function(grunt) {
                 imagesDir: '<%= yeoman.app %>/img',
                 javascriptsDir: '<%= yeoman.app %>/scripts',
                 fontsDir: '<%= yeoman.app %>/styles/fonts',
-                importPath: '<%= yeoman.app %>/../bower_components',
+                importPath: ['<%= yeoman.app %>/../bower_components','<%= yeoman.app %>/../bower_components/hbp-collaboratory-theme/dist/sass'],
                 httpImagesPath: '/img',
                 httpGeneratedImagesPath: '/img/generated',
                 httpFontsPath: '/styles/fonts',
@@ -478,6 +478,11 @@ module.exports = function(grunt) {
                     expand: true,
                     cwd: '.',
                     src: 'bower_components/angular-hbp-common/dist/assets/**/*.*',
+                    dest: '<%= yeoman.dist %>'
+                }, { // copy hbp-collaboratory-theme assets to dist
+                    expand: true,
+                    cwd: '.',
+                    src: 'bower_components/hbp-collaboratory-theme/dist/fonts/**/*.*',
                     dest: '<%= yeoman.dist %>'
                 }, {
                     expand: true,

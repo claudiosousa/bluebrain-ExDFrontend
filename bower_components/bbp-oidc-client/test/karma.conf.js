@@ -34,10 +34,12 @@ module.exports = function(config) {
             'src/jso.js',
 
             // app
+            'src/bbp-oidc.js',
             'src/angular-bbp-oidc.js',
 
             // test support
             'components/angular-mocks/angular-mocks.js',
+            'components/lodash/lodash.min.js',
 
             // tests
             'test/unit/*.js',

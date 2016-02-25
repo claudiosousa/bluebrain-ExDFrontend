@@ -1,4 +1,22 @@
 <a name"0.0.0"></a>
+## 0.0.0 (2015-09-24)
+
+
+#### Bug Fixes
+
+* **logout:** logout msg is sent if no token (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibOidcClient.git/commit/?id=6b7e6d00b2e45dead0c5f2fe5321dd631d061265)
+
+
+<a name"0.0.0"></a>
+## 0.0.0 (2015-08-31)
+
+
+#### Features
+
+* **client:** code refactoring to support js clients (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibOidcClient.git/commit/?id=6f3ef7b8454eb36b40f7698fc4d65c924dfada54)
+
+
+<a name"0.0.0"></a>
 ## 0.0.0 (2015-06-16)
 
 

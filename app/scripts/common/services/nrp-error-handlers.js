@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  var module = angular.module('nrpErrorHandlers', ['hbpCommon']);
+  var module = angular.module('nrpErrorHandlers', ['hbpCommon', 'ui.bootstrap.modal']);
 
   module.service('nrpErrorService', function () {
     var NrpError = function (options) {

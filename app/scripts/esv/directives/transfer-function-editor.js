@@ -199,7 +199,7 @@
         };
 
         scope.buildTransferFunctionFile = function(transferFunctions) {
-          return _.pluck(transferFunctions, 'code').join('\n');
+          return _.map(transferFunctions, 'code').join('\n');
         };
 
         var splitCodeFile = function(content) {
@@ -237,7 +237,7 @@
           _.forEach(scope.transferFunctions, scope.update);
           backendInterfaceService.saveTransferFunctions(
             simulationInfo.contextID,
-            _.pluck(scope.transferFunctions, 'code'),
+            _.map(scope.transferFunctions, 'code'),
             function() { // Success callback
               scope.isSavingToCollab = false;
             },function() { // Failure callback

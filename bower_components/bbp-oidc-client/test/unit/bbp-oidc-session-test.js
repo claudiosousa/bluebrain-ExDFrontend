@@ -28,22 +28,39 @@ describe('bbpOidcSession', function() {
             this.tokens[domain] = value;
         };
     }
+
     beforeEach(function() {
-        window.bbpConfig = {
+      jasmine.Ajax.install();
+    });
+
+    afterEach(function() {
+      jasmine.Ajax.uninstall();
+    });
+
+    function init(config) {
+        var defaultBbpConfig = {
             auth: {
                 url: 'https://test.oidc.te/auth',
                 clientId: 'test'
             }
         };
-        provider = 'test@https://test.oidc.te/auth';
-    });
-    beforeEach(module('bbpOidcClient'));
 
-    beforeEach(inject(function(_$httpBackend_, _$rootScope_, _bbpOidcSession_) {
-        $httpBackend = _$httpBackend_;
-        bbpOidcSession = _bbpOidcSession_;
-        $scope = _$rootScope_;
-    }));
+        if(config) {
+            window.bbpConfig = _.merge(defaultBbpConfig, config);
+        } else {
+            window.bbpConfig = defaultBbpConfig;
+        }
+
+        provider = 'test@https://test.oidc.te/auth';
+        module('bbpOidcClient');
+
+        inject(function(_$httpBackend_, _$rootScope_, _bbpOidcSession_) {
+            $httpBackend = _$httpBackend_;
+            bbpOidcSession = _bbpOidcSession_;
+            $scope = _$rootScope_;
+        });
+    }
+
 
     afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
@@ -51,10 +68,10 @@ describe('bbpOidcSession', function() {
 
         jso_registerStorageHandler(new jso_Api_default_storage());
         jso_wipe();
-        bbpOidcSession.ensureToken(false);
     });
 
     it('should be defined', function() {
+        init();
         expect(bbpOidcSession).toBeDefined();
         expect(bbpOidcSession.login).toBeDefined();
         expect(bbpOidcSession.logout).toBeDefined();
@@ -68,11 +85,13 @@ describe('bbpOidcSession', function() {
         });
 
         it('should authenticate', function() {
+            init();
             bbpOidcSession.login();
             expect(redirectFunc).toHaveBeenCalled();
         });
 
         it('should redirect to /authorize', function() {
+            init();
             bbpOidcSession.login();
             expect(redirectFunc.calls.mostRecent().args[0])
             .toMatch(/\/authorize\?/);
@@ -82,18 +101,20 @@ describe('bbpOidcSession', function() {
             var storage;
             beforeEach(function() {
                 storage = new StorageStub();
-                window.bbpConfig.auth.token = {
-                    token_type: 'Bearer',
-                    access_token: 'sadasdsa',
-                    expires_in: 2333,
-                    scopes: ['openid']
-                };
-                window.bbpConfig.auth.scopes = ['openid'];
                 jso_registerStorageHandler(storage);
             });
 
             it('should set the token directly', function() {
-                bbpOidcSession.ensureToken(true);
+                init({
+                    auth: {
+                        token: {
+                            token_type: 'Bearer',
+                            access_token: 'sadasdsa',
+                            expires_in: 2333,
+                            scopes: ['openid']
+                        }
+                    }
+                });
                 bbpOidcSession.login();
                 expect(bbpOidcSession.token()).not.toBeNull();
                 expect(redirectFunc).not.toHaveBeenCalled();
@@ -102,8 +123,7 @@ describe('bbpOidcSession', function() {
             it('should request if not the correct scope', function() {
                 jso_registerRedirectHandler(redirectFunc);
                 jso_wipe();
-                window.bbpConfig.auth.scopes = ['anotherscope'];
-                bbpOidcSession.ensureToken(true);
+                init({ auth: { scopes: ['anotherscope'] } });
                 bbpOidcSession.login();
                 expect(bbpOidcSession.token()).toBeNull();
             });
@@ -123,23 +143,20 @@ describe('bbpOidcSession', function() {
             };
 
             it('should request no default scopes', function() {
-                jso_wipe();
-                bbpOidcSession.ensureToken(true);
+                init();
                 bbpOidcSession.login();
                 checkNoScopes(redirectFunc.calls.mostRecent().args[0]);
             });
 
             it('should request custom scopes', function() {
-                window.bbpConfig.auth.scopes = ['openid', 'api.users'];
-                bbpOidcSession.ensureToken(true);
+                init({ auth: { scopes: ['openid', 'api.users'] } });
 
                 bbpOidcSession.login();
                 checkScopes(redirectFunc.calls.mostRecent().args[0], ['openid', 'api.users']);
             });
 
             it('should request no scopes if the client really wants to', function() {
-                window.bbpConfig.auth.scopes = [];
-                bbpOidcSession.ensureToken(true);
+                init({ auth: { scopes: [] } });
 
                 bbpOidcSession.login();
                 checkScopes(redirectFunc.calls.mostRecent().args[0], []);
@@ -147,14 +164,10 @@ describe('bbpOidcSession', function() {
         });
 
         describe('force prompt', function() {
-            beforeEach(function() {
-                bbpOidcSession.alwaysPromptLogin(true);
-            });
-            afterEach(function() {
-                bbpOidcSession.alwaysPromptLogin(false);
-            });
 
             it('should use prompt=login', function() {
+                init();
+                bbpOidcSession.alwaysPromptLogin(true);
                 bbpOidcSession.login();
                 expect(redirectFunc).toHaveBeenCalled();
                 expect(redirectFunc.calls.mostRecent().args[0])
@@ -175,10 +188,14 @@ describe('bbpOidcSession', function() {
             logoutUrl = 'https://test.oidc.te/auth/slo';
             jso_registerStorageHandler(storage);
             spyOn(window, 'jso_wipe').and.callThrough();
+            spyOn(window, 'jso_ensureTokens').and.callThrough();
             expect(jso_getToken(provider)).not.toBeNull();
             expect(jso_ensureTokens({provider:['openid']})).toBe(true);
             spyOn(storage, 'wipeTokens').and.callThrough();
-            $httpBackend.when('POST', logoutUrl).respond(200);
+
+            jasmine.Ajax.stubRequest(logoutUrl).andReturn({
+                status: 200
+            });
         });
 
         it('should retrieve a promise', function() {
@@ -187,29 +204,27 @@ describe('bbpOidcSession', function() {
             p.then(function() {
                 resolved = true;
             });
+            $scope.$digest();
             expect(p.then).toBeDefined();
-            $httpBackend.flush(1);
             expect(resolved).toBe(true);
         });
 
         it('should send a revocation request', function() {
             bbpOidcSession.logout();
-            $httpBackend.expect('POST', logoutUrl, {token: tokenValue}, function(headers){
-                return headers.Authorization === 'Bearer '+tokenValue;
+            var requests = _.filter(jasmine.Ajax.requests.filter(logoutUrl), {
+                readyState: 4
             });
-            $httpBackend.flush(1);
+            expect(requests.length).toBe(1);
         });
 
         it('should wipe token', function() {
             bbpOidcSession.logout();
-            $httpBackend.flush(1);
             expect(window.jso_wipe).toHaveBeenCalled();
             expect(storage.wipeTokens).toHaveBeenCalled();
         });
 
         it('should nullify actual token', function() {
             bbpOidcSession.logout();
-            $httpBackend.flush(1);
             expect(window.jso_getToken(provider)).toBeNull();
         });
 
@@ -221,15 +236,14 @@ describe('bbpOidcSession', function() {
             it('should be triggered when ensureToken is true', function() {
                 bbpOidcSession.ensureToken(true);
                 bbpOidcSession.logout();
-                $httpBackend.flush(1);
-                expect(bbpOidcSession.login).toHaveBeenCalled();
+                expect(window.jso_ensureTokens).toHaveBeenCalled();
             });
 
             it('should not be triggered when ensureToken is false', function() {
                 bbpOidcSession.ensureToken(false);
+                window.jso_ensureTokens.calls.reset();
                 bbpOidcSession.logout();
-                $httpBackend.flush(1);
-                expect(bbpOidcSession.login).not.toHaveBeenCalled();
+                expect(window.jso_ensureTokens).not.toHaveBeenCalled();
             });
         });
     });

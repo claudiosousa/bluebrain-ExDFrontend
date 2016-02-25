@@ -5115,13 +5115,26 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
 })(window, window.jQuery);
 
 /* global jso_configure, jso_ensureTokens, jso_getToken, jso_wipe */
-(function(){
+(function(exp){
     'use strict';
 
-    var options, initialized, _alwaysPromptLogin, _ensureToken, config, jso;
+    /* http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/ */
+    function deepExtend(destination, source) {
+        for (var property in source) {
+            if (source[property] && source[property].constructor &&
+                source[property].constructor === Object) {
+                destination[property] = destination[property] || {};
+                deepExtend(destination[property], source[property]);
+            } else {
+                destination[property] = source[property];
+            }
+        }
+        return destination;
+    }
 
-    var JsoWrapper = function(options) {
+    function JsoWrapper(options) {
         var provider, jsoConfig, jsoOptions, scopes;
+
         provider = options.clientId + '@' + options.authServer;
         jsoConfig = {
             client_id: options.clientId,
@@ -5160,86 +5173,182 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
         this.wipe = function() {
             return jso_wipe();
         };
-    };
+    }
 
-    var init = function() {
-        if (initialized) {
-            return;
-        }
-
-        options = {
-            clientId: config.get('auth.clientId'),
-            authServer: config.get('auth.url'),
-            debug: config.get('oidc.debug', false),
-            redirectUri: document.URL,
-            scopes: config.get('auth.scopes', null),
-            alwaysPromptLogin: _alwaysPromptLogin,
-            jsonWebKeys: {'keys':[{'alg':'RS256','e':'AQAB','n':'zlJpDPnGMUV5FlwQs5eIs77pdZTST29TELUT3_E1sKrN-lE4rEgbQQ5qU1KvF5669VmVeAt-BQ2qMjGjUyl44gq-aUkeQV7MXfYJfKHIULZMTGR0lJ4ebPRQgM5OWDNjYVbASAOz0NyO646G5H5BlHZrA9ADyrZYZ4CEhfI1KBk','kty':'RSA','kid':'bbp-oidc'}]},
-            token: config.get('auth.token', null)
-        };
-        jso = new JsoWrapper(options);
-
-        jso.configure();
-
-        // This check has to occurs every time.
-        if (_ensureToken) {
-            if(!jso.getToken()) {
-                // if there's no token, check if the session with oidc is still active
-                getTokenOrLogout(options.clientId);
-            }
-        }
-
-        initialized = true;
-    };
-
-    /**
-     * checks if the session with oidc is still active; if so, tries to get
-     * a new token, otherwise notifies the parent window.
+    /*
+     * the options are:
+     *  - clientId: string - Oauth client id (required)
+     *  - authServer: string - authentication server url (default: https://services.humanbrainproject.eu/oidc/)
+     *  - redirectUri: string - URL where to redirect after authentication.
+     *    The URL must be configured in the Oauth client configuration. (default: document.URL)
+     *  - scopes: array<string> - list of scopes to request (default: null)
+     *  - alwaysPromptLogin: boolean - if `true` if will always prompt for credentials.
+     *    For collaboratory apps MUST be `false`. (default: false)
+     *  - token: string - the token, if available (default: null)
+     *  - debug: boolean - flag to enable debug logs (default: false)
      */
-    var getTokenOrLogout = function(clientId) {
-        isSessionActive(function(active) {
-            if(!active) {
-                // notify the parent window that a new login is needed
-                postLogoutMsg(clientId);
-            }
-            // ensure token in any case
-            // if active == true, it will get a new token, otherwise redirect to login
-            jso.ensureTokens();
-        });
-    };
+    function BbpOidcClient(options) {
+        var initialized = false,
+            _ensureToken = true,
+            jso;
 
-    var postLogoutMsg = function(clientId) {
-        if(window.parent && window !== window.top) {
-            window.parent.postMessage({
-                eventName: 'oidc.logout',
-                data: {
-                    clientId: clientId
+        // default values
+        var defaultOpts = {
+            authServer: 'https://services.humanbrainproject.eu/oidc',
+            debug: false,
+            redirectUri: document.URL,
+            scopes: null,
+            alwaysPromptLogin: false,
+            jsonWebKeys: {
+                keys: [{
+                    alg: 'RS256',
+                    e: 'AQAB',
+                    kty: 'RSA',
+                    kid: 'bbp-oidc',
+                    n: 'zlJpDPnGMUV5FlwQs5eIs77pdZTST29TELUT3_E1sKrN-lE4rEgbQQ5qU1KvF5669VmVeAt' +
+                        '-BQ2qMjGjUyl44gq-aUkeQV7MXfYJfKHIULZMTGR0lJ4ebPRQgM5OWDNjYVbASAOz0NyO6' +
+                        '46G5H5BlHZrA9ADyrZYZ4CEhfI1KBk'
+                }]
+            },
+            token: null
+        };
+
+        var opts = deepExtend(defaultOpts, options);
+
+        var init = function(force) {
+            if (!initialized || force) {
+                initialized = false;
+
+                jso = new JsoWrapper(opts);
+                jso.configure();
+
+                // This check has to occurs every time.
+                if (_ensureToken) {
+                    if(!jso.getToken()) {
+                        // if there's no token, check if the session with oidc is still active
+                        getTokenOrLogout();
+                    }
                 }
-            }, '*');
-        }
-    };
 
-    var isSessionActive = function(callback) {
-        var oReq = new XMLHttpRequest();
-        oReq.onload = function() {
-            if(callback) {
-                callback(this.status === 200);
+                initialized = true;
             }
         };
 
-        oReq.open('get', options.authServer + '/session', true);
-        oReq.withCredentials = true;
-        oReq.send();
-    };
+        var login = function() {
+            return jso.ensureTokens();
+        };
+
+        var logout = function() {
+            // Ensure we have a token.
+            var token = getToken();
+            var localRemoval = function() {
+                // We need to keep the token to generate
+                // Bearer for this request. Hence the reset only after.
+                jso.wipe();
+
+                if (_ensureToken) {
+                    login();
+                }
+            };
+
+            var oReq = new XMLHttpRequest();
+            oReq.onload = localRemoval;
+            oReq.open('post', opts.authServer + '/slo', true);
+            oReq.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+            oReq.withCredentials = true;
+            oReq.send(JSON.stringify({ token: token }));
+        };
+
+        var getToken = function() {
+            return jso.getToken();
+        };
+
+        /**
+         * checks if the session with oidc is still active; if so, tries to get
+         * a new token, otherwise notifies the parent window.
+         */
+        var getTokenOrLogout = function() {
+            var clientId = opts.clientId;
+            isSessionActive(function(active) {
+                if(!active) {
+                    // notify the parent window that a new login is needed
+                    postLogoutMsg(clientId);
+                }
+                // ensure token in any case
+                // if active == true, it will get a new token, otherwise redirect to login
+                jso.ensureTokens();
+            });
+        };
+
+        var postLogoutMsg = function(clientId) {
+            if(window.parent && window !== window.top) {
+                window.parent.postMessage({
+                    eventName: 'oidc.logout',
+                    data: {
+                        clientId: clientId
+                    }
+                }, '*');
+            }
+        };
+
+        var isSessionActive = function(callback) {
+            var oReq = new XMLHttpRequest();
+            oReq.onload = function() {
+                if(callback) {
+                    callback(this.status === 200);
+                }
+            };
+
+            oReq.open('get', opts.authServer + '/session', true);
+            oReq.withCredentials = true;
+            oReq.send();
+        };
+
+        init(true);
+
+        return {
+            setAlwaysPromptLogin: function(value) {
+                opts.alwaysPromptLogin = !!value;
+                init(true);
+            },
+            setEnsureToken: function(value) {
+                _ensureToken = !!value;
+                init(true);
+            },
+            isEnsureToken: function() {
+                return _ensureToken;
+            },
+            getTokenOrLogout: getTokenOrLogout,
+            getToken: getToken,
+            wipeToken: jso.wipe,
+            logout: logout,
+            login: login
+        };
+    }
+
+    exp.BbpOidcClient = BbpOidcClient;
+
+})(window);
+
+/* global BbpOidcClient, jso_configure, jso_ensureTokens, jso_getToken, jso_wipe */
+(function(){
+    'use strict';
+
+    var client;
 
     angular.module('bbpOidcClient', ['bbpConfig'])
         .config(['bbpConfig', function(bbpConfig) {
-            config = bbpConfig;
-            init();
+            var oidcOptions = {
+                clientId: bbpConfig.get('auth.clientId'),
+                authServer: bbpConfig.get('auth.url', null),
+                debug: bbpConfig.get('oidc.debug', false),
+                scopes: bbpConfig.get('auth.scopes', null),
+                token: bbpConfig.get('auth.token', null)
+            };
+            client = new BbpOidcClient(oidcOptions);
         }])
         .config(['$httpProvider', function ($httpProvider) {
             $httpProvider.interceptors.push('httpOidcRequestInterceptor');
-            init();
         }])
         .provider('bbpOidcSession', function() {
             /**
@@ -5249,46 +5358,24 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
              *        forced when a token needs to be retrieved.
              */
             this.alwaysPromptLogin = function(value) {
-                _alwaysPromptLogin = !!value;
-                initialized = false;
-                init();
+                client.setAlwaysPromptLogin(!!value);
             };
 
             this.ensureToken = function(value) {
-                _ensureToken = !!value;
-                initialized = false;
-                init();
+                client.setEnsureToken(!!value);
             };
 
-            this.$get = ['$http', function($http) {
+            this.logout = function($q) {
+                return function() {
+                    return $q.when(client.logout());
+                };
+            };
+
+            this.$get = ['$http', '$q', function($http, $q) {
                 return {
-                    logout: function() {
-                        var self = this;
-                        // Ensure we have a token.
-                        var token = this.token();
-                        var localRemoval = function() {
-                            // We need to keep the token to generate
-                            // Bearer for this request. Hence the reset only after.
-                            jso.wipe();
-
-                            if (_ensureToken) {
-                                self.login();
-                            }
-                        };
-
-                        return $http({
-                            method: 'POST',
-                            url: options.authServer+'/slo',
-                            data: { token: token },
-                            withCredentials: true
-                        }).then(localRemoval, localRemoval);
-                    },
-                    login: function() {
-                        return jso.ensureTokens();
-                    },
-                    token: function() {
-                        return jso.getToken();
-                    },
+                    login: client.login,
+                    logout: this.logout($q),
+                    token: client.getToken,
                     alwaysPromptLogin: this.alwaysPromptLogin,
                     ensureToken: this.ensureToken
                 };
@@ -5299,13 +5386,13 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
             function (bbpConfig, $log, $q) {
             return {
                 request: function (requestConfig) {
-                    var token = jso.getToken();
+                    var token = client.getToken();
                     if (token) {
                         if (!requestConfig.headers.Authorization) {
                             requestConfig.headers.Authorization = 'Bearer ' + token;
                         }
-                    } else if(_ensureToken) {
-                        jso.ensureTokens();
+                    } else if(client.isEnsureToken()) {
+                        client.getTokenOrLogout();
                     }
 
                     return requestConfig;
@@ -5316,9 +5403,9 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
                     if (headers && headers.Authorization && rejection.status === 401) {
                         $log.debug('current token is not valid anymore:', rejection.data);
                         // remove token from localStorage
-                        jso.wipe();
-                        if (_ensureToken) {
-                            getTokenOrLogout(options.clientId);
+                        client.wipeToken();
+                        if (client.isEnsureToken()) {
+                            client.getTokenOrLogout();
                         }
                     }
                     return $q.reject(rejection);

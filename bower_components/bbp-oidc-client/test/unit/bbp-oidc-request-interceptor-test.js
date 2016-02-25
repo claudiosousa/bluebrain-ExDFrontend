@@ -1,6 +1,6 @@
-/* global describe, it, expect, beforeEach, afterEach, jasmine, spyOn */
-/* global module, inject, config */
-/* global jso_registerRedirectHandler, jso_registerStorageHandler, jso_getToken, jso_ensureTokens */
+/* global _, describe, it, expect, beforeEach, afterEach, jasmine, spyOn */
+/* global module, inject */
+/* global jso_registerStorageHandler */
 /* global jso_Api_default_storage */
 
 describe('bbpOidcRequestInterceptor', function() {
@@ -117,10 +117,13 @@ describe('bbpOidcRequestInterceptor', function() {
                 $http.get(url);
                 $httpBackend.flush();
 
-                expect(jasmine.Ajax.requests.filter(sessionStatusUrl).length).toBe(1);
+                var requests = _.filter(jasmine.Ajax.requests.filter(sessionStatusUrl), {
+                    readyState: 4
+                });
+                expect(requests.length).toBe(1);
             });
         });
-        
+
         describe('on !401 error', function() {
             it('should not wipe the token', function() {
                 $http.get(url);
@@ -154,7 +157,7 @@ describe('bbpOidcRequestInterceptor', function() {
                 });
             });
         });
-        
+
     });
 
     describe('without a token', function() {
@@ -179,6 +182,8 @@ describe('bbpOidcRequestInterceptor', function() {
         });
 
         it('if needed, tries to get a new one', function() {
+            jasmine.Ajax.stubRequest(sessionStatusUrl);
+
             bbpOidcSession.ensureToken(true);
             window.jso_ensureTokens.calls.reset();
 
@@ -206,6 +211,7 @@ describe('bbpOidcRequestInterceptor', function() {
 
             bbpOidcSession.ensureToken(true);
             window.jso_ensureTokens.calls.reset();
+            window.parent.postMessage.calls.reset();
 
             $http.get(url);
             $httpBackend.expect('GET', url).respond(200);
@@ -221,6 +227,7 @@ describe('bbpOidcRequestInterceptor', function() {
 
             bbpOidcSession.ensureToken(true);
             window.jso_ensureTokens.calls.reset();
+            window.parent.postMessage.calls.reset();
 
             $http.get(url);
             $httpBackend.expect('GET', url).respond(200);
