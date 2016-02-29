@@ -4981,6 +4981,9 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
         }
         else if(scope.selected === 'RXYZE')
         {
+          // commented out for now since it throws an error message at quaternionE.setFromEuler('not a THREE.Euler')
+          // and has unexpected results when actually followed through with a THREE.Euler passed to setFromEuler()
+          /*
           quaternionE.setFromEuler(point.clone().cross(tempVector).normalize()); // has this ever worked?
 
           tempQuaternion.setFromRotationMatrix(tempMatrix.getInverse(parentRotationMatrix));
@@ -4991,6 +4994,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
           tempQuaternion.multiplyQuaternions(tempQuaternion, quaternionXYZ);
 
           scope.object.quaternion.copy(tempQuaternion);
+          */
         }
         else
         {
