@@ -50,7 +50,7 @@
 
     // return concatenation of all jointNames with name of selected property
     function getCurveNamesToPlot(jointNames, propertyName) {
-      var jointToPlot =  _.pick(jointNames, _.identity); // filter out falsy values
+      var jointToPlot =  _.pickBy(jointNames, _.identity); // filter out falsy values
       var curveNamesToPlot = [];
 
       _.forOwn(jointToPlot, function(trueBool, joint) {
@@ -65,7 +65,7 @@
 
       // unregister curve in colormap if not selected for plotting
       _.forOwn(scope.curveToColorIdx, function(colorIdx, curveName) {
-        if (!_.contains(curveNamesToPlot,curveName)) {
+        if (!_.includes(curveNamesToPlot,curveName)) {
           delete scope.curveToColorIdx[curveName];
         }
       });

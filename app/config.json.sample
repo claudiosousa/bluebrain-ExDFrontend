@@ -88,7 +88,11 @@
       }
     },
     "user": {
-      "v0": "https://services.humanbrainproject.eu/oidc/v0/api"
+      "v0": "https://services.humanbrainproject.eu/oidc/v0/api",
+      "v1": "https://services.humanbrainproject.eu/idm/v1/api"
+    },
+    "account": {
+      "v1": "https://services.humanbrainproject.eu/idm/v1/api"
     },
     "collabContextManagement": {
       "url": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api"
@@ -103,6 +107,13 @@
   },
   "oidc": {
     "debug": false
+  },
+  "collab" : {
+    "features": {
+      "identity" : {
+        "userV1Api" : true
+      }
+    }
   },
   "localmode" : {
     "forceuser": false,

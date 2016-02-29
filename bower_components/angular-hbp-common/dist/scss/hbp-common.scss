@@ -2,13 +2,17 @@
 @import 'hbp/_bootstrap_variables';
 
 $icon-font-path: $hbp-common-asset-path+'/';
-@import 'bootstrap-sass-official/assets/stylesheets/bootstrap';
+@import 'theme';
 
 .hbp-logo {
     background-image: url($hbp-common-asset-path+'/hbp_logo_vertical.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;
+}
+
+.hbp-generated-icon {
+  display: inline-block;
 }
 
 // SASS Variables
@@ -37,13 +41,14 @@ $icon-font-path: $hbp-common-asset-path+'/';
 @import 'hbp/sidebar';
 @import 'hbp/list_tableview';
 @import 'hbp/brand';
+@import 'hbp/card';
 
 // Typography
 //
 // 'Didot' is used for titles and 'Gotham' for regular texts.
 //
 // Styleguide 3.
-@import 'hbp/_type';
+@import 'hbp/type';
 
 // Forms
 //
@@ -51,4 +56,4 @@ $icon-font-path: $hbp-common-asset-path+'/';
 // http://getbootstrap.com/css/#forms
 //
 // Styleguide 4.
-@import 'hbp/_form'
+@import 'hbp/form';

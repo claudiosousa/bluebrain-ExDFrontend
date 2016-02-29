@@ -17,7 +17,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     interval,
     experimentSimulationService,
     simulationService,
-    hbpUserDirectory,
+    hbpIdentityUserDirectory,
     ESV_UPDATE_RATE,
     UPTIME_UPDATE_RATE,
     STATE,
@@ -32,11 +32,11 @@ describe('Controller: ESVCollabRunCtrl', function () {
     get: jasmine.createSpy('get')
   };
 
-  var hbpUserDirectoryPromiseObject = { then: jasmine.createSpy('then') };
-  var hbpUserDirectoryPromiseObject2 = { then: jasmine.createSpy('then') };
-  var hbpUserDirectoryMock = {
-    getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn(hbpUserDirectoryPromiseObject),
-    get: jasmine.createSpy('get').andReturn(hbpUserDirectoryPromiseObject2)
+  var hbpIdentityUserDirectoryPromiseObject = { then: jasmine.createSpy('then') };
+  var hbpIdentityUserDirectoryPromiseObject2 = { then: jasmine.createSpy('then') };
+  var hbpIdentityUserDirectoryMock = {
+    getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn(hbpIdentityUserDirectoryPromiseObject),
+    get: jasmine.createSpy('get').andReturn(hbpIdentityUserDirectoryPromiseObject2)
   };
 
   var simulationServiceMockObject = {
@@ -76,17 +76,17 @@ describe('Controller: ESVCollabRunCtrl', function () {
       enterEditMode : jasmine.createSpy('enterEditMode')
     };
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
-    $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
+    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('collabConfigService', collabConfigServiceMock);
     $provide.value('slurminfoService', slurminfoServiceMockObject);
     for (var mock in experimentSimulationServiceMock) {
       experimentSimulationServiceMock[mock].reset();
     }
-    hbpUserDirectoryPromiseObject.then.reset();
-    hbpUserDirectoryPromiseObject2.then.reset();
-    hbpUserDirectoryMock.getCurrentUser.reset();
-    hbpUserDirectoryMock.get.reset();
+    hbpIdentityUserDirectoryPromiseObject.then.reset();
+    hbpIdentityUserDirectoryPromiseObject2.then.reset();
+    hbpIdentityUserDirectoryMock.getCurrentUser.reset();
+    hbpIdentityUserDirectoryMock.get.reset();
     simulationServiceMock.reset();
     simulationServiceMockObject.updateUptime.reset();
   }));
@@ -101,7 +101,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
                               _experimentSimulationService_,
                               _simulationService_,
                               _slurminfoService_,
-                              _hbpUserDirectory_,
+                              _hbpIdentityUserDirectory_,
                               _STATE_,
                               _OPERATION_MODE_,
                               _collabConfigService_,
@@ -116,7 +116,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     experimentSimulationService = _experimentSimulationService_;
     simulationService = _simulationService_;
     slurminfoService = _slurminfoService_;
-    hbpUserDirectory = _hbpUserDirectory_;
+    hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     STATE = _STATE_;
     OPERATION_MODE = _OPERATION_MODE_;
     stateParams = _$stateParams_;
@@ -167,7 +167,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
       displayName: 'John Does',
       id: '1234'
     };
-    hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
+    hbpIdentityUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
     expect(scope.userID).toEqual(currentUserInfo1234.id);
   });
 
@@ -176,7 +176,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     controller('ESVCollabRunCtrl', {
       $scope: scope
     });
-    expect(hbpUserDirectory.get).not.toHaveBeenCalled();
+    expect(hbpIdentityUserDirectory.get).not.toHaveBeenCalled();
     expect(scope.userID).toEqual('vonarnim');
     window.bbpConfig.localmode.forceuser = false;
   });
@@ -363,10 +363,10 @@ describe('Controller: ESVCollabRunCtrl', function () {
       scope.userID = undefined;
       scope.experiments['1'].simulations[0].owner = 'fakeUserID';
       scope.experiments['1'].simulations[0].operationMode = OPERATION_MODE.EDIT;
-      hbpUserDirectoryPromiseObject.then.reset();
+      hbpIdentityUserDirectoryPromiseObject.then.reset();
 
       scope.updateExperiments();
-      hbpUserDirectoryPromiseObject.then.mostRecentCall.args[0]({id: 'fakeUserID'});
+      hbpIdentityUserDirectoryPromiseObject.then.mostRecentCall.args[0]({id: 'fakeUserID'});
       expect(scope.userID).toBe('fakeUserID');
     });
   });

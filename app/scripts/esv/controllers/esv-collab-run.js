@@ -21,7 +21,7 @@
     'STATE',
     'OPERATION_MODE',
     'bbpConfig',
-    'hbpUserDirectory',
+    'hbpIdentityUserDirectory',
     'simulationSDFWorld',
     '$stateParams',
     'collabConfigService',
@@ -38,7 +38,7 @@
         STATE,
         OPERATION_MODE,
         bbpConfig,
-        hbpUserDirectory,
+        hbpIdentityUserDirectory,
         simulationSDFWorld,
         $stateParams,
         collabConfigService,
@@ -149,7 +149,7 @@
         $scope.updateUserID = function () {
           var deferred = $q.defer();
           if (!bbpConfig.get('localmode.forceuser', false)) {
-            hbpUserDirectory.getCurrentUser().then(function (profile) {
+            hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
               $scope.userID = profile.id;
               deferred.resolve();
             });

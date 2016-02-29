@@ -20,6 +20,7 @@
       'ngTouch',
       'ui.router',
       'ui.bootstrap',
+      'ui.bootstrap.modal',
       'ui.codemirror',
       'angular.panels',
       'angular-toArrayFilter',
@@ -27,6 +28,7 @@
       'hbpCommon',
       'bbpConfig',
       'hbpDocumentClient',
+      'hbpIdentity',
       'gzangular',
       'gz3dServices',
       'simulationControlServices',
@@ -104,6 +106,7 @@
       // Set to true if you want to check for the existence of
       // a token while loading.
       if (!bbpConfig.get('localmode.forceuser', false)) {
+        bbpOidcSessionProvider.alwaysPromptLogin(true);
         bbpOidcSessionProvider.ensureToken(true);
         localStorage.setItem('localmode.forceuser', false);
       } else {

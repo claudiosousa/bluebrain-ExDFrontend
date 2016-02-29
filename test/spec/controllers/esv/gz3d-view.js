@@ -25,7 +25,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       exampleProgressData,
       assetLoadingSplash,
       simulations,
-      hbpUserDirectory,
+      hbpIdentityUserDirectory,
       fakeSimulationData,
       nrpBackendVersions,
       nrpFrontendVersion,
@@ -216,11 +216,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       simulationID : 'mocked_simulation_id'
     };
     $provide.value('$stateParams', stateParamsMock);
-    var hbpUserDirectoryMock = {
+    var hbpIdentityUserDirectoryMock = {
       getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn({then: jasmine.createSpy('then')}),
       get: jasmine.createSpy('get').andReturn({then: jasmine.createSpy('then')})
     };
-    $provide.value('hbpUserDirectory', hbpUserDirectoryMock);
+    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
     $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').andReturn(nrpBackendVersionsObject));
     $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
     $provide.value('serverError', jasmine.createSpy('serverError'));
@@ -263,7 +263,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
-                              _hbpUserDirectory_,
+                              _hbpIdentityUserDirectory_,
                               _$timeout_,
                               _$window_,
                               _$document_,
@@ -295,7 +295,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
-    hbpUserDirectory = _hbpUserDirectory_;
+    hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     timeout = _$timeout_;
     window = _$window_;
     document = _$document_;
@@ -414,13 +414,13 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should set the current User and checks if isOwner (1)', function() {
       scope.viewState.isOwner = false;
-      var promise = hbpUserDirectory.getCurrentUser();
+      var promise = hbpIdentityUserDirectory.getCurrentUser();
       promise.then.mostRecentCall.args[0](currentUserInfo1234);
       expect(scope.viewState.userID).toEqual(currentUserInfo1234.id);
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
       expect(scope.viewState.ownerID).toEqual(fakeSimulationData.owner);
 
-      promise = hbpUserDirectory.get();
+      promise = hbpIdentityUserDirectory.get();
       promise.then.mostRecentCall.args[0](currentUserInfo1234Hash);
       expect(scope.viewState.isOwner).toBe(true);
       expect(scope.owner).toEqual(currentUserInfo1234.displayName);
@@ -428,12 +428,12 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should set the current User and checks if isOwner (2)', function() {
       scope.viewState.isOwner = true;
-      var promise = hbpUserDirectory.getCurrentUser();
+      var promise = hbpIdentityUserDirectory.getCurrentUser();
       promise.then.mostRecentCall.args[0](otherUserInfo4321);
       expect(scope.viewState.userID).toEqual(otherUserInfo4321.id);
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
       expect(scope.viewState.ownerID).toEqual(fakeSimulationData.owner);
-      promise = hbpUserDirectory.get();
+      promise = hbpIdentityUserDirectory.get();
       promise.then.mostRecentCall.args[0](currentUserInfo1234Hash);
       expect(scope.viewState.isOwner).toBe(false);
     });
@@ -453,7 +453,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should initialize simulationInfo.experimentID', function() {
-      var promise = hbpUserDirectory.getCurrentUser();
+      var promise = hbpIdentityUserDirectory.getCurrentUser();
       promise.then.mostRecentCall.args[0](otherUserInfo4321);
       expect(simulationInfo.experimentID).toBeDefined();
     });

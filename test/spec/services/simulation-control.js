@@ -3,7 +3,7 @@
 var TestDataGenerator = window.TestDataGenerator;
 
 describe('Services: server-info-service', function () {
-  var hbpUserDirectory,
+  var hbpIdentityUserDirectory,
       bbpStubFactory,
       simulationService,
       simulationControl,
@@ -20,12 +20,12 @@ describe('Services: server-info-service', function () {
 
   var httpBackend, simulations, returnSimulations, experimentTemplates;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpUserDirectory_, _bbpStubFactory_,
+  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpIdentityUserDirectory_, _bbpStubFactory_,
       _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_,
       _screenControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
-    hbpUserDirectory = _hbpUserDirectory_;
+    hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     bbpStubFactory = _bbpStubFactory_;
     simulationService = _simulationService_;
     simulationControl = _simulationControl_;
@@ -72,7 +72,7 @@ describe('Services: server-info-service', function () {
     var userInfo4321 = {
       displayName: 'John Dont'
     };
-    spyOn(hbpUserDirectory, 'get').andCallFake(function(ownerID) {
+    spyOn(hbpIdentityUserDirectory, 'get').andCallFake(function(ownerID) {
       var returnedPromise;
       switch(ownerID[0]) {
         case 'default-owner':
@@ -116,7 +116,7 @@ describe('Services: server-info-service', function () {
     });
 
     it('should set the forced user as owner when in full local mode', function() {
-      hbpUserDirectory.get.reset();
+      hbpIdentityUserDirectory.get.reset();
       for (var member in simulationService().owners) {
         delete simulationService().owners[member];
       }
@@ -126,7 +126,7 @@ describe('Services: server-info-service', function () {
       });
       httpBackend.expectGET(serverURL + '/simulation');
       httpBackend.flush();
-      expect(hbpUserDirectory.get).not.toHaveBeenCalled();
+      expect(hbpIdentityUserDirectory.get).not.toHaveBeenCalled();
       expect(Object.keys(simulationService().owners).length).toBe(1);
       expect(simulationService().owners.vonarnim).toBe('vonarnim');
       window.bbpConfig.localmode.forceuser = false;

@@ -404,7 +404,7 @@ describe('Directive: transferFunctionEditor', function () {
     it('should correctly saveTFIntoCollabStorage', function () {
       expect(isolateScope.isSavingToCollab).toEqual(false);
       isolateScope.saveTFIntoCollabStorage();
-      expect(backendInterfaceService.saveTransferFunctions).toHaveBeenCalledWith(simulationInfo.contextID, _.pluck(isolateScope.transferFunctions, 'code'), jasmine.any(Function), jasmine.any(Function));
+      expect(backendInterfaceService.saveTransferFunctions).toHaveBeenCalledWith(simulationInfo.contextID, _.map(isolateScope.transferFunctions, 'code'), jasmine.any(Function), jasmine.any(Function));
       expect(isolateScope.isSavingToCollab).toEqual(true);
       backendInterfaceService.saveTransferFunctions.argsForCall[0][2]();
       expect(isolateScope.isSavingToCollab).toBe(false);

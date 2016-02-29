@@ -52,6 +52,6 @@
     "commit": "b770b6e18ac3c0a485b79869729ab8e0225ec598"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularDocumentClient",
-  "_target": "*",
+  "_target": "0.2.4",
   "_originalSource": "angular-hbp-document-client"
 }
