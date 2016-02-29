@@ -240,6 +240,14 @@
             scope.platformDocumentationURL = data.platformDocumentationURL;
           });
 
+          scope.$parent.$on("$destroy", function () {
+            // Fix for Bug NRRPLT-3442.
+            // Do not issue getBrain request if the pynn editor is
+            // beeing destroyed; typically when a user pushes the STOP
+            // button.
+            scope.control.refresh = undefined;
+          });
+
         }
       };
     }]);

@@ -250,6 +250,11 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.loading).toBe(false);
     });
 
+    it('should not issue any getBrain request after a $destroy event of the parent scope', function() {
+      isolateScope.$parent.$destroy();
+      expect(isolateScope.control.refresh).toBeUndefined();
+    });
+
   });
 
 
