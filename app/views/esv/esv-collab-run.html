@@ -10,7 +10,7 @@
         <button analytics-on analytics-event="Toggle"
                 analytics-category="Server"
                 analytics-label="Collab"
-                ng-show="showAll" class="btn btn-default dropdown-toggle"
+                class="btn btn-default dropdown-toggle"
                 type="button" data-toggle="dropdown">
           Servers
           <span class="caret"></span>
@@ -26,7 +26,6 @@
             </a>
           </li>
         </ul>
-        <span ng-show="showAll" class="label label-warning">Developer mode</span>
       </div>
       <div ng-show="!isQueryingServersFinished">
         <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;<i>Loading experiment description</i>
@@ -37,13 +36,6 @@
         ng-class="clusterPartAvailInfo.nodes[1] > 2 ? 'label-success' : clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">{{clusterPartAvailInfo.nodes[1]}}/{{clusterPartAvailInfo.nodes[3]}}</span></div>
 
     <hr class="list-separator">
-
-    <a ng-show="!showAll" class="developpers-switch" ng-click="showAll=true">
-     developers
-    </a>
-    <a ng-show="showAll" class="developpers-switch" ng-click="showAll=false">
-     users
-    </a>
 
     <div class="list-entry-container left-right" ng-class="{selected: true}">
       <div class="list-entry-left" ng-class="{selected: true}">

@@ -7,7 +7,7 @@
   <div class="list-container">
     <div class="form-group form-inline col-xs-12">
       <input ng-model="query" type="text" class="top-buttons form-control input-sm" placeholder="Experiment Filter...">
-      <div ng-show="showAll" class="dropdown top-buttons">
+      <div class="dropdown top-buttons">
         <button analytics-on analytics-event="Toggle"
                 analytics-category="Server"
                 class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
@@ -19,15 +19,15 @@
             <a><input type="checkbox" ng-checked="serversEnabled.indexOf(server) > -1" ng-click="toggleServer(server); $event.stopPropagation();"> {{server}}</a>
           </li>
         </ul>
-        <span class="label label-warning">Developer mode</span>
+        <span ng-show="showAll" class="label label-warning">Developer mode</span>
       </div>
       <div ng-show="!isQueryingServersFinished"><i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;<i>Loading list of experiments...</i></div>
     </div>
 
     <hr class="list-separator">
 
-    <a ng-show="!showAll" class="developpers-switch" ng-click="showAll=true">developers</a>
-    <a ng-show="showAll" class="developpers-switch" ng-click="showAll=false">users</a>
+    <a ng-show="isDeploymentStageDev() && !showAll" class="developpers-switch" ng-click="showAll=true">developers</a>
+    <a ng-show="isDeploymentStageDev() && showAll" class="developpers-switch" ng-click="showAll=false">users</a>
 
     <div class="form-group form-inline col-xs-12">Robotic simulation cluster availability:
       <span class="label" ng-class="clusterPartAvailInfo.nodes[1] > 2 ? 'label-success' : clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">{{clusterPartAvailInfo.nodes[1]}}/{{clusterPartAvailInfo.nodes[3]}}</span>

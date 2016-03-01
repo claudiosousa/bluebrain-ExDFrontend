@@ -85,6 +85,11 @@
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
 
+        $scope.isDeploymentStageDev = function () {
+          var stage = bbpConfig.get('deployment.stage', 'development');
+          return (stage !== 'staging') && (stage !== 'production');
+        };
+
         $scope.setSelected = function (index) {
           if ($scope.startNewExperimentSelectedIndex !== -1) {
             return;

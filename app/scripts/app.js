@@ -121,6 +121,21 @@
   // and then bootstrap the application.
   angular.bootstrap().invoke(['$http', function ($http) {
     var boot = function () {
+
+      // Google Analytics
+      if (angular.isDefined(window.bbpConfig.deployment) &&
+          angular.isDefined(window.bbpConfig.deployment.stage)) {
+        var stage = window.bbpConfig.deployment.stage;
+        if (stage === "development") {
+          /* global ga: false */
+          ga('create', 'UA-62512653-1', 'auto');
+        }
+        else {
+          /* global ga: false */
+          ga('create', 'UA-62512653-2', 'auto');
+        }
+      }
+
       angular.element(document).ready(function () {
         angular.bootstrap(document, ['exdFrontendApp']);
       });

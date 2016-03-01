@@ -140,6 +140,28 @@ describe('Controller: experimentCtrl', function () {
     spyOn(console, 'log');
   }));
 
+  it('should get deployment stage and tell whether it is dev' , function () {
+    // first try without any stage variable set
+    var isdev = scope.isDeploymentStageDev();
+    expect(isdev).toBe(true);
+    // now with stage set to development
+    window.bbpConfig.deployment = { 'stage': 'development' };
+    isdev = scope.isDeploymentStageDev();
+    expect(isdev).toBe(true);
+    // now with stage set to staging
+    window.bbpConfig.deployment = { 'stage': 'staging' };
+    isdev = scope.isDeploymentStageDev();
+    expect(isdev).toBe(false);
+    // now with stage set to production
+    window.bbpConfig.deployment = { 'stage': 'production' };
+    isdev = scope.isDeploymentStageDev();
+    expect(isdev).toBe(false);
+    // now with stage set to something wrong
+    window.bbpConfig.deployment = { 'stage': 'wrong' };
+    isdev = scope.isDeploymentStageDev();
+    expect(isdev).toBe(true);
+  });
+
   it('should fetch and set the current user id' , function () {
     var currentUserInfo1234 = {
       displayName: 'John Does',
