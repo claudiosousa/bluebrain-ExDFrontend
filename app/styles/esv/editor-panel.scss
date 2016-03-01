@@ -24,6 +24,7 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
   }
 
   .editor-panel-header {
+    position: absolute;
     width: 90%;
     width: calc(100% - 10px);
     height: $editorPanelHeadingHeight;
