@@ -30,7 +30,8 @@
     "roslibjs": "~0.17.0",
     "stats.js": "latest",
     "v-button": "~1.1.1",
-    "xml2json": "1.1.1"
+    "xml2json": "1.1.1",
+    "angulartics-google-analytics": "^0.1.4"
   },
   "overrides": {
     "codemirror": {

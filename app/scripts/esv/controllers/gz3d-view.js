@@ -58,7 +58,7 @@
         'nrpFrontendVersion', 'UI', 'OPERATION_MODE', 'SCREEN_GLASS_STRING',
         'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
         'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
-        'backendInterfaceService', 'RESET_TYPE',
+       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics',
         function ($rootScope, $scope, $stateParams, $timeout,
                   $location, $window, $document, bbpConfig,
                   hbpIdentityUserDirectory, simulationService,
@@ -68,7 +68,7 @@
                   nrpFrontendVersion, UI, OPERATION_MODE, SCREEN_GLASS_STRING,
                   gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
                   simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
-                  backendInterfaceService, RESET_TYPE) {
+                  backendInterfaceService, RESET_TYPE, nrpAnalytics) {
 
           // This is the only place where simulation info are, and should be, initialized
           simulationInfo.Initialize();
@@ -212,8 +212,16 @@
             if (stateService.currentState === STATE.STOPPED) {
               // The Simulation is already Stopped, so do nothing more but show the alert popup
               $scope.viewState.isJoiningStoppedSimulation = true;
+              nrpAnalytics.eventTrack('Join-stopped', {
+                category: 'Simulation'
+              });
             } else {
               // Initialize GZ3D and so on...
+              nrpAnalytics.durationEventTrack('Server-initialization', {
+                category: 'Experiment'
+              });
+              nrpAnalytics.tickDurationEvent('Browser-initialization');
+
               gz3d.Initialize();
 
               // Handle touch clicks to toggle the context menu
@@ -265,6 +273,11 @@
           });
 
           $scope.onSceneLoaded = function () {
+            nrpAnalytics.durationEventTrack('Browser-initialization', {
+              category: 'Simulation'
+            });
+            nrpAnalytics.tickDurationEvent('Simulate');
+
             // Lights management
             $scope.$watch('sliderPosition', function () {
               var ratio = $scope.sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
@@ -532,41 +545,66 @@
           $scope.showSpikeTrain = false;
           $scope.toggleSpikeTrain = function () {
             $scope.showSpikeTrain = !$scope.showSpikeTrain;
+            nrpAnalytics.eventTrack('Toggle-spike-train', {
+              category: 'Simulation-GUI',
+              value: $scope.showSpikeTrain
+            });
           };
 
           // JointPlot
           $scope.showJointPlot = false;
           $scope.toggleJointPlot = function () {
             $scope.showJointPlot = !$scope.showJointPlot;
+            nrpAnalytics.eventTrack('Toggle-joint-plot', {
+              category: 'Simulation-GUI',
+              value: $scope.showJointPlot
+            });
           };
 
           // robot view
           $scope.toggleRobotView = function () {
             $scope.showRobotView = !$scope.showRobotView;
+            nrpAnalytics.eventTrack('Toggle-robot-view', {
+              category: 'Simulation-GUI',
+              value: $scope.showRobotView
+            });
             gz3d.scene.viewManager.views.forEach(function (view) {
               if (angular.isDefined(view.type) && view.type === 'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
                 view.active = !view.active;
                 view.container.style.visibility = view.active ? 'visible' : 'hidden';
               }
             });
+
+
           };
 
           // graphics performance settings
           $scope.toggleGraphicsPerformance = function () {
             var isShadowsEnabled = gz3d.scene.renderer.shadowMapEnabled;
             $scope.showShadows = !isShadowsEnabled;
+            nrpAnalytics.eventTrack('Toggle-shadows', {
+              category: 'Simulation-GUI',
+              value: $scope.showShadows
+            });
             gz3d.scene.setShadowMaps($scope.showShadows);
           };
 
           // help mode
           $scope.toggleHelpMode = function () {
             $scope.helpModeActivated = !$scope.helpModeActivated;
+            nrpAnalytics.eventTrack('Toggle-help-mode', {
+              category: 'Simulation-GUI',
+              value: $scope.helpModeActivated
+            });
             $scope.helpDescription = "";
             $scope.currentSelectedUIElement = UI.UNDEFINED;
           };
 
           // clean up on leaving
           $scope.$on("$destroy", function () {
+            nrpAnalytics.durationEventTrack('Simulate', {
+              category: 'Simulation'
+            });
             // Close the splash screens
             if (angular.isDefined($scope.splashScreen)) {
               splash.close();
@@ -607,12 +645,20 @@
             else {
               $scope.helpDescription = $scope.helpText[uiElement];
               $scope.currentSelectedUIElement = uiElement;
+              nrpAnalytics.eventTrack('Help', {
+                category: 'Simulation',
+                value: uiElement
+              });
             }
           };
 
           $scope.showEditorPanel = false;
           $scope.edit = function () {
             $scope.showEditorPanel = !$scope.showEditorPanel;
+            nrpAnalytics.eventTrack('Toggle-editor-panel', {
+              category: 'Simulation-GUI',
+              value: $scope.showEditorPanel
+            });
           };
 
           $scope.exit = function () {

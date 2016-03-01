@@ -11,6 +11,7 @@
     'exdFrontendApp.Constants',
     'exdFrontendFilters',
     'nrpErrorHandlers',
+    'nrpAngulartics',
     'bbpConfig',
     'hbpCommon']);
 
@@ -204,6 +205,7 @@
   module.factory('experimentSimulationService', [
     '$q',
     '$http',
+    'nrpAnalytics',
     '$stateParams',
     'bbpConfig',
     'simulationService',
@@ -218,6 +220,7 @@
     function (
       $q,
       $http,
+      nrpAnalytics,
       $stateParams,
       bbpConfig,
       simulationService,
@@ -604,7 +607,14 @@
 
       var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
         experimentSimulationService.setShouldLaunchInEditMode(false);
+
         experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
+
+        var mode = shouldLaunchInEditMode ? 'edit' : 'run';
+        nrpAnalytics.eventTrack('Start-'+mode, {
+          category: 'Experiment'
+        });
+        nrpAnalytics.tickDurationEvent('Server-initialization');
       };
 
       var enterEditMode = function (expConf, envConf, serverPattern, errorCallback) {

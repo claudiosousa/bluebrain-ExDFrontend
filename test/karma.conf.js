@@ -54,6 +54,9 @@ module.exports = function(config) {
       'bower_components/roslibjs/build/roslib.js',
       'bower_components/stats.js/build/stats.min.js',
       'bower_components/v-button/dist/v-button.js',
+      'bower_components/SHA-1/sha1.js',
+      'bower_components/angulartics/src/angulartics.js',
+      'bower_components/angulartics-google-analytics/lib/angulartics-google-analytics.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'bower_components/threejs/examples/js/controls/OrbitControls.js',

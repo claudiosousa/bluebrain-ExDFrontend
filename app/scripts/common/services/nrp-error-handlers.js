@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  var module = angular.module('nrpErrorHandlers', ['hbpCommon', 'ui.bootstrap.modal']);
+  var module = angular.module('nrpErrorHandlers', ['hbpCommon', 'nrpAngulartics', 'ui.bootstrap.modal']);
 
   module.service('nrpErrorService', function () {
     var NrpError = function (options) {
@@ -84,9 +84,11 @@
   module.factory('serverError', [
     'nrpErrorService',
     'hbpDialogFactory',
+    'nrpAnalytics',
     function(
       nrpErrorService,
-      hbpDialogFactory
+      hbpDialogFactory,
+      nrpAnalytics
     ) {
       var filter = function(response) {
         if (response) {
@@ -105,7 +107,18 @@
 
       var display = function(response) {
         if (filter(response)) {
-          hbpDialogFactory.alert(nrpErrorService.httpError(response));
+          var nrpError = nrpErrorService.httpError(response);
+          hbpDialogFactory.alert(nrpError);
+          var code = "No code", template = "No template";
+          if (_.isObject(nrpError)) {
+            code = nrpError.code || code;
+            template = nrpError.template || template;
+          }
+          nrpAnalytics.eventTrack(code, {
+            category: 'Error',
+            label: template
+          });
+
         }
       };
 

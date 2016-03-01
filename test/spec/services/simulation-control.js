@@ -304,6 +304,11 @@ describe('Services: experimentSimulationService', function () {
   var simulationServiceMock = jasmine.createSpy('simulationService').andReturn(simulationServiceObject);
 
   var roslibMock = {};
+  var nrpAnalyticsMock = {
+    eventTrack: function() {},
+    tickDurationEvent: function() {},
+    durationEventTrack: function() {},
+  };
   var rosConnectionMock = {};
   var statusListenerMock;
   var experimentListMockObject = { experiments: jasmine.createSpy('experiments')};
@@ -317,6 +322,7 @@ describe('Services: experimentSimulationService', function () {
     $provide.constant('bbpConfig', bbpConfigMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('roslib', roslibMock);
+    $provide.value('nrpAnalytics', nrpAnalyticsMock);
     var simulationGeneratorMock = jasmine.createSpy('simulationGenerator').andReturn(
       { create: jasmine.createSpy('create')}
     );
