@@ -176,7 +176,7 @@ describe('Directive: smachEditor', function () {
         var name = 'statemachine_' + n;
         expect(sm.name).toEqual(name);
         expect(sm.id).toEqual(name + '_' + date + '_front-end_generated');
-        expect(sm.code).toContain('import smach_ros');
+        expect(sm.code).toContain('import hbp_nrp_excontrol');
         expect(sm.code).toContain('from smach import StateMachine');
         expect(sm.code).toContain('StateMachine.add(');
       });

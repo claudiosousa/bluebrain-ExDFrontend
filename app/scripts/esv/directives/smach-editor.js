@@ -76,12 +76,8 @@
 
           scope.create = function(code) {
             var count = addedStateMachineCount;
-            var defaultCode = 'import smach_ros\n'+
-              'from smach import StateMachine\n'+
-              'from rosgraph_msgs.msg import Clock\n\n'+
-
-              'def timeline_condition(user_data, time):\n'+
-              '    return time.clock.secs < 20\n\n'+
+            var defaultCode = 'import hbp_nrp_excontrol as states\n'+
+              'from smach import StateMachine\n\n'+
 
               'FINISHED = \'FINISHED\'\n'+
               'ERROR = \'ERROR\'\n'+
@@ -90,13 +86,31 @@
               'sm = StateMachine(outcomes=[FINISHED, ERROR, PREEMPTED])\n\n'+
 
               'with sm:\n'+
+              '    # Waits until a simulation time of 20s is reached\n'+
               '    StateMachine.add(\n'+
               '     "timeline_condition",\n'+
-              '     smach_ros.MonitorState(\'/clock\', Clock, timeline_condition),\n'+
+              '     states.WaitToClockState(20),\n'+
               '     transitions = {\'valid\': \'timeline_condition\',\n'+
               '                    \'invalid\': FINISHED,\n'+
               '                    \'preempted\': PREEMPTED}\n'+
-              '    )\n';
+              '    )\n'+
+              '    # Uncomment this to add a state that sets the color of a material\n'+
+              '    # StataMachine.add(\n'+
+              '    #   "set_left_screen_red",\n'+
+              '    #   states.SetMaterialColorServiceState("left_vr_screen",\n'+
+              '    #                                       "body",\n'+
+              '    #                                       "screen_glass",\n'+
+              '    #                                       "Gazebo/Red"),\n'+
+              '    #   transitions = {...}\n'+
+              '    #)\n\n'+
+              '    # Uncomment this to monitor the robot pose\n'+
+              '    # StateMachine.add(\n'+
+              '    #   "wait_for_husky_left",\n'+
+              '    #   states.RobotPoseMonitorState(lambda ud, p: not ((-1 < p.position.x < 1) and\n'+
+              '    #                                                   (-2.5 < p.position.y < -1.8) and\n'+
+              '    #                                                   (0 < p.position.z < 1))),\n'+
+              '    #   transitions = {...}\n'+
+              '    # )\n\n';
 
             code = code ? code : defaultCode;
             var id = scope.generateID(count);
