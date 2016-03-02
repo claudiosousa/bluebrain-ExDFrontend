@@ -171,6 +171,13 @@
             $scope.versions = angular.extend($scope.versions, data);
           });
 
+          // prevent this analytics event from sent multiple time
+          var analyticsEventTimeout = _.once(function() {
+            nrpAnalytics.eventTrack('Timeout', {
+              category: 'Simulation'
+            });
+          });
+
           /* status messages are listened to here. A splash screen is opened to display progress messages. */
           /* This is the case when closing an simulation for example. Loading is taken take of */
           /* by a progressbar somewhere else. */
@@ -197,6 +204,9 @@
             }
             /* Time messages */
             if (angular.isDefined(message.timeout)) {
+              if (parseInt(message.timeout, 10) < 1.0) {
+                analyticsEventTimeout();
+              }
               $scope.simTimeoutText = message.timeout;
             }
             if (angular.isDefined(message.simulationTime)) {
