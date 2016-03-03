@@ -57,8 +57,15 @@
           editor.on("change", r);
         };
 
+        scope.onEditorLoad = function(editor) {
+          scope.refreshLayout(editor);
+          editor.on('focus', function() {
+            editor.refresh();
+          });
+        };
+
         scope.editorOptions = {
-          onLoad: scope.refreshLayout,
+          onLoad: scope.onEditorLoad,
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,

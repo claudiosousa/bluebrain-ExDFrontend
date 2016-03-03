@@ -154,5 +154,4 @@ describe('Controller: editorPanelCtrl', function () {
 
     expect(scope.showEditorPanel).toBeFalsy();
   });
-
 });
