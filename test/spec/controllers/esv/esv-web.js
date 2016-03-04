@@ -140,25 +140,25 @@ describe('Controller: experimentCtrl', function () {
     spyOn(console, 'log');
   }));
 
-  it('should get deployment stage and tell whether it is dev' , function () {
-    // first try without any stage variable set
-    var isdev = scope.isDeploymentStageDev();
+  it('should get deployment environment and tell whether it is dev' , function () {
+    // first try without any enironment variable set
+    var isdev = scope.isEnvironmentDev();
     expect(isdev).toBe(true);
-    // now with stage set to development
-    window.bbpConfig.deployment = { 'stage': 'development' };
-    isdev = scope.isDeploymentStageDev();
+    // now with environment set to development
+    window.bbpConfig.environment = 'development';
+    isdev = scope.isEnvironmentDev();
     expect(isdev).toBe(true);
-    // now with stage set to staging
-    window.bbpConfig.deployment = { 'stage': 'staging' };
-    isdev = scope.isDeploymentStageDev();
+    // now with environment set to staging
+    window.bbpConfig.environment = 'staging' ;
+    isdev = scope.isEnvironmentDev();
     expect(isdev).toBe(false);
-    // now with stage set to production
-    window.bbpConfig.deployment = { 'stage': 'production' };
-    isdev = scope.isDeploymentStageDev();
+    // now with environment set to production
+    window.bbpConfig.environment = 'production';
+    isdev = scope.isEnvironmentDev();
     expect(isdev).toBe(false);
-    // now with stage set to something wrong
-    window.bbpConfig.deployment = { 'stage': 'wrong' };
-    isdev = scope.isDeploymentStageDev();
+    // now with environment set to something wrong
+    window.bbpConfig.environment = 'wrong';
+    isdev = scope.isEnvironmentDev();
     expect(isdev).toBe(true);
   });
 
