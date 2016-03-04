@@ -553,6 +553,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       splash.showButton = false;
       stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'True', done: 'True'}});
       expect(splash.close).toHaveBeenCalled();
+      // onSImulationDone() should have been called
+      expect(stateService.removeMessageCallback).toHaveBeenCalled();
       // test "timeout"
       stateService.addMessageCallback.mostRecentCall.args[0]({timeout: 264, simulationTime: 1, realTime: 2});
       expect(scope.simTimeoutText).toBe(264);
@@ -855,8 +857,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       window.document.getElementById = backup;
     });
 
-    it('should close all connections and splash screens on $destroy', function() {
-      spyOn(window, 'stop');
+    it('should close gzbridge and splash screens on $destroy', function() {
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
       scope.splashScreen = splashInstance;
@@ -866,21 +867,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       expect(splash.close).toHaveBeenCalled();
       expect(assetLoadingSplash.close).toHaveBeenCalled();
-      expect(stateService.stopListeningForStatusInformation).toHaveBeenCalled();
-      expect(stateService.removeMessageCallback).toHaveBeenCalled();
       expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
       expect(gz3d.deInitialize).toHaveBeenCalled();
-      expect(window.stop).toHaveBeenCalled();
-    });
-
-    it('should call execCommand on destroy', function() {
-      // Fake IE browser behavior
-      // The stop() method is not supported by Internet Explorer
-      // https://developer.mozilla.org/de/docs/Web/API/Window/stop
-      document.execCommand = jasmine.createSpy('execCommand');
-      window.stop = undefined;
-      scope.$destroy();
-      expect(document.execCommand).toHaveBeenCalled();
     });
 
     it('should do nothing on $destroy when all is undefined', function() {
@@ -1071,6 +1059,118 @@ describe('Controller: Gz3dViewCtrl', function () {
       eventMock.button = 2;  // left mouse
       scope.onContainerMouseUp(eventMock);
       expect(objectInspectorService.update).not.toHaveBeenCalled();
+    });
+  });
+
+});
+
+describe('Controller: Gz3dViewCtrl - mocked window', function () {
+  var Gz3dViewCtrl,
+      controller,
+      scope,
+      rootScope,
+      stateService,
+      window,
+      document;
+
+  // load the controller's module
+  beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
+
+  beforeEach(module(function ($provide) {
+    var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
+    var getThenSpy = jasmine.createSpy('then');
+
+    getCurrentStateSpy.andCallFake(function () {
+      return { then: getThenSpy.andCallFake(function (f) { f(); }) };
+    });
+
+    $provide.value('stateService', {
+      Initialize: jasmine.createSpy('Initialize'),
+      startListeningForStatusInformation: jasmine.createSpy('startListeningForStatusInformation'),
+      stopListeningForStatusInformation: jasmine.createSpy('stopListeningForStatusInformation'),
+      addStateCallback: jasmine.createSpy('addStateCallback'),
+      removeStateCallback: jasmine.createSpy('removeStateCallback'),
+      addMessageCallback: jasmine.createSpy('addMessageCallback'),
+      removeMessageCallback: jasmine.createSpy('removeMessageCallback'),
+      getCurrentState: getCurrentStateSpy
+    });
+    var stateParamsMock = {
+      serverID : 'bbpce016',
+      simulationID : 'mocked_simulation_id'
+    };
+    $provide.value('$stateParams', stateParamsMock);
+    var gz3dMock = {
+      Initialize : jasmine.createSpy('Initialize'),
+      deInitialize : jasmine.createSpy('deInitialize'),
+      scene : {
+        container : {
+          addEventListener : jasmine.createSpy('addEventListener')
+        }
+      },
+      iface: {
+        setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
+        registerWebSocketConnectionCallback: jasmine.createSpy('registerWebSocketConnectionCallback')
+      }
+    };
+    //provide gz3dMock
+    $provide.value('gz3d', gz3dMock);
+
+    var ROSLIB = { Topic: {prototype: {} } };
+    $provide.value('$window', {
+      document: { getElementById: function(){}},
+      ROSLIB: ROSLIB,
+      stop: jasmine.createSpy('stop'),
+      addEventListener: function() {}
+    });
+  }));
+
+  // Initialize the controller and a mock scope
+  beforeEach(inject(function ($controller,
+                              $rootScope,
+                              _stateService_,
+                              _$window_,
+                              _$document_) {
+    controller = $controller;
+    rootScope = $rootScope;
+    scope = $rootScope.$new();
+    stateService = _stateService_;
+    window = _$window_;
+    document = _$document_;
+    scope.viewState = {};
+  }));
+
+  describe('(Clean up code tested with a mocked window object)', function () {
+    beforeEach(function(){
+      Gz3dViewCtrl = controller('Gz3dViewCtrl', {
+        $rootScope: rootScope,
+        $scope: scope
+      });
+    });
+
+    it('should call execCommand on destroy', function() {
+      // Fake IE browser behavior
+      // The stop() method is not supported by Internet Explorer
+      // https://developer.mozilla.org/de/docs/Web/API/Window/stop
+      document.execCommand = jasmine.createSpy('execCommand');
+      scope.onSimulationDone();
+      expect(window.stop).toHaveBeenCalled();
+      expect(document.execCommand).not.toHaveBeenCalled();
+      window.stop = undefined;
+      scope.onSimulationDone();
+      expect(document.execCommand).toHaveBeenCalled();
+    });
+
+    it('should close rosbridge connections on onSimulationDone', function() {
+      stateService.stopListeningForStatusInformation.reset();
+      stateService.removeMessageCallback.reset();
+
+      // call the method under test
+      scope.onSimulationDone();
+
+      expect(stateService.stopListeningForStatusInformation).toHaveBeenCalled();
+      expect(stateService.removeMessageCallback).toHaveBeenCalled();
+      expect(window.stop).toHaveBeenCalled();
     });
   });
 
