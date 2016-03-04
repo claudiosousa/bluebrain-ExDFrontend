@@ -16,10 +16,10 @@
 
     <hr class="list-separator">
 
-    <a ng-show="isDeploymentStageDev() && !showAll" class="developpers-switch" ng-click="showAll=true">
+    <a ng-show="isEnvironmentDev() && !showAll" class="developpers-switch" ng-click="showAll=true">
       developers
     </a>
-    <a ng-show="isDeploymentStageDev() && showAll" class="developpers-switch" ng-click="showAll=false">
+    <a ng-show="isEnvironmentDev() && showAll" class="developpers-switch" ng-click="showAll=false">
       users
     </a>
 
