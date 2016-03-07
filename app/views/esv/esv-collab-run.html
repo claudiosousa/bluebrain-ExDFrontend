@@ -44,12 +44,6 @@
       <div class="list-entry-middle list-entry-container up-down">
         <div class="list-entry-container left-right title-line">
           <div class="h4">{{experiment.name}}</div>
-          <div ng-if="experiment.runningExperiments == 1" class="list-entry-running">
-            ({{experiment.runningExperiments}} simulation running)
-          </div>
-          <div ng-if="experiment.runningExperiments > 1" class="list-entry-running">
-            ({{experiment.runningExperiments}} simulations running)
-          </div>
         </div>
         <div>{{experiment.description}}<br/>
           <i ng-if="experiment.timeout != undefined">Timeout: {{experiment.timeout | timeDDHHMMSS}}</i><br/>
@@ -63,7 +57,19 @@
           </div>
         </div>
         <div class="list-entry-buttons list-entry-container center">
-          <div ng-if="isCollabEditPage && !isAlreadyEditing" class="btn-group" role="group">
+          <div ng-if="!isEditingOngoing" class="btn-group" role="group">
+            <!-- Launch button (enabled/disabled) -->
+            <button analytics-on analytics-event="Launch"
+                    analytics-category="Experiment"
+                    analytics-label="Collab"
+                    ng-if="isServerAvailable[experiment.id]" class="btn btn-default"
+                    ng-click="setProgressbarVisible(experiment.id);startNewExperiment(experiment.experimentConfiguration,  experiment.serverPattern);">
+              <i class="fa fa-plus"></i> Launch
+            </button>
+            <button join ng-if="!isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
+                    tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+              <i class="fa fa-plus"></i> Launch
+            </button>
             <!-- Edit button (button enabled) -->
             <button ng-if="isServerAvailable[experiment.id]" class="btn btn-default"
                     ng-click="setProgressbarVisible(experiment.id);enterEditMode(experiment.experimentConfiguration, experiment.serverPattern);">
@@ -75,7 +81,16 @@
               <i class="fa fa-pencil"></i> Edit
             </button>
           </div>
-          <div ng-if="isCollabEditPage && isAlreadyEditing" class="btn-group" role="group">
+          <div ng-if="isEditingOngoing" class="btn-group" role="group">
+            <button analytics-on analytics-event="Launch"
+                    analytics-category="Experiment"
+                    analytics-label="Collab"
+                    class="btn btn-default disabled enable-tooltip"
+                    tooltip="Please join the already running simulation."
+                    tooltip-trigger="mouseenter"
+                    tooltip-placement="top">
+              <i class="fa fa-plus"></i> Launch
+            </button>
             <!-- A simulation is already in edit mode (button disabled) -->
             <button analytics-on analytics-event="Re-Edit"
                     analytics-category="Experiment"
@@ -84,44 +99,21 @@
                     tooltip="Please join the already running simulation to edit." tooltip-trigger="mouseenter" tooltip-placement="top">
               <i class="fa fa-pencil"></i> Edit
             </button>
-            <!-- Join button -->
-            <button analytics-on analytics-event="Re-Join"
-                    analytics-category="Experiment"
-                    analytics-label="Collab"
-                    class="btn btn-default" ng-click="setJoinableVisible(experiment.id);">
-              <i class="fa fa-sign-in"></i> Join »
-            </button>
           </div>
-          <div ng-if="!isCollabEditPage" class="btn-group" role="group">
-            <!-- Launch button (enabled/disabled) -->
-            <button analytics-on analytics-event="Launch"
-                    analytics-category="Experiment"
-                    analytics-label="Collab"
-                    ng-if="isServerAvailable[experiment.id]" class="btn btn-default"
-                    ng-click="setProgressbarVisible(experiment.id);startNewExperiment(experiment.experimentConfiguration, experiment.serverPattern);">
-              <i class="fa fa-plus"></i> Launch
-            </button>
-            <button join ng-if="!isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
-                    tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
-              <i class="fa fa-plus"></i> Launch
-            </button>
-            <!-- Join button -->
-            <button analytics-on analytics-event="Join"
-                    analytics-category="Experiment"
-                    analytics-label="Collab"
-                    ng-if="experiment.runningExperiments > 0" class="btn btn-default"
-                    ng-click="setJoinableVisible(experiment.id);">
-              <i class="fa fa-sign-in"></i> Join »
-            </button>
-          </div>
+          <!-- Join button -->
+          <button  ng-if="experiment.simulations.length > 0" analytics-on analytics-event="Re-Join"
+                  analytics-category="Experiment"
+                  analytics-label="Collab"
+                  class="btn btn-default" ng-click="setJoinableVisible(experiment.id);">
+            <i class="fa fa-sign-in"></i> Join »
+          </button>
         </div>
-        <div collapse="!startNewExperimentSelected">
+        <div collapse="!startNewExperimentSelected || (experiment.simulations.length === 0)">
           <progressbar value="100" class="progress-striped active top-buffer"><i>
             <b>{{progressMessageMain}}</b> {{progressMessageSub}}</i>
           </progressbar>
         </div>
-        <!-- This is displayed only on the collab RUN page -->
-        <div ng-if="!isCollabEditPage" class="table-wrapper" collapse="(!joinSelected)||(experiment.runningExperiments === 0)">
+        <div class="table-wrapper" collapse="!joinSelected">
           <table class="table table-striped">
             <thead>
             <tr>
@@ -133,7 +125,23 @@
             </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="simul in experiment.simulations">
+
+              <tr ng-repeat="simul in experiment.simulations | filter:{operationMode:OPERATION_MODE.EDIT}  | filter: { owner:userID }">
+                <td>{{simul.serverID}}</td>
+                <td>{{owners[simul.owner]}}</td>
+                <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
+                <td>{{simul.state}}</td>
+                <td>
+                  <a ng-if="isEditingOngoing" ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
+                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Edit »</a>
+                  <a ng-click="stopSimulation(simul);"
+                     type="button" class="btn btn-default"
+                     ng-if="simul.state !== STATE.CREATED" ng-disabled="simul.stopping">
+                    <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
+                  </a>
+                </td>
+              </tr>
+              <tr ng-repeat="simul in experiment.simulations | filter: { owner:'!' + userID }">
                 <td>{{simul.serverID}}</td>
                 <td>{{owners[simul.owner]}}</td>
                 <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
@@ -143,45 +151,7 @@
                      analytics-category="Experiment"
                      analytics-label="Collab"
                      ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{OPERATION_MODE.VIEW}}');"
-                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Join »</a>
-                  <a analytics-on analytics-event="Stop"
-                     analytics-category="Experiment"
-                     analytics-label="Collab"
-                     ng-click="stopSimulation(simul);"
-                     type="button" class="btn btn-default"
-                     ng-if="(simul.state !== STATE.CREATED) && (simul.owner === userID)" ng-disabled="simul.stopping">
-                    <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- This is displayed only on the collab EDIT page -->
-        <div ng-if="isCollabEditPage" class="table-wrapper" collapse="(!joinSelected)||((experiment.simulations | filter:{operationMode:OPERATION_MODE.EDIT} | filter:{owner:userID}).length === 0)">
-          <table class="table table-striped">
-            <thead>
-            <tr>
-              <th>Server</th>
-              <th>Creator</th>
-              <th>Uptime</th>
-              <th>Status</th>
-              <th>&nbsp;</th>
-            </tr>
-            </thead>
-            <tbody>
-              <tr ng-repeat="simul in experiment.simulations | filter:{operationMode:OPERATION_MODE.EDIT} | filter:{owner:userID}">
-                <td>{{simul.serverID}}</td>
-                <td>{{owners[simul.owner]}}</td>
-                <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
-                <td>{{simul.state}}</td>
-                <td>
-                  <a ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
-                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Edit »</a>
-                  <a ng-click="stopSimulation(simul);"
-                     type="button" class="btn btn-default"
-                     ng-if="simul.state !== STATE.CREATED" ng-disabled="simul.stopping">
-                    <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
+                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Join »
                   </a>
                 </td>
               </tr>

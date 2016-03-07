@@ -346,28 +346,16 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.uptime).toBeDefined();
     });
 
-    it('should set the isAlreadyEditing variable to true if the user owns an edit simulation', function() {
+    it('should set the isEditingOngoing variable to true if the user owns an edit simulation', function() {
       scope.updateExperiments();
-      expect(scope.isAlreadyEditing).toBe(false);
+      expect(scope.isEditingOngoing).toBe(false);
 
       scope.userID = 'fakeUserID';
       scope.experiments['1'].simulations[0].owner = 'fakeUserID';
       scope.experiments['1'].simulations[0].operationMode = OPERATION_MODE.EDIT;
 
       scope.updateExperiments();
-      expect(scope.isAlreadyEditing).toBe(true);
-    });
-
-    it('should set the isAlreadyEditing variable and update the userID if it was undefined', function() {
-      scope.isAlreadyEditing = false;
-      scope.userID = undefined;
-      scope.experiments['1'].simulations[0].owner = 'fakeUserID';
-      scope.experiments['1'].simulations[0].operationMode = OPERATION_MODE.EDIT;
-      hbpIdentityUserDirectoryPromiseObject.then.reset();
-
-      scope.updateExperiments();
-      hbpIdentityUserDirectoryPromiseObject.then.mostRecentCall.args[0]({id: 'fakeUserID'});
-      expect(scope.userID).toBe('fakeUserID');
+      expect(scope.isEditingOngoing).toBe(true);
     });
   });
 

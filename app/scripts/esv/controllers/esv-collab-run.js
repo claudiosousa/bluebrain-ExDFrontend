@@ -49,7 +49,7 @@
         $scope.isServerAvailable = {};
         $scope.isQueryingServersFinished = false;
         $scope.isDestroyed = false;
-        $scope.isAlreadyEditing = false;
+        $scope.isEditingOngoing = false;
         $scope.STATE = STATE;
         $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.updatePromise = undefined;
@@ -163,10 +163,10 @@
         $scope.updateUserID();
 
         // Function to determine if the current user owns an experiment which is in edit mode
-        $scope.isUserEditingExperiment = function() {
+        $scope.isUserAlreadyEditing = function() {
           var userEditsExperiment = false;
           angular.forEach($scope.experiment.simulations, function(simulation) {
-            if ((simulation.owner === $scope.userID)&&(simulation.operationMode === OPERATION_MODE.EDIT)) {
+            if ((simulation.operationMode === OPERATION_MODE.EDIT) && (simulation.contextID === $stateParams.ctx)) {
               userEditsExperiment = true;
             }
           });
@@ -174,18 +174,17 @@
         };
 
         $scope.updateExperiments = function() {
+          _.forEach($scope.experiments, function(experiment, experimentID) {
+            if (angular.isDefined(experiment.simulations)) {
+              experiment.simulations = _.filter(experiment.simulations, function(simulation) {
+                return (simulation.contextID === $stateParams.ctx);
+              });
+            }
+          });
           $scope.owners = simulationService().owners;
           $scope.uptime = simulationService().uptime;
 
-          // get userID if not yet done...
-          if (!angular.isDefined($scope.userID)) {
-            $scope.updateUserID().then(function() {
-              // and save if the user owns an experiment which is in edit mode
-              $scope.isAlreadyEditing = $scope.isUserEditingExperiment();
-            });
-          } else {
-            $scope.isAlreadyEditing = $scope.isUserEditingExperiment();
-          }
+          $scope.isEditingOngoing = $scope.isUserAlreadyEditing();
         };
 
         // This function is called when all servers responded to the query of running experiments
