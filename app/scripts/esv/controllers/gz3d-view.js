@@ -191,13 +191,14 @@
               if (angular.isDefined(message.progress.done) && message.progress.done) {
                 splash.spin = false;
                 splash.setMessage({headline: 'Finished'});
-
                 /* if splash is a blocking modal (no button), then close it */
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {
                   splash.close();
                   $scope.splashScreen = undefined;
                 }
+                // cleanly close ros websocket and stop window
+                $scope.onSimulationDone();
               } else {
                 splash.setMessage({headline: message.progress.task, subHeadline: message.progress.subtask});
               }
@@ -625,16 +626,18 @@
               delete $scope.assetLoadingSplashScreen;
             }
 
+            if (angular.isDefined(gz3d.iface) && angular.isDefined(gz3d.iface.webSocket)) {
+              gz3d.iface.webSocket.close();
+            }
+            gz3d.deInitialize();
+          });
+
+          $scope.onSimulationDone = function() {
             // Stop listening for status messages
             stateService.stopListeningForStatusInformation();
 
             // unregister the message callback
             stateService.removeMessageCallback(messageCallback);
-
-            if (angular.isDefined(gz3d.iface) && angular.isDefined(gz3d.iface.webSocket)) {
-              gz3d.iface.webSocket.close();
-            }
-            gz3d.deInitialize();
 
             // Stop/Cancel loading assets
             // The window.stop() method is not supported by Internet Explorer
@@ -645,7 +648,7 @@
             else if (angular.isDefined($document.execCommand)) {
               $document.execCommand("Stop", false);
             }
-          });
+          };
 
           $scope.help = function (uiElement) {
             if ($scope.currentSelectedUIElement === uiElement) {
