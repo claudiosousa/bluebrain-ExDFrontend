@@ -22,14 +22,6 @@ describe('Controller: experimentCtrl', function () {
     UPTIME_UPDATE_RATE,
     STATE;
 
-  var hbpIdentityUserDirectoryPromiseObject = {};
-  hbpIdentityUserDirectoryPromiseObject.then = jasmine.createSpy('then');
-  var hbpIdentityUserDirectoryPromiseObject2 = {};
-  hbpIdentityUserDirectoryPromiseObject2.then = jasmine.createSpy('then');
-  var hbpIdentityUserDirectoryMock = {};
-  hbpIdentityUserDirectoryMock.getCurrentUser = jasmine.createSpy('getCurrentUser').andReturn(hbpIdentityUserDirectoryPromiseObject);
-  hbpIdentityUserDirectoryMock.get = jasmine.createSpy('get').andReturn(hbpIdentityUserDirectoryPromiseObject2);
-
   var simulationServiceMockObject = {};
   simulationServiceMockObject.updateUptime = jasmine.createSpy('updateUptime');
   var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
@@ -78,16 +70,19 @@ describe('Controller: experimentCtrl', function () {
 
   beforeEach(module(function ($provide) {
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
+    var hbpIdentityUserDirectoryPromiseObject = {then: jasmine.createSpy('then').andReturn({then: jasmine.createSpy('then')})};
+    var hbpIdentityUserDirectoryPromiseObject2 = {then: jasmine.createSpy('then')};
+    var hbpIdentityUserDirectoryMock = {
+      getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn(hbpIdentityUserDirectoryPromiseObject),
+      get: jasmine.createSpy('get').andReturn(hbpIdentityUserDirectoryPromiseObject2),
+      isGroupMember: jasmine.createSpy('isGroupMember').andReturn({then: jasmine.createSpy('then')})
+    };
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('slurminfoService', slurminfoServiceMockObject);
     for (var mock in experimentSimulationServiceMock) {
       experimentSimulationServiceMock[mock].reset();
     }
-    hbpIdentityUserDirectoryPromiseObject.then.reset();
-    hbpIdentityUserDirectoryPromiseObject2.then.reset();
-    hbpIdentityUserDirectoryMock.getCurrentUser.reset();
-    hbpIdentityUserDirectoryMock.get.reset();
     simulationServiceMock.reset();
     simulationServiceMockObject.updateUptime.reset();
   }));
@@ -167,6 +162,7 @@ describe('Controller: experimentCtrl', function () {
       displayName: 'John Does',
       id: '1234'
     };
+    var hbpIdentityUserDirectoryPromiseObject = hbpIdentityUserDirectory.getCurrentUser();
     hbpIdentityUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
     expect(scope.userID).toEqual(currentUserInfo1234.id);
   });
@@ -179,6 +175,7 @@ describe('Controller: experimentCtrl', function () {
     });
     expect(hbpIdentityUserDirectory.get).not.toHaveBeenCalled();
     expect(scope.userID).toEqual('vonarnim');
+    expect(scope.hasEditRights).toBe(true);
     expect(slurminfoService.get).not.toHaveBeenCalled();
     window.bbpConfig.localmode.forceuser = false;
   });
@@ -297,6 +294,18 @@ describe('Controller: experimentCtrl', function () {
         expect(convertToArrayFilter(experimentTemplates)).toEqual(experimentTemplatesArray);
       }
     ));
+
+  it('should set the edit rights', function() {
+    var hbpIdentityUserDirectoryPromiseObject = hbpIdentityUserDirectory.getCurrentUser();
+    var callback = hbpIdentityUserDirectoryPromiseObject.then().then.mostRecentCall.args[0];
+    callback();
+    var isGroupMemberCallback = hbpIdentityUserDirectory.isGroupMember().then.mostRecentCall.args[0];
+    expect(scope.hasEditRights).not.toBeDefined();
+    isGroupMemberCallback(true);
+    expect(scope.hasEditRights).toBe(true);
+    isGroupMemberCallback(false);
+    expect(scope.hasEditRights).toBe(false);
+  });
 
   it('should create the updatePromise and call refresh experiments after ESV_UPDATE_RATE seconds', function() {
     var refreshExperimentsFinishedCallback = experimentSimulationService.refreshExperiments.mostRecentCall.args[3];

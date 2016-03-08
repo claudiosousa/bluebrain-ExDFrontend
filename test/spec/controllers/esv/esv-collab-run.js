@@ -32,13 +32,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
     get: jasmine.createSpy('get')
   };
 
-  var hbpIdentityUserDirectoryPromiseObject = { then: jasmine.createSpy('then') };
-  var hbpIdentityUserDirectoryPromiseObject2 = { then: jasmine.createSpy('then') };
-  var hbpIdentityUserDirectoryMock = {
-    getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn(hbpIdentityUserDirectoryPromiseObject),
-    get: jasmine.createSpy('get').andReturn(hbpIdentityUserDirectoryPromiseObject2)
-  };
-
   var simulationServiceMockObject = {
     updateUptime: jasmine.createSpy('updateUptime'),
     owners: { id1: 'John Doe', id2: 'John Don\'t' },
@@ -76,6 +69,13 @@ describe('Controller: ESVCollabRunCtrl', function () {
       enterEditMode : jasmine.createSpy('enterEditMode')
     };
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
+    var hbpIdentityUserDirectoryPromiseObject = { then: jasmine.createSpy('then').andReturn({ then: jasmine.createSpy('then')})};
+    var hbpIdentityUserDirectoryPromiseObject2 = { then: jasmine.createSpy('then') };
+    var hbpIdentityUserDirectoryMock = {
+      getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn(hbpIdentityUserDirectoryPromiseObject),
+      get: jasmine.createSpy('get').andReturn(hbpIdentityUserDirectoryPromiseObject2),
+      isGroupMember: jasmine.createSpy('isGroupMember').andReturn({then: jasmine.createSpy('then')})
+    };
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
     $provide.value('simulationService', simulationServiceMock);
     $provide.value('collabConfigService', collabConfigServiceMock);
@@ -83,10 +83,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     for (var mock in experimentSimulationServiceMock) {
       experimentSimulationServiceMock[mock].reset();
     }
-    hbpIdentityUserDirectoryPromiseObject.then.reset();
-    hbpIdentityUserDirectoryPromiseObject2.then.reset();
-    hbpIdentityUserDirectoryMock.getCurrentUser.reset();
-    hbpIdentityUserDirectoryMock.get.reset();
+
     simulationServiceMock.reset();
     simulationServiceMockObject.updateUptime.reset();
   }));
@@ -122,6 +119,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     stateParams = _$stateParams_;
     collabConfigService = _collabConfigService_;
     serverError = _serverError_;
+    hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
 
     spyOn(localStorage, 'getItem').andCallFake(function (key) {
       return store[key];
@@ -167,6 +165,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
       displayName: 'John Does',
       id: '1234'
     };
+    var hbpIdentityUserDirectoryPromiseObject = hbpIdentityUserDirectory.getCurrentUser();
     hbpIdentityUserDirectoryPromiseObject.then.mostRecentCall.args[0](currentUserInfo1234);
     expect(scope.userID).toEqual(currentUserInfo1234.id);
   });
@@ -178,6 +177,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     });
     expect(hbpIdentityUserDirectory.get).not.toHaveBeenCalled();
     expect(scope.userID).toEqual('vonarnim');
+    expect(scope.hasEditRights).toBe(true);
     window.bbpConfig.localmode.forceuser = false;
   });
 
@@ -248,6 +248,19 @@ describe('Controller: ESVCollabRunCtrl', function () {
     expect(experimentSimulationService.refreshExperiments.mostRecentCall.args[3]).toBe(
       scope.getExperimentsFinishedCallback
     );
+  });
+
+  it('should set the edit rights', function() {
+    scope.updateUserID();
+    var hbpIdentityUserDirectoryPromiseObject = hbpIdentityUserDirectory.getCurrentUser();
+    var callback = hbpIdentityUserDirectoryPromiseObject.then().then.mostRecentCall.args[0];
+    callback();
+    var isGroupMemberCallback = hbpIdentityUserDirectory.isGroupMember().then.mostRecentCall.args[0];
+    expect(scope.editRights).not.toBeDefined();
+    isGroupMemberCallback(true);
+    expect(scope.hasEditRights).toBe(true);
+    isGroupMemberCallback(false);
+    expect(scope.hasEditRights).toBe(false);
   });
 
   it('should retrieve the specified experiment using its Collab context', function() {
