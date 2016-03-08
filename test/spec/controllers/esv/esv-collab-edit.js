@@ -15,7 +15,8 @@ describe('Controller: ESVCollabEditCtrl', function () {
     collabConfigService,
     stateParams,
     slurminfoService,
-    serverError;
+    serverError,
+    hbpIdentityUserDirectory;
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
@@ -64,6 +65,10 @@ describe('Controller: ESVCollabEditCtrl', function () {
       mockObject.reset();
     });
     $provide.value('slurminfoService', slurminfoServiceMockObject);
+    var hbpIdentityUserDirectoryMockObject = { isGroupMember: jasmine.createSpy('isGroupMember').andReturn(
+      {then: jasmine.createSpy('then')}
+    )};
+    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMockObject);
     collabConfigServiceMock.clone.reset();
     collabConfigServiceMock.get.reset();
   }));
@@ -76,7 +81,8 @@ describe('Controller: ESVCollabEditCtrl', function () {
                               _collabConfigService_,
                               _slurminfoService_,
                               _$stateParams_,
-                              _serverError_) {
+                              _serverError_,
+                              _hbpIdentityUserDirectory_) {
     scope = $rootScope.$new();
     state = $state;
     experimentSimulationService = _experimentSimulationService_;
@@ -84,6 +90,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     stateParams = _$stateParams_;
     serverError = _serverError_;
     slurminfoService = _slurminfoService_;
+    hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
 
     store['server-enabled'] = angular.toJson(serversEnabled);
 
@@ -147,6 +154,15 @@ describe('Controller: ESVCollabEditCtrl', function () {
     expect(scope.isQueryingServersFinished).toBe(true);
     expect(scope.experiments).toBeDefined(); // $scope.experiment contains an error message displayed in the html view
     expect(serverError.display).toHaveBeenCalledWith(data);
+  });
+
+  it('should set the edit rights', function() {
+    var callback = hbpIdentityUserDirectory.isGroupMember().then.mostRecentCall.args[0];
+    scope.hasEditRights = undefined;
+    callback(true);
+    expect(scope.hasEditRights).toBe(true);
+    callback(false);
+    expect(scope.hasEditRights).toBe(false);
   });
 
   it('should go to the registered edit page state', function() {

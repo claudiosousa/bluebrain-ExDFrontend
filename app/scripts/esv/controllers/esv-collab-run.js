@@ -147,17 +147,21 @@
 
         // Update the userID
         $scope.updateUserID = function () {
-          var deferred = $q.defer();
           if (!bbpConfig.get('localmode.forceuser', false)) {
-            hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
-              $scope.userID = profile.id;
-              deferred.resolve();
-            });
+            return hbpIdentityUserDirectory.getCurrentUser()
+              .then(function (profile) {
+                $scope.userID = profile.id;
+              })
+              .then(function() {
+                hbpIdentityUserDirectory.isGroupMember('hbp-sp10-user-edit-rights').then(function (result) {
+                  $scope.hasEditRights = result;
+                });
+              });
           } else {
             $scope.userID = bbpConfig.get('localmode.ownerID');
-            deferred.resolve();
+            $scope.hasEditRights = true;
+            return $q.when();
           }
-          return deferred.promise;
         };
 
         $scope.updateUserID();

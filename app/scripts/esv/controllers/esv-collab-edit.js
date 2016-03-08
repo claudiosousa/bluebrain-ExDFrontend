@@ -14,6 +14,7 @@
                 'bbpConfig',
                 'collabConfigService',
                 'serverError',
+                'hbpIdentityUserDirectory',
       function ($scope,
                 $stateParams,
                 $state,
@@ -21,7 +22,8 @@
                 slurminfoService,
                 bbpConfig,
                 collabConfigService,
-                serverError)
+                serverError,
+                hbpIdentityUserDirectory)
       {
         $scope.selectedIndex = -1;
         $scope.isQueryingServersFinished = false;
@@ -64,6 +66,10 @@
             serverError.display(data);
           }
         );
+
+        hbpIdentityUserDirectory.isGroupMember('hbp-sp10-user-edit-rights').then(function (result) {
+          $scope.hasEditRights = result;
+        });
 
         $scope.setSelected = function (index) {
           $scope.selectedIndex = index;

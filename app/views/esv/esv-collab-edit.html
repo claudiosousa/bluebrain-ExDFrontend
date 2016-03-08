@@ -49,11 +49,17 @@
           </div>
           <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == selectedIndex">
             <div class="btn-group" role="group">
-              <button analytics-on analytics-event="Clone"
+              <button ng-if="hasEditRights"
+                      analytics-on analytics-event="Clone"
                       analytics-category="Experiment"
                       analytics-label="Collab"
                       analytics-value="exp.id"
                       class="btn btn-default" ng-click="cloneExperiment(exp.id)">
+                <i class="fa fa-pencil"></i> Clone
+              </button>
+              <button ng-if="!hasEditRights"
+                      class="btn btn-default disabled enable-tooltip"
+                      tooltip="Sorry, you don't have editing rights." tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-pencil"></i> Clone
               </button>
             </div>

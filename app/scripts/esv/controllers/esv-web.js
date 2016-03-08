@@ -166,9 +166,14 @@
         if (!bbpConfig.get('localmode.forceuser', false)) {
           hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
             $scope.userID = profile.id;
-          });
+          }).then(function() {
+              hbpIdentityUserDirectory.isGroupMember('hbp-sp10-user-edit-rights').then(function (result) {
+                $scope.hasEditRights = result;
+              });
+            });
         } else {
           $scope.userID = bbpConfig.get('localmode.ownerID');
+          $scope.hasEditRights = true;
         }
 
         // This function is called when all servers responded to the query of running experiments
