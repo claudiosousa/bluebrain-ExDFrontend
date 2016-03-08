@@ -185,9 +185,12 @@
           var messageCallback = function (message) {
             /* Progress messages (apart start state progress messages which are handled by another progress bar) */
             if (angular.isDefined(message.progress) && message.state !== STATE.STARTED) {
-              $scope.splashScreen = $scope.splashScreen || splash.open(
-                  !message.progress.block_ui,
-                  ((stateService.currentState === STATE.STOPPED) ? $scope.exit : undefined));
+              /* splashScreen == null means it has been already closed and should not be reopened */
+              if ($scope.splashScreen !== null) {
+                $scope.splashScreen = $scope.splashScreen || splash.open(
+                    !message.progress.block_ui,
+                    ((stateService.currentState === STATE.STOPPED) ? $scope.exit : undefined));
+              }
               if (angular.isDefined(message.progress.done) && message.progress.done) {
                 splash.spin = false;
                 splash.setMessage({headline: 'Finished'});
@@ -620,6 +623,7 @@
             if (angular.isDefined($scope.splashScreen)) {
               splash.close();
               delete $scope.splashScreen;
+              $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
             }
             if (angular.isDefined($scope.assetLoadingSplashScreen)) {
               assetLoadingSplash.close();
@@ -675,7 +679,7 @@
           };
 
           $scope.exit = function () {
-            $scope.splashScreen = undefined;
+            $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
             if (angular.isDefined($stateParams.ctx) && $stateParams.ctx !== '') {
               if ($scope.operationMode === OPERATION_MODE.EDIT) {
                 $location.path("esv-collab/edit");

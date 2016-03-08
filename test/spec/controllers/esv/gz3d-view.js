@@ -553,7 +553,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       splash.showButton = false;
       stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'True', done: 'True'}});
       expect(splash.close).toHaveBeenCalled();
-      // onSImulationDone() should have been called
+      // onSimulationDone() should have been called
       expect(stateService.removeMessageCallback).toHaveBeenCalled();
       // test "timeout"
       stateService.addMessageCallback.mostRecentCall.args[0]({timeout: 264, simulationTime: 1, realTime: 2});
@@ -562,6 +562,24 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.simulationTimeText).toBe(1);
       // test "realTime"
       expect(scope.realTimeText).toBe(2);
+    });
+
+    it('should NOT open splash screen with when destroy or exit has been called', function () {
+      scope.splashScreen = splashInstance;
+      scope.$destroy();
+      splash.close.reset();
+
+      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
+      expect(splash.close).not.toHaveBeenCalled();
+      expect(scope.splashScreen).toBe(null);
+
+      scope.splashScreen = splashInstance;
+      scope.exit();
+      splash.close.reset();
+
+      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
+      expect(splash.close).not.toHaveBeenCalled();
+      expect(scope.splashScreen).toBe(null);
     });
 
     it('should set a color on the selected screen', function() {
@@ -866,6 +884,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.$destroy();
 
       expect(splash.close).toHaveBeenCalled();
+      expect(scope.splashScreen).toBe(null);
       expect(assetLoadingSplash.close).toHaveBeenCalled();
       expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
       expect(gz3d.deInitialize).toHaveBeenCalled();
