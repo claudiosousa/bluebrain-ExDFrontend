@@ -174,6 +174,9 @@
         scope.onTransferFunctionChange = function (transferFunction) {
           transferFunction.name = pythonCodeHelper.getFunctionName(transferFunction.code);
           transferFunction.dirty = true;
+          if (transferFunction.local) {
+            transferFunction.id = transferFunction.name;
+          }
         };
 
         scope.delete = function (transferFunction) {
@@ -239,6 +242,7 @@
           var button = angular.element(document.querySelector('#download-transfer-functions'));
           button.attr("href", URL.createObjectURL(file));
         };
+
         scope.saveTFIntoCollabStorage = function () {
           scope.isSavingToCollab = true;
           // update all transfer functions
@@ -254,6 +258,22 @@
                 template: "Error while saving transfer functions to Collab storage."
               });
               scope.isSavingToCollab = false;
+            }
+          );
+        };
+
+        scope.saveCSVIntoCollabStorage = function () {
+          scope.isSavingCSVToCollab = true;
+          backendInterfaceService.saveCSVRecordersFiles(
+            simulationInfo.contextID,
+            function () { // Success callback
+              scope.isSavingCSVToCollab = false;
+            }, function () { // Failure callback
+              hbpDialogFactory.alert({
+                title: "Error.",
+                template: "Error while saving recorded CSV files to Collab storage."
+              });
+              scope.isSavingCSVToCollab = false;
             }
           );
         };
