@@ -40,7 +40,10 @@
     };
 
     this.close = function() {
-      this.modal.close();
+      // Support multiple calls to close
+      if (angular.isDefined(this.modal)) {
+        this.modal.close();
+      }
       if (angular.isDefined(this.callbackOnClose)) {
         this.callbackOnClose();
       }

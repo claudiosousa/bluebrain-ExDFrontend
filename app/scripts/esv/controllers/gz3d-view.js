@@ -621,12 +621,16 @@
             });
             // Close the splash screens
             if (angular.isDefined($scope.splashScreen)) {
-              splash.close();
+              if (angular.isDefined(splash)) {
+                splash.close();
+              }
               delete $scope.splashScreen;
               $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
             }
             if (angular.isDefined($scope.assetLoadingSplashScreen)) {
-              assetLoadingSplash.close();
+              if (angular.isDefined(assetLoadingSplash)) {
+                assetLoadingSplash.close();
+              }
               delete $scope.assetLoadingSplashScreen;
             }
 

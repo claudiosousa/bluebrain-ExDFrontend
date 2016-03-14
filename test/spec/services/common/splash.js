@@ -77,6 +77,13 @@
       expect(console.error).not.toHaveBeenCalled();
     });
 
+    it('should support multiple calls of splash.close()', function() {
+      splash.open(false, function() {});
+      splash.close();
+      splash.close();
+    });
+
+
   });
 
   describe('Controller: ModalInstanceCtrl', function () {
