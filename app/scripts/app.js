@@ -123,16 +123,19 @@
     var boot = function () {
 
       // Google Analytics
-      if (angular.isDefined(window.bbpConfig.deployment) &&
-          angular.isDefined(window.bbpConfig.deployment.stage)) {
-        var stage = window.bbpConfig.deployment.stage;
+      if (angular.isDefined(window.bbpConfig.environment)) {
+        var stage = window.bbpConfig.environment;
         if (stage === "development") {
           /* global ga: false */
           ga('create', 'UA-62512653-1', 'auto');
         }
-        else {
+        else if (stage === "staging") {
           /* global ga: false */
           ga('create', 'UA-62512653-2', 'auto');
+        }
+        else if (stage === "production") {
+          /* global ga: false */
+          ga('create', 'UA-62512653-3', 'auto');
         }
       }
 
