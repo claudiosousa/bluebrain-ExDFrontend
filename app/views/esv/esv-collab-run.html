@@ -124,7 +124,7 @@
             <b>{{progressMessageMain}}</b> {{progressMessageSub}}</i>
           </progressbar>
         </div>
-        <div class="table-wrapper" collapse="!joinSelected">
+        <div class="table-wrapper" collapse="!joinSelected || (experiment.runningExperiments === 0)">
           <table class="table table-striped">
             <thead>
             <tr>
