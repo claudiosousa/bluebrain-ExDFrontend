@@ -339,6 +339,11 @@ describe('Directive: transferFunctionEditor', function () {
         [
           { code: tf1CodeNewCode, dirty: true, local: false, name: 'tf_new_name', id: 'tf1', error: {} }
         ]);
+      // When updating the code of a newly created TF, we also update its ID using the computed TF name
+      tf1.local = true;
+      isolateScope.onTransferFunctionChange(tf1);
+      expect(tf1.id).toEqual(tf1.name);
+
     });
 
     it('should be able to load tf from file', function() {

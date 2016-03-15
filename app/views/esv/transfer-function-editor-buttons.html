@@ -13,6 +13,16 @@
   <i class="glyphicon glyphicon-book"></i><span> Save to Collab</span>
 </button>
 
+<button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+        ng-click="saveCSVIntoCollabStorage()"
+        ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
+        v-busy="isSavingCSVToCollab"
+        v-busy-label="Saving to Collab"
+        v-pressable>
+  <i class="glyphicon glyphicon glyphicon-stats"></i><span> Save CSV Recorded files to Collab</span>
+</button>
+
+
 <!-- The trick here is to use a 'a' tag instead of a 'button' tag -->
 <a id="download-transfer-functions" href="" class="btn btn-default btn-md" ng-click="download()" download="transferFunctions.py">
   <i class="glyphicon glyphicon-download"></i><span> Download</span>
