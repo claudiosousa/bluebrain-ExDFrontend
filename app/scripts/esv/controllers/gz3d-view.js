@@ -91,6 +91,9 @@
           $scope.UI = UI;
           $scope.RESET_TYPE = RESET_TYPE;
 
+          //Collab info used by reset
+          $scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+
           function ViewState() {
             this.isInitialized = false;
             this.isJoiningStoppedSimulation = false;
@@ -179,10 +182,11 @@
           });
 
           /* status messages are listened to here. A splash screen is opened to display progress messages. */
-          /* This is the case when closing an simulation for example. Loading is taken take of */
-          /* by a progressbar somewhere else. */
+          /* This is the case when closing or resetting a simulation/environment for example.
+          /* Loading is taken take of by a progressbar somewhere else. */
           /* Timeout messages are displayed in the toolbar. */
           var messageCallback = function (message) {
+
             /* Progress messages (apart start state progress messages which are handled by another progress bar) */
             if (angular.isDefined(message.progress) && message.state !== STATE.STARTED) {
               /* splashScreen == null means it has been already closed and should not be reopened */
@@ -312,16 +316,10 @@
             $scope.setEditMode(EDIT_MODE.VIEW);
           };
 
+          // TODO (Alessandro, Ugo): Refactor to avoid too many if nestings.
           $scope.resetButtonClickHandler = function () {
             $scope.request = {
               resetType: RESET_TYPE.NO_RESET
-            };
-
-            //frontend-bound reset checkboxes
-            $scope.frontend = {
-              checkboxes: {
-                viewReset: false
-              }
             };
 
             hbpDialogFactory.confirm({
@@ -329,22 +327,95 @@
               'scope': $scope
             })
             .then(function() {
-              var rst = $scope.request.resetType;
-              if (rst === RESET_TYPE.NO_RESET) { return; }
-              else if (rst < 256) { // Backend message
+              var resetType = $scope.request.resetType;
+              if (resetType === RESET_TYPE.NO_RESET) { return; }
+
+              if (resetType >= 256) { // frontend-bound reset
+                if (resetType === RESET_TYPE.RESET_CAMERA_VIEW) {
+                  gz3d.scene.resetView();
+                }
+              }
+              else { // Backend-bound reset
                 /* TODO: this should be removed as soon as some reset features are
                 correctly implemented and tested */
-                if (rst === RESET_TYPE.RESET_OLD) { // Old reset
+                if (resetType === RESET_TYPE.RESET_OLD) { // Old reset
                   $scope.updateSimulation(STATE.INITIALIZED);
                   $scope.setEditMode(EDIT_MODE.VIEW);
                 }
-                else { // Just forward the reset value to the backend
-                  backendInterfaceService.reset($scope.request);
-                }
-              }
-              else {
-                if (rst === RESET_TYPE.RESET_CAMERA_VIEW) {
-                  gz3d.scene.resetView();
+                else {
+
+                  if($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
+                    //open splash screen, blocking ui (i.e. no ok button) and no closing callback
+                    $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
+
+                    var resetWhat, downloadWhat = '';
+
+                    (function (resetType) { //customize user message depending on the reset type
+                      if(resetType === RESET_TYPE.RESET_WORLD) {
+                        resetWhat = 'Environment';
+                        downloadWhat = 'World SDF ';
+                      }
+                      else if(resetType === RESET_TYPE.RESET_BRAIN) {
+                        resetWhat = 'Brain';
+                        downloadWhat = 'brain configuration file ';
+                      }
+                    })(resetType);
+
+                    var messageHeadline = 'Resetting ' + resetWhat;
+                    var messageSubHeadline = 'Downloading ' + downloadWhat + 'from the Collab';
+
+                    _.defer(function() {
+                      splash.spin = true;
+                      splash.setMessage({headline: messageHeadline,
+                                        subHeadline: messageSubHeadline}
+                                        );
+                    });
+
+                    backendInterfaceService.resetCollab(
+                      simulationInfo.contextID,
+                      $scope.request,
+                      function () { // Success callback
+                        //close the splash
+                        if (angular.isDefined($scope.splashScreen)) {
+                          splash.close();
+                          delete $scope.splashScreen;
+                        }
+                      },
+                      function () { // Failure callback
+                        hbpDialogFactory.alert(
+                          {
+                            title: 'Error.',
+                            template: 'Error while resetting from Collab storage.'
+                          });
+                        //close the splash
+                        if (angular.isDefined($scope.splashScreen)) {
+                          splash.close();
+                          delete $scope.splashScreen;
+                        }
+                      }
+                    );
+                  }
+                  else {
+                    //other kinds of reset
+                    backendInterfaceService.reset(
+                      $scope.request,
+                      function () { // Success callback
+                        //do not close the splash if successful
+                        //it will be closed by messageCallback
+                      },
+                      function () { // Failure callback
+                        hbpDialogFactory.alert(
+                          {
+                            title: 'Error.',
+                            template: 'Error while resetting.'
+                          });
+                        if (angular.isDefined($scope.splashScreen)) {
+                          splash.close();
+                          delete $scope.splashScreen;
+                        }
+                      }
+                    );
+                  }
                 }
               }
             });

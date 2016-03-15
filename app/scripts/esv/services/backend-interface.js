@@ -95,24 +95,33 @@
         });
       };
 
-      var resourceReset = function (backendBaseUrl) {
-        return $resource(backendBaseUrl + '/simulation/:sim_id/reset', {}, {
-          reset: {
-            method: 'PUT',
-            interceptor: {responseError: serverError.display}
-          }
-        });
-      };
+     var resourceReset = function (backendBaseUrl) {
+       return $resource(backendBaseUrl + '/simulation/:sim_id/reset', {}, {
+         reset: {
+           method: 'PUT',
+           interceptor: {responseError: serverError.display}
+         }
+       });
+     };
 
-      var resourceCSVRecordesFiles = function (backendBaseUrl) {
-        return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders', {}, {
-          dump: {
-            method: 'PUT',
-            interceptor: {responseError: serverError.display},
-            url: backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders'
-          }
-        });
-      };
+     var resourceCSVRecordesFiles = function (backendBaseUrl) {
+       return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders', {}, {
+         dump: {
+           method: 'PUT',
+           interceptor: {responseError: serverError.display},
+           url: backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders'
+         }
+       });
+     };
+
+     var resourceResetCollab = function (backendBaseUrl) {
+       return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/reset', {}, {
+         reset: {
+           method: 'PUT',
+           interceptor: {responseError: serverError.display}
+         }
+       });
+     };
 
       return {
         getBrain: function (callback) {
@@ -226,9 +235,17 @@
           return resourceSDFExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID },
             { context_id: contextID }, successCallback, errorCallback);
         },
-        reset: function(resetData) {
+        reset: function(resetData, successCallback, errorCallback) {
           return resourceReset(simulationInfo.serverBaseUrl).reset(
-            {sim_id: simulationInfo.simulationID}, resetData);
+            {sim_id: simulationInfo.simulationID},
+            resetData, successCallback, errorCallback
+            );
+        },
+        resetCollab: function(contextID, resetData, successCallback, errorCallback) {
+          return resourceResetCollab(simulationInfo.serverBaseUrl).reset(
+            {sim_id: simulationInfo.simulationID, context_id: contextID },
+            resetData, successCallback, errorCallback
+          );
         }
       };
 

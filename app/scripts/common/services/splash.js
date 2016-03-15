@@ -27,6 +27,7 @@
     };
 
     this.open = function (showButton, callbackOnClose) {
+      this.spin = true;
       this.showButton = showButton;
       this.callbackOnClose = callbackOnClose;
       if (angular.isDefined(this.modal)) { this.modal.close(); }
