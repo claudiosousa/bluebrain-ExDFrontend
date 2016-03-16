@@ -76,7 +76,7 @@
 
           scope.create = function(code) {
             var count = addedStateMachineCount;
-            var defaultCode = 'import hbp_nrp_excontrol as states\n'+
+            var defaultCode = 'import hbp_nrp_excontrol.nrp_states as states\n'+
               'from smach import StateMachine\n\n'+
 
               'FINISHED = \'FINISHED\'\n'+
@@ -95,22 +95,26 @@
               '                    \'preempted\': PREEMPTED}\n'+
               '    )\n'+
               '    # Uncomment this to add a state that sets the color of a material\n'+
-              '    # StataMachine.add(\n'+
-              '    #   "set_left_screen_red",\n'+
-              '    #   states.SetMaterialColorServiceState("left_vr_screen",\n'+
-              '    #                                       "body",\n'+
-              '    #                                       "screen_glass",\n'+
-              '    #                                       "Gazebo/Red"),\n'+
-              '    #   transitions = {...}\n'+
+              '    #StateMachine.add(\n'+
+              '    #  "set_left_screen_red",\n'+
+              '    #  states.SetMaterialColorServiceState("left_vr_screen",\n'+
+              '    #                                      "body",\n'+
+              '    #                                      "screen_glass",\n'+
+              '    #                                      "Gazebo/Red"),\n'+
+              '    #  transitions = {\'succeeded\': FINISHED,\n' +
+              '    #                 \'aborted\': FINISHED,\n'+
+              '    #                 \'preempted\': PREEMPTED}\n'+
               '    #)\n\n'+
               '    # Uncomment this to monitor the robot pose\n'+
-              '    # StateMachine.add(\n'+
-              '    #   "wait_for_husky_left",\n'+
-              '    #   states.RobotPoseMonitorState(lambda ud, p: not ((-1 < p.position.x < 1) and\n'+
-              '    #                                                   (-2.5 < p.position.y < -1.8) and\n'+
-              '    #                                                   (0 < p.position.z < 1))),\n'+
-              '    #   transitions = {...}\n'+
-              '    # )\n\n';
+              '    #StateMachine.add(\n'+
+              '    # "wait_for_husky_left",\n'+
+              '    # states.RobotPoseMonitorState(lambda ud, p: not ((-1 < p.position.x < 1) and\n'+
+              '    #                                                 (-2.5 < p.position.y < -1.8) and\n'+
+              '    #                                                 (0 < p.position.z < 1))),\n'+
+              '    #  transitions = {\'valid\': \'wait_for_husky_left\',\n' +
+              '    #                 \'invalid\': \'set_left_screen_red\',\n'+
+              '    #                 \'preempted\': PREEMPTED}\n'+
+              '    #)\n\n';
 
             code = code ? code : defaultCode;
             var id = scope.generateID(count);
