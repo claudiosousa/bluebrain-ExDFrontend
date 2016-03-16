@@ -49,7 +49,7 @@
         $scope.isServerAvailable = {};
         $scope.isQueryingServersFinished = false;
         $scope.isDestroyed = false;
-        $scope.isEditingOngoing = false;
+        $scope.hasEdits = false;
         $scope.STATE = STATE;
         $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.updatePromise = undefined;
@@ -57,13 +57,11 @@
         $scope.experiments = {};
         $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
-        $scope.userID = undefined;
-        // The experiment may be viewed, after selection and clone, from the Collab Edit page.
-        // The edit (resp. launch) button is then enabled (resp. disabled).
-        $scope.isCollabEditPage = angular.isDefined($stateParams.experimentID);
         if (!bbpConfig.get('localmode.forceuser', false)) {
           $scope.clusterPartAvailInfo = slurminfoService.get();
         }
+
+        $scope.userID = undefined;
 
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -129,10 +127,9 @@
         $scope.stopSimulation = function(simulation) {
           simulation.stopping = true;
           experimentSimulationService.stopExperimentOnServer($scope.experiments, simulation.serverID, simulation.simulationID).then(function() {
-            $scope.updateExperiments();
+            $scope.updateExperiment();
           });
         };
-
 
         experimentSimulationService.setInitializedCallback($scope.joinExperiment);
 
@@ -166,29 +163,28 @@
 
         $scope.updateUserID();
 
-        // Function to determine if the current user owns an experiment which is in edit mode
-        $scope.isUserAlreadyEditing = function() {
-          var userEditsExperiment = false;
+        // Function to determine if at least one simulation launched from the current Collab Navigation item
+        // is running in edit mode
+        $scope.isASimulationInEditMode = function() {
+          var result = false;
           angular.forEach($scope.experiment.simulations, function(simulation) {
-            if ((simulation.operationMode === OPERATION_MODE.EDIT) && (simulation.contextID === $stateParams.ctx)) {
-              userEditsExperiment = true;
+            if (simulation.operationMode === OPERATION_MODE.EDIT) {
+              result = true;
             }
           });
-          return userEditsExperiment;
+          return result;
         };
 
-        $scope.updateExperiments = function() {
-          _.forEach($scope.experiments, function(experiment, experimentID) {
-            if (angular.isDefined(experiment.simulations)) {
-              experiment.simulations = _.filter(experiment.simulations, function(simulation) {
-                return (simulation.contextID === $stateParams.ctx);
-              });
-            }
-          });
+        $scope.updateExperiment = function() {
+          var simulations = $scope.experiments[$scope.experiment.id].simulations;
+          if (angular.isDefined(simulations)) {
+            $scope.experiment.simulations = _.filter(simulations, function(simulation) {
+              return (simulation.contextID === $stateParams.ctx);
+            });
+          }
           $scope.owners = simulationService().owners;
           $scope.uptime = simulationService().uptime;
-
-          $scope.isEditingOngoing = $scope.isUserAlreadyEditing();
+          $scope.hasEdits = $scope.isASimulationInEditMode();
         };
 
         // This function is called when all servers responded to the query of running experiments
@@ -200,19 +196,19 @@
                 name: 'No experiment selected',
                 description: 'Please click on the Edit button'
               };
-              $scope.experiment = experimentID !== '' ? $scope.experiments[experimentID] : defaultExperiment;
-              $scope.experiment.id = experimentID;
               $scope.isQueryingServersFinished = true;
               // Schedule the update if the esv-web controller was not destroyed in the meantime
               if(!$scope.isDestroyed) {
-                $scope.updateExperiments();
+                $scope.experiment = experimentID !== '' ? $scope.experiments[experimentID] : defaultExperiment;
+                $scope.experiment.id = experimentID;
+                $scope.updateExperiment();
                 // Start to update the datastructure in regular intervals
                 $scope.updatePromise = $timeout(function () {
                   experimentSimulationService.refreshExperiments(
                     $scope.experiments,
                     $scope.serversEnabled,
                     setIsServerAvailable,
-                    $scope.updateExperiments
+                    $scope.updateExperiment
                   );
                 }, ESV_UPDATE_RATE);
               }

@@ -137,17 +137,12 @@
                 <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
                 <td>{{simul.state}}</td>
                 <td>
-                  <!-- Edit button enabled provided simulation state is consistent-->
-                  <a ng-if="hasEditRights && isEditingOngoing"
+                  <!-- Join button enabled provided simulation state is consistent-->
+                  <a
                     analytics-on analytics-event="Join"
                     analytics-category="Experiment"
                     ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
-                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Edit »</a>
-                  <!-- No edit rights: stop button disabled -->
-                  <a ng-if="!hasEditRights && isEditingOngoing" type="button" class="btn btn-default disabled enable-tooltip"
-                          tooltip="Sorry, you don't have edit rights." tooltip-trigger="mouseenter" tooltip-placement="top">
-                    <i class="fa fa-pencil"></i> Edit »
-                  </a>
+                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Join »</a>
                   <!-- Stop button enabled provided simulation state is consistent-->
                   <a analytics-on analytics-event="Stop"
                      analytics-category="Experiment"
@@ -161,12 +156,6 @@
                      tooltip="Sorry, you don't have sufficient rights to stop the simulation."
                      tooltip-trigger="mouseenter" tooltip-placement="top"
                      ng-if="!hasEditRights && (simul.state !== STATE.CREATED)"> Stop
-                  </a>
-                  <a analytics-on analytics-event="Join"
-                     analytics-category="Experiment"
-                     ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
-                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">
-                     Join »
                   </a>
                 </td>
               </tr>
