@@ -1,16 +1,17 @@
 <fieldset>
     <ul style="list-style: none">
         <b>Simulation</b>
-        <li>
+        <li ng-if="operationMode === OPERATION_MODE.VIEW">
             <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_OLD}}"
                     tooltip="Reset also the simulation timeout." tooltip-trigger="mouseenter" tooltip-placement="top">
                 Reset Simulation
             </input>
         </li>
-        <li ng-if="operationMode === OPERATION_MODE.EDIT" class="enable-tooltip disabled"
-            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="radio" disabled="true" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}">
-                Reset Everything
+
+        <li ng-if="operationMode === OPERATION_MODE.EDIT">
+            <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}"
+                   tooltip="Reset also the simulation timeout." tooltip-trigger="mouseenter" tooltip-placement="top">
+                Reset Simulation
             </input>
         </li>
         <br/>
