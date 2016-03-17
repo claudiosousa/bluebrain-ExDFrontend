@@ -119,7 +119,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.GRAPHICS_PERFORMANCE]='This Button toggles the performance hungry graphic options (shadows, ...)'">
         <!-- overlay -->
         <div id="overlay" class="esv-overlay">
-          <div class="hbp-toolbar" ng-mousedown="toggleContextMenu(false, $event);">
+          <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
             <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"

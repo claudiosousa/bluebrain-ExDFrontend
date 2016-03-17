@@ -235,7 +235,6 @@ describe('Directive: environment-designer', function () {
   it('should execute correctly addModel("box")', function () {
 
     spyOn(window.guiEvents, 'emit');
-    spyOn($scope, 'setEditMode');
 
     var addBoxBtnDomElem = element.find('#insert-entity-box');
     var addBoxBtn = angular.element(addBoxBtnDomElem);
@@ -244,9 +243,6 @@ describe('Directive: environment-designer', function () {
 
     //should emit 'spawn_entity_start'
     expect(window.guiEvents.emit).toHaveBeenCalledWith('spawn_entity_start', 'box');
-
-    //should set translate mode
-    expect($scope.setEditMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
 
     //should close panel
     expect(panels.close).toHaveBeenCalled();

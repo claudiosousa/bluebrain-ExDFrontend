@@ -83,7 +83,7 @@
             scope.addModel = function (modelName) {
               if (stateService.currentState !== STATE.INITIALIZED) {
                 window.guiEvents.emit('spawn_entity_start', modelName);
-                scope.setEditMode(EDIT_MODE.TRANSLATE);
+
                 panels.close();
               }
             };
