@@ -1,76 +1,93 @@
 <fieldset>
     <ul style="list-style: none">
+        <b>Simulation</b>
         <li>
             <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_OLD}}"
-                    tooltip="Reset also the simulation timer." tooltip-trigger="mouseenter" tooltip-placement="top">
+                    tooltip="Reset also the simulation timeout." tooltip-trigger="mouseenter" tooltip-placement="top">
                 Reset Simulation
             </input>
         </li>
-        <li>
-            <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_CAMERA_VIEW}}">
-                Reset Camera View
-            </input>
-        </li>
-        <li class="enable-tooltip disabled"
+        <li ng-if="operationMode === OPERATION_MODE.EDIT" class="enable-tooltip disabled"
             tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
             <input type="radio" disabled="true" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}">
                 Reset Everything
             </input>
         </li>
         <br/>
-        <b>Brain</b>
-        <li ng-show="!isCollabExperiment">
-            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
-                   tooltip="Reset the brain to the status it was at the beginning of the simulation"
-                   tooltip-trigger="mouseenter" tooltip-placement="top">
-                 Reset the Neural Network
-            </input>
-        </li>
-        <li ng-show="isCollabExperiment">
-            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
-                    tooltip="Reset the brain to the last saved state in the Collab"
-                    tooltip-trigger="mouseenter" tooltip-placement="top">
-                Reset the Neural Network (from Collab)
+
+        <b>Camera</b>
+        <li>
+            <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_CAMERA_VIEW}}">
+                Reset Camera View
             </input>
         </li>
         <br/>
+
+        <span ng-if="operationMode === OPERATION_MODE.EDIT">
+            <b>Brain</b>
+            <li ng-if="!isCollabExperiment">
+                <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
+                       tooltip="Reset the brain to the status it was at the beginning of the simulation"
+                       tooltip-trigger="mouseenter" tooltip-placement="top">
+                     Reset the Neural Network
+                </input>
+            </li>
+            <li ng-if="isCollabExperiment">
+                <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
+                        tooltip="Reset the brain to the last saved state in the Collab"
+                        tooltip-trigger="mouseenter" tooltip-placement="top">
+                    Reset the Neural Network (from Collab)
+                </input>
+            </li>
+            <br/>
+        </span>
+
         <!--<b>State machines</b>-->
         <!--<li class="enable-tooltip disabled"-->
             <!--tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">-->
             <!--<input type="radio" disabled="true"> Reset the state machine</input>-->
         <!--</li>-->
         <!--<br/>-->
-        <b>Environment</b>
-        <li ng-show="!isCollabExperiment">
-            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio"
-                   tooltip="Reset the poses of models to the original state" tooltip-trigger="mouseenter" tooltip-placement="top">
-                 Reset Environment Poses
-            </input>
-        </li>
-        <li ng-show="isCollabExperiment">
-            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio"
-                    tooltip="Reset Environment Poses to the last saved state in the Collab" tooltip-trigger="mouseenter" tooltip-placement="top">
-                Reset Environment Poses (from Collab)
-            </input>
-        </li>
-        <br/>
-        <b>Robot</b>
-        <li>
-            <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_ROBOT_POSE}}" type="radio"
-                   tooltip="Reset Robot to the original Pose" tooltip-trigger="mouseenter" tooltip-placement="top">
-                Reset Robot Pose
-            </input>
-        </li>
-        <li class="enable-tooltip disabled"
-            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="radio" disabled="true"> Reset Robot Controllers</input>
-        </li>
-        <br/>
-        <b>Transfer functions</b>
-        <li class="enable-tooltip disabled"
-            tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
-            <input type="radio" disabled="true"> Reset Transfer Functions</input>
-        </li>
+        <span ng-if="operationMode === OPERATION_MODE.EDIT">
+            <b>Environment</b>
+            <li ng-if="!isCollabExperiment">
+                <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio"
+                       tooltip="Reset the poses of models to the original state" tooltip-trigger="mouseenter" tooltip-placement="top">
+                     Reset Environment Poses
+                </input>
+            </li>
+            <li ng-if="isCollabExperiment">
+                <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio"
+                        tooltip="Reset Environment Poses to the last saved state in the Collab" tooltip-trigger="mouseenter" tooltip-placement="top">
+                    Reset Environment Poses (from Collab)
+                </input>
+            </li>
+            <br/>
+            </span>
+
+        <span ng-if="operationMode === OPERATION_MODE.EDIT">
+            <b>Robot</b>
+            <li>
+                <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_ROBOT_POSE}}" type="radio"
+                       tooltip="Reset Robot to the original Pose" tooltip-trigger="mouseenter" tooltip-placement="top">
+                    Reset Robot Pose
+                </input>
+            </li>
+            <li ng-if="operationMode === OPERATION_MODE.EDIT"
+                class="enable-tooltip disabled"
+                tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+                <input type="radio" disabled="true"> Reset Robot Controllers</input>
+            </li>
+            <br/>
+        </span>
+
+        <span ng-if="operationMode === OPERATION_MODE.EDIT">
+            <b>Transfer functions</b>
+            <li class="enable-tooltip disabled"
+                tooltip="This feature is not implemented yet." tooltip-trigger="mouseenter" tooltip-placement="top">
+                <input type="radio" disabled="true"> Reset Transfer Functions</input>
+            </li>
+        </span>
     </ul>
 </fieldset>
 <br/>

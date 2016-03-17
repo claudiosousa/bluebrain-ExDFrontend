@@ -602,22 +602,26 @@ describe('Controller: Gz3dViewCtrl', function () {
       stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
       callbackOnClose = splash.open.mostRecentCall.args[1];
       expect(callbackOnClose).not.toBeDefined();
-      // test "done" without close
+      // test "done" (without close, with onSimulationDone)
       splash.showButton = true;
       splash.spin = true;
       stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', done: 'True'}});
+      expect(splash.spin).toBe(false);
       expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Finished' });
       expect(splash.close).not.toHaveBeenCalled();
-      expect(splash.spin).toBe(false);
-      // test "done" in IF path (with close)
+      // onSimulationDone() should have been called
+      expect(stateService.removeMessageCallback).toHaveBeenCalled();
+
+      // test "done" in IF path (with close, without onSimulationDone)
       stateService.currentState = STATE.STOPPED;
       scope.splashScreen = undefined;
       splash.close.reset();
+      stateService.removeMessageCallback.reset();
       splash.showButton = false;
       stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'True', done: 'True'}});
       expect(splash.close).toHaveBeenCalled();
-      // onSimulationDone() should have been called
-      expect(stateService.removeMessageCallback).toHaveBeenCalled();
+      // onSimulationDone() should NOT have been called
+      expect(stateService.removeMessageCallback).not.toHaveBeenCalled();
       // test "timeout"
       stateService.addMessageCallback.mostRecentCall.args[0]({timeout: 264, simulationTime: 1, realTime: 2});
       expect(scope.simTimeoutText).toBe(264);

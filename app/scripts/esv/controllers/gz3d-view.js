@@ -186,7 +186,6 @@
           /* Loading is taken take of by a progressbar somewhere else. */
           /* Timeout messages are displayed in the toolbar. */
           var messageCallback = function (message) {
-
             /* Progress messages (apart start state progress messages which are handled by another progress bar) */
             if (angular.isDefined(message.progress) && message.state !== STATE.STARTED) {
               /* splashScreen == null means it has been already closed and should not be reopened */
@@ -198,14 +197,20 @@
               if (angular.isDefined(message.progress.done) && message.progress.done) {
                 splash.spin = false;
                 splash.setMessage({headline: 'Finished'});
-                /* if splash is a blocking modal (no button), then close it */
+                /* if splash is a blocking modal (no button), then close it*/
                 /* (else it is closed by the user on button click) */
                 if (!splash.showButton) {
+                  // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
+                  // so we don't have to close the websocket, just the splash screen.
                   splash.close();
                   $scope.splashScreen = undefined;
                 }
-                // cleanly close ros websocket and stop window
-                $scope.onSimulationDone();
+                else {
+                  // the modal is non blocking (i.e. w/ button) ->
+                  // we are closing the simulation thus we have to
+                  // cleanly close ros websocket and stop window
+                  $scope.onSimulationDone();
+                }
               } else {
                 splash.setMessage({headline: message.progress.task, subHeadline: message.progress.subtask});
               }
@@ -278,7 +283,7 @@
               // Register for the status updates as well as the timing stats
               // Note that we have two different connections here, hence we only put one as a callback for
               // $rootScope.iface and the other one not!
-              /* Listen for status infromations */
+              /* Listen for status informations */
               stateService.startListeningForStatusInformation();
               stateService.addMessageCallback(messageCallback);
 
