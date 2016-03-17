@@ -6864,6 +6864,12 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
 
   var lightObj = elements[0];
   var helper = elements[1];
+  obj.add(lightObj);
+  obj.add(helper);
+
+  helper.visible = this.showLightHelpers;
+  lightObj.up = new THREE.Vector3(0,0,1);
+  lightObj.shadowBias = -0.0005;
 
   if (name)
   {
@@ -6874,16 +6880,14 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
     helper.name = '_lightHelper';
   }
 
+  if ((type === this.LIGHT_SPOT || type === this.LIGHT_DIRECTIONAL) && !(direction instanceof THREE.Vector3)) {
+    direction = new THREE.Vector3(0, 0, -1);
+  }
   if (direction)
   {
-    var dir = new THREE.Vector3(direction.x, direction.y,
-        direction.z);
-
-    obj.direction = new THREE.Vector3();
-    obj.direction.copy(dir);
-
-    dir.applyMatrix4(matrixWorld); // localToWorld
-    lightObj.target.position.copy(dir);
+    lightObj.target.name = name + '_target';
+    obj.add(lightObj.target);
+    lightObj.target.position.copy(direction);
     lightObj.target.updateMatrixWorld();
   }
 
@@ -6895,13 +6899,6 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
   obj.serverProperties.attenuation_quadratic = attenuation_quadratic;
   obj.serverProperties.initial = {};
   obj.serverProperties.initial.diffuse = diffuse;
-
-  helper.visible = this.showLightHelpers;
-  lightObj.up = new THREE.Vector3(0,0,1);
-  lightObj.shadowBias = -0.0005;
-
-  obj.add(lightObj);
-  obj.add(helper);
 
   return obj;
 };
@@ -9353,15 +9350,15 @@ GZ3D.SpawnModel.prototype.start = function(entity, callback)
   }
   else if (entity === 'pointlight')
   {
-    mesh = this.scene.createLight(1);
+    mesh = this.scene.createLight(this.scene.LIGHT_POINT);
   }
   else if (entity === 'spotlight')
   {
-    mesh = this.scene.createLight(2);
+    mesh = this.scene.createLight(this.scene.LIGHT_SPOT);
   }
   else if (entity === 'directionallight')
   {
-    mesh = this.scene.createLight(3);
+    mesh = this.scene.createLight(this.scene.LIGHT_DIRECTIONAL);
   }
   else
   {
@@ -9553,15 +9550,6 @@ GZ3D.SpawnModel.prototype.moveSpawnedModel = function(positionX, positionY)
   }
 
   this.scene.setPose(this.obj, point, new THREE.Quaternion());
-
-  if (this.obj.children[0].children[0] &&
-     (this.obj.children[0].children[0] instanceof THREE.SpotLight ||
-      this.obj.children[0].children[0] instanceof THREE.DirectionalLight))
-  {
-    var lightObj = this.obj.children[0].children[0];
-    lightObj.target.position.copy(this.obj.position);
-    lightObj.target.position.add(new THREE.Vector3(0,0,-0.5));
-  }
 };
 
 /**
