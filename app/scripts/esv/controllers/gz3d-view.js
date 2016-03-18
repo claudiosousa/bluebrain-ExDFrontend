@@ -328,6 +328,7 @@
             };
 
             hbpDialogFactory.confirm({
+              'title' : 'Reset Menu',
               'templateUrl': 'views/esv/reset-checklist-template.html',
               'scope': $scope
             })
