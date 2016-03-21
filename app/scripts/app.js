@@ -96,12 +96,19 @@
         controller: 'ESVCollabRunCtrl'
       };
 
+      var supportState = {
+        name: 'support',
+        url: '/support',
+        templateUrl: 'views/common/support.html'
+      };
+
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
       home.state(esvCollabEditState);
       home.state(registeredEsvCollabEditState);
       home.state(esvCollabRunState);
       home.state(gz3dViewState);
+      home.state(supportState);
       // Provide a default route.
       // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
       $urlRouterProvider.otherwise('/');

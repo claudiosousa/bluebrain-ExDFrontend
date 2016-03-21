@@ -1,0 +1,52 @@
+#support-header {
+  text-align: center;
+
+  hr {
+    width: 50%;
+  }
+}
+
+.support-topics-list {
+  list-style: none;
+  margin: 5% 10% 5% 10%;
+
+  .support-topics-listitem {
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    width: 20%;
+    height: 300px;
+    min-width: 300px;
+    min-height: 300px;
+    margin: 1%;
+    background-color: whitesmoke;
+
+    .topic-header {
+      vertical-align: middle;
+      padding: 10px;
+      margin-bottom: 20px;
+      background-color: #ebebeb;
+
+      .topic-header-text {
+        font-size: 2em;
+        padding-left: 20px;
+      }
+    }
+
+    .topic-content {
+      text-align: left;
+      padding: 20px;
+    }
+  }
+}
+
+#note-chat-support {
+  position: absolute;
+  bottom: 10%;
+  right: 1%;
+  width: 5%;
+  min-width: 100px;
+  text-align: center;
+  padding: 10px;
+  background-color: #f4d430;
+}
