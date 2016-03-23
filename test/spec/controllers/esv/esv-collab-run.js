@@ -284,6 +284,15 @@ describe('Controller: ESVCollabRunCtrl', function () {
     expect(scope.isQueryingServersFinished).toBe(true);
   });
 
+  it('should redirect to Collab edit page if no experiment was selected', function() {
+    scope.getExperimentsFinishedCallback();
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    spyOn(location, 'path');
+    var response = { experimentID: ''};
+    getSuccessCallback(response);
+    expect(location.path).toHaveBeenCalled();
+  });
+
   it('should create the updatePromise and call refresh experiments after ESV_UPDATE_RATE seconds', function() {
     var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
     stateParams.ctx = context;

@@ -192,15 +192,16 @@
           collabConfigService.get({contextID: $stateParams.ctx},
             function(response) {
               var experimentID = response.experimentID;
-              var defaultExperiment = {
-                name: 'No experiment selected',
-                description: 'Please click on the Edit button'
-              };
+              // auto-redirect to Collab edit page if no experiment was cloned
+              if (experimentID === '') {
+                $location.path("esv-collab/edit");
+                return;
+              }
+              $scope.experiment = $scope.experiments[experimentID];
+              $scope.experiment.id = experimentID;
               $scope.isQueryingServersFinished = true;
               // Schedule the update if the esv-web controller was not destroyed in the meantime
               if(!$scope.isDestroyed) {
-                $scope.experiment = experimentID !== '' ? $scope.experiments[experimentID] : defaultExperiment;
-                $scope.experiment.id = experimentID;
                 $scope.updateExperiment();
                 // Start to update the datastructure in regular intervals
                 $scope.updatePromise = $timeout(function () {
