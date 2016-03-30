@@ -1,7 +1,9 @@
 @import "pop-over-viewer.scss";
 
-$editorPanelMinWidth: 750px;
-$editorPanelMinHeight: 500px;
+$editorPanelStartWidth: 750px;
+$editorPanelStartHeight: 500px;
+$editorPanelMinWidth: 100px;
+$editorPanelMinHeight: 75px;
 $editorPanelHeadingHeight: 25px;
 $editorPanelHeadingMargin: 5px;
 $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHeadingMargin;
@@ -11,8 +13,8 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
   display: flex !important;
   top: 2%;
   left: 2%;
-  width: $editorPanelMinWidth;
-  height: $editorPanelMinHeight;
+  width: $editorPanelStartWidth;
+  height: $editorPanelStartHeight;
   min-width: $editorPanelMinWidth;
   min-height: $editorPanelMinHeight;
   background: white;
