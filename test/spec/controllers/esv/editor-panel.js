@@ -154,4 +154,39 @@ describe('Controller: editorPanelCtrl', function () {
 
     expect(scope.showEditorPanel).toBeFalsy();
   });
+
+  it('should refresh code editors after resizing', function () {
+    spyOn(document.activeElement, 'blur');
+
+    scope.onResizeEnd();
+    expect(document.activeElement.blur).toHaveBeenCalled();
+
+    scope.activeTab.transferfunction = true;
+    scope.onResizeEnd();
+    expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
+    scope.activeTab.transferfunction = false;
+
+    scope.activeTab.statemachine = true;
+    scope.onResizeEnd();
+    expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
+    scope.activeTab.statemachine = false;
+
+    scope.activeTab.pynneditor = true;
+    scope.onResizeEnd();
+    expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
+    scope.activeTab.pynneditor = false;
+  });
+
+  it('should watch showEditorPanel', function () {
+    spyOn(scope, 'openCallback');
+    spyOn(scope, 'closeCallback');
+
+    scope.showEditorPanel = false;
+    scope.$digest();
+    expect(scope.closeCallback).toHaveBeenCalled();
+
+    scope.showEditorPanel = true;
+    scope.$digest();
+    expect(scope.openCallback).toHaveBeenCalled();
+  });
 });

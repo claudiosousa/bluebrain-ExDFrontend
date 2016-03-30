@@ -87,8 +87,16 @@
     $scope.onResizeEnd = function() {
       // the codemirror elements inside the transfer function tab of the editor panel
       // do not work well with resizing so deselect them on resize and refresh on focus
-      if ($scope.activeTab.transferfunction) {
-        document.activeElement.blur();
+      document.activeElement.blur();
+
+      if ($scope.activeTab.transferfunction === true) {
+        $scope.controls.transferfunction.refresh();
+      }
+      else if ($scope.activeTab.statemachine === true) {
+        $scope.controls.statemachine.refresh();
+      }
+      else if ($scope.activeTab.pynneditor === true) {
+        $scope.controls.pynneditor.refresh();
       }
     };
   }]);
