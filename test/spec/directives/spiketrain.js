@@ -73,7 +73,8 @@ describe('Directive: spiketrain', function () {
     expect(element.prop('outerHTML')).toContain('leftaxis');
     expect(element.prop('outerHTML')).toContain('spiketrain');
     expect(element.prop('outerHTML')).toContain('<p class="legend">NeuronID</p>');
-    expect(element.prop('outerHTML')).toContain('<canvas></canvas><canvas></canvas>');
+    expect(element.prop('outerHTML')).toContain('<canvas id="spiketrain-canvas-1"></canvas>');
+    expect(element.prop('outerHTML')).toContain('<canvas id="spiketrain-canvas-2"></canvas>');
   });
 
   it('should set the state callback properly', function () {
@@ -300,18 +301,17 @@ describe('Directive: spiketrain', function () {
 describe('Directive: spiketrain (missing necessary attributes)', function () {
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
 
   var element;
   var $log;
   var $scope;
 
-  var logMock = {error: jasmine.createSpy('error')};
-
   beforeEach(module(function ($provide) {
-    $provide.value('$log', logMock);
+    $provide.value('$log', {error: jasmine.createSpy('error')});
   }));
 
-  beforeEach(inject(function ($rootScope, $compile,_$log_) {
+  beforeEach(inject(function ($rootScope, $compile, _$log_) {
     $scope = $rootScope.$new();
     element = $compile('<spiketrain></spiketrain>')($scope);
     $scope.$digest();
@@ -319,6 +319,7 @@ describe('Directive: spiketrain (missing necessary attributes)', function () {
   }));
 
   it('should log to error in case we have left out necessary attributes', function() {
+    expect($log.error).toBeDefined();
     expect($log.error).toHaveBeenCalledWith('The server URL was not specified!');
     expect($log.error).toHaveBeenCalledWith('The topic for the spikes was not specified!');
   });

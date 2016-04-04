@@ -4,6 +4,7 @@ $spikeTrainBottom: 65px;
 $spikeTrainHeight: 175px;
 $spikeTrainMargin: 5px;
 
+
 .spikegraph {
   @extend .pop-over-viewer;
   @include compute-top($spikeTrainBottom, $spikeTrainHeight);
@@ -64,4 +65,10 @@ $spikeTrainMargin: 5px;
   border-width: 2px;
   padding-left: 15px;
   padding-right: 15px;
+}
+
+.button-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }

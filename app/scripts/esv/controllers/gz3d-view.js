@@ -751,7 +751,7 @@
           };
 
           $scope.showEditorPanel = false;
-          $scope.edit = function () {
+          $scope.toggleEditors = function () {
             $scope.showEditorPanel = !$scope.showEditorPanel;
             nrpAnalytics.eventTrack('Toggle-editor-panel', {
               category: 'Simulation-GUI',

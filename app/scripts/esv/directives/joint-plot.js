@@ -195,7 +195,8 @@
         server: '@',
         topic: '@',
         // see https://github.com/angular/angular.js/issues/2500
-        ngShow: '='
+        ngShow: '=',
+        closeWidget: '&'
       },
       link: function (scope, element, attrs) {
         scope.chartHeight = 400;

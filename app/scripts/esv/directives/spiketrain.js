@@ -190,14 +190,15 @@
     }
 
     return {
-      template: '<div resizeable class="spikegraph"><div class="leftaxis"><div class="arrow"><p class="legend">NeuronID</p></div></div><div class="spiketrain"><canvas></canvas><canvas></canvas></div></div>',
+      templateUrl: 'views/esv/spiketrain.html',
       restrict: 'E',
       replace: true,
       scope: {
         server: '@',
         topic: '@',
         // see https://github.com/angular/angular.js/issues/2500
-        ngShow: '='
+        ngShow: '=',
+        closeWidget: '&'
       },
       link: function (scope, element, attrs) {
         if(angular.isUndefined(scope.server)) {
@@ -209,8 +210,10 @@
         }
 
         var firstTimeRun = true;
-        var div = element[0].childNodes[1];
-        configureSpiketrain(scope, div.childNodes[0], div.childNodes[1], div);
+        var div = element[0].querySelector('#spiketrain-display');
+        var canvas1 = element[0].querySelector('#spiketrain-canvas-1');
+        var canvas2 = element[0].querySelector('#spiketrain-canvas-2');
+        configureSpiketrain(scope, canvas1, canvas2, div);
 
         // When resizing the window, we have to take care of resizing the canvas
         angular.element($window).bind('resize', function() {
@@ -237,7 +240,6 @@
             }
           });
         }
-
       }
     };
   }]);

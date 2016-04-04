@@ -1060,7 +1060,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should enable display of the editor panel', function() {
       scope.showEditorPanel = false;
-      scope.edit();
+      scope.toggleEditors();
       expect(scope.showEditorPanel).toBe(true);
     });
 
