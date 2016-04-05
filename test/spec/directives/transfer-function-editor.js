@@ -296,6 +296,18 @@ describe('Directive: transferFunctionEditor', function () {
       expect(isolateScope.cleanCompileError).not.toHaveBeenCalled();
     });
 
+    it('should retrieve the flawed TF using its ID when an error is received', function () {
+      var namingError = isolateScope.ERROR.NO_OR_MULTIPLE_NAMES;
+      var tf1 = transferFunctions[0];
+      tf1.name = '';
+      var msg = { functionName: 'tf1', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1 };
+      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      spyOn(isolateScope, 'cleanCompileError');
+      spyOn(_, 'find').andReturn(tf1);
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(_.find).toHaveBeenCalledWith(isolateScope.transferFunctions, { 'id': msg.functionName });
+    });
+
     it('should remove error highlighting in the editor of the previously flawed transfer function', function () {
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       var tf1 = transferFunctions[0];
@@ -306,6 +318,15 @@ describe('Directive: transferFunctionEditor', function () {
       tf1.error = { lineHandle: undefined };
       isolateScope.cleanCompileError(tf1);
       expect(editorMock.removeLineClass).not.toHaveBeenCalled();
+    });
+
+    it('should remove the Compile or NoOrMultipleNames errors if the TF update is successfull', function () {
+      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      var tf1 = transferFunctions[0];
+      tf1.error[isolateScope.ERROR.COMPILE] = tf1.error[isolateScope.ERROR.NO_OR_MULTIPLE_NAMES] = {};
+      isolateScope.cleanCompileError(tf1);
+      expect(tf1.error[isolateScope.ERROR.COMPILE]).not.toBeDefined();
+      expect(tf1.error[isolateScope.ERROR.NO_OR_MULTIPLE_NAMES]).not.toBeDefined();
     });
 
   });

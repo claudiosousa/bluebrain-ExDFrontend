@@ -7,6 +7,7 @@
       COMPILE: 'Compile',
       RUNTIME: 'Runtime',
       LOADING: 'Loading',
+      NO_OR_MULTIPLE_NAMES: 'NoOrMultipleNames'
     });
 
   angular.module('exdFrontendApp').directive('transferFunctionEditor', [
@@ -94,7 +95,7 @@
 
         scope.onNewErrorMessageReceived = function(msg) {
           if (msg.severity < 2) { // Error message is not critical and can be fixed
-            var flawedTransferFunction = _.find(scope.transferFunctions, {'name': msg.functionName});
+            var flawedTransferFunction = _.find(scope.transferFunctions, {'id': msg.functionName});
             // Remove error line highlighting if a new compile error is received
             if (msg.errorType === scope.ERROR.COMPILE) {
               scope.cleanCompileError(flawedTransferFunction);
@@ -141,6 +142,7 @@
             editor.removeLineClass(lineHandle, 'background', 'alert-danger');
           }
           delete transferFunction.error[scope.ERROR.COMPILE];
+          delete transferFunction.error[scope.ERROR.NO_OR_MULTIPLE_NAMES];
         };
 
         scope.update = function(transferFunction) {
