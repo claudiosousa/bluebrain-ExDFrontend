@@ -58,7 +58,7 @@
     $scope.disableKeyBindings = function() {
       // Only disable the key bindings if the panel is open
       // This prevents disabling the key bindings when the page is loaded
-      if($scope.panelIsOpen === true) {
+      if($scope.panelIsOpen === true && angular.isDefined(gz3d.scene)) {
         gz3d.scene.controls.keyBindingsEnabled = false;
       }
     };
