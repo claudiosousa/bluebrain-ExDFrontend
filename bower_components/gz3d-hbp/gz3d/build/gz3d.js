@@ -5944,6 +5944,7 @@ GZ3D.Scene.prototype.init = function()
 
   var that = this;
 
+  this.keyBindingsEnabled = true;
   // Need to use `document` instead of getDomElement in order to get events
   // outside the webgl div element.
   document.addEventListener( 'mouseup',
@@ -6252,6 +6253,10 @@ GZ3D.Scene.prototype.setSDFParser = function(sdfParser)
  */
 GZ3D.Scene.prototype.onPointerDown = function(event)
 {
+  if (this.keyBindingsEnabled === false) {
+    return;
+  }
+
   event.preventDefault();
 
   if (this.spawnModel.active)
@@ -6268,6 +6273,10 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
  */
 GZ3D.Scene.prototype.onPointerUp = function(event)
 {
+  if (this.keyBindingsEnabled === false) {
+    return;
+  }
+
   event.preventDefault();
 
   var millisecs = new Date().getTime();
@@ -6386,6 +6395,10 @@ GZ3D.Scene.prototype.onMouseScroll = function(event)
  */
 GZ3D.Scene.prototype.onKeyDown = function(event)
 {
+  if (this.keyBindingsEnabled === false) {
+    return;
+  }
+
   if (event.shiftKey)
   {
     // + and - for zooming
@@ -8929,7 +8942,7 @@ GZ3D.SdfParser.prototype.createGeom = function(geom, mat, parent)
           allChildren[c].receiveShadow = visualObj.receiveShadows;
         }
 
-        if (visualObj.name.indexOf('COLLISION_VISUAL') >= 0)
+        if (visualObj.name !== undefined && visualObj.name.indexOf('COLLISION_VISUAL') >= 0)
         {
           allChildren[c].castShadow = false;
           allChildren[c].receiveShadow = false;
@@ -8956,7 +8969,7 @@ GZ3D.SdfParser.prototype.createVisual = function(visual)
   if (visual.geometry)
   {
     var visualObj = new THREE.Object3D();
-    visualObj.name = visual['@name'];
+    visualObj.name = visual['@name'] || visual['name'];
 
     if (visual.pose)
     {
