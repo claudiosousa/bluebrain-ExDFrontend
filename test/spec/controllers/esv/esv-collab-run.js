@@ -136,10 +136,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
     UPTIME_UPDATE_RATE = 2 * 1000; // 2 seconds
 
     store['server-enabled'] = serversEnabledFromLocalStorage;
-
-    // create mock for console
-    spyOn(console, 'error');
-    spyOn(console, 'log');
   }));
 
   it('should initialize scope members' , function () {
@@ -153,9 +149,9 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.experiments).toEqual({});
       expect(scope.serversEnabled).toEqual(experimentSimulationService.getServersEnable());
       expect(scope.userID).not.toBeDefined();
-      expect(scope.isCollabEditPage).toBe(false);
       expect(scope.owners).not.toBeDefined();
       expect(scope.uptime).not.toBeDefined();
+      expect(scope.hasEdits).toBe(false);
       expect(slurminfoService.get).toHaveBeenCalled();
       expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
   });
@@ -272,11 +268,11 @@ describe('Controller: ESVCollabRunCtrl', function () {
     expect(collabConfigService.get.mostRecentCall.args[0].contextID).toEqual(context);
     var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
     var response = { experimentID: experimentID };
-    spyOn(scope, 'updateExperiments');
+    spyOn(scope, 'updateExperiment');
     getSuccessCallback(response);
     expect(scope.experiment).toEqual({id: response.experimentID});
     expect(scope.isQueryingServersFinished).toBe(true);
-    expect(scope.updateExperiments).toHaveBeenCalled();
+    expect(scope.updateExperiment).toHaveBeenCalled();
 
     spyOn(serverError, 'display');
     scope.isQueryingServersFinished = false;
@@ -340,7 +336,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     expect(scope.isServerAvailable).toEqual({'fakeId': true});
   });
 
-  describe('Tests related to updateExperiments', function() {
+  describe('Tests related to updateExperiment:', function() {
     beforeEach(function(){
       var experimentTemplates = {
         '1': TestDataGenerator.createTestExperiment(),
@@ -351,24 +347,30 @@ describe('Controller: ESVCollabRunCtrl', function () {
       scope.experiments['1'].simulations = [];
       scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
       scope.experiment = scope.experiments['1'];
+      scope.experiment.id = '1';
     });
 
     it('should update scope.owners and scope.uptime', function() {
-      scope.updateExperiments();
+      scope.updateExperiment();
       expect(scope.owners).toBeDefined();
       expect(scope.uptime).toBeDefined();
     });
 
-    it('should set the isEditingOngoing variable to true if the user owns an edit simulation', function() {
-      scope.updateExperiments();
-      expect(scope.isEditingOngoing).toBe(false);
+    it('should set the hasEdits variable to true if at least one simulation is running in edit mode', function() {
+      expect(scope.hasEdits).toBe(false);
+      expect(scope.isASimulationInEditMode()).toBe(false);
 
       scope.userID = 'fakeUserID';
-      scope.experiments['1'].simulations[0].owner = 'fakeUserID';
-      scope.experiments['1'].simulations[0].operationMode = OPERATION_MODE.EDIT;
+      stateParams.ctx = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
 
-      scope.updateExperiments();
-      expect(scope.isEditingOngoing).toBe(true);
+      var simulation = scope.experiment.simulations[0];
+      simulation.owner = 'fakeUserID';
+      simulation.operationMode = OPERATION_MODE.EDIT;
+      simulation.contextID = stateParams.ctx;
+      expect(scope.isASimulationInEditMode()).toBe(true);
+
+      scope.updateExperiment();
+      expect(scope.hasEdits).toBe(true);
     });
   });
 
@@ -381,15 +383,12 @@ describe('Controller: ESVCollabRunCtrl', function () {
     scope.experiments = experimentTemplates;
     scope.experiments['1'].simulations = [];
     scope.experiments['1'].simulations.push({serverID: 'fakeserverID', simulationID: 'fakeID'});
-    var updateExperiments = scope.updateExperiments;
-    scope.updateExperiments = jasmine.createSpy('updateExperiments');
+    spyOn(scope, 'updateExperiment');
 
     scope.stopSimulation(scope.experiments['1'].simulations[0]);
     expect(experimentSimulationService.stopExperimentOnServer).toHaveBeenCalledWith(scope.experiments, 'fakeserverID', 'fakeID');
-    expect(scope.updateExperiments).toHaveBeenCalled();
+    expect(scope.updateExperiment).toHaveBeenCalled();
 
-    // restore original function
-    scope.updateExperiments = updateExperiments;
   });
 
   describe('Tests related to scope.$destroy()', function(){

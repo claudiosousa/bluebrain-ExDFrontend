@@ -57,7 +57,7 @@
           </div>
         </div>
         <div class="list-entry-buttons list-entry-container center">
-          <div ng-if="!isEditingOngoing" class="btn-group" role="group">
+          <div class="btn-group" role="group">
             <!-- Launch button enabled -->
             <button analytics-on analytics-event="Launch"
                     analytics-category="Experiment"
@@ -73,46 +73,34 @@
             </button>
             <!-- No edit rights: Launch button disabled -->
             <button join ng-if="!hasEditRights" class="btn btn-default disabled enable-tooltip"
-                    tooltip="Sorry, you don't have sufficient rights to lauch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
+                    tooltip="Sorry, you don't have sufficient rights to launch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
               <i class="fa fa-plus"></i> Launch
             </button>
             <!-- Edit button enabled -->
-            <button ng-if="hasEditRights && isServerAvailable[experiment.id]" class="btn btn-default"
+            <button ng-if="hasEditRights && !hasEdits && isServerAvailable[experiment.id]" class="btn btn-default"
                     ng-click="setProgressbarVisible(experiment.id);enterEditMode(experiment.experimentConfiguration, experiment.serverPattern);">
               <i class="fa fa-pencil"></i> Edit
             </button>
             <!-- No available server: edit button disabled -->
-            <button ng-if="hasEditRights && !isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
-                    tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+            <button ng-if="hasEditRights && !isServerAvailable[experiment.id]"
+              class="btn btn-default disabled enable-tooltip"
+              tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+              <i class="fa fa-pencil"></i> Edit
+            </button>
+            <!-- A simulation is being edited: edit button disabled -->
+            <button ng-if="hasEditRights && hasEdits && isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
+                    tooltip="Sorry, you cannot edit a new simulation while another one is being edited."
+                    tooltip-trigger="mouseenter" tooltip-placement="top">
               <i class="fa fa-pencil"></i> Edit
             </button>
             <!-- No edit rights: edit button disabled -->
-            <button ng-if="!hasEditRights" class="btn btn-default disabled enable-tooltip"
+            <button ng-if="!hasEditRights && isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
                     tooltip="Sorry, you don't have edit rights." tooltip-trigger="mouseenter" tooltip-placement="top">
               <i class="fa fa-pencil"></i> Edit
             </button>
           </div>
-          <div ng-if="isEditingOngoing" class="btn-group" role="group">
-            <button analytics-on analytics-event="Launch"
-                    analytics-category="Experiment"
-                    analytics-label="Collab"
-                    class="btn btn-default disabled enable-tooltip"
-                    tooltip="Please join the already running simulation."
-                    tooltip-trigger="mouseenter"
-                    tooltip-placement="top">
-              <i class="fa fa-plus"></i> Launch
-            </button>
-            <!-- A simulation is already in edit mode (button disabled) -->
-            <button analytics-on analytics-event="Re-Edit"
-                    analytics-category="Experiment"
-                    analytics-label="Collab"
-                    class="btn btn-default disabled enable-tooltip"
-                    tooltip="Please join the already running simulation to edit." tooltip-trigger="mouseenter" tooltip-placement="top">
-              <i class="fa fa-pencil"></i> Edit
-            </button>
-          </div>
           <!-- Join button -->
-          <button  ng-if="experiment.simulations.length > 0" analytics-on analytics-event="Re-Join"
+          <button ng-if="experiment.simulations.length > 0" analytics-on analytics-event="Re-Join"
                   analytics-category="Experiment"
                   analytics-label="Collab"
                   class="btn btn-default" ng-click="setJoinableVisible(experiment.id);">
@@ -136,49 +124,25 @@
             </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="simul in experiment.simulations | filter:{operationMode:OPERATION_MODE.EDIT}  | filter: { owner:userID }">
-                <td>{{simul.serverID}}</td>
-                <td>{{owners[simul.owner]}}</td>
-                <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
-                <td>{{simul.state}}</td>
+              <tr ng-repeat="simulation in experiment.simulations">
+                <td>{{simulation.serverID}}</td>
+                <td>{{owners[simulation.owner]}}</td>
+                <td class="monospace-text">{{uptime[simulation.serverID + '-' + simulation.simulationID] | timeDDHHMMSS}}</td>
+                <td>{{simulation.state}}</td>
                 <td>
-                  <!-- Edit button enabled provided simulation state is consistent-->
-                  <a ng-if="hasEditRights && isEditingOngoing"
-                    analytics-on analytics-event="Join"
-                    analytics-category="Experiment"
-                    ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{(simul.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
-                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Edit »</a>
-                  <!-- No edit rights: stop button disabled -->
-                  <a ng-if="!hasEditRights && isEditingOngoing" type="button" class="btn btn-default disabled enable-tooltip"
-                          tooltip="Sorry, you don't have edit rights." tooltip-trigger="mouseenter" tooltip-placement="top">
-                    <i class="fa fa-pencil"></i> Edit
-                  </a>
-                  <!-- Stop button enabled provided simulation state is consistent-->
-                  <a ng-click="stopSimulation(simul);"
-                     type="button" class="btn btn-default"
-                     ng-if="hasEditRights && (simul.state !== STATE.CREATED)" ng-disabled="simul.stopping">
-                    <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
-                  </a>
-                  <!-- No edit rights: stop button disabled -->
-                  <a type="button" class="btn btn-default disabled enable-tooltip"
-                     tooltip="Sorry, you don't have sufficient rights to stop the simulation."
-                     tooltip-trigger="mouseenter" tooltip-placement="top"
-                     ng-if="!hasEditRights && (simul.state !== STATE.CREATED)"> Stop
-                  </a>
-                </td>
-              </tr>
-              <!-- The user is not the owner of the running simulation: join button enabled -->
-              <tr ng-repeat="simul in experiment.simulations | filter: { owner:'!' + userID }">
-                <td>{{simul.serverID}}</td>
-                <td>{{owners[simul.owner]}}</td>
-                <td class="monospace-text">{{uptime[simul.serverID + '-' + simul.simulationID] | timeDDHHMMSS}}</td>
-                <td>{{simul.state}}</td>
-                <td>
+                  <!-- Join button enabled provided simulation state is consistent-->
                   <a analytics-on analytics-event="Join"
-                     analytics-category="Experiment"
-                     analytics-label="Collab"
-                     ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}/{{OPERATION_MODE.VIEW}}');"
-                     type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Join »
+                    analytics-category="Experiment"
+                    ng-click="joinExperiment('esv-web/gz3d-view/{{simulation.serverID}}/{{simulation.simulationID}}/{{(simulation.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
+                    type="button" class="btn btn-default"
+                    ng-disabled="(simulation.state === STATE.CREATED)||simulation.stopping">Join »
+                  </a>
+                  <!-- Stop button available provided the user owns the simulation, enabled provided simulation state is consistent-->
+                  <a ng-click="stopSimulation(simulation);"
+                     type="button" class="btn btn-default"
+                     ng-if="(simulation.owner === userID) && (simul.state !== STATE.CREATED)"
+                     ng-disabled="simulation.stopping">
+                    <i class="fa fa-spinner fa-spin" ng-if="simulation.stopping"></i> Stop
                   </a>
                 </td>
               </tr>
