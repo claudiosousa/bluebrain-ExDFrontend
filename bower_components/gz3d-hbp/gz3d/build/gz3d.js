@@ -8283,38 +8283,10 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
     entity.serverProperties.specular = color.clone();
   }
 
-  var matrixWorld;
   if (msg.pose)
   {
-    // needed to update light's direction
-    var quaternion = new THREE.Quaternion(
-        msg.pose.orientation.x,
-        msg.pose.orientation.y,
-        msg.pose.orientation.z,
-        msg.pose.orientation.w);
-
-    var translation = new THREE.Vector3(
-        msg.pose.position.x,
-        msg.pose.position.y,
-        msg.pose.position.z);
-
-    matrixWorld = new THREE.Matrix4();
-    matrixWorld.compose(translation, quaternion, new THREE.Vector3(1,1,1));
-
     this.setPose(entity, msg.pose.position, msg.pose.orientation);
     entity.matrixWorldNeedsUpdate = true;
-
-    if (entity.direction && lightObj.target)
-    {
-      dir = new THREE.Vector3(entity.direction.x, entity.direction.y,
-          entity.direction.z);
-
-      entity.direction = new THREE.Vector3();
-      entity.direction.copy(dir);
-
-      dir.applyMatrix4(matrixWorld); // localToWorld
-      lightObj.target.position.copy(dir);
-    }
   }
 
   if (msg.range)
@@ -8373,11 +8345,6 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
   {
     dir = new THREE.Vector3(msg.direction.x, msg.direction.y,
         msg.direction.z);
-
-    entity.direction = new THREE.Vector3();
-    entity.direction.copy(dir);
-
-    dir.applyMatrix4(matrixWorld); // localToWorld
     lightObj.target.position.copy(dir);
   }
 };
