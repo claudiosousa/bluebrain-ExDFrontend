@@ -66,15 +66,14 @@
      *  - redirectUri: string - URL where to redirect after authentication.
      *    The URL must be configured in the Oauth client configuration. (default: document.URL)
      *  - scopes: array<string> - list of scopes to request (default: null)
-     *  - alwaysPromptLogin: boolean - if `true` if will always prompt for credentials.
+     *  - ensureToken: boolean - if `true` it will try to get a token (default: true)
+     *  - alwaysPromptLogin: boolean - if `true` if will always prompt for credentials. (default: false)
      *    For collaboratory apps MUST be `false`. (default: false)
      *  - token: string - the token, if available (default: null)
      *  - debug: boolean - flag to enable debug logs (default: false)
      */
     function BbpOidcClient(options) {
-        var initialized = false,
-            _ensureToken = true,
-            jso;
+        var jso;
 
         // default values
         var defaultOpts = {
@@ -82,6 +81,7 @@
             debug: false,
             redirectUri: document.URL,
             scopes: null,
+            ensureToken: true,
             alwaysPromptLogin: false,
             jsonWebKeys: {
                 keys: [{
@@ -99,30 +99,24 @@
 
         var opts = deepExtend(defaultOpts, options);
 
-        var init = function(force) {
-            if (!initialized || force) {
-                initialized = false;
+        function init() {
+            jso = new JsoWrapper(opts);
+            jso.configure();
 
-                jso = new JsoWrapper(opts);
-                jso.configure();
-
-                // This check has to occurs every time.
-                if (_ensureToken) {
-                    if(!jso.getToken()) {
-                        // if there's no token, check if the session with oidc is still active
-                        getTokenOrLogout();
-                    }
+            // This check has to occurs every time.
+            if (opts.ensureToken) {
+                if(!jso.getToken()) {
+                    // if there's no token, check if the session with oidc is still active
+                    getTokenOrLogout();
                 }
-
-                initialized = true;
             }
-        };
+        }
 
-        var login = function() {
+        function login() {
             return jso.ensureTokens();
-        };
+        }
 
-        var logout = function() {
+        function logout() {
             // Ensure we have a token.
             var token = getToken();
             var localRemoval = function() {
@@ -130,7 +124,7 @@
                 // Bearer for this request. Hence the reset only after.
                 jso.wipe();
 
-                if (_ensureToken) {
+                if (opts.ensureToken) {
                     login();
                 }
             };
@@ -141,17 +135,17 @@
             oReq.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
             oReq.withCredentials = true;
             oReq.send(JSON.stringify({ token: token }));
-        };
+        }
 
-        var getToken = function() {
+        function getToken() {
             return jso.getToken();
-        };
+        }
 
         /**
          * checks if the session with oidc is still active; if so, tries to get
          * a new token, otherwise notifies the parent window.
          */
-        var getTokenOrLogout = function() {
+        function getTokenOrLogout() {
             var clientId = opts.clientId;
             isSessionActive(function(active) {
                 if(!active) {
@@ -162,9 +156,9 @@
                 // if active == true, it will get a new token, otherwise redirect to login
                 jso.ensureTokens();
             });
-        };
+        }
 
-        var postLogoutMsg = function(clientId) {
+        function postLogoutMsg(clientId) {
             if(window.parent && window !== window.top) {
                 window.parent.postMessage({
                     eventName: 'oidc.logout',
@@ -173,34 +167,54 @@
                     }
                 }, '*');
             }
-        };
+        }
 
-        var isSessionActive = function(callback) {
-            var oReq = new XMLHttpRequest();
-            oReq.onload = function() {
-                if(callback) {
-                    callback(this.status === 200);
-                }
-            };
+        var sessionReqInProgress = false;
+        var pendingCallbacks = [];
+        function isSessionActive(callback) {
+            if(callback) {
+                pendingCallbacks.push(callback);
+            }
+            if(!sessionReqInProgress) {
+                sessionReqInProgress = true;
+                var oReq = new XMLHttpRequest();
+                oReq.onload = function() {
+                    sessionReqInProgress = false;
+                    for(var i = 0; i < pendingCallbacks.length; i++) {
+                        try {
+                            pendingCallbacks[i](this.status === 200);
+                        } catch(err) {
+                            console.error('Error invoking isSessionActive callback:', err); // jshint ignore:line
+                        }
+                    }
+                    pendingCallbacks = [];
+                };
 
-            oReq.open('get', opts.authServer + '/session', true);
-            oReq.withCredentials = true;
-            oReq.send();
-        };
+                oReq.open('get', opts.authServer + '/session', true);
+                oReq.withCredentials = true;
+                oReq.send();
+            }
+        }
 
-        init(true);
+        init();
 
         return {
             setAlwaysPromptLogin: function(value) {
-                opts.alwaysPromptLogin = !!value;
-                init(true);
+                var newVal = !!value;
+                if(opts.alwaysPromptLogin !== newVal) {
+                    opts.alwaysPromptLogin = newVal;
+                    init();
+                }
             },
             setEnsureToken: function(value) {
-                _ensureToken = !!value;
-                init(true);
+                var newVal = !!value;
+                if(opts.ensureToken !== newVal) {
+                    opts.ensureToken = newVal;
+                    init();
+                }
             },
             isEnsureToken: function() {
-                return _ensureToken;
+                return opts.ensureToken;
             },
             getTokenOrLogout: getTokenOrLogout,
             getToken: getToken,

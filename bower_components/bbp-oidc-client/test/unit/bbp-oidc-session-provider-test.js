@@ -27,27 +27,20 @@ describe('bbpOidcSessionProvider', function() {
       jasmine.Ajax.uninstall();
     });
 
-    describe(".ensureToken()", function() {
+    describe("dependency to bbpOidcSession", function() {
         var bbpOidcSession;
-        
+
         var initModule = function() {
-            angular.module('fake', ['bbpOidcClient'])
-            .config(function(bbpOidcSessionProvider) {
-                bbpOidcSessionProvider = bbpOidcSessionProvider.ensureToken(true);
-            });
+            angular.module('fake', ['bbpOidcClient']);
             module('bbpOidcClient');
             module('fake');
-            
+
             inject(function(_bbpOidcSession_){
                 bbpOidcSession = _bbpOidcSession_;
             });
         };
 
-        afterEach(function() {
-            bbpOidcSession.ensureToken(false);
-        });
-
-        it("should ensure the token presence when there's a session", function() {
+        it("should by default ensure the token presence when there's a session", function() {
             jasmine.Ajax.stubRequest(sessionStatusUrl).andReturn({
                 status: 200
             });
@@ -55,13 +48,21 @@ describe('bbpOidcSessionProvider', function() {
             expect(window.jso_ensureTokens).toHaveBeenCalled();
         });
 
-
-        it("should ensure the token presence when there isn't a session", function() {
+        it("should by default ensure the token presence when there isn't a session", function() {
             jasmine.Ajax.stubRequest(sessionStatusUrl).andReturn({
                 status: 401
             });
             initModule();
             expect(window.jso_ensureTokens).toHaveBeenCalled();
+        });
+
+        it("can not ensure the token presence", function() {
+            jasmine.Ajax.stubRequest(sessionStatusUrl).andReturn({
+                status: 401
+            });
+            window.bbpConfig.auth.ensureToken = false;
+            initModule();
+            expect(window.jso_ensureTokens).not.toHaveBeenCalled();
         });
     });
 });

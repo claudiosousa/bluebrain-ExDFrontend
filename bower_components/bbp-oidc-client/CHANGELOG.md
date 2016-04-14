@@ -1,4 +1,22 @@
 <a name"0.0.0"></a>
+## 0.0.0 (2016-04-12)
+
+
+#### Bug Fixes
+
+* **session:** call /session endpoint once (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibOidcClient.git/commit/?id=2baecd581219e73906998052b111b57881583cdf)
+
+
+<a name"0.0.0"></a>
+## 0.0.0 (2016-04-12)
+
+
+#### Bug Fixes
+
+* **ensure:** let clients not to require a token (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibOidcClient.git/commit/?id=c8bda2d7282c49013cd5f2a6cf43059c8a1e1e4b)
+
+
+<a name"0.0.0"></a>
 ## 0.0.0 (2015-09-24)
 
 

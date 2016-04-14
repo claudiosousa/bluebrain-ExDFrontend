@@ -12,13 +12,19 @@ describe('bbpOidcRequestInterceptor', function() {
         window.bbpConfig = {
             auth: {
                 url: 'https://test.oidc.te/auth',
-                clientId: 'test'
+                clientId: 'test',
+                ensureToken: false
             },
             oidc: {
                 debug: false
             }
         };
         sessionStatusUrl = window.bbpConfig.auth.url + '/session';
+
+        // by default no session available
+        jasmine.Ajax.stubRequest(sessionStatusUrl).andReturn({
+            status: 404
+        });
     });
 
     beforeEach(function() {
@@ -182,7 +188,9 @@ describe('bbpOidcRequestInterceptor', function() {
         });
 
         it('if needed, tries to get a new one', function() {
-            jasmine.Ajax.stubRequest(sessionStatusUrl);
+            jasmine.Ajax.stubRequest(sessionStatusUrl).andReturn({
+                status: 200
+            });
 
             bbpOidcSession.ensureToken(true);
             window.jso_ensureTokens.calls.reset();

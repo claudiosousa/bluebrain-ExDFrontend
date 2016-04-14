@@ -11,7 +11,9 @@
                 authServer: bbpConfig.get('auth.url', null),
                 debug: bbpConfig.get('oidc.debug', false),
                 scopes: bbpConfig.get('auth.scopes', null),
-                token: bbpConfig.get('auth.token', null)
+                token: bbpConfig.get('auth.token', null),
+                ensureToken: bbpConfig.get('auth.ensureToken', true),
+                alwaysPromptLogin: bbpConfig.get('auth.alwaysPromptLogin', false),
             };
             client = new BbpOidcClient(oidcOptions);
         }])
