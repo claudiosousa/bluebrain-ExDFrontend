@@ -627,7 +627,7 @@
           };
 
           $scope.updateInitialCameraPose = function (pose) {
-            if (pose !== null) {
+            if (pose !== null && angular.isDefined(gz3d.scene)) {
               gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
             }
           };
