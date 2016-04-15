@@ -1,13 +1,13 @@
 {
   "name": "angular-hbp-common",
   "description": "Common components for HBP websites.",
-  "version": "2.0.1-dev.0",
+  "version": "2.2.1",
   "private": true,
   "repository": {
     "url": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
   },
   "dependencies": {
-    "angular": "~1.4.6",
+    "angular": "~1.4.9",
     "angular-bbp-config": "~0.3.0",
     "angular-ui-router": "~0.2.15",
     "angular-bootstrap": "~0.13.4",
@@ -34,6 +34,6 @@
     "/reports"
   ],
   "resolutions": {
-    "angular": "~1.4.6"
+    "angular": "~1.4.9"
   }
 }

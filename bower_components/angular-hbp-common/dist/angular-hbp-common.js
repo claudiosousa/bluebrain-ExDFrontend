@@ -151,13 +151,15 @@ angular.module("templates/userSelector.html", []).run(["$templateCache", functio
     "      typeahead-editable=\"false\"\n" +
     "      typeahead-on-select=\"selectUser()\"\n" +
     "      typeahead-min-length=\"3\"\n" +
+    "      typeahead-wait-ms=\"300\"\n" +
     "      ng-keypress=\"noSubmitOnEnter($event)\"\n" +
     "      name=\"new-user\"\n" +
     "      ng-disabled=\"selectionDisabled\">\n" +
     "    <span class=\"input-group-btn\">\n" +
     "      <button ng-click=\"selectUser()\" class=\"btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-plus\"></i></button>\n" +
     "    </span>\n" +
-    "</div>");
+    "</div>\n" +
+    "");
 }]);
 
 angular.module("templates/usercard.html", []).run(["$templateCache", function($templateCache) {
@@ -244,11 +246,14 @@ angular.module("templates/usercard.html", []).run(["$templateCache", function($t
      * The promise contains the `instance` of the result set as well.
      *
      * @param  {Object} res     a HTTPResponse or a promise which resolve to a HTTPResponse
-     * @param  {Object} options configuration
-     * @param  {string} options.nextUrlKey name of the attribute containing the URL to fetch next results
-     * @param  {string} options.previousUrlKey name of the attribute containing the URL to fetch previous results
-     * @param  {string} options.resultKey name of the attribute containing an array with all the results
-     * @return {ResultSet}      a new instance of ResultSet
+     * @param  {Object} [options] configuration
+     * @param  {string} [options.nextUrlKey] name of (or dot notation path to) the attribute containing the URL to fetch next results
+     * @param  {string} [options.previousUrlKey] name of (or dot notation path to) the attribute containing the URL to fetch previous results
+     * @param  {string} [options.resultKey] name of (or dot notation path to) the attribute containing an array with all the results
+     * @param  {string} [options.countKey] name of (or dot notation path to) the attribute containing the number of results returned
+     * @param  {function} [options.resultsFactory] a function to which a new array of results is passed.
+     *                    The function can return `undefined`, a `promise` or an `array` as result.
+     * @return {ResultSet}a new instance of ResultSet
      */
     function paginatedResultSet(res, options) {
         return new ResultSet(res, options).promise;
@@ -275,12 +280,14 @@ angular.module("templates/usercard.html", []).run(["$templateCache", function($t
         self.errorHandler = null;
         self.next = next;
         self.previous = previous;
+        self.toArray = toArray;
         self.count = -1;
 
         options = angular.extend({
             resultKey: 'results',
             nextUrlKey: 'next',
-            previousUrlKey: 'previous'
+            previousUrlKey: 'previous',
+            countKey: 'count'
         }, options);
 
         self.promise = $q.when(pRes)
@@ -324,20 +331,55 @@ angular.module("templates/usercard.html", []).run(["$templateCache", function($t
             });
         }
 
+        /**
+         * @name toArray
+         * @memberof hbpUtil.ResultSet
+         * @desc
+         * Retrieve an array containing ALL the results. Beware that this
+         * can be very long to resolve depending on your dataset.
+         *
+         * @return {Promise} a promise that will resolve to the array when
+         * all data has been fetched.
+         */
+        function toArray() {
+            if (self.hasNext) {
+                return self.next().then(toArray);
+            } else {
+                return $q.when(self.results.slice());
+            }
+        }
+
         function handleNextResults(res) {
             var rs = res.data;
-            self.results.push.apply(self.results, rs[options.resultKey]);
-            counting(rs);
-            bindNext(rs);
-            return self;
+            var result = at(rs, options.resultKey);
+
+            var fResult;
+            if (options.resultsFactory) {
+                fResult = options.resultsFactory(result);
+            }
+            return $q.when(fResult)
+            .then(function(computedResult) {
+                self.results.push.apply(self.results, (computedResult || result));
+                counting(rs);
+                bindNext(rs);
+                return self;
+            });
         }
 
         function handlePreviousResults(res) {
             var rs = res.data;
-            self.results.unshift.apply(self.results, rs[options.resultKey]);
-            counting(rs);
-            bindPrevious(rs);
-            return self;
+            var result = at(rs, options.resultKey);
+            var fResult;
+            if (options.resultsFactory) {
+                fResult = options.resultsFactory(result);
+            }
+            return $q.when(fResult)
+            .then(function(computedResult) {
+                self.results.unshift.apply(self.results, (computedResult || result));
+                counting(rs);
+                bindPrevious(rs);
+                return self;
+            });
         }
 
         function handleError(res) {
@@ -349,18 +391,19 @@ angular.module("templates/usercard.html", []).run(["$templateCache", function($t
         }
 
         function bindNext(rs) {
-            self.nextUrl = rs[options.nextUrlKey];
+            self.nextUrl = at(rs, options.nextUrlKey);
             self.hasNext = !!self.nextUrl;
         }
 
         function bindPrevious(rs) {
-            self.previousUrl = rs[options.previousUrlKey];
+            self.previousUrl = at(rs, options.previousUrlKey);
             self.hasPrevious = !!self.previousUrl;
         }
 
         function counting(rs) {
-            if (rs.count) {
-                self.count = rs.count;
+            var c = at(rs, options.countKey);
+            if (angular.isDefined(c)) {
+                self.count = c;
             }
         }
 
@@ -373,9 +416,11 @@ angular.module("templates/usercard.html", []).run(["$templateCache", function($t
         }
 
         function initialize(res) {
-            handleNextResults(res);
-            bindPrevious(res.data);
-            return self;
+            return handleNextResults(res)
+            .then(function() {
+                bindPrevious(res.data);
+                return self;
+            });
         }
     }
 
@@ -416,7 +461,22 @@ angular.module("templates/usercard.html", []).run(["$templateCache", function($t
         return _.isArray(obj) ? obj : [obj];
     }
 
-    return hbpUtil;
+    /**
+     * @name at
+     * @desc
+     * Lodash 'at' function replacement. This is needed because the 'at' function
+     * supports Object as first arg only starting from v4.0.0.
+     * Migration to that version has big impacts.
+     *
+     * See: https://lodash.com/docs#at
+     */
+    function at(obj, desc) {
+        var arr = desc.split('.');
+        while(arr.length && obj) {
+            obj = obj[arr.shift()];
+        }
+        return obj;
+    }
   }
   hbpUtil.$inject = ["$q", "$http", "hbpErrorService"];
 }());
@@ -444,132 +504,375 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
      *
      * @memberOf hbpIdentity
      */
-    function groupStore($rootScope, $q, $http, $cacheFactory, bbpConfig, hbpUtil, hbpIdentityUtil) {
-      var groupsCache = $cacheFactory('hbpGroupsCache');
-      var groupApiUrl = bbpConfig.get('api.user.v0') + '/group/';
+    function groupStore($rootScope, $q, $http, $cacheFactory, bbpConfig, hbpErrorService, hbpUtil, hbpIdentityUtil) {
+        var groupsCache = $cacheFactory('hbpGroupsCache');
 
-      var service = {
-          get: get,
-          getByName: getByName,
-          getMembers: getMembers,
-          addMembers: addMembers,
-          removeMembers: removeMembers,
-          list: list
-      };
-      return service;
-      ///////////////////
+        function v1PaginationConfig(type, factory) {
+            return {
+                nextUrlKey: '_links.next.href',
+                previousUrlKey: '_links.prev.href',
+                resultKey: '_embedded.' + type + 's',
+                countKey: 'page.totalElements',
+                resultsFactory: factory
+            };
+        }
 
-      /**
-       * @name get
-       * @memberOf hbpIdentity.hbpIdentityGroupStore
-       * @desc
-       * Return a promise that will resolve to a group
-       * based on the given `id`.
-       *
-       * In case of error, the promise is rejected with a `HbpError` instance.
-       *
-       * @param  {String} groupId
-       * @return {Promise} a promise that resolve to a group
-       */
-      function get(groupId) {
-          return $http.get(groupApiUrl+ groupId).then(function(resp) {
-              return resp.data;
-          }, hbpUtil.ferr);
-      };
-
-      /**
-       * @name getMembers
-       * @memberOf hbpIdentity.hbpIdentityGroupStore
-       * @desc
-       * Return a promise that will resolve to a paginatedResultSet of userId
-       * representing all the members of `groupId`.
-       *
-       * In case of error, the promise is rejected with a `HbpError` instance.
-       *
-       * @param  {String}  groupId
-       * @return {Promise} resolve to a hbpUtil.ResultSet instance
-       */
-      function getMembers(groupId) {
-          return hbpUtil.paginatedResultSet($http.get(groupApiUrl + groupId + '/members'));
-      }
-
-      /**
-       * @name addMembers
-       * @memberOf hbpIdentity.hbpIdentityGroupStore
-       * @desc
-       * Adds all the user in `userIds` to the group `groupId`.
-       * `userIds` can be either an array of ids or a single id.
-       * Returns a promise that will resolve to a list of current group members.
-       *
-       * In case of error, the promise is rejected with a `HbpError` instance.
-       *
-       * @param  {String} groupId
-       * @parame {Array}  userIds a list of user id string to add to this group
-       * @return {Promise} resolve to a hbpUtil.ResultSet instance
-       */
-      function addMembers(groupId, userIds) {
-        var reqData = {
-            users: hbpUtil.arrayOf(userIds)
+        var service = {
+            get: get,
+            getByName: getByName,
+            create: createGroup,
+            delete: deleteGroup,
+            getMembers: getMembers,
+            getMemberGroups: getMemberGroups,
+            getAdmins: getAdmins,
+            getAdminGroups: getAdminGroups,
+            getParentGroups: getParentGroups,
+            getManagedGroups: getManagedGroups,
+            list: list
         };
-        return hbpUtil.paginatedResultSet($http.put(groupApiUrl+ groupId + '/members', reqData));
-      }
 
-      /**
-       * @name removeMembers
-       * @memberOf hbpIdentity.hbpIdentityGroupStore
-       * @desc
-       * Removes all the user in `userIds` from the group `groupId`.
-       * `userIds` can be either an array of ids or a single id.
-       * Returns a promise that will resolve to a list of current group members.
-       *
-       * In case of error, the promise is rejected with a `HbpError` instance.
-       * @param  {[type]} groupId [description]
-       * @param  {[type]} userIds [description]
-       * @return {[type]}         [description]
-       */
-      function removeMembers(groupId, userIds) {
+        _.each(['members', 'admins', 'member-groups', 'admin-groups'], function(rel) {
+            var batchQuery = function(groupName, relIds, method) {
+                relIds = hbpUtil.arrayOf(relIds);
+                return $q.all(_.map(relIds, function(relId) {
+                    var url = [groupApiUrl(), groupName, rel, relId].join('/');
+                    return $http({
+                        method: method,
+                        url: url
+                    }).then(function() {
+                        return relId;
+                    });
+                })).catch(hbpUtil.ferr);
+            };
+            service[_.camelCase('add-' + rel)] = function(groupName, relIds) {
+                if (hbpIdentityUtil.userApiVersion() === 0) {
+                    return legacy(_.camelCase('add-' + rel))(groupName, hbpUtil.arrayOf(relIds));
+                }
+                return batchQuery(groupName, relIds, 'POST');
+            };
+            service[_.camelCase('remove-' + rel)] = function(groupName, relIds) {
+                if (hbpIdentityUtil.userApiVersion() === 0) {
+                    return legacy(_.camelCase('remove-' + rel))(groupName, hbpUtil.arrayOf(relIds));
+                }
+                return batchQuery(groupName, relIds, 'DELETE');
+            };
+        });
+
+        return service;
+
+
+        ///////////////////
+
+        /**
+         * @name get
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a group
+         * based on the given `id`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String} groupId id (V0) or name (V1) of the group
+         * @return {Promise} a promise that resolve to a group
+         */
+        function get(groupId) {
+            return $http.get(groupApiUrl() + '/' + groupId).then(function(resp) {
+                return resp.data;
+            }, hbpUtil.ferr);
+        }
+
+        /**
+         * @name getMembers
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a paginatedResultSet of user
+         * representing all the members of `groupId`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String}  groupId
+         * @param  {object}  [options]
+         * @param  {function} [options.factory] a function called with a list of
+         *                    result to build
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function getMembers(groupId, options) {
+            var getMembersV0 = function(groupId) {
+              return hbpUtil.paginatedResultSet(
+                $http.get(groupApiUrl() + '/' + groupId + '/members')
+              );
+            };
+            var getMembersV1 = function(groupId, options) {
+              options = angular.extend({}, options);
+              return hbpUtil.paginatedResultSet(
+                  $http.get(groupApiUrl() + '/' + groupId + '/members'),
+                  v1PaginationConfig('user', options.factory)
+              );
+            };
+
+            return [getMembersV0, getMembersV1][hbpIdentityUtil.userApiVersion()](groupId, options);
+        }
+
+        /**
+         * @name getMemberGroups
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a paginatedResultSet of groups
+         * representing all the group members of `groupName`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String}  groupName
+         * @param  {object}  [options]
+         * @param  {function} [options.factory] a function called with a list of
+         *                    result to build
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function getMemberGroups(groupName, options) {
+            options = angular.extend({}, options);
+            return hbpUtil.paginatedResultSet(
+                $http.get(groupApiUrl() + '/' + groupName + '/member-groups'),
+                v1PaginationConfig('group', options.factory)
+            );
+        }
+
+        /**
+         * @name getAdmins
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a paginatedResultSet of groups
+         * representing all the group that can administrate `groupName`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String}  groupName
+         * @param  {object}  [options]
+         * @param  {function} [options.factory] a function called with a list of
+         *                    result to build
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function getAdmins(groupName, options) {
+            options = angular.extend({}, options);
+            return hbpUtil.paginatedResultSet(
+                $http.get(groupApiUrl() + '/' + groupName + '/admins'),
+                v1PaginationConfig('user', options.factory)
+            );
+        }
+
+        /**
+         * @name getAdminGroups
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a paginatedResultSet of groups
+         * representing all the group that can administrate `groupName`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String}  groupName
+         * @param  {object}  [options]
+         * @param  {function} [options.factory] a function called with a list of
+         *                    result to build
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function getAdminGroups(groupName, options) {
+            options = angular.extend({}, options);
+            return hbpUtil.paginatedResultSet(
+                $http.get(groupApiUrl() + '/' + groupName + '/admin-groups'),
+                v1PaginationConfig('group', options.factory)
+            );
+        }
+
+        /**
+         * @name getParentGroups
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a paginatedResultSet of groups
+         * representing all the group that are parent to the current `groupName`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String}  groupName
+         * @param  {object}  [options]
+         * @param  {function} [options.factory] a function called with a list of
+         *                    result to build
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function getParentGroups(groupName, options) {
+            options = angular.extend({}, options);
+            return hbpUtil.paginatedResultSet(
+                $http.get(groupApiUrl() + '/' + groupName + '/parent-groups'),
+                v1PaginationConfig('group', options.factory)
+            );
+        }
+
+        /**
+         * @name getManagedGroups
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve to a paginatedResultSet of groups
+         * representing all the group that can be administred by `groupName`.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String}  groupName
+         * @param  {object}  [options]
+         * @param  {function} [options.factory] a function called with a list of
+         *                    result to build
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function getManagedGroups(groupName, options) {
+            options = angular.extend({}, options);
+            return hbpUtil.paginatedResultSet(
+                $http.get(groupApiUrl() + '/' + groupName + '/managed-groups'),
+                v1PaginationConfig('group', options.factory)
+            );
+        }
+
+        /**
+         * @name create
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve when the group has been created.
+         *
+         * In case of error, the promise is rejected with an HbpError instance.
+         *
+         * @param  {string} name the group name
+         * @param {string} description the group description
+         * @return {Promise} promise of creation completion
+         */
+        function createGroup(name, description) {
+            if (!bbpConfig.get('collab.features.identity.userApiV1', false)) {
+                return $q.reject(unsupportedError());
+            }
+            return $http.post(groupApiUrl(), {
+              name: name,
+              description: description
+            })
+            .then(function(res) {
+              return res.data;
+            })
+            .catch(function(res) {
+              return $q.reject(hbpErrorService.httpError(res));
+            });
+        }
+
+        /**
+         * @name create
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Return a promise that will resolve when the group has been created.
+         *
+         * In case of error, the promise is rejected with an HbpError instance.
+         *
+         * @param  {string} name the group name
+         * @param {string} description the group description
+         * @return {Promise} promise of creation completion
+         */
+        function deleteGroup(groupId) {
+            if (!bbpConfig.get('collab.features.identity.userApiV1', false)) {
+                return $q.reject(unsupportedError());
+            }
+            return $http.delete(groupApiUrl() + '/' + groupId)
+            .then(function() {
+              return;
+            })
+            .catch(function(res) {
+              return $q.reject(hbpErrorService.httpError(res));
+            });
+        }
+
+        function legacy(name) {
+            var funcs = {
+                addMembers: addMembersV0,
+                removeMembers: removeMembersV0
+            };
+            if (!funcs[name]) {
+                throw hbpErrorService.error({
+                    type: 'UnsupportedMethodException',
+                    message: 'HBP Identity API must be v1 or higher to use method ' + name
+                });
+            }
+            return funcs[name];
+        }
+
+        /**
+         * @name addMembers
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Adds all the user in `userIds` to the group `groupId`.
+         * `userIds` can be either an array of ids or a single id.
+         * Returns a promise that will resolve to a list of current group members.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         *
+         * @param  {String} groupId
+         * @parame {Array}  userIds a list of user id string to add to this group
+         * @return {Promise} resolve to a hbpUtil.ResultSet instance
+         */
+        function addMembersV0(groupId, userIds) { // API v0
           var reqData = {
               users: hbpUtil.arrayOf(userIds)
           };
-
-          return hbpUtil.paginatedResultSet($http({
-              method: 'DELETE',
-              url: groupApiUrl+ groupId + '/members',
-              data: reqData,
-              headers: {'Content-Type': 'application/json'}
-          }));
-      }
-
-      /**
-       * @name getByName
-       * @memberOf hbpIdentity.hbpIdentityGroupStore
-       * @desc
-       * return the group with the given name.
-       * @param {String} groupName
-       * @param {Array}  userIds a list of user id string to add to this group
-       * @return {Promise} resolve to a group instance
-       */
-      function getByName(groupName) {
-          var group = groupsCache.get(groupName);
-          if(group) {
-              return $q.when(group);
-          }
-          return list({
-              filter: { name: groupName }
-          }).then(function(resp) {
-              if(resp.results.length === 1) {
-                  groupsCache.put(groupName, resp.results[0]);
-                  return resp.results[0];
-              } else if(resp.results.length === 0) {
-                  return undefined;
-              } else {
-                  return $q.reject(hbpErrorService.error({
-                    type: 'UnexpectedResult',
-                    message: 'More than one result has been retrieved'
-                  }));
-              }
-          });
+          return hbpUtil.paginatedResultSet($http.put(groupApiUrl() + '/' + groupId + '/members', reqData));
         }
+
+        /**
+         * @name removeMembers
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * Removes all the user in `userIds` from the group `groupId`.
+         * `userIds` can be either an array of ids or a single id.
+         * Returns a promise that will resolve to a list of current group members.
+         *
+         * In case of error, the promise is rejected with a `HbpError` instance.
+         * @param  {[type]} groupId [description]
+         * @param  {[type]} userIds [description]
+         * @return {[type]}         [description]
+         */
+        function removeMembersV0(groupId, userIds) {
+            var reqData = {
+                users: userIds
+            };
+
+            return hbpUtil.paginatedResultSet($http({
+                method: 'DELETE',
+                url: groupApiUrl() + '/' + groupId + '/members',
+                data: reqData,
+                headers: {'Content-Type': 'application/json'}
+            }));
+        }
+
+        /**
+         * @name getByName
+         * @memberOf hbpIdentity.hbpIdentityGroupStore
+         * @desc
+         * return the group with the given name.
+         * @param {String} groupName
+         * @param {Array}  userIds a list of user id string to add to this group
+         * @return {Promise} resolve to a group instance
+         */
+        function getByName(groupName) {
+            var group = groupsCache.get(groupName);
+            if(group) {
+                return $q.when(group);
+            }
+            return list({
+                filter: { name: groupName }
+            }).then(function(resp) {
+                if(resp.results.length === 1) {
+                    groupsCache.put(groupName, resp.results[0]);
+                    return resp.results[0];
+                } else if(resp.results.length === 0) {
+                    return undefined;
+                } else {
+                    return $q.reject(hbpErrorService.error({
+                      type: 'UnexpectedResult',
+                      message: 'More than one result has been retrieved'
+                    }));
+                }
+            });
+        }
+
 
         /**
          * @name list
@@ -585,17 +888,68 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
          * - page: page to be loaded (default: 0)
          * - pageSize: max number or items to be loaded (default: 10)
          * - filter: fiter object, wildcard admitted in the values
+         * - factory: a function to be used to create object instance from the
+         *            one result
          *
          * @return {Promise} resolves to a hbpUtil.ResultSet instance
          */
         function list(options) {
+            return [listV0, listV1][hbpIdentityUtil.userApiVersion()](options);
+        }
+
+        function listV0(options) {
             var params = hbpIdentityUtil.queryParams(options);
-            return hbpUtil.paginatedResultSet($http.get(groupApiUrl, {
+            return hbpUtil.paginatedResultSet($http.get(groupApiUrl(), {
                 params: params
             }));
         }
+
+        function listV1(options) {
+            options = angular.extend({}, options);
+            var params = hbpIdentityUtil.queryParamsV1(options);
+            var url = groupApiUrl();
+
+            if (options.filter) { // search
+                var supportedFilters = [ 'name', 'description' ];
+                url += '/search?';
+                for (var k in options.filter) {
+                    if (options.filter.hasOwnProperty(k)) {
+                        if (supportedFilters.indexOf(k) === -1) {
+                            return $q.reject(hbpErrorService.error({
+                                type: 'FilterNotSupportedError',
+                                message: 'Cannot filter on property: ' + k
+                            }));
+                        }
+                    }
+                    var v = options.filter[k];
+                    if (angular.isArray(v)) {
+                        _.each(v, function(vi) {
+                            url += k + '=' + encodeURIComponent(vi) + '&';
+                        });
+                    } else {
+                        url += k + '=' + encodeURIComponent(v) + '&';
+                    }
+                    url = url.slice(0, -1);
+                }
+            }
+
+            return hbpUtil.paginatedResultSet($http.get(url, {
+                params: _.omit(params, 'filter')
+            }), v1PaginationConfig('group', options.factory));
+        }
+
+        function unsupportedError() {
+          return hbpErrorService.error({
+              type: 'UnsupportedMethodException',
+              message: 'HBP Identity API must be v1 or higher to create or delete group.'
+          });
+        }
+
+        function groupApiUrl() {
+            return bbpConfig.get('api.user.v' + hbpIdentityUtil.userApiVersion()) + '/group';
+        }
     }
-    groupStore.$inject = ["$rootScope", "$q", "$http", "$cacheFactory", "bbpConfig", "hbpUtil", "hbpIdentityUtil"];
+    groupStore.$inject = ["$rootScope", "$q", "$http", "$cacheFactory", "bbpConfig", "hbpErrorService", "hbpUtil", "hbpIdentityUtil"];
 }());
 
 /**
@@ -609,6 +963,16 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
 
   ////////////
 
+  function paginationOptions(pluralType, factory) {
+     return {
+         resultKey: '_embedded.' + pluralType,
+         nextUrlKey: '_links.next.href',
+         previousUrlKey: '_links.prev.href',
+         countKey: 'page.totalElements',
+         resultsFactory: factory
+     };
+  }
+
   /**
    * @namespace userDirectory
    * @desc
@@ -616,27 +980,39 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
    *
    * @memberOf hbpIdentity
    */
-  function userDirectory($rootScope, $q, $http, $cacheFactory, bbpConfig, hbpUtil, hbpIdentityUtil){
+  function userDirectory($rootScope, $q, $http, $cacheFactory, $log, bbpConfig, hbpErrorService, hbpUtil, hbpIdentityUtil) {
     var userCache = $cacheFactory('hbpUserCache');
-    var APIUrl = bbpConfig.get('api.user.v0');
-    var userApiUrl = APIUrl + '/user';
-    var groupApiUrl = APIUrl + '/group';
+    var v0APIUrl = bbpConfig.get('api.user.v0', null);
+    var v1APIUrl = bbpConfig.get('api.user.v1', null);
+    var userApiUrl = function() {
+        var url = [v0APIUrl, v1APIUrl][hbpIdentityUtil.userApiVersion()] + '/user';
+        if (!url) {
+            throw hbpErrorService.error({
+                type: 'UnkownConfigurationKey',
+                message: 'URL for <api.user.v' + hbpIdentityUtil.userApiVersion() + '> is not set'
+            });
+        }
+        return url;
+    };
+    var groupApiUrl = function() {
+      return [v0APIUrl, v1APIUrl][hbpIdentityUtil.userApiVersion()] + '/group';
+    };
     // key used to store the logged in user in the cache
     var currentUserKey = '_currentUser_';
-    var adminsGroupId = 'S12578'; // S12578 > bbp-ou-platformdev
 
     $rootScope.$on('user:disconnected', function() {
         userCache.removeAll();
     });
 
     // Create requests with a maximum length of 2000 chars
-    var splitInURl = function (source, urlPrefix, destination) {
+    var splitInURl = function (source, urlPrefix, destination, argName) {
         if (source.length > 0) {
             var url = urlPrefix + source[0];
+            var sep = ['%2B', '&' + argName + '='][hbpIdentityUtil.userApiVersion()];
             for(var i = 1; i < source.length; i++) {
-                if(url.length + source[i].length + 1 < 2000) {
+                if(url.length + source[i].length + sep.length < 2000) {
                     // If we still have enough room in the url we add the id to it
-                    url += '%2B' + source[i]; // %2B means +
+                    url += sep + source[i];
                 } else {
                     // We flush the call and start a new one
                     destination.push(url);
@@ -674,7 +1050,20 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
             deferred.reject.apply(deferred, ids);
         };
         var processResponseAndCarryOn = function (data) {
-            addToCache(data.data.result, response);
+            // atm group and user api response data format is different
+            var items;
+            if (data.data.result) {
+              items = data.data.result;
+            } else if (data.data._embedded.users) {
+              items = data.data._embedded.users;
+            } else if (data.data._embedded.groups) {
+              items = data.data._embedded.groups;
+            } else if (data.data.content) {
+              items = data.data.content;
+            } else {
+              $log.error("Unable to find a resultset in data", data);
+            }
+            addToCache(items, response);
             if(urls && urls.length > 0) {
                 return $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
             } else {
@@ -688,6 +1077,7 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
                 response[id] = user;
             } else {
                 if(id[0] === 'S') {
+                    // FIXME
                     // The id is from a group
                     uncachedGroup.push(id);
                 } else {
@@ -702,8 +1092,10 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
             deferred.resolve(response);
         } else {
             // Get the list of URLs to call
-            splitInURl(uncachedUser, userApiUrl + '?filter=id=', urls);
-            splitInURl(uncachedGroup, groupApiUrl + '?filter=id=', urls);
+            var userBaseUrl = ['?filter=id=', '/search?id='][hbpIdentityUtil.userApiVersion()];
+            var groupBaseUrl = ['?filter=id=', '/search?name='][hbpIdentityUtil.userApiVersion()];
+            splitInURl(uncachedUser, userApiUrl() + userBaseUrl, urls, 'id');
+            splitInURl(uncachedGroup, groupApiUrl() + groupBaseUrl, urls, 'value');
 
             // Async calls and combination of result
             $http.get(urls.shift()).then(processResponseAndCarryOn, rejectDeferred);
@@ -714,12 +1106,130 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
 
     var isGroupMember = function(groups) {
         return this.getCurrentUser().then(function(user) {
-            var groupList = _.isArray(groups) ? groups : [groups];
-            return _.some(groupList, function (group){
+            var compFunc = [function (group){ // V0
                 return user.groups.indexOf(group) > -1;
-            });
+            }, function(group) {
+                return _.some(user.groups, function(g) {
+                    return g.name === group;
+                });
+            }][hbpIdentityUtil.userApiVersion()];
+            var groupList = _.isArray(groups) ? groups : [groups];
+            return _.some(groupList, compFunc);
         });
     };
+
+    /*
+     * @deprecated
+     * @desc
+     * It will be removed once v1 apis will be available in all envs.
+     *
+     */
+    function listV0(options) {
+        var params = hbpIdentityUtil.queryParams(options);
+        var endpoint = userApiUrl();
+        if(options && options.managedOnly) {
+            endpoint += '/managed';
+        }
+        var pageOptions = {
+            resultKey: 'result'
+        };
+        return hbpUtil.paginatedResultSet($http.get(endpoint, {
+          params: params
+        }), pageOptions);
+    }
+
+    function listV1(options) {
+        var opt = angular.extend({
+            sort: 'familyName'
+        }, options);
+        var endpoint = userApiUrl();
+
+        if(opt.managedOnly) {
+            return $q.reject(hbpErrorService.error({
+                type: 'OptionNotSupportedError',
+                message: 'mangedOnly query not supported yet'
+            }));
+        }
+
+        // append filter part to endpoint
+        if(opt.filter) {
+            var supportedFilters = [ 'displayName', 'email', 'id', 'username', 'accountType' ];
+            try {
+                endpoint += '/search?' + appendFilterToPath(opt.filter, supportedFilters);
+            } catch (ex) {
+                return $q.reject(ex);
+            }
+        }
+
+        var pageOptions = paginationOptions('users', opt.factory);
+        var params = hbpIdentityUtil.queryParamsV1(opt);
+
+        var result = hbpUtil.paginatedResultSet($http.get(endpoint, {
+          params: params
+        }), pageOptions);
+
+        // if pageSize=0 load everything
+        return (opt.pageSize !== 0) ? result : result.then(loadMore);
+    }
+
+    function adminGroups(options) {
+        options = angular.extend({sort: 'name'}, options);
+        var params = hbpIdentityUtil.queryParamsV1(options);
+        return this.getCurrentUserOnly().then(function(user) {
+            var url = hbpUtil.format('{0}/{1}/admin-groups', [userApiUrl(), user.id]);
+            if (options.filter) {
+                try {
+                    url += '?' + appendFilterToPath(options.filter, ['name']);
+                } catch (ex) {
+                    return $q.reject(ex);
+                }
+            }
+            return hbpUtil.paginatedResultSet(
+                $http.get(url, {
+                    params: params
+                }),
+                paginationOptions('groups', options.factory)
+            );
+        });
+    }
+
+    // used by `list` function to load all the pages
+    function loadMore(res) {
+        return res.hasNext ? res.next().then(loadMore) : res;
+    }
+
+    /**
+     * [appendFilterToPath description]
+     * @param  {[type]} filter           [description]
+     * @param  {[type]} supportedFilters [description]
+     * @throws {HbpError} FilterNotSupportedError
+     * @return {[type]}                  [description]
+     */
+    function appendFilterToPath(filter, supportedFilters) {
+        if (!filter) {
+            return;
+        }
+        var queryString = '';
+        for (var k in filter) {
+          if (filter.hasOwnProperty(k)) {
+                if (supportedFilters.indexOf(k) === -1) {
+                    throw hbpErrorService.error({
+                        type: 'FilterNotSupportedError',
+                        message: 'Cannot filter on property: ' + k
+                    });
+                }
+                var v = filter[k];
+                if (angular.isArray(v)) {
+                    _.each(v, function(vi) {
+                        queryString += k + '=' + encodeURIComponent(vi) + '&';
+                    });
+                } else {
+                    queryString += k + '=' + encodeURIComponent(v) + '&';
+                }
+            }
+        }
+        return queryString.slice(0, -1);
+    }
 
     return {
         /**
@@ -752,7 +1262,7 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
                 return $q.when(user);
             }
             // load it from user profile service
-            return $http.get(userApiUrl + '/me').then(
+            return $http.get(userApiUrl() + '/me').then(
                 function(userData) {
                     // merge groups into user profile
                     var profile = userData.data;
@@ -783,12 +1293,26 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
             if(!user){
                 request.user = this.getCurrentUserOnly();
             }
-            request.groups = $http.get(userApiUrl + '/me/groups');
+
+            [function() {        // V0
+                request.groups = $http.get(userApiUrl() + '/me/groups')
+                .then(function(res) {
+                    return res.data.result;
+                });
+            }, function() {      // V1
+                request.groups = hbpUtil.paginatedResultSet(
+                    $http.get(userApiUrl() + '/me/member-groups'),
+                    paginationOptions('groups')
+                ).then(function(rs) {
+                    return rs.toArray();
+                });
+            }][hbpIdentityUtil.userApiVersion()]();
+
             // load it from user profile service
             return $q.all(request).then(function(aggregatedData) {
                 // merge groups into user profile
                 var profile = aggregatedData.user || user;
-                profile.groups = aggregatedData.groups.data.result;
+                profile.groups = aggregatedData.groups;
 
                 // add to cache
                 userCache.put(currentUserKey, profile);
@@ -808,7 +1332,7 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
          * @function
          */
         create: function (user) {
-            return $http.post(userApiUrl, user).then(
+            return $http.post(userApiUrl(), user).then(
                 function() {
                     return user;
                 },
@@ -835,7 +1359,8 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
         update: function(user, data) {
             data = data || user;
             var id = (typeof user === 'string' ? user : user.id);
-            return $http.put(userApiUrl + '/' + id, data).then(
+            var httpCall = [$http.put, $http.patch][hbpIdentityUtil.userApiVersion()];
+            return httpCall(userApiUrl() + '/' + id, data).then(
                 function() {
                     userCache.remove(id);
                     var cachedCurrentUser = userCache.get(currentUserKey);
@@ -871,10 +1396,11 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
          *
          * Available options:
          *
-         * * sort: properties to sort on. prepend '-'' to reverse order.
+         * * sort: property to sort on. prepend '-'' to reverse order.
          * * page: page to be loaded (default: 0)
-         * * pageSize: max number or items to be loaded (default: 10)
-         * * filter: fiter object, wildcard admitted in the values
+         * * pageSize: max number or items to be loaded (default: 10, when 0 all records are loaded)
+         * * filter: an Object containing the field name as key and
+         *           the query as a String or an Array of strings
          * * managedOnly: returns only the users managed by the current logged in user
          *
          *
@@ -882,17 +1408,7 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
          * @function
          */
         list: function(options) {
-            var params = hbpIdentityUtil.queryParams(options);
-            var endpoint = userApiUrl;
-            if(options && options.managedOnly) {
-                endpoint += '/managed';
-            }
-
-            return hbpUtil.paginatedResultSet($http.get(endpoint, {
-              params: params
-            }), {
-              resultKey: 'result'
-            });
+            return [listV0, listV1][hbpIdentityUtil.userApiVersion()](options);
         },
 
         /**
@@ -904,9 +1420,7 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
          * @function
          */
         isAdmin: function() {
-            return this.getCurrentUser().then(function(user) {
-                return user.groups && user.groups.indexOf(adminsGroupId) > -1;
-            });
+            return this.isGroupMember(bbpConfig.get('collab.groups.hbpAdmin', 'S12578'));
         },
 
         /**
@@ -919,10 +1433,27 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
          * @memberOf hbpIdentity.hbpIdentityUserDirectory
          * @function
          */
-        isGroupMember: isGroupMember
+        isGroupMember: isGroupMember,
+
+        /**
+         * @name isHbpMember
+         * @desc
+         * Return a promise that will resolve to true if the current user is a
+         * HBP member.
+         *
+         * @memberOf hbpIdentity.hbpIdentityUserDirectory
+         * @function
+         */
+        isHbpMember: function() {
+            if (hbpIdentityUtil.userApiVersion() === 0) {
+                return $q.when(true);
+            }
+            return this.isGroupMember(bbpConfig.get('collab.groups.hbpMember', 'hbp-member'));
+        },
+        adminGroups: adminGroups
     };
   }
-  userDirectory.$inject = ["$rootScope", "$q", "$http", "$cacheFactory", "bbpConfig", "hbpUtil", "hbpIdentityUtil"];
+  userDirectory.$inject = ["$rootScope", "$q", "$http", "$cacheFactory", "$log", "bbpConfig", "hbpErrorService", "hbpUtil", "hbpIdentityUtil"];
 
 }());
 
@@ -944,62 +1475,120 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
    * hbpIdentityUtil grouprs together useful function for the hbpIdentity module.
    * @memberOf hbpIdentity
    */
-  function hbpIdentityUtil() {
+  function hbpIdentityUtil($log, bbpConfig) {
     var service = {
-      queryParams: queryParams
+        queryParams: queryParams,
+        queryParamsV1: queryParamsV1,
+        userApiVersion: userApiVersion
+    };
+
+
+    function userApiVersion() {
+        return bbpConfig.get('collab.features.identity.userApiV1', false) ? 1 : 0;
     }
+
+    /**
+     * @name queryParams
+     * @memberOf hbpIdentity.hbpIdentityUtil
+     * @desc
+     * Accept an object with the following attributes:
+     *
+     * - page: the result page to load (default: 0)
+     * - pageSize: the size of a page (default: 25)
+     * - filter: an Object containing the field name as key and
+     *           the query as a String or an Array of strings
+     * - sort: the ordering columns as a string or an array of string
+     *
+     * @param  {Object} options sort and filter keys
+     * @return {Object}         params suitable for $http requests
+     */
+    function queryParams(options) {
+        var defaultOptions = {
+            page: 0,
+            pageSize: 10
+        };
+        var opt = angular.extend(defaultOptions, options);
+
+        var filterStr;
+        if(opt.filter) {
+            var filterArr = _.map(opt.filter, function(val, key) {
+                if(_.isArray(val)) {
+                    val = val.join('+');
+                }
+                return key + '=' + val;
+            });
+            filterStr = filterArr.join();
+        }
+
+        var sortStr;
+        if(opt.sort) {
+            if(_.isArray(opt.sort)) {
+                sortStr = opt.sort.join();
+            } else {
+                sortStr = _(opt.sort).toString();
+            }
+        }
+
+        return {
+            page: opt.page,
+            pageSize: opt.pageSize,
+            filter: filterStr,
+            sort: sortStr
+        };
+    }
+
+
+    /**
+     * @deprecated
+     * @name queryParamsV1
+     * @memberOf hbpIdentity.hbpIdentityUtil
+     * @desc
+     * Should be used only in the transition period between v0 and v1.
+     * It will disappear once the group api v1 will be available.
+     *
+     * Accept an object with the following attributes:
+     *
+     * - page: the result page to load (default: 0)
+     * - pageSize: the size of a page (default: 25)
+     * - filter: an Object containing the field name as key and
+     *           the query as a String or an Array of strings
+     * - sort: the ordering column as a string. prepend with '-' to reverse order.
+     *
+     * @param  {Object} options sort and filter keys
+     * @return {Object} params suitable for $http requests
+     */
+    function queryParamsV1(options) {
+        var defaultOptions = {
+            page: 0,
+            pageSize: 10
+        };
+        var opt = angular.extend(defaultOptions, options);
+
+        var sortStr;
+        if(opt.sort) {
+            var sortVal = opt.sort;
+            if(_.isArray(sortVal) && sortVal.length > 0) {
+              sortVal = sortVal[0];
+              $log.warn('Multiple field sorting not supported. Using: ' + sortVal);
+            }
+            sortStr = _(sortVal).toString();
+
+            if(sortStr.charAt(0) === '-') {
+              sortStr = sortStr.substring(1) + ',desc';
+            }
+        }
+
+        return {
+            page: opt.page,
+            pageSize: opt.pageSize,
+            sort: sortStr
+        };
+    }
+
     return service;
   }
+  hbpIdentityUtil.$inject = ["$log", "bbpConfig"];
 
-  /**
-   * @name queryParams
-   * @memberOf hbpIdentity.hbpIdentityUtil
-   * @desc
-   * Accept an object with the following attributes:
-   *
-   * - page: the result page to load (default: 0)
-   * - pageSize: the size of a page (default: 25)
-   * - filter: an Object containing the field name as key and
-   *           the query as a String or an Array of strings
-   * - sort: the ordering columns as a string or an array of string
-   *
-   * @param  {Object} options sort and filter keys
-   * @return {Object}         params suitable for $http requests
-   */
-  function queryParams(options) {
-      var defaultOptions = {
-          page: 0,
-          pageSize: 10
-      };
-      var opt = angular.extend(defaultOptions, options);
-
-      var filterStr;
-      if(opt.filter) {
-          var filterArr = _.map(opt.filter, function(val, key) {
-              if(_.isArray(val)) {
-                  val = val.join('+');
-              }
-              return key + '=' + val;
-          });
-          filterStr = filterArr.join();
-      }
-
-      var sortStr;
-      if(opt.sort) {
-          if(_.isArray(opt.sort)) {
-              sortStr = opt.sort.join();
-          } else {
-              sortStr = _(opt.sort).toString();
-          }
-      }
-
-      return {
-          page: opt.page,
-          pageSize: opt.pageSize,
-          filter: filterStr,
-          sort: sortStr
-      };
-  }
 }());
 
 'use strict';
@@ -1013,7 +1602,7 @@ angular.module('hbpCommon', [
   'hbpIdentity',
   'hbpCommonUI'
 ]);
-window.hbpCommonVersion = '2.0.1-dev.0';
+window.hbpCommonVersion = '2.2.1';
 
 angular.module('hbpCommon')
 /**
@@ -1411,8 +2000,8 @@ angular.module('hbpCommonUI')
     return {
         restrict: 'E',
         scope: {
-            promise: '=hbpPromise',
-            message: '=hbpMessage'
+            promise: '=?hbpPromise',
+            message: '=?hbpMessage'
         },
         template: '<div class="hbp-loading" ng-if="loading"><span class="glyphicon glyphicon-refresh hbp-spinning"></span> {{message}}</div>',
         link: function(scope) {
@@ -1513,6 +2102,7 @@ angular.module('hbpCommon')
             restrict: 'EA',
             scope: {
                 exclude: '=hbpUserExclude',
+                filter: '=?hbpFilter',
                 onUserSelect: '&hbpOnSelect'
             },
             templateUrl: function(tElement, tAttrs) {
@@ -1537,9 +2127,9 @@ angular.module('hbpCommon')
                 $scope.getUsers = function(filter) {
                     var users = [];
                     return hbpIdentityUserDirectory.list({
-                        filter: {
+                        filter: angular.extend({}, $scope.filter, {
                             displayName: '*' + filter+ '*'
-                        }
+                        })
                     }).then(function(res) {
                         _.forEach(res.results, function(item) {
                             if($scope.idsToExclude.indexOf(item.id) < 0) {
@@ -1842,7 +2432,7 @@ angular.module('hbpCommon')
             });
         }
         return hbpUtil.paginatedResultSet(request, {
-          factory: Collab.fromJson
+          resultsFactory: resultsFactory
         });
     };
 
@@ -1862,7 +2452,7 @@ angular.module('hbpCommon')
         options = angular.extend({}, options);
         var params = angular.extend({}, _.pick(options, ['search']));
         return hbpUtil.paginatedResultSet($http.get(myCollabsUrl, {params: params}), {
-            factory: Collab.fromJson
+            resultsFactory: resultsFactory
         });
     };
     this.mine = mine;
@@ -1920,6 +2510,10 @@ angular.module('hbpCommon')
             return ongoingContextRequests[uuid];
         }
     };
+
+    function resultsFactory(results) {
+        return _.map(results, Collab.fromJson);
+    }
 
 
     //
@@ -2272,13 +2866,20 @@ angular.module('hbpCommon')
     var HbpError = function(options) {
         options = angular.extend({
             type: 'UnknownError',
-            message: 'An unknown error occured.',
+            message: 'An unknown error occurred.',
             code: -1
         }, options);
         this.type = options.type;
+        this.name = this.type; // Conform to Error class
         this.message = options.message;
         this.data = options.data;
         this.code = options.code;
+        this.stack = (new Error()).stack;
+    };
+    // Extend the Error prototype
+    HbpError.prototype = Object.create(Error.prototype);
+    HbpError.prototype.toString = function() {
+        return '' + this.type + ':' + this.message;
     };
 
     return {
@@ -2412,7 +3013,7 @@ angular.module('hbpCommon')
         //
         // Once this function is called it will first try to call the 'submitCall' function with
         // all the optional argument provided above.
-        // - If this succeeds then the close methode will be called.
+        // - If this succeeds then the close method will be called.
         // - If this fails then the error field of the provided scope will be filed with the
         //   error message
         var dialogSubmissionRestCallErrorHandler = function (submitCall, scope) {
