@@ -118,7 +118,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CODE_EDITOR]='Toggle the experiment designer. Choose between the environment designer and the transfer function (TF) editor in the tabs above.\n- The environment designer allows to add, move, rotate and scale objects during the simulation. The environment model can be saved or loaded using the SDF format.\n- The TF editor allows to re-define or add new transfer functions into the current simulation. The transfer functions represent the main interface between the robot and the spiking neural network and define the conversion from the sensory input to the sensory neurons and from the network output to the robot control properties. A transfer function can be defined, loaded and saved as a Python script.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.GRAPHICS_PERFORMANCE]='This Button toggles the performance hungry graphic options (shadows, ...)'">
         <!-- overlay -->
-        <div id="overlay" class="esv-overlay">
+        <div id="overlay" class="esv-overlay noselect">
           <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
             <div ng-if="viewState.isOwner"
                  class="hbp-toolbar-action"
