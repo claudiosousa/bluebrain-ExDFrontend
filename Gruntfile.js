@@ -225,7 +225,14 @@ module.exports = function(grunt) {
                     ]
                 }]
             },
-            server: '.tmp'
+            server: {
+                files: [{
+                    src: [
+                        '.tmp',
+                        '<%= yeoman.app %>/style' // removes png files copied from bower_components/gz3d-hbp/gz3d/client/style/images [NRRPLT-3145]
+                    ]
+                }]
+            },
         },
 
         // Add vendor prefixed styles
@@ -492,6 +499,13 @@ module.exports = function(grunt) {
                         'bower_components/jquery/dist/jquery.min.js'
                     ],
                     dest: '<%= yeoman.dist %>'
+                }, {
+                    expand: true,
+                    cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
+                    src: [ // the following files are needed by gz3d [NRRPLT-3145]
+                        'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
+                    ],
+                    dest: '<%= yeoman.dist %>/style/images'
                 }]
             },
             styles: {
@@ -505,6 +519,14 @@ module.exports = function(grunt) {
                 cwd: '<%= yeoman.app %>/img',
                 dest: '<%= yeoman.dist %>/img',
                 src: '**/*.{png,jpg,jpeg,gif,webp}'
+            },
+            gz3dImages: {
+                expand: true,
+                cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
+                src: [ // the following files are needed by gz3d [NRRPLT-3145]
+                        'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
+                    ],
+                dest: '<%= yeoman.app %>/style/images'
             }
         },
 
@@ -667,6 +689,7 @@ module.exports = function(grunt) {
         grunt.task.run([
         	'version:test',
             'clean:server',
+            'copy:gz3dImages', // copy files needed by gz3d [NRRPLT-3145]
             'wiredep',
             'concurrent:server',
             'autoprefixer',
