@@ -111,7 +111,7 @@
   "collab" : {
     "features": {
       "identity" : {
-        "userV1Api" : true
+        "userApiV1" : true
       }
     }
   },
