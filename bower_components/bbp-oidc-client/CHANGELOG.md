@@ -1,4 +1,13 @@
 <a name"0.0.0"></a>
+## 0.0.0 (2016-04-20)
+
+
+#### Bug Fixes
+
+* **logout:** logout issue in firefox (https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibOidcClient.git/commit/?id=a4e5b1fb997738f228bf85cd84b070c131f3e618)
+
+
+<a name"0.0.0"></a>
 ## 0.0.0 (2016-04-12)
 
 
