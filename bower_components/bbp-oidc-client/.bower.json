@@ -1,6 +1,6 @@
 {
   "name": "bbp-oidc-client",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Javascript client to OIDC, using angular or plain js.",
   "main": [
     "./angular-bbp-oidc-client.js"
@@ -44,13 +44,13 @@
   "resolutions": {
     "angular": "~1.3.15"
   },
-  "_release": "0.8.3",
+  "_release": "0.8.4",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.3",
-    "commit": "5d6fe22c9bf351996985f0d4fd2b68b3293dfa91"
+    "tag": "v0.8.4",
+    "commit": "2feeab32972a47d3a725835d502874d7ecb79e26"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibOidcClient",
-  "_target": "~0.8.3",
+  "_target": "~0.8.1",
   "_originalSource": "bbp-oidc-client"
 }

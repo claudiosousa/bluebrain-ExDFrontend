@@ -180,9 +180,10 @@
                 var oReq = new XMLHttpRequest();
                 oReq.onload = function() {
                     sessionReqInProgress = false;
+                    var active = this.status === 200;
                     for(var i = 0; i < pendingCallbacks.length; i++) {
                         try {
-                            pendingCallbacks[i](this.status === 200);
+                            pendingCallbacks[i](active);
                         } catch(err) {
                             console.error('Error invoking isSessionActive callback:', err); // jshint ignore:line
                         }
