@@ -102,6 +102,12 @@
         templateUrl: 'views/common/support.html'
       };
 
+      var newCollabOverviewState = {
+        name: 'create-collab-overview',
+        url: '/create-collab-overview',
+        templateUrl: 'views/common/create-collab-overview.html'
+      };
+
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
       home.state(esvCollabEditState);
@@ -109,6 +115,7 @@
       home.state(esvCollabRunState);
       home.state(gz3dViewState);
       home.state(supportState);
+      home.state(newCollabOverviewState);
       // Provide a default route.
       // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
       $urlRouterProvider.otherwise('/');
