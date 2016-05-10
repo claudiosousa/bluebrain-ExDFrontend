@@ -1,6 +1,6 @@
 {
   "name": "exdfrontend",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "description": "Neurorobotics experiment designer",
   "dependencies": {},
   "devDependencies": {
