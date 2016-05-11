@@ -68,6 +68,15 @@
         });
       };
 
+      var resourceBrainPopulations = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/simulation/:sim_id/populations', {}, {
+          get: {
+            method: 'GET',
+            interceptor: {responseError: serverError.display}
+          }
+        });
+      };
+
       var resourceBrainExperiment = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/experiment/:context_id/brain', {}, {
           save: {
@@ -160,6 +169,14 @@
             function(response) {
               callback(response);
             }
+          );
+        },
+        getPopulations: function (callback) {
+          resourceBrainPopulations(simulationInfo.serverBaseUrl).get(
+              {sim_id: simulationInfo.simulationID},
+              function(response) {
+                callback(response);
+              }
           );
         },
 

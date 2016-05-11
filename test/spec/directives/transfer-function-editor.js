@@ -9,6 +9,7 @@ describe('Directive: transferFunctionEditor', function () {
     hbpDialogFactory;
 
   var backendInterfaceServiceMock = {
+    getPopulations: jasmine.createSpy('getPopulations'),
     getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
     setTransferFunction: jasmine.createSpy('setTransferFunction'),
     deleteTransferFunction: jasmine.createSpy('deleteTransferFunction'),
@@ -102,6 +103,44 @@ describe('Directive: transferFunctionEditor', function () {
     expect(isolateScope.ERROR).toBeDefined();
     expect(backendInterfaceService.getTransferFunctions).toHaveBeenCalled();
     expect(isolateScope.cleDocumentationURL).toEqual('cleDocumentationURL');
+  });
+
+  it('should init the populations variable', function () {
+    $scope.control.refresh();
+    expect(isolateScope.populations).toEqual([]);
+    expect(isolateScope.showPopulations).toBe(false);
+  });
+
+  it('should load the populations when showPopulations is True', function () {
+    isolateScope.showPopulations = true;
+    $scope.control.refresh();
+    expect(isolateScope.populations).toEqual([]);
+    expect(isolateScope.showPopulations).toBe(true);
+    expect(backendInterfaceService.getPopulations).toHaveBeenCalled();
+  });
+
+  it('should toggle populations visibility', function () {
+    isolateScope.togglePopulations();
+    expect(isolateScope.showPopulations).toBe(true);
+    expect(backendInterfaceService.getPopulations).toHaveBeenCalled();
+  });
+
+  it('should toggle populations correctly', function() {
+    var population = { name: 'test'};
+    population.showDetails = false;
+    isolateScope.togglePopulationParameters(population);
+    expect(population.showDetails).toBe(true);
+    isolateScope.togglePopulationParameters(population);
+    expect(population.showDetails).toBe(false);
+  });
+
+  it('should add new populations correctly', function() {
+    var population = { name: 'test'};
+    expect(isolateScope.populations).toEqual([]);
+    isolateScope.onPopulationsReceived(population);
+    expect(isolateScope.populations).toEqual([population]);
+    isolateScope.onPopulationsReceived(population);
+    expect(isolateScope.populations).toEqual([population]);
   });
 
   describe('Retrieving, saving and deleting transferFunctions', function () {

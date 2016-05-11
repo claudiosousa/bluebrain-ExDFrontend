@@ -104,6 +104,14 @@ describe('Services: backendInterfaceService', function () {
     expect(callback).toHaveBeenCalled();
   });
 
+  it('should call the success callback when the getPopulations GET request succeeds', function () {
+    $httpBackend.whenGET(urlRegex).respond(200);
+    var callback = jasmine.createSpy('callback');
+    backendInterfaceService.getPopulations(callback);
+    $httpBackend.flush();
+    expect(callback).toHaveBeenCalled();
+  });
+
   it('should call serverError.display when the saveTransferFunctions PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     backendInterfaceService.saveTransferFunctions('97923877-13ea-4b43-ac31-6b79e130d344');
