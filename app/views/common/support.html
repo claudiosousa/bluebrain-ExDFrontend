@@ -1,3 +1,25 @@
+<script>
+ var showPageInCollab = function(href) {
+   // external URL are sent to parent windows.
+    var nextUrl = new URL(href);
+    var currentUrl = new URL(location.absUrl());
+
+    if (nextUrl.host !== currentUrl.host ||
+        nextUrl.pathname !== currentUrl.pathname ||
+        nextUrl.port !== currentUrl.port) {
+      window.parent.postMessage({
+        eventName: 'location',
+        data: {
+          url: href
+        }
+      }, '*');
+    } else {
+      // Standard behaviors, other navigation rules will be handled
+      // by standard Angular events.
+      location.href = href;
+    }​
+ }
+</script>
 <div id="support-header">
   <h1>Neurorobotics platform - Support</h1>
   <hr>
@@ -12,15 +34,17 @@
     <li id="support-topic-manual" class="support-topics-listitem">
       <div class="topic-header"><i class="fa fa-book fa-3x"></i><span class="topic-header-text">Manuals</span></div>
       <div class="topic-content">
-        <p>For <b>beginners</b>, the preferred documentation will be the <a href="https://collab.humanbrainproject.eu/#/collab/71/nav/1610">user manual</a>.</p>
-        <p>For <b>advanced users</b> that need to change transfer functions or edit brain code, please refer to our <a href="https://collab.humanbrainproject.eu/#/collab/71/nav/1610">developer manual</a>.</p>
+        <p>For <b>beginners</b>, the preferred documentation will be the
+        <a onclick="showPageInCollab('https://collab.humanbrainproject.eu/#/collab/71/nav/1610')">user manual</a>.</p>
+        <p>For <b>advanced users</b> that need to change transfer functions or edit brain code, please refer to our
+          <a onclick="showPageInCollab('https://collab.humanbrainproject.eu/#/collab/71/nav/1610')">developer manual</a>.</p>
       </div>
     </li>
     <li id="support-topic-contacts" class="support-topics-listitem">
       <div class="topic-header"><i class="fa fa-comment fa-3x"></i><span class="topic-header-text">Contacts</span></div>
       <div class="topic-content">
         <p>
-          <a href="https://forum.humanbrainproject.eu/">
+          <a href="https://forum.humanbrainproject.eu/" target="_blank">
             <img src="http://forums.redflagdeals.com/images/icons/new/forum-icon-base-32.png">Forum
           </a>
         </p>
@@ -35,12 +59,12 @@
       <div class="topic-header"><i class="fa fa-share-alt fa-3x"></i><span class="topic-header-text">Social</span></div>
       <div class="topic-content">
         <p>
-          <a href="https://www.youtube.com/channel/UCPFZMa0mnGcaysvrdA-OzrA/videos">
+          <a href="https://www.youtube.com/channel/UCPFZMa0mnGcaysvrdA-OzrA/videos" target="_blank">
             <img src="https://addons.cdn.mozilla.net/user-media/addon_icons/10/10423-64.png?modified=1316482012">Video tutorials and more
           </a>
         </p>
         <p>
-          <a href="https://twitter.com/HBPNeurorobotic">
+          <a href="https://twitter.com/HBPNeurorobotic" target="_blank">
             <img src="https://abs.twimg.com/favicons/favicon.ico">Twitter
           </a>
         </p>
