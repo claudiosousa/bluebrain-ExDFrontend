@@ -6603,6 +6603,8 @@ GZ3D.Scene.prototype.setWindowSize = function(width, height)
   this.viewManager.setWindowSize(width, height);
 
   this.render();
+
+  this.container.focus();
 };
 
 /**
@@ -8318,7 +8320,6 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
     lightObj.intensity = E*(D/(D+L*r))*(Math.pow(D,2)/(Math.pow(D,2)+Q*Math.pow(r,2)));
   }
 
-
   if (lightObj instanceof THREE.SpotLight) {
     if (msg.spot_outer_angle) {
       lightObj.angle = msg.spot_outer_angle;
@@ -8327,13 +8328,6 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
     if (msg.spot_falloff) {
       lightObj.exponent = msg.spot_falloff;
     }
-  }
-
-  if (msg.direction && lightObj.target)
-  {
-    dir = new THREE.Vector3(msg.direction.x, msg.direction.y,
-        msg.direction.z);
-    lightObj.target.position.copy(dir);
   }
 };
 
