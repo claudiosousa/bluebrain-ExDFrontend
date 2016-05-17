@@ -54,8 +54,7 @@ describe('Controller: experimentCtrl', function () {
     refreshExperiments : jasmine.createSpy('refreshExperiments'),
     getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
     startNewExperiment : jasmine.createSpy('startNewExperiment'),
-    stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer'),
-    enterEditMode : jasmine.createSpy('enterEditMode')
+    stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer')
   };
 
   var experimentTemplatesArray = (function () {
@@ -421,13 +420,6 @@ describe('Controller: experimentCtrl', function () {
     expect(experimentSimulationService.startNewExperiment).toHaveBeenCalled();
     expect(experimentSimulationService.startNewExperiment.mostRecentCall.args[0]).toBe('foo');
     expect(experimentSimulationService.startNewExperiment.mostRecentCall.args[2]).toBe('bar');
-  });
-
-  it('should test enterEditMode', function() {
-    scope.enterEditMode('foo', 'bar');
-    expect(experimentSimulationService.enterEditMode).toHaveBeenCalled();
-    expect(experimentSimulationService.enterEditMode.mostRecentCall.args[0]).toBe('foo');
-    expect(experimentSimulationService.enterEditMode.mostRecentCall.args[2]).toBe('bar');
   });
 
   describe('tests the uploadEnvironmentAndStart', function () {

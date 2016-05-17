@@ -142,10 +142,6 @@
           experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible);
         };
 
-        $scope.enterEditMode = function(configuration, serverPattern) {
-          experimentSimulationService.enterEditMode(configuration, null, serverPattern, $scope.setProgressbarInvisible);
-        };
-
         $scope.joinExperiment = function (url) {
           var message = 'Joining experiment ' + url;
           $scope.setProgressMessage({main: message});

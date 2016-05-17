@@ -469,7 +469,7 @@ describe('Services: experimentSimulationService', function () {
     expect(experimentTemplates[returnSimulations[3].experimentConfiguration].simulations).toEqual([]);
   });
 
-  it('should call correctly startNewExperiments when calling startNewExperiment and enterEditMode', function() {
+  it('should call correctly startNewExperiments when calling startNewExperiment', function() {
     var oldSnes = experimentSimulationService.startNewExperiments;
     var oldSsliem = experimentSimulationService.setShouldLaunchInEditMode;
     var oldGse = experimentSimulationService.getServersEnable;
@@ -477,15 +477,6 @@ describe('Services: experimentSimulationService', function () {
     spyOn(experimentSimulationService, 'startNewExperiments');
     spyOn(experimentSimulationService, 'setShouldLaunchInEditMode');
     spyOn(experimentSimulationService, 'getServersEnable');
-
-    experimentSimulationService.enterEditMode('expconf', 'envconf', 'serverPattern', null);
-    expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
-    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(true);
-    expect(experimentSimulationService.getServersEnable).toHaveBeenCalled();
-
-    experimentSimulationService.startNewExperiments.reset();
-    experimentSimulationService.setShouldLaunchInEditMode.reset();
-    experimentSimulationService.getServersEnable.reset();
 
     experimentSimulationService.startNewExperiment('expconf', 'envconf', 'serverPattern', null);
     expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();

@@ -7,6 +7,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       controller,
       scope,
       rootScope,
+      log,
       timeout,
       window,
       document,
@@ -40,7 +41,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       hbpDialogFactory,
       backendInterfaceService,
       RESET_TYPE,
-      objectInspectorService;
+      objectInspectorService,
+      collabExperimentLockService,
+      collabExperimentLockServiceMock ={},
+      lockServiceMock,
+      q,
+      callback;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -250,6 +256,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     $provide.value('objectInspectorService', objectInspectorServiceMock);
 
+    $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
+
     simulationServiceObject.simulations.reset();
     simulationServiceObject.getUserName.reset();
     simulationStateObject.update.reset();
@@ -267,6 +275,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
+                              _$log_,
                               _hbpIdentityUserDirectory_,
                               _$timeout_,
                               _$window_,
@@ -295,9 +304,12 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _hbpDialogFactory_,
                               _backendInterfaceService_,
                               _RESET_TYPE_,
-                              _objectInspectorService_) {
+                              _objectInspectorService_,
+                              _collabExperimentLockService_,
+                              _$q_) {
     controller = $controller;
     rootScope = $rootScope;
+    log = _$log_;
     scope = $rootScope.$new();
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     timeout = _$timeout_;
@@ -328,6 +340,19 @@ describe('Controller: Gz3dViewCtrl', function () {
     backendInterfaceService = _backendInterfaceService_;
     RESET_TYPE = _RESET_TYPE_;
     objectInspectorService = _objectInspectorService_;
+    collabExperimentLockService = _collabExperimentLockService_;
+    q = _$q_;
+
+    callback = q.defer();
+    lockServiceMock = {
+      tryAddLock : jasmine.createSpy('tryAddLock').andReturn(callback.promise),
+      onLockChanged : jasmine.createSpy('onLockChanged'),
+      releaseLock: jasmine.createSpy('releaseLock').andReturn(callback.promise),
+    };
+    collabExperimentLockServiceMock.createLockServiceForContext = function(){
+      return lockServiceMock;
+    };
+
 
     scope.viewState = {};
 
@@ -358,9 +383,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       experimentConfiguration: 'FakeExperiment'
     };
 
-    // create mock for console
-    spyOn(console, 'error');
-    spyOn(console, 'log');
+    // create mock for $log
+    spyOn(log, 'error');
   }));
 
   describe('(ViewMode)', function () {
@@ -661,8 +685,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       // currently no element is selected, hence we want a console.error message
       gz3d.scene.selectedEntity = undefined;
       scope.setMaterialOnEntity('value_does_not_matter_here');
-      expect(console.error).toHaveBeenCalled();
-      expect(console.error.callCount).toEqual(1);
+      expect(log.error).toHaveBeenCalled();
+      expect(log.error.callCount).toEqual(1);
 
       // pretend we selected a screen now
       var screenGlassName = 'left_vr_screen::body::screen_glass';
@@ -1044,27 +1068,106 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
   });
 
-  describe('(EditMode)', function () {
-    beforeEach(function(){
+  describe('(EditMode)', function() {
+    beforeEach(function () {
+      stateParams.ctx = 'a context id';
       simulationInfo.mode = OPERATION_MODE.EDIT;
+      lockServiceMock.tryAddLock.reset();
+      lockServiceMock.releaseLock.reset();
 
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
-        $scope: scope
+        $scope: scope,
+        collabExperimentLockService: collabExperimentLockService
+
       });
     });
 
-    it('should be in edit mode', function(){
+    it('should be in edit mode', function () {
       expect(scope.operationMode).toBe(OPERATION_MODE.EDIT);
     });
 
-    it('should enable display of the editor panel', function() {
+    it('should enable display of the editor panel', function () {
       scope.showEditorPanel = false;
+      stateParams.ctx = '';
       scope.toggleEditors();
       expect(scope.showEditorPanel).toBe(true);
     });
 
-    it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function() {
+    it('should enable display of the editor panel in collab mode when there is no lock', function () {
+      scope.showEditorPanel = false;
+      scope.viewState.userID = 'test-user-id';
+      scope.userEditingID ='';
+
+      scope.toggleEditors();
+      callback.resolve({ 'success': true });
+      scope.$apply();
+
+      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
+      expect(scope.showEditorPanel).toBe(true);
+      expect(scope.userEditingID).toBe('test-user-id');
+    });
+
+    it('should enable display of the editor panel in collab mode when there is a lock but the current user is the owner of the lock', function () {
+      scope.showEditorPanel = false;
+      var ownerId = 'my-id';
+      scope.viewState.userID = ownerId;
+
+      scope.toggleEditors();
+      callback.resolve({ 'success': false, 'lock': { 'lockInfo': { 'user': { 'id': ownerId, 'displayName': 'test' }, 'date': 'thedate' } } });
+      scope.$apply();
+
+      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
+      expect(scope.showEditorPanel).toBe(true);
+      expect(scope.userEditingID).toBe(ownerId);
+    });
+
+    it('should NOT enable display of the editor panel in collab mode when there is a lock', function () {
+      scope.showEditorPanel = false;
+      scope.viewState.userID = 'current_user_id';
+      var userName = 'testName';
+      var theDate = '2016-05-17T17:21:05';
+      var notCurrentUser = 'not_current_user';
+
+      scope.toggleEditors();
+      callback.resolve({ 'success': false, 'lock': { 'lockInfo': { 'user': { 'id': notCurrentUser, 'displayName': userName }, 'date': theDate } } });
+      scope.$apply();
+
+      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
+      expect(scope.editIsDisabled).toBe(true);
+      expect(scope.showEditorPanel).toBe(false);
+      expect(scope.userEditingID).toBe(notCurrentUser);
+      expect(scope.userEditing).toBe(userName);
+      expect(scope.timeEditStarted).toBe(moment(new Date(theDate)).fromNow());
+
+    });
+
+    it('should NOT enable display of the editor panel in collab mode when an exception is thrown trying to get the lock', function () {    
+      scope.showEditorPanel = false;
+      scope.viewState.userID = 'current_user_id';
+
+      scope.toggleEditors();
+      callback.reject('something went wrong');
+      scope.$apply();
+
+      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
+      expect(scope.showEditorPanel).toBe(false);
+      expect(scope.userEditingID).toBe('');
+      expect(scope.userEditing).toBe('');
+      expect(scope.timeEditStarted).toBe('');
+    });
+
+    it('should remove display of the editor panel and remove lock', function () {
+      scope.showEditorPanel = true;
+      scope.toggleEditors();
+      callback.resolve();
+      scope.$apply();
+      
+      expect(lockServiceMock.releaseLock).toHaveBeenCalled();
+      expect(lockServiceMock.releaseLock.callCount).toBe(1);
+    });
+
+    it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function () {
       spyOn(scope, 'setLightHelperVisibility').andCallThrough();
       spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
 

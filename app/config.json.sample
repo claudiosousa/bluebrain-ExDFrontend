@@ -99,6 +99,9 @@
     },
     "slurmmonitor": {
       "url": "https://neurorobotics-dev.humanbrainproject.eu/slurmmonitor"
+    },
+    "document": {
+      "v0": "https://services.humanbrainproject.eu/document/v0/api"
     }
   },
   "auth": {

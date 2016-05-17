@@ -76,28 +76,6 @@
                     tooltip="Sorry, you don't have sufficient rights to launch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
               <i class="fa fa-plus"></i> Launch
             </button>
-            <!-- Edit button enabled -->
-            <button ng-if="hasEditRights && !hasEdits && isServerAvailable[experiment.id]" class="btn btn-default"
-                    ng-click="setProgressbarVisible(experiment.id);enterEditMode(experiment.experimentConfiguration, experiment.serverPattern);">
-              <i class="fa fa-pencil"></i> Edit
-            </button>
-            <!-- No available server: edit button disabled -->
-            <button ng-if="hasEditRights && !isServerAvailable[experiment.id]"
-              class="btn btn-default disabled enable-tooltip"
-              tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
-              <i class="fa fa-pencil"></i> Edit
-            </button>
-            <!-- A simulation is being edited: edit button disabled -->
-            <button ng-if="hasEditRights && hasEdits && isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
-                    tooltip="Sorry, you cannot edit a new simulation while another one is being edited."
-                    tooltip-trigger="mouseenter" tooltip-placement="top">
-              <i class="fa fa-pencil"></i> Edit
-            </button>
-            <!-- No edit rights: edit button disabled -->
-            <button ng-if="!hasEditRights && isServerAvailable[experiment.id]" class="btn btn-default disabled enable-tooltip"
-                    tooltip="Sorry, you don't have edit rights." tooltip-trigger="mouseenter" tooltip-placement="top">
-              <i class="fa fa-pencil"></i> Edit
-            </button>
           </div>
           <!-- Join button -->
           <button ng-if="experiment.simulations.length > 0" analytics-on analytics-event="Re-Join"

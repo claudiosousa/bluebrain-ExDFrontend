@@ -111,12 +111,6 @@
           );
         };
 
-        $scope.enterEditMode = function(configuration, serverPattern) {
-          experimentSimulationService.enterEditMode(
-            configuration, null, serverPattern, $scope.setProgressbarInvisible
-          );
-        };
-
         $scope.joinExperiment = function(url) {
           var message = 'Joining experiment ' + url;
           $scope.setProgressMessage({main: message});
@@ -200,6 +194,7 @@
               $scope.experiment = $scope.experiments[experimentID];
               $scope.experiment.id = experimentID;
               $scope.isQueryingServersFinished = true;
+
               // Schedule the update if the esv-web controller was not destroyed in the meantime
               if(!$scope.isDestroyed) {
                 $scope.updateExperiment();

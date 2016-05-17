@@ -267,8 +267,9 @@
               <!-- toggle graphics performance -->
 
 
-              <!-- code editor icon-->
-              <div ng-if="operationMode === OPERATION_MODE.EDIT" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel}" ng-click="(!helpModeActivated) ? toggleEditors() : help(UI.CODE_EDITOR)">
+              <!-- code editor icon -->
+
+              <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel, disabled: editIsDisabled || loadingEditPanel}" ng-click="editClick()" tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}." tooltip-trigger="mouseenter" tooltip-enable="editIsDisabled" v-busy="loadingEditPanel" v-busy-label="Loading the edit panel">
                 <i class="fa fa-pencil-square-o fa-2x vertcenter"></i>
               </div>
               <!-- code editor icon-->

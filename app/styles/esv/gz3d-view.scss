@@ -189,6 +189,7 @@ body > div {
 .disabled {
   opacity: 0.6;
   filter: alpha(opacity=60); /* msie */
+  cursor: help;
 }
 
 

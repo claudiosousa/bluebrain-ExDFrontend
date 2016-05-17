@@ -65,8 +65,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
       startNewExperiment : jasmine.createSpy('startNewExperiment'),
       stopExperimentOnServer: jasmine.createSpy('stopExperimentOnServer').andCallFake(function () {
         return { then: stopExperimentsThenSpy.andCallFake(function (f) { f(); }) };
-      }),
-      enterEditMode : jasmine.createSpy('enterEditMode')
+      })
     };
     $provide.value('experimentSimulationService', experimentSimulationServiceMock);
     var hbpIdentityUserDirectoryPromiseObject = { then: jasmine.createSpy('then').andReturn({ then: jasmine.createSpy('then')})};
@@ -446,13 +445,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
     expect(experimentSimulationService.startNewExperiment).toHaveBeenCalled();
     expect(experimentSimulationService.startNewExperiment.mostRecentCall.args[0]).toBe('foo');
     expect(experimentSimulationService.startNewExperiment.mostRecentCall.args[2]).toBe('bar');
-  });
-
-  it('should test enterEditMode', function() {
-    scope.enterEditMode('foo', 'bar');
-    expect(experimentSimulationService.enterEditMode).toHaveBeenCalled();
-    expect(experimentSimulationService.enterEditMode.mostRecentCall.args[0]).toBe('foo');
-    expect(experimentSimulationService.enterEditMode.mostRecentCall.args[2]).toBe('bar');
   });
 
   describe('tests the uploadEnvironmentAndStart', function () {

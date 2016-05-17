@@ -48,8 +48,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     existsAvailableServer : jasmine.createSpy('existsAvailableServer'),
     refreshExperiments : jasmine.createSpy('refreshExperiments'),
     getServersEnable : jasmine.createSpy('getServersEnable').andReturn(serversEnabled),
-    startNewExperiment : jasmine.createSpy('startNewExperiment'),
-    enterEditMode : jasmine.createSpy('enterEditMode')
+    startNewExperiment : jasmine.createSpy('startNewExperiment')
   };
 
   var experimentTemplatesArray = _.map(experimentTemplates, function(entry, key){

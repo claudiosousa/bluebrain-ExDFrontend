@@ -617,11 +617,6 @@
         nrpAnalytics.tickDurationEvent('Server-initialization');
       };
 
-      var enterEditMode = function (expConf, envConf, serverPattern, errorCallback) {
-        experimentSimulationService.setShouldLaunchInEditMode(true);
-        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
-      };
-
       // Public methods of the service
       var experimentSimulationService = {
         getExperiments: getExperiments,
@@ -635,8 +630,7 @@
         setProgressMessageCallback: setProgressMessageCallback,
         setShouldLaunchInEditMode: setShouldLaunchInEditMode,
         getServersEnable: getServersEnable,
-        startNewExperiment: startNewExperiment,
-        enterEditMode: enterEditMode
+        startNewExperiment: startNewExperiment
       };
 
       return experimentSimulationService;
