@@ -99,6 +99,9 @@
     },
     "slurmmonitor": {
       "url": "https://neurorobotics-dev.humanbrainproject.eu/slurmmonitor"
+    },
+    "document": {
+      "v0": "https://services.humanbrainproject.eu/document/v0/api"
     }
   },
   "auth": {
@@ -112,6 +115,17 @@
     "features": {
       "identity" : {
         "userApiV1" : true
+      }
+    },
+    "collabIds": {
+      "neuroroboticsCollabBaseUrl": "https://collab.humanbrainproject.eu/#/collab/570/nav/",
+      "pagesId": {
+        "upgrade": 6864,
+        "tutorial": 6350,
+        "exampleExperiments": 5098,
+        "createCollab": 5650,
+        "documentation": 5100,
+        "support": 5101
       }
     }
   },
