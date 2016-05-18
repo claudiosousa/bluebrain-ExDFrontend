@@ -141,7 +141,7 @@
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STOPPED) : help(UI.STOP_BUTTON);"
-                 ng-show="((stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED))">
+                 ng-show="(stateService.currentState !== STATE.STOPPED)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div ng-if="viewState.isOwner"
