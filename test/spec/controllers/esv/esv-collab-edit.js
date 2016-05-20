@@ -39,7 +39,6 @@ describe('Controller: ESVCollabEditCtrl', function () {
   slurminfoServiceMockObject.get = jasmine.createSpy('get').andReturn({'foo':'bar'});
 
   var experimentSimulationServiceMock = {
-    setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
     startNewExperiments : jasmine.createSpy('startNewExperiments'),
     getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
       return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };

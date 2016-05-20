@@ -471,20 +471,16 @@ describe('Services: experimentSimulationService', function () {
 
   it('should call correctly startNewExperiments when calling startNewExperiment', function() {
     var oldSnes = experimentSimulationService.startNewExperiments;
-    var oldSsliem = experimentSimulationService.setShouldLaunchInEditMode;
     var oldGse = experimentSimulationService.getServersEnable;
 
     spyOn(experimentSimulationService, 'startNewExperiments');
-    spyOn(experimentSimulationService, 'setShouldLaunchInEditMode');
     spyOn(experimentSimulationService, 'getServersEnable');
 
     experimentSimulationService.startNewExperiment('expconf', 'envconf', 'serverPattern', null);
     expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
-    expect(experimentSimulationService.setShouldLaunchInEditMode).toHaveBeenCalledWith(false);
     expect(experimentSimulationService.getServersEnable).toHaveBeenCalled();
 
     experimentSimulationService.startNewExperiments = oldSnes;
-    experimentSimulationService.setShouldLaunchInEditMode = oldSsliem;
     experimentSimulationService.getServersEnable = oldGse;
   });
 
@@ -638,7 +634,6 @@ describe('Services: experimentSimulationService', function () {
       var initializedCallback = jasmine.createSpy('initializedCallback');
       experimentSimulationService.setInitializedCallback(initializedCallback);
 
-      experimentSimulationService.setShouldLaunchInEditMode(true);
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, serverID, null);
       expect(messageCallback).toHaveBeenCalled();
       expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
@@ -678,16 +673,15 @@ describe('Services: experimentSimulationService', function () {
       expect(updateFunction).not.toThrow();
     });
 
-    it('should start the experiment in view mode', function() {
+    it('should start the experiment in edit mode', function() {
       experimentSimulationService.setProgressMessageCallback(messageCallback);
-      experimentSimulationService.setShouldLaunchInEditMode(false);
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', null);
       var simulationGeneratorMockObject = simulationGenerator();
       expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith({
         experimentConfiguration: 'mocked_experiment_conf',
         /* jshint camelcase: false */
         gzserverHost: 'lugano',
-        operationMode: 'view'
+        operationMode: 'edit'
       }, jasmine.any(Function));
     });
 
@@ -744,21 +738,21 @@ describe('Services: experimentSimulationService', function () {
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBe('environment_conf');
-      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('view');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('edit');
 
       experimentSimulationService.launchExperimentOnServer('experiment_conf', undefined, 'bbpce014', emptyCallback);
 
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBeUndefined();
-      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('view');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('edit');
 
       experimentSimulationService.launchExperimentOnServer('experiment_conf', null, 'bbpce014', emptyCallback);
 
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBeUndefined();
-      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('view');
+      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('edit');
     });
 
   });
