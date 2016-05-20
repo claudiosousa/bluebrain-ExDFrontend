@@ -1,6 +1,7 @@
 @import "pop-over-viewer.scss";
 
 $editorPanelStartWidth: 750px;
+$editorPanelStartWidthLargeScreen: 950px;
 $editorPanelStartHeight: 500px;
 $editorPanelMinWidth: 100px;
 $editorPanelMinHeight: 75px;
@@ -46,8 +47,8 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
   .editor-panel-content {
     overflow: auto;
     width: 100%;
-    padding: 10px;
-    margin: $editorPanelHeadingHeightTotal 10px 10px 10px;
+    padding: 20px;
+    margin: $editorPanelHeadingHeightTotal 0 0 0;
   }
 
   .button-close {
@@ -58,6 +59,11 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
 
 }
 
+@media (min-width: 1024px){
+  .editor-panel-widget {
+    width: $editorPanelStartWidthLargeScreen;
+  }
+}
   /* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
 .noselect {
    cursor: default;

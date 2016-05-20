@@ -79,6 +79,33 @@
         scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
         var ScriptObject = pythonCodeHelper.ScriptObject;
 
+        scope.populations = [];
+
+        scope.showPopulations = false;
+        scope.togglePopulations = function() {
+          scope.showPopulations = !scope.showPopulations;
+          refreshPopulations();
+        };
+        scope.togglePopulationParameters = function(population) {
+          population.showDetails = !population.showDetails;
+        };
+        scope.onPopulationsReceived = function(population) {
+          var p = _.find(scope.populations, {'name': population.name});
+          var found = angular.isDefined(p);
+          if (!found) {
+            population.showDetails = false;
+            scope.populations.unshift(population);
+          }
+        };
+
+        var refreshPopulations = function() {
+          if (scope.showPopulations) {
+            backendInterfaceService.getPopulations(function(response) {
+              _.forEach(response.populations, scope.onPopulationsReceived);
+            });
+          }
+        };
+
         scope.transferFunctions = [];
         var addedTransferFunctionCount = 0;
 
@@ -132,6 +159,7 @@
                 }
              });
           });
+          refreshPopulations();
         };
 
         scope.cleanCompileError = function(transferFunction) {
