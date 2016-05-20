@@ -116,6 +116,17 @@
       "identity" : {
         "userApiV1" : true
       }
+    },
+    "collabIds": {
+      "neuroroboticsCollabBaseUrl": "https://collab.humanbrainproject.eu/#/collab/570/nav/",
+      "pagesId": {
+        "upgrade": 6864,
+        "tutorial": 6350,
+        "exampleExperiments": 5098,
+        "createCollab": 5650,
+        "documentation": 5100,
+        "support": 5101
+      }
     }
   },
   "localmode" : {
