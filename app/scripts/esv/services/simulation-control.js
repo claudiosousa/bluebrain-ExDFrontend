@@ -238,12 +238,8 @@
       var serverIDs = Object.keys(servers);
       var rosConnection;
       var statusListener;
-      var shouldLaunchInEditMode = false;
       var setProgressMessage;
 
-      var setShouldLaunchInEditMode = function (value) {
-        shouldLaunchInEditMode = value;
-      };
 
       var setProgressMessageCallback = function (callback) {
         setProgressMessage = callback;
@@ -501,7 +497,7 @@
         // In case the config does specify where to run, we take the value from the config file. If there is no hint,
         // we fallback to "local".
         var serverJobLocation = servers[freeServerID].serverJobLocation ? servers[freeServerID].serverJobLocation : 'local';
-        var operationMode = (shouldLaunchInEditMode ? OPERATION_MODE.EDIT : OPERATION_MODE.VIEW);
+        var operationMode = OPERATION_MODE.EDIT;
 
         var simInitData = {
           experimentConfiguration: experimentConfiguration,
@@ -606,12 +602,10 @@
       };
 
       var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
-        experimentSimulationService.setShouldLaunchInEditMode(false);
 
         experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
 
-        var mode = shouldLaunchInEditMode ? 'edit' : 'run';
-        nrpAnalytics.eventTrack('Start-'+mode, {
+        nrpAnalytics.eventTrack('Start', {
           category: 'Experiment'
         });
         nrpAnalytics.tickDurationEvent('Server-initialization');
@@ -628,7 +622,6 @@
         stopExperimentOnServer: stopExperimentOnServer,
         setInitializedCallback: setInitializedCallback,
         setProgressMessageCallback: setProgressMessageCallback,
-        setShouldLaunchInEditMode: setShouldLaunchInEditMode,
         getServersEnable: getServersEnable,
         startNewExperiment: startNewExperiment
       };

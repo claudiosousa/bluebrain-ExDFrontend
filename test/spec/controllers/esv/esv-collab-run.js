@@ -52,7 +52,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
     var getExperimentsThenSpy = jasmine.createSpy('then');
     var stopExperimentsThenSpy = jasmine.createSpy('then');
     var experimentSimulationServiceMock = {
-      setShouldLaunchInEditMode : jasmine.createSpy('setShouldLaunchInEditMode'),
       startNewExperiments : jasmine.createSpy('startNewExperiments'),
       getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
         return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };
