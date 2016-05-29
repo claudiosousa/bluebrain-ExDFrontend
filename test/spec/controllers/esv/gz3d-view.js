@@ -77,6 +77,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     update: jasmine.createSpy('update')
   };
 
+  var userNavigationServiceMock = {
+    init: jasmine.createSpy('init'),
+    deinit: jasmine.createSpy('deinit'),
+    setDefaultPose: jasmine.createSpy('setDefaultPose')
+  };
+
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -258,6 +264,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('objectInspectorService', objectInspectorServiceMock);
 
     $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
+
+    $provide.value('userNavigationService', userNavigationServiceMock);
 
     simulationServiceObject.simulations.reset();
     simulationServiceObject.getUserName.reset();

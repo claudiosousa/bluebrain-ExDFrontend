@@ -70,6 +70,7 @@ module.exports = function(config) {
       'bower_components/gz3d-hbp/gz3d/client/js/include/ThreeBackwardsCompatibility.js',
       'bower_components/gz3d-hbp/gz3d/client/js/include/ColladaLoader.js',
       'bower_components/gz3d-hbp/gz3d/client/js/include/first-person-controls.js',
+      'bower_components/gz3d-hbp/gz3d/client/js/include/avatar-controls.js',
       'bower_components/gz3d-hbp/gz3d/build/gz3d.js',
       'test/support/**/*.js',
       './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find

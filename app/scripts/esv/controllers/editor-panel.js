@@ -33,7 +33,7 @@
       if($scope.activeTab.transferfunction === true ||
         $scope.activeTab.statemachine === true ||
         $scope.activeTab.pynneditor === true) {
-        gz3d.scene.controls.keyBindingsEnabled = false;
+        gz3d.scene.controls.keyboardBindingsEnabled = false;
       }
 
       if ($scope.activeTab.transferfunction === true) {
@@ -50,8 +50,8 @@
     $scope.closeCallback = function() {
       // The Panel is closed
       $scope.panelIsOpen = false;
-      if (angular.isDefined(gz3d.scene)) {
-        gz3d.scene.controls.keyBindingsEnabled = true;
+      if (angular.isDefined(gz3d.scene) && angular.isDefined(gz3d.scene.controls)) {
+        gz3d.scene.controls.keyboardBindingsEnabled = true;
       }
     };
 
@@ -59,14 +59,14 @@
       // Only disable the key bindings if the panel is open
       // This prevents disabling the key bindings when the page is loaded
       if($scope.panelIsOpen === true && angular.isDefined(gz3d.scene)) {
-        gz3d.scene.controls.keyBindingsEnabled = false;
+        gz3d.scene.controls.keyboardBindingsEnabled = false;
       }
     };
 
     $scope.reenableKeyBindings = function() {
       // Reenable the key bindings when the user leaves a code-editor panel
       if (angular.isDefined(gz3d.scene)) {
-        gz3d.scene.controls.keyBindingsEnabled = true;
+        gz3d.scene.controls.keyboardBindingsEnabled = true;
       }
     };
 
