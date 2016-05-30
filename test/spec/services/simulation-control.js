@@ -407,9 +407,13 @@ describe('Services: experimentSimulationService', function () {
         imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment2.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1, simulations: [
+        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1,
+        simulations: [
           returnSimulations[3]
-      ]},
+        ],
+        contextlessSimulations: [
+          returnSimulations[3]
+        ]},
       'fakeExperiment3.xml': {
         imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }

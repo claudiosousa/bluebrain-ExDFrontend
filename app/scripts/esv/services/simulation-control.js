@@ -245,11 +245,15 @@
         setProgressMessage = callback;
       };
 
+      var getContextlessSimulations = function(experimentTemplate){
+        return experimentTemplate.simulations.filter(function(sim){return !sim.contextID;});
+      };
+
       var addSimulationToTemplate = function (experimentTemplates, activeSimulation) {
         angular.forEach(experimentTemplates, function (experimentTemplate) {
           //ToDo: Should not take the experimentConfiguration, but the experimentConfiguration of the template
           if (experimentTemplate.experimentConfiguration === activeSimulation.experimentConfiguration &&
-            (experimentTemplate.serverPattern.indexOf(activeSimulation.serverID) > -1 )) {
+            (experimentTemplate.serverPattern.indexOf(activeSimulation.serverID) > -1)) {
             // Increase the number of running experiments for this template
             experimentTemplate.runningExperiments = ('runningExperiments' in experimentTemplate) ? experimentTemplate.runningExperiments + 1 : 1;
             // Add the 'simulations' variable to the template and create it if it does not exist
@@ -257,17 +261,19 @@
               experimentTemplate.simulations = [];
             }
             experimentTemplate.simulations.push(activeSimulation);
+            experimentTemplate.contextlessSimulations = getContextlessSimulations(experimentTemplate);
           }
         });
       };
 
       var deleteSimulationFromTemplate = function (experimentTemplates, serverID) {
-        angular.forEach(experimentTemplates, function (experimentTemplate, templateName) {
+        angular.forEach(experimentTemplates, function (experimentTemplate) {
           angular.forEach(experimentTemplate.simulations, function (simulation, simulationIndex) {
             if (simulation.serverID === serverID) {
               // delete the outdated entry
               experimentTemplate.simulations.splice(simulationIndex, 1);
               experimentTemplate.runningExperiments -= 1;
+              experimentTemplate.contextlessSimulations = getContextlessSimulations(experimentTemplate);
             }
           });
         });
