@@ -1,5 +1,7 @@
 $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 // Dependencies (not injected via wiredep due to some path issues)
+
+$icon-font-path: "/bower_components/hbp-collaboratory-theme/dist/fonts/";
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 @import "angular-hbp-common/dist/scss/hbp-common.scss";
 @import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";

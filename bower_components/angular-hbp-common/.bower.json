@@ -1,7 +1,7 @@
 {
   "name": "angular-hbp-common",
   "description": "Common components for HBP websites.",
-  "version": "2.2.1",
+  "version": "2.2.11",
   "private": true,
   "repository": {
     "url": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"
@@ -36,13 +36,13 @@
   "resolutions": {
     "angular": "~1.4.9"
   },
-  "_release": "2.2.1",
+  "_release": "2.2.11",
   "_resolution": {
     "type": "version",
-    "tag": "2.2.1",
-    "commit": "17121f308a7e188844a8a4f8fd3934c1a9e70a94"
+    "tag": "2.2.11",
+    "commit": "b3ae680cab30ad6243be09a50b4073b8c3307d4b"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon",
-  "_target": "2.2.1",
+  "_target": "2.2.11",
   "_originalSource": "angular-hbp-common"
 }

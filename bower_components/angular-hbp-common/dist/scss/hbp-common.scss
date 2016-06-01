@@ -1,7 +1,7 @@
 @import 'hbp/_variables';
 @import 'hbp/_bootstrap_variables';
 
-$icon-font-path: $hbp-common-asset-path+'/';
+$icon-font-path: $hbp-common-asset-path+'/' !default;
 @import 'theme';
 
 .hbp-logo {
