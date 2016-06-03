@@ -3,7 +3,7 @@
 'use strict';
 
 describe('Services: objectInspectorService', function () {
-  var objectInspectorService;
+  var $timeout, objectInspectorService, colorableObjectService;
   var gz3d, stateService, EDIT_MODE, STATE;
 
   var gz3dMock = {
@@ -16,13 +16,16 @@ describe('Services: objectInspectorService', function () {
       setViewAs: jasmine.createSpy('setViewAs'),
       setManipulationMode: jasmine.createSpy('setManipulationMode'),
       selectEntity: jasmine.createSpy('selectEntity')
+    },
+    gui: {
+      guiEvents: new window.EventEmitter2({ verbose: true })
     }
   };
   var stateServiceMock = {
     ensureStateBeforeExecuting: jasmine.createSpy('ensureStateBeforeExecuting').andCallFake(
       function (state, callback) {
         callback();
-    })
+      })
   };
 
   var htmlMock = {};
@@ -48,16 +51,21 @@ describe('Services: objectInspectorService', function () {
 
   beforeEach(function () {
     // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
     module('objectInspectorModule');
     module('exdFrontendApp.Constants');
 
     // inject service for testing.
-    inject(function (_objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_) {
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
       stateService = _stateService_;
       EDIT_MODE = _EDIT_MODE_;
       STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
     });
   });
 
@@ -69,28 +77,27 @@ describe('Services: objectInspectorService', function () {
   });
 
   it('should allow to toggle/set its display', function () {
-    spyOn(objectInspectorService, 'update').andCallThrough();
     spyOn(objectInspectorService, 'setManipulationMode').andCallThrough();
 
+    gz3d.scene.selectedEntity = dummyObject;
     objectInspectorService.toggleView();
-    expect(objectInspectorService.update).toHaveBeenCalled();
+    expect(objectInspectorService.selectedObject).toBeDefined();
     expect(objectInspectorService.isShown).toBe(true);
 
-    objectInspectorService.update.reset();
-
+    gz3d.scene.selectedEntity = undefined;
     objectInspectorService.toggleView(false);
-    expect(objectInspectorService.update).not.toHaveBeenCalled();
+    expect(objectInspectorService.selectedObject).toBeDefined();
     expect(objectInspectorService.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
     expect(objectInspectorService.isShown).toBe(false);
   });
 
-  it('should be able to round numbers to displayable precisions', function() {
+  it('should be able to round numbers to displayable precisions', function () {
     var number = 1.23456789;
     var rounded = objectInspectorService.roundToPrecision(number);
     expect(rounded).toBeCloseTo(number, objectInspectorService.floatPrecision);
   });
 
-  it('should update() correctly', function () {
+  it('should react to \'setTreeSelected\' event correctly', function () {
     spyOn(document, 'getElementById').andCallFake(function (id) {
       if (!htmlMock[id]) {
         var newElement = document.createElement('div');
@@ -99,34 +106,43 @@ describe('Services: objectInspectorService', function () {
       return htmlMock[id];
     });
     spyOn(objectInspectorService, 'roundToPrecision').andCallThrough();
+    dummyObject.showCollision = undefined;
+    objectInspectorService.toggleView();
 
     expect(gz3d.scene.selectedEntity).not.toBeDefined();
-    objectInspectorService.update();
+    gz3d.gui.guiEvents.emit('setTreeSelected');
+    $timeout.flush();
     expect(objectInspectorService.selectedObject).not.toBeDefined();
 
     gz3d.scene.selectedEntity = dummyObject;
     expect(dummyObject.showCollision).not.toBeDefined();
-    objectInspectorService.update();
+    gz3d.gui.guiEvents.emit('setTreeSelected');
+    $timeout.flush();
     expect(objectInspectorService.selectedObject).toBe(dummyObject);
+
     // translation and rotation are being rounded on update
     expect(objectInspectorService.roundToPrecision.calls.length).toBe(6);
     expect(dummyObject.showCollision).toBe(false);
     expect(objectInspectorService.showCollision).toBe(false);
 
     dummyObject.viewAs = 'normal';
-    objectInspectorService.update();
+    gz3d.gui.guiEvents.emit('setTreeSelected');
+    $timeout.flush();
     expect(document.getElementById('oi-viewmode-normal').checked).toBe(true);
 
     dummyObject.viewAs = 'transparent';
-    objectInspectorService.update();
+    gz3d.gui.guiEvents.emit('setTreeSelected');
+    $timeout.flush();
     expect(document.getElementById('oi-viewmode-transparent').checked).toBe(true);
 
     dummyObject.viewAs = 'wireframe';
-    objectInspectorService.update();
+    gz3d.gui.guiEvents.emit('setTreeSelected');
+    $timeout.flush();
     expect(document.getElementById('oi-viewmode-wireframe').checked).toBe(true);
 
     dummyObject.showCollision = true;
-    objectInspectorService.update();
+    gz3d.gui.guiEvents.emit('setTreeSelected');
+    $timeout.flush();
     expect(objectInspectorService.showCollision).toBe(true);
   });
 
@@ -188,7 +204,7 @@ describe('Services: objectInspectorService', function () {
     expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(dummyObject);
   });
 
-  it('should change collision geometry visibility', function() {
+  it('should change collision geometry visibility', function () {
     spyOn(collisionVisualMock, 'traverse').andCallThrough();
 
     objectInspectorService.selectedObject = dummyObject;
@@ -200,5 +216,29 @@ describe('Services: objectInspectorService', function () {
     expect(dummyObject.showCollision).toBe(true);
     expect(collisionVisualMock.traverse).toHaveBeenCalled();
     expect(meshMock.visible).toBe(true);
+  });
+
+  it('should trigger  change collision geometry visibility', function () {
+    spyOn(collisionVisualMock, 'traverse').andCallThrough();
+  });
+
+  it('should register guiEvents only once', function () {
+    spyOn(gz3d.gui.guiEvents, 'on').andCallThrough();
+
+    objectInspectorService.toggleView(true);
+
+    objectInspectorService.toggleView(true);
+    expect(gz3d.gui.guiEvents.on.calls.length).toBe(1);
+    // gz3d.gui.guiEvents.emit('setTreeSelected');
+    // $timeout.flush();
+  });
+
+  it('should call colorableObjectService.setEntityMaterial on selectMaterial', function () {
+    spyOn(colorableObjectService, 'setEntityMaterial').andReturn();
+
+    objectInspectorService.selectMaterial('TEST');
+
+    expect(colorableObjectService.setEntityMaterial).toHaveBeenCalled();
+
   });
 });

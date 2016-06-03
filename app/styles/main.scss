@@ -56,6 +56,21 @@ canvas {
     position: absolute;
     z-index: 1000;
     background-color: white;
+    min-width: 100px;
+}
+
+.esv-materials-chooser {
+  display: flex;
+  height: 30px;
+
+  .esv-materials-chooser-material{
+    flex-grow: 1;
+     border: 1px solid white;
+
+    &:hover{
+      border-color:  #666;
+    }
+  }
 }
 
 @media only screen

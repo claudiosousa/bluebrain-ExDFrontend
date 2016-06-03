@@ -38,25 +38,6 @@ describe('Services: contextMenuState', function (){
     expect(angular.isFunction(contextMenuState.toggleContextMenu)).toBe(true);
   });
 
-  it('should not allow itemGroup duplicates', function () {
-
-    var dummyItemGroup = {
-      label: 'Sample',
-      visible: false,
-      items: []
-    };
-
-    var originalItemGroupLength = contextMenuState.itemsGroups.length;
-
-    contextMenuState.pushItemGroup(dummyItemGroup);//push once
-    expect(contextMenuState.itemsGroups.length).toBe(originalItemGroupLength+1);//pushed successfully
-
-    contextMenuState.pushItemGroup(dummyItemGroup);//push it again
-    expect(contextMenuState.itemsGroups.length).toBe(originalItemGroupLength+1);//pushed failed
-
-  });
-
-
   it('should hide menu when calling toggleContextMenu(false)', function(){
 
     spyOn(contextMenuState, 'hideMenu');

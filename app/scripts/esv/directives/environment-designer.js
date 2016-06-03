@@ -25,19 +25,19 @@
       'backendInterfaceService',
       'hbpDialogFactory',
       function ($document,
-                STATE,
-                EDIT_MODE,
-                OPERATION_MODE,
-                panels,
-                simulationSDFWorld,
-                bbpConfig,
-                gz3d,
-                stateService,
-                simulationInfo,
-                contextMenuState,
-                objectInspectorService,
-                backendInterfaceService,
-                hbpDialogFactory) {
+        STATE,
+        EDIT_MODE,
+        OPERATION_MODE,
+        panels,
+        simulationSDFWorld,
+        bbpConfig,
+        gz3d,
+        stateService,
+        simulationInfo,
+        contextMenuState,
+        objectInspectorService,
+        backendInterfaceService,
+        hbpDialogFactory) {
         return {
           templateUrl: 'views/esv/environment-designer.html',
           restrict: 'E',
@@ -125,19 +125,15 @@
 
                 show: function (model) {
                   var inEditMode = (simulationInfo.mode === OPERATION_MODE.EDIT);
-                  var isPaused = (stateService.currentState === STATE.PAUSED);
                   var isRobot = model.name.indexOf('robot') !== -1;
 
-                  var show = isPaused;
-                  this.visible = show;
-                  this.items[0].visible = show;
-                  this.items[1].visible = show && inEditMode && !isRobot; //don't delete the robot
+                  this.visible = this.items[0].visible = true;
+                  this.items[1].visible = inEditMode && !isRobot; //don't delete the robot
 
-                  return show;
+                  return true;
                 }
               }
             );
-
 
             scope.exportSDFWorld = function () {
               simulationSDFWorld(simulationInfo.serverBaseUrl).export({}, function (data) {

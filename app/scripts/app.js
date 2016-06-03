@@ -34,6 +34,7 @@
       'gzangular',
       'gz3dServices',
       'simulationControlServices',
+      'colorableObjectModule',
       'simulationStateServices',
       'contextMenuStateService',
       'objectInspectorModule',

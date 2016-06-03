@@ -9,7 +9,7 @@ describe('Services: server-info-service', function () {
       simulationControl,
       simulationState,
       simulationGenerator,
-      screenControl,
+      objectControl,
       scope,
       STATE;
 
@@ -22,7 +22,7 @@ describe('Services: server-info-service', function () {
 
   beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpIdentityUserDirectory_, _bbpStubFactory_,
       _simulationService_, _simulationControl_, _simulationState_, _simulationGenerator_,
-      _screenControl_, _STATE_) {
+      _objectControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
@@ -31,7 +31,7 @@ describe('Services: server-info-service', function () {
     simulationControl = _simulationControl_;
     simulationState = _simulationState_;
     simulationGenerator = _simulationGenerator_;
-    screenControl = _screenControl_;
+    objectControl = _objectControl_;
     STATE = _STATE_;
 
     simulations = [
@@ -219,10 +219,10 @@ describe('Services: server-info-service', function () {
     httpBackend.expectPOST('http://bbpce016.epfl.ch:8080/simulation');
   });
 
-  it('should control the screen color', function() {
+   it('should control the screen color', function() {
     //Ignore this warning because of the sim_id
     /*jshint camelcase: false */
-    screenControl('http://bbpce016.epfl.ch:8080').updateScreenColor({sim_id:1}, {state: STATE.PAUSED}, function(){});
+    objectControl('http://bbpce016.epfl.ch:8080').updateMaterial({sim_id:1}, {state: STATE.PAUSED}, function(){});
     httpBackend.flush();
     httpBackend.expectPUT('http://bbpce016.epfl.ch:8080/simulation/1/interaction', {state: STATE.PAUSED});
   });
@@ -853,7 +853,7 @@ describe('Services: error handling', function () {
   var httpBackend;
   var serverError, simulationService, simulationControl;
   var simulationGenerator, simulationState, experimentSimulationService, serversEnabled;
-  var screenControl;
+  var objectControl;
   serversEnabled = ['bbpce014','bbpce016', 'bbpce018'];
 
   beforeEach(module('simulationControlServices'));
@@ -870,7 +870,7 @@ describe('Services: error handling', function () {
   }));
 
   beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_,
-     _simulationGenerator_, _simulationState_, _experimentSimulationService_, _screenControl_, _serverError_){
+     _simulationGenerator_, _simulationState_, _experimentSimulationService_, _objectControl_, _serverError_){
 
     httpBackend = $httpBackend;
     serverError = _serverError_;
@@ -880,7 +880,7 @@ describe('Services: error handling', function () {
     simulationGenerator = _simulationGenerator_;
     simulationState = _simulationState_;
     experimentSimulationService = _experimentSimulationService_;
-    screenControl = _screenControl_;
+    objectControl = _objectControl_;
     httpBackend.whenPUT(/\/simulation/).respond(500);
   }));
 
@@ -930,7 +930,7 @@ describe('Services: error handling', function () {
     expect(response.status).toBe(500);
     serverError.display.reset();
 
-    screenControl(serverURL).updateScreenColor(simulationID, {});
+   objectControl(serverURL).updateMaterial(simulationID, {});
     httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/material_change', {});
     httpBackend.flush();
     expect(serverError.display.callCount).toBe(1);

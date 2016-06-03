@@ -21,7 +21,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       stateService,
       simulationInfo,
       contextMenuState,
-      screenControl,
+      colorableObjectService,
       splashInstance,
       exampleProgressData,
       assetLoadingSplash,
@@ -34,7 +34,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       UI,
       OPERATION_MODE,
       EDIT_MODE,
-      SCREEN_GLASS_STRING,
       panels,
       gz3d,
       experimentSimulationService,
@@ -64,10 +63,6 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   var simulationControlObject = {
     simulation: jasmine.createSpy('simulation')
-  };
-
-  var screenControlObject = {
-    updateScreenColor: jasmine.createSpy('updateScreenColor')
   };
 
   var assetLoadingSplashInstance = {
@@ -215,7 +210,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('simulationService', jasmine.createSpy('simulationService').andReturn(simulationServiceObject));
     $provide.value('simulationState', jasmine.createSpy('simulationState').andReturn(simulationStateObject));
     $provide.value('simulationControl',  jasmine.createSpy('simulationControl').andReturn(simulationControlObject));
-    $provide.value('screenControl', jasmine.createSpy('screenControl').andReturn(screenControlObject));
+
+    var colorableObjectServiceMock = {
+      setEntityMaterial: jasmine.createSpy('setEntityMaterial')
+    };
+
+    $provide.value('colorableObjectService', colorableObjectServiceMock);
+
     var stateParamsMock = {
       mode : undefined,
       serverID : 'bbpce016',
@@ -263,7 +264,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationStateObject.update.reset();
     simulationStateObject.state.reset();
     simulationControlObject.simulation.reset();
-    screenControlObject.updateScreenColor.reset();
     assetLoadingSplashInstance.close.reset();
     nrpBackendVersionsObject.get.reset();
     hbpDialogFactoryMock.confirm.reset();
@@ -290,14 +290,13 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _simulationControl_,
                               _stateService_,
                               _contextMenuState_,
-                              _screenControl_,
+                              _colorableObjectService_,
                               _nrpBackendVersions_,
                               _nrpFrontendVersion_,
                               _STATE_,
                               _UI_,
                               _OPERATION_MODE_,
                               _EDIT_MODE_,
-                              _SCREEN_GLASS_STRING_,
                               _panels_,
                               _gz3d_,
                               _experimentSimulationService_,
@@ -325,14 +324,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationControl = _simulationControl_;
     stateService = _stateService_;
     contextMenuState = _contextMenuState_;
-    screenControl = _screenControl_;
+    colorableObjectService = _colorableObjectService_;
     nrpBackendVersions = _nrpBackendVersions_;
     nrpFrontendVersion = _nrpFrontendVersion_;
     STATE = _STATE_;
     UI = _UI_;
     OPERATION_MODE = _OPERATION_MODE_;
     EDIT_MODE = _EDIT_MODE_;
-    SCREEN_GLASS_STRING = _SCREEN_GLASS_STRING_;
     panels = _panels_;
     gz3d = _gz3d_;
     experimentSimulationService = _experimentSimulationService_;
@@ -688,16 +686,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(log.error).toHaveBeenCalled();
       expect(log.error.callCount).toEqual(1);
 
-      // pretend we selected a screen now
-      var screenGlassName = 'left_vr_screen::body::screen_glass';
-      spyOn(scope, 'getScreenGlass').andReturn({name: screenGlassName});
       gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
       scope.setMaterialOnEntity('Gazebo/Red');
 
-      expect(screenControl).toHaveBeenCalledWith(simulationInfo.serverBaseUrl);
-      expect(screenControlObject.updateScreenColor).toHaveBeenCalledWith(
-        { sim_id: 'mocked_simulation_id' },
-        { 'visual_path': screenGlassName, 'material': 'Gazebo/Red' }
+      expect(colorableObjectService.setEntityMaterial).toHaveBeenCalledWith(
+        simulationInfo,
+        gz3d.scene.selectedEntity,
+        'Gazebo/Red'
       );
     });
 
@@ -1142,7 +1137,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     });
 
-    it('should NOT enable display of the editor panel in collab mode when an exception is thrown trying to get the lock', function () {    
+    it('should NOT enable display of the editor panel in collab mode when an exception is thrown trying to get the lock', function () {
       scope.showEditorPanel = false;
       scope.viewState.userID = 'current_user_id';
 
@@ -1162,7 +1157,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.toggleEditors();
       callback.resolve();
       scope.$apply();
-      
+
       expect(lockServiceMock.releaseLock).toHaveBeenCalled();
       expect(lockServiceMock.releaseLock.callCount).toBe(1);
     });
@@ -1189,14 +1184,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
     });
 
-    it('should get the screen glass entity if any', function() {
-      var entity = { traverse: jasmine.createSpy('traverse') };
-      scope.getScreenGlass(entity);
-      var traverseCallback = entity.traverse.mostRecentCall.args[0];
-      var node = {name: 'vr_screen::body::screen_glass'};
-      expect(traverseCallback(node)).toEqual(node);
-    });
-
     it(' - onContainerMouseDown() should make the right calls', function() {
       var eventMock = {};
 
@@ -1218,37 +1205,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, eventMock);
     });
 
-    it(' - onContainerMouseUp() should make the right calls', function() {
-      var eventMock = {};
-
-      objectInspectorService.update.reset();
-      scope.viewState.isOwner = false;
-      scope.onContainerMouseUp(eventMock);
-      expect(objectInspectorService.update).not.toHaveBeenCalled();
-
-      objectInspectorService.update.reset();
-      scope.viewState.isOwner = true;
-      objectInspectorService.isShown = false;
-      eventMock.button = 0;  // left mouse
-      scope.onContainerMouseUp(eventMock);
-      expect(objectInspectorService.update).not.toHaveBeenCalled();
-
-      objectInspectorService.update.reset();
-      objectInspectorService.isShown = true;
-      eventMock.button = 0;  // left mouse
-      scope.onContainerMouseUp(eventMock);
-      expect(objectInspectorService.update).toHaveBeenCalled();
-
-      objectInspectorService.update.reset();
-      eventMock.button = 1;  // left mouse
-      scope.onContainerMouseUp(eventMock);
-      expect(objectInspectorService.update).toHaveBeenCalled();
-
-      objectInspectorService.update.reset();
-      eventMock.button = 2;  // left mouse
-      scope.onContainerMouseUp(eventMock);
-      expect(objectInspectorService.update).not.toHaveBeenCalled();
-    });
   });
 
 });

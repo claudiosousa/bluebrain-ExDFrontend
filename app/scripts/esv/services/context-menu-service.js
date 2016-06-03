@@ -59,20 +59,7 @@
         ],
 
         pushItemGroup: function (itemGroup) {
-
-          var found = false;
-          //check if itemGroup is already into the menu
-          for (var i = 0, len = this.itemsGroups.length; i < len && !found; i += 1) {
-            if (this.itemsGroups[i].label === itemGroup.label) {
-              found = true;
-            }
-          }
-
-          if (!found) { // No, it isn't. So add it.
-            this.itemsGroups.push(itemGroup);
-          }
-
-          return !found;
+          this.itemsGroups.push(itemGroup);
         },
 
         hideMenu: function () {
