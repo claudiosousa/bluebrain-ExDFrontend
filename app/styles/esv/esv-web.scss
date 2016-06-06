@@ -118,3 +118,18 @@ $icon-font-path: "/bower_components/hbp-collaboratory-theme/dist/fonts/";
   right: 5pt;
   font-size: xx-small;
 }
+.servers-dropdown.dropdown-menu{
+  padding: 5px 2px 2px 2px;
+
+  &> li > a:hover{
+    background-color:rgba(0,0,0,0.1);
+  }
+
+  .server-state-WARNING{
+    background-color:rgba(255, 170, 68, 0.4)
+  }
+
+  .server-state-CRITICAL{
+    background-color:rgba(255, 85, 102, 0.4);
+  }
+}

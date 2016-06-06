@@ -29,7 +29,10 @@
         $scope.isQueryingServersFinished = false;
         $scope.isCloneRequested = false;
         $scope.experiments = {};
-        $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
+        experimentSimulationService.getHealthyServers().then(function (servers) {
+          $scope.serverNames = servers;
+        });
+
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         if (!bbpConfig.get('localmode.forceuser', false)) {
           $scope.clusterPartAvailInfo = slurminfoService.get();

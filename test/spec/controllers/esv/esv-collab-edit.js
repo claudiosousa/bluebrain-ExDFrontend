@@ -16,7 +16,8 @@ describe('Controller: ESVCollabEditCtrl', function () {
     stateParams,
     slurminfoService,
     serverError,
-    hbpIdentityUserDirectory;
+    hbpIdentityUserDirectory,
+    $q;
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
@@ -29,7 +30,22 @@ describe('Controller: ESVCollabEditCtrl', function () {
     '3': TestDataGenerator.createTestExperiment()
   };
 
-  var serversEnabled = [ 'bbpce014', 'bbpce016', 'bbpce018' ];
+
+  var healthyServers = [
+    {
+      id: 'bbpce014',
+      state: 'OK'
+    },
+    {
+      id: 'bbpce016',
+      state: 'WARNING'
+    },
+    {
+      id: 'bbpce018',
+      state: 'CRITICAL'
+    }
+  ];
+  var serversEnabled = healthyServers.map(function (s) { return s.id; });
 
   var store = {};
 
@@ -42,6 +58,9 @@ describe('Controller: ESVCollabEditCtrl', function () {
     startNewExperiments : jasmine.createSpy('startNewExperiments'),
     getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
       return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };
+    }),
+    getHealthyServers: jasmine.createSpy('getExperiments').andCallFake(function () {
+      return $q.when(healthyServers);
     }),
     setInitializedCallback : jasmine.createSpy('setInitializedCallback'),
     existsAvailableServer : jasmine.createSpy('existsAvailableServer'),
@@ -80,7 +99,8 @@ describe('Controller: ESVCollabEditCtrl', function () {
                               _slurminfoService_,
                               _$stateParams_,
                               _serverError_,
-                              _hbpIdentityUserDirectory_) {
+                              _hbpIdentityUserDirectory_,
+                              _$q_) {
     scope = $rootScope.$new();
     state = $state;
     experimentSimulationService = _experimentSimulationService_;
@@ -89,6 +109,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     serverError = _serverError_;
     slurminfoService = _slurminfoService_;
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
+    $q = _$q_;
 
     store['server-enabled'] = angular.toJson(serversEnabled);
 
@@ -100,6 +121,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
       $scope: scope
     });
 
+    $rootScope.$digest();
     // create mock for state changes
     spyOn(state, 'go');
 

@@ -607,6 +607,36 @@
         return result;
       };
 
+      var getHealthyServers = function () {
+        //dictionary of server states used in sorting
+        var healthStatusPriority = {
+          OK: 1,
+          WARNING: 2,
+          CRITICAL: 3
+        };
+
+        return $q.all(serverIDs.map(function (serverID) {
+          var server = servers[serverID];
+          return $q.all({
+            id: serverID,
+            health: $http.get(server.gzweb['nrp-services'] + '/health/errors')
+          });
+        })).then(function (serverList) {
+          //return the server ids sorted by health status
+          return serverList
+            .map(function (s) {
+              s.priority = healthStatusPriority[s.health.data.state] || 9;//unknown status come at the end
+              return s;
+            })
+            .sort(function (s1, s2) {
+              return s1.priority - s2.priority;
+            })
+            .map(function (s) {
+              return { id: s.id, state: s.health.data.state };
+            });
+        });
+      };
+
       var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
 
         experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
@@ -629,7 +659,8 @@
         setInitializedCallback: setInitializedCallback,
         setProgressMessageCallback: setProgressMessageCallback,
         getServersEnable: getServersEnable,
-        startNewExperiment: startNewExperiment
+        startNewExperiment: startNewExperiment,
+        getHealthyServers: getHealthyServers
       };
 
       return experimentSimulationService;

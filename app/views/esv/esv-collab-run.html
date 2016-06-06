@@ -16,13 +16,13 @@
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu dropdown-menu-left servers-dropdown">
-          <li ng-repeat="server in serverNames"
-              ng-click="toggleServer(server); $event.stopPropagation();">
+          <li ng-repeat="server in serverNames" ng-class="'server-state-'+server.state"
+              ng-click="toggleServer(server.id); $event.stopPropagation();">
             <a><input
               type="checkbox"
               ng-checked="serversEnabled.indexOf(server) > -1"
-              ng-click="toggleServer(server); $event.stopPropagation();">
-              {{server}}
+              ng-click="toggleServer(server.id); $event.stopPropagation();">
+              <span ng-bind="server.id"></span>
             </a>
           </li>
         </ul>
