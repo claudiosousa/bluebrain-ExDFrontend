@@ -55,13 +55,19 @@
         $scope.updatePromise = undefined;
         $scope.updateUptimePromise = undefined;
         $scope.experiments = {};
-        experimentSimulationService.getHealthyServers().then(function (servers) {
-          $scope.serverNames = servers;
-        });
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         if (!bbpConfig.get('localmode.forceuser', false)) {
           $scope.clusterPartAvailInfo = slurminfoService.get();
         }
+
+        var loadHealthyServers = function () {
+          experimentSimulationService.getHealthyServers().then(function (servers) {
+            $scope.serverNames = servers;
+          });
+        };
+
+        loadHealthyServers();
+
 
         $scope.userID = undefined;
 
@@ -109,7 +115,7 @@
 
         $scope.startNewExperiment = function(configuration, serverPattern) {
           experimentSimulationService.startNewExperiment(
-            configuration, null, serverPattern, $scope.setProgressbarInvisible
+            configuration, null, serverPattern, $scope.setProgressbarInvisible, loadHealthyServers
           );
         };
 
@@ -208,6 +214,8 @@
                     setIsServerAvailable,
                     $scope.updateExperiment
                   );
+
+                  loadHealthyServers();
                 }, ESV_UPDATE_RATE);
               }
             },

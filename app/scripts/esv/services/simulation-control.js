@@ -138,26 +138,57 @@
     };
   }]);
 
-  module.factory('simulationState', ['$resource', 'serverError', function ($resource, serverError) {
-    return function (baseUrl) {
+  module.factory('simulationCreationInterceptor', ['$q', 'serverError', function ($q, serverError) {
+    return function (customErrorCallback) {
+      //returns if the error occured because it is impossible to allocate a job on the cluster
+      var isClusterAllocationError = function (error) {
+        if (!error.data) {
+          return false;
+        }
+        var errorMsg = error.data.message || error.data;
+        return angular.isString(errorMsg) && errorMsg.indexOf('cluster') >= 0;
+      };
+      return function (error) {
+        var isClusterError = isClusterAllocationError(error);
+        if (isClusterError) {
+          //if is a cluster allocation error, then we through the normal error handling
+          serverError.display(error);
+        }
+        //call custom error handling
+        if (customErrorCallback) {
+          customErrorCallback(error, isClusterError);
+        }
+        return $q.reject(error);
+      };
+    };
+  }]);
+
+  module.factory('simulationState', ['$resource', 'simulationCreationInterceptor','serverError', function ($resource, simulationCreationInterceptor,serverError) {
+    return function (baseUrl, customErrorCallback) {
       return $resource(baseUrl + '/simulation/:sim_id/state', {}, {
         state: {
           method: 'GET',
           interceptor: {responseError: serverError.display}
         },
         update: { // this method initializes, starts, stops, or pauses the simulation
-          method: 'PUT'
+          method: 'PUT',
+          interceptor: {
+            responseError: simulationCreationInterceptor(customErrorCallback)
+          }
         }
       });
     };
   }]);
 
-  module.factory('simulationGenerator', ['$resource', 'serverError', function ($resource, serverError) {
-    return function (baseUrl) {
+  module.factory('simulationGenerator', ['$resource', 'simulationCreationInterceptor', function ($resource, simulationCreationInterceptor) {
+    return function (baseUrl, customErrorCallback) {
+
       return $resource(baseUrl + '/simulation', {}, {
         create: {
           method: 'POST',
-          interceptor: {responseError: serverError.display}
+          interceptor: {
+            responseError: simulationCreationInterceptor(customErrorCallback)
+          }
         }
       });
     };
@@ -205,6 +236,8 @@
   module.factory('experimentSimulationService', [
     '$q',
     '$http',
+    '$log',
+    '$timeout',
     'nrpAnalytics',
     '$stateParams',
     'bbpConfig',
@@ -217,9 +250,12 @@
     'OPERATION_MODE',
     'serverError',
     'simulationSDFWorld',
+    'hbpDialogFactory',
     function (
       $q,
       $http,
+      $log,
+      $timeout,
       nrpAnalytics,
       $stateParams,
       bbpConfig,
@@ -231,7 +267,8 @@
       STATE,
       OPERATION_MODE,
       serverError,
-      simulationSDFWorld)
+      simulationSDFWorld,
+      hbpDialogFactory)
     {
       var initializedCallback;
       var servers = bbpConfig.get('api.neurorobotics');
@@ -462,33 +499,85 @@
         });
       };
 
-      var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, errorCallback) {
-        var keepGoing = true;
-        angular.forEach(serverIDs, function (serverID) {
-          if (keepGoing && (serversEnabled.indexOf(serverID) > -1)) {
-            if (serverPattern.indexOf(serverID) > -1) {
-              var serverURL = servers[serverID].gzweb['nrp-services'];
-              simulationService({serverURL: serverURL, serverID: serverID}).simulations(function (data) {
-                var activeSimulation = simulationService().getActiveSimulation(data);
-                if (!angular.isDefined(activeSimulation)) {
-                  if (keepGoing) {
-                    keepGoing = false;
+      var triggerErrorCallbackTimeout;
+      var launchExperimentInPossibleServers = function (possibleServers, expConf, envSDFData, failureCallback, errorCallback) {
+        var foundAfreeServer = false;
 
-                    // Need to send the SDF to the backend before launching the experiment
-                    if (angular.isDefined(envSDFData) && envSDFData !== null) {
-                      simulationSDFWorld(serverURL).import({sdf: envSDFData}, function (data) {
-                        experimentSimulationService.launchExperimentOnServer(expConf, data.path, serverID, errorCallback);
-                      });
-                    }
-                    else {
-                      experimentSimulationService.launchExperimentOnServer(expConf, null, serverID, errorCallback);
-                    }
-                  }
-                }
+        var failedAllServers = function (handledByStandardInterceptor) {
+          if (!handledByStandardInterceptor) {
+            hbpDialogFactory.alert(
+              {
+                title: 'No server is currently available',
+                template: 'No server can handle your simulation at the moment. Please try again later'
+              });
+          }
+          failureCallback();
+        };
+
+        var failed2startSimulation = function (error, handledByStandardInterceptor) {
+          if (error && error.data) {
+            $log.error('Failed to start simulation: ' + angular.toJson(error.data));
+            // if several servers fail one after the other, don't call errorCallback multiple consecutive times.
+            // instead wait a moment (5s) to see if some other server fails before calling the callback
+            $timeout.cancel(triggerErrorCallbackTimeout);
+            triggerErrorCallbackTimeout = $timeout(function () {
+              errorCallback(error);
+            }, 5000);
+          }
+          if (possibleServers.length > 0 && !handledByStandardInterceptor) {
+            launchExperimentInPossibleServers(possibleServers, expConf, envSDFData, failureCallback, errorCallback);
+          } else {
+            failedAllServers(handledByStandardInterceptor);
+          }
+        };
+
+        angular.forEach(possibleServers, function (serverID) {
+          var serverURL = servers[serverID].gzweb['nrp-services'];
+
+          simulationService({ serverURL: serverURL, serverID: serverID }).simulations(function (data) {
+            var activeSimulation = simulationService().getActiveSimulation(data);
+
+            //current server is busy
+            if (angular.isDefined(activeSimulation)) {
+              possibleServers.splice(possibleServers.indexOf(serverID), 1);
+              //failed to start in all servers
+              if (!possibleServers.length && !foundAfreeServer) {
+                failedAllServers();
+              }
+              return;
+            }
+
+            if (foundAfreeServer){
+              return;
+            }
+
+            foundAfreeServer = true;
+            //the current server Id is removed from the remaining possible servers
+            possibleServers.splice(possibleServers.indexOf(serverID), 1);
+
+            // Need to send the SDF to the backend before launching the experiment
+            if (angular.isDefined(envSDFData) && envSDFData !== null) {
+              simulationSDFWorld(serverURL).import({ sdf: envSDFData }, function (data) {
+                experimentSimulationService.launchExperimentOnServer(expConf, data.path, serverID, failed2startSimulation);
               });
             }
-          }
+            else {
+              experimentSimulationService.launchExperimentOnServer(expConf, null, serverID, failed2startSimulation);
+            }
+          }, failed2startSimulation);
         });
+      };
+
+      //errorCallback is called if some error has occurred while starting the experiment (independent on whether we successfully started the experiment)
+      //failureCallback is called if we failed to start the experiment
+      var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, failureCallback, errorCallback) {
+
+        //possible servers are the servers that selected by the user
+        var possibleServers = serverIDs.filter(function (serverID) {
+          return serversEnabled.indexOf(serverID)>=0 && serverPattern.indexOf(serverID)>=0;
+        });
+
+        launchExperimentInPossibleServers(possibleServers, expConf, envSDFData, failureCallback, errorCallback);
       };
 
       var launchExperimentOnServer = function (
@@ -512,41 +601,33 @@
           contextID: $stateParams.ctx
         };
 
-        var errorDisplayFunction = function (errorData) {
-          serverError.display(errorData);
-          errorCallback();
-        };
-
         if (angular.isDefined(environmentConfiguration) && environmentConfiguration !== null) {
           simInitData.environmentConfiguration = environmentConfiguration;
         }
 
         // Create a new simulation.
-        simulationGenerator(serverURL).create(simInitData, function (createData) {
-          setProgressMessage({main: 'Initialize Simulation...'});
+        simulationGenerator(serverURL, errorCallback).create(simInitData, function (createData) {
+          setProgressMessage({ main: 'Initialize Simulation...' });
           // register for messages during initialization
           registerForStatusInformation(freeServerID, createData.simulationID);
 
           // initialize the newly created simulation, then goto STARTED and then PAUSED
-          simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.INITIALIZED},
+          simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.INITIALIZED },
             function () {
-              simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.STARTED},
+              simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.STARTED },
                 function () {
-                  simulationState(serverURL).update({sim_id: createData.simulationID}, {state: STATE.PAUSED},
+                  simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.PAUSED },
                     // Now join the simulation
                     function () {
                       var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID + '/' + operationMode;
                       if (angular.isDefined(initializedCallback)) {
                         initializedCallback(url);
                       }
-                    },
-                    errorDisplayFunction
+                    }
                   );
-                },
-                errorDisplayFunction
+                }
               );
-            },
-            errorDisplayFunction
+            }
           );
         });
       };
@@ -637,9 +718,9 @@
         });
       };
 
-      var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
+      var startNewExperiment = function (expConf, envConf, serverPattern, failureCallback, errorCallback) {
 
-        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
+        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, failureCallback, errorCallback);
 
         nrpAnalytics.eventTrack('Start', {
           category: 'Experiment'
