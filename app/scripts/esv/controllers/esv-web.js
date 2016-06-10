@@ -74,7 +74,9 @@
         $scope.updatePromise = undefined;
         $scope.updateUptimePromise = undefined;
         $scope.experiments = {};
-        $scope.serverNames = Object.keys(bbpConfig.get('api.neurorobotics'));
+        experimentSimulationService.getHealthyServers().then(function(servers){
+          $scope.serverNames = servers;
+        });
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         $scope.userID = undefined;
         $scope.clusterPartAvailInfo = undefined;

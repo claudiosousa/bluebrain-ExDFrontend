@@ -20,7 +20,8 @@ describe('Controller: experimentCtrl', function () {
     hbpIdentityUserDirectory,
     ESV_UPDATE_RATE,
     UPTIME_UPDATE_RATE,
-    STATE;
+    STATE,
+    $q;
 
   var simulationServiceMockObject = {};
   simulationServiceMockObject.updateUptime = jasmine.createSpy('updateUptime');
@@ -34,9 +35,22 @@ describe('Controller: experimentCtrl', function () {
     '3': TestDataGenerator.createTestExperiment()
   };
 
-  var serversEnabled = [ 'bbpce014', 'bbpce016', 'bbpce018' ];
-  var serversEnabledFromLocalStorage = [ 'bbpce014', 'bbpce016' ];
-
+  var healthyServers = [
+    {
+      id: 'bbpce014',
+      state: 'OK'
+    },
+    {
+      id: 'bbpce016',
+      state: 'WARNING'
+    },
+    {
+      id: 'bbpce018',
+      state: 'CRITICAL'
+    }
+  ];
+  var serversEnabled = healthyServers.map(function (s) { return s.id; });
+  var serversEnabledFromLocalStorage = ['bbpce014', 'bbpce016'];
   var store = {};
   store['server-enabled'] = angular.toJson(serversEnabled);
 
@@ -44,6 +58,9 @@ describe('Controller: experimentCtrl', function () {
 
   var experimentSimulationServiceMock = {
     startNewExperiments : jasmine.createSpy('startNewExperiments'),
+    getHealthyServers: jasmine.createSpy('getExperiments').andCallFake(function () {
+      return $q.when(healthyServers);
+    }),
     getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
       return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };
     }),
@@ -96,7 +113,8 @@ describe('Controller: experimentCtrl', function () {
                               _simulationService_,
                               _slurminfoService_,
                               _hbpIdentityUserDirectory_,
-                              _STATE_) {
+                              _STATE_,
+                              _$q_) {
     scope = $rootScope.$new();
     controller = $controller;
     location = _$location_;
@@ -108,6 +126,7 @@ describe('Controller: experimentCtrl', function () {
     slurminfoService = _slurminfoService_;
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     STATE = _STATE_;
+    $q = _$q_;
 
     spyOn(localStorage, 'getItem').andCallFake(function (key) {
       return store[key];
@@ -125,6 +144,8 @@ describe('Controller: experimentCtrl', function () {
 
     httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
     httpBackend.whenGET('views/esv/experiment_templates.json').respond(experimentTemplates);
+
+    $rootScope.$digest();
 
     store['server-enabled'] = serversEnabledFromLocalStorage;
 

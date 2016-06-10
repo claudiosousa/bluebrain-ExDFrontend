@@ -850,8 +850,30 @@ describe('Services: experimentSimulationService', function () {
     expect(experimentSimulationService.getServersEnable()).toEqual(servers);
   });
 
+  it('should return Healthy servers', function () {
+    var servers = Object.keys(bbpConfigString);
+    var status = {
+      bbpce014: 'CRITICAL',
+      bbpce016: 'OK',
+      bbpsrvc21: 'WARNING'
+    };
+    var EXPECTED_SORT_ORDER = ['bbpce016', 'bbpsrvc21', 'bbpce014'];
+    servers.forEach(function (server) {
+      httpBackend.whenGET(bbpConfigString[server].gzweb['nrp-services'] + '/health/errors').respond(200, { state: status[server] });
+    });
+    var healthyServers;
+    experimentSimulationService.getHealthyServers()
+      .then(function (servers) {
+        healthyServers = servers;
+      });
+    httpBackend.flush();
+    scope.$digest();
+    //expect servers to be sorted by status
+    healthyServers.forEach(function (s, i) {
+      expect(s.id).toBe(EXPECTED_SORT_ORDER[i]);
+    });
+  });
 });
-
 
 describe('Services: error handling', function () {
   var httpBackend;

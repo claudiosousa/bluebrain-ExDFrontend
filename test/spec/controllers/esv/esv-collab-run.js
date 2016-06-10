@@ -25,7 +25,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
     stateParams,
     collabConfigService,
     serverError,
-    slurminfoService;
+    slurminfoService,
+    $q;
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
@@ -39,8 +40,22 @@ describe('Controller: ESVCollabRunCtrl', function () {
   };
   var simulationServiceMock = jasmine.createSpy('simulationServiceMock').andReturn(simulationServiceMockObject);
 
-  var serversEnabled = [ 'bbpce014', 'bbpce016', 'bbpce018' ];
-  var serversEnabledFromLocalStorage = [ 'bbpce014', 'bbpce016' ];
+  var healthyServers = [
+    {
+      id: 'bbpce014',
+      state: 'OK'
+    },
+    {
+      id: 'bbpce016',
+      state: 'WARNING'
+    },
+    {
+      id: 'bbpce018',
+      state: 'CRITICAL'
+    }
+  ];
+  var serversEnabled = healthyServers.map(function (s) { return s.id; });
+  var serversEnabledFromLocalStorage = ['bbpce014', 'bbpce016'];
 
   var store = {};
   store['server-enabled'] = angular.toJson(serversEnabled);
@@ -52,11 +67,14 @@ describe('Controller: ESVCollabRunCtrl', function () {
     var getExperimentsThenSpy = jasmine.createSpy('then');
     var stopExperimentsThenSpy = jasmine.createSpy('then');
     var experimentSimulationServiceMock = {
-      startNewExperiments : jasmine.createSpy('startNewExperiments'),
-      getExperiments : jasmine.createSpy('getExperiments').andCallFake(function () {
+      startNewExperiments: jasmine.createSpy('startNewExperiments'),
+      getExperiments: jasmine.createSpy('getExperiments').andCallFake(function () {
         return { then: getExperimentsThenSpy.andCallFake(function (f) { f(); }) };
       }),
-      setProgressMessageCallback : jasmine.createSpy('setProgressMessageCallback'),
+      getHealthyServers: jasmine.createSpy('getExperiments').andCallFake(function () {
+        return $q.when(healthyServers);
+      }),
+      setProgressMessageCallback: jasmine.createSpy('setProgressMessageCallback'),
       setInitializedCallback : jasmine.createSpy('setInitializedCallback'),
       existsAvailableServer : jasmine.createSpy('existsAvailableServer'),
       refreshExperiments : jasmine.createSpy('refreshExperiments'),
@@ -101,7 +119,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
                               _OPERATION_MODE_,
                               _collabConfigService_,
                               _$stateParams_,
-                              _serverError_) {
+                              _serverError_,
+                              _$q_) {
     scope = $rootScope.$new();
     controller = $controller;
     location = _$location_;
@@ -118,6 +137,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     collabConfigService = _collabConfigService_;
     serverError = _serverError_;
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
+    $q = _$q_;
 
     spyOn(localStorage, 'getItem').andCallFake(function (key) {
       return store[key];
@@ -129,6 +149,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
     ESVCollabRunCtrl = $controller('ESVCollabRunCtrl', {
       $scope: scope
     });
+
+    $rootScope.$digest();
 
     ESV_UPDATE_RATE = 30 * 1000; // 30 seconds
     UPTIME_UPDATE_RATE = 2 * 1000; // 2 seconds
