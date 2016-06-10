@@ -15,6 +15,8 @@
       STARTED: 'started',
       PAUSED: 'paused',
       INITIALIZED: 'initialized',
+      HALTED: 'halted',
+      FAILED: 'failed',
       STOPPED: 'stopped'
     })
     .constant('OPERATION_MODE', {

@@ -66,27 +66,25 @@
       };
 
       // State filtering for simulations (the second parameter is optional)
-      var filterSimulations = function (simulations, state1, state2) {
+      var filterSimulations = function (simulations, predicate) {
         var length = simulations.length;
         for (var i = length - 1; i >= 0; i -= 1) { // the largest indices correspond to the newest objects
           var simulation = simulations[i];
           var state = simulation.state;
-          if (state === state1 || (state2 !== undefined && state === state2)) {
+          if (predicate(state)) {
             return simulation;
           }
         }
         return undefined;
       };
 
-      // Retrieve the latest active simulation, i.e., the simulation with the highest index which is started or paused
-      // If it doesn't exist, we fall back on an initialized or created one. If there is no simulation object on the server,
+      // Retrieve the latest active simulation, i.e., the simulation with the highest index which is neither stopped nor failed
+      // If there is no simulation object on the server,
       // the active simulation remains undefined
       var getActiveSimulation = function (simulations) {
-        var activeSimulation = filterSimulations(simulations, STATE.PAUSED, STATE.STARTED);
-        if (activeSimulation !== undefined) {
-          return activeSimulation;
-        }
-        return filterSimulations(simulations, STATE.INITIALIZED);
+        return filterSimulations(simulations, function (state) {
+          return state !== STATE.FAILED && state !== STATE.STOPPED;
+        });
       };
 
       // Public methods of the service
