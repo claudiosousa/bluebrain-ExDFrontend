@@ -115,7 +115,7 @@
     }));
 
     it('should initialize the object properly', function () {
-      expect(scope.progressData).toEqual([]);
+      expect(scope.progressData).toEqual({});
       expect(scope.percentage).toEqual(0);
       expect(assetLoadingSplash.setProgressObserver).toHaveBeenCalled();
     });

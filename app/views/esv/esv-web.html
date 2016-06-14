@@ -32,11 +32,6 @@
     <a ng-show="isEnvironmentDev() && !showAll" class="developpers-switch" ng-click="showAll=true">developers</a>
     <a ng-show="isEnvironmentDev() && showAll" class="developpers-switch" ng-click="showAll=false">users</a>
 
-    <div class="form-group form-inline col-xs-12">Robotic simulation cluster availability:
-      <span class="label" ng-class="clusterPartAvailInfo.nodes[1] > 2 ? 'label-success' : clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">{{clusterPartAvailInfo.nodes[1]}}/{{clusterPartAvailInfo.nodes[3]}}</span>
-    </div>
-    <hr class="list-separator">
-
     <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll"
          ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="setSelected(exp.id);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == selectedIndex) || isHovered}">
@@ -51,7 +46,21 @@
           </div>
           <div ng-if="exp.id == selectedIndex">{{exp.description}}<br/>
             <i ng-if="exp.timeout != undefined">Timeout: {{exp.timeout | timeDDHHMMSS}}</i><br/>
-            <i ng-if="exp.numSupportingServers != undefined">Available servers: {{exp.numAvailableServers}} / {{exp.numSupportingServers}}</i>
+            <span ng-if="exp.numSupportingServers != undefined">
+              <i>Backend availability:</i>
+              <i  class="label-availability"
+                  tooltip="A backend VM is required to control the simulation"
+                  ng-class="serverNames | serverStatus: serversEnabled">
+                 {{exp.numAvailableServers}} / {{exp.numSupportingServers}}
+              </i>
+            </span>
+            <br>
+            <i>Cluster availability: </i>
+            <i class="label-availability"
+                tooltip="A cluster node is required to run the robot simulation"
+                ng-class="clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">
+              {{clusterPartAvailInfo.nodes[1]}} / {{clusterPartAvailInfo.nodes[3]}}
+            </i>
           </div>
           <div ng-if="exp.id != selectedIndex">{{exp.description | limitTo: 200}}...</div>
           <div collapse="isQueryingServersFinished" ng-if="exp.id == selectedIndex">
