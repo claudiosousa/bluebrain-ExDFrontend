@@ -39,28 +39,27 @@
       JOINT_PLOT: 13,
       GRAPHICS_PERFORMANCE: 14
     })
-    .constant('SLIDER_INITIAL_POSITION', 50)
-    .constant('SCREEN_GLASS_STRING', '::screen_glass');
+    .constant('SLIDER_INITIAL_POSITION', 50);
 
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl',
     ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$window', '$document', '$log', 'bbpConfig',
       'hbpIdentityUserDirectory', 'simulationService',
-      'simulationControl', 'screenControl', 'experimentList',
+      'simulationControl', 'colorableObjectService', 'experimentList',
       'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
       'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'UI', 'OPERATION_MODE', 'SCREEN_GLASS_STRING',
+      'nrpFrontendVersion', 'UI', 'OPERATION_MODE',
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       function ($rootScope, $scope, $stateParams, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory, simulationService,
-        simulationControl, screenControl, experimentList,
+        simulationControl, colorableObjectService, experimentList,
         experimentSimulationService, timeDDHHMMSSFilter, splash,
         assetLoadingSplash, STATE, nrpBackendVersions,
-        nrpFrontendVersion, UI, OPERATION_MODE, SCREEN_GLASS_STRING,
+        nrpFrontendVersion, UI, OPERATION_MODE,
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
         simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService) {
@@ -493,58 +492,29 @@
           );
         };
 
-        // We restrict material changes to screen glasses found in screen models of the 3D scene,
-        // i.e., only visuals bearing the name screen_glass can be modified by this function.
-        $scope.setMaterialOnEntity = function (value) {
+        // We restrict material changes to simple objects and screen glasses found in screen models of the 3D scene,
+        // i.e., only visuals bearing the name screen_glass or COLORABLE_VISUAL can be modified by this function.
+        $scope.setMaterialOnEntity = function (material) {
           var selectedEntity = gz3d.scene.selectedEntity;
 
           if (!selectedEntity) {
-            $log.error('Could not change screen color since there was no object selected');
+            $log.error('Could not change color since there was no object selected');
             return;
           }
-          var screenGlass = $scope.getScreenGlass(selectedEntity);
-          var materialChange = { 'visual_path': screenGlass.name, 'material': value };
-          // Request color change through RESTful call
-          screenControl(simulationInfo.serverBaseUrl).updateScreenColor(
-            { sim_id: simulationInfo.simulationID }, materialChange
-          );
+
+          colorableObjectService.setEntityMaterial(simulationInfo, selectedEntity, material);
 
           // Hide context menu after a color was assigned
           contextMenuState.toggleContextMenu(false);
         };
 
-        $scope.getScreenGlass = function (entity) {
-          var screenGlass;
-          entity.traverse(function (node) {
-            var index = node.name.length - SCREEN_GLASS_STRING.length;
-            // Check whether the current node name ends with SCREEN_GLASS_STRING
-            // (Note that string.endsWith() doesn't exist yet but ECMA6 will add this function, see
-            // http://stackoverflow.com/questions/280634/endswith-in-javascript)
-            if (node.name.indexOf(SCREEN_GLASS_STRING, index) !== -1) {
-              screenGlass = node;
-              return node;
-            }
-          });
-          return screenGlass;
-        };
-
-        // ScreenChange context Menu setup
-        var screenChangeMenuItemGroup = {
-          label: 'Change Color',
+        // colorable object context Menu setup
+        var colorableMenuItemGroup = {
           visible: false,
           items: [
             {
-              text: 'Red',
+              html: '<materials-chooser on-select="setMaterialOnEntity(material)"/>',
               callback: function (event) {
-                $scope.setMaterialOnEntity('Gazebo/Red');
-                event.stopPropagation();
-              },
-              visible: false
-            },
-            {
-              text: 'Blue',
-              callback: function (event) {
-                $scope.setMaterialOnEntity('Gazebo/Blue');
                 event.stopPropagation();
               },
               visible: false
@@ -552,24 +522,19 @@
           ],
 
           hide: function () {
-            this.visible = this.items[0].visible = this.items[1].visible = false;
+            this.visible = this.items[0].visible = false;
           },
 
           show: function (model) {
-            var shouldShowOnlyInViewMode =
-              (gz3d.scene.manipulationMode === EDIT_MODE.VIEW);
+            var isInViewMode = (gz3d.scene.manipulationMode === EDIT_MODE.VIEW);
 
-            var shouldShowOnlyOnScreens = angular.isDefined($scope.getScreenGlass(model));
-            var show =
-              shouldShowOnlyInViewMode &&
-              shouldShowOnlyOnScreens;
+            var isColorableEntity = colorableObjectService.isColorableEntity(model);
+            var show = isInViewMode && isColorableEntity;
 
-            return (this.visible =
-              this.items[0].visible =
-              this.items[1].visible = show);
+            return (this.visible = this.items[0].visible = show);
           }
         };
-        contextMenuState.pushItemGroup(screenChangeMenuItemGroup);
+        contextMenuState.pushItemGroup(colorableMenuItemGroup);
 
         //main context menu handler
         $scope.onContainerMouseDown = function (event) {
@@ -584,26 +549,6 @@
               case 0:
               case 1:
                 contextMenuState.toggleContextMenu(false);
-                break;
-            }
-          }
-        };
-
-        //main handler for mouseup events on the container element
-        $scope.onContainerMouseUp = function (event) {
-          if ($scope.viewState.isOwner) {
-            switch (event.button) {
-              case 2:
-                // right click
-                break;
-
-              case 0:
-              // left click
-              case 1:
-                // middle mouse button
-                if (objectInspectorService.isShown) {
-                  objectInspectorService.update();
-                }
                 break;
             }
           }

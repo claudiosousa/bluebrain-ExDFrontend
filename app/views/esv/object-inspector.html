@@ -88,6 +88,11 @@
                                                 class="input-radio-check"
                                                 ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.WIREFRAME)">Wireframe</label>
     </li>
+    <!-- section - Change material -->
+    <li class="section-item" ng-show="objectInspectorService.hasColorableVisual">
+      <h5>Change color</h5>
+      <materials-chooser on-select="objectInspectorService.selectMaterial(material)"/>
+    </li>
     <!-- section - physical properties -->
     <li class="section-item" ng-show="objectInspectorService.selectedObject">
       <label for="oi-show-collision"><input id="oi-show-collision" type="checkbox" name="show-collision"

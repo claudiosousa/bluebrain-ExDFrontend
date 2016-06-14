@@ -178,12 +178,12 @@
     };
   }]);
 
-  module.factory('screenControl', ['$resource', 'serverError', function ($resource, serverError) {
+  module.factory('objectControl', ['$resource', 'serverError', function ($resource, serverError) {
     return function (baseUrl) {
       return $resource(baseUrl + '/simulation/:sim_id/interaction/material_change', {}, {
-        updateScreenColor: {
+        updateMaterial: {
           method: 'PUT',
-          interceptor: {responseError: serverError.display}
+          interceptor: { responseError: serverError.display }
         }
       });
     };
