@@ -74,15 +74,21 @@
         $scope.updatePromise = undefined;
         $scope.updateUptimePromise = undefined;
         $scope.experiments = {};
-        experimentSimulationService.getHealthyServers().then(function(servers){
-          $scope.serverNames = servers;
-        });
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         $scope.userID = undefined;
         $scope.clusterPartAvailInfo = undefined;
         if (!bbpConfig.get('localmode.forceuser', false)) {
           $scope.clusterPartAvailInfo = slurminfoService.get();
         }
+
+        var loadHealthyServers = function () {
+          experimentSimulationService.getHealthyServers().then(function (servers) {
+            $scope.serverNames = servers;
+          });
+        };
+
+        loadHealthyServers();
+
 
         var ESV_UPDATE_RATE = 30 * 1000; //Update ESV-Web page every 30 seconds
         var UPTIME_UPDATE_RATE = 1000; //Update the uptime every second
@@ -141,7 +147,7 @@
         };
 
         $scope.startNewExperiment = function(configuration, serverPattern) {
-          experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible);
+          experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible, loadHealthyServers);
         };
 
         $scope.joinExperiment = function (url) {
@@ -194,6 +200,7 @@
                 getExperimentsFinishedCallback
               );
 
+              loadHealthyServers();
             }, ESV_UPDATE_RATE);
           }
         };
@@ -234,7 +241,8 @@
                 evt.target.result,
                 $scope.serversEnabled,
                 experiment.serverPattern,
-                $scope.setProgressbarInvisible
+                $scope.setProgressbarInvisible,
+                loadHealthyServers
               );
             };
           });

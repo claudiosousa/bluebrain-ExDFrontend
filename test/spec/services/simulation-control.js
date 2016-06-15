@@ -640,7 +640,7 @@ describe('Services: experimentSimulationService', function () {
 
       experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, serverID, null);
       expect(messageCallback).toHaveBeenCalled();
-      expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services']);
+      expect(simulationGenerator).toHaveBeenCalledWith(bbpConfigString.bbpce014.gzweb['nrp-services'], null);
 
       var simulationGeneratorMockObject = simulationGenerator();
       expect(simulationGeneratorMockObject.create).toHaveBeenCalledWith(
@@ -650,21 +650,22 @@ describe('Services: experimentSimulationService', function () {
           gzserverHost: 'lugano',
           operationMode: expectedOperatingMode,
           contextID: stateParams.ctx
-        }, jasmine.any(Function)
+        },
+        jasmine.any(Function)
       );
       simulationGeneratorMockObject.create.mostRecentCall.args[1]({ simulationID : simulationID});
 
       expect(messageCallback).toHaveBeenCalled();
-      expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080');
-      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.INITIALIZED}, jasmine.any(Function), jasmine.any(Function));
+      expect(simulationState).toHaveBeenCalledWith('http://bbpce014.epfl.ch:8080', null);
+      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.INITIALIZED}, jasmine.any(Function));
       var updateFunction = simulationState().update.mostRecentCall.args[2];
       simulationState().update.reset();
       updateFunction();
-      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.STARTED}, jasmine.any(Function), jasmine.any(Function));
+      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.STARTED}, jasmine.any(Function));
       updateFunction = simulationState().update.mostRecentCall.args[2];
       simulationState().update.reset();
       updateFunction();
-      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.PAUSED}, jasmine.any(Function), jasmine.any(Function));
+      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.PAUSED}, jasmine.any(Function));
       updateFunction = simulationState().update.mostRecentCall.args[2];
 
       // Test for initialized Callback
@@ -686,7 +687,8 @@ describe('Services: experimentSimulationService', function () {
         /* jshint camelcase: false */
         gzserverHost: 'lugano',
         operationMode: 'edit'
-      }, jasmine.any(Function));
+      },
+        jasmine.any(Function));
     });
 
     it('should start a new experiment', function(){
@@ -948,14 +950,6 @@ describe('Services: error handling', function () {
     expect(response.status).toBe(400);
     serverError.display.reset();
 
-    simulationGenerator(serverURL).create();
-    httpBackend.expectPOST(serverURL + '/simulation').respond(500);
-    httpBackend.flush();
-    expect(serverError.display.callCount).toBe(1);
-    response = serverError.display.mostRecentCall.args[0];
-    expect(response.status).toBe(500);
-    serverError.display.reset();
-
    objectControl(serverURL).updateMaterial(simulationID, {});
     httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/material_change', {});
     httpBackend.flush();
@@ -973,7 +967,6 @@ describe('Services: error handling', function () {
     experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', errorCallback);
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
-    expect(serverError.display.callCount).toBe(1);
   });
 
   it('should not call serverError for a failing GET /simulation request with 504 or a -1 status', function() {
@@ -991,5 +984,85 @@ describe('Services: error handling', function () {
     httpBackend.flush();
     expect(serverError.display.callCount).toBe(0);
   });
+});
 
+describe('Start simulation error handling', function () {
+  var httpBackend, experimentSimulationService;
+  var servers = ['bbpce014','bbpce016', 'bbpce018', 'bbpsrvc020'];
+
+  beforeEach(module('simulationControlServices'));
+
+  var roslibMock = {};
+  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn({ subscribe: function () { } });
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+
+  beforeEach(module(function ($provide) {
+    $provide.value('roslib', roslibMock);
+  }));
+
+  beforeEach(inject(function($httpBackend,_simulationService_, _simulationControl_,
+     _simulationGenerator_, _simulationState_, _experimentSimulationService_){
+
+    httpBackend = $httpBackend;
+    experimentSimulationService = _experimentSimulationService_;
+  }));
+
+  afterEach(function () {
+    httpBackend.verifyNoOutstandingExpectation();
+    httpBackend.verifyNoOutstandingRequest();
+  });
+
+  var launchExperimentsWithFailingServer = function (failAtCreation) {
+
+    var errorCallback = jasmine.createSpy('errorCallback');
+
+    var serverindex2succeed = servers.length - 1;
+    servers.forEach(function (server, i) {
+      var returnCode = (i === serverindex2succeed) ? 200 : 500;
+      httpBackend.whenGET('http://' + server + '.epfl.ch:8080/simulation').respond(200);
+      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(failAtCreation ? returnCode : 200, {data:{}});
+      httpBackend.whenPUT('http://' + server + '.epfl.ch:8080/simulation/state').respond(failAtCreation ? 200 : returnCode, {data:{}});
+    });
+
+    spyOn(experimentSimulationService, 'launchExperimentOnServer').andCallThrough();
+    var messageCallback = jasmine.createSpy('messageCallback');
+    experimentSimulationService.setProgressMessageCallback(messageCallback);
+    experimentSimulationService.startNewExperiments('mocked_experiment_conf', null, servers, servers, errorCallback);
+    httpBackend.flush();
+
+    expect(errorCallback.callCount).toBe(0);
+
+    var triedForServers = experimentSimulationService.launchExperimentOnServer.calls.map(function (fnCall) {
+      return fnCall.args[2];
+    });
+
+    expect(triedForServers.length).toBe(4);
+    var allServersWereTried = servers.every(function (s) {
+      return triedForServers.indexOf(s) >= 0;
+    });
+    expect(allServersWereTried).toBe(true);
+};
+
+  it('should go through all servers trying to create a simulation until succeeds', function () {
+    launchExperimentsWithFailingServer(true);
+  });
+
+  it('should go through all servers trying to create and update a simulation until succeeds', function () {
+    launchExperimentsWithFailingServer(false);
+  });
+
+  it('should call error callback if all servers failed', function () {
+    var errorCallback = jasmine.createSpy('errorCallback');
+    servers.forEach(function (server) {
+      httpBackend.whenGET('http://' + server + '.epfl.ch:8080/simulation').respond(200);
+      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(500);
+    });
+
+    var messageCallback = jasmine.createSpy('messageCallback');
+    experimentSimulationService.setProgressMessageCallback(messageCallback);
+    experimentSimulationService.startNewExperiments('mocked_experiment_conf', null, servers, servers, errorCallback);
+    httpBackend.flush();
+    expect(errorCallback.callCount).toBe(1);
+
+  });
 });
