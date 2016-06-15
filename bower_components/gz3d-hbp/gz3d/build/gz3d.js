@@ -256,7 +256,10 @@ var modelList =
       {modelPath:'vr_lamp', modelTitle:'Stand Lamp'},
       {modelPath:'vr_screen', modelTitle:'Virtual Screen'},
       {modelPath:'viz_poster', modelTitle:'Poster 1'},
-      {modelPath:'viz_poster_2', modelTitle:'Poster 2'}
+      {modelPath:'viz_poster_2', modelTitle:'Poster 2'},
+
+      {modelPath:'icub_model', modelTitle:'iCub'},
+      {modelPath:'lauron_model', modelTitle:'Lauron'}
     ]}
   ];
 
