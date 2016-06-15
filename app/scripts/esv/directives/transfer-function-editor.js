@@ -123,6 +123,10 @@
         scope.onNewErrorMessageReceived = function(msg) {
           if (msg.severity < 2) { // Error message is not critical and can be fixed
             var flawedTransferFunction = _.find(scope.transferFunctions, {'id': msg.functionName});
+            if (flawedTransferFunction === undefined){
+                // if we couldn't find the tf from the id, try against the name
+                flawedTransferFunction = _.find(scope.transferFunctions, {'name': msg.functionName});
+            }
             // Remove error line highlighting if a new compile error is received
             if (msg.errorType === scope.ERROR.COMPILE) {
               scope.cleanCompileError(flawedTransferFunction);
