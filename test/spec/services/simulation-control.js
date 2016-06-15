@@ -139,33 +139,45 @@ describe('Services: server-info-service', function () {
     });
   });
 
-  describe('When calling getActiveSimulation/filterSimulations', function() {
+  describe('When calling getActiveSimulation/filterSimulations in presence of failed simulations', function() {
     var simulations;
 
     beforeEach(function() {
-      simulations = TestDataGenerator.createTestSimulations(10, STATE.CREATED);
+      simulations = TestDataGenerator.createTestSimulations(10, STATE.FAILED);
     });
 
-    it('should find a STARTED simulation in a list of otherwise CREATED simulations', function() {
+    it('should find a STARTED simulation', function() {
       var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
       simulations[randomIndex].state = STATE.STARTED;
       expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
     });
 
-    it('should find a INITIALIZED simulation in a list of otherwise CREATED simulations', function() {
+    it('should find a INITIALIZED simulation', function() {
       var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
       simulations[randomIndex].state = STATE.INITIALIZED;
       expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
     });
 
-    it('should return undefined in case no simulation with state STARTED or PAUSED is there', function() {
+    it('should find a CREATED simulation', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.CREATED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
+
+    it('should find a HALTED simulation', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.HALTED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
+
+    it('should return undefined in case no running simulation is there', function() {
       expect(simulationService().getActiveSimulation(simulations)).toBe(undefined);
     });
 
     it('should filter out a STARTED simulation', function() {
       simulations[1].state = STATE.PAUSED;
       simulations[3].state = STATE.STARTED;
-      expect(simulationService().filterSimulations(simulations, STATE.STARTED, STATE.PAUSED).state).toBe(STATE.STARTED);
+      expect(simulationService().filterSimulations(simulations, function (state) { return state === STATE.STARTED || state === STATE.PAUSED;}).state).toBe(STATE.STARTED);
     });
 
     it('should attach a filter function and filter simulations according to state and index in the list', function() {
@@ -173,14 +185,51 @@ describe('Services: server-info-service', function () {
       simulations[3].state = STATE.PAUSED;
       simulations[5].state = STATE.INITIALIZED;
 
-      expect(simulationService().filterSimulations(simulations, STATE.STARTED, STATE.PAUSED).state).toBe(STATE.PAUSED);
-      expect(simulationService().filterSimulations(simulations, STATE.INITIALIZED).simulationID).toBe(5);
+      expect(simulationService().filterSimulations(simulations, function (state) { return state === STATE.STARTED || state === STATE.PAUSED; }).state).toBe(STATE.PAUSED);
+      expect(simulationService().filterSimulations(simulations, function (state) { return state === STATE.INITIALIZED;}).simulationID).toBe(5);
 
       // We expect it to be the last element
-      expect(simulationService().filterSimulations(simulations, STATE.CREATED).simulationID).toBe(simulations.length-1);
+      expect(simulationService().filterSimulations(simulations, function (state) { return state === STATE.FAILED;}).simulationID).toBe(simulations.length-1);
 
       simulations[4].state = STATE.PAUSED;
-      expect(simulationService().filterSimulations(simulations, STATE.STOPPED)).toBe(undefined);
+      expect(simulationService().filterSimulations(simulations, function (state) { return state === STATE.STOPPED;})).toBe(undefined);
+    });
+
+  });
+
+  describe('When calling getActiveSimulation/filterSimulations in presence of stopped simulations', function() {
+    var simulations;
+
+    beforeEach(function() {
+      simulations = TestDataGenerator.createTestSimulations(10, STATE.STOPPED);
+    });
+
+    it('should find a STARTED simulation', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.STARTED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
+
+    it('should find a INITIALIZED simulation', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.INITIALIZED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
+
+    it('should find a CREATED simulation', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.CREATED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
+
+    it('should find a HALTED simulation', function() {
+      var randomIndex = TestDataGenerator.randomInt(0,simulations.length-1);
+      simulations[randomIndex].state = STATE.HALTED;
+      expect(simulationService().getActiveSimulation(simulations)).toBe(simulations[randomIndex]);
+    });
+
+    it('should return undefined in case no running simulation is there', function() {
+      expect(simulationService().getActiveSimulation(simulations)).toBe(undefined);
     });
 
   });
