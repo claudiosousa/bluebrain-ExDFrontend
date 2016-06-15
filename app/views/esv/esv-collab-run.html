@@ -20,7 +20,7 @@
               ng-click="toggleServer(server.id); $event.stopPropagation();">
             <a><input
               type="checkbox"
-              ng-checked="serversEnabled.indexOf(server) > -1"
+              ng-checked="serversEnabled.indexOf(server.id) > -1"
               ng-click="toggleServer(server.id); $event.stopPropagation();">
               <span ng-bind="server.id"></span>
             </a>
@@ -31,9 +31,6 @@
         <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp;<i>Loading experiment description</i>
       </div>
     </div>
-
-    <div class="form-group form-inline col-xs-12">Robotic simulation cluster availability: <span class="label"
-        ng-class="clusterPartAvailInfo.nodes[1] > 2 ? 'label-success' : clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger' ">{{clusterPartAvailInfo.nodes[1]}}/{{clusterPartAvailInfo.nodes[3]}}</span></div>
 
     <hr class="list-separator">
 
@@ -47,9 +44,13 @@
         </div>
         <div>{{experiment.description}}<br/>
           <i ng-if="experiment.timeout != undefined">Timeout: {{experiment.timeout | timeDDHHMMSS}}</i><br/>
-          <i ng-if="experiment.numSupportingServers != undefined">
-            Available servers: {{experiment.numAvailableServers}} / {{experiment.numSupportingServers}}
-          </i>
+          <span ng-if="experiment.numSupportingServers != undefined">
+            <i>Backend availability:</i>
+            <i class="label-availability" ng-class="serverNames | serverStatus: serversEnabled">{{experiment.numAvailableServers}} / {{experiment.numSupportingServers}}</i>
+          </span>
+          <br>
+          <i>Cluster availability: </i>
+          <i class="label-availability"  ng-class="clusterPartAvailInfo.nodes[1] > 1 ? 'label-warning' : 'label-danger'">{{clusterPartAvailInfo.nodes[1]}} / {{clusterPartAvailInfo.nodes[3]}}</i>
         </div>
         <div collapse="isQueryingServersFinished">
           <div class="list-entry-container center">
