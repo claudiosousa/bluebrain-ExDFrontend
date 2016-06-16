@@ -109,13 +109,6 @@
         templateUrl: 'views/common/create-collab-overview.html'
       };
 
-      var externalViewState = {
-        name: 'external-view',
-        url: '/external-view/:externalView',
-        templateUrl: 'views/common/external-view.html',
-        controller: 'externalViewCtrl'
-      };
-
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
       home.state(esvCollabEditState);
@@ -124,7 +117,6 @@
       home.state(gz3dViewState);
       home.state(supportState);
       home.state(newCollabOverviewState);
-      home.state(externalViewState);
       // Provide a default route.
       // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
       $urlRouterProvider.otherwise('/');

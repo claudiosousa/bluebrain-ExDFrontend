@@ -127,9 +127,6 @@
         "documentation": 5100,
         "support": 5101
       }
-    },
-    "externalViews":{
-      "videotutorial": "http://neurorobotics.net/fileadmin/platform/videotutorial/index.html"
     }
   },
   "localmode" : {
