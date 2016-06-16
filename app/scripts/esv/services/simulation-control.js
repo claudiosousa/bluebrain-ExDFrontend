@@ -696,9 +696,15 @@
 
         return $q.all(serverIDs.map(function (serverID) {
           var server = servers[serverID];
-          return $q.all({
+          var response = {
             id: serverID,
             health: $http.get(server.gzweb['nrp-services'] + '/health/errors')
+          };
+          return $q.all(response).catch(function () {
+            //if we failed to receive a response to the health request,
+            //we consider the server to be in critical state
+            response.health = { data: { state: 'CRITICAL' } };
+            return response;
           });
         })).then(function (serverList) {
           //return the server ids sorted by health status
