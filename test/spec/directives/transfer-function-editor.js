@@ -347,6 +347,24 @@ describe('Directive: transferFunctionEditor', function () {
       expect(_.find).toHaveBeenCalledWith(isolateScope.transferFunctions, { 'id': msg.functionName });
     });
 
+    it('should retrieve the flawed TF using its name when no TF found using its ID when an error is received', function () {
+      var namingError = isolateScope.ERROR.NO_OR_MULTIPLE_NAMES;
+      var tf1 = transferFunctions[0];
+      tf1.name = 'NewFunctionName';
+      tf1.id = 'OldFunctionName';
+      var msg = { functionName: 'NewFunctionName', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1 };
+      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      spyOn(isolateScope, 'cleanCompileError');
+      spyOn(_, 'find').andCallFake(function(arg1, arg2){
+        if (Object.keys(arg2)[0] === 'id'){
+            return undefined;
+        }
+        return tf1;
+      });
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(Object.keys(_.find.mostRecentCall.args[1])[0]).toBe('name');
+    });
+
     it('should remove error highlighting in the editor of the previously flawed transfer function', function () {
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       var tf1 = transferFunctions[0];
