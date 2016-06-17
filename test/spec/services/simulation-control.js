@@ -303,7 +303,8 @@ describe('Services: experimentSimulationService', function () {
     scope,
     bbpConfig,
     roslib,
-    STATE;
+    STATE,
+    healthStatus;
 
   // load the service to test and mock the necessary service
   beforeEach(module('simulationControlServices'));
@@ -412,6 +413,12 @@ describe('Services: experimentSimulationService', function () {
     roslib = _roslib_;
     STATE = _STATE_;
     simulationSDFWorld = _simulationSDFWorld_;
+
+    healthStatus = {
+      bbpce014: 'CRITICAL',
+      bbpce016: 'OK',
+      bbpsrvc21: 'WARNING'
+    };
 
     // Create 7 experiments, all being the same, except for 3, which has experimentConfiguration 'fakeExperiment2.xml'
     returnSimulations = (function () {
@@ -903,14 +910,29 @@ describe('Services: experimentSimulationService', function () {
 
   it('should return Healthy servers', function () {
     var servers = Object.keys(bbpConfigString);
-    var status = {
-      bbpce014: 'CRITICAL',
-      bbpce016: 'OK',
-      bbpsrvc21: 'WARNING'
-    };
     var EXPECTED_SORT_ORDER = ['bbpce016', 'bbpsrvc21', 'bbpce014'];
     servers.forEach(function (server) {
-      httpBackend.whenGET(bbpConfigString[server].gzweb['nrp-services'] + '/health/errors').respond(200, { state: status[server] });
+      httpBackend.whenGET(bbpConfigString[server].gzweb['nrp-services'] + '/health/errors').respond(200, { state: healthStatus[server] });
+    });
+    var healthyServers;
+    experimentSimulationService.getHealthyServers()
+      .then(function (servers) {
+        healthyServers = servers;
+      });
+    httpBackend.flush();
+    scope.$digest();
+    //expect servers to be sorted by status
+    healthyServers.forEach(function (s, i) {
+      expect(s.id).toBe(EXPECTED_SORT_ORDER[i]);
+    });
+  });
+
+  it('should considered a server failing to respond to the health check as in CRITICAL state', function () {
+    var servers = Object.keys(bbpConfigString);
+
+    var EXPECTED_SORT_ORDER = ['bbpsrvc21', 'bbpce014', 'bbpce016'];
+    servers.forEach(function (server) {
+      httpBackend.whenGET(bbpConfigString[server].gzweb['nrp-services'] + '/health/errors').respond(server === 'bbpce016' ? 500 : 200, { state: healthStatus[server] });
     });
     var healthyServers;
     experimentSimulationService.getHealthyServers()
@@ -1112,6 +1134,5 @@ describe('Start simulation error handling', function () {
     experimentSimulationService.startNewExperiments('mocked_experiment_conf', null, servers, servers, errorCallback);
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
-
   });
 });
