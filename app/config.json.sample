@@ -69,7 +69,7 @@
         },
         "serverJobLocation": "lugano"
       },
-      "bbpsrvc21": {
+      "bbpsrvc71": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/6/assets",
           "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/6/api",
