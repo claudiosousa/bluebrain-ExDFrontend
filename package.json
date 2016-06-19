@@ -44,7 +44,6 @@
     "karma-phantomjs-launcher": "latest",
     "load-grunt-tasks": "^3.3.0",
     "ng-html2js": "2.0.0",
-    "phantomjs-polyfill-find": "github:ptim/phantomjs-polyfill-find",
     "protractor": "2.5.1",
     "time-grunt": "^1.2.2",
     "vinyl-fs": "2.2.1"

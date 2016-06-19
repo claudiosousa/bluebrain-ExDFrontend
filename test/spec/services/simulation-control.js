@@ -15,7 +15,6 @@ describe('Services: server-info-service', function () {
 
   // load the service to test and mock the necessary service
   beforeEach(module('simulationControlServices'));
-  beforeEach(module('hbpCommon'));
   beforeEach(module('bbpStubFactory'));
 
   var httpBackend, simulations, returnSimulations, experimentTemplates;
@@ -955,7 +954,7 @@ describe('Services: error handling', function () {
   var objectControl;
   serversEnabled = ['bbpce014','bbpce016', 'bbpce018'];
 
-  beforeEach(module('simulationControlServices'));
+  beforeEach(module('exd.templates','simulationControlServices'));
 
   var roslibMock = {};
   roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn({ subscribe: function(){} });
@@ -1029,15 +1028,27 @@ describe('Services: error handling', function () {
     expect(response.status).toBe(500);
   });
 
-  it('should test the error callback when launching an experiment fails', function() {
+  var testErrorCallbackWithErrorDisplay = function(isFatalError) {
     var errorCallback = jasmine.createSpy('errorCallback');
-    httpBackend.whenPOST(/()/).respond({simulationID: '0'}, 200);
+    serverError.display.reset();
+    httpBackend.whenPOST(/()/).respond(500, isFatalError ? {message: 'cluster'} : {message: 'Internal'});
     httpBackend.whenGET(/()/).respond(200);
+    httpBackend.whenPUT(/()/).respond(200);
     var messageCallback = jasmine.createSpy('messageCallback');
     experimentSimulationService.setProgressMessageCallback(messageCallback);
     experimentSimulationService.launchExperimentOnServer('mocked_experiment_conf', null, 'bbpce014', errorCallback);
     httpBackend.flush();
     expect(errorCallback.callCount).toBe(1);
+    expect(serverError.display.callCount).toBe(isFatalError ? 1 : 0);
+  };
+
+  it('should test the error callback and call display when launching an experiment fails', function() {
+    testErrorCallbackWithErrorDisplay(true);
+  });
+
+  // Define a separate test because httpBackend needs to be reset with afterEach()
+  it('should test the error callback and dont call display when launching an experiment fails', function() {
+    testErrorCallbackWithErrorDisplay(false);
   });
 
   it('should not call serverError for a failing GET /simulation request with 504 or a -1 status', function() {
@@ -1091,8 +1102,8 @@ describe('Start simulation error handling', function () {
     servers.forEach(function (server, i) {
       var returnCode = (i === serverindex2succeed) ? 200 : 500;
       httpBackend.whenGET('http://' + server + '.epfl.ch:8080/simulation').respond(200);
-      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(failAtCreation ? returnCode : 200, {data:{}});
-      httpBackend.whenPUT('http://' + server + '.epfl.ch:8080/simulation/state').respond(failAtCreation ? 200 : returnCode, {data:{}});
+      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(failAtCreation ? returnCode : 200, {data:{message: 'timeout'}});
+      httpBackend.whenPUT('http://' + server + '.epfl.ch:8080/simulation/state').respond(failAtCreation ? 200 : returnCode, {data:{message: 'Cannot'}});
     });
 
     spyOn(experimentSimulationService, 'launchExperimentOnServer').andCallThrough();
@@ -1107,11 +1118,11 @@ describe('Start simulation error handling', function () {
       return fnCall.args[2];
     });
 
-    expect(triedForServers.length).toBe(4);
+    expect(triedForServers.length).toBe(failAtCreation ? 4 : 1);
     var allServersWereTried = servers.every(function (s) {
       return triedForServers.indexOf(s) >= 0;
     });
-    expect(allServersWereTried).toBe(true);
+    expect(allServersWereTried).toBe(failAtCreation);
 };
 
   it('should go through all servers trying to create a simulation until succeeds', function () {

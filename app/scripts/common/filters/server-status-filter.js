@@ -11,9 +11,14 @@
 
       return function (serverNames, serverEnabled) {
 
-        var firstSelectedServer = serverNames.find(function (server) {
-          return serverEnabled.indexOf(server.id) >= 0;
-        });
+        var firstSelectedServer = undefined;
+        var i = 0;
+        while(!angular.isDefined(firstSelectedServer) && i<serverNames.length) {
+          if (serverEnabled.indexOf(serverNames[i].id) >= 0) {
+            firstSelectedServer = serverNames[i];
+          }
+          i++;
+        }
         return firstSelectedServer ? classesByState[firstSelectedServer.state] : classesByState.CRITICAL;
       };
     });

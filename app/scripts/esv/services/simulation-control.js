@@ -138,23 +138,32 @@
 
   module.factory('simulationCreationInterceptor', ['$q', 'serverError', function ($q, serverError) {
     return function (customErrorCallback) {
-      //returns if the error occured because it is impossible to allocate a job on the cluster
-      var isClusterAllocationError = function (error) {
+      //returns true if the error is unlisted as blocking or is a cluster error
+      var isFatalError = function (error) {
         if (!error.data) {
           return false;
         }
         var errorMsg = error.data.message || error.data;
-        return angular.isString(errorMsg) && errorMsg.indexOf('cluster') >= 0;
+        return angular.isString(errorMsg) &&
+          ((errorMsg.indexOf('cluster') >= 0) ||
+            ((errorMsg.indexOf('Another') < 0) &&
+             (errorMsg.indexOf('timeout') < 0) &&
+             (errorMsg.indexOf('Internal') < 0)
+            )
+          );
       };
       return function (error) {
-        var isClusterError = isClusterAllocationError(error);
-        if (isClusterError) {
-          //if is a cluster allocation error, then we through the normal error handling
+        var isFatal = isFatalError(error);
+        if (isFatal) {
+          //if is a non fatal error, then we through the normal error handling
           serverError.display(error);
+        } else {
+          // log error on console
+          console.log(error);
         }
         //call custom error handling
         if (customErrorCallback) {
-          customErrorCallback(error, isClusterError);
+          customErrorCallback(error, isFatal);
         }
         return $q.reject(error);
       };
@@ -169,10 +178,7 @@
           interceptor: {responseError: serverError.display}
         },
         update: { // this method initializes, starts, stops, or pauses the simulation
-          method: 'PUT',
-          interceptor: {
-            responseError: simulationCreationInterceptor(customErrorCallback)
-          }
+          method: 'PUT'
         }
       });
     };
