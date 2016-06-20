@@ -136,32 +136,32 @@
     };
   }]);
 
-  module.factory('simulationCreationInterceptor', ['$q', 'serverError', function ($q, serverError) {
+  module.factory('simulationCreationInterceptor', ['$q', '$log', 'serverError', function ($q, $log, serverError) {
     return function (customErrorCallback) {
       //returns true if the error is unlisted as blocking or is a cluster error
       var isFatalError = function (error) {
         if (!error.data) {
-          return false;
+          return true;
         }
         var errorMsg = error.data.message || error.data;
-        return angular.isString(errorMsg) &&
-          ((errorMsg.indexOf('cluster') >= 0) ||
-            ((errorMsg.indexOf('Another') < 0) &&
-             (errorMsg.indexOf('timeout') < 0) &&
-             (errorMsg.indexOf('Internal') < 0)
-            )
-          );
+        if (!angular.isString(errorMsg) || (errorMsg.indexOf('cluster') >= 0) || (errorMsg.indexOf('Internal') >= 0)) {
+          return true;
+        }
+        if ((errorMsg.indexOf('Another') >= 0) || (errorMsg.indexOf('timeout') >= 0)) {
+          return false; // white list of non-fatal errors
+        }
+        return true;
       };
       return function (error) {
         var isFatal = isFatalError(error);
         if (isFatal) {
-          //if is a non fatal error, then we through the normal error handling
+          // If it is a fatal error, then we go through the normal error handling
           serverError.display(error);
         } else {
-          // log error on console
-          console.log(error);
+          // Log error on console
+          $log.debug(error);
         }
-        //call custom error handling
+        // Call custom error handling
         if (customErrorCallback) {
           customErrorCallback(error, isFatal);
         }
@@ -178,7 +178,10 @@
           interceptor: {responseError: serverError.display}
         },
         update: { // this method initializes, starts, stops, or pauses the simulation
-          method: 'PUT'
+          method: 'PUT',
+          interceptor: {
+            responseError: simulationCreationInterceptor(customErrorCallback)
+          }
         }
       });
     };
