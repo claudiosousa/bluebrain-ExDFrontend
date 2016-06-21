@@ -15,6 +15,14 @@ describe('Controller: editorPanelCtrl', function () {
 
   var simulationInfo;
 
+  var baseEventHandlerMock = {
+    suppressAnyKeyPress: jasmine.createSpy('suppressAnyKeyPress')
+  };
+
+  beforeEach(module(function ($provide) {
+    $provide.value('baseEventHandler', baseEventHandlerMock);
+  }));
+
   beforeEach(module(function ($provide) {
     $provide.value('simulationInfo', simulationInfo);
   }));
@@ -188,5 +196,10 @@ describe('Controller: editorPanelCtrl', function () {
     scope.showEditorPanel = true;
     scope.$digest();
     expect(scope.openCallback).toHaveBeenCalled();
+  });
+
+  it('should call suppressAnyKeyPress from baseEventHandler service', function () {
+    scope.suppressKeyPress(event);
+    expect(baseEventHandlerMock.suppressAnyKeyPress).toHaveBeenCalled();
   });
 });

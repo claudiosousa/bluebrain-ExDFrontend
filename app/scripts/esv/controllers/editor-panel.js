@@ -4,8 +4,8 @@
   /* global console: false */
 
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d) {
+    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler',
+    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler) {
 
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
@@ -98,6 +98,10 @@
       else if ($scope.activeTab.pynneditor === true) {
         $scope.controls.pynneditor.refresh();
       }
+    };
+
+    $scope.suppressKeyPress = function(event) {
+      baseEventHandler.suppressAnyKeyPress(event);
     };
   }]);
 }());

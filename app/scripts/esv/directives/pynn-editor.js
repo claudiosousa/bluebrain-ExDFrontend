@@ -247,7 +247,6 @@
             // button.
             scope.control.refresh = undefined;
           });
-
         }
       };
     }]);
