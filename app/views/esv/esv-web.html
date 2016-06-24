@@ -2,6 +2,11 @@
 <link rel="stylesheet" href="styles/esv/esv-web.css" />
 <!-- endbuild -->
 
+<div class="alert alert-warning">
+  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Running simulations is unavailable due to
+  server maintenance. Full functionality will be available again as soon as possible!
+</div>
+
 <div class="container-with-navbar-margin">
 
   <div class="list-container">
@@ -82,7 +87,7 @@
               </button>
               <!-- No edit rights: launch button disabled -->
               <button ng-if="!hasEditRights" class="btn btn-default disabled enable-tooltip"
-                      tooltip="Sorry, you don't have sufficient rights to launch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
+                      tooltip="Sorry, maintenance is ongoing" tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch
               </button>
               <!-- Servers are available and the user has edit rights: upload custom environment button is enabled -->
@@ -99,7 +104,7 @@
               </button>
               <!-- No edit rights: upload custom environment button is disabled -->
               <button ng-if="!hasEditRights" class="btn btn-default disabled enable-tooltip"
-                      tooltip="Sorry, you don't have edit rights." tooltip-trigger="mouseenter" tooltip-placement="top">
+                      tooltip="Sorry, maintenance is ongoing" tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-upload"></i> Upload custom environment
               </button>
               <!-- Join button -->
@@ -148,7 +153,7 @@
                   </a>
                   <!-- No edit rights: stop button disabled -->
                   <a type="button" class="btn btn-default disabled enable-tooltip"
-                     tooltip="Sorry, you don't have sufficient rights to stop the simulation."
+                     tooltip="Sorry, maintenance is ongoing"
                      tooltip-trigger="mouseenter" tooltip-placement="top"
                      ng-if="!hasEditRights && (simul.state !== STATE.CREATED)"> Stop
                   </a>

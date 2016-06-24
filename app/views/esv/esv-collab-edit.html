@@ -2,6 +2,11 @@
 <link rel="stylesheet" href="styles/esv/esv-web.css" />
 <!-- endbuild -->
 
+<div class="alert alert-warning">
+  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Running simulations is unavailable due to
+  server maintenance. Full functionality will be available again as soon as possible!
+</div>
+
 <div class="container-with-navbar-margin">
 
   <div class="list-container">
@@ -59,7 +64,7 @@
               </button>
               <button ng-if="!hasEditRights"
                       class="btn btn-default disabled enable-tooltip"
-                      tooltip="Sorry, you don't have editing rights." tooltip-trigger="mouseenter" tooltip-placement="top">
+                      tooltip="Sorry, maintenance is ongoing" tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-pencil"></i> Clone
               </button>
             </div>
