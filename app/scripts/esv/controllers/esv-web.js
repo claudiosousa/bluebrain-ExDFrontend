@@ -122,6 +122,7 @@
         $scope.setProgressbarInvisible = function () {
           $scope.joinSelectedIndex = -1;
           $scope.startNewExperimentSelectedIndex = -1;
+          loadHealthyServers();
         };
 
         $scope.setProgressMessage = function (msg) {
@@ -147,7 +148,7 @@
         };
 
         $scope.startNewExperiment = function(configuration, serverPattern) {
-          experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible, loadHealthyServers);
+          experimentSimulationService.startNewExperiment(configuration, null, serverPattern, $scope.setProgressbarInvisible);
         };
 
         $scope.joinExperiment = function (url) {
@@ -241,8 +242,7 @@
                 evt.target.result,
                 $scope.serversEnabled,
                 experiment.serverPattern,
-                $scope.setProgressbarInvisible,
-                loadHealthyServers
+                $scope.setProgressbarInvisible
               );
             };
           });
