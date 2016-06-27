@@ -97,7 +97,7 @@
             // Edit and Delete object context Menu item
             contextMenuState.pushItemGroup(
               {
-                label: 'Modify',
+                id: 'Modify',
                 visible: false,
                 items: [
                   {

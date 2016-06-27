@@ -59,7 +59,9 @@
         ],
 
         pushItemGroup: function (itemGroup) {
-          this.itemsGroups.push(itemGroup);
+          if (!this.itemsGroups.some(function (item) { return item.id === itemGroup.id; })){
+            this.itemsGroups.push(itemGroup);
+          }
         },
 
         hideMenu: function () {

@@ -512,6 +512,7 @@
 
         // colorable object context Menu setup
         var colorableMenuItemGroup = {
+          id: 'changeColor',
           visible: false,
           items: [
             {
@@ -536,6 +537,7 @@
             return (this.visible = this.items[0].visible = show);
           }
         };
+
         contextMenuState.pushItemGroup(colorableMenuItemGroup);
 
         //main context menu handler
