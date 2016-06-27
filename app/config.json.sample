@@ -1,7 +1,24 @@
 {
   "api": {
     "neurorobotics": {
-      "bbpce022": {
+      "bbpce1": {
+        "gzweb": {
+          "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/assets",
+          "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/1/api",
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws/gzbridge"
+        },
+        "rosbridge": {
+          "topics": {
+            "spikes": "/monitor/spike_recorder",
+            "joint": "/joint_states",
+            "status": "/ros_cle_simulation/status",
+            "cleError": "/ros_cle_simulation/cle_error"
+          },
+          "websocket": "wss://neurorobotics-dev.humanbrainproject.eu/cle/1/ws"
+        },
+        "serverJobLocation": "local"
+      },
+      "bbpce2": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/2/assets",
           "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/2/api",
@@ -18,7 +35,7 @@
         },
         "serverJobLocation": "local"
       },
-      "bbpce023": {
+      "bbpce3": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/3/assets",
           "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/3/api",
@@ -35,7 +52,7 @@
         },
         "serverJobLocation": "local"
       },
-      "bbpsrvc20": {
+      "bbpsrvc4": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/4/assets",
           "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/4/api",
@@ -52,7 +69,7 @@
         },
         "serverJobLocation": "lugano"
       },
-      "bbpsrvc19": {
+      "bbpsrvc5": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/5/assets",
           "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/5/api",
@@ -69,7 +86,7 @@
         },
         "serverJobLocation": "lugano"
       },
-      "bbpsrvc71": {
+      "bbpsrvc6": {
         "gzweb": {
           "assets": "https://neurorobotics-dev.humanbrainproject.eu/cle/6/assets",
           "nrp-services": "https://neurorobotics-dev.humanbrainproject.eu/cle/6/api",
