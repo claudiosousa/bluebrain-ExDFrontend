@@ -129,6 +129,16 @@
       } else {
         localStorage.setItem('localmode.forceuser', true);
       }
+    }).factory('timeoutHttpInterceptor', function () {
+      // Here we specify a global http request timeout value for all requests, for all browsers
+      return {
+        request: function (config) {
+          config.timeout = 30*1000; //30s timeout
+          return config;
+        }
+      };
+    }).config(function ($httpProvider) {
+      $httpProvider.interceptors.push('timeoutHttpInterceptor');
     });
 
   // load the configuration used by bbpConfig
