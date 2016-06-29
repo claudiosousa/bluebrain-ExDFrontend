@@ -396,6 +396,27 @@ describe('Directive: pynnEditor', function () {
       });
     });
 
+    it('should check wheather selected population name changes', function() {
+      var popName = 'testPop';
+      isolateScope.onFocusChange(popName);
+
+      expect(isolateScope.focusedName).toEqual(popName);
+    });
+
+    it('should check processChange wheather selected population name changes', function() {
+      var popName = 'population2';
+      isolateScope.onFocusChange(popName);
+
+      isolateScope.processChange(popName);
+      expect(isolateScope.focusedName).toEqual(popName);
+
+      var popName2 = 'population2-1';
+
+      isolateScope.processChange(popName2);
+      expect(isolateScope.populations[popName2]).toBeDefined();
+      expect(isolateScope.populations[popName]).toBeUndefined();
+    });
+
   });
 
 });
