@@ -68,15 +68,32 @@ describe('Service colorableObjectService', function () {
     expect(colorableObjectService.isColorableEntity(droppedObject)).toBe(false);
   });
 
+  var CHANGE_MATERIAL_URL = 'SOME_URL';
+  var SIMULATION_ID = 123;
+  var MATERIAL_COLOR = 'Gazebo/Red';
+
   it('should trigger update_material request', function () {
-    var CHANGE_MATERIAL_URL = 'SOME_URL';
-    var SIMULATION_ID = 123;
-    var MATERIAL_COLOR = 'Gazebo/Red';
-    var modelNames = ['some_model', 'some_link', TV_VISUAL_NAME];
+    var modelNames = ['box_0', 'link', 'visual'];
     var tvModel = buildThreeObject(modelNames);
 
     httpBackend.expectPUT(CHANGE_MATERIAL_URL + '/simulation/' + SIMULATION_ID + '/interaction/material_change',
       { 'visual_path': modelNames.join('::'), material: MATERIAL_COLOR }
+    ).respond(200);
+
+    colorableObjectService.setEntityMaterial({ serverBaseUrl: CHANGE_MATERIAL_URL, simulationID: SIMULATION_ID }, tvModel, MATERIAL_COLOR);
+
+    httpBackend.flush();
+    httpBackend.verifyNoOutstandingExpectation();
+    httpBackend.verifyNoOutstandingRequest();
+  });
+
+  it('should trigger update_material request and append emissive postfix', function () {
+    var modelNames = ['some_model', 'some_link', TV_VISUAL_NAME];
+    var emissivePostfix = 'Glow';
+    var tvModel = buildThreeObject(modelNames);
+
+    httpBackend.expectPUT(CHANGE_MATERIAL_URL + '/simulation/' + SIMULATION_ID + '/interaction/material_change',
+      { 'visual_path': modelNames.join('::'), material: MATERIAL_COLOR + emissivePostfix }
     ).respond(200);
 
     colorableObjectService.setEntityMaterial({ serverBaseUrl: CHANGE_MATERIAL_URL, simulationID: SIMULATION_ID }, tvModel, MATERIAL_COLOR);
