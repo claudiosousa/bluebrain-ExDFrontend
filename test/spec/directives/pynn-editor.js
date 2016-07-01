@@ -396,7 +396,7 @@ describe('Directive: pynnEditor', function () {
       });
     });
 
-    it('should check wheather selected population name changes', function() {
+    it('should check whether selected population name changes', function() {
       var popName = 'testPop';
       isolateScope.onFocusChange(popName);
 
