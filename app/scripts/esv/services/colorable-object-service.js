@@ -2,27 +2,32 @@
     'use strict';
 
     angular.module('colorableObjectModule', ['simulationControlServices'])
-        .constant('COLORABLE_VISUAL_REGEXP', /(::.+::(COLORABLE_VISUAL|screen_glass)|(cylinder|box|sphere)_[0-9]+::link::visual)$/)
+        .constant('COLORABLE_VISUAL_REGEXP', {
+            EMISSIVE: /::.+::screen_glass$/,
+            NORMAL: /(::.+::COLORABLE_VISUAL)|((cylinder|box|sphere)_[0-9]+::link::visual)$/
+        })
         .factory('colorableObjectService', ['objectControl', 'COLORABLE_VISUAL_REGEXP',
             function (objectControl, COLORABLE_VISUAL_REGEXP) {
+                var EMISSIVE_COLOR_POSTFIX = 'Glow';
 
-                //determines if entity has a colorable node. True if:
-                // - the entity has a visual named 'screen_glass' (TV's)
-                // - the entity has a visual named  'COLORABLE_VISUAL' (tagged visuals on the sdf)
-                // - the entity has a node named 'cylinder_[n]' or 'box_[n]' or 'sphere_[n]' (dropped simple object)
-                var getColorableNode = function (entity) {
-                    var colorableNode;
+                //returns a node matching the regexp in parameter
+                var getNode = function (entity, regexp) {
+                    var foundNode;
                     entity.traverse(function (node) {
-                        // Check whether the current node name matches the condition to be considered a node we can color
-                        if (COLORABLE_VISUAL_REGEXP.test(node.name)) {
-                            return (colorableNode = node);
+                        // Check whether the current node name matches the regexp condition
+                        if (regexp.test(node.name)) {
+                            return (foundNode = node);
                         }
                     });
-                    return colorableNode;
+                    return foundNode;
                 };
 
                 var setEntityMaterial = function (simulationInfo, entity, material) {
-                    var colorableNode = getColorableNode(entity);
+                    var colorableNode = getNode(entity, COLORABLE_VISUAL_REGEXP.NORMAL);
+                    if (!colorableNode) {
+                        colorableNode = getNode(entity, COLORABLE_VISUAL_REGEXP.EMISSIVE);
+                        material += EMISSIVE_COLOR_POSTFIX;
+                    }
                     var materialChange = { 'visual_path': colorableNode.name, 'material': material };
                     // Request color change through RESTful call
                     objectControl(simulationInfo.serverBaseUrl).updateMaterial(
@@ -30,8 +35,9 @@
                     );
                 };
 
+                //determines if entity has a colorable node
                 var isColorableEntity = function (selectedEntity) {
-                    return !!getColorableNode(selectedEntity);
+                    return !!(getNode(selectedEntity, COLORABLE_VISUAL_REGEXP.EMISSIVE) || getNode(selectedEntity, COLORABLE_VISUAL_REGEXP.NORMAL));
                 };
 
                 return {

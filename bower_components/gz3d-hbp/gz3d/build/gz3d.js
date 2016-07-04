@@ -3583,10 +3583,10 @@ GZ3D.GZIface.prototype.applyMaterial = function(obj, mat)
     if (mat)
     {
       obj.material = new THREE.MeshPhongMaterial();
-      var ambient = mat.ambient;
-      if (ambient)
+      var emissive = mat.emissive;
+      if (emissive)
       {
-        obj.material.emissive.setRGB(ambient[0], ambient[1], ambient[2]);
+        obj.material.emissive.setRGB(emissive[0], emissive[1], emissive[2]);
       }
       var diffuse = mat.diffuse;
       if (diffuse)
@@ -3633,6 +3633,7 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
   var textureUri;
   var ambient;
   var diffuse;
+  var emissive;
   var specular;
   var opacity;
   var scale;
@@ -3651,6 +3652,7 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
         {
           ambient = mat['ambient'];
           diffuse = mat['diffuse'];
+          emissive = mat['emissive'];
           specular = mat['specular'];
           opacity = mat['opacity'];
           scale = mat['scale'];
@@ -3726,6 +3728,7 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
       texture: texture,
       normalMap: normalMap,
       ambient: ambient,
+      emissive: emissive,
       diffuse: diffuse,
       specular: specular,
       opacity: opacity,
@@ -7628,10 +7631,10 @@ GZ3D.Scene.prototype.setMaterial = function(obj, material)
     if (material)
     {
       obj.material = new THREE.MeshPhongMaterial();
-      var ambient = material.ambient;
-      if (ambient)
+      var emissive = material.emissive;
+      if (emissive)
       {
-        obj.material.emissive.setRGB(ambient[0], ambient[1], ambient[2]);
+        obj.material.emissive.setRGB(emissive[0], emissive[1], emissive[2]);
       }
       var diffuse = material.diffuse;
       if (diffuse)
