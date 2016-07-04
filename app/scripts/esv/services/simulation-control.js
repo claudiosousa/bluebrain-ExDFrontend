@@ -695,6 +695,7 @@
               break;
             case STATE.STARTED:
             case STATE.PAUSED:
+            case STATE.HALTED:
               simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
                 // Delete all elements in the data structure with this serverID
                 deleteSimulationFromTemplate(experimentTemplates, serverID);
