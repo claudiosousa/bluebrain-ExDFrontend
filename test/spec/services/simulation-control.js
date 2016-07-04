@@ -1100,28 +1100,31 @@ describe('Start simulation error handling', function () {
     httpBackend.verifyNoOutstandingRequest();
   });
 
-  var launchExperimentsWithFailingServer = function (succedsRunningExperiement) {
+  var tryLaunchExperiments = function () {
     spyOn(experimentSimulationService, 'launchExperimentOnServer').andCallThrough();
     experimentSimulationService.setProgressMessageCallback(jasmine.createSpy('messageCallback'));
-    var failureCallback = jasmine.createSpy('failureCallback');
     var errorCallback = jasmine.createSpy('errorCallback');
     experimentSimulationService.startNewExperiments(
-      'mocked_experiment_conf', null, servers, servers, failureCallback, errorCallback);
+      'mocked_experiment_conf', null, servers, servers, errorCallback);
     httpBackend.flush();
 
-    expect(failureCallback.callCount).toBe(succedsRunningExperiement ? 0 : 1);
-    expect(errorCallback.callCount).toBe(0);
-
-    var triedForServers = experimentSimulationService.launchExperimentOnServer.calls.map(function (fnCall) {
+    var triedLaunchOnServers = experimentSimulationService.launchExperimentOnServer.calls.map(function (fnCall) {
       return fnCall.args[2];
     });
 
-    expect(triedForServers.length).toBe(succedsRunningExperiement ? 4 : 1);
-    var allServersWereTried = servers.every(function (s) {
-      return triedForServers.indexOf(s) >= 0;
+    var triedLaunchOnAllServers = servers.every(function (s) {
+      return triedLaunchOnServers.indexOf(s) >= 0;
     });
-    expect(allServersWereTried).toBe(succedsRunningExperiement);
+
+    return {
+      errorCallbackCalled: errorCallback.callCount !== 0,
+      triedLaunchOnServers: triedLaunchOnServers,
+      triedLaunchOnAllServers: triedLaunchOnAllServers
+    };
   };
+
+  var SIMULATION_URL = 'http://SERVER_NAME.epfl.ch:8080/simulation';
+  var SIMULATION_STATE_URL = SIMULATION_URL+'/state';
 
   it('should go through all servers trying to create a simulation until success', function () {
     var serverindex2succeed = servers.length - 1;
@@ -1130,33 +1133,95 @@ describe('Start simulation error handling', function () {
       httpBackend.whenGET(/()/).respond(200);
       httpBackend.whenPUT(/()/).respond(200, {message: 'Alright'});
       // Non-fatal 500 error issued by all but the last queried server
-      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(returnCode, {message: 'timeout'});
+      httpBackend.whenPOST(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(returnCode, {message: 'timeout'});
     });
-    launchExperimentsWithFailingServer(true);
+
+    var launchExperimentsResult = tryLaunchExperiments();
+    expect(launchExperimentsResult.errorCallbackCalled).toBe(false);
+    expect(launchExperimentsResult.triedLaunchOnServers.length).toBe(4);
+    expect(launchExperimentsResult.triedLaunchOnAllServers).toBe(true);
   });
 
-  it('should go through all servers trying to create and update a simulation until success', function () {
+  it('should go through all servers trying to create a simulation until FATAL error', function () {
+    var serverindex2throwfatalError = 2;
+    servers.forEach(function (server, i) {
+      var returnErrorMsg = (i === serverindex2throwfatalError) ? 'cluster' : 'timeout';
+      httpBackend.whenGET(/()/).respond(200);
+      httpBackend.whenPUT(/()/).respond(200);
+      // Non-fatal 500 error issued by all but the last queried server
+      httpBackend.whenPOST(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(500, { message: returnErrorMsg });
+    });
+
+    var launchExperimentsResult = tryLaunchExperiments();
+    expect(launchExperimentsResult.errorCallbackCalled).toBe(true);
+    expect(launchExperimentsResult.triedLaunchOnServers.length).toBe(3);
+    expect(launchExperimentsResult.triedLaunchOnAllServers).toBe(false);
+  });
+
+  it('should go through all servers trying to create and update a simulation until FATAL error', function () {
     var serverindex2succeed = servers.length - 1;
     servers.forEach(function (server, i) {
       var returnCode = (i === serverindex2succeed) ? 200 : 500;
       httpBackend.whenGET(/()/).respond(200);
-      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(200, {});
+      httpBackend.whenPOST(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(200, {});
       // Fatal 500 error
-      httpBackend.whenPUT('http://' + server + '.epfl.ch:8080/simulation/state').respond(returnCode, {message: 'Cannot'});
+      httpBackend.whenPUT(SIMULATION_STATE_URL.replace(/SERVER_NAME/, server)).respond(returnCode, {message: 'Cannot'});
     });
-    launchExperimentsWithFailingServer(false);
+
+    var launchExperimentsResult = tryLaunchExperiments();
+    expect(launchExperimentsResult.errorCallbackCalled).toBe(true);
+    expect(launchExperimentsResult.triedLaunchOnServers.length).toBe(1);
+    expect(launchExperimentsResult.triedLaunchOnAllServers).toBe(false);
+  });
+
+  it('should go try to execute requets in the right order', function () {
+
+    //Query each server sequentially for their status
+    servers.forEach(function (server) {
+      httpBackend.expectGET(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(200);
+    });
+
+    //first server is free, it will try to run the experiment on it
+    httpBackend.expectPOST(SIMULATION_URL.replace(/SERVER_NAME/, servers[0])).respond(500, {message:'timeout'});
+
+    //failed to run experiment on first first server with non-FATAL error, so it will retry on the other servers
+    var remainingServers = servers.slice(1);
+    remainingServers.forEach(function (server) {
+      httpBackend.expectGET(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(200);
+    });
+
+    //first server is free, it will try to run the experiment on it
+    httpBackend.expectPOST(SIMULATION_URL.replace(/SERVER_NAME/, remainingServers[0])).respond(200);
+    //Succeeded in creating the experiment, so it will try update its status
+    httpBackend.expectPUT(SIMULATION_STATE_URL.replace(/SERVER_NAME/, remainingServers[0])).respond(500, {message:'timeout'});
+
+    //failed to update status on first server with non-FATAL error, so it will retry on the other servers
+    remainingServers = remainingServers.slice(1);
+    remainingServers.forEach(function (server) {
+      httpBackend.expectGET(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(200);
+    });
+
+    //first server is free, it will try to run the experiment on it
+    httpBackend.expectPOST(SIMULATION_URL.replace(/SERVER_NAME/, remainingServers[0])).respond(200);
+    //Succeeded in creating the experiment, so it will try update its status
+    httpBackend.expectPUT(SIMULATION_STATE_URL.replace(/SERVER_NAME/, remainingServers[0])).respond(500, {message:'Cannot'});
+    //it will fail with FATAL error, so it does not continue retrying
+
+    var launchExperimentsResult = tryLaunchExperiments();
+    expect(launchExperimentsResult.errorCallbackCalled).toBe(true);
+    expect(launchExperimentsResult.triedLaunchOnServers.length).toBe(3);
+    expect(launchExperimentsResult.triedLaunchOnAllServers).toBe(false);
   });
 
   it('should call error callback if all servers failed', function () {
     servers.forEach(function (server) {
-      httpBackend.whenGET('http://' + server + '.epfl.ch:8080/simulation').respond(200);
-      httpBackend.whenPOST('http://' + server + '.epfl.ch:8080/simulation').respond(500);
+      httpBackend.whenGET(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(200);
+      httpBackend.whenPOST(SIMULATION_URL.replace(/SERVER_NAME/, server)).respond(500);
     });
 
-    experimentSimulationService.setProgressMessageCallback(jasmine.createSpy('messageCallback'));
-    var failureCallback = jasmine.createSpy('failureCallback');
-    experimentSimulationService.startNewExperiments('mocked_experiment_conf', null, servers, servers, failureCallback);
-    httpBackend.flush();
-    expect(failureCallback.callCount).toBe(1);
+    var launchExperimentsResult = tryLaunchExperiments();
+    expect(launchExperimentsResult.errorCallbackCalled).toBe(true);
+    expect(launchExperimentsResult.triedLaunchOnServers.length).toBe(1);
+    expect(launchExperimentsResult.triedLaunchOnAllServers).toBe(false);
   });
 });

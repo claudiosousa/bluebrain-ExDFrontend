@@ -506,93 +506,123 @@
         });
       };
 
-      var triggerErrorCallbackTimeout;
-      var launchExperimentInPossibleServers = function (possibleServers, expConf, envSDFData, failureCallback, errorCallback) {
+      var launchExperimentInPossibleServers = function (possibleServers, expConf, envSDFData, errorCallback) {
         var foundAfreeServer = false;
 
-        var failedAllServers = function (handledByStandardInterceptor) {
-          if (!handledByStandardInterceptor) {
+        var serverStatus = {
+          ERROR: 'ERROR', //failed to run simulation on the server
+          FATAL: 'FATAL', //failed FATALLY to run simulation on the server
+          SUCCESS: 'SUCCESS', //successfully started a simulation
+          BUSY: 'BUSY', //this server already has a running simulation
+          SKIPPED: 'SKIPPED' //skipped server because we started the simulation on another server
+        };
+
+        //we go through all servers and determine their status
+        $q.all(possibleServers.map(function (serverID) {
+          var serverURL = servers[serverID].gzweb['nrp-services'];
+          var deferred = $q.defer();
+          var serverResult = {
+            serverID: serverID,
+            status: deferred.promise
+          };
+
+          var failed2startSimulation = function (error, isFatal) {
+            if (error && error.data) {
+              $log.error('Failed to start simulation: ' + angular.toJson(error.data));
+            }
+            deferred.resolve(isFatal ? serverStatus.FATAL : serverStatus.ERROR);
+          };
+
+          var succeededStartingSimulation = function () {
+            deferred.resolve(serverStatus.SUCCESS);
+          };
+
+          simulationService({ serverURL: serverURL, serverID: serverID }).simulations(function (data) {
+            var activeSimulation = simulationService().getActiveSimulation(data);
+
+            if (angular.isDefined(activeSimulation)) {
+              //current server is busy
+              deferred.resolve(serverStatus.BUSY);
+              return;
+            }
+
+            if (foundAfreeServer) {
+              deferred.resolve(serverStatus.SKIPPED);
+              return;
+            }
+
+            foundAfreeServer = true;
+            // Need to send the SDF to the backend before launching the experiment
+            if (angular.isDefined(envSDFData) && envSDFData !== null) {
+              simulationSDFWorld(serverURL).import({ sdf: envSDFData }, function (data) {
+                experimentSimulationService.launchExperimentOnServer(expConf, data.path, serverID, failed2startSimulation, succeededStartingSimulation);
+              });
+            }
+            else {
+              experimentSimulationService.launchExperimentOnServer(expConf, null, serverID, failed2startSimulation, succeededStartingSimulation);
+            }
+          }, failed2startSimulation);
+
+          return $q.all(serverResult);
+        })).then(function (serversStatus) { //once the status for all server is determined
+
+          var aServerHasSucceeded = serversStatus.some(function (server) {
+            return server.status === serverStatus.SUCCESS;
+          });
+
+          //if we successfuly started a simulation, then the job is done
+          if (aServerHasSucceeded) {
+            return;
+          }
+
+          var fatalErrorOccured = serversStatus.some(function (server) {
+            return server.status === serverStatus.FATAL;
+          });
+
+          var skippedServers = serversStatus.filter(function (server) {
+            return server.status === serverStatus.SKIPPED;
+          }).map(function (server) {
+            return server.serverID;
+          });
+
+          // if fatal errors occured, then it is likely that there are issues allocating jobs on the cluster
+          // in this case, we don't want to keep retrying on other servers because they are likely to fail with the same reason
+          if (!fatalErrorOccured && skippedServers.length > 0) {
+            //if no fatal error occured, and some servers were skipped, then let's retry on those available servers
+            launchExperimentInPossibleServers(skippedServers, expConf, envSDFData, errorCallback);
+            return;
+          }
+
+          if (!fatalErrorOccured) {
+            //displays geneeric error message only if so fatal error occured
+            //fatal errors are handled (and displayed) by the genereic http error interceptor
             hbpDialogFactory.alert(
               {
                 title: 'No server is currently available',
                 template: 'No server can handle your simulation at the moment. Please try again later'
               });
           }
-          failureCallback();
-        };
-
-        var failed2startSimulation = function (error, handledByStandardInterceptor) {
-          if (error && error.data) {
-            $log.error('Failed to start simulation: ' + angular.toJson(error.data));
-            // if several servers fail one after the other, don't call errorCallback multiple consecutive times.
-            // instead wait a moment (5s) to see if some other server fails before calling the callback
-            $timeout.cancel(triggerErrorCallbackTimeout);
-            triggerErrorCallbackTimeout = $timeout(function () {
-              errorCallback(error);
-            }, 5000);
-          }
-          if (possibleServers.length > 0 && !handledByStandardInterceptor) {
-            launchExperimentInPossibleServers(possibleServers, expConf, envSDFData, failureCallback, errorCallback);
-          } else {
-            failedAllServers(handledByStandardInterceptor);
-          }
-        };
-
-        angular.forEach(possibleServers, function (serverID) {
-          var serverURL = servers[serverID].gzweb['nrp-services'];
-
-          simulationService({ serverURL: serverURL, serverID: serverID }).simulations(function (data) {
-            var activeSimulation = simulationService().getActiveSimulation(data);
-
-            //current server is busy
-            if (angular.isDefined(activeSimulation)) {
-              possibleServers.splice(possibleServers.indexOf(serverID), 1);
-              //failed to start in all servers
-              if (!possibleServers.length && !foundAfreeServer) {
-                failedAllServers();
-              }
-              return;
-            }
-
-            if (foundAfreeServer){
-              return;
-            }
-
-            foundAfreeServer = true;
-            //the current server Id is removed from the remaining possible servers
-            possibleServers.splice(possibleServers.indexOf(serverID), 1);
-
-            // Need to send the SDF to the backend before launching the experiment
-            if (angular.isDefined(envSDFData) && envSDFData !== null) {
-              simulationSDFWorld(serverURL).import({ sdf: envSDFData }, function (data) {
-                experimentSimulationService.launchExperimentOnServer(expConf, data.path, serverID, failed2startSimulation);
-              });
-            }
-            else {
-              experimentSimulationService.launchExperimentOnServer(expConf, null, serverID, failed2startSimulation);
-            }
-          }, failed2startSimulation);
+          //we failed to start the simulation
+          errorCallback();
         });
       };
 
-      //errorCallback is called if some error has occurred while starting the experiment (independent on whether we successfully started the experiment)
-      //failureCallback is called if we failed to start the experiment
-      var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, failureCallback, errorCallback) {
+      var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, errorCallback) {
 
         //possible servers are the servers that selected by the user
         var possibleServers = serverIDs.filter(function (serverID) {
           return serversEnabled.indexOf(serverID)>=0 && serverPattern.indexOf(serverID)>=0;
         });
 
-        launchExperimentInPossibleServers(possibleServers, expConf, envSDFData, failureCallback, errorCallback);
+        launchExperimentInPossibleServers(possibleServers, expConf, envSDFData, errorCallback);
       };
 
       var launchExperimentOnServer = function (
         experimentConfiguration,
         environmentConfiguration,
         freeServerID,
-        errorCallback)
-      {
+        errorCallback,
+        successCallback) {
         setProgressMessage({main: 'Create new Simulation...'});
         var serverURL = servers[freeServerID].gzweb['nrp-services'];
 
@@ -627,6 +657,9 @@
                     // Now join the simulation
                     function () {
                       var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID + '/' + operationMode;
+                      if (angular.isDefined(successCallback)) {
+                        successCallback(url);
+                      }
                       if (angular.isDefined(initializedCallback)) {
                         initializedCallback(url);
                       }
@@ -731,9 +764,9 @@
         });
       };
 
-      var startNewExperiment = function (expConf, envConf, serverPattern, failureCallback, errorCallback) {
+      var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
 
-        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, failureCallback, errorCallback);
+        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
 
         nrpAnalytics.eventTrack('Start', {
           category: 'Experiment'

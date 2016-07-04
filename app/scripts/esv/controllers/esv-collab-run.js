@@ -87,6 +87,7 @@
         $scope.setProgressbarInvisible = function () {
           $scope.joinSelected = false;
           $scope.startNewExperimentSelected = true;
+          loadHealthyServers();
         };
 
         $scope.setProgressMessage = function (msg) {
@@ -115,8 +116,7 @@
 
         $scope.startNewExperiment = function(configuration, serverPattern) {
           experimentSimulationService.startNewExperiment(
-            configuration, null, serverPattern, $scope.setProgressbarInvisible, loadHealthyServers
-          );
+            configuration, null, serverPattern, $scope.setProgressbarInvisible);
         };
 
         $scope.joinExperiment = function(url) {
