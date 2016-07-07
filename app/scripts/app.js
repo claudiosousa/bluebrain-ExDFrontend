@@ -133,7 +133,7 @@
       // Here we specify a global http request timeout value for all requests, for all browsers
       return {
         request: function (config) {
-          config.timeout = 30*1000; //30s timeout
+          config.timeout = 60*1000; //60s timeout
           return config;
         }
       };
