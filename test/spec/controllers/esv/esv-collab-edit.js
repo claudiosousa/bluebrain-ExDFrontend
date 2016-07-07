@@ -146,6 +146,28 @@ describe('Controller: ESVCollabEditCtrl', function () {
     expect(scope.selectedIndex).toEqual(1);
   });
 
+  it('should get deployment environment and tell whether it is dev' , function () {
+    // first try without any enironment variable set
+    var isdev = scope.isEnvironmentDev();
+    expect(isdev).toBe(true);
+    // now with environment set to development
+    window.bbpConfig.environment = 'development';
+    isdev = scope.isEnvironmentDev();
+    expect(isdev).toBe(true);
+    // now with environment set to staging
+    window.bbpConfig.environment = 'staging' ;
+    isdev = scope.isEnvironmentDev();
+    expect(isdev).toBe(false);
+    // now with environment set to production
+    window.bbpConfig.environment = 'production';
+    isdev = scope.isEnvironmentDev();
+    expect(isdev).toBe(false);
+    // now with environment set to something wrong
+    window.bbpConfig.environment = 'wrong';
+    isdev = scope.isEnvironmentDev();
+    expect(isdev).toBe(true);
+  });
+
   it('should get the registered experiment if any', function() {
     expect(collabConfigService.get).toHaveBeenCalled();
   });

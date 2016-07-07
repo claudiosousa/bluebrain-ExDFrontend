@@ -74,6 +74,11 @@
           $scope.hasEditRights = result;
         });
 
+        $scope.isEnvironmentDev = function () {
+          var stage = bbpConfig.get('environment', 'development');
+          return (stage !== 'staging') && (stage !== 'production');
+        };
+
         $scope.setSelected = function (index) {
           $scope.selectedIndex = index;
         };
