@@ -105,7 +105,7 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PAUSE_BUTTON]='Here you can pause the simulation on the server.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.STOP_BUTTON]='Here you can stop the simulation on the server.'">
-        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.RESET_BUTTON]='Here you can reset the simulation on the server. The robot will return to its initial position and the simulation will be paused.'">
+        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.RESET_BUTTON]='Here you can activate the reset menu.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.TIME_DISPLAY]='This shows the simulated time of the experiment on the server \'Simulation time\', the actual elapsed time \'Real time\' and the \'Timeout\', after which the simulation is terminated.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.LIGHT_SLIDER]='With this slider, you can change the global brightness of the lights in the simulation.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CAMERA_TRANSLATION]='With those controls, you can change the viewpoint of your local camera. By clicking on the left/right/diagonal arrows, pressing the keys (WASD) or the arrow keys, you can move forward/left/backward/right. The up/down arrows, the keys (RF) or (Page-Up,Page-Down) let you move up and down. The circle in the middle lets you reset the position.'">
@@ -125,7 +125,7 @@
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STARTED) : help(UI.PLAY_BUTTON);"
-                 ng-show="((stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED))">
+                 ng-show="(stateService.currentState === STATE.PAUSED)">
               <i class="glyphicon glyphicon-play"></i>
             </div>
             <div ng-if="viewState.isOwner"
@@ -133,7 +133,7 @@
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.PAUSED) : help(UI.PAUSE_BUTTON);"
-                 ng-show="(stateService.currentState === STATE.STARTED) && (gz3d.scene.manipulationMode === EDIT_MODE.VIEW)">
+                 ng-show="(stateService.currentState === STATE.STARTED)">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
             <div ng-if="viewState.isOwner"
@@ -141,7 +141,8 @@
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STOPPED) : help(UI.STOP_BUTTON);"
-                 ng-show="(stateService.currentState !== STATE.STOPPED)">
+                 ng-show="(stateService.currentState !== STATE.STOPPED) &&
+                          (stateService.currentState !== STATE.FAILED)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div ng-if="viewState.isOwner"
@@ -149,7 +150,9 @@
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}"
                  ng-click="(!helpModeActivated) ? resetButtonClickHandler() : help(UI.RESET_BUTTON);"
-                 ng-show="(stateService.currentState === STATE.PAUSED)">
+                 ng-show="(stateService.currentState !== STATE.STOPPED) &&
+                          (stateService.currentState !== STATE.HALTED) &&
+                          (stateService.currentState !== STATE.FAILED)">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
             <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)">

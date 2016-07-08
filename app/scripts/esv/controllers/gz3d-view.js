@@ -213,13 +213,13 @@
         /* Loading is taken take of by a progressbar somewhere else. */
         /* Timeout messages are displayed in the toolbar. */
         var messageCallback = function (message) {
-          /* Progress messages (apart start state progress messages which are handled by another progress bar) */
+          /* Progress messages (except start state progress messages which are handled by another progress bar) */
           if (angular.isDefined(message.progress) && message.state !== STATE.STARTED) {
             /* splashScreen == null means it has been already closed and should not be reopened */
             if ($scope.splashScreen !== null) {
               $scope.splashScreen = $scope.splashScreen || splash.open(
                 !message.progress.block_ui,
-                ((stateService.currentState === STATE.STOPPED) ? $scope.exit : undefined));
+                ((stateService.currentState === STATE.STOPPED || stateService.currentState === STATE.FAILED) ? $scope.exit : undefined));
             }
             if (angular.isDefined(message.progress.done) && message.progress.done) {
               splash.spin = false;
@@ -339,118 +339,145 @@
           userNavigationService.init();
         };
 
+        $scope.updateSimulation = function (newState) {
+          stateService.setCurrentState(newState);
+        };
+
         // play/pause/stop button handler
         $scope.simControlButtonHandler = function (newState) {
           $scope.updateSimulation(newState);
           $scope.setEditMode(EDIT_MODE.VIEW);
         };
 
-        // TODO (Alessandro, Ugo): Refactor to avoid too many if nestings.
+        //When resetting do something
+        $scope.resetListenerUnbindHandler = $scope.$on('RESET', function(event, resetType) {
+
+          if(resetType === RESET_TYPE.RESET_FULL) {
+            $scope.resetGUI();
+          }
+        });
+
         $scope.resetButtonClickHandler = function () {
+
           $scope.request = {
             resetType: RESET_TYPE.NO_RESET
           };
 
           hbpDialogFactory.confirm({
-            'title': 'Reset Menu',
+            'title' : 'Reset Menu',
             'templateUrl': 'views/esv/reset-checklist-template.html',
             'scope': $scope
-          })
-            .then(function () {
-              var resetType = $scope.request.resetType;
-              if (resetType === RESET_TYPE.NO_RESET) { return; }
+          }).then(function() {
+                    stateService.ensureStateBeforeExecuting(
+                      STATE.PAUSED,
+                      $scope.__resetButtonClickHandler
+                    );
+                  });
+        };
 
-              if (resetType >= 256) { // frontend-bound reset
-                if (resetType === RESET_TYPE.RESET_CAMERA_VIEW) {
-                  gz3d.scene.resetView();
+        $scope.__resetButtonClickHandler = function () {
+
+          var resetType = $scope.request.resetType;
+          if (resetType === RESET_TYPE.NO_RESET) { return; }
+
+          $scope.notifyResetToWidgets(resetType);
+
+          if (resetType >= 256) { // Frontend-bound reset
+            if (resetType === RESET_TYPE.RESET_CAMERA_VIEW) {
+              gz3d.scene.resetView();
+            }
+          }
+          else { // Backend-bound reset
+
+            if($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
+              //open splash screen, blocking ui (i.e. no ok button) and no closing callback
+              $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
+
+              var resetWhat, downloadWhat = '';
+
+              (function (resetType) { //customize user message depending on the reset type
+                if(resetType === RESET_TYPE.RESET_WORLD) {
+                  resetWhat = 'Environment';
+                  downloadWhat = 'World SDF ';
                 }
-              }
-              else { // Backend-bound reset
-                /* TODO: this should be removed as soon as some reset features are
-                correctly implemented and tested */
-                if (resetType === RESET_TYPE.RESET_OLD) { // Old reset
-                  $scope.updateSimulation(STATE.INITIALIZED);
-                  $scope.setEditMode(EDIT_MODE.VIEW);
+                else if(resetType === RESET_TYPE.RESET_BRAIN) {
+                  resetWhat = 'Brain';
+                  downloadWhat = 'brain configuration file ';
                 }
-                else {
+              })(resetType);
 
-                  if ($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
-                    //open splash screen, blocking ui (i.e. no ok button) and no closing callback
-                    $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
+              var messageHeadline = 'Resetting ' + resetWhat;
+              var messageSubHeadline = 'Downloading ' + downloadWhat + 'from the Collab';
 
-                    var resetWhat, downloadWhat = '';
+              _.defer(function() {
+                splash.spin = true;
+                splash.setMessage({headline: messageHeadline, subHeadline: messageSubHeadline});
+              });
 
-                    (function (resetType) { //customize user message depending on the reset type
-                      if (resetType === RESET_TYPE.RESET_WORLD) {
-                        resetWhat = 'Environment';
-                        downloadWhat = 'World SDF ';
-                      }
-                      else if (resetType === RESET_TYPE.RESET_BRAIN) {
-                        resetWhat = 'Brain';
-                        downloadWhat = 'brain configuration file ';
-                      }
-                    })(resetType);
-
-                    var messageHeadline = 'Resetting ' + resetWhat;
-                    var messageSubHeadline = 'Downloading ' + downloadWhat + 'from the Collab';
-
-                    _.defer(function () {
-                      splash.spin = true;
-                      splash.setMessage({ headline: messageHeadline, subHeadline: messageSubHeadline });
+              backendInterfaceService.resetCollab(
+                simulationInfo.contextID,
+                $scope.request,
+                function () { // Success callback
+                  //close the splash
+                  if (angular.isDefined($scope.splashScreen)) {
+                    splash.close();
+                    delete $scope.splashScreen;
+                  }
+                },
+                function () { // Failure callback
+                  hbpDialogFactory.alert(
+                    {
+                      title: 'Error.',
+                      template: 'Error while resetting from Collab storage.'
                     });
-
-                    backendInterfaceService.resetCollab(
-                      simulationInfo.contextID,
-                      $scope.request,
-                      function () { // Success callback
-                        //close the splash
-                        if (angular.isDefined($scope.splashScreen)) {
-                          splash.close();
-                          delete $scope.splashScreen;
-                        }
-                      },
-                      function () { // Failure callback
-                        hbpDialogFactory.alert(
-                          {
-                            title: 'Error.',
-                            template: 'Error while resetting from Collab storage.'
-                          });
-                        //close the splash
-                        if (angular.isDefined($scope.splashScreen)) {
-                          splash.close();
-                          delete $scope.splashScreen;
-                        }
-                      }
-                    );
-                  }
-                  else {
-                    //other kinds of reset
-                    backendInterfaceService.reset(
-                      $scope.request,
-                      function () { // Success callback
-                        //do not close the splash if successful
-                        //it will be closed by messageCallback
-                      },
-                      function () { // Failure callback
-                        hbpDialogFactory.alert(
-                          {
-                            title: 'Error.',
-                            template: 'Error while resetting.'
-                          });
-                        if (angular.isDefined($scope.splashScreen)) {
-                          splash.close();
-                          delete $scope.splashScreen;
-                        }
-                      }
-                    );
+                  //close the splash
+                  if (angular.isDefined($scope.splashScreen)) {
+                    splash.close();
+                    delete $scope.splashScreen;
                   }
                 }
-              }
-            });
+              );
+            }
+            else {
+              //other kinds of reset
+              backendInterfaceService.reset(
+                $scope.request,
+                function () { // Success callback
+                  //do not close the splash if successful
+                  //it will be closed by messageCallback
+                },
+                function () { // Failure callback
+                  hbpDialogFactory.alert(
+                    {
+                      title: 'Error.',
+                      template: 'Error while resetting.'
+                    });
+                  if (angular.isDefined($scope.splashScreen)) {
+                    splash.close();
+                    delete $scope.splashScreen;
+                  }
+                }
+              );
+            }
+          }
+        };
+
+        $scope.resetGUI = function () {
+          gz3d.scene.controls.onMouseDownManipulator('initPosition');
+          gz3d.scene.controls.onMouseDownManipulator('initRotation');
+          gz3d.scene.controls.update();
+          gz3d.scene.controls.onMouseUpManipulator('initPosition');
+          gz3d.scene.controls.onMouseUpManipulator('initRotation');
+          $scope.sliderPosition = SLIDER_INITIAL_POSITION;
+          gz3d.scene.resetView(); //update the default camera position, if defined
+        };
+
+        $scope.notifyResetToWidgets = function (resetType) {
+          $scope.$broadcast('RESET', resetType);
         };
 
         $scope.setEditMode = function (newMode) {
-          //oldMode !== newMode
+          //currentMode !== newMode
           if (gz3d.scene.manipulationMode !== newMode) {
             gz3d.scene.setManipulationMode(newMode);
           }
@@ -464,31 +491,6 @@
               node.visible = visible;
             }
           });
-        };
-
-        $scope.updateSimulation = function (newState) {
-          stateService.setCurrentState(newState).then(
-            function () {
-              // Temporary fix for screen color update on reset event, see comments above
-              if (newState === STATE.INITIALIZED) {
-
-                gz3d.scene.controls.onMouseDownManipulator('initPosition');
-                gz3d.scene.controls.onMouseDownManipulator('initRotation');
-                gz3d.scene.controls.update();
-                gz3d.scene.controls.onMouseUpManipulator('initPosition');
-                gz3d.scene.controls.onMouseUpManipulator('initRotation');
-                $scope.sliderPosition = SLIDER_INITIAL_POSITION;
-                gz3d.scene.resetView(); //update the default camera position, if defined
-
-                // Don't stay in INITIALIZED, but switch to STARTED->PAUSED
-                stateService.setCurrentState(STATE.STARTED).then(
-                  function () {
-                    stateService.setCurrentState(STATE.PAUSED);
-                  }
-                );
-              }
-            }
-          );
         };
 
         // We restrict material changes to simple objects and screen glasses found in screen models of the 3D scene,
@@ -700,6 +702,9 @@
 
         // clean up on leaving
         $scope.$on("$destroy", function () {
+          // unbind resetListener callback
+          $scope.resetListenerUnbindHandler();
+
           nrpAnalytics.durationEventTrack('Simulate', {
             category: 'Simulation'
           });

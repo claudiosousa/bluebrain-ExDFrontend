@@ -1,6 +1,6 @@
 /*
   This module is thought to centralize the manipulation of the simulation state.
-  It provides two functions for getting and setting the simuation state via REST,
+  It provides two functions for getting and setting the simulation state via REST,
   as well as a variable saving the current state that can be accessed when there
   is no necessity to explicitly fetching the state.
 

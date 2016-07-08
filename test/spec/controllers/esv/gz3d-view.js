@@ -485,20 +485,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(simulationInfo.experimentID).toBeDefined();
     });
 
-    it('should check that updateSimulation sets the scope\'s state', function () {
-      //Ignore this warning because of the sim_id
-      /*jshint camelcase: false */
+    it('should ensure that the state is PAUSED when resetting', function() {
+      scope.resetButtonClickHandler();
 
-      // test whether the state given as a parameter is passed
-      scope.updateSimulation(STATE.STARTED);
-      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STARTED);
+      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
 
-      // test whether duplicate requests are skipped
-      scope.updateSimulation(STATE.STARTED);
-      expect(stateService.setCurrentState).toHaveBeenCalled();
-      stateService.setCurrentState.reset();
-      scope.updateSimulation(STATE.STARTED);
-      expect(simulationStateObject.update).not.toHaveBeenCalled();
+      expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     });
 
     it('should show a popup when the reset button is pressed', function() {
@@ -507,16 +499,27 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should pass the radio button value to resetService when Collab not available', function() {
-      scope.resetButtonClickHandler();
+
       scope.request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
+
+      scope.__resetButtonClickHandler();
 
       scope.isCollabExperiment = false; //Collab IS NOT available
 
-      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
       expect(backendInterfaceService.reset).toHaveBeenCalledWith(
         scope.request,
         jasmine.any(Function),
         jasmine.any(Function));
+    });
+
+    it('should notify the widgets when resetting', function() {
+      spyOn(scope, 'notifyResetToWidgets').andCallThrough();
+
+      scope.request = { resetType: RESET_TYPE.RESET_WORLD };
+
+      scope.__resetButtonClickHandler();
+
+      expect(scope.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
     });
 
     it('should pass the radio button value to resetCollabService when Collab is available', function() {
@@ -534,6 +537,13 @@ describe('Controller: Gz3dViewCtrl', function () {
         scope.splashScreen = undefined;
 
         hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+
+        expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
+
+        //ensureStateBeforeExecuting's first parameter is a state, second is a callback
+        var resetFunction = stateService.ensureStateBeforeExecuting.mostRecentCall.args[1];
+
+        resetFunction(); // call the callback
 
         //open splash
         expect(splash.open).toHaveBeenCalled();
@@ -585,25 +595,22 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(backendInterfaceService.reset.calls.length).toBe(0);
     });
 
-    it('should call updateSimulation when the "OLD STYLE RESET" checkbox is clicked', function () {
-      spyOn(scope, 'updateSimulation');
-      spyOn(scope, 'setEditMode');
+    it('should reset GUI when reset type is RESET.RESET_ALL', function () {
+      spyOn(scope, 'resetGUI').andCallThrough();
 
-      scope.resetButtonClickHandler();
-      scope.request = { resetType: RESET_TYPE.RESET_OLD };
+      scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
+      scope.$digest();
 
-      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
-      expect(scope.updateSimulation).toHaveBeenCalledWith(STATE.INITIALIZED);
-      expect(scope.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
+      expect(scope.resetGUI).toHaveBeenCalled();
     });
 
-     it('should call resetView() when "Reset Camera view" checkbox is checked', function () {
+    it('should call resetView() when "Reset Camera view" checkbox is checked', function () {
       //gz3d.scene.resetView is already being spied on
 
       scope.resetButtonClickHandler();
       scope.request = { resetType: RESET_TYPE.RESET_CAMERA_VIEW };
 
-      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      scope.__resetButtonClickHandler();
       expect(gz3d.scene.resetView).toHaveBeenCalled();
     });
 
