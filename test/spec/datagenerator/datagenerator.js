@@ -27,7 +27,7 @@ window.TestDataGenerator = (function () {
       name: 'FakeName ' + random,
       description: 'Some Fake Description ' + random,
       experimentConfiguration: 'fakeExperiment' + random,
-      serverPattern: ['bbpce' + random],
+      servers: ['bbpce' + random],
       timeout: api.randomInt(0, 1000)
     };
   };

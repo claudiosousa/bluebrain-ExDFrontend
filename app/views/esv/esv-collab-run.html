@@ -72,7 +72,7 @@
                     analytics-category="Experiment"
                     analytics-label="Collab"
                     ng-if="hasEditRights && isServerAvailable[experiment.id]" class="btn btn-default"
-                    ng-click="setProgressbarVisible(experiment.id);startNewExperiment(experiment.experimentConfiguration,  experiment.serverPattern);">
+                    ng-click="setProgressbarVisible(experiment.id);startNewExperiment(experiment.experimentConfiguration,  experiment.servers);">
               <i class="fa fa-plus"></i> Launch
             </button>
             <!-- No server available: Launch button disabled -->

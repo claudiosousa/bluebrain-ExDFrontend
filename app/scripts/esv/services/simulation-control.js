@@ -297,7 +297,7 @@
         angular.forEach(experimentTemplates, function (experimentTemplate) {
           //ToDo: Should not take the experimentConfiguration, but the experimentConfiguration of the template
           if (experimentTemplate.experimentConfiguration === activeSimulation.experimentConfiguration &&
-            (experimentTemplate.serverPattern.indexOf(activeSimulation.serverID) > -1)) {
+            (experimentTemplate.servers.indexOf(activeSimulation.serverID) > -1)) {
             // Increase the number of running experiments for this template
             experimentTemplate.runningExperiments = ('runningExperiments' in experimentTemplate) ? experimentTemplate.runningExperiments + 1 : 1;
             // Add the 'simulations' variable to the template and create it if it does not exist
@@ -427,10 +427,10 @@
           experimentList(serverNRPServicesURL).experiments(function (data) {
             angular.forEach(data.data, function (experiment, index) {
               if (angular.isDefined(experimentTemplates[index])) {
-                experimentTemplates[index].serverPattern.push(serverID);
+                experimentTemplates[index].servers.push(serverID);
               } else {
                 experimentTemplates[index] = experiment;
-                experimentTemplates[index].serverPattern = [serverID];
+                experimentTemplates[index].servers = [serverID];
                 $http.get(serverNRPServicesURL + '/experiment/' + index + '/preview').then(function (response) {
                   experimentTemplates[index].imageData = response.data.image_as_base64;
                 });
@@ -480,7 +480,7 @@
           var supportingServerIDs = [];
           angular.forEach(serversEnabled, function(serverID) {
             // Does this server support this experiment?
-            if (experimentTemplate.serverPattern.indexOf(serverID) > -1) {
+            if (experimentTemplate.servers.indexOf(serverID) > -1) {
               supportingServerIDs.push(serverID);
             }
           });
@@ -607,11 +607,11 @@
         });
       };
 
-      var startNewExperiments = function (expConf, envSDFData, serversEnabled, serverPattern, errorCallback) {
+      var startNewExperiments = function (expConf, envSDFData, serversEnabled, servers, errorCallback) {
 
         //possible servers are the servers that selected by the user
         var possibleServers = serverIDs.filter(function (serverID) {
-          return serversEnabled.indexOf(serverID)>=0 && serverPattern.indexOf(serverID)>=0;
+          return serversEnabled.indexOf(serverID)>=0 && servers.indexOf(serverID)>=0;
         });
 
         launchExperimentInPossibleServers(possibleServers, expConf, envSDFData, errorCallback);
@@ -719,11 +719,7 @@
         }
         else {
           angular.forEach(serverIDs, function (server) {
-            // Temporary: Lugano servers are the only one with a working camera.
-            // For the moment, it preselects only Lugano servers.
-            if (server.indexOf('bbpsrvc') > -1) {
-              result.push(server);
-            }
+            result.push(server);
           });
         }
         return result;
@@ -765,9 +761,9 @@
         });
       };
 
-      var startNewExperiment = function (expConf, envConf, serverPattern, errorCallback) {
+      var startNewExperiment = function (expConf, envConf, servers, errorCallback) {
 
-        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), serverPattern, errorCallback);
+        experimentSimulationService.startNewExperiments(expConf, envConf, this.getServersEnable(), servers, errorCallback);
 
         nrpAnalytics.eventTrack('Start', {
           category: 'Experiment'

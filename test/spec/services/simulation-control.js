@@ -447,22 +447,22 @@ describe('Services: experimentSimulationService', function () {
 
     experimentTemplates = {
       'fakeExperiment1.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', servers:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment2.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', servers:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment3.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', servers:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
     experimentTemplatesAugmented = {
       'fakeExperiment1.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', serverPattern:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 1', description: 'Some Fake Description 1', experimentConfiguration: 'fakeExperiment1.xml', servers:['bbpce014','bbpce016'], timeout: 100, numSupportingServers: 2, numAvailableServers : 0
       },
       'fakeExperiment2.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', serverPattern:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1,
+        imageData: 'base64XF5Tf', name: 'FakeName 2', description: 'Some Fake Description 2', experimentConfiguration: 'fakeExperiment2.xml', servers:['bbpce016'], timeout: 200, numSupportingServers: 2, numAvailableServers : 0, runningExperiments: 1,
         simulations: [
           returnSimulations[3]
         ],
@@ -470,7 +470,7 @@ describe('Services: experimentSimulationService', function () {
           returnSimulations[3]
         ]},
       'fakeExperiment3.xml': {
-        imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', serverPattern:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
+        imageData: 'base64XF5Tf', name: 'FakeName 3', description: 'Some Fake Description 3', experimentConfiguration: 'fakeExperiment3.xml', servers:['bbpce016'], timeout: 300, numSupportingServers: 2, numAvailableServers : 0
       }
     };
 
@@ -535,7 +535,7 @@ describe('Services: experimentSimulationService', function () {
     spyOn(experimentSimulationService, 'startNewExperiments');
     spyOn(experimentSimulationService, 'getServersEnable');
 
-    experimentSimulationService.startNewExperiment('expconf', 'envconf', 'serverPattern', null);
+    experimentSimulationService.startNewExperiment('expconf', 'envconf', 'servers', null);
     expect(experimentSimulationService.startNewExperiments).toHaveBeenCalled();
     expect(experimentSimulationService.getServersEnable).toHaveBeenCalled();
 
@@ -895,7 +895,7 @@ describe('Services: experimentSimulationService', function () {
     spyOn(localStorage, 'getItem').andCallFake(function (key) { // jshint ignore:line
       return null;
     });
-    expect(experimentSimulationService.getServersEnable()).toEqual([Object.keys(bbpConfigString)[2]]);
+    expect(experimentSimulationService.getServersEnable()).toEqual(Object.keys(bbpConfigString));
   });
 
   it ('should get the available servers properly when they are  stored in localstorage', function() {

@@ -114,9 +114,9 @@
           localStorage.setItem('server-enabled', angular.toJson($scope.serversEnabled));
         };
 
-        $scope.startNewExperiment = function(configuration, serverPattern) {
+        $scope.startNewExperiment = function(configuration, servers) {
           experimentSimulationService.startNewExperiment(
-            configuration, null, serverPattern, $scope.setProgressbarInvisible);
+            configuration, null, servers, $scope.setProgressbarInvisible);
         };
 
         $scope.joinExperiment = function(url) {
