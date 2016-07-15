@@ -499,5 +499,67 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
   });
+});
 
+describe('Directive: transferFunctionEditor refresh populations', function () {
+
+  var $rootScope, $compile, $scope, isolateScope,
+    element;
+
+  var backendInterfaceServiceMock = {};
+  backendInterfaceServiceMock.getPopulations = function () {
+    isolateScope.onPopulationsReceived(shownPopulation);
+  };
+
+  var documentationURLsMock =
+  {
+    getDocumentationURLs: function() {
+      return {
+        then: function(callback) {
+          return callback({cleDocumentationURL: 'cleDocumentationURL',
+            backendDocumentationURL: 'backendDocumentationURL'});}
+      };
+    }
+  };
+
+  var roslibMock = {};
+  var returnedConnectionObject = {};
+  returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
+
+  var shownPopulation = { name: 'test2', showDetails : false};
+
+  beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
+  beforeEach(module('currentStateMockFactory'));
+  beforeEach(module(function ($provide) {
+    $provide.value('backendInterfaceService', backendInterfaceServiceMock);
+    $provide.value('documentationURLs', documentationURLsMock);
+    $provide.value('roslib', roslibMock);
+  }));
+
+  beforeEach(inject(function (_$rootScope_,
+                              _$compile_,
+                              $templateCache) {
+    $rootScope = _$rootScope_;
+    $compile = _$compile_;
+
+    $scope = $rootScope.$new();
+    $templateCache.put('views/esv/transfer-function-editor.html', '');
+    $scope.control = {};
+    element = $compile('<transfer-function-editor control="control"/>')($scope);
+    $scope.$digest();
+    isolateScope = element.isolateScope();
+  }));
+
+  it('should refresh correctly', function() {
+    var population = { name: 'test', showDetails : false};
+
+    isolateScope.onPopulationsReceived(population);
+    expect(isolateScope.populations).toEqual([population]);
+
+    isolateScope.togglePopulations();
+    expect(isolateScope.populations).toEqual([shownPopulation]);
+  });
 });

@@ -403,7 +403,7 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.focusedName).toEqual(popName);
     });
 
-    it('should check processChange wheather selected population name changes', function() {
+    it('should check processChange whether selected population name changes', function() {
       var popName = 'population2';
       isolateScope.onFocusChange(popName);
 
