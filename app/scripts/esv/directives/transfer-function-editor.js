@@ -100,6 +100,7 @@
 
         var refreshPopulations = function() {
           if (scope.showPopulations) {
+            scope.populations = [];
             backendInterfaceService.getPopulations(function(response) {
               _.forEach(response.populations, scope.onPopulationsReceived);
             });

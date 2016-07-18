@@ -247,6 +247,18 @@
             // button.
             scope.control.refresh = undefined;
           });
+
+          scope.onFocusChange = function(population) {
+            scope.focusedName = population;
+          };
+
+          scope.processChange = function(population) {
+            if (population === scope.focusedName) {
+              return;
+            }
+            scope.populations[population] = angular.copy(scope.populations[scope.focusedName]);
+            delete scope.populations[scope.focusedName];
+          };
         }
       };
     }]);
