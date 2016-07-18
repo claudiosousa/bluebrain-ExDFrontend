@@ -1,3 +1,6 @@
+/* global console: false */
+/* global THREE: false */
+
 (function () {
   'use strict';
 
@@ -55,16 +58,18 @@
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
+      'userNavigationService', 'NAVIGATION_MODES',
       function ($rootScope, $scope, $stateParams, $timeout,
-        $location, $window, $document, $log, bbpConfig,
-        hbpIdentityUserDirectory, simulationService,
-        simulationControl, colorableObjectService, experimentList,
-        experimentSimulationService, timeDDHHMMSSFilter, splash,
-        assetLoadingSplash, STATE, nrpBackendVersions,
-        nrpFrontendVersion, UI, OPERATION_MODE,
-        gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
-        simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
-        backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService) {
+                $location, $window, $document, $log, bbpConfig,
+                hbpIdentityUserDirectory, simulationService,
+                simulationControl, colorableObjectService, experimentList,
+                experimentSimulationService, timeDDHHMMSSFilter, splash,
+                assetLoadingSplash, STATE, nrpBackendVersions,
+                nrpFrontendVersion, UI, OPERATION_MODE,
+                gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
+                simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
+                backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
+                userNavigationService, NAVIGATION_MODES) {
 
         // This is the only place where simulation info are, and should be, initialized
         simulationInfo.Initialize();
@@ -340,6 +345,8 @@
           } else {
             $scope.setLightHelperVisibility(false);
           }
+
+          userNavigationService.init();
         };
 
         // play/pause/stop button handler
@@ -603,6 +610,8 @@
           if (pose !== null && angular.isDefined(gz3d.scene)) {
             gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
           }
+
+          userNavigationService.setDefaultPose.apply(userNavigationService, pose);
         };
 
         // Spiketrain
@@ -653,6 +662,34 @@
           gz3d.scene.setShadowMaps($scope.showShadows);
         };
 
+        // navigation mode
+        $scope.NAVIGATION_MODES = NAVIGATION_MODES;
+        $scope.showNavigationModeMenu = false;
+
+        $scope.toggleNavigationModeMenu = function() {
+          $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
+        };
+        
+        $scope.setNavigationMode = function(mode) {
+          switch (mode) {
+            case NAVIGATION_MODES.FREE_CAMERA:
+              userNavigationService.setModeFreeCamera();
+                  break;
+
+            case NAVIGATION_MODES.GHOST:
+              userNavigationService.setModeGhost();
+              break;
+
+            case NAVIGATION_MODES.HUMAN_BODY:
+              userNavigationService.setModeHumanBody();
+              break;
+          }
+        };
+
+        $scope.isActiveNavigationMode = function(mode) {
+          return (userNavigationService.navigationMode === mode);
+        };
+
         // help mode
         $scope.toggleHelpMode = function () {
           $scope.helpModeActivated = !$scope.helpModeActivated;
@@ -669,6 +706,8 @@
           nrpAnalytics.durationEventTrack('Simulate', {
             category: 'Simulation'
           });
+
+          userNavigationService.deinit();
 
           if ($stateParams.ctx) {
             cancelLockSubscription();

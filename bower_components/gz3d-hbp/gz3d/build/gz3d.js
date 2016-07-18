@@ -259,7 +259,9 @@ var modelList =
       {modelPath:'viz_poster_2', modelTitle:'Poster 2'},
 
       {modelPath:'icub_model', modelTitle:'iCub'},
-      {modelPath:'lauron_model', modelTitle:'Lauron'}
+      {modelPath:'lauron_model', modelTitle:'Lauron'},
+      {modelPath:'user_avatar_basic', modelTitle:'user avatar (collision)'},
+      {modelPath:'user_avatar_basic_no-collision', modelTitle:'user avatar (no collision)'}
     ]}
   ];
 
@@ -1042,18 +1044,7 @@ GZ3D.Gui.prototype.init = function()
 
    guiEvents.on('show_orbit_indicator', function()
       {
-        that.scene.controls.showTargetIndicator =
-            !that.scene.controls.showTargetIndicator;
-        if(!that.scene.controls.showTargetIndicator)
-        {
-          $('#view-orbit-indicator').buttonMarkup({icon: 'false'});
-          guiEvents.emit('notification_popup','Hiding orbit indicator');
-        }
-        else
-        {
-          $('#view-orbit-indicator').buttonMarkup({icon: 'check'});
-          guiEvents.emit('notification_popup','Viewing orbit indicator');
-        }
+
       }
   );
 
@@ -2361,7 +2352,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     callback();
   });
 
-  var statusTopic = new ROSLIB.Topic({
+  this.statusTopic = new ROSLIB.Topic({
     ros: this.webSocket,
     name: '~/status',
     messageType : 'status',
@@ -2375,9 +2366,9 @@ GZ3D.GZIface.prototype.onConnected = function()
       this.emitter.emit('gzstatus', 'error');
     }
   };
-  statusTopic.subscribe(statusUpdate.bind(this));
+  this.statusTopic.subscribe(statusUpdate.bind(this));
 
-  var materialTopic = new ROSLIB.Topic({
+  this.materialTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/material',
     messageType : 'material',
@@ -2389,7 +2380,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     this.emitter.emit('material', this.material);
 
   };
-  materialTopic.subscribe(materialUpdate.bind(this));
+  this.materialTopic.subscribe(materialUpdate.bind(this));
 
   this.sceneTopic = new ROSLIB.Topic({
     ros : this.webSocket,
@@ -2469,7 +2460,7 @@ GZ3D.GZIface.prototype.onConnected = function()
 
 
   // Update model pose
-  var poseTopic = new ROSLIB.Topic({
+  this.poseTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/pose/info',
     messageType : 'pose',
@@ -2486,11 +2477,11 @@ GZ3D.GZIface.prototype.onConnected = function()
     }
   };
 
-  poseTopic.subscribe(poseUpdate.bind(this));
+  this.poseTopic.subscribe(poseUpdate.bind(this));
 
   // ROS topic subscription for joint_state messages
   // Requires gzserver version with support for joint state messages
-  var jointTopicSubscriber = new ROSLIB.Topic({ros: this.webSocket,
+  this.jointTopicSubscriber = new ROSLIB.Topic({ros: this.webSocket,
                                               name: '~/joint_states',
                                               message_type: 'jointstates',
                                               throttle_rate: 1.0 / 25.0 * 1000.0,
@@ -2507,10 +2498,10 @@ GZ3D.GZIface.prototype.onConnected = function()
   };
 
   // Subscription to joint update topic
-  jointTopicSubscriber.subscribe(updateJoint.bind(this));
+  this.jointTopicSubscriber.subscribe(updateJoint.bind(this));
 
   // Requests - for deleting models
-  var requestTopic = new ROSLIB.Topic({
+  this.requestTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/request',
     messageType : 'request',
@@ -2538,10 +2529,10 @@ GZ3D.GZIface.prototype.onConnected = function()
     }
   };
 
-  requestTopic.subscribe(requestUpdate.bind(this));
+  this.requestTopic.subscribe(requestUpdate.bind(this));
 
   // Model info messages - currently used for spawning new models
-  var modelInfoTopic = new ROSLIB.Topic({
+  this.modelInfoTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/model/info',
     messageType : 'model',
@@ -2585,10 +2576,10 @@ GZ3D.GZIface.prototype.onConnected = function()
     this.gui.setModelStats(message, 'update');
   };
 
-  modelInfoTopic.subscribe(modelUpdate.bind(this));
+  this.modelInfoTopic.subscribe(modelUpdate.bind(this));
 
   // Visual messages - currently just used for collision visuals
-  var visualTopic = new ROSLIB.Topic({
+  this.visualTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/visual',
     messageType : 'visual',
@@ -2619,10 +2610,10 @@ GZ3D.GZIface.prototype.onConnected = function()
     }
   };
 
-  visualTopic.subscribe(visualUpdate.bind(this));
+  this.visualTopic.subscribe(visualUpdate.bind(this));
 
   // world stats
-  var worldStatsTopic = new ROSLIB.Topic({
+  this.worldStatsTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/world_stats',
     messageType : 'world_stats',
@@ -2633,10 +2624,10 @@ GZ3D.GZIface.prototype.onConnected = function()
     this.updateStatsGuiFromMsg(message);
   };
 
-  worldStatsTopic.subscribe(worldStatsUpdate.bind(this));
+  this.worldStatsTopic.subscribe(worldStatsUpdate.bind(this));
 
   // Spawn new lights
-  var lightFactoryTopic = new ROSLIB.Topic({
+  this.lightFactoryTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/factory/light',
     messageType : 'light',
@@ -2666,7 +2657,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     this.gui.setLightStats(message, 'update');
   };
 
-  lightFactoryTopic.subscribe(lightCreate.bind(this));
+  this.lightFactoryTopic.subscribe(lightCreate.bind(this));
 
   // Update existing lights
   var lightModifyTopic = new ROSLIB.Topic({
@@ -2900,7 +2891,7 @@ GZ3D.GZIface.prototype.onConnected = function()
         z: quaternion.z
       }
     };
-    if (model.children[0].children[0] instanceof THREE.Light)
+    if (model.children[0] && model.children[0].children[0] && model.children[0].children[0] instanceof THREE.Light)
     {
       that.lightFactoryTopic.publish(entityMsg);
     }
@@ -5236,7 +5227,7 @@ GZ3D.MultiView.prototype.createMainUserView = function()
         width: 960,
         height: 600,
         fov: 60,
-        near: 0.1,
+        near: 0.15,
         far: 100
     };
 
@@ -5963,7 +5954,7 @@ GZ3D.Scene.prototype.init = function()
 
   var that = this;
 
-  this.keyBindingsEnabled = true;
+  this.keyboardBindingsEnabled = true;
   // Need to use `document` instead of getDomElement in order to get events
   // outside the webgl div element.
   document.addEventListener( 'mouseup',
@@ -5971,12 +5962,6 @@ GZ3D.Scene.prototype.init = function()
 
   this.getDomElement().addEventListener( 'mouseup',
       function(event) {that.onPointerUp(event);}, false );
-
-  this.getDomElement().addEventListener( 'DOMMouseScroll',
-      function(event) {that.onMouseScroll(event);}, false ); //firefox
-
-  this.getDomElement().addEventListener( 'mousewheel',
-      function(event) {that.onMouseScroll(event);}, false );
 
   document.addEventListener( 'keydown',
       function(event) {that.onKeyDown(event);}, false );
@@ -5994,16 +5979,6 @@ GZ3D.Scene.prototype.init = function()
       this.getDomElement());
 
   this.timeDown = null;
-
-  var domElementForKeyBindings = document.getElementsByTagName('body')[0];
-  this.controls = new THREE.FirstPersonControls(this.camera, this.container, domElementForKeyBindings);
-  if (this.controls instanceof THREE.FirstPersonControls) {
-    this.controls.movementSpeed = 0.2;
-    this.controls.lookSpeed = 0.005;
-  }
-  if (this.controls.targetIndicator !== undefined) {
-    this.scene.add(this.controls.targetIndicator);
-  }
 
   this.emitter = new EventEmitter2({ verbose: true });
 
@@ -6272,7 +6247,7 @@ GZ3D.Scene.prototype.setSDFParser = function(sdfParser)
  */
 GZ3D.Scene.prototype.onPointerDown = function(event)
 {
-  if (this.keyBindingsEnabled === false) {
+  if (this.keyboardBindingsEnabled === false) {
     return;
   }
 
@@ -6292,7 +6267,7 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
  */
 GZ3D.Scene.prototype.onPointerUp = function(event)
 {
-  if (this.keyBindingsEnabled === false) {
+  if (this.keyboardBindingsEnabled === false) {
     return;
   }
 
@@ -6334,11 +6309,6 @@ GZ3D.Scene.prototype.onPointerUp = function(event)
 
     var intersect = new THREE.Vector3();
     var model = this.getRayCastModel(pos, intersect);
-
-    if (intersect)
-    {
-      this.controls.target = intersect;
-    }
 
     // Cancel in case of multitouch
     if (event.touches && event.touches.length !== 1)
@@ -6401,11 +6371,6 @@ GZ3D.Scene.prototype.onMouseScroll = function(event)
 
   var intersect = new THREE.Vector3();
   var model = this.getRayCastModel(pos, intersect);
-
-  if (intersect)
-  {
-    this.controls.target = intersect;
-  }
 };
 
 /**
@@ -6414,7 +6379,7 @@ GZ3D.Scene.prototype.onMouseScroll = function(event)
  */
 GZ3D.Scene.prototype.onKeyDown = function(event)
 {
-  if (this.keyBindingsEnabled === false) {
+  if (this.keyboardBindingsEnabled === false) {
     return;
   }
 
@@ -6428,20 +6393,6 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
 
       var intersect = new THREE.Vector3();
       var model = this.getRayCastModel(pos, intersect);
-
-      if (intersect)
-      {
-        this.controls.target = intersect;
-      }
-
-      if (event.keyCode === 187)
-      {
-        this.controls.dollyOut();
-      }
-      else
-      {
-        this.controls.dollyIn();
-      }
     }
   }
 
@@ -6597,18 +6548,20 @@ GZ3D.Scene.prototype.render = function()
   // -using radial menu
   // -pointer over menus
   // -spawning
-  if (this.modelManipulator.hovered ||
+  if (this.controls) {
+    if (this.modelManipulator.hovered ||
       this.radialMenu.showing ||
       this.pointerOnMenu ||
       this.spawnModel.active)
-  {
-    this.controls.enabled = false;
-    this.controls.update();
-  }
-  else
-  {
-    this.controls.enabled = true;
-    this.controls.update();
+    {
+      this.controls.enabled = false;
+      this.controls.update();
+    }
+    else
+    {
+      this.controls.enabled = true;
+      this.controls.update();
+    }
   }
 
   this.modelManipulator.update();
@@ -8008,9 +7961,7 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
       }
       else
       {
-        material.opacity =
-            material.originalOpacity ?
-            material.originalOpacity : 1.0;
+        material.opacity = material.originalOpacity ? material.originalOpacity : 1.0;
       }
     }
   }

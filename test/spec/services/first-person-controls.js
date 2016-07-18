@@ -378,8 +378,6 @@ describe('FirstPersonControls', function () {
     camera.up = new THREE.Vector3(0,0,1);
     camera.updateMatrix();
 
-    expect(firstPersonControls.activeLook).toBe(true);
-
     triggerMouseEvent(domElement, 'mousedown', 0, 10, 20);
 
     expect(firstPersonControls.updateSphericalAngles).toHaveBeenCalled();
@@ -393,7 +391,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle mouseup events', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
     firstPersonControls.mouseDragOn = true;
 
     triggerMouseEvent(domElement, 'mouseup', 0, 10, 20);
@@ -402,8 +399,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle mousemove events', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
-
     triggerMouseEvent(domElement, 'mousemove', 0, 10, 20);
 
     expect(firstPersonControls.mousePosCurrent.x).toEqual(10);
@@ -411,7 +406,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle mousemove events when no button was pressed', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
     firstPersonControls.mousePosCurrent.x = 0;
     firstPersonControls.mousePosCurrent.y = 0;
 
@@ -458,8 +452,6 @@ describe('FirstPersonControls', function () {
     camera.up = new THREE.Vector3(0,0,1);
     camera.updateMatrix();
 
-    expect(firstPersonControls.activeLook).toBe(true);
-
     triggerOneTouchEvent(domElement, 'touchstart', 10, 20);
 
     expect(firstPersonControls.updateSphericalAngles).toHaveBeenCalled();
@@ -473,7 +465,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle touchend events', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
     firstPersonControls.mouseDragOn = true;
 
     triggerZeroTouchEvent(domElement, 'touchend');
@@ -482,8 +473,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle touchmove events', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
-
     triggerOneTouchEvent(domElement, 'touchmove', 20, 30);
 
     expect(firstPersonControls.mousePosCurrent.x).toEqual(20);
@@ -522,7 +511,6 @@ describe('FirstPersonControls', function () {
     camera.up = new THREE.Vector3(0,0,1);
     camera.updateMatrix();
 
-    expect(firstPersonControls.activeLook).toBe(true);
     firstPersonControls.mouseDragOn = true;
 
     triggerTwoTouchEvent(domElement, 'touchstart', 10, 20, 20, 30);
@@ -534,7 +522,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle touchend events 2 touches', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
     firstPersonControls.mouseDragOn = true;
 
     triggerOneTouchEvent(domElement, 'touchend');
@@ -545,7 +532,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle move forward/backward touch gesture', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
     camera.position.copy(new THREE.Vector3(0,0,0));
     camera.lookAt(new THREE.Vector3(1,0,0));
     camera.up = new THREE.Vector3(0,0,1);
@@ -561,7 +547,6 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle move sidewards/upwards touch gesture', inject(function() {
-    expect(firstPersonControls.activeLook).toBe(true);
     camera.position.copy(new THREE.Vector3(0,0,0));
     camera.lookAt(new THREE.Vector3(1,0,0));
     camera.up = new THREE.Vector3(0,0,1);
