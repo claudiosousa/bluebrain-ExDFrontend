@@ -47,7 +47,6 @@ describe('Services: server-info-service', function () {
     simulationInfo.Initialize();
     expect(simulationInfo.serverID).toEqual(stateParams.serverID);
     expect(simulationInfo.simulationID).toEqual(stateParams.simulationID);
-    expect(simulationInfo.mode).toEqual(stateParams.mode);
     expect(simulationInfo.serverConfig).toBeDefined();
     expect(simulationInfo.serverBaseUrl).toBeDefined();
     expect(simulationInfo.contextID).toBe(stateParams.ctx);

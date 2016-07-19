@@ -13,7 +13,6 @@
       '$document',
       'STATE',
       'EDIT_MODE',
-      'OPERATION_MODE',
       'panels',
       'simulationSDFWorld',
       'bbpConfig',
@@ -27,7 +26,6 @@
       function ($document,
         STATE,
         EDIT_MODE,
-        OPERATION_MODE,
         panels,
         simulationSDFWorld,
         bbpConfig,
@@ -124,11 +122,10 @@
                 },
 
                 show: function (model) {
-                  var inEditMode = (simulationInfo.mode === OPERATION_MODE.EDIT);
                   var isRobot = model.name.indexOf('robot') !== -1;
 
                   this.visible = this.items[0].visible = true;
-                  this.items[1].visible = inEditMode && !isRobot; //don't delete the robot
+                  this.items[1].visible = !isRobot; //don't delete the robot
 
                   return true;
                 }

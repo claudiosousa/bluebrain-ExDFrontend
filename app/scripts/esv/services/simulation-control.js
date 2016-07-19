@@ -254,7 +254,6 @@
     'experimentList',
     'roslib',
     'STATE',
-    'OPERATION_MODE',
     'serverError',
     'simulationSDFWorld',
     'hbpDialogFactory',
@@ -272,7 +271,6 @@
       experimentList,
       roslib,
       STATE,
-      OPERATION_MODE,
       serverError,
       simulationSDFWorld,
       hbpDialogFactory)
@@ -629,12 +627,10 @@
         // In case the config does specify where to run, we take the value from the config file. If there is no hint,
         // we fallback to "local".
         var serverJobLocation = servers[freeServerID].serverJobLocation ? servers[freeServerID].serverJobLocation : 'local';
-        var operationMode = OPERATION_MODE.EDIT;
 
         var simInitData = {
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
-          operationMode: operationMode,
           contextID: $stateParams.ctx
         };
 
@@ -656,7 +652,7 @@
                   simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.PAUSED },
                     // Now join the simulation
                     function () {
-                      var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID + '/' + operationMode;
+                      var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID;
                       if (angular.isDefined(successCallback)) {
                         successCallback(url);
                       }

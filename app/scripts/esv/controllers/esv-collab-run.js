@@ -4,8 +4,7 @@
   /**
    * # ESVCollabRunCtrl
    * Controller of the Collab edit and run pages
-   * It allows to launch a registered Collab experiment either in edit mode (edit page)
-   * or read-only mode (run page)
+   * It allows to launch a registered Collab experiment
    */
 
   angular.module('exdFrontendApp').controller('ESVCollabRunCtrl',
@@ -19,7 +18,6 @@
     'slurminfoService',
     'experimentSimulationService',
     'STATE',
-    'OPERATION_MODE',
     'bbpConfig',
     'hbpIdentityUserDirectory',
     'simulationSDFWorld',
@@ -36,7 +34,6 @@
         slurminfoService,
         experimentSimulationService,
         STATE,
-        OPERATION_MODE,
         bbpConfig,
         hbpIdentityUserDirectory,
         simulationSDFWorld,
@@ -49,9 +46,7 @@
         $scope.isServerAvailable = {};
         $scope.isQueryingServersFinished = false;
         $scope.isDestroyed = false;
-        $scope.hasEdits = false;
         $scope.STATE = STATE;
-        $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.updatePromise = undefined;
         $scope.updateUptimePromise = undefined;
         $scope.experiments = {};
@@ -165,18 +160,6 @@
 
         $scope.updateUserID();
 
-        // Function to determine if at least one simulation launched from the current Collab Navigation item
-        // is running in edit mode
-        $scope.isASimulationInEditMode = function() {
-          var result = false;
-          angular.forEach($scope.experiment.simulations, function(simulation) {
-            if (simulation.operationMode === OPERATION_MODE.EDIT) {
-              result = true;
-            }
-          });
-          return result;
-        };
-
         $scope.updateExperiment = function() {
           var simulations = $scope.experiments[$scope.experiment.id].simulations;
           if (angular.isDefined(simulations)) {
@@ -186,7 +169,6 @@
           }
           $scope.owners = simulationService().owners;
           $scope.uptime = simulationService().uptime;
-          $scope.hasEdits = $scope.isASimulationInEditMode();
         };
 
         // This function is called when all servers responded to the query of running experiments

@@ -22,10 +22,6 @@
       FAILED: 'failed',
       STOPPED: 'stopped'
     })
-    .constant('OPERATION_MODE', {
-      VIEW: 'view',
-      EDIT: 'edit'
-    })
     .constant('UI', {
       UNDEFINED: -1,
       PLAY_BUTTON: 0,
@@ -54,22 +50,22 @@
       'simulationControl', 'colorableObjectService', 'experimentList',
       'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
       'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
-      'nrpFrontendVersion', 'UI', 'OPERATION_MODE',
+      'nrpFrontendVersion', 'UI',
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES',
       function ($rootScope, $scope, $stateParams, $timeout,
-                $location, $window, $document, $log, bbpConfig,
-                hbpIdentityUserDirectory, simulationService,
-                simulationControl, colorableObjectService, experimentList,
-                experimentSimulationService, timeDDHHMMSSFilter, splash,
-                assetLoadingSplash, STATE, nrpBackendVersions,
-                nrpFrontendVersion, UI, OPERATION_MODE,
-                gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
-                simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
-                backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
-                userNavigationService, NAVIGATION_MODES) {
+        $location, $window, $document, $log, bbpConfig,
+        hbpIdentityUserDirectory, simulationService,
+        simulationControl, colorableObjectService, experimentList,
+        experimentSimulationService, timeDDHHMMSSFilter, splash,
+        assetLoadingSplash, STATE, nrpBackendVersions,
+        nrpFrontendVersion, UI,
+        gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
+        simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
+        backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
+        userNavigationService, NAVIGATION_MODES) {
 
         // This is the only place where simulation info are, and should be, initialized
         simulationInfo.Initialize();
@@ -77,7 +73,6 @@
 
         stateService.Initialize();
         var serverConfig = bbpConfig.get('api.neurorobotics')[simulationInfo.serverID];
-        $scope.operationMode = simulationInfo.mode;
         $scope.helpModeActivated = false;
         $scope.helpDescription = '';
         $scope.helpText = {};
@@ -119,7 +114,6 @@
         $scope.jointTopic = serverConfig.rosbridge.topics.joint;
 
         $scope.STATE = STATE;
-        $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.UI = UI;
         $scope.RESET_TYPE = RESET_TYPE;
 
@@ -339,13 +333,8 @@
             gz3d.scene.emitter.emit('lightChanged', ratio);
           });
 
-          // when in edit mode make light's helper geometry visible
-          if ($scope.operationMode === OPERATION_MODE.EDIT) {
-            $scope.setLightHelperVisibility(true);
-          } else {
-            $scope.setLightHelperVisibility(false);
-          }
-
+          // make light's helper geometry visible
+          $scope.setLightHelperVisibility(true);
           userNavigationService.init();
         };
 
@@ -669,7 +658,7 @@
         $scope.toggleNavigationModeMenu = function() {
           $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
         };
-        
+
         $scope.setNavigationMode = function(mode) {
           switch (mode) {
             case NAVIGATION_MODES.FREE_CAMERA:
@@ -845,11 +834,7 @@
         $scope.exit = function () {
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           if (angular.isDefined($stateParams.ctx) && $stateParams.ctx !== '') {
-            if ($scope.operationMode === OPERATION_MODE.EDIT) {
-              $location.path("esv-collab/edit");
-            } else {
-              $location.path("esv-collab/run");
-            }
+            $location.path("esv-collab/run");
           } else {
             $location.path("esv-web");
           }

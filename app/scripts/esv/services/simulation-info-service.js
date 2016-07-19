@@ -17,7 +17,6 @@
         }
         thisService.serverID = $stateParams.serverID;
         thisService.simulationID = $stateParams.simulationID;
-        thisService.mode = $stateParams.mode;
         thisService.serverConfig = bbpConfig.get('api.neurorobotics')[thisService.serverID];
         thisService.serverBaseUrl = thisService.serverConfig.gzweb['nrp-services'];
         thisService.contextID = $stateParams.ctx;

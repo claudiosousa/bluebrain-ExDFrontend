@@ -685,7 +685,6 @@ describe('Services: experimentSimulationService', function () {
     });
 
     it('should test the launch of an experiment on a given server', function() {
-      var expectedOperatingMode = 'edit';
       var serverID = 'bbpce014';
       var simulationID = 'mocked_sim_id';
       stateParams.ctx = '97923877-13ea-4b43-ac31-6b79e130d344';
@@ -703,7 +702,6 @@ describe('Services: experimentSimulationService', function () {
           experimentConfiguration: 'mocked_experiment_conf',
           /* jshint camelcase: false */
           gzserverHost: 'lugano',
-          operationMode: expectedOperatingMode,
           contextID: stateParams.ctx
         },
         jasmine.any(Function)
@@ -725,7 +723,7 @@ describe('Services: experimentSimulationService', function () {
 
       // Test for initialized Callback
       updateFunction();
-      var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID + '/' + expectedOperatingMode;
+      var url = 'esv-web/gz3d-view/' + serverID + '/' + simulationID;
       expect(initializedCallback).toHaveBeenCalledWith(url);
 
       // Should not throw an error when the callback is not defined
@@ -741,7 +739,6 @@ describe('Services: experimentSimulationService', function () {
         experimentConfiguration: 'mocked_experiment_conf',
         /* jshint camelcase: false */
         gzserverHost: 'lugano',
-        operationMode: 'edit'
       },
         jasmine.any(Function));
     });
@@ -799,21 +796,18 @@ describe('Services: experimentSimulationService', function () {
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBe('environment_conf');
-      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('edit');
 
       experimentSimulationService.launchExperimentOnServer('experiment_conf', undefined, 'bbpce014', emptyCallback);
 
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBeUndefined();
-      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('edit');
 
       experimentSimulationService.launchExperimentOnServer('experiment_conf', null, 'bbpce014', emptyCallback);
 
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].experimentConfiguration).toBe('experiment_conf');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].gzserverHost).toBe('lugano');
       expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].environmentConfiguration).toBeUndefined();
-      expect(simulationGeneratorMockObject.create.mostRecentCall.args[0].operationMode).toBe('edit');
     });
 
   });

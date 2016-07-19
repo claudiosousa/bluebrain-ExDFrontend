@@ -59,7 +59,6 @@ describe('Directive: environment-designer', function () {
                               $document,
                               EDIT_MODE,
                               STATE,
-                              OPERATION_MODE,
                               _currentStateMockFactory_,
                               _stateService_,
                               _contextMenuState_,
@@ -78,7 +77,6 @@ describe('Directive: environment-designer', function () {
     currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
     simulationInfo = _simulationInfo_;
-    simulationInfo.mode = OPERATION_MODE.EDIT;
     panels = _panels_;
     simulationSDFWorld = _simulationSDFWorld_;
     backendInterfaceService = _backendInterfaceService_;
