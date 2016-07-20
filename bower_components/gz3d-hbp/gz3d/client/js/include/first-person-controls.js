@@ -23,7 +23,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   // Set to false to disable this control
   this.enabled = true;
-  this.keyboardBindingsEnabled = true;
+  this.keyBindingsEnabled = true;
 
   this.movementSpeed = 0.05;
   this.lookSpeed = 0.01;
@@ -33,7 +33,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.target = new THREE.Vector3();
   this.lookVertical = true;
 
-  this.mouseBindingsEnabled = true;
+  this.activeLook = true;
 
   this.azimuth = 0.0;
   this.zenith = 0.0;
@@ -82,7 +82,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.mouseBindingsEnabled) {
+    if (this.activeLook) {
       switch (event.button) {
         case 0:
           this.updateSphericalAngles();
@@ -104,7 +104,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     // and expect the event to be fired.
     //event.stopPropagation();
 
-    if (this.mouseBindingsEnabled) {
+    if (this.activeLook) {
       switch (event.button) {
         case 0:
           this.mouseDragOn = false;
@@ -221,7 +221,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.onKeyDown = function (event) {
-    if(this.keyboardBindingsEnabled === false) {
+    if(this.keyBindingsEnabled === false) {
       return;
     }
     this.shiftHold = event.shiftKey;
@@ -247,7 +247,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.onKeyUp = function (event) {
-    if(this.keyboardBindingsEnabled === false) {
+    if(this.keyBindingsEnabled === false) {
       return;
     }
     this.shiftHold = event.shiftKey;
@@ -345,7 +345,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       /* --- rotation by means of a mouse drag --- */
       if (this.mouseDragOn) {
         var actualLookSpeed = delta * this.lookSpeed;
-        if (!this.mouseBindingsEnabled) {
+        if (!this.activeLook) {
           actualLookSpeed = 0;
         }
 
@@ -372,6 +372,8 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         this.object.lookAt(targetPosition);
         this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.object.position);
       }
+
+      this.object.updateMatrixWorld();  // I need to add this to get the camera working with the new ThreeJS version
     }
   };
 

@@ -3713,7 +3713,11 @@ THREE.ColladaLoader = function () {
 
 									if ( image ) {
 
-                    var texture = THREE.ImageUtils.loadTexture(baseUrl + image.init_from);
+                    //var texture = THREE.ImageUtils.loadTexture(baseUrl + image.init_from);
+
+										var loader = new THREE.TextureLoader();
+										var texture = loader.load( baseUrl + image.init_from);
+
 										texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 										texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 										texture.offset.x = cot.texOpts.offsetU;
@@ -3792,14 +3796,22 @@ THREE.ColladaLoader = function () {
 			case 'phong':
 			case 'blinn':
 
-				if (props.diffuse != undefined) props.color = props.diffuse;
+				if (props.diffuse != undefined) 
+				{
+					props.color = props.diffuse;
+					delete props.diffuse;
+				}
 				this.material = new THREE.MeshPhongMaterial( props );
 				break;
 
 			case 'lambert':
 			default:
 
-				if (props.diffuse != undefined) props.color = props.diffuse;
+				if (props.diffuse != undefined) 
+				{
+					props.color = props.diffuse;
+					delete props.diffuse;
+				}
 				this.material = new THREE.MeshLambertMaterial( props );
 				break;
 

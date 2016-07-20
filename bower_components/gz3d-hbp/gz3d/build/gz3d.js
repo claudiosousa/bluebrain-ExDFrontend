@@ -229,7 +229,6 @@ GZ3D.AnimatedModel.prototype.updateJoint = function(robotName, jointName, jointV
         // TODO: Move this to the animation loop to synchronize animations with the actual frame rate.
         // Alternative: Use the clock helper class from three.js for retrieving the actual frame rate delta.
         entity.userData['Skeleton_Visual_Helper'].update(0.016);
-        THREE.AnimationHandler.update(0.016);
       }
     }
   }
@@ -954,12 +953,12 @@ GZ3D.Gui.prototype.init = function()
           }
           else if (option === 'toggle')
           {
-              var shadowsEnabled = that.scene.renderer.shadowMapEnabled;
+              var shadowsEnabled = that.scene.renderer.shadowMap.enabled;
               //that.emitter.emit('setShadows', !shadowsEnabled);
               that.scene.setShadowMaps(!shadowsEnabled);
           }
 
-          if(!that.scene.renderer.shadowMapEnabled)
+          if(!that.scene.renderer.shadowMap.enabled)
           {
               $('#view-shadows').buttonMarkup({icon: 'false'});
               guiEvents.emit('notification_popup','Disabling shadows');
@@ -4260,7 +4259,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
         depthWrite: false,
         transparent: true
     });
-    mesh = new THREE.Line(geometry, material, THREE.LinePieces);
+    mesh = new THREE.LineSegments(geometry, material);
     displayAxes['translate'].add(mesh);
 
     // Display cone (arrow tip)
@@ -5130,14 +5129,21 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     var rect = domElement.getBoundingClientRect();
     var x = (pointer.clientX - rect.left) / rect.width;
     var y = (pointer.clientY - rect.top) / rect.height;
+    var i;
+
     pointerVector.set((x) * 2 - 1, - (y) * 2 + 1, 0.5);
 
     pointerVector.unproject(scope.camera);
     ray.set(camPosition, pointerVector.sub(camPosition).normalize());
 
+    for(i=0;i<objects.length;i++) {objects[i].visible = true;}  // ThreeJS intersectObjects function requires object to be visible
+
     // checks all intersections between the ray and the objects,
     // true to check the descendants
     var intersections = ray.intersectObjects(objects, true);
+
+    for(i=0;i<objects.length;i++) {objects[i].visible = false;}   // Hide them again after the test
+
     return intersections[0] ? intersections[0] : false;
   }
 
@@ -5515,8 +5521,10 @@ GZ3D.RadialMenu.prototype.init = function()
   this.bgSizeSelected = 68*scale;
   this.highlightSize = 45*scale;
   this.iconProportion = 0.6;
-  this.bgShape = THREE.ImageUtils.loadTexture(
-      'style/images/icon_background.png' );
+
+  var loader = new THREE.TextureLoader();
+  this.bgShape = loader.load( 'style/images/icon_background.png');
+
   this.layers = {
     ICON: 0,
     BACKGROUND : 1,
@@ -5842,7 +5850,9 @@ GZ3D.RadialMenu.prototype.onLongPressMove = function(event)
 GZ3D.RadialMenu.prototype.addItem = function(type, iconTexture)
 {
   // Icon
-  iconTexture = THREE.ImageUtils.loadTexture( iconTexture );
+
+  var loader = new THREE.TextureLoader();
+  iconTexture = loader.load( iconTexture);
 
   var iconMaterial = new THREE.SpriteMaterial( {
     map: iconTexture
@@ -5928,8 +5938,8 @@ GZ3D.Scene.prototype.init = function()
   this.renderer.setSize( window.innerWidth, window.innerHeight);
 
   // shadows
-  this.renderer.shadowMapEnabled = false;
-  this.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+  this.renderer.shadowMap.enabled = false;
+  this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   this.container = document.getElementById( 'container' );
 
@@ -6001,12 +6011,12 @@ GZ3D.Scene.prototype.init = function()
 
   // SSAO
   this.effectsEnabled = false;
-  
+
  // depth
  // var depthShader = THREE.ShaderLib[ 'depthRGBA'];  // It seems that the depthRGBA shader does not exist
                                                       // anymore in THREEJS version 78. It has been replaced
                                                       // by another shader called 'depth'. Need to investigate
-                                                      // about that, but I guess that the 'depth' buffer is a 
+                                                      // about that, but I guess that the 'depth' buffer is a
                                                       // floating point buffer that does not need to be RGBA unpacked.
                                                       // I just replaced it with the new shader for now, it does not
                                                       // seems to break anything:
@@ -6069,9 +6079,8 @@ GZ3D.Scene.prototype.init = function()
     vertices[2], vertices[6],
     vertices[3], vertices[7]
   );
-  this.boundingBox = new THREE.Line(boxGeometry,
-      new THREE.LineBasicMaterial({color: 0xffffff}),
-      THREE.LinePieces);
+  this.boundingBox = new THREE.LineSegments(boxGeometry,
+      new THREE.LineBasicMaterial({color: 0xffffff}));
   this.boundingBox.visible = false;
 
   // Joint visuals
@@ -6223,7 +6232,7 @@ GZ3D.Scene.prototype.init = function()
 
   var radius = 0.04;
   var length = 0.02;
-  var curve = new THREE.SplineCurve3([new THREE.Vector3(radius, 0, 0*length),
+  var curve = new THREE.CatmullRomCurve3([new THREE.Vector3(radius, 0, 0*length),
                                       new THREE.Vector3(0, radius, 1*length),
                                       new THREE.Vector3(-radius, 0, 2*length),
                                       new THREE.Vector3(0, -radius, 3*length),
@@ -6882,7 +6891,7 @@ GZ3D.Scene.prototype.createLight = function(type, diffuse, intensity, pose,
 
   helper.visible = this.showLightHelpers;
   lightObj.up = new THREE.Vector3(0,0,1);
-  lightObj.shadowBias = -0.0005;
+  lightObj.shadow.bias = -0.0005;
 
   if (name)
   {
@@ -6934,7 +6943,7 @@ GZ3D.Scene.prototype.createPointLight = function(obj, color, intensity,
   }
 
   var lightObj = new THREE.PointLight(color, intensity);
-  lightObj.shadowDarkness = 0.3;
+//  lightObj.shadowDarkness = 0.3;
 
   if (distance)
   {
@@ -6987,15 +6996,15 @@ GZ3D.Scene.prototype.createSpotLight = function(obj, color, intensity,
 
   var lightObj = new THREE.SpotLight(color, intensity, distance, angle, falloff);
   lightObj.position.set(0,0,0);
-  lightObj.shadowDarkness = 0.3;
-  lightObj.shadowBias = 0.0001;
+//  lightObj.shadowDarkness = 0.3;
+  lightObj.shadow.bias = 0.0001;
 
-  lightObj.shadowCameraNear = 0.1;
-  lightObj.shadowCameraFar = 50;
-  lightObj.shadowCameraFov = (2 * angle / Math.PI) * 180;
+  lightObj.shadow.camera.near = 0.1;
+  lightObj.shadow.camera.far = 50;
+  lightObj.shadow.camera.fov = (2 * angle / Math.PI) * 180;
 
-  lightObj.shadowMapWidth = 2048;
-  lightObj.shadowMapHeight = 2048;
+  lightObj.shadow.mapSize.width = 2048;
+  lightObj.shadow.mapSize.height = 2048;
 
   if (cast_shadows)
   {
@@ -7030,18 +7039,16 @@ GZ3D.Scene.prototype.createDirectionalLight = function(obj, color, intensity,
   }
 
   var lightObj = new THREE.DirectionalLight(color, intensity);
-  lightObj.shadowCameraNear = 0.1;
-  lightObj.shadowCameraFar = 50;
-  lightObj.shadowMapWidth = 2048;
-  lightObj.shadowMapHeight = 2048;
-  lightObj.shadowCameraVisible = false;
-  lightObj.shadowCameraBottom = -10;
-  lightObj.shadowCameraLeft = -10;
-  lightObj.shadowCameraRight = 10;
-  lightObj.shadowCameraTop = 10;
-  lightObj.shadowBias = 0.0001;
+  lightObj.shadow.camera.near = 0.1;
+  lightObj.shadow.camera.far = 50;
+  lightObj.shadow.mapSize.width = 2048;
+  lightObj.shadow.mapSize.height = 2048;
+  lightObj.shadow.camera.bottom = -10;
+  lightObj.shadow.camera.left = -10;
+  lightObj.shadow.camera.right = 10;
+  lightObj.shadow.camera.top = 10;
+  lightObj.shadow.bias = 0.0001;
   lightObj.position.set(0,0,0);
-  lightObj.shadowDarkness = 0.3;
 
   if (cast_shadows)
   {
@@ -7060,8 +7067,7 @@ GZ3D.Scene.prototype.createDirectionalLight = function(obj, color, intensity,
   helperGeometry.vertices.push(new THREE.Vector3(   0,    0, 0));
   helperGeometry.vertices.push(new THREE.Vector3(   0,    0, -0.5));
   var helperMaterial = new THREE.LineBasicMaterial({color: 0x00ff00});
-  var helper = new THREE.Line(helperGeometry, helperMaterial,
-      THREE.LinePieces);
+  var helper = new THREE.LineSegments(helperGeometry, helperMaterial);
 
   return [lightObj, helper];
 };
@@ -8340,7 +8346,7 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
 };
 
 GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
-  this.renderer.shadowMapEnabled = enabled;
+  this.renderer.shadowMap.enabled = enabled;
 
   var that = this;
   this.scene.traverse(function(node) {
@@ -8546,23 +8552,21 @@ GZ3D.SdfParser.prototype.spawnLightFromSDF = function(sdfObj)
     target.z -= pose.position.z;
 
     lightObj.target.position = target;
-    lightObj.shadowCameraNear = 1;
-    lightObj.shadowCameraFar = 50;
-    lightObj.shadowMapWidth = 2048;
-    lightObj.shadowMapHeight = 2048;
-    lightObj.shadowCameraVisible = false;
-    lightObj.shadowCameraBottom = -100;
-    lightObj.shadowCameraLeft = -100;
-    lightObj.shadowCameraRight = 100;
-    lightObj.shadowCameraTop = 100;
-    lightObj.shadowBias = 0.0001;
+    lightObj.shadow.camera.near = 1;
+    lightObj.shadow.camera.far = 50;
+    lightObj.shadow.map.width = 2048;
+    lightObj.shadow.map.height = 2048;
+    lightObj.shadow.camera.bottom = -100;
+    lightObj.shadow.camera.left = -100;
+    lightObj.shadow.camera.right = 100;
+    lightObj.shadow.camera.top = 100;
+    lightObj.shadow.bias = 0.0001;
 
     lightObj.position.set(negDir.x, negDir.y, negDir.z);
     this.scene.setPose(lightObj, pose.position, pose.orientation);
   }
   lightObj.intensity = parseFloat(light.attenuation.constant);
   lightObj.castShadow = light.cast_shadows;
-  lightObj.shadowDarkness = 0.3;
   lightObj.name = light['@name'];
 
   return lightObj;
