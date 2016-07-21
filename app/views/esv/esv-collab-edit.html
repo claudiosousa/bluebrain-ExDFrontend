@@ -28,13 +28,6 @@
       users
     </a>
 
-    <div class="form-group form-inline col-xs-12">Robotic simulation cluster availability:
-      <i class="label-availability"
-         tooltip="A cluster node is required to run the robot simulation"
-         ng-class="clusterPartAvailInfo.nodes[0] < 4 ? (clusterPartAvailInfo.nodes[0] < 2 ? 'label-danger' : 'label-warning') : 'label-success' ">{{clusterPartAvailInfo.nodes[0]}} / {{clusterPartAvailInfo.nodes[3]}}
-      </i>
-    </div>
-
     <hr class="list-separator">
 
     <div ng-repeat="exp in experiments | convertToArray | nameSnippet:query | orderBy:'name':false | byMaturity:showAll"
