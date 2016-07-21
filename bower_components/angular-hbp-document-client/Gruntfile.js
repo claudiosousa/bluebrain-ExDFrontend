@@ -1,4 +1,3 @@
-/* jshint node: true, browser: false */
 'use strict';
 
 // var fs = require('fs');
@@ -53,10 +52,14 @@ module.exports = function (grunt) {
       }
     },
 
-    // ngmin tries to make the code safe for minification automatically by
+    // ngAnnotate tries to make the code safe for minification automatically by
     // using the Angular long form for dependency injection. It doesn't work on
     // things like resolve or inject so those have to be done manually.
-    ngmin: {
+    ngAnnotate: {
+      options: {
+        singleQuotes: true,
+        add: true
+      },
       dist: {
         files: [{
           expand: true,
@@ -76,17 +79,16 @@ module.exports = function (grunt) {
 
     sass: {
       options: {
-        bundleExec: true,
-        loadPath: [
+        includePaths: [
           'src/styles/components',
           'bower_components'
         ]
       },
       dist: {
         files: {
-          '.tmp/styles/angular-hbp-document-client.css': 'src/styles/angular-hbp-document-client.scss',
+          '.tmp/styles/angular-hbp-document-client.css': 'src/styles/angular-hbp-document-client.scss'
         }
-      },
+      }
     },
 
     cssmin: {
@@ -111,25 +113,15 @@ module.exports = function (grunt) {
       main: {
         src: ['<%=pattern.templates%>'],
         dest: '.tmp/html2js/templates.js'
-      },
+      }
     },
 
-    jshint: {
+    eslint: {
       options: {
-        reporter: require('jshint-stylish')
+        formatter: process.env.CI ? 'junit' : 'stylish',
+        outputFile: process.env.CI ? 'reports/eslint-test-unit.xml' : null
       },
-      src: {
-        src: ['<%=pattern.src%>', 'Gruntfile.js'],
-        options: {
-          jshintrc: '.jshintrc'
-        }
-      },
-      test: {
-        src: ['test/**/*.js'],
-        options: {
-          jshintrc: 'test/.jshintrc'
-        }
-      }
+      target: ['Gruntfile.js', 'src/{*/,}*.js', 'test/{*/,}*.js']
     },
 
     copy: {
@@ -183,7 +175,7 @@ module.exports = function (grunt) {
           'src/*.js',
           '<%=pattern.src%>',
           '.tmp/html2js/templates.js',
-          'test/support/{,*/}*.js',
+          'test/unit/support/{,*/}*.js',
           'test/unit/{,*/}*.js'
         ]),
         reporters: ['progress']
@@ -216,7 +208,7 @@ module.exports = function (grunt) {
           junitReporter: {
             outputFile: 'reports/dist-unit-test.xml',
             suite: 'unit'
-          },
+          }
         },
         configFile: 'test/karma.conf.js'
       }
@@ -243,7 +235,7 @@ module.exports = function (grunt) {
         },
         files: {
           src: ['dist/**/*']
-        },
+        }
       }
     },
     gittag: {
@@ -276,16 +268,16 @@ module.exports = function (grunt) {
       },
       js: {
         files: ['<%=pattern.src%>'],
-        tasks: ['concat', 'ngmin', 'uglify']
+        tasks: ['concat', 'ngAnnotate', 'uglify']
       },
-      jshint: {
+      lint: {
         files: [
           '<%=pattern.src%>',
           '<%=pattern.test%>',
           'test/karma.conf.js',
           'Gruntfile.js'
         ],
-        tasks: ['newer:jshint:src', 'newer:jshint:test']
+        tasks: ['eslint']
       },
       livereload: {
         files: [
@@ -347,7 +339,7 @@ module.exports = function (grunt) {
     var done = this.async();
 
     grunt.log.writeln('publish documentation');
-    var r = request.post('http://bbpsrv27.epfl.ch:5000/docs/hmd', function(err, res) {
+    var r = request.post('http://bbpgb027.epfl.ch:5000/docs/hmd', function(err, res) {
       if(err || res.statusCode !== 200) {
         grunt.fail.warn('Unable to publish documentation', err);
         return done(false);
@@ -402,14 +394,6 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('ci', 'Run all the build steps on the CI server', function (target) {
-
-    // Junit reporter for JShint
-    grunt.config('jshint.src.options.reporter', require('jshint-junit-reporter'));
-    grunt.config('jshint.src.options.reporterOutput', 'reports/jshint-src-unit.xml');
-    grunt.config('jshint.test.options.reporter', require('jshint-junit-reporter'));
-    grunt.config('jshint.test.options.reporterOutput', 'reports/jshint-test-unit.xml');
-
-
     var tasks = ['wiredep', 'test', 'build', 'jsdoc', 'karma:dist'];
     if (target === 'patch' || target === 'minor' || target === 'major') {
       tasks.unshift('bump:'+target);
@@ -434,9 +418,9 @@ module.exports = function (grunt) {
     'watch'
   ]);
   grunt.registerTask('test', 'Run code quality tools',
-    ['html2js', 'jshint', 'karma:unit']);
+    ['html2js', 'eslint', 'karma:unit']);
   grunt.registerTask('build', 'Build the code in dist folder',
-    ['html2js', 'sass', 'cssmin', 'concat', 'ngmin', 'uglify', 'copy:dist']);
+    ['html2js', 'sass', 'cssmin', 'concat', 'ngAnnotate', 'uglify', 'copy:dist']);
   grunt.registerTask('default', 'clean, build, test',
     ['clean:dist', 'build', 'test']);
 };

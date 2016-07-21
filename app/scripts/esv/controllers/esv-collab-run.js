@@ -24,6 +24,7 @@
     '$stateParams',
     'collabConfigService',
     'serverError',
+    'collabFolderAPIService',
       function (
         $q,
         $scope,
@@ -39,7 +40,8 @@
         simulationSDFWorld,
         $stateParams,
         collabConfigService,
-        serverError
+        serverError,
+        collabFolderAPIService
       ) {
         $scope.joinSelected = false;
         $scope.startNewExperimentSelected = false;
@@ -183,8 +185,14 @@
               }
               $scope.experiment = $scope.experiments[experimentID];
               $scope.experiment.id = experimentID;
-              $scope.isQueryingServersFinished = true;
+              // use collab image if there is one
+              var defaultImage = $scope.experiment.imageData;
+              $scope.experiment.imageData = "";
+              $scope.collabImage.then(function(resolvedPromises){
+                $scope.experiment.imageData = resolvedPromises ? resolvedPromises : defaultImage;
+              });
 
+              $scope.isQueryingServersFinished = true;
               // Schedule the update if the esv-web controller was not destroyed in the meantime
               if(!$scope.isDestroyed) {
                 $scope.updateExperiment();
@@ -196,7 +204,6 @@
                     setIsServerAvailable,
                     $scope.updateExperiment
                   );
-
                   loadHealthyServers();
                 }, ESV_UPDATE_RATE);
               }
@@ -212,6 +219,43 @@
           );
         };
 
+        // get the experiment image from the collab storage
+        $scope.loadCollabImage = function (){
+          var promise = $q.defer();
+          collabConfigService.get({contextID: $stateParams.ctx},
+            function(response){
+              if (!response.experimentFolderUUID || !response.experimentID){
+                promise.resolve(null);
+                return;
+              }
+              return collabFolderAPIService.getFolderFile(response.experimentFolderUUID, response.experimentID +".png")
+              .then(function(imageData){
+                if (!imageData._uuid){
+                  promise.resolve(null);
+                  return;
+                }
+                return collabFolderAPIService.downloadFile(imageData._uuid, {"responseType": "blob"});
+              })
+              .then(function(imageContent){
+                var reader = new FileReader();
+                reader.addEventListener('loadend', function(e) {
+                  promise.resolve(e.target.result.replace("data:image/png;base64,", ""));
+                });
+                if (imageContent){
+                  reader.readAsDataURL(imageContent);
+                }
+                else {
+                  promise.resolve(null);
+                }
+              });
+            },
+            function(){
+              promise.resolve(null);
+            }
+          );
+          return promise.promise;
+        };
+        $scope.collabImage = $scope.loadCollabImage();
         // Set the progress message callback function
         experimentSimulationService.setProgressMessageCallback($scope.setProgressMessage);
 

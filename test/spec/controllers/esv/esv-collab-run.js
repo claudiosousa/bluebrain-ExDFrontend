@@ -25,7 +25,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
     collabConfigService,
     serverError,
     slurminfoService,
-    $q;
+    $q,
+    collabFolderAPIService;
 
   var collabConfigServiceMock = {
     clone: jasmine.createSpy('clone'),
@@ -118,7 +119,8 @@ describe('Controller: ESVCollabRunCtrl', function () {
                               _collabConfigService_,
                               _$stateParams_,
                               _serverError_,
-                              _$q_) {
+                              _$q_,
+                              _collabFolderAPIService_) {
     scope = $rootScope.$new();
     controller = $controller;
     location = _$location_;
@@ -135,6 +137,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     serverError = _serverError_;
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     $q = _$q_;
+    collabFolderAPIService = _collabFolderAPIService_;
 
     spyOn(localStorage, 'getItem').andCallFake(function (key) {
       return store[key];
@@ -286,7 +289,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
     var response = { experimentID: experimentID };
     spyOn(scope, 'updateExperiment');
     getSuccessCallback(response);
-    expect(scope.experiment).toEqual({id: response.experimentID});
+    expect(scope.experiment.id).toEqual(response.experimentID);
     expect(scope.isQueryingServersFinished).toBe(true);
     expect(scope.updateExperiment).toHaveBeenCalled();
 
@@ -327,6 +330,150 @@ describe('Controller: ESVCollabRunCtrl', function () {
     // called after in total ESV_UPDATE_RATE seconds
     timeout.flush(1000);
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
+  });
+
+  it('test getExperimentsFinishedCallback updates the experiment image to one in collab storage', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    var experimentID = 'ExDBraitenbergLauron';
+    scope.experiments[experimentID] = {imageData: 'defaultImage'};
+    // set up collabImage to return a fake image
+    scope.collabImage = $q.when('newImage');
+    scope.getExperimentsFinishedCallback();
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    var response = { experimentID: experimentID };
+    getSuccessCallback(response);
+    scope.$apply();
+    expect(scope.experiment.imageData).toBe('newImage');
+  });
+
+  it('test getExperimentsFinishedCallback uses default image if there is no image in the storage', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    var experimentID = 'ExDBraitenbergLauron';
+    scope.experiments[experimentID] = {imageData: 'defaultImage'};
+    // set up collabImage to return null
+    scope.collabImage = $q.when(null);
+    scope.getExperimentsFinishedCallback();
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    var response = { experimentID: experimentID };
+    getSuccessCallback(response);
+    scope.$apply();
+    expect(scope.experiment.imageData).toBe('defaultImage');
+  });
+
+  it('test loadCollabImage calls everything correctly', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    var experimentID = 'ExDBraitenbergLauron';
+    var experimentFolderUUID = 'fakeUUID';
+    // call the function, get the promise back
+    var returnValue = scope.loadCollabImage();
+    expect(collabConfigService.get).toHaveBeenCalledWith({contextID: context}, jasmine.any(Function), jasmine.any(Function));
+    // get the collabConfigService callback function
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+    var imageData = 'data:image/png;base64,fakeContent';
+    var blob = new Blob([imageData],{type : 'image/png'});
+    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(blob));
+    var readAsDataURL = jasmine.createSpy();
+    var eventListener = jasmine.createSpy();
+    spyOn(window, 'FileReader').andReturn({
+      addEventListener: eventListener,
+      readAsDataURL: readAsDataURL
+    });
+    // call the callback function and test we get the expected output
+    getSuccessCallback({ experimentID: experimentID , experimentFolderUUID: experimentFolderUUID});
+    scope.$apply();
+    // set call the callback function in eventlister with the imageData
+    eventListener.mostRecentCall.args[1]({
+      target:{
+        result:imageData
+      }
+    });
+    expect(readAsDataURL).toHaveBeenCalledWith(blob);
+    expect(eventListener.mostRecentCall.args[0]).toEqual('loadend');
+    expect(collabFolderAPIService.getFolderFile).toHaveBeenCalledWith(experimentFolderUUID, experimentID+'.png');
+    expect(collabFolderAPIService.downloadFile).toHaveBeenCalledWith('fakeUUID', {'responseType': 'blob'});
+    returnValue.then(function(value){
+      expect(value).toBe('fakeContent');
+    });
+    scope.$apply();
+
+  });
+
+  it('test loadCollabImage returns a promise with null when there is no experimentUUID or experimentID', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    var experimentID = 'ExDBraitenbergLauron';
+    var experimentFolderUUID = 'fakeUUID';
+    // call the function, get the promise back
+    var returnValue = scope.loadCollabImage();
+    // get the collabConfigService callback function
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    // try without experimentFolderUUID
+    getSuccessCallback({ experimentID: experimentID});
+    returnValue.then(function(value){
+      expect(value).toBe(null);
+    });
+    scope.$apply();
+    // try without experimentID
+    getSuccessCallback({experimentFolderUUID: experimentFolderUUID});
+    returnValue.then(function(value){
+      expect(value).toBe(null);
+    });
+    scope.$apply();
+  });
+
+  it('test loadCollabImage returns a promise with null when there is no image _uuid', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    var experimentID = 'ExDBraitenbergLauron';
+    var experimentFolderUUID = 'fakeUUID';
+    // call the function, get the promise back
+    var returnValue = scope.loadCollabImage();
+    // get the collabConfigService callback function
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    // no image uuidis returned from getFolderFile
+    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({}));
+    getSuccessCallback({ experimentID: experimentID , experimentFolderUUID: experimentFolderUUID});
+    returnValue.then(function(value){
+      expect(value).toBe(null);
+    });
+    scope.$apply();
+  });
+
+  it('test loadCollabImage returns a promise with null when there is no image', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    var experimentID = 'ExDBraitenbergLauron';
+    var experimentFolderUUID = 'fakeUUID';
+    // call the function, get the promise back
+    var returnValue = scope.loadCollabImage();
+    // get the collabConfigService callback function
+    var getSuccessCallback = collabConfigService.get.mostRecentCall.args[1];
+    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+    // no image is returned from downloadFile
+    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(null));
+    getSuccessCallback({ experimentID: experimentID , experimentFolderUUID: experimentFolderUUID});
+    returnValue.then(function(value){
+      expect(value).toBe(null);
+    });
+    scope.$apply();
+  });
+
+  it('test loadCollabImage returns a promise with null when the get fails', function() {
+    var context = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
+    stateParams.ctx = context;
+    // call the function, get the promise back
+    var returnValue = scope.loadCollabImage();
+    // get the collabConfigService callback function
+    var getFailureCallback = collabConfigService.get.mostRecentCall.args[2];
+    getFailureCallback();
+    returnValue.then(function(value){
+      expect(value).toBe(null);
+    });
+    scope.$apply();
   });
 
   it('should create the updateUptimePromise and update the uptime after UPTIME_UPDATE_RATE seconds', function() {

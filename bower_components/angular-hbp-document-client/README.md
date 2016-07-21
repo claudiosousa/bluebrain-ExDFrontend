@@ -1,3 +1,7 @@
+# angular-hbp-document-client
+
+An AngularJS client library to access the HBP Collaboratory Storage.
+
 JSLibAngularDocumentClient provides
 the `angular-hbp-document-client` bower component.
 
@@ -12,6 +16,8 @@ The `hbpDocumentClient` module export some services and one directive:
   * `hbpProjectStore`
 * directive:
   * `<hbp-mini-browser></hbp-mini-browser>`
+  * `<hbp-file-browser root="entity" entity="someFolder"></hbp-file-browser>`
+  * `<hbp-file-icon entity="aFile"></hbp-file-icon>`
 
 # Install
 
@@ -40,4 +46,3 @@ https://bbpteam.epfl.ch/project/issues/browse/LBK
 Contact us:
 
 * email: bbp-ou-platformdev@groupes.epfl.ch
-* IRC: bbpsrv19.epfl.ch:6667 > #hipster.js

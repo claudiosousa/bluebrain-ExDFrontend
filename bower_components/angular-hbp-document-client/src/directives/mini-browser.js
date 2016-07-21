@@ -1,70 +1,65 @@
 (function(){
   'use strict';
 
-  angular.module('hbpDocumentClient')
+  angular.module('hbpDocumentClient.ui')
 
     /*
      * This directive represents a small file browser with the capacity to register a callback for file selection
      */
-    .directive('hbpMiniBrowser', ['hbpEntityStore', 'hbpProjectStore', function(hbpEntityStore, hbpProjectStore) {
+    .directive('hbpMiniBrowser', function(hbpEntityStore, hbpProjectStore) {
       return {
         restrict: 'E',
         templateUrl: 'templates/mini-browser.html',
-        link: function ($scope) {
+        scope: {
+          selection: '&hbpSelection',
+          selectable: '&hbpSelectable',
+          browsable: '&hbpBrowsable',
+          hovered: '&hbpHovered',
+          entity: '=hbpCurrentEntity'
+        },
+        controller: function ($scope, $q) {
 
           // loads the entity child
-          $scope.getChildren = function(root) {
-            $scope.currentEntity.children = {
-              list: undefined,
-            };
-            if(root) {
-              //bbpBrowserRest.getProjectsAndReleases(entities).then( function() {
-              hbpProjectStore.getAll().then( function(res) {
-                // add current users permissions to entities
-                _.forEach(res.result, function(project) {
-                  hbpEntityStore.getUserAccess(project).then(function(access) {
-                    project.canRead = access.canRead;
-                    project.canWrite = access.canWrite;
-                    project.canManage = access.canManage;
-                    // TODO: rewrite to entities.list[i].access = access
-                  });
-                });
+          function getChildren(entity, options) {
+            var root = !entity;
+            var opts = _.extend({}, options);
+            var writeOpts = _.extend({}, options, { access: 'write', from: null, pageSize: 0 });
 
-                $scope.currentEntity.children = {
-                  list: res.result,
-                  hasNext: res.hasMore
-                };
-              });
+            if(root) {
+              return $q.all({
+                  all: hbpProjectStore.getAll(opts),
+                  write: hbpProjectStore.getAll(writeOpts)
+                }).then( function(res) {
+                  var writeProjects = _.pluck(res.write.result, '_uuid');
+                  // add current users permissions to entities
+                  _.forEach(res.all.result, function(project) {
+                      project.canRead = true;
+                      project.canWrite = writeProjects.indexOf(project._uuid) !== -1;
+                  });
+
+                  return {
+                    list: res.all.result,
+                    hasNext: res.all.hasMore
+                  };
+                });
 
             } else {
               // there is a parent, we display it's children
-              hbpEntityStore.getChildren($scope.currentEntity.entity).then(function(res){
-                $scope.currentEntity.children = {
+              return hbpEntityStore.getChildren(entity).then(function(res){
+                return {
                   list: res.result,
                   hasNext: res.hasMore
                 };
               });
             }
-          };
+          }
 
-          // initialize current entity with provided entity if any
-          if ($scope.entity && $scope.entity._parent) {
-            $scope.currentEntity = {
-              root: false,
-              entity: {
-                _uuid: $scope.entity._parent
-              }
+          function initCurrentEntity(root, entity, children) {
+            return {
+              root: root,
+              entity: entity || null,
+              children: children || {}
             };
-            hbpEntityStore.get($scope.currentEntity.entity._uuid).then(function(entity) {
-              $scope.currentEntity.entity = entity;
-              $scope.getChildren(false);
-            });
-          } else {
-            $scope.currentEntity = {
-              root: true,
-              entity: null
-            };
-            $scope.getChildren(true);
           }
 
           // Loads the current entity parent's children
@@ -72,21 +67,25 @@
             event.preventDefault();
 
             if(!$scope.currentEntity.root) {
-              if($scope.currentEntity.entity._parent) {
+              var parent = $scope.currentEntity.entity._parent;
+              if(parent) {
+
+                $scope.currentEntity = initCurrentEntity(false);
 
                 // there is a parent, we display it's children
-                hbpEntityStore.get($scope.currentEntity.entity._parent).then(function(entity) {
+                hbpEntityStore.get(parent).then(function(entity) {
                   $scope.currentEntity.entity = entity;
-                  $scope.getChildren(false);
+                  getChildren(entity).then(function(result) {
+                    $scope.currentEntity.children = result;
+                  });
                 });
-
-                $scope.currentEntity.entity = {};
-                $scope.currentEntity.root = false;
 
               } else {
                 // otherwise we display the list of root entities
-                $scope.currentEntity.root = true;
-                $scope.getChildren(true);
+                $scope.currentEntity = initCurrentEntity(true);
+                getChildren().then(function(result) {
+                  $scope.currentEntity.children = result;
+                });
               }
             }
           };
@@ -95,28 +94,25 @@
           $scope.browseTo = function (child, event) {
             event.preventDefault();
 
-            $scope.currentEntity.root = false;
-            $scope.currentEntity.entity = child;
+            $scope.currentEntity = initCurrentEntity(false, child);
 
-            $scope.getChildren(false);
+            getChildren(child).then(function(result) {
+              $scope.currentEntity.children = result;
+            });
           };
 
           $scope.loadMore = function () {
             var lastId = $scope.currentEntity.children.list[$scope.currentEntity.children.list.length - 1]._uuid;
             var addToCurrentEntity = function(res) {
               // remove the first element of the new page to avoid duplicate
-              res.result.shift();
+              res.list.shift();
               // add new page to previous children list
-              Array.prototype.push.apply($scope.currentEntity.children.list, res.result);
+              Array.prototype.push.apply($scope.currentEntity.children.list, res.list);
 
-              $scope.currentEntity.children.hasNext = res.hasMore;
+              $scope.currentEntity.children.hasNext = res.hasNext;
             };
 
-            if($scope.currentEntity.root) {
-              hbpProjectStore.getAll({from: lastId}).then(addToCurrentEntity);
-            } else {
-              hbpEntityStore.getChildren($scope.currentEntity.entity, {from: lastId}).then(addToCurrentEntity);
-            }
+            getChildren($scope.currentEntity.entity, {from: lastId}).then(addToCurrentEntity);
           };
 
           // Calls the selection callback if defined
@@ -126,10 +122,10 @@
               $scope.selection()(entity);
             }
           };
-        
+
           // Calls the mouse-over callback if defined
           $scope.mouseOver = function (entity) {
-            if(typeof $scope.hovered() === 'function') {
+            if(angular.isFunction($scope.hovered())) {
               $scope.hovered()(entity);
             }
           };
@@ -147,15 +143,29 @@
             }
             return false;
           };
-        },
-        scope: {
-          selection: '&hbpSelection',
-          selectable: '&hbpSelectable',
-          browsable: '&hbpBrowsable',
-          hovered: '&hbpHovered',
-          entity: '=hbpCurrentEntity'
-        }
 
+          // initialize current entity with provided entity if any
+          if ($scope.entity && $scope.entity._parent) {
+            $scope.currentEntity = initCurrentEntity(false, {
+              _uuid: $scope.entity._parent
+            });
+            // load all info
+            hbpEntityStore.get($scope.currentEntity.entity._uuid).then(function(entity) {
+              $scope.currentEntity.entity = entity;
+              //load entity children
+              getChildren(entity).then(function(result) {
+                $scope.currentEntity.children = result;
+              });
+            });
+          } else {
+            // init empty currentEntity
+            $scope.currentEntity = initCurrentEntity(true);
+            // load root children (== all projects)
+            getChildren().then(function(result) {
+              $scope.currentEntity.children = result;
+            });
+          }
+        }
       };
-    }]);
+    });
 }());
