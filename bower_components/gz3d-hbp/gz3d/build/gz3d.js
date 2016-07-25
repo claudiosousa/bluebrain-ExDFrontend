@@ -104,6 +104,7 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
   element.totalSize = 0;
   element.done = false;
   GZ3D.assetProgressData.assets.push(element);
+  var url = this.modelUri_animated;
   this.loader.load(this.modelUri_animated, function (collada) {
     var modelParent = new THREE.Object3D();
     modelParent.name = modelName + '_animated';
@@ -139,8 +140,22 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
      modelParent.add(model_parent_axes);*/
 
     // Temporary fix for offset between mouse model defined in SDF and client-side COLLADA model; cause remains to be investigated
-    modelParent.position.y = modelParent.position.y + 5;
-    modelParent.position.z = modelParent.position.z + 0.62;
+    if( url.indexOf('mouse_v1') >= 0 ) {
+      console.log('mouse_v1 offset');
+      modelParent.position.y = modelParent.position.y + 5;
+      modelParent.position.z = modelParent.position.z + 0.62;
+    } else if( url.indexOf('mouse_v2') >= 0 ) {
+      console.log('mouse_v2 offset');
+      modelParent.scale.x = modelParent.scale.y = modelParent.scale.z = 0.01;
+      modelParent.position.x = modelParent.position.x - 0.895;
+      modelParent.position.y = modelParent.position.y - 1.9975;
+      modelParent.position.z = modelParent.position.z + 1.115;
+      modelParent.rotation.z = Math.PI / 2;
+    } else {
+      console.log('no offset');
+      modelParent.position.y = modelParent.position.y;
+      modelParent.position.z = modelParent.position.z;
+    }
 
     // Build list of bones in rig, and attach it to scene node (userData) for later retrieval in animation handling
     var getBoneList = function (object) {
@@ -5929,12 +5944,11 @@ GZ3D.Scene.prototype.init = function()
   this.resetView();
 
   // Grid
-  this.grid = new THREE.GridHelper(10, 1);
+  this.grid = new THREE.GridHelper(10, 1,new THREE.Color( 0xCCCCCC ),new THREE.Color( 0x4D4D4D ));
   this.grid.name = 'grid';
   this.grid.position.z = 0.05;
   this.grid.rotation.x = Math.PI * 0.5;
   this.grid.castShadow = false;
-  this.grid.setColors(new THREE.Color( 0xCCCCCC ),new THREE.Color( 0x4D4D4D ));
   this.grid.material.transparent = true;
   this.grid.material.opacity = 0.5;
   this.grid.visible = false;
@@ -5984,8 +5998,17 @@ GZ3D.Scene.prototype.init = function()
 
   // SSAO
   this.effectsEnabled = false;
-  // depth
-  var depthShader = THREE.ShaderLib[ 'depthRGBA'];
+  
+ // depth
+ // var depthShader = THREE.ShaderLib[ 'depthRGBA'];  // It seems that the depthRGBA shader does not exist
+                                                      // anymore in THREEJS version 78. It has been replaced
+                                                      // by another shader called 'depth'. Need to investigate
+                                                      // about that, but I guess that the 'depth' buffer is a 
+                                                      // floating point buffer that does not need to be RGBA unpacked.
+                                                      // I just replaced it with the new shader for now, it does not
+                                                      // seems to break anything:
+  var depthShader = THREE.ShaderLib[ 'depth'];        // <-
+
   var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
 
   this.depthMaterial = new THREE.ShaderMaterial( {
