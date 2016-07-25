@@ -3296,8 +3296,11 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
 
     var aspectRatio = camera.image_size.x / camera.image_size.y;
 
-    // FOV: THREE uses 1) vertical instead of horizontal FOV, 2) half the angle, 3) degree instead of radians,
-    var camFOV = THREE.Math.radToDeg((camera.horizontal_fov / aspectRatio) / 2);
+    // FOV: THREE uses 1) vertical instead of horizontal FOV, 2) degree instead of radians,
+    // FOV conversion taken from: http://wiki.panotools.org/Field_of_View
+    // aspect ratio inverted because it is given in sensor.camera as width/height
+    var vFOV = 2 * Math.atan(Math.tan(camera.horizontal_fov / 2.0) * (1.0 / aspectRatio));
+    var camFOV = THREE.Math.radToDeg(vFOV);
     var camNear = camera.near_clip;
     var camFar = camera.far_clip;
 
