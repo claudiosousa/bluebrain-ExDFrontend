@@ -141,7 +141,7 @@
                   <a
                     analytics-on analytics-event="Join"
                     analytics-category="Experiment"
-                    ng-click="joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');"
+                    ng-click="((simul.state === STATE.CREATED) || simul.stopping) || joinExperiment('esv-web/gz3d-view/{{simul.serverID}}/{{simul.simulationID}}');"
                      type="button" class="btn btn-default" ng-disabled="(simul.state === STATE.CREATED)||simul.stopping">Join »</a>
                   <!-- Stop button enabled provided simulation state is consistent-->
                   <a analytics-on analytics-event="Stop"
