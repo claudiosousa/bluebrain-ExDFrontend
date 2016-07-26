@@ -21,7 +21,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
     ESV_UPDATE_RATE,
     UPTIME_UPDATE_RATE,
     STATE,
-    OPERATION_MODE,
     stateParams,
     collabConfigService,
     serverError,
@@ -116,7 +115,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
                               _slurminfoService_,
                               _hbpIdentityUserDirectory_,
                               _STATE_,
-                              _OPERATION_MODE_,
                               _collabConfigService_,
                               _$stateParams_,
                               _serverError_,
@@ -132,7 +130,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
     slurminfoService = _slurminfoService_;
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     STATE = _STATE_;
-    OPERATION_MODE = _OPERATION_MODE_;
     stateParams = _$stateParams_;
     collabConfigService = _collabConfigService_;
     serverError = _serverError_;
@@ -171,7 +168,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.userID).not.toBeDefined();
       expect(scope.owners).not.toBeDefined();
       expect(scope.uptime).not.toBeDefined();
-      expect(scope.hasEdits).toBe(false);
       expect(slurminfoService.get).toHaveBeenCalled();
       expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
   });
@@ -385,22 +381,6 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.uptime).toBeDefined();
     });
 
-    it('should set the hasEdits variable to true if at least one simulation is running in edit mode', function() {
-      expect(scope.hasEdits).toBe(false);
-      expect(scope.isASimulationInEditMode()).toBe(false);
-
-      scope.userID = 'fakeUserID';
-      stateParams.ctx = 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
-
-      var simulation = scope.experiment.simulations[0];
-      simulation.owner = 'fakeUserID';
-      simulation.operationMode = OPERATION_MODE.EDIT;
-      simulation.contextID = stateParams.ctx;
-      expect(scope.isASimulationInEditMode()).toBe(true);
-
-      scope.updateExperiment();
-      expect(scope.hasEdits).toBe(true);
-    });
   });
 
   it('should stop a running experiment', function() {

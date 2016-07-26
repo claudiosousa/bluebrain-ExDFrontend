@@ -32,7 +32,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       nrpFrontendVersion,
       STATE,
       UI,
-      OPERATION_MODE,
       EDIT_MODE,
       panels,
       gz3d,
@@ -303,7 +302,6 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _nrpFrontendVersion_,
                               _STATE_,
                               _UI_,
-                              _OPERATION_MODE_,
                               _EDIT_MODE_,
                               _panels_,
                               _gz3d_,
@@ -337,7 +335,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     nrpFrontendVersion = _nrpFrontendVersion_;
     STATE = _STATE_;
     UI = _UI_;
-    OPERATION_MODE = _OPERATION_MODE_;
     EDIT_MODE = _EDIT_MODE_;
     panels = _panels_;
     gz3d = _gz3d_;
@@ -396,7 +393,6 @@ describe('Controller: Gz3dViewCtrl', function () {
   describe('(ViewMode)', function () {
     var currentUserInfo1234, currentUserInfo1234Hash, otherUserInfo4321;
     beforeEach(function(){
-      simulationInfo.mode = OPERATION_MODE.VIEW;
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope
@@ -423,10 +419,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should call simulationInfo.Initialize() and stateService.Initialize()', function(){
       expect(simulationInfo.Initialize.callCount).toBe(1);
       expect(stateService.Initialize.callCount).toBe(1);
-    });
-
-    it('should be in view mode', function(){
-      expect(scope.operationMode).toBe(OPERATION_MODE.VIEW);
     });
 
     it('should set isJoiningStoppedSimulation to true when already stopped', function(){
@@ -1037,18 +1029,10 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(location.path()).toEqual('/esv-web');
     });
 
-    it('should go back to the esv-collab-run page when a "ctx" parameter was in the url and in view-mode', function() {
+    it('should go back to the esv-collab-run page when a "ctx" parameter was in the url', function() {
       stateParams.ctx = 'fake_ctx_id';
-      scope.operationMode = OPERATION_MODE.VIEW;
       scope.exit();
       expect(location.path()).toEqual('/esv-collab/run');
-    });
-
-    it('should go back to the esv-collab-edit page when a "ctx" parameter was in the url and in edit-mode', function() {
-      stateParams.ctx = 'fake_ctx_id';
-      scope.operationMode = OPERATION_MODE.EDIT;
-      scope.exit();
-      expect(location.path()).toEqual('/esv-collab/edit');
     });
 
     it('should update simulation\'s initial camera pose', function(){
@@ -1059,22 +1043,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.setDefaultCameraPose).toHaveBeenCalled();
     });
 
-    it('should make lightHelpers invisible', function(){
-      spyOn(scope, 'setLightHelperVisibility').andCallThrough();
-      spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
-
-      scope.onSceneLoaded();
-
-      expect(scope.setLightHelperVisibility).toHaveBeenCalledWith(false);
-      expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
-      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
-    });
   });
 
   describe('(EditMode)', function() {
     beforeEach(function () {
       stateParams.ctx = 'a context id';
-      simulationInfo.mode = OPERATION_MODE.EDIT;
       lockServiceMock.tryAddLock.reset();
       lockServiceMock.releaseLock.reset();
 
@@ -1084,10 +1057,6 @@ describe('Controller: Gz3dViewCtrl', function () {
         collabExperimentLockService: collabExperimentLockService
 
       });
-    });
-
-    it('should be in edit mode', function () {
-      expect(scope.operationMode).toBe(OPERATION_MODE.EDIT);
     });
 
     it('should enable display of the editor panel', function () {

@@ -120,7 +120,7 @@
                   <!-- Join button enabled provided simulation state is consistent-->
                   <a analytics-on analytics-event="Join"
                     analytics-category="Experiment"
-                    ng-click="joinExperiment('esv-web/gz3d-view/{{simulation.serverID}}/{{simulation.simulationID}}/{{(simulation.owner === userID)?simul.operationMode:OPERATION_MODE.VIEW}}');"
+                    ng-click="joinExperiment('esv-web/gz3d-view/{{simulation.serverID}}/{{simulation.simulationID}}');"
                     type="button" class="btn btn-default"
                     ng-disabled="(simulation.state === STATE.CREATED)||simulation.stopping">Join »
                   </a>

@@ -45,7 +45,6 @@
       'slurminfoService',
       'experimentSimulationService',
       'STATE',
-      'OPERATION_MODE',
       'bbpConfig',
       'hbpIdentityUserDirectory',
       'simulationSDFWorld',
@@ -58,7 +57,6 @@
         slurminfoService,
         experimentSimulationService,
         STATE,
-        OPERATION_MODE,
         bbpConfig,
         hbpIdentityUserDirectory,
         simulationSDFWorld)
@@ -70,7 +68,6 @@
         $scope.isQueryingServersFinished = false;
         $scope.isDestroyed = false;
         $scope.STATE = STATE;
-        $scope.OPERATION_MODE = OPERATION_MODE;
         $scope.updatePromise = undefined;
         $scope.updateUptimePromise = undefined;
         $scope.experiments = {};
