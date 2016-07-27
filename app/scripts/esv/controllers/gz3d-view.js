@@ -178,6 +178,7 @@
                 $scope.ExperimentDescription = experimentTemplate.description;
                 $scope.ExperimentName = experimentTemplate.name;
                 $scope.updateInitialCameraPose(experimentTemplate.cameraPose);
+                $scope.setAnimatedRobotModel(experimentTemplate.visualModel, experimentTemplate.visualModelParams);
                 simulationInfo.experimentID = experimentID;
               }
             });
@@ -601,6 +602,13 @@
           }
 
           userNavigationService.setDefaultPose.apply(userNavigationService, pose);
+        };
+
+        $scope.setAnimatedRobotModel = function (model, params) {
+          if (model !== null && params !== null && angular.isDefined(gz3d.scene)) {
+            params.unshift(model); // argument to apply must be a single list
+            gz3d.scene.setAnimatedRobotModel.apply(gz3d.scene, params);
+          }
         };
 
         // Spiketrain

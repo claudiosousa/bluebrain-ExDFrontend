@@ -8,71 +8,6 @@ var GZ3D = GZ3D || {
 GZ3D.AnimatedModel = function(scene) {
   this.scene = scene;
   this.loader = null;
-
-  this.modelUri_animated = '';
-  this.animatedModelFound = false;
-  this.hideLinkVisuals = false;
-
-  this.modelName = '';
-
-  this.visualsToHide = [];
-
-  this.serverSideModel = null;
-};
-
-// Helper function to find Visuals that need to be hidden when loading a client-side-only animated model
-GZ3D.AnimatedModel.prototype.isVisualHidden = function(visual) {
-  if (visual.geometry && visual.geometry.mesh) {
-    for (var k = 0; k < this.visualsToHide.length; k++) {
-      if (this.visualsToHide[k] === visual.geometry.mesh.filename) {
-        return true;
-      }
-    }
-  }
-  return false;
-};
-
-// Function to check if a client-side-only file for an animated model is available
-GZ3D.AnimatedModel.prototype.animatedModelAvailable = function(model) {
-  var uriPath = GZ3D.assetsPath;
-
-  for (var j = 0; j < model.link.length; ++j) {
-    var link = model.link[j];
-
-    for (var k = 0; k < link.visual.length; k++) {
-      var geom = link.visual[k].geometry;
-      if (geom && geom.mesh) {
-        var meshUri = geom.mesh.filename;
-        // This saves all visuals of a model here because access to the loaded model after the loading
-        // process finished is more difficult to implement. The optimal solution would be to actually
-        // do this only after an animated model was found.
-        this.visualsToHide.push(geom.mesh.filename);
-        var uriType = meshUri.substring(0, meshUri.indexOf('://'));
-        if (uriType === 'file' || uriType === 'model') {
-          var modelUri = meshUri.substring(meshUri.indexOf('://') + 3);
-          var modelName = modelUri.substring(0, modelUri.indexOf('/'));
-          var modelUriCheck = uriPath + '/' + modelName + '/meshes/' + modelName + '_animated.dae';
-          var checkModel = new XMLHttpRequest();
-
-          checkModel.open('HEAD', modelUriCheck, false);
-          try {
-            checkModel.send();
-          } catch (err) {
-            console.log(modelUriCheck + ': no animated version');
-          }
-          if (checkModel.status !== 404) {
-            this.modelUri_animated = modelUriCheck;
-            this.animatedModelFound = true;
-            this.hideLinkVisuals = true;
-            this.modelName = model.name;
-            this.serverSideModel = model;
-            break;
-          }
-        }
-      }
-    }
-  }
-  return this.animatedModelFound;
 };
 
 GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
@@ -99,13 +34,13 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
   // Progress update: Add this asset to the assetProgressArray
   var element = {};
   element.id = modelName;
-  element.url = this.modelUri_animated;
+  element.url = this.scene.animatedModel;
   element.progress = 0;
   element.totalSize = 0;
   element.done = false;
   GZ3D.assetProgressData.assets.push(element);
-  var url = this.modelUri_animated;
-  this.loader.load(this.modelUri_animated, function (collada) {
+  var scene = this.scene;
+  this.loader.load(this.scene.animatedModel, function (collada) {
     var modelParent = new THREE.Object3D();
     modelParent.name = modelName + '_animated';
     var linkParent = new THREE.Object3D();
@@ -139,23 +74,14 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
     /*var model_parent_axes = new THREE.AxisHelper(4);
      modelParent.add(model_parent_axes);*/
 
-    // Temporary fix for offset between mouse model defined in SDF and client-side COLLADA model; cause remains to be investigated
-    if( url.indexOf('mouse_v1') >= 0 ) {
-      console.log('mouse_v1 offset');
-      modelParent.position.y = modelParent.position.y + 5;
-      modelParent.position.z = modelParent.position.z + 0.62;
-    } else if( url.indexOf('mouse_v2') >= 0 ) {
-      console.log('mouse_v2 offset');
-      modelParent.scale.x = modelParent.scale.y = modelParent.scale.z = 0.01;
-      modelParent.position.x = modelParent.position.x - 0.895;
-      modelParent.position.y = modelParent.position.y - 1.9975;
-      modelParent.position.z = modelParent.position.z + 1.115;
-      modelParent.rotation.z = Math.PI / 2;
-    } else {
-      console.log('no offset');
-      modelParent.position.y = modelParent.position.y;
-      modelParent.position.z = modelParent.position.z;
-    }
+    // Use scale, position, and rotation offsets provided in animated robot model specification
+    modelParent.scale.x = modelParent.scale.y = modelParent.scale.z = scene.animatedModelScale;
+    modelParent.position.x = modelParent.position.x + scene.animatedModelPosition.x;
+    modelParent.position.y = modelParent.position.y + scene.animatedModelPosition.y;
+    modelParent.position.z = modelParent.position.z + scene.animatedModelPosition.z;
+    modelParent.rotation.x = modelParent.rotation.x + scene.animatedModelRotation.x;
+    modelParent.rotation.y = modelParent.rotation.y + scene.animatedModelRotation.y;
+    modelParent.rotation.z = modelParent.rotation.z + scene.animatedModelRotation.z;
 
     // Build list of bones in rig, and attach it to scene node (userData) for later retrieval in animation handling
     var getBoneList = function (object) {
@@ -3068,11 +2994,9 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     this.scene.setPose(modelObj, model.pose.position, model.pose.orientation);
   }
 
-  // Check for client-side-only animated model
+  // Check for client-side-only animated model for robot
   var animatedModel = new GZ3D.AnimatedModel(this.scene);
-  var animatedModelExists = animatedModel.animatedModelAvailable(model);
-
-  if (animatedModelExists)
+  if (model.name === 'robot' && this.scene.animatedModel)
   {
     animatedModel.loadAnimatedModel(model.name);
     this.animatedModels[model.name] = animatedModel;
@@ -3101,35 +3025,24 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
           link.pose.orientation);
     }
     modelObj.add(linkObj);
-    for (var k = 0; k < link.visual.length; ++k)
+
+    // only load individual link visuals if they are not replace by an animated model
+    if (animatedModel === null)
     {
-      var visual = link.visual[k];
-      // Check if the current visual needs to be hidden, i. e. is replaced by a client-side-only AnimatedModel
-      var isVisual_Hidden = false;
-      if (animatedModel !== null)
+      for (var k = 0; k < link.visual.length; ++k)
       {
-        isVisual_Hidden = animatedModel.isVisualHidden(visual);
+        var visual = link.visual[k];
+        var visualObj = this.createVisualFromMsg(visual);
+        if (visualObj && !visualObj.parent) {
+          linkObj.add(visualObj);
+        }
       }
 
-      var visualObj = null;
-      if (!isVisual_Hidden) {
-        visualObj = this.createVisualFromMsg(visual);
-      }
-
-      // Hide object if it needs to be hidden: Don't add it to the scene in that case.
-      if (visualObj && !visualObj.parent)
+      for (var l = 0; l < link.collision.length; ++l)
       {
-        linkObj.add(visualObj);
-      }
-    }
-
-    for (var l = 0; l < link.collision.length; ++l)
-    {
-      var collision = link.collision[l];
-      for (var m = 0; m < link.collision[l].visual.length; ++m)
-      {
-        // Only create collision visuals if this is not an animated model
-        if (!animatedModelExists) {
+        var collision = link.collision[l];
+        for (var m = 0; m < link.collision[l].visual.length; ++m)
+        {
           var collisionVisual = link.collision[l].visual[m];
           var collisionVisualObj = this.createVisualFromMsg(collisionVisual);
           if (collisionVisualObj && !collisionVisualObj.parent) {
@@ -3139,6 +3052,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
       }
     }
 
+    // always add sensor links, even with animated models (e.g. cameras)
     for (var i = 0; i < link.sensor.length; ++i) {
       var sensor = link.sensor[i];
 
@@ -5956,6 +5870,12 @@ GZ3D.Scene.prototype.init = function()
   this.defaultCameraLookAt = new THREE.Vector3(0.0, 0.0, 0.0);
   this.resetView();
 
+  // animated visual model to replace raw server side robot meshes
+  this.animatedModel = null;
+  this.animatedModelPosition = new THREE.Vector3(0, 0, 0);
+  this.animatedModelRotation = new THREE.Vector3(0, 0, 0);
+  this.animatedModelScale = 1.0;
+
   // Grid
   this.grid = new THREE.GridHelper(10, 1,new THREE.Color( 0xCCCCCC ),new THREE.Color( 0x4D4D4D ));
   this.grid.name = 'grid';
@@ -7817,6 +7737,26 @@ GZ3D.Scene.prototype.setCameraPose = function(xPos, yPos, zPos, xLookAt, yLookAt
   this.camera.position = new THREE.Vector3(xPos, yPos, zPos);
   this.camera.lookAt(new THREE.Vector3(xLookAt, yLookAt, zLookAt));
   this.camera.updateMatrix();
+};
+
+/**
+ * Set the animated visual model and placement for robot (replaces raw server side meshes
+ * within the same base package).
+ * @param {String} model - the path of the model to use
+ * @param {Float} xPos - x offset
+ * @param {Float} yPos - y offset
+ * @param {Float} zPos - z offset
+ * @param {Float} xRot - x axis rotation
+ * @param {Float} yRot - y axis rotation
+ * @param {Float} zRot - z axis rotation
+ * @param {Float} scale - visual scale to apply to raw mesh
+ */
+GZ3D.Scene.prototype.setAnimatedRobotModel = function(model, xPos, yPos, zPos, xRot, yRot, zRot, scale)
+{
+  this.animatedModel =  GZ3D.assetsPath + '/' + model;
+  this.animatedModelPosition = new THREE.Vector3(xPos, yPos, zPos);
+  this.animatedModelRotation = new THREE.Vector3(xRot, yRot, zRot);
+  this.animatedModelScale = scale;
 };
 
 /**

@@ -139,6 +139,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scene : {
         resetView: jasmine.createSpy('resetView'),
         setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
+        setAnimatedRobotModel: jasmine.createSpy('setAnimatedRobotModel'),
         container : {
           addEventListener : jasmine.createSpy('addEventListener')
         },
@@ -521,54 +522,60 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should pass the radio button value to resetCollabService when Collab is available', function() {
       spyOn(_, 'defer');
 
-      scope.resetButtonClickHandler();
-      scope.request = { resetType: RESET_TYPE.RESET_WORLD };
-      scope.isCollabExperiment = true; //Collab IS available
-      scope.splashScreen = undefined;
+      var testWorld = {type: RESET_TYPE.RESET_WORLD, headline: 'Resetting Environment', subHeadline: 'Downloading World SDF from the Collab'};
+      var testBrain = {type: RESET_TYPE.RESET_BRAIN, headline: 'Resetting Brain', subHeadline: 'Downloading brain configuration file from the Collab'};
+      var testCases = [testWorld, testBrain];
 
-      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      for (var i = 0; i < testCases.length; i++) {
 
-      //open splash
-      expect(splash.open).toHaveBeenCalled();
+        scope.resetButtonClickHandler();
+        scope.request = { resetType: testCases[i].type };
+        scope.isCollabExperiment = true; //Collab IS available
+        scope.splashScreen = undefined;
 
-      //defer call
-      expect(_.defer).toHaveBeenCalled();
-      _.defer.mostRecentCall.args[0](); // call deferred function
+        hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
 
-      expect(splash.spin).toBe(true);
-      expect(splash.setMessage).toHaveBeenCalledWith(
-        { headline: 'Resetting Environment',
-          subHeadline: 'Downloading World SDF from the Collab'
-        }
-      );
+        //open splash
+        expect(splash.open).toHaveBeenCalled();
 
-      expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
-        simulationInfo.contextID,
-        scope.request,
-        jasmine.any(Function),
-        jasmine.any(Function)
-      );
+        //defer call
+        expect(_.defer).toHaveBeenCalled();
+        _.defer.mostRecentCall.args[0](); // call deferred function
 
-      backendInterfaceService.resetCollab.mostRecentCall.args[2](); //2 is the success callback
+        expect(splash.spin).toBe(true);
+        expect(splash.setMessage).toHaveBeenCalledWith(
+          { headline: testCases[i].headline,
+            subHeadline: testCases[i].subHeadline
+          }
+        );
 
-      expect(splash.close).toHaveBeenCalled();
-      expect(scope.splashScreen).not.toBeDefined();
+        expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
+          simulationInfo.contextID,
+          scope.request,
+          jasmine.any(Function),
+          jasmine.any(Function)
+        );
 
-      //reset spies
-      splash.close.reset();
-      scope.splashScreen = 'isDefined';
+        backendInterfaceService.resetCollab.mostRecentCall.args[2](); //2 is the success callback
 
-      backendInterfaceService.resetCollab.mostRecentCall.args[3](); //3 is the failure callback
+        expect(splash.close).toHaveBeenCalled();
+        expect(scope.splashScreen).not.toBeDefined();
 
-      expect(hbpDialogFactory.alert).toHaveBeenCalledWith(
-        { title: 'Error.',
-          template: 'Error while resetting from Collab storage.'
-        }
-      );
+        //reset spies
+        splash.close.reset();
+        scope.splashScreen = 'isDefined';
 
-      expect(splash.close).toHaveBeenCalled();
-      expect(scope.splashScreen).not.toBeDefined();
+        backendInterfaceService.resetCollab.mostRecentCall.args[3](); //3 is the failure callback
 
+        expect(hbpDialogFactory.alert).toHaveBeenCalledWith(
+          { title: 'Error.',
+            template: 'Error while resetting from Collab storage.'
+          }
+        );
+
+        expect(splash.close).toHaveBeenCalled();
+        expect(scope.splashScreen).not.toBeDefined();
+      }
     });
 
     it('shouldn\'t do anything if no radio button is set', function() {
@@ -1041,6 +1048,23 @@ describe('Controller: Gz3dViewCtrl', function () {
       var camPose =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0];
       scope.updateInitialCameraPose(camPose);
       expect(gz3d.scene.setDefaultCameraPose).toHaveBeenCalled();
+    });
+
+    it('should update simulation\'s animated robot visual model', function(){
+      var modelName = 'test/meshes/test_animated.dae';
+      var modelParams =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0, 1.0];
+
+      // all variations of invalid arguments
+      scope.setAnimatedRobotModel(null, null);
+      expect(gz3d.scene.setAnimatedRobotModel).not.toHaveBeenCalled();
+      scope.setAnimatedRobotModel(modelName, null);
+      expect(gz3d.scene.setAnimatedRobotModel).not.toHaveBeenCalled();
+      scope.setAnimatedRobotModel(null, modelParams);
+      expect(gz3d.scene.setAnimatedRobotModel).not.toHaveBeenCalled();
+
+      // valid when both arguments provided
+      scope.setAnimatedRobotModel(modelName, modelParams);
+      expect(gz3d.scene.setAnimatedRobotModel).toHaveBeenCalled();
     });
 
   });
