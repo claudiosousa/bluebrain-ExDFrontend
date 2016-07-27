@@ -1,14 +1,14 @@
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    /**
-     * @ngdoc overview
-     * @name exdFrontendApp
-     * @description
-     * # exdFrontendApp
-     *
-     * Main module of the application.
-     */
+  /**
+   * @ngdoc overview
+   * @name exdFrontendApp
+   * @description
+   * # exdFrontendApp
+   *
+   * Main module of the application.
+   */
 
   var app = angular
     .module('exdFrontendApp', [
@@ -49,10 +49,12 @@
       'nrpBackendAbout',
       'nrpAngulartics',
       'ngFileUpload',
+      'environmentServiceModule',
+      'experimentServices',
       'nrpBrowserDetection',
       'vButton'])
     // Routes
-    .config(function ($stateProvider, $urlRouterProvider) {
+    .config(function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
       // Configuring routes using `angular-ui-router` states.
       // (See https://github.com/angular-ui/ui-router/wiki)
 
@@ -67,35 +69,19 @@
         name: 'gz3d-view',
         url: '/esv-web/gz3d-view/:serverID/:simulationID?ctx',
         templateUrl: 'views/esv/gz3d-view.html',
-        controller: 'Gz3dViewCtrl'
+        controller: 'Gz3dViewCtrl',
+        resolve: {
+          siminfo: function (simulationInfo, $stateParams) {
+            return simulationInfo.initialize($stateParams.serverID, $stateParams.simulationID, $stateParams, $stateParams.ctx);
+          }
+        }
       };
 
       var esvWebState = {
         name: 'esv-web',
-        url: '/esv-web',
-        templateUrl: 'views/esv/esv-web.html',
-        controller: 'experimentCtrl'
-      };
-
-      var esvCollabEditState = {
-        name: 'esv-collab-edit',
-        url: '/esv-collab/edit?ctx',
-        templateUrl: 'views/esv/esv-collab-edit.html',
-        controller: 'ESVCollabEditCtrl'
-      };
-
-      var registeredEsvCollabEditState = {
-        name: 'registered-esv-collab-edit',
-        url: '/esv-collab/edit?ctx/:experimentID',
-        templateUrl: 'views/esv/esv-collab-run.html',
-        controller: 'ESVCollabRunCtrl'
-      };
-
-      var esvCollabRunState = {
-        name: 'esv-collab-run',
-        url: '/esv-collab/run?ctx',
-        templateUrl: 'views/esv/esv-collab-run.html',
-        controller: 'ESVCollabRunCtrl'
+        url: '/esv-web?ctx',
+        templateUrl: 'views/esv/esv-experiments.html',
+        controller: 'esvExperimentsCtrl'
       };
 
       var supportState = {
@@ -112,35 +98,26 @@
 
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
-      home.state(esvCollabEditState);
-      home.state(registeredEsvCollabEditState);
-      home.state(esvCollabRunState);
       home.state(gz3dViewState);
       home.state(supportState);
       home.state(newCollabOverviewState);
       // Provide a default route.
       // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
       $urlRouterProvider.otherwise('/');
-    }).config(function (bbpOidcSessionProvider, bbpConfig) {
-      // Set to true if you want to check for the existence of
-      // a token while loading.
-      if (!bbpConfig.get('localmode.forceuser', false)) {
-        bbpOidcSessionProvider.ensureToken(true);
-        localStorage.setItem('localmode.forceuser', false);
-      } else {
-        localStorage.setItem('localmode.forceuser', true);
-      }
-    }).factory('timeoutHttpInterceptor', function () {
+
+      environmentServiceProvider.$get().initialize();
+    })
+    .factory('timeoutHttpInterceptor', function () {
       // Here we specify a global http request timeout value for all requests, for all browsers
       return {
         request: function (config) {
-          config.timeout = 60*1000; //60s timeout
+         // config.timeout = 120 * 1000; //request timeout in milliseconds
           return config;
         }
       };
-    }).config(function ($httpProvider) {
+    }).config(['$httpProvider', function ($httpProvider) {
       $httpProvider.interceptors.push('timeoutHttpInterceptor');
-    });
+    }]);
 
   // load the configuration used by bbpConfig
   // and then bootstrap the application.
@@ -182,7 +159,7 @@
   // use it to define its own constants.
   angular.module('exdFrontendApp.Constants', []);
 
-}());
+} ());
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately
 // chose to redeclare them as empty and not to include JQuery mobile. The

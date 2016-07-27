@@ -547,9 +547,23 @@ module.exports = function(grunt) {
 
         // Test settings
         karma: {
-            unit: {
+            options: {
                 configFile: 'test/karma.conf.js',
                 singleRun: true
+            },
+            unit: {
+                browsers: ['PhantomJS'],
+                logLevel: 'DEBUG'
+            },
+            dev: {
+                browsers: ['PhantomJS'],
+                logLevel: 'ERROR',
+                client: { captureConsole: false }
+            },
+            chrome: {
+                browsers: ['Chrome'],
+                singleRun: false,
+                logLevel: 'OFF'
             }
         },
 
@@ -746,7 +760,7 @@ module.exports = function(grunt) {
         'concurrent:test',
         'autoprefixer',
         'connect:test',
-        'karma',
+        'karma:unit',
         'jshint'
     ]);
 

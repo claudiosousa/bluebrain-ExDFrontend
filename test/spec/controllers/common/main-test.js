@@ -5,21 +5,24 @@ describe('Controller: MainCtrl', function () {
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
 
-  var controller, scope, $window;
+  var controller, scope, $window, $log, $controller;
   var browserSupport;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function (_browserSupport_, $controller, $rootScope, _$window_) {
+  beforeEach(inject(function (_browserSupport_, _$controller_, $rootScope, _$window_, _$log_) {
     browserSupport = _browserSupport_;
     spyOn(browserSupport, 'isSupported').andReturn(false);
     spyOn(browserSupport, 'getBrowserVersion').andReturn('unknown');
     $window = _$window_;
-    spyOn($window.sessionStorage,'getItem').andReturn(null);
-    spyOn($window.sessionStorage,'setItem');
+    spyOn($window.sessionStorage, 'getItem').andReturn(null);
+    spyOn($window.sessionStorage, 'setItem');
     scope = $rootScope.$new();
     spyOn(scope, '$apply');
     /* global _: false */
     spyOn(_, 'defer');
+    $log = _$log_;
+    $controller = _$controller_;
+    spyOn($log, 'error');
     controller = $controller('MainCtrl', {
       $scope: scope
     });
@@ -46,7 +49,7 @@ describe('Controller: MainCtrl', function () {
     expect(scope.dismissWarning).toBe(false);
   });
 
-   it('should call window.sessionStorage.setItem to store the information about the dismissed warning', function () {
+  it('should call window.sessionStorage.setItem to store the information about the dismissed warning', function () {
     scope.dismissBrowserWarning();
     _.defer.mostRecentCall.args[0]();
     scope.$apply.mostRecentCall.args[0]();
@@ -55,4 +58,18 @@ describe('Controller: MainCtrl', function () {
     expect(scope.dismissWarning).toBe(true);
   });
 
+  it('should retrieve collabItemurl ', function () {
+    var testUrl = scope.getCollabItemUrl('test');
+    expect(testUrl).toBe('http://localhost/testUrl');
+  });
+
+  it('should not fail if "collab" config is missing', function () {
+    delete window.bbpConfig.collab;
+    $controller('MainCtrl', {
+      $scope: scope
+    });
+    expect($log.error).toHaveBeenCalled();
+  });
+
 });
+

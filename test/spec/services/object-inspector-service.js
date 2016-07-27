@@ -55,6 +55,7 @@ describe('Services: objectInspectorService', function () {
     module('simulationControlServices');
     module('colorableObjectModule');
     module('objectInspectorModule');
+    module('experimentServices');
     module('exdFrontendApp.Constants');
 
     // inject service for testing.

@@ -21,11 +21,12 @@ describe('testing the gz3d service', function () {
 
   Detector = {};
   Detector.webgl = true;
-
+  var cameraHelper = { visible: false };
   var SceneObject = {};
   SceneObject.render = jasmine.createSpy('render');
   SceneObject.viewManager = {};
   SceneObject.viewManager.setCallbackCreateRenderContainer = jasmine.createSpy('setCallbackCreateRenderContainer');
+  SceneObject.viewManager.getViewByName = function () { return { camera: { cameraHelper: cameraHelper } }; };
   var DomElement = {};
   SceneObject.getDomElement = jasmine.createSpy('getDomElement').andReturn(DomElement);
   SceneObject.setWindowSize = jasmine.createSpy('setWindowSize');
@@ -54,7 +55,7 @@ describe('testing the gz3d service', function () {
     $provide.value('bbpConfig', bbpConfig);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, _gz3d_) {
+  beforeEach(inject(function ($rootScope, _gz3d_) {
     rootScope = $rootScope;
     gz3d = _gz3d_;
 
@@ -106,6 +107,10 @@ describe('testing the gz3d service', function () {
     expect(testRenderContainerNotAdjustable.innerHTML).toContain('<input type="checkbox" name="test_rendercontainer_unadjustable_options" value="show_frustum" id="test_rendercontainer_unadjustable_show_frustum" class="frustumCheckbox">');
     expect(testRenderContainerNotAdjustable.innerHTML).toContain('<label for="test_rendercontainer_unadjustable_show_frustum" class="frustumLabel">show frustum</label>');
 
+
+    expect(cameraHelper.visible).toBe(false);
+    $(testRenderContainerAdjustable).find('input').click();
+    expect(cameraHelper.visible).toBe(true);
   });
 
   it('should not initialize when already initialized', function() {

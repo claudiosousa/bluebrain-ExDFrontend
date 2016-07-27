@@ -46,33 +46,31 @@
     .controller('Gz3dViewCtrl',
     ['$rootScope', '$scope', '$stateParams', '$timeout',
       '$location', '$window', '$document', '$log', 'bbpConfig',
-      'hbpIdentityUserDirectory', 'simulationService',
+      'hbpIdentityUserDirectory',
       'simulationControl', 'colorableObjectService', 'experimentList',
-      'experimentSimulationService', 'timeDDHHMMSSFilter', 'splash',
+      'timeDDHHMMSSFilter', 'splash',
       'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
-      'userNavigationService', 'NAVIGATION_MODES',
+      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory',
       function ($rootScope, $scope, $stateParams, $timeout,
         $location, $window, $document, $log, bbpConfig,
-        hbpIdentityUserDirectory, simulationService,
+        hbpIdentityUserDirectory,
         simulationControl, colorableObjectService, experimentList,
-        experimentSimulationService, timeDDHHMMSSFilter, splash,
+        timeDDHHMMSSFilter, splash,
         assetLoadingSplash, STATE, nrpBackendVersions,
         nrpFrontendVersion, UI,
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
         simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
-        userNavigationService, NAVIGATION_MODES) {
+        userNavigationService, NAVIGATION_MODES, experimentsFactory) {
 
-        // This is the only place where simulation info are, and should be, initialized
-        simulationInfo.Initialize();
         $scope.simulationInfo = simulationInfo;
 
         stateService.Initialize();
-        var serverConfig = bbpConfig.get('api.neurorobotics')[simulationInfo.serverID];
+        var serverConfig = simulationInfo.serverConfig;
         $scope.helpModeActivated = false;
         $scope.helpDescription = '';
         $scope.helpText = {};
@@ -184,9 +182,10 @@
             });
           });
           if (!bbpConfig.get('localmode.forceuser', false)) {
-            hbpIdentityUserDirectory.get([data.owner]).then(function (profile) {
-              $scope.owner = simulationService().getUserName(profile);
+            experimentsFactory.getOwnerDisplayName(data.owner).then(function (owner) {
+              $scope.owner = owner;
             });
+
           } else {
             $scope.owner = bbpConfig.get('localmode.ownerID');
             $scope.viewState.isOwner = true;
@@ -665,15 +664,15 @@
         $scope.NAVIGATION_MODES = NAVIGATION_MODES;
         $scope.showNavigationModeMenu = false;
 
-        $scope.toggleNavigationModeMenu = function() {
+        $scope.toggleNavigationModeMenu = function () {
           $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
         };
 
-        $scope.setNavigationMode = function(mode) {
+        $scope.setNavigationMode = function (mode) {
           switch (mode) {
             case NAVIGATION_MODES.FREE_CAMERA:
               userNavigationService.setModeFreeCamera();
-                  break;
+              break;
 
             case NAVIGATION_MODES.GHOST:
               userNavigationService.setModeGhost();
@@ -685,7 +684,7 @@
           }
         };
 
-        $scope.isActiveNavigationMode = function(mode) {
+        $scope.isActiveNavigationMode = function (mode) {
           return (userNavigationService.navigationMode === mode);
         };
 
@@ -846,11 +845,7 @@
 
         $scope.exit = function () {
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
-          if (angular.isDefined($stateParams.ctx) && $stateParams.ctx !== '') {
-            $location.path("esv-collab/run");
-          } else {
-            $location.path("esv-web");
-          }
+          $location.path('esv-web');
         };
 
       }]);

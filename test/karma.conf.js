@@ -87,7 +87,7 @@ module.exports = function(config) {
       'app/scripts/esv/services/*.js',
       'app/views/esv/*.html',
       'app/views/common/*.html',
-      {pattern: 'app/views/*.*', included: false, served: true}
+      {pattern: 'app/views/*.*', included: true, served: true}
     ],
 
     preprocessors: {
@@ -126,9 +126,9 @@ module.exports = function(config) {
     // - PhantomJS
     // - IE (only Windows)
     browsers: [
+      'Chrome',
       'PhantomJS'
     ],
-
     reporters: ['progress', 'junit', 'coverage'],
 
     // Which plugins to enable
@@ -167,11 +167,7 @@ module.exports = function(config) {
 
     colors: true,
 
-    // level of logging
-    // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-    logLevel: config.LOG_DEBUG,
-
-    proxies : {
+    proxies: {
         '/views/': 'http://localhost:8000/views/',
         '/img/': 'app/img/'
     },

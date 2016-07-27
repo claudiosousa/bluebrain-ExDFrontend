@@ -1,29 +1,31 @@
-/*
-  This module is thought to centralize the back-end server settings used for the current simulation.
-*/
+/* This module is thought to centralize the back-end server settings used for the current simulation.*/
 
 (function () {
   'use strict';
 
-  var module = angular.module('simulationInfoService', ['bbpConfig']);
-  module.factory('simulationInfo',
-    ['$stateParams', 'bbpConfig', function ($stateParams, bbpConfig) {
-      var thisService = {};
+  angular.module('simulationInfoService', [])
+    .factory('simulationInfo', ['experimentProxyService', function (experimentProxyService) {
+      var thisService = {
+        initialize: initialize
+      };
+      return thisService;
 
       // This function loads the server specific configuration and sets the simulation specific values
-      thisService.Initialize = function() {
-        if (!$stateParams.serverID || !$stateParams.simulationID){
-          throw "No serverID or simulationID given.";
-        }
-        thisService.serverID = $stateParams.serverID;
-        thisService.simulationID = $stateParams.simulationID;
-        thisService.serverConfig = bbpConfig.get('api.neurorobotics')[thisService.serverID];
-        thisService.serverBaseUrl = thisService.serverConfig.gzweb['nrp-services'];
-        thisService.contextID = $stateParams.ctx;
-        thisService.isCollabExperiment = angular.isDefined(thisService.contextID) ? true : false;
-      };
+      function initialize(serverID, simulationID, contextID) {
 
-      return thisService;
-    }
-  ]);
-}());
+        if (!serverID || !simulationID) {
+          throw 'No serverID or simulationID given.';
+        }
+        thisService.serverID = serverID;
+        thisService.simulationID = simulationID;
+        thisService.contextID = contextID;
+        thisService.isCollabExperiment = angular.isDefined(thisService.contextID);
+        return experimentProxyService.getServerConfig(thisService.serverID)
+          .then(function (serverConfig) {
+            thisService.serverConfig = serverConfig;
+            thisService.serverBaseUrl = serverConfig.gzweb['nrp-services'];
+            return thisService;
+          });
+      }
+    }]);
+} ());

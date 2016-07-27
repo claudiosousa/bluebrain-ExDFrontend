@@ -35,7 +35,6 @@
             $scope.browser = 'your browser';
           }
           $scope.dismissBrowserWarning = function () {
-            /* global _ : false */
             _.defer(function () {
               $scope.$apply(function () {
                 $window.sessionStorage.setItem('unsupportedBrowserWarning', 'dismissed');
