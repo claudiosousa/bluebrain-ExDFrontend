@@ -16,16 +16,9 @@
         return cursor;
     };
 
-    /**
-     * 0.1.x version of bbpConfig is using this instead of .get().
-     * This is now deprecated in favor of bbpConfig.get(key, [default]).
-     */
-    var bbpConfig = function() {
-        console.log('bbpConfig(key, [default]) is now deprecated in favor of bbpConfig.get(key, [default]).');
-        console.log('bbpConfig(key, [default] will be removed in bbpConfig 0.3)');
-        return get.apply(this, arguments);
+    var bbpConfig = {
+        get: get
     };
-    bbpConfig.get = get;
 
     angular.module('bbpConfig', [])
     /**

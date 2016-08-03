@@ -3,50 +3,70 @@
   <head>
     <title>JSLibAngularDocumentClient</title>
     <!-- bower:css -->
-    <link rel="stylesheet" href="../bower_components/angular-hbp-common/dist/hbp-common.css" />
+    <link rel="stylesheet" href="../bower_components/hbp-collaboratory-theme/dist/css/bootstrap.css" />
     <!-- endbower -->
     <link rel="stylesheet" href="./styles/angular-hbp-document-client.css" />
     <link rel="stylesheet" href="./style.css">
   </head>
   <body>
-    <h1>Document Browser</h1>
     <div ng-app="myApp">
-      <ul class="tree tree-project" ng-controller="projectListCtrl">
-        <li ng-repeat="p in projects" class="item item-project">
-          <span class="icon icon-project">p</span>
-          <a class="icon icon-container-open" href>></a>
-          <a href>{{p._name}}</a>
-        </li>
-      </ul>
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a href class="navbar-brand">angular-hbp-document-client</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li><a href ng-href="#/minibrowser">hbp-mini-browser</a></li>
+            <li><a href ng-href="#/filebrowser">hbp-file-browser</a></li>
+            <li><a href ng-href="#/custom">Custom</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div ng-controller="demoSelectorCtrl">
+        <div class="demo" ng-if="demo==='/minibrowser'">
+          <h2>Mini browser directive</h2>
+          <hbp-mini-browser entity="scope.folder"></hbp-mini-browser>
+        </div>
+
+        <div class="demo" ng-if="demo==='/filebrowser'" ng-controller="fileBrowserDemoCtrl">
+          <h2>File browser directive</h2>
+          <p ng-if="selectedEntity"><strong>Selected Entity Through Event:</strong> {{selectedEntity._name}}({{selectedEntity._uuid}})</code></p>
+          <hbp-file-browser root="null" entity="folder"></hbp-file-browser>
+        </div>
+
+        <div class="demo" ng-if="demo==='/custom'">
+          <h2>A custom browser</h2>
+          <ul class="tree tree-project" ng-controller="projectListCtrl">
+            <li ng-repeat="p in projects" class="item item-project">
+              <span class="icon icon-project">p</span>
+              <a class="icon icon-container-open" href>></a>
+              <a href>{{p._name}}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
+
     <!-- bower:js -->
     <script src="../bower_components/jquery/dist/jquery.js"></script>
-    <script src="../bower_components/es5-shim/es5-shim.js"></script>
-    <script src="../bower_components/lodash/dist/lodash.compat.js"></script>
     <script src="../bower_components/angular/angular.js"></script>
-    <script src="../bower_components/json3/lib/json3.min.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/affix.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/alert.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/button.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/carousel.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/collapse.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/dropdown.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tab.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/transition.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/scrollspy.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/modal.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tooltip.js"></script>
-    <script src="../bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/popover.js"></script>
-    <script src="../bower_components/angular-ui-router/release/angular-ui-router.js"></script>
     <script src="../bower_components/angular-bbp-config/angular-bbp-config.js"></script>
+    <script src="../bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="../bower_components/bbp-oidc-client/angular-bbp-oidc-client.js"></script>
-    <script src="../bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js"></script>
+    <script src="../bower_components/lodash/lodash.js"></script>
+    <script src="../bower_components/marked-hbp/lib/marked.js"></script>
     <script src="../bower_components/angular-hbp-common/dist/angular-hbp-common.js"></script>
     <!-- endbower -->
 
     <script src="./html2js/templates.js"></script>
     <script src="./src/document-client.js"></script>
     <script src="./src/directives/mini-browser.js"></script>
+    <script src="./src/directives/file-browser.js"></script>
+    <script src="./src/directives/file-icon.js"></script>
+    <script src="./src/directives/file-upload-area.js"></script>
+    <script src="./src/services/entity-children-loader.js"></script>
     <script src="./src/services/entity-store.js"></script>
     <script src="./src/services/project-store.js"></script>
     <script src="./src/services/file-store.js"></script>

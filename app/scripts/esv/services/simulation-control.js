@@ -430,7 +430,9 @@
                 experimentTemplates[index] = experiment;
                 experimentTemplates[index].servers = [serverID];
                 $http.get(serverNRPServicesURL + '/experiment/' + index + '/preview').then(function (response) {
-                  experimentTemplates[index].imageData = response.data.image_as_base64;
+                  if (!experimentTemplates[index].imageData){
+                    experimentTemplates[index].imageData = response.data.image_as_base64;
+                  }
                 });
               }
             });

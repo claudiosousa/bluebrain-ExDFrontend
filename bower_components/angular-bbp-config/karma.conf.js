@@ -43,6 +43,28 @@ module.exports = function(config) {
         // - IE (only Windows)
         browsers: ['PhantomJS'],
 
+        reporters: ['progress', 'junit', 'coverage'],
+
+        junitReporter: {
+            outputFile: 'reports/karma-unit.xml',
+            suite: 'unit'
+        },
+
+        coverageReporter: {
+            dir : 'reports/coverage/',
+            reporters: [
+                {
+                    type : 'lcov',
+                    dir:   'reports/coverage/',
+                    file : 'coverage.info'
+                },
+                {
+                    type : 'cobertura',
+                    dir:   'reports/coverage/'
+                },
+            ]
+        },
+
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit

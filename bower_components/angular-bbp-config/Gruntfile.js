@@ -12,9 +12,6 @@ module.exports = function (grunt) {
     // Load grunt tasks automatically
     require('load-grunt-tasks')(grunt);
 
-    // Time how long tasks take. Can help when optimizing build times
-    require('time-grunt')(grunt);
-
     // Define the configuration for all the tasks
     grunt.initConfig({
 
@@ -101,66 +98,20 @@ module.exports = function (grunt) {
             }
         },
 
-        release: {
+        bump: {
             options: {
-                file: 'bower.json',
-                bump: false, // until jenkins can commit on master branch.
-                commit: false,
-                push: false,
-                npm: false
+                files: ['bower.json'],
+                commitFiles: ['angular-bbp-config.js', 'bower.json'],
+                pushTo: 'origin HEAD:master'
             }
         },
 
-        gitcommit: {
-            dist: {
-                options: {
-                    message: 'built artefact',
-                    ignoreEmpty: true
-                },
-                files: {
-                    src: 'angular-bbp-config.js'
-                },
+        changelog: {
+            options: {
+                commitLink: function(h) { return 'https://bbpteam.epfl.ch/reps/gerrit/platform/JSLibAngularConfig.git/commit/?id='+h; },
+                issueLink: function(issueId) { return 'https://bbpteam.epfl.ch/project/issues/browse/' + issueId; }
             }
         }
-    });
-
-    grunt.registerTask('register', function(){
-        var request = require('request');
-        var bowerConfig = grunt.file.readJSON('./bower.json');
-        var baseUrl = grunt.file.readJSON('./.bowerrc').registry;
-
-        var done = this.async();
-
-        var registerComponent = function(done) {
-            grunt.log.writeln('Send registration request');
-            if (! (bowerConfig && bowerConfig.repository && bowerConfig.repository.url)) {
-                grunt.log.error('Missing repository.url key in bower.json');
-                done(false);
-            }
-            request.post(baseUrl+'/packages/', {
-                form: {
-                    name: bowerConfig.name,
-                    url: bowerConfig.repository.url
-                }
-            }, function(error, response) {
-                if (response.statusCode !== 201) {
-                    grunt.log.error('Registration failed:' + response.statusCode + ' - ' + error);
-                    done(false);
-                } else {
-                    grunt.log.writeln('registration successful');
-                    done();
-                }
-            });
-        };
-
-        request.get(baseUrl+'/packages/'+bowerConfig.name, function(error, response) {
-            if (error || response.statusCode !== 200) {
-                registerComponent(done);
-            } else {
-                grunt.log.writeln('already registered');
-                done();
-            }
-        });
     });
 
     grunt.registerTask('serve', function (target) {
@@ -174,18 +125,29 @@ module.exports = function (grunt) {
         ]);
     });
 
-    grunt.registerTask('server', function (target) {
-        grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
-        grunt.task.run(['serve:' + target]);
-    });
-
     grunt.registerTask('test', [
         'clean:server',
         'jshint',
         'karma'
     ]);
 
-    grunt.registerTask('build', []);
-    grunt.registerTask('publish', ['gitcommit:dist', 'release', 'register']);
+    grunt.registerTask('ci', 'Run all the build steps on the CI server', function (target) {
+
+        // Junit reporter for JShint
+        grunt.config('jshint.all.options.reporter', require('jshint-junit-reporter'));
+        grunt.config('jshint.all.options.reporterOutput', 'reports/jshint-all-unit.xml');
+        grunt.config('jshint.test.options.reporter', require('jshint-junit-reporter'));
+        grunt.config('jshint.test.options.reporterOutput', 'reports/jshint-test-unit.xml');
+
+
+        var tasks = ['default'];
+        if (target === 'patch' || target === 'minor' || target === 'major') {
+            tasks.unshift('bump-only:'+target);
+            tasks.push('changelog', 'bump-commit');
+        }
+        grunt.task.run(tasks);
+    });
+
     grunt.registerTask('default', ['test']);
+
 };

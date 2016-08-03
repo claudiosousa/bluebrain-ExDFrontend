@@ -3,9 +3,9 @@ $icon-font-path: "/bower_components/hbp-collaboratory-theme/dist/fonts/";
 
 // Dependencies (scss deps are injected here by grunt-wiredep).
 // bower:scss
-@import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 @import "hbp-collaboratory-theme/dist/sass/theme.scss";
+@import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
 // endbower
 
 @import "toolbar-extensions";

@@ -9,12 +9,12 @@
         <li ng-if="currentEntity.children.list.length === 0"><span class="no-entity">Empty</span></li>
         <li ng-repeat="child in currentEntity.children.list">
             <a ng-if="isBrowsable(child)" ng-click="browseTo(child, $event)" ng-mouseover="mouseOver(child)">
-                <hbp-icon entity="child"></hbp-icon>
+                <hbp-file-icon entity="child"></hbp-file-icon>
                 {{child._name}}
                 <button ng-if="isSelectable(child)" ng-click="select(child, $event)" class="btn btn-xs btn-default">Select</button>
             </a>
             <span ng-if="!isBrowsable(child)" ng-class="{disabled: !isSelectable(child)}" ng-mouseover="mouseOver(child)">
-                <hbp-icon entity="child"></hbp-icon>
+                <hbp-file-icon entity="child"></hbp-file-icon>
                 {{child._name}}
                 <button ng-if="isSelectable(child)" ng-click="select(child, $event)" class="btn btn-xs btn-default">Select</button>
             </span>

@@ -1,6 +1,6 @@
 {
   "name": "angular-bbp-config",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "authors": [
     "BBP/EPFL"
   ],
@@ -26,19 +26,19 @@
     "karam.conf.js"
   ],
   "dependencies": {
-    "angular": "~1.2.16"
+    "angular": "~1.3.15"
   },
   "devDependencies": {
-    "angular-mocks": "~1.2.16",
-    "angular-scenario": "~1.2.16"
+    "angular-mocks": "~1.3.15",
+    "angular-scenario": "~1.3.15"
   },
-  "_release": "0.2.0",
+  "_release": "0.3.0",
   "_resolution": {
     "type": "version",
-    "tag": "0.2.0",
-    "commit": "87b0544f66d0202e04c084c4128e768d5304e462"
+    "tag": "v0.3.0",
+    "commit": "ed0a5f0edf6e8dd3e9e2cf45b34883a71b2d0cb2"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularConfig",
-  "_target": "~0.2.0",
+  "_target": "~0.3.0",
   "_originalSource": "angular-bbp-config"
 }

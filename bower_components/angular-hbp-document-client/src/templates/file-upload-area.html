@@ -1,0 +1,7 @@
+<div class="hbp-drop-zone" ng-class="{'hbp-drop-zone-drag-enter': dragEntered, 'hbp-drop-zone-drag-leave': !dragEntered}" ng-cloak>
+    <h4>Drop Files Here to Upload</h4>
+    <span>or</span>
+    <div class="btn btn-default hbp-drop-zone-btn-file">
+        Select Files <input type="file" multiple onchange="angular.element(this).scope().onFileChanged(this.files)" >
+    </div>
+</div>
