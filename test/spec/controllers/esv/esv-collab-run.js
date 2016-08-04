@@ -172,7 +172,7 @@ describe('Controller: ESVCollabRunCtrl', function () {
       expect(scope.owners).not.toBeDefined();
       expect(scope.uptime).not.toBeDefined();
       expect(slurminfoService.get).toHaveBeenCalled();
-      expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
+      expect(scope.clusterPartitionInfo).toEqual({'foo':'bar'});
   });
 
   it('should fetch and set the current user id' , function () {

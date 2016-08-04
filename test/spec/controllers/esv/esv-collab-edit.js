@@ -137,7 +137,7 @@ describe('Controller: ESVCollabEditCtrl', function () {
     expect(scope.experiments).toEqual({});
     expect(scope.serversEnabled).toBe(serversEnabled);
     expect(slurminfoService.get).toHaveBeenCalled();
-    expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
+    expect(scope.clusterPartitionInfo).toEqual({'foo':'bar'});
   });
 
   it('should select the correct entry', function() {

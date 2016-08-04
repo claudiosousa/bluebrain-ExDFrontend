@@ -63,8 +63,8 @@
             <i>Cluster availability: </i>
             <i class="label-availability"
                 tooltip="A cluster node is required to run the robot simulation"
-                ng-class="clusterPartAvailInfo.nodes[0] < 4 ? (clusterPartAvailInfo.nodes[0] < 2 ? 'label-danger' : 'label-warning') : 'label-success' ">
-              {{clusterPartAvailInfo.nodes[0]}} / {{clusterPartAvailInfo.nodes[3]}}
+                ng-class="clusterPartitionInfo.nodes[1] < 4 ? (clusterPartitionInfo.nodes[1] < 2 ? 'label-danger' : 'label-warning') : 'label-success' ">
+              {{clusterPartitionInfo.nodes[1]}} / {{clusterPartitionInfo.nodes[3]}}
             </i>
           </div>
           <div ng-if="exp.id != selectedIndex">{{exp.description | limitTo: 200}}...</div>

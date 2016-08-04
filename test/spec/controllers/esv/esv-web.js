@@ -344,7 +344,7 @@ describe('Controller: experimentCtrl', function () {
     expect(experimentSimulationService.refreshExperiments).toHaveBeenCalled();
     expect(slurminfoService.get).toHaveBeenCalled();
 
-    expect(scope.clusterPartAvailInfo).toEqual({'foo':'bar'});
+    expect(scope.clusterPartitionInfo).toEqual({'foo':'bar'});
 
     // if in full local mode, slurm service should not be called
     slurminfoService.get.reset();

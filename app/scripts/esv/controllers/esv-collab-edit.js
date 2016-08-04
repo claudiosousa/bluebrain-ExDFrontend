@@ -35,7 +35,7 @@
 
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         if (!bbpConfig.get('localmode.forceuser', false)) {
-          $scope.clusterPartAvailInfo = slurminfoService.get();
+          $scope.clusterPartitionInfo = slurminfoService.get();
         }
 
         $scope.goToRegisteredState = function(experimentID) {

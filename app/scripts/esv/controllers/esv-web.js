@@ -73,9 +73,9 @@
         $scope.experiments = {};
         $scope.serversEnabled = experimentSimulationService.getServersEnable();
         $scope.userID = undefined;
-        $scope.clusterPartAvailInfo = undefined;
+        $scope.clusterPartitionInfo = undefined;
         if (!bbpConfig.get('localmode.forceuser', false)) {
-          $scope.clusterPartAvailInfo = slurminfoService.get();
+          $scope.clusterPartitionInfo = slurminfoService.get();
         }
 
         var loadHealthyServers = function () {
@@ -189,7 +189,7 @@
             // Start to update the datastructure in regular intervals
             $scope.updatePromise = $timeout(function () {
               if (!bbpConfig.get('localmode.forceuser', false)) {
-                $scope.clusterPartAvailInfo = slurminfoService.get();
+                $scope.clusterPartitionInfo = slurminfoService.get();
               }
               experimentSimulationService.refreshExperiments(
                 $scope.experiments,
