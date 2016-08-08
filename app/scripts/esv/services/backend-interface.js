@@ -146,12 +146,13 @@
           brain_populations,
           brain_type,
           data_type,
+          change_population,
           successCallback,
           failureCallback
         ) {
           resourceBrainSimulation(simulationInfo.serverBaseUrl).put({
             sim_id: simulationInfo.simulationID
-          }, {'data': data, 'brain_type': brain_type, 'data_type': data_type, 'additional_populations': brain_populations},
+          }, {'data': data, 'brain_type': brain_type, 'data_type': data_type, 'additional_populations': brain_populations, 'change_population': change_population},
           successCallback, failureCallback);
         },
         saveBrain: function(contextID, pynnScript, brainPopulations, successCallback, failureCallback) {

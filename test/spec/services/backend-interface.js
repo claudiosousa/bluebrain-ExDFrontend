@@ -193,7 +193,7 @@ describe('Services: backendInterfaceService', function () {
   it('should call the failure callback when the setBrain PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     var callback = jasmine.createSpy('callback');
-    backendInterfaceService.setBrain(undefined, undefined, undefined, undefined, function(){}, callback);
+    backendInterfaceService.setBrain(undefined, undefined, undefined, undefined, undefined, function(){}, callback);
     $httpBackend.flush();
     expect(callback).toHaveBeenCalled();
   });

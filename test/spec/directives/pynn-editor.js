@@ -138,6 +138,18 @@ describe('Directive: pynnEditor', function () {
     expect(cm).toEqual(isolateScope.cm);
   });
 
+  it('should check getCM setting scope.cm', function () {
+
+    var elem = document.getElementById;
+    document.getElementById =  jasmine.createSpy('getElementById').andReturn({children:[{CodeMirror: cmMock}]});
+
+    isolateScope.cm = null;
+    var cm = isolateScope.getCM();
+    expect(cm).toBe(cmMock);
+
+    document.getElementById = elem;
+  });
+
   describe('Get/Set brain, PyNN script', function () {
     var data = {
       'brain_type': 'py',
@@ -189,18 +201,49 @@ describe('Directive: pynnEditor', function () {
     it('should apply changes made on the pynn script and the brain population properly', function () {
       isolateScope.pynnScript = expected_script;
       isolateScope.populations = {'index': {list: '1'}};
-      isolateScope.apply();
+      isolateScope.apply(0);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
         isolateScope.pynnScript,
         {index: [1]},
         'py',
         'text',
+        0,
         jasmine.any(Function),
         jasmine.any(Function)
       );
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][4](); // success callback
+      backendInterfaceService.setBrain.argsForCall[0][5](); // success callback
       expect(isolateScope.loading).toBe(false);
+    });
+
+    it('should set brain with change_population parameter', function () {
+      isolateScope.pynnScript = expected_script;
+      isolateScope.populations = {'index': {list: '1'}};
+      isolateScope.apply(1);
+      expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
+        isolateScope.pynnScript,
+        {index: [1]},
+        'py',
+        'text',
+        1,
+        jasmine.any(Function),
+        jasmine.any(Function)
+      );
+      expect(isolateScope.loading).toBe(true);
+      backendInterfaceService.setBrain.argsForCall[0][5](); // success callback
+      expect(isolateScope.loading).toBe(false);
+    });
+
+    it('should check set brain agree helper', function () {
+      spyOn(isolateScope, 'apply');
+      isolateScope.agreeAction();
+      expect(isolateScope.apply).toHaveBeenCalledWith(1);
+    });
+
+    it('should check set brain disagree helper', function () {
+      spyOn(isolateScope, 'apply');
+      isolateScope.doNotAgreeAction();
+      expect(isolateScope.apply).toHaveBeenCalledWith(2);
     });
 
     it('should save the pynn script and the neuron populations properly', function () {
@@ -229,7 +272,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply();
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][4](); // success callback
+      backendInterfaceService.setBrain.argsForCall[0][5](); // success callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -237,7 +280,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply();
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][5](errorMock1); // error callback
+      backendInterfaceService.setBrain.argsForCall[0][6](errorMock1); // error callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -246,7 +289,7 @@ describe('Directive: pynnEditor', function () {
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
       isolateScope.pynnScript = 'some pynn script';
-      backendInterfaceService.setBrain.argsForCall[0][5](errorMock2); // error callback
+      backendInterfaceService.setBrain.argsForCall[0][6](errorMock2); // error callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -290,6 +333,18 @@ describe('Directive: pynnEditor', function () {
       isolateScope.clearError();
       expect(isolateScope.lineWidget.clear).toHaveBeenCalled();
       expect(isolateScope.cm.removeLineClass).toHaveBeenCalled();
+    });
+
+    it('should check markError function with NaNs', function () {
+      isolateScope.clearError();
+      isolateScope.markError(NaN, NaN, NaN);
+      expect(isolateScope.lineHandle).toBeUndefined();
+    });
+
+    it('should check markError function with zeros', function () {
+      isolateScope.clearError();
+      isolateScope.markError('', 0, 0);
+      expect(isolateScope.lineHandle).toBeUndefined();
     });
 
   });
