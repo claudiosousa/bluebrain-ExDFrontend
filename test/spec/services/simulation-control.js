@@ -543,23 +543,25 @@ describe('Services: experimentSimulationService', function () {
     experimentSimulationService.getServersEnable = oldGse;
   });
 
-  it('should change the state from INITIALIZED to STOPPED when calling stopExperimentOnServer', function() {
+  it('should change the state from CREATED to STOPPED when calling stopExperimentOnServer', function() {
     expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(1);
     experimentSimulationService.stopExperimentOnServer(experimentTemplatesAugmented, 'bbpce016', 'fakeSimulationID');
     expect(simulationState).toHaveBeenCalledWith(bbpConfigString.bbpce016.gzweb['nrp-services']);
     /* jshint camelcase: false */
     expect(simulationState().state).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, jasmine.any(Function));
 
-    // If the state is INITIALIZED then first change to STARTED then STOPPED
-    simulationState().state.mostRecentCall.args[1]({state: STATE.INITIALIZED});
-    expect(simulationState().update).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, {state: STATE.STARTED}, jasmine.any(Function));
+    // If the state is CREATED then first change to PAUSED then STOPPED
+    simulationState().state.mostRecentCall.args[1]({state: STATE.CREATED});
+    expect(simulationState().update).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, {state: STATE.INITIALIZED}, jasmine.any(Function));
     simulationState().update.mostRecentCall.args[2]();
     expect(simulationState().update).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, {state: STATE.STOPPED}, jasmine.any(Function));
     simulationState().update.mostRecentCall.args[2]();
     expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(0);
+
   });
 
   it('should change the state from STARTED to STOPPED when calling stopExperimentOnServer', function() {
+
     expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(1);
     experimentSimulationService.stopExperimentOnServer(experimentTemplatesAugmented, 'bbpce016', 'fakeSimulationID');
     expect(simulationState).toHaveBeenCalledWith(bbpConfigString.bbpce016.gzweb['nrp-services']);
@@ -584,6 +586,36 @@ describe('Services: experimentSimulationService', function () {
     simulationState().state.mostRecentCall.args[1]({state: STATE.PAUSED});
     expect(simulationState().update).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, {state: STATE.STOPPED}, jasmine.any(Function));
     simulationState().update.mostRecentCall.args[2]();
+
+    expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(0);
+  });
+
+
+  it('should change the state from HALTED to FAILED when calling stopExperimentOnServer', function() {
+    expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(1);
+    experimentSimulationService.stopExperimentOnServer(experimentTemplatesAugmented, 'bbpce016', 'fakeSimulationID');
+    expect(simulationState).toHaveBeenCalledWith(bbpConfigString.bbpce016.gzweb['nrp-services']);
+    /* jshint camelcase: false */
+    expect(simulationState().state).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, jasmine.any(Function));
+
+    // If the state is HALTED then change to FAILED using STOPPED transition
+    simulationState().state.mostRecentCall.args[1]({state: STATE.HALTED});
+    expect(simulationState().update).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, {state: STATE.STOPPED}, jasmine.any(Function));
+    simulationState().update.mostRecentCall.args[2]();
+
+    expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(0);
+  });
+
+  it('should not change state when in FAILED when calling stopExperimentOnServer', function() {
+    expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(1);
+    experimentSimulationService.stopExperimentOnServer(experimentTemplatesAugmented, 'bbpce016', 'fakeSimulationID');
+    expect(simulationState).toHaveBeenCalledWith(bbpConfigString.bbpce016.gzweb['nrp-services']);
+    /* jshint camelcase: false */
+    expect(simulationState().state).toHaveBeenCalledWith({sim_id: 'fakeSimulationID'}, jasmine.any(Function));
+
+    // FAILED is a final state, don't change state.
+    simulationState().state.mostRecentCall.args[1]({state: STATE.FAILED});
+    expect(simulationState().update).not.toHaveBeenCalled();
     expect(experimentTemplatesAugmented['fakeExperiment2.xml'].runningExperiments).toBe(0);
   });
 
@@ -713,13 +745,6 @@ describe('Services: experimentSimulationService', function () {
       expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.INITIALIZED}, jasmine.any(Function));
       var updateFunction = simulationState().update.mostRecentCall.args[2];
       simulationState().update.reset();
-      updateFunction();
-      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.STARTED}, jasmine.any(Function));
-      updateFunction = simulationState().update.mostRecentCall.args[2];
-      simulationState().update.reset();
-      updateFunction();
-      expect(simulationState().update).toHaveBeenCalledWith({sim_id: simulationID}, {state: STATE.PAUSED}, jasmine.any(Function));
-      updateFunction = simulationState().update.mostRecentCall.args[2];
 
       // Test for initialized Callback
       updateFunction();

@@ -7,7 +7,7 @@ describe('Directive: joint-plot', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
 
-  var $scope, parentscope, element, roslib, window;
+  var $scope, parentscope, element, roslib, window, RESET_TYPE;
   var SERVER_URL = 'ws://localhost:1234';
   var JOINT_TOPIC = '/gazebo/joint_states';
 
@@ -36,7 +36,7 @@ describe('Directive: joint-plot', function () {
     $provide.value('roslib', roslibMock);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, $window, _roslib_) {
+  beforeEach(inject(function ($rootScope, $compile, $window, _roslib_, _RESET_TYPE_) {
     parentscope = $rootScope.$new();
     parentscope.showJointPlot = true;
     element = $compile('<joint-plot server="' + SERVER_URL + '" topic="' + JOINT_TOPIC + '" ng-show="showJointPlot"></joint-plot>')(parentscope);
@@ -52,6 +52,7 @@ describe('Directive: joint-plot', function () {
     };
     $scope.selectedProperty = { name: 'position' };
     $scope.minYIntervalWidth = 1.0;
+    RESET_TYPE = _RESET_TYPE_;
   }));
 
   it('should replace the element with the appropriate content', function () {
@@ -62,12 +63,30 @@ describe('Directive: joint-plot', function () {
     expect(element.prop('outerHTML')).toContain('<svg');
   });
 
-  it('should unregister from stateService on destroy', inject(function(stateService) {
-    spyOn(stateService,'removeStateCallback');
+  it('should clear the plot on RESET event', function () {
+      spyOn($scope, 'clearPlot').andCallThrough();
+
+      $scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
+      $scope.$digest();
+
+      expect($scope.clearPlot).toHaveBeenCalled();
+  });
+
+    it('should NOT clear the plot on RESET event: RESET_CAMERA_VIEW', function () {
+      spyOn($scope, 'clearPlot').andCallThrough();
+
+      $scope.$broadcast('RESET', RESET_TYPE.RESET_CAMERA_VIEW);
+      $scope.$digest();
+
+      expect($scope.clearPlot).not.toHaveBeenCalled();
+  });
+
+  it('should remove the RESET event callback on $destroy event', function () {
+    spyOn($scope, 'resetListenerUnbindHandler').andCallThrough();
     $scope.$broadcast('$destroy');
     $scope.$digest();
-    expect(stateService.removeStateCallback).toHaveBeenCalled();
-  }));
+    expect($scope.resetListenerUnbindHandler).toHaveBeenCalled();
+  });
 
   it('should register selected curves properly', function() {
     $scope.onNewJointMessageReceived(messageMock);
@@ -76,7 +95,6 @@ describe('Directive: joint-plot', function () {
 
     expect($scope.curves[0].jointa_position).toBe(1);
     expect($scope.curves[0].jointb_position).toBe(2);
-
 
     // velocity and effort are not selected properties
     expect($scope.curves[0].jointa_velocity).toBeUndefined();
@@ -92,8 +110,6 @@ describe('Directive: joint-plot', function () {
     expect($scope.curves[0].jointc_velocity).toBeUndefined();
     expect($scope.curves[0].jointc_effort).toBeUndefined();
   });
-
-
 
   it('should increase its y interval', function() {
     messageMock.position[0] = -5;

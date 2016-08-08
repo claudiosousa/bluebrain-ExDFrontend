@@ -186,7 +186,7 @@
     };
   }
 
-  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', '$timeout', function ($log, $window, $filter, roslib, stateService, STATE, $timeout) {
+  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', '$timeout', 'RESET_TYPE', function ($log, $window, $filter, roslib, stateService, STATE, $timeout, RESET_TYPE) {
     return {
       templateUrl: 'views/esv/joint-plot.html',
       restrict: 'E',
@@ -220,7 +220,6 @@
             lineChartWrapper.css('visibility', 'visible');
           }, 200);
         };
-
 
         scope.plotOptions = {
           tooltip: {
@@ -261,25 +260,25 @@
           }
         });
 
-        // clean plot when reinitialize the simulation
-        var onStateChangedCallback = function(newState) {
-          if (newState === STATE.INITIALIZED){
-            // clear the jointplot
+        scope.clearPlot = function() {
             scope.curves.length = 0;
             scope.plotOptions.axes.x.min = 0;
             scope.plotOptions.axes.x.max = scope.timeWindow;
-          }
         };
 
-        stateService.addStateCallback(onStateChangedCallback);
+        //clear plot when resetting the simulation
+        scope.resetListenerUnbindHandler = scope.$on('RESET', function(event, resetType) {
+          if(resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
+            scope.clearPlot();
+          }
+        });
 
         // clean up on leaving
         scope.$on("$destroy", function() {
-          // remove the callback
-          stateService.removeStateCallback(onStateChangedCallback);
+          // unbind resetListener callback
+          scope.resetListenerUnbindHandler();
         });
       }
-
     };
   }]);
 }());

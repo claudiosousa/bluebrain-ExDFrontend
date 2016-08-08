@@ -570,12 +570,12 @@
             return server.status === serverStatus.SUCCESS;
           });
 
-          //if we successfuly started a simulation, then the job is done
+          //if we successfully started a simulation, then the job is done
           if (aServerHasSucceeded) {
             return;
           }
 
-          var fatalErrorOccured = serversStatus.some(function (server) {
+          var fatalErrorOccurred = serversStatus.some(function (server) {
             return server.status === serverStatus.FATAL;
           });
 
@@ -585,17 +585,17 @@
             return server.serverID;
           });
 
-          // if fatal errors occured, then it is likely that there are issues allocating jobs on the cluster
+          // if fatal errors occurred, then it is likely that there are issues allocating jobs on the cluster
           // in this case, we don't want to keep retrying on other servers because they are likely to fail with the same reason
-          if (!fatalErrorOccured && skippedServers.length > 0) {
-            //if no fatal error occured, and some servers were skipped, then let's retry on those available servers
+          if (!fatalErrorOccurred && skippedServers.length > 0) {
+            //if no fatal error occurred, and some servers were skipped, then let's retry on those available servers
             launchExperimentInPossibleServers(skippedServers, expConf, envSDFData, errorCallback);
             return;
           }
 
-          if (!fatalErrorOccured) {
-            //displays geneeric error message only if so fatal error occured
-            //fatal errors are handled (and displayed) by the genereic http error interceptor
+          if (!fatalErrorOccurred) {
+            //displays generic error message only if fatal error occurred
+            //fatal errors are handled (and displayed) by the generic http error interceptor
             hbpDialogFactory.alert(
               {
                 title: 'No server is currently available',
@@ -646,25 +646,17 @@
           // register for messages during initialization
           registerForStatusInformation(freeServerID, createData.simulationID);
 
-          // initialize the newly created simulation, then goto STARTED and then PAUSED
+          // initialize the newly created simulation
           simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.INITIALIZED },
+            // Now join the simulation
             function () {
-              simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.STARTED },
-                function () {
-                  simulationState(serverURL, errorCallback).update({ sim_id: createData.simulationID }, { state: STATE.PAUSED },
-                    // Now join the simulation
-                    function () {
-                      var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID;
-                      if (angular.isDefined(successCallback)) {
-                        successCallback(url);
-                      }
-                      if (angular.isDefined(initializedCallback)) {
-                        initializedCallback(url);
-                      }
-                    }
-                  );
-                }
-              );
+              var url = 'esv-web/gz3d-view/' + freeServerID + '/' + createData.simulationID;
+              if (angular.isDefined(successCallback)) {
+                successCallback(url);
+              }
+              if (angular.isDefined(initializedCallback)) {
+                initializedCallback(url);
+              }
             }
           );
         });
@@ -682,8 +674,8 @@
 
         simStateInstance.state({sim_id: simulationID}, function(data){
           switch (data.state) {
-            case STATE.INITIALIZED:
-              simStateInstance.update({sim_id: simulationID}, {state: STATE.STARTED}, function () {
+            case STATE.CREATED: //CREATED --(initialize)--> PAUSED --(stop)--> STOPPED
+              simStateInstance.update({sim_id: simulationID}, {state: STATE.INITIALIZED}, function () {
                 simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
                   // Delete all elements in the data structure with this serverID
                   deleteSimulationFromTemplate(experimentTemplates, serverID);
@@ -691,14 +683,19 @@
                 });
               });
               break;
-            case STATE.STARTED:
-            case STATE.PAUSED:
-            case STATE.HALTED:
+            case STATE.STARTED: //STARTED --(stop)--> STOPPED
+            case STATE.PAUSED:  //PAUSED  --(stop)--> STOPPED
+            case STATE.HALTED:  //HALTED  --(stop)--> FAILED
               simStateInstance.update({sim_id: simulationID}, {state: STATE.STOPPED}, function () {
                 // Delete all elements in the data structure with this serverID
                 deleteSimulationFromTemplate(experimentTemplates, serverID);
                 deferred.resolve();
               });
+              break;
+            case STATE.FAILED: //FAILED is a final state
+              // Delete all elements in the data structure with this serverID
+              deleteSimulationFromTemplate(experimentTemplates, serverID);
+              deferred.resolve();
               break;
           }
         });

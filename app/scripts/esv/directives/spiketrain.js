@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp').directive('spiketrain', ['$timeout', '$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', function ($timeout, $log, $window, $filter, roslib, stateService, STATE) {
+  angular.module('exdFrontendApp').directive('spiketrain', ['$timeout', '$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', 'RESET_TYPE', function ($timeout, $log, $window, $filter, roslib, stateService, STATE, RESET_TYPE) {
 
     function configureSpiketrain(scope, canvas1, canvas2, div) {
       scope.canvas = [canvas1, canvas2];
@@ -14,22 +14,24 @@
       var MARK_INTERVAL = 2000; // time lapse (ms) between two consecutive time marks
       var TIMELABEL_SPACE = 15; // Vertical space in the canvas reserved for the time label
 
-      var onStateChangedCallback = function(newState) {
-        if (newState === STATE.INITIALIZED){
+      scope.clearPlot = function() {
           scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);
           scope.ctx[1].clearRect(0, 0, scope.canvas[1].width, scope.canvas[1].height);
-        }
       };
+
+      //clear spiketrain when resetting the simulation
+      scope.resetListenerUnbindHandler = scope.$on('RESET', function(event, resetType) {
+          if(resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
+              scope.clearPlot();
+          }
+      });
 
       // clean up on leaving
       scope.$on("$destroy", function() {
-        // remove the callback
-        stateService.removeStateCallback(onStateChangedCallback);
+        // unbind resetListener callback
+        scope.resetListenerUnbindHandler();
       });
-      scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);
-      scope.ctx[1].clearRect(0, 0, scope.canvas[1].width, scope.canvas[1].height);
-
-      stateService.addStateCallback(onStateChangedCallback);
+      scope.clearPlot();
 
       // Main functions, get called each time a spike message is received, It redraws the canvas.
       scope.onNewSpikesMessageReceived = function(message){

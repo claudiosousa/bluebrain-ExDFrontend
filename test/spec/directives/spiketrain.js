@@ -5,7 +5,7 @@ describe('Directive: spiketrain', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
 
-  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout;
+  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout, RESET_TYPE;
   var SERVER_URL = 'ws://localhost:1234';
   var SPIKE_TOPIC = '/cle_sim/spike';
 
@@ -33,11 +33,12 @@ describe('Directive: spiketrain', function () {
       addStateCallback: jasmine.createSpy('addStateCallback'),
       removeStateCallback: jasmine.createSpy('removeStateCallback')
     });
+
   }));
 
   beforeEach(inject(function (
     $rootScope, $compile, $window,
-    _roslib_, _stateService_, _STATE_, $timeout) {
+    _roslib_, _stateService_, _STATE_, $timeout, _RESET_TYPE_) {
     parentscope = $rootScope.$new();
     parentscope.showSpikeTrain = false;
     element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')(parentscope);
@@ -48,6 +49,7 @@ describe('Directive: spiketrain', function () {
     timeout = $timeout;
     stateService = _stateService_;
     STATE = _STATE_;
+    RESET_TYPE = _RESET_TYPE_;
   }));
 
   it('should draw separator if not first time run', function () {
@@ -77,23 +79,29 @@ describe('Directive: spiketrain', function () {
     expect(element.prop('outerHTML')).toContain('<canvas id="spiketrain-canvas-2"></canvas>');
   });
 
-  it('should set the state callback properly', function () {
-    var onStateChangeCallback = stateService.addStateCallback.mostRecentCall.args[0];
-    var clearRectMock = { clearRect: jasmine.createSpy('clearRect') };
-    var ctx = $scope.ctx = [ clearRectMock, angular.copy(clearRectMock) ];
-    onStateChangeCallback(STATE.STOPPED);
-    expect(ctx[0].clearRect).not.toHaveBeenCalled();
-    expect(ctx[1].clearRect).not.toHaveBeenCalled();
-    onStateChangeCallback(STATE.INITIALIZED);
-    expect(ctx[0].clearRect).toHaveBeenCalled();
-    expect(ctx[1].clearRect).toHaveBeenCalled();
+  it('should clear the plot on RESET event', function () {
+      spyOn($scope, 'clearPlot').andCallThrough();
+
+      $scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
+      $scope.$digest();
+
+      expect($scope.clearPlot).toHaveBeenCalled();
   });
 
-  it('should remove the state callback on $destroy event', function () {
-    var onStateChangeCallback = stateService.addStateCallback.mostRecentCall.args[0];
+    it('should NOT clear the plot on RESET event: RESET_CAMERA_VIEW', function () {
+      spyOn($scope, 'clearPlot').andCallThrough();
+
+      $scope.$broadcast('RESET', RESET_TYPE.RESET_CAMERA_VIEW);
+      $scope.$digest();
+
+      expect($scope.clearPlot).not.toHaveBeenCalled();
+  });
+
+  it('should remove the RESET event callback on $destroy event', function () {
+    spyOn($scope, 'resetListenerUnbindHandler').andCallThrough();
     $scope.$broadcast('$destroy');
     $scope.$digest();
-    expect(stateService.removeStateCallback).toHaveBeenCalledWith(onStateChangeCallback);
+    expect($scope.resetListenerUnbindHandler).toHaveBeenCalled();
   });
 
   it('should display spike message properly', function () {
