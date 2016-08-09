@@ -72,6 +72,20 @@ module.exports = function(config) {
       'bower_components/gz3d-hbp/gz3d/client/js/include/first-person-controls.js',
       'bower_components/gz3d-hbp/gz3d/client/js/include/avatar-controls.js',
       'bower_components/gz3d-hbp/gz3d/build/gz3d.js',
+
+      'bower_components/brainvisualizer/src/brain3D.js',
+      'bower_components/brainvisualizer/src/brain3Dmainview.js',
+      'bower_components/brainvisualizer/shaders/brain3Dshaders.js',
+
+      'bower_components/brainvisualizer/data/brain3Dposes_1.js',
+      'bower_components/brainvisualizer/data/brain3Dposes_2.js',
+      'bower_components/brainvisualizer/data/brain3Dposes_3.js',
+      'bower_components/brainvisualizer/data/brain3Dposes_4.js',
+      'bower_components/brainvisualizer/data/brain3Dposes_5.js',
+      'bower_components/brainvisualizer/data/brain3Dposes_6.js',
+      'bower_components/brainvisualizer/data/brain3Dallannotation.js',
+      'bower_components/brainvisualizer/data/brain3Dembeddeddata.js',
+
       'test/support/**/*.js',
       './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used

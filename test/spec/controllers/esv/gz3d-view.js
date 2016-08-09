@@ -1202,6 +1202,61 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   });
 
+
+  describe('(BrainVisualizer)', function ()
+  {
+    beforeEach(function ()
+    {
+      stateParams.ctx = 'a context id';
+      lockServiceMock.tryAddLock.reset();
+      lockServiceMock.releaseLock.reset();
+
+      Gz3dViewCtrl = controller('Gz3dViewCtrl', {
+        $rootScope: rootScope,
+        $scope: scope,
+        collabExperimentLockService: collabExperimentLockService
+
+      });
+    });
+
+    it('should enable display of the brainvisualizer panel', function ()
+    {
+      scope.showBrainvisualizerPanel = false;
+      stateParams.ctx = '';
+      scope.toggleBrainvisualizer();
+      expect(scope.showBrainvisualizerPanel).toBe(true);
+    });
+
+    it('should open of the brainvisualizer panel', function ()
+    {
+      scope.showBrainvisualizerPanel = false;
+      stateParams.ctx = '';
+      scope.brainvisualizerClick();
+      expect(scope.showBrainvisualizerPanel).toBe(true);
+    });
+
+    it('should display the help of brainvisualizer panel', function ()
+    {
+      scope.showBrainvisualizerPanel = false;
+      scope.helpModeActivated = true;
+      stateParams.ctx = '';
+      scope.brainvisualizerClick();
+      expect(scope.showBrainvisualizerPanel).toBe(false);
+      scope.helpModeActivated = false;
+    });
+
+    it('should not display brainvisualizer panel when disabled', function ()
+    {
+      scope.showBrainvisualizerPanel = false;
+      scope.brainvisualizerIsDisabled = true;
+      stateParams.ctx = '';
+      scope.brainvisualizerClick();
+      expect(scope.showBrainvisualizerPanel).toBe(false);
+      scope.brainvisualizerIsDisabled = false;
+    });
+
+
+  });
 });
 
 describe('Controller: Gz3dViewCtrl - mocked window', function () {

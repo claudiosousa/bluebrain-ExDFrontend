@@ -31,7 +31,8 @@
     "stats.js": "latest",
     "v-button": "~1.1.1",
     "xml2json": "1.1.1",
-    "angulartics-google-analytics": "^0.1.4"
+    "angulartics-google-analytics": "^0.1.4",
+    "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer"
   },
   "overrides": {
     "codemirror": {

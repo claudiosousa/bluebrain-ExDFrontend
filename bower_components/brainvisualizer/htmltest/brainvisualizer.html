@@ -1,0 +1,58 @@
+<!-- TEST BRAIN 3D VISUALIZER CLASS-->
+<!--
+
+    This is a stand-alone test html file. You can use it to run the brainvisualizer
+    directly in a web browser. Use "http-server ." from
+    the root brainvisualizer folder and then open
+    http://127.0.0.1:8081/htmltest/brainvisualizer.html
+
+-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Brain Visualizer</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+<link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body>
+
+<script src="../lib/three.min.js"></script>
+
+
+<!--Brain 3D classes-->
+
+<script type="text/javascript" src="../src/brain3D.js"></script>
+<script type="text/javascript" src="../src/brain3Dmainview.js"></script>
+<script type="text/javascript" src="../shaders/brain3Dshaders.js"></script>
+
+
+<!-- Embedded data for testing purpose -->
+<script type="text/javascript" src="../data/brain3Dallannotation.js"></script>
+<script type="text/javascript" src="../data/brain3Dposes_1.js"></script>
+<script type="text/javascript" src="../data/brain3Dposes_2.js"></script>
+<script type="text/javascript" src="../data/brain3Dposes_3.js"></script>
+<script type="text/javascript" src="../data/brain3Dposes_4.js"></script>
+<script type="text/javascript" src="../data/brain3Dposes_5.js"></script>
+<script type="text/javascript" src="../data/brain3Dposes_6.js"></script>
+<script type="text/javascript" src="../data/brain3Dembeddeddata.js"></script>
+
+<!-- The main containers -->
+<div id="container"></div>
+
+<!-- Scripts -->
+
+<script>
+
+var brain3D = new BRAIN3D.MainView(document.getElementById( 'container'),BRAIN3D.embeddedData, 'img/brain3dball.png', 'img/brain3dballsimple.png');
+
+</script>
+
+</body>
+
+</html>

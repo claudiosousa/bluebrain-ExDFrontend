@@ -38,7 +38,8 @@
       ROBOT_VIEW: 11,
       CODE_EDITOR: 12,
       JOINT_PLOT: 13,
-      GRAPHICS_PERFORMANCE: 14
+      GRAPHICS_PERFORMANCE: 14,
+      BRAIN_VISUALIZER: 15
     })
     .constant('SLIDER_INITIAL_POSITION', 50);
 
@@ -847,6 +848,36 @@
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           $location.path('esv-web');
         };
+
+     // Brain visualizer
+
+        $scope.showBrainvisualizerPanel = false;
+        $scope.toggleBrainvisualizer = function()
+        {
+            $scope.showBrainvisualizerPanel = !$scope.showBrainvisualizerPanel;
+            nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
+                           category: 'Simulation-GUI',
+                           value: $scope.showBrainvisualizerPanel
+          });
+        };
+
+        $scope.showBrainvisualizerPanel = false;
+        $scope.brainvisualizerClick = function()
+        {
+          if ($scope.helpModeActivated)
+          {
+            return $scope.help($scope.UI.BRAIN_VISUALIZER);
+          }
+          else if ($scope.brainvisualizerIsDisabled || $scope.loadingBrainvisualizerPanel)
+          {
+            return;
+          }
+          else
+          {
+            return $scope.toggleBrainvisualizer();
+          }
+        };
+
 
       }]);
 } ());

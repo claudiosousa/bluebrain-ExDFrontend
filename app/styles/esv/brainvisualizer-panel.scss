@@ -1,0 +1,78 @@
+@import "pop-over-viewer.scss";
+
+$brainvisualizerPanelStartWidth: 750px;
+$brainvisualizerPanelStartWidthLargeScreen: 950px;
+$brainvisualizerPanelStartHeight: 500px;
+$brainvisualizerPanelMinWidth: 100px;
+$brainvisualizerPanelMinHeight: 75px;
+$brainvisualizerPanelHeadingHeight: 25px;
+$brainvisualizerPanelHeadingMargin: 5px;
+$brainvisualizerPanelHeadingHeightTotal: $brainvisualizerPanelHeadingHeight + 2 * $brainvisualizerPanelHeadingMargin;
+
+.brainvisualizer-panel-widget {
+  @extend .pop-over-viewer;
+  display: flex !important;
+  top: 2%;
+  left: 2%;
+  width: $brainvisualizerPanelStartWidth;
+  height: $brainvisualizerPanelStartHeight;
+  min-width: $brainvisualizerPanelMinWidth;
+  min-height: $brainvisualizerPanelMinHeight;
+  background: white;
+
+  .brainvisualizer-panel-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+  .brainvisualizer-panel-header {
+    position: absolute;
+    width: 80%;
+    width: calc(100% - 50px);
+    height: $brainvisualizerPanelHeadingHeight;
+    margin: $brainvisualizerPanelHeadingMargin;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #e1e1e1;
+    background: #f8f8f8;
+  }
+
+  .brainvisualizer-panel-title {
+    padding-left: 10px;
+    margin: $brainvisualizerPanelHeadingMargin;
+  }
+
+  .brainvisualizer-panel-content {
+    width: 100%;
+    height: calc(100% - 2.51em);
+    padding: 15px;
+    padding-top: 5px;
+    margin: $brainvisualizerPanelHeadingHeightTotal 0 0 0;
+  }
+
+  .button-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+}
+
+@media (min-width: 1024px){
+  .brainvisualizer-panel-widget {
+    width: $brainvisualizerPanelStartWidthLargeScreen;
+  }
+}
+  /* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+.noselect {
+   cursor: default;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* Internet Explorer/Edge */
+   user-select: none;           /* Non-prefixed version, currently
+                                  not supported by any browser */
+}
