@@ -160,7 +160,7 @@
           function transformClusterAvailability(clusterAvailability) {
             var result = { free: 'NaN', total: 'NaN'}; // Displayed if there is an issue with the Slurmonitor server
             if (clusterAvailability) {
-              result.free = clusterAvailability.nodes[1];
+              result.free = clusterAvailability.free;
               result.total = clusterAvailability.nodes[3];
             }
             return result;
