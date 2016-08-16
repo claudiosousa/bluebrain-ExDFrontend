@@ -8301,8 +8301,8 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
       }
     } else {
       if (node instanceof THREE.Light) {
-        if (node.shadowMap) {
-          that.renderer.clearTarget( node.shadowMap );
+        if (node.shadow!==undefined && node.shadow.map!==undefined) {
+          that.renderer.clearTarget( node.shadow.map );
         }
       }
     }
