@@ -41,7 +41,8 @@
       GRAPHICS_PERFORMANCE: 14,
       BRAIN_VISUALIZER: 15
     })
-    .constant('SLIDER_INITIAL_POSITION', 50);
+    .constant('INITIAL_LIGHT_DIFFUSE', 1)
+    .constant('MINIMAL_LIGHT_DEFUSE', 0.2);
 
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl',
@@ -53,7 +54,7 @@
       'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
-      'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
+      'simulationInfo', 'INITIAL_LIGHT_DIFFUSE', 'MINIMAL_LIGHT_DEFUSE', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory',
       function ($rootScope, $scope, $stateParams, $timeout,
@@ -64,7 +65,7 @@
         assetLoadingSplash, STATE, nrpBackendVersions,
         nrpFrontendVersion, UI,
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
-        simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
+        simulationInfo, INITIAL_LIGHT_DIFFUSE, MINIMAL_LIGHT_DEFUSE, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory) {
 
@@ -155,7 +156,7 @@
         $scope.contextMenuState = contextMenuState;
         $scope.objectInspectorService = objectInspectorService;
 
-        $scope.sliderPosition = SLIDER_INITIAL_POSITION;
+        $scope.lightDiffuse = INITIAL_LIGHT_DIFFUSE;
 
         simulationInfo.experimentID = 'experiment-not-found';
         if (!bbpConfig.get('localmode.forceuser', false)) {
@@ -328,15 +329,18 @@
           });
           nrpAnalytics.tickDurationEvent('Simulate');
 
-          // Lights management
-          $scope.$watch('sliderPosition', function () {
-            var ratio = $scope.sliderPosition / 50; // turns the slider position (in [0,100]) into a ratio (in [0, 2])
-            gz3d.scene.emitter.emit('lightChanged', ratio);
-          });
-
           // make light's helper geometry visible
           $scope.setLightHelperVisibility(true);
           userNavigationService.init();
+        };
+
+        // Lights management
+        $scope.modifyLight = function (direction) {
+          $scope.lightDiffuse += MINIMAL_LIGHT_DEFUSE * direction;
+          if ($scope.lightDiffuse < MINIMAL_LIGHT_DEFUSE) {
+            $scope.lightDiffuse = MINIMAL_LIGHT_DEFUSE;
+          }
+          gz3d.scene.emitter.emit('lightChanged', $scope.lightDiffuse);
         };
 
         $scope.updateSimulation = function (newState) {
@@ -468,7 +472,7 @@
           gz3d.scene.controls.update();
           gz3d.scene.controls.onMouseUpManipulator('initPosition');
           gz3d.scene.controls.onMouseUpManipulator('initRotation');
-          $scope.sliderPosition = SLIDER_INITIAL_POSITION;
+          $scope.lightDiffuse = INITIAL_LIGHT_DIFFUSE;
           gz3d.scene.resetView(); //update the default camera position, if defined
         };
 

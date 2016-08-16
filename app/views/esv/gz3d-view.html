@@ -170,11 +170,8 @@
                   </div>
                 </div>
               </div>
-              <div ng-if="viewState.isOwner" class="hbp-toolbar-large-tool hidden-xs" ng-class="{'highlighted': currentSelectedUIElement === UI.LIGHT_SLIDER}" ng-click="helpModeActivated && help(UI.LIGHT_SLIDER);">
-                <i class="fa fa-lightbulb-o"></i>
-                <input id="lightslider" type="range" min="0" max="100" steps="10" ng-model="$parent.sliderPosition" ng-disabled="helpModeActivated"
-                       ng-mouseup="$event.stopPropagation(); focus('container');" />
-              </div>
+              <div class="fa fa-lightbulb-o fa-2x vertcenter hbp-toolbar-action ng-scope" ng-if="viewState.isOwner" ng-disabled="helpModeActivated" ng-click="modifyLight(1)"><img src="img/esv/empty.png"></div>
+              <div class="fa fa-lightbulb-o fa-1x vertcenter hbp-toolbar-action ng-scope" ng-if="viewState.isOwner" ng-disabled="helpModeActivated" ng-click="modifyLight(-1)"><img src="img/esv/empty.png"></div>
               <!-- camera translation tool -->
               <div class="hbp-toolbar-item hidden-xs hidden-sm esv-remove-from-touchscreen hbp-camera-tool-container" ng-class="{'highlighted': currentSelectedUIElement === UI.CAMERA_TRANSLATION}" ng-click="(helpModeActivated && help(UI.CAMERA_TRANSLATION)) || helpModeActivated || showKeyboardControlInfo();">
                 <div class="hbp-camera-tool-controls">
