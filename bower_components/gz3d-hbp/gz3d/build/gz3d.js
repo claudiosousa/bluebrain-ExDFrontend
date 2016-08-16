@@ -8416,7 +8416,7 @@ GZ3D.SdfParser.prototype.onConnectionError = function()
 GZ3D.SdfParser.prototype.parseColor = function(colorStr)
 {
   var color = {};
-  var values = colorStr.split(' ');
+  var values = colorStr.trim().split(' ');
 
   color.r = parseFloat(values[0]);
   color.g = parseFloat(values[1]);
@@ -8435,7 +8435,7 @@ GZ3D.SdfParser.prototype.parseColor = function(colorStr)
 GZ3D.SdfParser.prototype.parse3DVector = function(vectorStr)
 {
   var vector3D = {};
-  var values = vectorStr.split(' ');
+  var values = vectorStr.trim().split(' ');
   vector3D.x = parseFloat(values[0]);
   vector3D.y = parseFloat(values[1]);
   vector3D.z = parseFloat(values[2]);
@@ -8522,7 +8522,7 @@ GZ3D.SdfParser.prototype.spawnLightFromSDF = function(sdfObj)
  */
 GZ3D.SdfParser.prototype.parsePose = function(poseStr)
 {
-  var values = poseStr.split(' ');
+  var values = poseStr.trim().split(' ');
 
   var position = new THREE.Vector3(parseFloat(values[0]),
           parseFloat(values[1]), parseFloat(values[2]));
@@ -8551,7 +8551,7 @@ GZ3D.SdfParser.prototype.parsePose = function(poseStr)
  */
 GZ3D.SdfParser.prototype.parseScale = function(scaleStr)
 {
-  var values = scaleStr.split(' ');
+  var values = scaleStr.trim().split(' ');
   var scale = new THREE.Vector3(parseFloat(values[0]), parseFloat(values[1]),
           parseFloat(values[2]));
   return scale;
@@ -8682,7 +8682,7 @@ GZ3D.SdfParser.prototype.createMaterial = function(material)
 GZ3D.SdfParser.prototype.parseSize = function(sizeStr)
 {
   var sizeObj;
-  var values = sizeStr.split(' ');
+  var values = sizeStr.trim().split(' ');
   var x = parseFloat(values[0]);
   var y = parseFloat(values[1]);
   var z = parseFloat(values[2]);
