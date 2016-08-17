@@ -2,11 +2,6 @@
 <link rel="stylesheet" href="styles/esv/esv-web.css" />
 <!-- endbuild -->
 
-<div class="alert alert-warning">
-  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Running simulations is unavailable due to
-  server maintenance. Full functionality will be available again as soon as possible!
-</div>
-
 <div class="container-with-navbar-margin">
   <div class="list-container">
     <div class="form-group form-inline col-xs-12">
@@ -76,7 +71,7 @@
               </button>
 
               <!-- No edit rights: launch button disabled -->
-              <button ng-if="config.canLaunchExperiments && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, maintenance is ongoing"
+              <button ng-if="config.canLaunchExperiments && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have sufficient rights to launch a simulation."
                 tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch
               </button>
@@ -91,7 +86,7 @@
                 <i class="fa fa-upload"></i> Upload custom environment
               </button>
               <!-- No edit rights: upload custom environment button is disabled -->
-              <button ng-if="config.canUploadEnvironment && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, maintenance is ongoing"
+              <button ng-if="config.canUploadEnvironment && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have edit rights."
                 tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-upload"></i> Upload custom environment
               </button>
@@ -139,7 +134,7 @@
                       <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
                     </a>
                     <!-- No edit rights: stop button disabled -->
-                    <a type="button" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, maintenance is ongoing" tooltip-trigger="mouseenter"
+                    <a type="button" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have sufficient rights to stop the simulation." tooltip-trigger="mouseenter"
                       tooltip-placement="top" ng-if="!userinfo.hasEditRights && (simul.state !== STATE.CREATED)"> Stop
                   </a>
                   </td>
