@@ -57,6 +57,9 @@ module.exports = function(config) {
       'bower_components/SHA-1/sha1.js',
       'bower_components/angulartics/src/angulartics.js',
       'bower_components/angulartics-google-analytics/lib/angulartics-google-analytics.js',
+      'bower_components/brainvisualizer/src/brain3D.js',
+      'bower_components/brainvisualizer/src/brain3Dmainview.js',
+      'bower_components/brainvisualizer/shaders/brain3Dshaders.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'bower_components/three.js/examples/js/controls/OrbitControls.js',
@@ -73,19 +76,6 @@ module.exports = function(config) {
       'bower_components/gz3d-hbp/gz3d/client/js/include/avatar-controls.js',
       'bower_components/gz3d-hbp/gz3d/build/gz3d.js',
 
-      'bower_components/brainvisualizer/src/brain3D.js',
-      'bower_components/brainvisualizer/src/brain3Dmainview.js',
-      'bower_components/brainvisualizer/shaders/brain3Dshaders.js',
-
-      'bower_components/brainvisualizer/data/brain3Dposes_1.js',
-      'bower_components/brainvisualizer/data/brain3Dposes_2.js',
-      'bower_components/brainvisualizer/data/brain3Dposes_3.js',
-      'bower_components/brainvisualizer/data/brain3Dposes_4.js',
-      'bower_components/brainvisualizer/data/brain3Dposes_5.js',
-      'bower_components/brainvisualizer/data/brain3Dposes_6.js',
-      'bower_components/brainvisualizer/data/brain3Dallannotation.js',
-      'bower_components/brainvisualizer/data/brain3Dembeddeddata.js',
-
       'test/support/**/*.js',
       './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
@@ -101,6 +91,14 @@ module.exports = function(config) {
       'app/scripts/esv/services/*.js',
       'app/views/esv/*.html',
       'app/views/common/*.html',
+      'app/data/brainvisualizer/brain3Dallannotation.js',
+      'app/data/brainvisualizer/brain3Dposes_1.js',
+      'app/data/brainvisualizer/brain3Dposes_2.js',
+      'app/data/brainvisualizer/brain3Dposes_3.js',
+      'app/data/brainvisualizer/brain3Dposes_4.js',
+      'app/data/brainvisualizer/brain3Dposes_5.js',
+      'app/data/brainvisualizer/brain3Dposes_6.js',
+      'app/data/brainvisualizer/brain3Dembeddeddata.js',
       {pattern: 'app/views/*.*', included: true, served: true}
     ],
 
