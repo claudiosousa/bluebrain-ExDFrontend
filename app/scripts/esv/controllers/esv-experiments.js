@@ -50,8 +50,8 @@
           });
         };
 
-        var loadExperiments = function (ctx, experimentId) {
-          var experimentsService = experimentsFactory.createExperimentsService(ctx, experimentId);
+        var loadExperiments = function (ctx, experimentId, experimentFolderUUID) {
+          var experimentsService = experimentsFactory.createExperimentsService(ctx, experimentId, experimentFolderUUID);
           experimentsService.initialize();
           experimentsService.experiments.then(function (experiments) {
             $scope.experiments = experiments;
@@ -108,7 +108,7 @@
                 $scope.config.canCloneExperiments = true;
                 $scope.config.canLaunchExperiments = false;
               }
-              loadExperiments(ctx, response.experimentID);
+              loadExperiments(ctx, response.experimentID, response.experimentFolderUUID);
             },
             function (data) {
               $scope.experiments = [{

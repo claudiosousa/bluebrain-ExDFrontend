@@ -4,6 +4,7 @@ describe('Directive: resizeable', function () {
 
   var scope, compile, element, document, window, resizeDiv;
   var mockedMouseDownEventStopPropagation;
+  var startHeight, startWidth;
 
   // Note that we set those two values to '0'. This is mainly due to the problem that phantomjs
   // does not eat these values for 'top' and 'left' in the CSS – they are always set to '0'.
@@ -16,6 +17,8 @@ describe('Directive: resizeable', function () {
     compile = $compile;
     document = $document;
     window = $window;
+    startHeight = window.innerHeight;
+    startWidth = window.innerWidth;
     scope.onResizeEnd = jasmine.createSpy('onResizeEnd');
     mockedMouseDownEventStopPropagation = jasmine.createSpy('stopPropagation');
   }));
@@ -34,8 +37,8 @@ describe('Directive: resizeable', function () {
 
     it('should check for the default window height and width', function () {
       // Default height and width
-      expect(window.innerHeight).toBe(300);
-      expect(window.innerWidth).toBe(400);
+      expect(window.innerHeight).toBe(startHeight);
+      expect(window.innerWidth).toBe(startWidth);
     });
 
     it('should call the onResizeEnd method', function () {
