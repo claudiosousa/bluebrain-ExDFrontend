@@ -71,9 +71,9 @@
         templateUrl: 'views/esv/gz3d-view.html',
         controller: 'Gz3dViewCtrl',
         resolve: {
-          siminfo: function (simulationInfo, $stateParams) {
+          siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
             return simulationInfo.initialize($stateParams.serverID, $stateParams.simulationID, $stateParams, $stateParams.ctx);
-          }
+          }]
         }
       };
 
@@ -111,7 +111,7 @@
       // Here we specify a global http request timeout value for all requests, for all browsers
       return {
         request: function (config) {
-         // config.timeout = 120 * 1000; //request timeout in milliseconds
+          // config.timeout = 120 * 1000; //request timeout in milliseconds
           return config;
         }
       };
