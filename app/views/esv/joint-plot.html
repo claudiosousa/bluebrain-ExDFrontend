@@ -1,29 +1,24 @@
 <div class="jointplot-wrapper" resizeable close-widget="toggleJointPlot()">
   <div class="jointplot" ng-show="allJoints.length > 0">
     <div class="property-selector">
-      <label>
-        <input value="position" type="radio" ng-model="selectedProperty.name">
-        position
-      </label><br/>
-      <label>
-        <input value="velocity" type="radio" ng-model="selectedProperty.name">
-        velocity
-      </label><br/>
-      <label>
-        <input value="effort" type="radio" ng-model="selectedProperty.name">
-        effort
-      </label><br/>
+      <div ng-repeat="prop in properties">
+        <label>
+          <input type="radio" ng-model="selectedProperty.name" value="{{prop}}" ng-change="updateVisibleSeries()">
+          {{prop}}
+        </label>
+        <br/>
+      </div>
     </div>
     <div class="joint-selector">
-      <span ng-repeat="joint in allJoints">
-        <label ng-style="getCurveColor(joint)" for="{{joint}}">
-          <input type="checkbox" ng-model="selectedJoints[joint]" name="group" id="{{joint}}">
+      <span ng-repeat="joint in allJoints" ng-style="{color:jointColors[$index]}">
+        <label for="{{joint}}">
+          <input type="checkbox" ng-model="selectedJoints[joint]" name="group" ng-change="updateVisibleSeries()">
           {{joint}}
         </label><br/>
       </span>
     </div>
     <div class="linechart-wrapper">
-      <linechart class="linechart" height="{{chartHeight}}" data="curves" options="plotOptions"></linechart>
+      <linechart class="linechart" data="curves" options="plotOptions"></linechart>
     </div>
   </div>
   <div class="jointplot" ng-hide="allJoints.length > 0">
