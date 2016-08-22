@@ -1,12 +1,14 @@
 <div id="spiketrain-widget" resizeable class="spikegraph" close-widget="toggleSpikeTrain()">
   <div class="leftaxis">
-    <div class="arrow">
+    <div class="spikearrow">
       <p class="legend">NeuronID</p>
     </div>
   </div>
   <div id="spiketrain-display" class="spiketrain">
-    <canvas id="spiketrain-canvas-1"></canvas>
-    <canvas id="spiketrain-canvas-2"></canvas>
+    <div id="spiketrain-container">
+      <canvas id="spiketrain-canvas-1"></canvas>
+      <canvas id="spiketrain-canvas-2"></canvas>
+    </div>
   </div>
   <button type="button" class="button-close" data-ng-click="closeWidget()">×</button>
 </div>

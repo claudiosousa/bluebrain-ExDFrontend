@@ -10,7 +10,7 @@
 <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable transfer function edition.</div>
 <hr style="margin-bottom: 10px;">
 <h4 class="collapsable-title" ng-click="togglePopulations()">
-  <div class="arrow" ng-class="showPopulations?'expanded':'collapsed'"></div>
+  <div class="collapsearrow" ng-class="showPopulations?'expanded':'collapsed'"></div>
   <span>Populations</span>
 </h4>
 <div ng-show="showPopulations" class="animate-appearance">

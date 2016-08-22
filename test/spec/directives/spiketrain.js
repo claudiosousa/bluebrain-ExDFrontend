@@ -5,7 +5,7 @@ describe('Directive: spiketrain', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
 
-  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout, RESET_TYPE;
+  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout, RESET_TYPE, SPIKE_TIMELABEL_SPACE;
   var SERVER_URL = 'ws://localhost:1234';
   var SPIKE_TOPIC = '/cle_sim/spike';
 
@@ -38,7 +38,7 @@ describe('Directive: spiketrain', function () {
 
   beforeEach(inject(function (
     $rootScope, $compile, $window,
-    _roslib_, _stateService_, _STATE_, $timeout, _RESET_TYPE_) {
+    _roslib_, _stateService_, _STATE_, $timeout, _RESET_TYPE_, _SPIKE_TIMELABEL_SPACE_) {
     parentscope = $rootScope.$new();
     parentscope.showSpikeTrain = false;
     element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')(parentscope);
@@ -50,6 +50,7 @@ describe('Directive: spiketrain', function () {
     stateService = _stateService_;
     STATE = _STATE_;
     RESET_TYPE = _RESET_TYPE_;
+    SPIKE_TIMELABEL_SPACE = _SPIKE_TIMELABEL_SPACE_;
   }));
 
   it('should draw separator if not first time run', function () {
@@ -112,7 +113,7 @@ describe('Directive: spiketrain', function () {
     // canvas size is 300x150 as default
     // The first column is black except of the last 16 pixel
     var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
-    for (var i = 0; i < canvasData.length - (4 * 17); i = i + 4) {
+    for (var i = SPIKE_TIMELABEL_SPACE * 4; i < canvasData.length - (4 * 17); i = i + 4) {
       // "r" value of our spike
       expect(canvasData[i]).toBe(0);
       // "g" value of our spike
@@ -143,7 +144,7 @@ describe('Directive: spiketrain', function () {
     // canvas size is 300x150 as default
     // The first column is black except of the last 16 pixel
     canvasData = $scope.ctx[$scope.currentCanvasIndex].getImageData(0, 0, 1, $scope.canvas[$scope.currentCanvasIndex].height).data;
-    for (i = 0; i < canvasData.length - (4 * 17); i = i + 4) {
+    for (i = SPIKE_TIMELABEL_SPACE * 4; i < canvasData.length - (4 * 17); i = i + 4) {
       // "r" value of our spike
       expect(canvasData[i]).toBe(0);
       // "g" value of our spike
@@ -167,7 +168,7 @@ describe('Directive: spiketrain', function () {
     // canvas size is 300x150 as default
     // The first column is red except for the last 15 pixel
     var canvasData = $scope.ctx[1].getImageData(0, 0, 1, $scope.canvas[1].height).data;
-    for (var i = 0; i < canvasData.length - (4 * 16); i = i + 4) {
+    for (var i = SPIKE_TIMELABEL_SPACE * 4; i < canvasData.length - (4 * 16); i = i + 4) {
       // "r" value
       expect(canvasData[i]).toBe(255);
       // "g" value
@@ -233,7 +234,7 @@ describe('Directive: spiketrain', function () {
 
 
     // Mock this DIV, because offsetWidth is not available in this test
-    $scope.directiveDiv = {};
+    $scope.splikeContainer = $scope.directiveDiv = { style: {} };
     $scope.directiveDiv.offsetWidth = 400;
     $scope.directiveDiv.offsetHeight = 200;
 
