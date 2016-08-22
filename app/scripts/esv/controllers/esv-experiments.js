@@ -117,7 +117,6 @@
                   description: 'Database unavailable'
                 }
               }];
-              serverError.display(data);
             });
         }
         if (!$stateParams.ctx) {
