@@ -64,14 +64,14 @@
 
   describe('Controller: esvExperimentsCtrl', function () {
     var $controller, $httpBackend, $rootScope, $templateCache, $compile, $stateParams, $interval,
-      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL;
+      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window;
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
 
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_,
-      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_) {
+      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_) {
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
@@ -86,6 +86,7 @@
       SERVER_POLL_INTERVAL = _SERVER_POLL_INTERVAL_;
       proxyUrl = bbpConfig.get('api.proxy.url');
       oidcUrl = bbpConfig.get('api.user.v0');
+      $window = _$window_;
     }));
 
     afterEach(function () {
@@ -345,6 +346,7 @@
         it('should trigger PUT request on clone click', function () {
           var page = renderEsvWebPage();
           page.find('.experiment-box').first().click();
+          spyOn($window.location, 'reload');
           $httpBackend.whenPUT(collabContextlessUrl).respond(200, {});
           page.find('[analytics-event="Clone"]').click();
           $httpBackend.flush();
