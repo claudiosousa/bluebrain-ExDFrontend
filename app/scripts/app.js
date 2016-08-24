@@ -72,7 +72,7 @@
         controller: 'Gz3dViewCtrl',
         resolve: {
           siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
-            return simulationInfo.initialize($stateParams.serverID, $stateParams.simulationID, $stateParams, $stateParams.ctx);
+            return simulationInfo.initialize($stateParams.serverID, $stateParams.simulationID, $stateParams.ctx);
           }]
         }
       };
