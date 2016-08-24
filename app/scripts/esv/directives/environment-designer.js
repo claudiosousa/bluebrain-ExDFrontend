@@ -1,3 +1,4 @@
+/* global THREE: false */
 (function () {
   'use strict';
 
@@ -78,9 +79,40 @@
               }
             };
 
+            scope.selectCreatedEntity = function(event) {
+
+              scope.gz3d.gui.guiEvents._events.notification_popup = scope.default_notification_popup_handle;
+
+              var obj = scope.gz3d.scene.getByName(scope.expectedObjectName);
+              scope.expectedObjectName = null;
+
+              if (obj) {
+                scope.gz3d.scene.selectEntity(obj);
+                objectInspectorService.toggleView(true);
+              }
+            };
+
+            scope.interceptEntityCreationEvent = function(model, type) {
+
+              scope.defaultEntityCreatedCallback(model, type);
+              scope.gz3d.iface.gui.emitter._events.entityCreated = scope.defaultEntityCreatedCallback;
+              // local variable <model> holds a temporary object;
+              // another THREE.Object3D is about to be created by
+              // modelUpdate method from GZ3D.GZIface.prototype.onConnected
+              // with this.createModelFromMsg(message). We assign a notification
+              // handler for that event.
+              scope.expectedObjectName = model.name;
+              scope.default_notification_popup_handle = scope.gz3d.gui.guiEvents._events.notification_popup;
+              scope.gz3d.gui.guiEvents._events.notification_popup = scope.selectCreatedEntity;
+            };
+
             scope.addModel = function (modelName) {
               if (stateService.currentState !== STATE.INITIALIZED) {
+
                 window.guiEvents.emit('spawn_entity_start', modelName);
+
+                scope.defaultEntityCreatedCallback = scope.gz3d.iface.gui.emitter._events.entityCreated;
+                scope.gz3d.iface.gui.emitter._events.entityCreated = scope.interceptEntityCreationEvent;
 
                 panels.close();
               }

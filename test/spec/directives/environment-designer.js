@@ -89,11 +89,25 @@ describe('Directive: environment-designer', function () {
       andCallFake(function (m) {
         this.manipulationMode = m;
       }),
+      manipulationMode: undefined,
+      selectedEntity:{},
+      selectEntity: jasmine.createSpy('selectEntity').
+      andCallFake(function (obj) {
+        this.selectedEntity = obj;
+      }),
+      getByName: jasmine.createSpy('getByName').
+      andCallFake(function (name) {
 
-      manipulationMode: undefined
+        var obj = {};
+        obj.name = name;
+        return this.selectedEntity;
+      })
     };
+
+    /*jshint camelcase: false */
     gz3dMock = {
-      gui: {emitter: {emit: jasmine.createSpy('emit')}},
+      iface: {gui: {emitter:{_events: {entityCreated: jasmine.createSpy('entityCreated')}}}},
+      gui: {emitter: {emit: jasmine.createSpy('emit')}, guiEvents: {_events: {notification_popup: jasmine.createSpy('notification_popup')}}},
       scene: sceneMock,
       toggleScreenChangeMenu: jasmine.createSpy('toggleScreenChangeMenu')
     };
@@ -247,7 +261,34 @@ describe('Directive: environment-designer', function () {
 
   });
 
-  it('should create a new dummy anchor and click it when exporting the environment', function () {
+  it('should open object inspector after adding a model', function () {
+
+    var objName = 'cylinder_0';
+    var obj = {};
+    obj.name = objName;
+
+    $scope.expectedObjectName = objName;
+
+    $scope.selectCreatedEntity(objName + ' created');
+
+    expect($scope.gz3d.scene.selectedEntity === obj);
+    expect(objectInspectorService.toggleView).toHaveBeenCalled();
+  });
+
+  it('should check interceptEntityCreationEvent', function () {
+
+    var objName = 'cylinder_0';
+    var obj = {};
+    obj.name = objName;
+
+    $scope.addModel(objName);
+
+    $scope.interceptEntityCreationEvent(obj);
+
+    expect($scope.defaultEntityCreatedCallback).toHaveBeenCalled();
+  });
+
+    it('should create a new dummy anchor and click it when exporting the environment', function () {
     var exportSpy = jasmine.createSpy('export');
     simulationSDFWorld.andCallFake(function () {
       return {
