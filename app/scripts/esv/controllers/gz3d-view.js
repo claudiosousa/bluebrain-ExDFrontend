@@ -55,7 +55,7 @@
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'SLIDER_INITIAL_POSITION', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
-      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory',
+      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate',
       function ($rootScope, $scope, $stateParams, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -66,7 +66,7 @@
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
         simulationInfo, SLIDER_INITIAL_POSITION, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
-        userNavigationService, NAVIGATION_MODES, experimentsFactory) {
+        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -124,6 +124,11 @@
           this.isJoiningStoppedSimulation = false;
           this.isOwner = false;
           var _userID, _ownerID;
+          var viewState = this;
+          this.hasEditRights = function () {
+            return viewState.isOwner;
+          };
+
           Object.defineProperty(this, 'userID',
             {
               get: function () {
@@ -273,6 +278,8 @@
             nrpAnalytics.tickDurationEvent('Browser-initialization');
 
             gz3d.Initialize();
+            gz3d.iface.addCanDeletePredicate(isNotARobotPredicate);
+            gz3d.iface.addCanDeletePredicate($scope.viewState.hasEditRights);
 
             // Handle touch clicks to toggle the context menu
             // This is used to save the position of a touch start event used for content menu toggling

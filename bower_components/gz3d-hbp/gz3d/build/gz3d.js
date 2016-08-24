@@ -2185,6 +2185,7 @@ GZ3D.GZIface = function(scene, gui)
 
   this.init();
   this.visualsToAdd = [];
+  this.canDeletePredicates = [];
 
   // Stores AnimatedModel instances
   this.animatedModels = {};
@@ -2199,6 +2200,10 @@ GZ3D.GZIface = function(scene, gui)
   GZ3D.assetProgressCallback = undefined;
 
   this.webSocketConnectionCallbacks = [];
+};
+
+GZ3D.GZIface.prototype.addCanDeletePredicate = function(canDeletePredicate){
+  this.canDeletePredicates.push(canDeletePredicate);
 };
 
 GZ3D.GZIface.prototype.init = function()
@@ -2848,14 +2853,15 @@ GZ3D.GZIface.prototype.onConnected = function()
     messageType : 'entity_delete',
   });
 
-  var publishDeleteEntity = function(entity)
-  {
-    var modelMsg =
-    {
-      name: entity.name
-    };
-
-    that.deleteTopic.publish(modelMsg);
+  var publishDeleteEntity = function (entity) {
+    var canDelete = !that.canDeletePredicates.length ||
+      that.canDeletePredicates
+        .every(function (deletePredicate) {
+          return deletePredicate(entity) !== false;
+        });
+    if (canDelete) {
+      that.deleteTopic.publish({ name: entity.name });
+    }
   };
 
   this.gui.emitter.on('deleteEntity',

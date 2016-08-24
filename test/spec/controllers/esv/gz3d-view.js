@@ -164,6 +164,7 @@ describe('Controller: Gz3dViewCtrl', function () {
         scene: new THREE.Scene()
       },
       iface: {
+        addCanDeletePredicate: angular.noop,
         setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
         registerWebSocketConnectionCallback: jasmine.createSpy('registerWebSocketConnectionCallback'),
         webSocket: {
@@ -450,6 +451,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.showEditorPanel = true;
       scope.editClick();
       expect(scope.showEditorPanel).toBe(false);
+    });
+
+    it('should have editRights when owner', function () {
+      scope.viewState.isOwner = false;
+      expect(scope.viewState.hasEditRights()).toBe(false);
+      scope.viewState.isOwner = true;
+      expect(scope.viewState.hasEditRights()).toBe(true);
     });
 
     it('should set the forced user id in full local mode' , function () {
@@ -1304,6 +1312,7 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
         }
       },
       iface: {
+        addCanDeletePredicate: angular.noop,
         setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
         registerWebSocketConnectionCallback: jasmine.createSpy('registerWebSocketConnectionCallback')
       }
