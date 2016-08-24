@@ -5,20 +5,20 @@
       '$scope',
       '$location',
       '$stateParams',
-      '$state',
       'STATE',
       'serverError',
       'experimentsFactory',
       'collabConfigService',
+      '$window',
       function (
         $scope,
         $location,
         $stateParams,
-        $state,
         STATE,
         serverError,
         experimentsFactory,
-        collabConfigService
+        collabConfigService,
+        $window
       ) {
         $scope.STATE = STATE;
         $scope.pageState = {};
@@ -46,7 +46,7 @@
         $scope.cloneExperiment = function (experimentID) {
           $scope.isCloneRequested = true;
           collabConfigService.clone({ contextID: $stateParams.ctx }, { experimentID: experimentID }, function () {
-            $state.reload();
+            $window.location.reload();
           });
         };
 
