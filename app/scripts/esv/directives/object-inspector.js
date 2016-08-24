@@ -4,8 +4,8 @@
   angular.module('exdFrontendApp')
     .directive('objectInspector', [
       'OBJECT_VIEW_MODE',
-      'objectInspectorService',
-      function (OBJECT_VIEW_MODE, objectInspectorService) {
+      'objectInspectorService', 'baseEventHandler',
+      function (OBJECT_VIEW_MODE, objectInspectorService, baseEventHandler) {
         return {
           templateUrl: 'views/esv/object-inspector.html',
           restrict: 'E',
@@ -17,6 +17,10 @@
             });
 
             scope.OBJECT_VIEW_MODE = OBJECT_VIEW_MODE;
+
+            scope.suppressKeyPress = function(event) {
+              baseEventHandler.suppressAnyKeyPress(event);
+            };
           }
         };
       }]);

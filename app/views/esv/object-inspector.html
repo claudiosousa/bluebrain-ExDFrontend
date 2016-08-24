@@ -1,4 +1,4 @@
-<div id="object-inspector" class="object-inspector-widget" resizeable ng-show="objectInspectorService.isShown">
+<div id="object-inspector" class="object-inspector-widget" resizeable ng-show="objectInspectorService.isShown" ng-keydown="suppressKeyPress($event)">
   <!-- sections of the object inspector -->
   <ol class="sections-list">
     <!-- section - object identifier -->
