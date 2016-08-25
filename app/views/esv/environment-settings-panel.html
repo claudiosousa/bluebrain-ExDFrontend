@@ -1,0 +1,33 @@
+<!-- build:css(.tmp) styles/esv/environment-settings-panel.css -->
+<link rel="stylesheet" href="styles/esv/environment-settings-panel.css" />
+<!-- endbuild -->
+
+<div resizeable id="environment-settings-panel" class="environment-settings-panel-widget noselect" ng-show="showEnvironmentSettingsPanel"
+  ng-controller="environmentSettingsPanelCtrl" ng-keydown="suppressKeyPress($event)">
+  <div class="environment-settings-panel-header" movable-anchor-for-id="environment-settings-panel">
+    <h5 class="environment-settings-panel-title">3D Environment Settings</h5>
+  </div>
+
+  <!--
+  <environmentsettings class="environment-settings-panel-content" > </environmentsettings>
+-->
+
+  <div class="environment-settings-panel-content">
+
+    <tabset>
+      <tab heading="Quality" active="activeTab.quality">
+        <environmentsettingsquality></environmentsettingsquality>
+      </tab>
+
+      <tab heading="Environment" active="activeTab.environment">
+        <environment-settings-environment></environment-settings-environment>
+        </tab>
+
+      <tab heading="Color Correction" active="activeTab.color">
+        <environment-settings-colors></environment-settings-colors>
+      </tab>
+    </tabset>
+  </div>
+
+  <button type="button" class="button-close" data-ng-click="toggleEnvironmentSettings()">×</button>
+</div>

@@ -16,8 +16,17 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+
+      // The two following files are required by gz3d.js. Since
+      // order matters here, they should be in front of the bower
+      // section.
+
+      'bower_components/three.js/build/three.js',
+      'bower_components/three.js/examples/js/postprocessing/EffectComposer.js',
+
       // The lines between 'bower:' and 'endbower' are filled automagically with the respective bower components.
       // Note though that several packages are excluded (as described in the Gruntfile.js).
+
       // bower:
       'bower_components/es5-shim/es5-shim.js',
       'bower_components/jquery/dist/jquery.js',
@@ -68,7 +77,6 @@ module.exports = function(config) {
       'bower_components/three.js/examples/js/Detector.js',
       'bower_components/three.js/examples/js/shaders/CopyShader.js',
       'bower_components/three.js/examples/js/shaders/SSAOShader.js',
-      'bower_components/three.js/examples/js/postprocessing/EffectComposer.js',
       'bower_components/three.js/examples/js/postprocessing/RenderPass.js',
       'bower_components/three.js/examples/js/postprocessing/MaskPass.js',
       'bower_components/three.js/examples/js/postprocessing/ShaderPass.js',

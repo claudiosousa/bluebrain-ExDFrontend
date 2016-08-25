@@ -1,0 +1,21 @@
+@import "environment-settings-panel.scss";
+
+.environment-settings-environment-wrapper {
+  display:flex;
+}
+
+.esv-envsettings-bloom-slider {
+  vertical-align: top;
+  left: 5px;
+  padding: 0px;
+}
+
+.environment-settings-option-subblock-environment {
+  margin:10px 10px 10px 10px;
+};
+
+input[type="range"].esv-envsettings-bloom-slider {
+  display: inline;
+  width: 110px;
+  margin: 0px 20px 0px 5px;
+}

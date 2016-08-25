@@ -1,0 +1,134 @@
+@import "pop-over-viewer.scss";
+
+$environmentSettingsPanelStartWidth: 750px;
+$environmentSettingsPanelStartWidthLargeScreen:750px;
+$environmentSettingsPanelStartHeight: 670px;
+$environmentSettingsPanelMinWidth: 467px;
+$environmentSettingsPanelMinHeight: 200px;
+$environmentSettingsPanelHeadingHeight: 25px;
+$environmentSettingsPanelHeadingMargin: 5px;
+$environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHeight + 2 * $environmentSettingsPanelHeadingMargin;
+
+.environment-settings-panel-widget {
+  @extend .pop-over-viewer;
+   display: flex !important;
+   top: 3%;
+   left: 3%;
+   width: $environmentSettingsPanelStartWidth;
+   height: $environmentSettingsPanelStartHeight;
+   min-width: $environmentSettingsPanelMinWidth;
+   min-height: $environmentSettingsPanelMinHeight;
+   background: white;
+
+  .environment-settings-panel-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+  .environment-settings-panel-header {
+    position: absolute;
+    width: 80%;
+    width: calc(100% - 50px);
+    height: $environmentSettingsPanelHeadingHeight;
+    margin: $environmentSettingsPanelHeadingMargin;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #e1e1e1;
+    background: #f8f8f8;
+  }
+
+  .environment-settings-panel-title {
+    padding-left: 10px;
+    margin: $environmentSettingsPanelHeadingMargin;
+  }
+
+  .environment-settings-panel-content {
+    overflow: auto;
+    width: 100%;
+    padding: 20px;
+    margin: $environmentSettingsPanelHeadingHeightTotal 0 0 0;
+  }
+
+  .button-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+}
+
+@media (min-width: 1024px){
+  .environment-settings-panel-widget {
+    width: $environmentSettingsPanelStartWidthLargeScreen;
+  }
+}
+  /* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+.noselect {
+   cursor: default;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* Internet Explorer/Edge */
+   user-select: none;           /* Non-prefixed version, currently
+                                  not supported by any browser */
+}
+
+.environment-settings-checkbox-label
+{
+ font-style: normal;
+ font-weight: normal;
+ font-family: Courier, monospace;
+ font-size: 15px;
+ }
+
+.environment-settings-checkbox {
+  padding: 0;
+  margin:0;
+  vertical-align: bottom;
+  position: relative;
+  top: -6px;
+  right: 5px;
+}
+
+.environment-settings-radio-group
+ {
+  font-style: normal;
+  font-weight: normal;
+  font-family: Courier, monospace;
+  font-size: 15px;
+}
+
+.environment-settings-radio {
+  vertical-align: bottom;
+  position: relative;
+  top: -6px;
+  left:5px;
+  width:30px;
+}
+
+.environment-settings-option-subblock {
+  margin:10px 50px 10px 10px;
+
+};
+
+.environment-settings-textfield
+{
+  width:60px;
+}
+
+.esv-envsettings-slider
+{
+  vertical-align: top;
+  left: 5px;
+  padding: 0px;
+}
+
+input[type="range"]
+{
+  display: inline;
+  width: 200px;
+  margin: 0px 20px 0px 5px;
+}

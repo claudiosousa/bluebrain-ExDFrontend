@@ -116,9 +116,10 @@
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.OWNER_DISPLAY]='This information appears when you are not the displayed owner of the experiment and thus you are in a view-only mode.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.EXIT_BUTTON]='Here you can leave the simulation.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.CODE_EDITOR]='Toggle the experiment designer. Choose between the environment designer and the transfer function (TF) editor in the tabs above.\n- The environment designer allows to add, move, rotate and scale objects during the simulation. The environment model can be saved or loaded using the SDF format.\n- The TF editor allows to re-define or add new transfer functions into the current simulation. The transfer functions represent the main interface between the robot and the spiking neural network and define the conversion from the sensory input to the sensory neurons and from the network output to the robot control properties. A transfer function can be defined, loaded and saved as a Python script.'">
-        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.GRAPHICS_PERFORMANCE]='This Button toggles the performance hungry graphic options (shadows, ...)'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.BRAIN_VISUALIZER]='This button opens the brain visualizer.'">
+        <input type="hidden" ng-model="helpText" ng-init="helpText[UI.ENVIRONMENT_SETTINGS]='This button displays the 3D environment setting panel.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.USER_NAVIGATION]='Open user navigation sub-menu: Camera Button - Freeflying Camera / Character Button - Character bound physical presence.'">        <!-- overlay -->
+        <!-- overlay -->
         <div id="overlay" class="esv-overlay noselect">
           <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
             <div ng-if="viewState.isOwner"
@@ -261,11 +262,21 @@
               </div>
               <!-- toggle robot camera view -->
 
-              <!-- toggle graphics performance -->
+              <!-- toggle graphics performance
               <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.GRAPHICS_PERFORMANCE, 'active': showShadows}" ng-click="(!helpModeActivated) ? toggleGraphicsPerformance() : help(UI.GRAPHICS_PERFORMANCE);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <i class="fa fa-tachometer fa-2x vertcenter"></i>
               </div>
-              <!-- toggle graphics performance -->
+              toggle graphics performance -->
+
+              <!-- environment settings panel -->
+              <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow"
+                  ng-class="{'highlighted': currentSelectedUIElement === UI.ENVIRONMENT_SETTINGS, 'active': showEnvironmentSettingsPanel, disabled: environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
+                  ng-click="environmentSettingsClick()"
+                  v-busy="loadingEnvironmentSettingsPanel"
+                  v-busy-label="Loading the environment settings panel">
+                <i class="fa fa-tachometer fa-2x vertcenter"></i>
+              </div>
+              <!-- brain visualizer icon-->
 
               <!-- navigation mode -->
               <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.USER_NAVIGATION, 'active': showNavigationModeMenu}" ng-click="(!helpModeActivated) ? toggleNavigationModeMenu() : help(UI.USER_NAVIGATION);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
@@ -399,6 +410,9 @@
         <brainvisualizer-panel></brainvisualizer-panel>
         <!-- Brainvisualizer panel --->
 
+        <!-- Environment settings panel --->
+        <environment-settings-panel></environment-settings-panel>
+        <!-- Environment setting panel --->
 
       </div>
       <!-- container -->

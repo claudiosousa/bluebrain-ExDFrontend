@@ -1,0 +1,92 @@
+<!-- build:css(.tmp) styles/esv/environment-settings-colors.css -->
+<link rel="stylesheet" href="styles/esv/environment-settings-colors.css" />
+<!-- endbuild -->
+
+<h3>Color Correction</h3>
+<p>You can change the color curves, brightness and contrast of the scene: </p>
+
+<hr>
+
+<div class="environment-settings-color-wrapper">
+    <div class="environment-settings-color-curves">
+
+        <div class="environment-settings-option-subblock">
+
+            <div class="environment-settings-radio-group">
+
+                <label>
+            <input class="environment-settings-radio" type="radio"
+            ng-model="selectedColorChannel" ng-value="0">Red</label>
+
+                <label>
+            <input class="environment-settings-radio" type="radio"
+            ng-model="selectedColorChannel" ng-value="1">Green</label>
+
+                <label>
+            <input class="environment-settings-radio" type="radio"
+            ng-model="selectedColorChannel" ng-value="2">Blue</label>
+
+            </div>
+
+        </div>
+
+        <rgb-curve-editor selected-color-channel="selectedColorChannel" curve="composerSettings.rgbCurve" on-change="onRGBCurveChanged()"></rgb-curve-editor>
+
+        <div class="environment-settings-color-reset">
+
+            <button type="button" class="btn btn-default" ng-click="resetCurve()" ng-mouseup="$event.stopPropagation(); focus('container');">
+                <span>Reset Curve</span>
+        </button>
+
+        </div>
+
+    </div>
+
+    <div class="environment-settings-color-levels">
+
+        <div class="environment-settings-option-subblock">
+
+            <span class="environment-settings-color-levels-title">
+            Levels
+            </span>
+
+            <div class="environment-settings-option-subblock">
+
+                <label class="environment-settings-color-levels-slider-label">Black Point</label>
+                <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsInBlack" step="0.01" min="0" max="0.5"
+                    ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+                <label class="environment-settings-color-levels-slider-label">Midtone</label>
+                <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="inGamma" step="0.01" min="0.5" max="1.5"
+                    ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+                <label class="environment-settings-color-levels-slider-label">White Point</label>
+                <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsInWhite" step="0.01" min="0.5" max="1.0"
+                    ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+                <label class="environment-settings-color-levels-slider-label">Output Black</label>
+                <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsOutBlack" step="0.01" min="0" max="0.5"
+                    ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+                <label class="environment-settings-color-levels-slider-label">Output White</label>
+                <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsOutWhite" step="0.01" min="0.5" max="1.0"
+                    ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+                <div class="environment-settings-color-reset">
+
+                    <button type="button" class="btn btn-default" ng-click="resetLevels()" ng-mouseup="$event.stopPropagation(); focus('container');">
+                        <span>Reset Levels</span>
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+</div>

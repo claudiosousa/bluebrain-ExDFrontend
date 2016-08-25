@@ -1,0 +1,33 @@
+@import "environment-settings-panel.scss";
+
+.environment-settings-color-reset {
+  margin:10px 10px 10px 70px;
+}
+
+.environment-settings-color-wrapper {
+  display:flex;
+}
+
+.environment-settings-color-curves {
+   width: 340px;
+   min-width: 100px;
+   flex-shrink: 0;
+}
+
+.environment-settings-color-levels {
+   width: 50%;
+   min-width: 200px;
+   max-width: 250px;
+   flex-grow: 1;
+   margin:32px 0px 0px 0px;
+}
+
+.environment-settings-color-levels-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.environment-settings-color-levels-slider-label {
+    font-weight: normal;
+    font-size: 12px;
+}

@@ -115,7 +115,8 @@
         "angular",
         "moment",
         "_",
-        "d3"
+        "d3",
+        "THREE"
     ],
     "indent"        : 4         // Specify indentation spacing
 

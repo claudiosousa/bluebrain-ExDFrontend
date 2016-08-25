@@ -1272,7 +1272,59 @@ describe('Controller: Gz3dViewCtrl', function () {
 
 
   });
+
+
+ describe('(EnvironmentSettings)', function ()
+  {
+    beforeEach(function ()
+    {
+      stateParams.ctx = 'a context id';
+      lockServiceMock.tryAddLock.reset();
+      lockServiceMock.releaseLock.reset();
+
+      Gz3dViewCtrl = controller('Gz3dViewCtrl', {
+        $rootScope: rootScope,
+        $scope: scope,
+        collabExperimentLockService: collabExperimentLockService
+
+      });
+    });
+
+    it('should enable display of the environment settings panel', function ()
+    {
+      scope.showEnvironmentSettingsPanel = false;
+      stateParams.ctx = '';
+      scope.toggleEnvironmentSettings();
+      expect(scope.showEnvironmentSettingsPanel).toBe(true);
+    });
+
+    it('should open of the environment settings panel', function ()
+    {
+      scope.showEnvironmentSettingsPanel = false;
+      stateParams.ctx = '';
+      scope.environmentSettingsClick();
+      expect(scope.showEnvironmentSettingsPanel).toBe(true);
+    });
+
+    it('should display the help of environment settings panel', function ()
+    {
+      scope.showEnvironmentSettingsPanel = false;
+      scope.helpModeActivated = true;
+      stateParams.ctx = '';
+      scope.environmentSettingsClick();
+      expect(scope.showEnvironmentSettingsPanel).toBe(false);
+      scope.helpModeActivated = false;
+    });
+
+
+
+
+  });
+
 });
+
+
+
 
 describe('Controller: Gz3dViewCtrl - mocked window', function () {
   var Gz3dViewCtrl,
