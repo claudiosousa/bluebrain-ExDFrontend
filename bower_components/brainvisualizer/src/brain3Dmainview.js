@@ -202,17 +202,32 @@ BRAIN3D.MainView.prototype.initImages = function ()        // Init images
 BRAIN3D.MainView.prototype.initInteractivity = function ()
 {
     var that = this;
-    this.container.addEventListener('mousemove', function (e) { that.mouseMove.call(that, e); }, false);
-    this.container.addEventListener('mousedown', function (e) { that.mouseDown.call(that, e); }, false);
-    this.container.addEventListener('mouseup', function (e) { that.mouseUp.call(that, e); }, false);
-    this.container.addEventListener('mouseout', function (e) { that.mouseOut.call(that, e); }, false);
+
+    this.container.addEventListener('mousemove', this.mouseMoveHandler = function (e) { that.mouseMove.call(that, e); }, false);
+    this.container.addEventListener('mousedown', this.mouseDownHandler = function (e) { that.mouseDown.call(that, e); }, false);
+    this.container.addEventListener('mouseup', this.mouseUpHandler = function (e) { that.mouseUp.call(that, e); }, false);
+    this.container.addEventListener('mouseout', this.mouseOutHandler = function (e) { that.mouseOut.call(that, e); }, false);
 
     // IE9, Chrome, Safari, Opera
-    this.container.addEventListener("mousewheel", function (e) { that.mouseWheel.call(that, e); }, false);
+    this.container.addEventListener("mousewheel", this.mouseWheelHandler = function (e) { that.mouseWheel.call(that, e); }, false);
 
     // Firefox
-    this.container.addEventListener("DOMMouseScroll", function (e) { that.mouseWheel.call(that, e); }, false);
-}
+    this.container.addEventListener("DOMMouseScroll", this.mouseWheelFXHandler = function (e) { that.mouseWheel.call(that, e); }, false);
+};
+
+//------------------------------
+// Terminate (should be called when the object is not required anymore to unregister its event listeners)
+
+BRAIN3D.MainView.prototype.terminate = function ()
+{
+    this.container.removeEventListener('mousemove', this.mouseMoveHandler);
+    this.container.removeEventListener('mousedown', this.mouseDownHandler);
+    this.container.removeEventListener('mouseup', this.mouseUpHandler);
+    this.container.removeEventListener('mouseout', this.mouseOutHandler);
+
+    this.container.removeEventListener('mousewheel', this.mouseWheelHandler);
+    this.container.removeEventListener('DOMMouseScroll', this.mouseWheelFXHandler);
+};
 
 //------------------------------
 // View size
