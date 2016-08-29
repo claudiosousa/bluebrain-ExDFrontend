@@ -785,11 +785,18 @@ describe('Controller: Gz3dViewCtrl', function () {
       var callbackOnClose = assetLoadingSplash.open.mostRecentCall.args[0];
       expect(callbackOnClose).toBeDefined();
       expect(callbackOnClose).toBe(scope.onSceneLoaded);
-      callbackOnClose();
-      scope.sliderPosition = 60.0;
-      scope.$apply();
-      expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 60 / 50);
-      expect(gz3d.scene.emitter.emit.callCount).toEqual(1);
+    });
+
+    it('should test light change', function() {
+      var initiaLightness = 1.0;
+      scope.lightDiffuse = initiaLightness;
+
+      scope.modifyLight(1);
+      expect(scope.lightDiffuse).toBeGreaterThan(initiaLightness);
+
+      scope.modifyLight(-1);
+      scope.modifyLight(-1);
+      expect(scope.lightDiffuse).toBeLessThan(initiaLightness);
     });
 
     it('should emit light intensity changes', function() {
