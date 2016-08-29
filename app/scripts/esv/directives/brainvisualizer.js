@@ -38,6 +38,14 @@
 
             });
 
+            // clean up on leaving
+            scope.$on("$destroy", function ()
+            {
+              if (brain3D !== undefined)
+              {
+                brain3D.terminate();
+              }
+            });
           }
         };
       }
