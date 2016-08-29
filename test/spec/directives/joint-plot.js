@@ -51,7 +51,6 @@ describe('Directive: joint-plot', function () {
       jointc: false
     };
     $scope.selectedProperty = { name: 'position' };
-    $scope.minYIntervalWidth = 1.0;
     RESET_TYPE = _RESET_TYPE_;
   }));
 
@@ -88,58 +87,32 @@ describe('Directive: joint-plot', function () {
     expect($scope.resetListenerUnbindHandler).toHaveBeenCalled();
   });
 
+  function checkSeriesVisibility(){
+    $scope.plotOptions.series.forEach(function (serie) {
+      expect(serie.visible).toBe($scope.selectedJoints[serie.joint] && serie.prop === $scope.selectedProperty.name);
+    });
+  }
+
   it('should register selected curves properly', function() {
     $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.curves.length).toBe(1);
-    expect($scope.curves[0].time).toBe(1.5);
 
-    expect($scope.curves[0].jointa_position).toBe(1);
-    expect($scope.curves[0].jointb_position).toBe(2);
+    expect($scope.curves.jointa_position[0].time).toBe(1.5);
 
-    // velocity and effort are not selected properties
-    expect($scope.curves[0].jointa_velocity).toBeUndefined();
-    expect($scope.curves[0].jointb_velocity).toBeUndefined();
+    //test values
+    messageMock.name.forEach(function (jointName, iJoint) {
+      ['position', 'velocity', 'effort'].forEach(function (propName) {
+        expect($scope.curves[jointName + '_' + propName][0].y).toBe(messageMock[propName][iJoint]);
+      });
+    });
 
-    expect($scope.curves[0].jointa_effort).toBeUndefined();
-    expect($scope.curves[0].jointb_effort).toBeUndefined();
-
-    expect($scope.curves[0].jointa).toBeUndefined();
-    expect($scope.curves[0].jointb).toBeUndefined();
-
-    expect($scope.curves[0].jointc_position).toBeUndefined();
-    expect($scope.curves[0].jointc_velocity).toBeUndefined();
-    expect($scope.curves[0].jointc_effort).toBeUndefined();
+    //test visibility
+    checkSeriesVisibility();
   });
-
-  it('should increase its y interval', function() {
-    messageMock.position[0] = -5;
-    messageMock.position[1] = 7;
-    $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.plotOptions.axes.y.min).toBe(-5);
-    expect($scope.plotOptions.axes.y.max).toBe(7);
-  });
-
-  it('should not decrease its y interval below min interval width', function() {
-    messageMock.position[0] = -8.0;
-    messageMock.position[1] = -7.5;
-    $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.plotOptions.axes.y.min).toBe(-8.25);
-    expect($scope.plotOptions.axes.y.max).toBe(-7.25);
-  });
-
-  it('should not take undefined into account for computing its y interval', function() {
-    messageMock.position[0] = undefined;
-    messageMock.position[1] = 5;
-    $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.plotOptions.axes.y.min).toBe(4.5);
-    expect($scope.plotOptions.axes.y.max).toBe(5.5);
-  });
-
 
   it('should register 2 datapoints that are sufficiently far in time', function() {
     $scope.onNewJointMessageReceived(messageMock);
     $scope.onNewJointMessageReceived(messageMockFar);
-    expect($scope.curves.length).toBe(2);
+    expect($scope.curves.jointa_position.length).toBe(2);
   });
 
   it('should connect to roslib when calling startJointDisplay', function () {
@@ -156,17 +129,17 @@ describe('Directive: joint-plot', function () {
   });
 
   it('should hide on resize begin', function() {
-    var lineChartWrapper = angular.element(element[0].childNodes[1].childNodes[5]);
+    expect(element.hasClass('resizing')).toBe(false);
     $scope.onResizeBegin();
-    expect(lineChartWrapper.css('visibility')).toBe('hidden');
+    expect(element.hasClass('resizing')).toBe(true);
   });
 
   it('should show on resize end', inject(function($timeout) {
-    var lineChartWrapper = angular.element(element[0].childNodes[1].childNodes[5]);
-    lineChartWrapper.css('visibility', 'hidden');
+    $scope.onResizeBegin();
+    expect(element.hasClass('resizing')).toBe(true);
     $scope.onResizeEnd();
     $timeout.flush();
-    expect(lineChartWrapper.css('visibility')).toBe('visible');
+    expect(element.hasClass('resizing')).toBe(false);
   }));
 
 
@@ -196,72 +169,23 @@ describe('Directive: joint-plot', function () {
     expect($scope.startJointDisplay).toHaveBeenCalled();
   });
 
-
-  it('should register new joint', function () {
-    expect($scope.curves.length).toBe(0);
-    expect($scope.selectedJoints.jointc).toBeFalsy();
+  it('should make new joint visible', function () {
     $scope.selectedJoints.jointc = true;
-    $scope.$digest();
-    $scope.onNewJointMessageReceived(messageMock);
-
-    expect($scope.curves[0].jointc_position).toBe(3);
-    expect($scope.curves[0].jointc_velocity).toBeUndefined();
-    expect($scope.curves[0].jointc_effort).toBeUndefined();
+    checkSeriesVisibility();
   });
 
-  it('should register new property', function () {
-    expect($scope.curves.length).toBe(0);
-    expect($scope.selectedProperty.name).toBe('position');
+  it('should make new property visible', function () {
     $scope.selectedProperty.name = 'effort';
-    $scope.$digest();
-    $scope.onNewJointMessageReceived(messageMock);
-
-    expect($scope.curves[0].jointa_effort).toBe(7);
-    expect($scope.curves[0].jointb_effort).toBe(8);
+    checkSeriesVisibility();
   });
 
-  it('should add colors to colormap', function () {
-    expect($scope.curveToColorIdx).toEqual({});
+  it('should color series per joint name', function () {
     $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.curveToColorIdx.jointa_position).toBe(0);
-    expect($scope.curveToColorIdx.jointb_position).toBe(1);
-  });
+    var colorScale = d3.scale.category10();
 
-  it('should clean colormap when curves are removed', function () {
-    $scope.curveToColorIdx = {some_joint_position : 0};
-    $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.curveToColorIdx.some_joint_position).toBeUndefined();
-  });
-
-  it('should have no color for unselected curve', function() {
-    var style = $scope.getCurveColor('jointc');
-    expect(style.color).toBeUndefined();
-  });
-
-
-
-  it('should gray-out a selected curve that has no color yet', function() {
-    var style = $scope.getCurveColor('jointa');
-    expect(style.color).toBe('#8A8A8A');
-  });
-
-
-  it('should provide curve color', function() {
-    spyOn($scope, 'indexToColor').andReturn('#FFFFFF');
-    $scope.onNewJointMessageReceived(messageMock);
-    var style = $scope.getCurveColor('jointa');
-    expect($scope.indexToColor).toHaveBeenCalled();
-    expect(style.color).toBe('#FFFFFF');
-  });
-
-
-  it('should use previously selected colors', function() {
-    spyOn($scope, 'indexToColor');
-    $scope.onNewJointMessageReceived(messageMock);
-    var indexToColorCallCount = $scope.indexToColor.callCount;
-    expect(indexToColorCallCount).toBeGreaterThan(0);
-    $scope.onNewJointMessageReceived(messageMock);
-    expect($scope.indexToColor.callCount).toBe(indexToColorCallCount);
+    $scope.plotOptions.series.forEach(function (serie) {
+      expect(serie.color).toBe(colorScale($scope.allJoints.indexOf(serie.joint)));
+    });
   });
 
   it('should pop datapoints when they are too old', function() {
@@ -277,9 +201,9 @@ describe('Directive: joint-plot', function () {
     $scope.onNewJointMessageReceived(messageMockClose);
     $scope.onNewJointMessageReceived(messageMockReallyFar1);
     // two first messages are filtered out, too old
-    expect($scope.curves.length).toBe(1);
+    expect($scope.curves.jointa_position.length).toBe(1);
     $scope.onNewJointMessageReceived(messageMockReallyFar2);
-    expect($scope.curves.length).toBe(2);
+    expect($scope.curves.jointa_position.length).toBe(2);
   });
 
 });
@@ -307,8 +231,8 @@ describe('Directive: joint-plot (missing necessary attributes)', function () {
   }));
 
   it('should log to error in case we have left out necessary attributes', function() {
-    expect($log.error).toHaveBeenCalledWith('The server URL was not specified!');
-    expect($log.error).toHaveBeenCalledWith('The topic for the joints was not specified!');
+    expect($log.error).toHaveBeenCalledWith('The server property was not specified!');
+    expect($log.error).toHaveBeenCalledWith('The topic property was not specified!');
   });
 
 });

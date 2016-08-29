@@ -8,7 +8,7 @@
 // use this if you want to recursively match all subfolders:
 // 'test/spec/**/*.js'
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
     // Load grunt tasks automatically
     require('load-grunt-tasks')(grunt);
@@ -115,55 +115,33 @@ module.exports = function(grunt) {
         // The actual grunt server settings
         connect: {
             options: {
-              port: 9000,
-              hostname: 'localhost',
-              livereload: 35729
+                port: 9000,
+                hostname: 'localhost',
+                livereload: 35729,
+                middleware: function (connect) {
+                    return [
+                        connect.static('.tmp'),
+                        connect().use('/bower_components', connect.static('./bower_components')),
+                        connect().use('/node_modules', connect.static('./node_modules')),
+                        connect.static(appConfig.app)
+                    ];
+                }
             },
             livereload: {
                 options: {
                     open: true,
-                    protocol: 'http',
-                    middleware: function(connect) {
-                        return [
-                            connect.static('.tmp'),
-                            connect().use(
-                                '/bower_components',
-                                connect.static('./bower_components')
-                            ),
-                            connect.static(appConfig.app)
-                        ];
-                    }
+                    protocol: 'http'
                 }
             },
             livereload_https: {
                 options: {
                     open: true,
-                    protocol: 'https',
-                    middleware: function(connect) {
-                        return [
-                            connect.static('.tmp'),
-                            connect().use(
-                                '/bower_components',
-                                connect.static('./bower_components')
-                            ),
-                            connect.static(appConfig.app)
-                        ];
-                    }
+                    protocol: 'https'
                 }
             },
             e2etest: {
                 options: {
-                    hostname: '0.0.0.0', // Accessible through 'localhost'
-                    middleware: function(connect) {
-                        return [
-                            connect.static('.tmp'),
-                            connect().use(
-                                '/bower_components',
-                                connect.static('./bower_components')
-                            ),
-                            connect.static(appConfig.app)
-                        ];
-                    }
+                    hostname: '0.0.0.0' // Accessible through 'localhost'
                 }
             },
             test: {
@@ -173,10 +151,8 @@ module.exports = function(grunt) {
                         return [
                             connect.static('.tmp'),
                             connect.static('test'),
-                            connect().use(
-                                '/bower_components',
-                                connect.static('./bower_components')
-                            ),
+                            connect().use('/bower_components', connect.static('./bower_components')),
+                            connect().use('/node_modules', connect.static('./node_modules')),
                             connect.static(appConfig.app)
                         ];
                     }
@@ -257,25 +233,25 @@ module.exports = function(grunt) {
                 ignorePath: /\.\.\//
             },
             test: {
-              src: 'test/karma.conf.js',
-              exclude: [ 'bootstrap-sass-official', 'angular-scenario' ],
-              devDependencies: true,
-              // We have to use a small hack here: We match also for the first 'b' in the ignorePath. This pattern will
-              // then be removed in the {{filePath}} below on replace and we add it again there. This is necessary due
-              // to the fact that the pattern without the 'b' does exclude jquery (at least). Still we considered this
-              // hack a better solution than doing the dependency handling in karma.conf.js manually!
-              ignorePath: /\.\.\/b/,
-              fileTypes: {
-                js: {
-                  block: /(([\s\t]*)\/\/\s*bower:*(\S*))(\n|\r|.)*?(\/\/\s*endbower)/gi,
-                  detect: {
-                    js: /'(.*\.js')/gi
-                  },
-                  replace: {
-                    js: '\'b{{filePath}}\','
-                  }
+                src: 'test/karma.conf.js',
+                exclude: [ 'bootstrap-sass-official', 'angular-scenario' ],
+                devDependencies: true,
+                // We have to use a small hack here: We match also for the first 'b' in the ignorePath. This pattern will
+                // then be removed in the {{filePath}} below on replace and we add it again there. This is necessary due
+                // to the fact that the pattern without the 'b' does exclude jquery (at least). Still we considered this
+                // hack a better solution than doing the dependency handling in karma.conf.js manually!
+                ignorePath: /\.\.\/b/,
+                fileTypes: {
+                    js: {
+                        block: /(([\s\t]*)\/\/\s*bower:*(\S*))(\n|\r|.)*?(\/\/\s*endbower)/gi,
+                        detect: {
+                            js: /'(.*\.js')/gi
+                        },
+                        replace: {
+                            js: '\'b{{filePath}}\','
+                        }
+                    }
                 }
-              }
             },
             sass: {
                 src: ['<%= yeoman.app %>/styles/**/*.{scss,sass}'],
@@ -468,46 +444,56 @@ module.exports = function(grunt) {
                         'data/**/*'
                     ]
                 }, {
-                    expand: true,
-                    cwd: '.tmp/img',
-                    dest: '<%= yeoman.dist %>/img',
-                    src: ['generated/*']
-                }, {
-                    expand: true,
-                    cwd: 'bower_components/bootstrap-sass-official/assets/',
-                    src: 'fonts/bootstrap/*',
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
-                    cwd: 'bower_components/font-awesome/',
-                    src: 'fonts/*',
-                    dest: '<%= yeoman.dist %>'
-                }, { // copy hbpcommon assets to dist
-                    expand: true,
-                    cwd: '.',
-                    src: 'bower_components/angular-hbp-common/dist/assets/**/*.*',
-                    dest: '<%= yeoman.dist %>'
-                }, { // copy hbp-collaboratory-theme assets to dist
-                    expand: true,
-                    cwd: '.',
-                    src: 'bower_components/hbp-collaboratory-theme/dist/fonts/**/*.*',
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
-                    cwd: '.',
-                    src: [
-                        'bower_components/bbp-oidc-client/js/bbp-oidc-client.js',
-                        'bower_components/jquery/dist/jquery.min.js'
-                    ],
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
-                    cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
-                    src: [ // the following files are needed by gz3d [NRRPLT-3145]
-                        'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
-                    ],
-                    dest: '<%= yeoman.dist %>/style/images'
-                }]
+                        expand: true,
+                        cwd: '.tmp/img',
+                        dest: '<%= yeoman.dist %>/img',
+                        src: ['generated/*']
+                    }, {
+                        expand: true,
+                        cwd: 'bower_components/bootstrap-sass-official/assets/',
+                        src: 'fonts/bootstrap/*',
+                        dest: '<%= yeoman.dist %>'
+                    }, {
+                        expand: true,
+                        cwd: 'bower_components/font-awesome/',
+                        src: 'fonts/*',
+                        dest: '<%= yeoman.dist %>'
+                    }, { // copy hbpcommon assets to dist
+                        expand: true,
+                        cwd: '.',
+                        src: 'bower_components/angular-hbp-common/dist/assets/**/*.*',
+                        dest: '<%= yeoman.dist %>'
+                    }, { // copy hbp-collaboratory-theme assets to dist
+                        expand: true,
+                        cwd: '.',
+                        src: 'bower_components/hbp-collaboratory-theme/dist/fonts/**/*.*',
+                        dest: '<%= yeoman.dist %>'
+                    }, {
+                        expand: true,
+                        cwd: '.',
+                        src: [
+                            'bower_components/bbp-oidc-client/js/bbp-oidc-client.js',
+                            'bower_components/jquery/dist/jquery.min.js'
+                        ],
+                        dest: '<%= yeoman.dist %>'
+                    }, {
+                        expand: true,
+                        cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
+                        src: [ // the following files are needed by gz3d [NRRPLT-3145]
+                            'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
+                        ],
+                        dest: '<%= yeoman.dist %>/style/images'
+                    }, {
+                        expand: true,
+                        cwd: 'node_modules/n3-charts/build',
+                        src: [ 'LineChart.min.css', 'LineChart.min.js'],
+                        dest: '<%= yeoman.dist %>/node_modules/n3-charts/build'
+                    }, {
+                        expand: true,
+                        cwd: 'node_modules/d3',
+                        src: [ 'd3.min.js'],
+                        dest: '<%= yeoman.dist %>/node_modules/d3'
+                    }]
             },
             styles: {
                 expand: true,
@@ -525,8 +511,8 @@ module.exports = function(grunt) {
                 expand: true,
                 cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
                 src: [ // the following files are needed by gz3d [NRRPLT-3145]
-                        'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
-                    ],
+                    'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
+                ],
                 dest: '<%= yeoman.app %>/style/images'
             }
         },
@@ -581,7 +567,7 @@ module.exports = function(grunt) {
         gitadd: {
             bump: {
                 options: {
-                  force: true
+                    force: true
                 },
                 files: {
                     src: ['package.json', 'bower.json']
@@ -589,9 +575,9 @@ module.exports = function(grunt) {
             },
             dist: {
                 options: {
-                  force: true,
-                  message: 'add artefact',
-                  ignoreEmpty: true
+                    force: true,
+                    message: 'add artefact',
+                    ignoreEmpty: true
                 },
                 files: {
                     src: ['dist/**/*']
@@ -659,38 +645,38 @@ module.exports = function(grunt) {
         },
 
         jsdoc: {
-          doc: {
-            src: [
-              '<%= yeoman.app %>/scripts/**/*.js'
-            ],
-            options: {
-              destination: 'doc'
+            doc: {
+                src: [
+                    '<%= yeoman.app %>/scripts/**/*.js'
+                ],
+                options: {
+                    destination: 'doc'
+                }
             }
-          }
         },
 
         version: {
-          options: {
-             version: '<%= pkg.version %>'
-          },
-          dist: {
-            file: '<%= yeoman.dist %>/version.json'
-          },
-          test: {
-            file: '<%= yeoman.app %>/version.json',
-          }
+            options: {
+                version: '<%= pkg.version %>'
+            },
+            dist: {
+                file: '<%= yeoman.dist %>/version.json'
+            },
+            test: {
+                file: '<%= yeoman.app %>/version.json',
+            }
         },
 
         ci: {
-          options: {
-             gerritBranch: '<%= gerritBranch %>'
-          }
+            options: {
+                gerritBranch: '<%= gerritBranch %>'
+            }
         },
 
         build: {
-          options: {
-             noImagemin: '<%= noImagemin %>'
-          }
+            options: {
+                noImagemin: '<%= noImagemin %>'
+            }
         },
 
     });
@@ -702,7 +688,7 @@ module.exports = function(grunt) {
         }
 
         grunt.task.run([
-        	'version:test',
+            'version:test',
             'clean:server',
             'copy:gz3dImages', // copy files needed by gz3d [NRRPLT-3145]
             'wiredep',
@@ -745,7 +731,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerMultiTask('version', 'Retrieve the version of the application and put it in version.json', function(){
-       grunt.file.write(this.data.file, '{ \"hbp_nrp_esv\" : \"' + this.options().version + '\" }');
+        grunt.file.write(this.data.file, '{ \"hbp_nrp_esv\" : \"' + this.options().version + '\" }');
     });
 
 
@@ -755,7 +741,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('test', [
-    	'version:test',
+        'version:test',
         'clean:server',
         'wiredep:test',
         'concurrent:test',
@@ -805,7 +791,7 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask('serve-dist', [
-      'serve:dist'
+        'serve:dist'
     ]);
 
     grunt.registerTask('ci', 'Run all the build steps on the CI server', function(target) {

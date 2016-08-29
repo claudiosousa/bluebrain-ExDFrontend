@@ -25,14 +25,14 @@
     "hbp-collaboratory-theme": "0.0.18",
     "json3": "~3.3.2",
     "lodash": "latest",
-    "n3-line-chart": "~1.1.11",
     "ng-file-upload": "~7.0.17",
     "roslibjs": "~0.17.0",
     "stats.js": "latest",
     "v-button": "~1.1.1",
     "xml2json": "1.1.1",
     "angulartics-google-analytics": "^0.1.4",
-    "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer"
+    "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer",
+    "moment": "2.10.6"
   },
   "overrides": {
     "codemirror": {

@@ -47,9 +47,6 @@ module.exports = function(config) {
       'bower_components/xml2json/xml2json.js',
       'bower_components/gz3d-hbp/gz3d/build/gz3d.js',
       'bower_components/json3/lib/json3.js',
-      'bower_components/d3/d3.js',
-      'bower_components/moment/moment.js',
-      'bower_components/n3-line-chart/build/line-chart.min.js',
       'bower_components/ng-file-upload/ng-file-upload.js',
       'bower_components/roslibjs/build/roslib.js',
       'bower_components/stats.js/build/stats.min.js',
@@ -60,8 +57,13 @@ module.exports = function(config) {
       'bower_components/brainvisualizer/src/brain3D.js',
       'bower_components/brainvisualizer/src/brain3Dmainview.js',
       'bower_components/brainvisualizer/shaders/brain3Dshaders.js',
+      'bower_components/moment/moment.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
+
+      'node_modules/d3/d3.min.js',
+      'node_modules/n3-charts/build/LineChart.js',
+
       'bower_components/three.js/examples/js/controls/OrbitControls.js',
       'bower_components/three.js/examples/js/Detector.js',
       'bower_components/three.js/examples/js/shaders/CopyShader.js',

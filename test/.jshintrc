@@ -33,6 +33,7 @@
     "spyOn": false,
     "_": false,
     "$": false,
+    "d3": false,
     "moment": false
   }
 }

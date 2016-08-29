@@ -11,14 +11,15 @@ $jointPlotPadding: 10px;
   height: $jointPlotHeight;
   min-width: 600px;
 
+  &.resizing .linechart-wrapper{
+    visibility: hidden;
+  }
+
   .jointplot {
     display: flex;
     width: 100%;
     justify-content: center;
     align-items: center;
-  }
-  .linechart-wrapper  {
-    flex-grow: 1;
   }
 
   .property-selector, .joint-selector {
@@ -33,11 +34,21 @@ $jointPlotPadding: 10px;
     flex-shrink: 0;
   }
   .linechart-wrapper {
+    flex-grow: 1;
     flex-shrink: 0;
     flex-basis: 240px;
+    height: calc(100% - 30px);
+    margin: 10px 40px 20px 20px;
 
-    svg .legend {
+    svg .overlay {
       /* the legend from n3-line-chart is ugly */
+      display: none;
+    }
+    .linechart{
+      margin: 10px;
+    }
+
+    .chart-legend{
       display: none;
     }
   }
