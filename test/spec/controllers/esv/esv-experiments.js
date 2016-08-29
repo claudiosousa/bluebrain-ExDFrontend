@@ -66,9 +66,15 @@
     var $controller, $httpBackend, $rootScope, $templateCache, $compile, $stateParams, $interval,
       $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window;
 
+    var serverErrorMock = {
+      display: jasmine.createSpy('display')
+    };
+
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
-
+    beforeEach(module(function ($provide) {
+      $provide.value('serverError', serverErrorMock);
+    }));
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_,
       _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_) {
@@ -311,7 +317,7 @@
 
 
     describe('Collab experiments', function () {
-      var collabContextlessUrl, collabContextUrl, serverError;
+      var collabContextlessUrl, collabContextUrl;
 
       beforeEach(function () {
         collabContextlessUrl = bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration';
@@ -319,16 +325,11 @@
         $stateParams.ctx = ctx;
       });
 
-      beforeEach(inject(function (_serverError_) {
-        serverError = _serverError_;
-      }));
-
       it('should set experiments to error when collab fails', function () {
         $httpBackend.whenGET(collabContextUrl).respond(502, {});
-        spyOn(serverError, 'display').andCallFake(angular.noop);
         renderEsvWebPage();
         expect($rootScope.experiments).toMatch([{ error: { name: 'Internal Error', description: 'Database unavailable' } }]);
-        expect(serverError.display).toHaveBeenCalled();
+        expect(serverErrorMock.display).toHaveBeenCalled();
       });
 
       describe('yet to clone', function () {

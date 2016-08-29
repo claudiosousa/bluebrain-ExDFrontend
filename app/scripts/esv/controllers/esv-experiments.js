@@ -6,7 +6,6 @@
       '$location',
       '$stateParams',
       'STATE',
-      'serverError',
       'experimentsFactory',
       'collabConfigService',
       '$window',
@@ -15,7 +14,6 @@
         $location,
         $stateParams,
         STATE,
-        serverError,
         experimentsFactory,
         collabConfigService,
         $window
