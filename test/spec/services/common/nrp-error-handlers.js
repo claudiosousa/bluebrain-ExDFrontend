@@ -141,7 +141,7 @@ describe('Services: nrp-error-handlers', function () {
     hbpDialogFactory =  _hbpDialogFactory_;
     nrpErrorService = _nrpErrorService_;
     spyOn(hbpDialogFactory, 'alert');
-    spyOn(nrpErrorService, 'httpError');
+    spyOn(nrpErrorService, 'httpError').andReturn({'template': 'error template'});
   }));
 
   it('should filter in errors without response', function() {
@@ -177,6 +177,5 @@ describe('Services: nrp-error-handlers', function () {
     var response = { data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, status: 0 };
     serverError.display(response);
     expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
-    expect(nrpErrorService.httpError).not.toHaveBeenCalled();
   });
 });

@@ -4,18 +4,15 @@
   var module = angular.module('nrpErrorHandlers', ['hbpCommon', 'nrpAngulartics', 'ui.bootstrap.modal']);
 
   module.service('nrpErrorService', function () {
-    var NrpError = function (options) {
-      options = angular.extend({
-        title: 'Error',
-        label: 'OK',
-        template: 'An unknown error occured.'
-      }, options);
-      this.title = options.title;
-      this.label = options.label;
-      this.template = options.template;
+    var NrpError = function () {
+      this.title = 'Error';
+      this.label = 'OK';
+      this.template = 'An error occured. Please try again later.';
     };
     return {
-
+      getBasicError: function(){
+        return new NrpError();
+      },
       getHtmlTitle: function(errorMessage) {
         var htmlRegExp = /^[\s\S]*(<html>[\s\S]*<\/html>)/gm;
         var matches = htmlRegExp.exec(errorMessage);
@@ -38,7 +35,7 @@
         return null;
       },
       httpError: function (response) {
-        var error = new NrpError({ code: undefined });
+        var error = new NrpError();
         if (response) {
           error.code = response.status;
           var errorSource = response.data;
@@ -85,10 +82,12 @@
     'nrpErrorService',
     'hbpDialogFactory',
     'nrpAnalytics',
+    '$log',
     function(
       nrpErrorService,
       hbpDialogFactory,
-      nrpAnalytics
+      nrpAnalytics,
+      $log
     ) {
       var filter = function(response) {
         if (response) {
@@ -96,7 +95,7 @@
           if (response.status === 0) {
             return false;
           }
-          // we ignore errors due to transfer function updates as they are catched by a
+          // we ignore errors due to transfer function updates as they are caught by a
           // dedicated ROS topic
           if (response.data && response.data.type === "Transfer function error") {
             return false;
@@ -106,8 +105,14 @@
       };
 
       var display = function(response) {
+        response = angular.extend({
+            human_readable: nrpErrorService.httpError(response).template
+          },
+          response
+        );
         if (filter(response)) {
-          var nrpError = nrpErrorService.httpError(response);
+          $log.error(response);
+          var nrpError = nrpErrorService.getBasicError();
           hbpDialogFactory.alert(nrpError);
           var code = "No code", template = "No template";
           if (_.isObject(nrpError)) {
@@ -118,7 +123,9 @@
             category: 'Error',
             label: template
           });
-
+        }
+        else {
+          $log.debug(response);
         }
       };
 
