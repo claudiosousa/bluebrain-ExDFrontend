@@ -30,6 +30,9 @@
             userDisplayName: undefined,
 
             init: function() {
+
+              this.navigationMode = undefined;
+
               this.userCamera = gz3d.scene.viewManager.mainUserView.camera;
               if (!angular.isDefined(this.userCamera.parent)) {
                 gz3d.scene.scene.add(this.userCamera);
