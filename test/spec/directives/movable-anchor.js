@@ -6,7 +6,7 @@ describe('Directive: movable-anchor', function () {
 
   var $log, $document, $compile, $scope;
   var targetID = 'test_target';
-  var anchorElement, anchorDOM, anchorElementScope, targetElement, htmlMock;
+  var anchorElement, anchorDOM, anchorElementScope, targetElement, htmlMock, startHeight, startWidth;
 
   var logMock = {error: jasmine.createSpy('error')};
   var startX = 110, startY = 110;
@@ -38,10 +38,12 @@ describe('Directive: movable-anchor', function () {
 
   beforeEach(inject(function ($rootScope, _$compile_, _$log_, _$document_) {
     $scope = $rootScope.$new();
-
+    startHeight = window.innerHeight;
+    startWidth = window.innerWidth;
     $log = _$log_;
     $document = _$document_;
     $compile = _$compile_;
+
 
     // mocking document.getElementById()
     htmlMock = {};
@@ -87,8 +89,8 @@ describe('Directive: movable-anchor', function () {
   }));
 
   it('should have a default sized window', function () {
-    expect(window.innerWidth).toBe(400);
-    expect(window.innerHeight).toBe(300);
+    expect(window.innerWidth).toBe(startWidth);
+    expect(window.innerHeight).toBe(startHeight);
   });
 
   it('should change the cursor to be the movable-cursor', function () {

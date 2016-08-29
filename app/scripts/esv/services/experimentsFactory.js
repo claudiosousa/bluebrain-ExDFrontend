@@ -1,13 +1,13 @@
-(function () {
+(function (){
   'use strict';
 
   angular.module('experimentServices')
     .constant('SERVER_POLL_INTERVAL', 10 * 1000)
     .factory('experimentsFactory',
-    ['$q', '$http', '$interval', '$rootScope', 'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
-      'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory', 'SERVER_POLL_INTERVAL',
-      function ($q, $http, $interval, $rootScope, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
-        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL) {
+    ['$q', '$interval', 'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
+      'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory', 'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
+      function ($q, $interval, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
+        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService) {
         var localmode = {
           forceuser: bbpConfig.get('localmode.forceuser', false),
           ownerID: bbpConfig.get('localmode.ownerID', null)
@@ -48,9 +48,8 @@
           });
         }
 
-        function experimentsService(contextId, experimentId) {
+        function experimentsService(contextId, experimentId, experimentFolderUUID) {
           var updateUptimeInterval, updateExperimentsInterval, experimentsDict, stoppingDict = {};
-
           var service = {
             destroy: destroy,
             initialize: initialize,
@@ -77,7 +76,6 @@
           }
 
           function transformExperiments(experiments) {
-
             return _.forEach(experiments, function (exp, expId) {
               exp.id = expId;
               exp.joinableServers.forEach(function (simul) {
@@ -89,12 +87,75 @@
           }
 
           function updateExperimentImages() {
+            var getCollabImage = loadCollabImage();
             service.experiments.then(function (experiments) {
-              var experimentIds = experiments.map(function (exp) { return exp.id; });
-              experimentProxyService.getImages(experimentIds)
-                .then(function (images) {
-                  experiments.forEach(function (exp) { exp.imageData = images[exp.id]; });
+              if (contextId && experiments.length === 1){
+                getCollabImage.then(function(collabImage){
+                  experiments[0].imageData = collabImage;
+                }).catch(function(){
+                  getBackendExperimentImages(experiments);
                 });
+              }
+              else {
+                getBackendExperimentImages(experiments);
+              }
+            });
+          }
+
+          function getBackendExperimentImages(experiments) {
+            var experimentIds = experiments.map(function (exp) { return exp.id; });
+            experimentProxyService.getImages(experimentIds)
+             .then(function (images) {
+               experiments.forEach(function (exp) { exp.imageData = images[exp.id]; });
+             });
+          }
+
+          /*
+            Function to get experiment details from the collab storage
+            @param {string}   fileName        - the file to retrieve from the storage
+            @param {Object}   downloadHeaders - headers to use when requesting the file
+            @return {Promise} Promise object
+          */
+          function getExperimentDetailsFromCollab(fileName, downloadHeaders) {
+            var promise = $q.defer();
+            if (contextId && experimentId && experimentFolderUUID){
+              collabFolderAPIService.getFolderFile(experimentFolderUUID, fileName)
+              .then(function(fileData){
+                if (!fileData || !fileData._uuid){
+                  promise.reject();
+                }
+                else {
+                  collabFolderAPIService.downloadFile(fileData._uuid, downloadHeaders)
+                  .then(function(fileContent){
+                    if (!fileContent){
+                      promise.reject();
+                    }
+                    else {
+                      promise.resolve(fileContent);
+                    }
+                  });
+                }
+              });
+            }
+            else {
+              promise.reject();
+            }
+            return promise.promise;
+          }
+
+          function loadCollabImage(){
+            return getExperimentDetailsFromCollab(experimentId + ".png", {"responseType": "blob"})
+            .then(function(imageContent){
+              var reader = new FileReader();
+              var promise = $q.defer();
+              reader.addEventListener('loadend', function(e) {
+                promise.resolve(e.target.result.replace("data:image/png;base64,", ""));
+              });
+              reader.readAsDataURL(imageContent);
+              return promise.promise;
+            },
+            function(){
+              return $q.reject();
             });
           }
 
