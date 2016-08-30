@@ -52,13 +52,6 @@ function createTwoTouchEvent(targetElement, eventType, pageX1, pageY1, pageX2, p
   return event;
 }
 
-function createMouseWheelEvent(targetElement, eventType, delta) {
-  var event = document.createEvent('Event');
-  event.initEvent(eventType, true, true);
-  event.wheelDelta = delta;
-  return event;
-}
-
 function triggerKeyEvent(targetElement, eventType, key) {
   var event = createKeyEvent(eventType, key);
   targetElement.dispatchEvent(event);
@@ -89,11 +82,6 @@ function triggerTwoTouchEvent(targetElement, eventType, x1, y1, x2, y2) {
   targetElement.dispatchEvent(event);
 }
 
-function triggerMouseWheelEvent(targetElement, eventType, delta) {
-  var event = createMouseWheelEvent(targetElement, eventType, delta);
-  targetElement.dispatchEvent(event);
-}
-
 describe('FirstPersonControls', function () {
 
   var camera;
@@ -119,7 +107,6 @@ describe('FirstPersonControls', function () {
     spyOn(firstPersonControls, 'onTouchStart').andCallThrough();
     spyOn(firstPersonControls, 'onTouchMove').andCallThrough();
     spyOn(firstPersonControls, 'onTouchEnd').andCallThrough();
-    spyOn(firstPersonControls, 'onMouseWheel').andCallThrough();
   });
 
   it('should get initialized', inject(function () {
@@ -144,8 +131,6 @@ describe('FirstPersonControls', function () {
     expect(domElement.addEventListener.argsForCall[4][0]).toMatch(/touchstart/);
     expect(domElement.addEventListener.argsForCall[5][0]).toMatch(/touchmove/);
     expect(domElement.addEventListener.argsForCall[6][0]).toMatch(/touchend/);
-    expect(domElement.addEventListener.argsForCall[7][0]).toMatch(/mousewheel/);
-    expect(domElement.addEventListener.argsForCall[8][0]).toMatch(/DOMMouseScroll/);
     expect(domElementForKeyBindings.addEventListener.argsForCall[0][0]).toMatch(/keydown/);
     expect(domElementForKeyBindings.addEventListener.argsForCall[1][0]).toMatch(/keyup/);
   }));
@@ -559,23 +544,6 @@ describe('FirstPersonControls', function () {
 
     expect(firstPersonControls.mouseDragOn).toEqual(false);
     expect(camera.position).toEqual(new THREE.Vector3(0, -50 * firstPersonControls.touchSensitivity, 0));
-  }));
-
-  //#######################
-  // Mouse wheel zooming
-  //#######################
-  it('should handle zome with mouse wheel', inject(function() {
-    camera.position.copy(new THREE.Vector3(0,0,0));
-    camera.lookAt(new THREE.Vector3(1,0,0));
-    camera.up = new THREE.Vector3(0,0,1);
-    camera.updateMatrix();
-    firstPersonControls.cameraLookDirection = new THREE.Vector3(1,0,0);
-
-    triggerMouseWheelEvent(domElement, 'mousewheel', 1);
-
-    expect(camera.position.x).toEqual(firstPersonControls.mouseWheelSensitivity);
-    expect(camera.position.y).toBeCloseTo(0, 5);
-    expect(camera.position.z).toBeCloseTo(0, 5);
   }));
 
   it('should ignore everything when disabled or frozen', inject(function() {
