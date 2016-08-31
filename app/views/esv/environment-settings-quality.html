@@ -1,0 +1,53 @@
+<!-- build:css(.tmp) styles/esv/environment-settings.css -->
+<link rel="stylesheet" href="styles/esv/environment-settings-quality.css" />
+<!-- endbuild -->
+
+<h3>Quality Settings</h3>
+<p>You can change the level of quality of the 3D scene using the followig settings: </p>
+
+<hr>
+
+<label class="environment-settings-checkbox-label">
+    <input class="environment-settings-checkbox"
+    type="checkbox"
+     ng-model="renderShadows"
+    ng-change="updateEnvQualitySettings()">Shadows</label>
+
+<br>
+
+<hr>
+
+<label class="environment-settings-checkbox-label">
+    <input class="environment-settings-checkbox" type="checkbox"
+     ng-model="renderAmbientOcclusion"
+    ng-change="updateEnvQualitySettings()">Ambient Occlusion</label>
+
+<br>
+
+<div class="environment-settings-option-subblock" ng-show="renderAmbientOcclusion">
+
+    <label>Clamp
+
+    <input class="esv-envsettings-slider" type="range" ng-change="updateEnvQualitySettings()" ng-model="ambientOcclusionClamp"
+        step="0.01" min="0" max="1.0" ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+    </label>
+
+    <label>Luminosity
+
+    <input class="esv-envsettings-slider" type="range" ng-change="updateEnvQualitySettings()" ng-model="ambientOcclusionLum"
+        step="0.01" min="0" max="1.0" ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+</label>
+
+</div>
+
+
+<hr>
+
+<label class="environment-settings-checkbox-label">
+    <input class="environment-settings-checkbox" type="checkbox"
+     ng-model="antiAliasingEnabled"
+    ng-change="updateEnvQualitySettings()">Anti-aliasing</label>
+
+

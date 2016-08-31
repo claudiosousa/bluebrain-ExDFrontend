@@ -160,6 +160,845 @@ GZ3D.AnimatedModel.prototype.updateJoint = function(robotName, jointName, jointV
   }
 };
 
+/**
+ * Bloom shader
+ *
+ * This is basically the THREE.UnrealBloomPass shader (that can be found in ThreeJS examples) with some minor changes.
+ *
+ */
+
+GZ3D.BloomShader = function (resolution, strength, radius, threshold)
+{
+
+	THREE.Pass.call(this);
+
+	this.strength = (strength !== undefined) ? strength : 1;
+	this.radius = radius;
+	this.threshold = threshold;
+	this.resolution = (resolution !== undefined) ? new THREE.Vector2(resolution.x, resolution.y) : new THREE.Vector2(256, 256);
+
+	// render targets
+	var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat };
+	this.renderTargetsHorizontal = [];
+	this.renderTargetsVertical = [];
+	this.nMips = 5;
+	var resx = Math.round(this.resolution.x / 2);
+	var resy = Math.round(this.resolution.y / 2);
+
+	this.renderTargetBright = new THREE.WebGLRenderTarget(resx, resy, pars);
+	this.renderTargetBright.texture.generateMipmaps = false;
+
+	for (var i = 0; i < this.nMips; i++)
+	{
+
+		var renderTarget = new THREE.WebGLRenderTarget(resx, resy, pars);
+
+		renderTarget.texture.generateMipmaps = false;
+
+		this.renderTargetsHorizontal.push(renderTarget);
+
+		renderTarget = new THREE.WebGLRenderTarget(resx, resy, pars);
+
+		renderTarget.texture.generateMipmaps = false;
+
+		this.renderTargetsVertical.push(renderTarget);
+
+		resx = Math.round(resx / 2);
+		resy = Math.round(resy / 2);
+	}
+
+	// luminosity high pass material
+
+	if (GZ3D.LuminosityHighPassShader === undefined)
+	{
+		console.error('GZ3D.BloomShader relies on GZ3D.LuminosityHighPassShader');
+	}
+
+	var highPassShader = GZ3D.LuminosityHighPassShader;
+	this.highPassUniforms = THREE.UniformsUtils.clone(highPassShader.uniforms);
+
+	this.highPassUniforms['luminosityThreshold'].value = threshold;
+	this.highPassUniforms['smoothWidth'].value = 0.01;
+
+	this.materialHighPassFilter = new THREE.ShaderMaterial({
+		uniforms: this.highPassUniforms,
+		vertexShader: highPassShader.vertexShader,
+		fragmentShader: highPassShader.fragmentShader,
+		defines: {}
+	});
+
+	// Gaussian Blur Materials
+	this.separableBlurMaterials = [];
+	var kernelSizeArray = [3, 5, 7, 9, 11];
+	resx = Math.round(this.resolution.x / 2);
+	resy = Math.round(this.resolution.y / 2);
+
+	for (i = 0; i < this.nMips; i++)
+	{
+
+		this.separableBlurMaterials.push(this.getSeperableBlurMaterial(kernelSizeArray[i]));
+
+		this.separableBlurMaterials[i].uniforms['texSize'].value = new THREE.Vector2(resx, resy);
+
+		resx = Math.round(resx / 2);
+
+		resy = Math.round(resy / 2);
+	}
+
+	// Composite material
+	this.compositeMaterial = this.getCompositeMaterial(this.nMips);
+	this.compositeMaterial.uniforms['blurTexture1'].value = this.renderTargetsVertical[0].texture;
+	this.compositeMaterial.uniforms['blurTexture2'].value = this.renderTargetsVertical[1].texture;
+	this.compositeMaterial.uniforms['blurTexture3'].value = this.renderTargetsVertical[2].texture;
+	this.compositeMaterial.uniforms['blurTexture4'].value = this.renderTargetsVertical[3].texture;
+	this.compositeMaterial.uniforms['blurTexture5'].value = this.renderTargetsVertical[4].texture;
+	this.compositeMaterial.uniforms['bloomStrength'].value = strength;
+	this.compositeMaterial.uniforms['bloomRadius'].value = 0.1;
+	this.compositeMaterial.needsUpdate = true;
+
+	var bloomFactors = [1.0, 0.8, 0.6, 0.4, 0.2];
+	this.compositeMaterial.uniforms['bloomFactors'].value = bloomFactors;
+	this.bloomTintColors = [new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1)];
+	this.compositeMaterial.uniforms['bloomTintColors'].value = this.bloomTintColors;
+
+	// copy material
+	if (THREE.CopyShader === undefined)
+	{
+		console.error('THREE.BloomPass relies on THREE.CopyShader');
+	}
+
+	var copyShader = THREE.CopyShader;
+
+	this.copyUniforms = THREE.UniformsUtils.clone(copyShader.uniforms);
+	this.copyUniforms['opacity'].value = 1.0;
+
+	this.materialCopy = new THREE.ShaderMaterial({
+		uniforms: this.copyUniforms,
+		vertexShader: copyShader.vertexShader,
+		fragmentShader: copyShader.fragmentShader,
+		blending: THREE.AdditiveBlending,
+		depthTest: false,
+		depthWrite: false,
+		transparent: true
+	});
+
+	this.enabled = true;
+	this.needsSwap = false;
+
+	this.oldClearColor = new THREE.Color();
+	this.oldClearAlpha = 1;
+
+	this.camera = new THREE.OrthographicCamera(- 1, 1, 1, - 1, 0, 1);
+	this.scene = new THREE.Scene();
+
+	this.quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null);
+	this.scene.add(this.quad);
+
+};
+
+GZ3D.BloomShader.prototype = Object.assign(Object.create(THREE.Pass.prototype), {
+
+	constructor: GZ3D.BloomShader,
+
+	dispose: function ()
+	{
+		for (var i = 0; i < this.renderTargetsHorizontal.length(); i++)
+		{
+			this.renderTargetsHorizontal[i].dispose();
+		}
+		for (i = 0; i < this.renderTargetsVertical.length(); i++)
+		{
+			this.renderTargetsVertical[i].dispose();
+		}
+		this.renderTargetBright.dispose();
+	},
+
+	setSize: function (width, height)
+	{
+
+		var resx = Math.round(width / 2);
+		var resy = Math.round(height / 2);
+
+		this.renderTargetBright.setSize(resx, resy);
+
+		for (var i = 0; i < this.nMips; i++)
+		{
+
+			this.renderTargetsHorizontal[i].setSize(resx, resy);
+			this.renderTargetsVertical[i].setSize(resx, resy);
+
+			this.separableBlurMaterials[i].uniforms['texSize'].value = new THREE.Vector2(resx, resy);
+
+			resx = Math.round(resx / 2);
+			resy = Math.round(resy / 2);
+		}
+	},
+
+	render: function (renderer, writeBuffer, readBuffer, delta, maskActive)
+	{
+
+		this.oldClearColor.copy(renderer.getClearColor());
+		this.oldClearAlpha = renderer.getClearAlpha();
+		var oldAutoClear = renderer.autoClear;
+		renderer.autoClear = false;
+
+		renderer.setClearColor(new THREE.Color(0, 0, 0), 0);
+
+		if (maskActive)
+		{
+			renderer.context.disable(renderer.context.STENCIL_TEST);
+		}
+
+		// 1. Extract Bright Areas
+		this.highPassUniforms['tDiffuse'].value = readBuffer.texture;
+		this.highPassUniforms['luminosityThreshold'].value = this.threshold;
+		this.quad.material = this.materialHighPassFilter;
+		renderer.render(this.scene, this.camera, this.renderTargetBright, true);
+
+		// 2. Blur All the mips progressively
+		var inputRenderTarget = this.renderTargetBright;
+
+		for (var i = 0; i < this.nMips; i++)
+		{
+
+			this.quad.material = this.separableBlurMaterials[i];
+
+			this.separableBlurMaterials[i].uniforms['colorTexture'].value = inputRenderTarget.texture;
+
+			this.separableBlurMaterials[i].uniforms['direction'].value = GZ3D.BloomShader.BlurDirectionX;
+
+			renderer.render(this.scene, this.camera, this.renderTargetsHorizontal[i], true);
+
+			this.separableBlurMaterials[i].uniforms['colorTexture'].value = this.renderTargetsHorizontal[i].texture;
+
+			this.separableBlurMaterials[i].uniforms['direction'].value = GZ3D.BloomShader.BlurDirectionY;
+
+			renderer.render(this.scene, this.camera, this.renderTargetsVertical[i], true);
+
+			inputRenderTarget = this.renderTargetsVertical[i];
+		}
+
+		// Composite All the mips
+		this.quad.material = this.compositeMaterial;
+		this.compositeMaterial.uniforms['bloomStrength'].value = this.strength;
+		this.compositeMaterial.uniforms['bloomRadius'].value = this.radius;
+		this.compositeMaterial.uniforms['bloomTintColors'].value = this.bloomTintColors;
+		renderer.render(this.scene, this.camera, this.renderTargetsHorizontal[0], true);
+
+		// Blend it additively over the input texture
+		this.quad.material = this.materialCopy;
+		this.copyUniforms['tDiffuse'].value = this.renderTargetsHorizontal[0].texture;
+
+		if (maskActive)
+		{
+			renderer.context.enable(renderer.context.STENCIL_TEST);
+		}
+
+		renderer.render(this.scene, this.camera, readBuffer, false);
+
+		renderer.setClearColor(this.oldClearColor, this.oldClearAlpha);
+		renderer.autoClear = oldAutoClear;
+	},
+
+	getSeperableBlurMaterial: function (kernelRadius)
+	{
+
+		return new THREE.ShaderMaterial({
+
+			defines: {
+				'KERNEL_RADIUS': kernelRadius,
+				'SIGMA': kernelRadius
+			},
+
+			uniforms: {
+				'colorTexture': { value: null },
+				'texSize': { value: new THREE.Vector2(0.5, 0.5) },
+				'direction': { value: new THREE.Vector2(0.5, 0.5) },
+			},
+
+			vertexShader: [
+				'varying vec2 vUv;',
+				'void main() {',
+				'vUv = uv;',
+				'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+				'}'].join('\n'),
+
+			fragmentShader: [
+				'#include <common>',
+				'varying vec2 vUv;',
+				'uniform sampler2D colorTexture;',
+				'uniform vec2 texSize;',
+				'uniform vec2 direction;',
+
+				'float gaussianPdf(in float x, in float sigma) {',
+				'	return 0.39894 * exp( -0.5 * x * x/( sigma * sigma))/sigma;',
+				'}',
+				'void main() {',
+				'	vec2 invSize = 1.0 / texSize;',
+				'	float fSigma = float(SIGMA);',
+				'	float weightSum = gaussianPdf(0.0, fSigma);',
+				'	vec3 diffuseSum = texture2D( colorTexture, vUv).rgb * weightSum;',
+				'	for( int i = 1; i < KERNEL_RADIUS; i ++ ) {',
+				'		float x = float(i);',
+				'		float w = gaussianPdf(x, fSigma);',
+				'		vec2 uvOffset = direction * invSize * x;',
+				'		vec3 sample1 = texture2D( colorTexture, vUv + uvOffset).rgb;',
+				'		vec3 sample2 = texture2D( colorTexture, vUv - uvOffset).rgb;',
+				'		diffuseSum += (sample1 + sample2) * w;',
+				'		weightSum += 2.0 * w;',
+				'	}',
+				'	gl_FragColor = vec4(diffuseSum/weightSum, 1.0);',
+				'}'].join('\n')
+		});
+	},
+
+	getCompositeMaterial: function (nMips)
+	{
+
+		return new THREE.ShaderMaterial({
+
+			defines: {
+				'NUM_MIPS': nMips
+			},
+
+			uniforms: {
+				'blurTexture1': { value: null },
+				'blurTexture2': { value: null },
+				'blurTexture3': { value: null },
+				'blurTexture4': { value: null },
+				'blurTexture5': { value: null },
+				'dirtTexture': { value: null },
+				'bloomStrength': { value: 1.0 },
+				'bloomFactors': { value: null },
+				'bloomTintColors': { value: null },
+				'bloomRadius': { value: 0.0 }
+			},
+
+			vertexShader: [
+				'varying vec2 vUv;',
+				'void main() {',
+				'vUv = uv;',
+				'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+				'}'].join('\n'),
+
+			fragmentShader: [
+				'varying vec2 vUv;',
+				'uniform sampler2D blurTexture1;',
+				'uniform sampler2D blurTexture2;',
+				'uniform sampler2D blurTexture3;',
+				'uniform sampler2D blurTexture4;',
+				'uniform sampler2D blurTexture5;',
+				'uniform sampler2D dirtTexture;',
+				'uniform float bloomStrength;',
+				'uniform float bloomRadius;',
+				'uniform float bloomFactors[NUM_MIPS];',
+				'uniform vec3 bloomTintColors[NUM_MIPS];',
+
+				'float lerpBloomFactor(const in float factor) { ',
+				'	float mirrorFactor = 1.2 - factor;',
+				'	return mix(factor, mirrorFactor, bloomRadius);',
+				'}',
+
+				'void main() {',
+				'	gl_FragColor = bloomStrength * ( lerpBloomFactor(bloomFactors[0]) * vec4(bloomTintColors[0], 1.0) * texture2D(blurTexture1, vUv) + ',
+				'	 							 lerpBloomFactor(bloomFactors[1]) * vec4(bloomTintColors[1], 1.0) * texture2D(blurTexture2, vUv) + ',
+				'								 lerpBloomFactor(bloomFactors[2]) * vec4(bloomTintColors[2], 1.0) * texture2D(blurTexture3, vUv) + ',
+				'								 lerpBloomFactor(bloomFactors[3]) * vec4(bloomTintColors[3], 1.0) * texture2D(blurTexture4, vUv) + ',
+				'								 lerpBloomFactor(bloomFactors[4]) * vec4(bloomTintColors[4], 1.0) * texture2D(blurTexture5, vUv) );',
+				'}'].join('\n')
+		});
+	}
+
+});
+
+GZ3D.BloomShader.BlurDirectionX = new THREE.Vector2(1.0, 0.0);
+GZ3D.BloomShader.BlurDirectionY = new THREE.Vector2(0.0, 1.0);
+
+/**
+ * BBP /HBP
+ *
+ * The composer is called by each view to render the final scene and apply all post-processing effects.
+ * Since each view can have a different OpenGL context, the composer duplicates its shaders and buffers
+ * and stores them directly in the view object.
+ *
+ * All composer settings are defined in "gzcomposersettings.js".
+ *
+ */
+
+GZ3D.Composer = function (gz3dScene)
+{
+    this.gz3dScene = gz3dScene;
+    this.scene = gz3dScene.scene;
+    this.webglRenderer = gz3dScene.renderer;
+    this.currenSkyBoxTexture = null;
+    this.currentSkyBoxID = '';
+
+    //-----------------------------------
+    // Sun, lens flare
+
+    var that = this;
+    var flareColor = new THREE.Color(0xffffff);
+
+    var textureLoader = new THREE.TextureLoader();
+
+    var textureFlare0 = textureLoader.load('img/3denv/lens/lenstart.png');
+    var textureFlare1 = textureLoader.load('img/3denv/lens/lenspoly.png');
+    var textureFlare2 = textureLoader.load('img/3denv/lens/lensflare2.png');
+    var textureFlare3 = textureLoader.load('img/3denv/lens/lensflare3.png');
+    var textureFlare4 = textureLoader.load('img/3denv/lens/lenscircle.jpg');
+
+    this.lensFlare = new THREE.LensFlare(textureFlare0, 400, 0.0, THREE.AdditiveBlending, flareColor);
+    this.lensFlare.customUpdateCallback = function (object) { that.lensFlareUpdateCallback(object); };
+
+    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+    this.lensFlare.add(textureFlare4, 150, 0.1, THREE.AdditiveBlending, new THREE.Color(0xffffff), 0.4);
+
+    this.lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
+    this.lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
+    this.lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
+
+    this.lensFlare.add(textureFlare1, 150, 0.8, THREE.AdditiveBlending, new THREE.Color(0xffffff), 0.2);
+    this.lensFlare.add(textureFlare1, 90, 0.6, THREE.AdditiveBlending, new THREE.Color(0xffffff), 0.2);
+
+    this.lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
+
+    this.lensFlare.position.x = -65;
+    this.lensFlare.position.y = 50;
+    this.lensFlare.position.z = 40.0;
+    this.scene.add(this.lensFlare);
+
+    this.init();
+};
+
+GZ3D.Composer.prototype.init = function ()
+{
+    this.minimalRender = false;         // Can be used to force a rendering without any post-processing effects
+};
+
+/**
+ * Lensflare call back
+ *
+ */
+
+GZ3D.Composer.prototype.lensFlareUpdateCallback = function (object)
+{
+    // This function is called by the lens flare object to set the on-screen position of the lens flare particles.
+
+    var dist = Math.sqrt(object.positionScreen.x * object.positionScreen.x + object.positionScreen.y * object.positionScreen.y);
+
+    if (dist > 1.0) { dist = 1.0; }
+    dist = 1.0 - dist;
+
+    var f, fl = object.lensFlares.length;
+    var flare;
+    var vecX = -object.positionScreen.x * 2;
+    var vecY = -object.positionScreen.y * 2;
+
+    for (f = 0; f < fl; f++)
+    {
+        flare = object.lensFlares[f];
+        flare.x = object.positionScreen.x + vecX * flare.distance;
+        flare.y = object.positionScreen.y + vecY * flare.distance;
+        flare.rotation = 0;
+    }
+
+    object.lensFlares[0].size = 10.0 + (600.0 - 10.0) * dist;
+    object.lensFlares[1].size = 512.0 + (600.0 - 512.0) * dist;
+    object.lensFlares[1].rotation = dist * 0.5;
+    object.lensFlares[1].opacity = dist * dist;
+    object.lensFlares[2].size = 512.0 + (600.0 - 512.0) * dist;
+    object.lensFlares[2].opacity = dist;
+    object.lensFlares[3].size = 100.0 + (200.0 - 100.0) * dist;
+};
+
+
+
+/**
+ * Init composer for a specific view
+ *
+ */
+
+GZ3D.Composer.prototype.initView = function (view)
+{
+    var width = view.container.canvas.width;
+    var height = view.container.canvas.height;
+    var camera = view.camera;
+
+    //---------------------------------
+    // Init the effect composer which handles all post-processing passes.
+
+    view.composer = new THREE.EffectComposer(this.webglRenderer);
+
+    view.directRenderPass = new THREE.RenderPass(this.scene, camera);       // First pass simply render the scene
+    view.directRenderPass.enabled = true;
+    view.composer.addPass(view.directRenderPass);
+
+    //-------------------------------------------------------
+    // SSAO, initialize ambient occlusion pass
+
+    // Setup depth buffer. SSAO requires a pre-rendered depth buffer.
+
+    view.depthMaterial = new THREE.MeshDepthMaterial();
+    view.depthMaterial.depthPacking = THREE.RGBADepthPacking;
+    view.depthMaterial.blending = THREE.NoBlending;
+
+    var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+    view.depthRenderTarget = new THREE.WebGLRenderTarget(width, height, pars);
+
+    // Setup SSAO pass which will compute and apply SSAO.
+
+    view.ssaoPass = new THREE.ShaderPass(GZ3D.SSAOShader);
+    view.ssaoPass.uniforms['tDepth'].value = view.depthRenderTarget.texture;
+    view.ssaoPass.uniforms['size'].value.set(width, height);
+    view.ssaoPass.uniforms['cameraNear'].value = camera.near;
+    view.ssaoPass.uniforms['cameraFar'].value = camera.far;
+    view.ssaoPass.uniforms['onlyAO'].value = 0;
+    view.ssaoPass.uniforms['aoClamp'].value = 0.5;
+    view.ssaoPass.uniforms['lumInfluence'].value = 0.9;
+    view.composer.addPass(view.ssaoPass);
+
+    //-------------------------------------------------------
+    // RGB Curves
+
+    view.rgbCurvesShader = new THREE.ShaderPass(GZ3D.RGBCurvesShader);
+    view.rgbCurvesShader.enabled = false;
+    view.composer.addPass(view.rgbCurvesShader);
+
+    //-------------------------------------------------------
+    // Levels
+
+    view.levelsShader = new THREE.ShaderPass(GZ3D.LevelsShader);
+    view.levelsShader.enabled = false;
+    view.levelsShader.uniforms['inBlack'].value = 0.0;
+    view.levelsShader.uniforms['inGamma'].value = 1.0;
+    view.levelsShader.uniforms['inWhite'].value = 1.0;
+
+    view.levelsShader.uniforms['outBlack'].value = 0.0;
+    view.levelsShader.uniforms['outWhite'].value = 1.0;
+
+    view.composer.addPass(view.levelsShader);
+
+    if (view.lensFlare !== undefined)
+    {
+        view.lensFlare.screenLevels = view.levelsShader;
+    }
+
+    //---------------------------------
+    // Anti-aliasing
+
+    view.fxaaShader = new THREE.ShaderPass(THREE.FXAAShader);
+    view.composer.addPass(view.fxaaShader);
+
+    //---------------------------------
+    // Bloom
+
+    view.bloomPass = new GZ3D.BloomShader(new THREE.Vector2(1024, 1024), 1.5, 0.4, 0.85);
+    view.composer.addPass(view.bloomPass);
+
+    //---------------------------------
+    // Copy pass, after all the effects have been applied copy the content to the screen
+
+    var copyPass = new THREE.ShaderPass(THREE.CopyShader);
+    copyPass.renderToScreen = true;
+    view.composer.addPass(copyPass);
+
+    //---------------------------------
+    // Apply the initial settings
+
+    this.applyComposerSettings(true);
+};
+
+/**
+ * Apply composer settings
+ *
+ */
+
+GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve)
+{
+    // Updates the composer internal data with the latest settings.
+
+    // Pass true to updateColorCurve it the color curve has been changed. This will
+    // force the composer to update its ramp texture for the color curves.
+
+    var cs = this.gz3dScene.composerSettings;
+
+    this.gz3dScene.setShadowMaps(cs.shadows);   // Update shadow state
+
+    // Fog
+
+    if ((cs.fog && this.scene.fog === null) || (!cs.fog && this.scene.fog !== null))
+    {
+        // turning on/off fog requires materials to be updated
+
+        this.scene.traverse(function (node)
+        {
+            if (node.material)
+            {
+                node.material.needsUpdate = true;
+                if (node.material.materials)
+                {
+                    for (var i = 0; i < node.material.materials.length; i = i + 1)
+                    {
+                        node.material.materials[i].needsUpdate = true;
+                    }
+                }
+            }
+        });
+    }
+
+    if (cs.fog)
+    {
+        this.scene.fog = new THREE.FogExp2(cs.fogColor, cs.fogDensity);
+    }
+    else
+    {
+        this.scene.fog = null;
+    }
+
+
+    // Update sky box
+
+    if (this.currentSkyBoxID !== cs.skyBox)
+    {
+        this.currentSkyBoxID = cs.skyBox;
+
+        if (this.currentSkyBoxID === '')
+        {
+            this.currenSkyBoxTexture = null; // Plain color, no needs for a texture
+        }
+        else
+        {
+            var path = this.currentSkyBoxID;
+            var format = '.png';
+
+            path += '-';
+
+            var urls = [
+                path + 'px' + format, path + 'nx' + format,
+                path + 'nz' + format, path + 'pz' + format,
+                path + 'py' + format, path + 'ny' + format
+            ];
+
+            this.currenSkyBoxTexture = new THREE.CubeTextureLoader().load(urls);
+            this.currenSkyBoxTexture.format = THREE.RGBFormat;
+        }
+    }
+
+    // Now updates per-view settings. Please note that most of the settings need no update since
+    // they are used directly from the render pass.
+
+    this.gz3dScene.viewManager.views.forEach(function (view)
+    {
+        if (view.active)
+        {
+            // Color curve
+
+            if (updateColorCurve)
+            {
+                if ((cs.rgbCurve['red'] === undefined || cs.rgbCurve['red'].length < 2) &&
+                    (cs.rgbCurve['green'] === undefined || cs.rgbCurve['green'].length < 2) &&
+                    (cs.rgbCurve['blue'] === undefined || cs.rgbCurve['blue'].length < 2))
+                {
+                    view.rgbCurvesShader.enabled = false;   // We don't need RGB curve correction, simply disable the shader pass
+                }
+                else
+                {
+                    view.rgbCurvesShader.enabled = true;
+
+                    var rgbCurves = [{ 'color': 'red', 'curve': [] },
+                        { 'color': 'green', 'curve': [] },
+                        { 'color': 'blue', 'curve': [] }];
+
+                    // Prepare the curve. Vertices need to be converted to ThreeJS vectors.
+
+                    rgbCurves.forEach(function (channel)
+                    {
+                        var color = channel['color'];
+
+                        if ((cs.rgbCurve[color] === undefined || cs.rgbCurve[color].length < 2))
+                        {
+                            // The curve is empty, fill the chanel with a simple linear curve (no color correction).
+
+                            channel['curve'].push(new THREE.Vector3(0, 0, 0));
+                            channel['curve'].push(new THREE.Vector3(0, 1, 0));
+                        }
+                        else
+                        {
+                            // Convert to vectors
+
+                            cs.rgbCurve[color].forEach(function (vi)
+                            {
+                                channel['curve'].push(new THREE.Vector3(vi[0], vi[1], 0));
+                            });
+                        }
+                    });
+
+                    // Pass the new curve to the color correction shader.
+
+                    GZ3D.RGBCurvesShader.setupCurve(rgbCurves[0]['curve'], rgbCurves[1]['curve'], rgbCurves[2]['curve'], view.rgbCurvesShader);
+                }
+            }
+        }
+    });
+
+};
+
+/**
+ * Render the scene and apply the post-processing effects.
+ *
+ */
+
+GZ3D.Composer.prototype.render = function (view)
+{
+    if (view.composer === undefined)    // No ThreeJS composer for this view, we need to initialize it.
+    {
+        this.initView(view);
+    }
+
+    var camera = view.camera;
+    var width = view.container.canvas.width;
+    var height = view.container.canvas.height;
+    var cs = this.gz3dScene.composerSettings;
+    var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
+
+    this.webglRenderer.setViewport(0, 0, width, height);
+
+
+    if (this.minimalRender || nopostProcessing) // No post processing is required, directly render to the screen.
+    {
+        this.lensFlare.visible = false;
+        this.scene.background = null;
+        this.webglRenderer.render(this.scene, camera);
+    }
+    else
+    {
+        var pixelRatio = this.webglRenderer.getPixelRatio();
+        var newWidth = Math.floor(width / pixelRatio) || 1;
+        var newHeight = Math.floor(height / pixelRatio) || 1;
+
+        view.composer.setSize(newWidth, newHeight);
+
+        // Update the shaders with the latest settings
+
+        // SSAO
+
+        view.ssaoPass.enabled = cs.ssao;
+        view.ssaoPass.uniforms['onlyAO'].value = cs.ssaoDisplay ? 1.0 : 0.0;
+        view.ssaoPass.uniforms['aoClamp'].value = cs.ssaoClamp;
+        view.ssaoPass.uniforms['lumInfluence'].value = cs.ssaoLumInfluence;
+        view.ssaoPass.uniforms['size'].value.set(width, height);
+        view.ssaoPass.uniforms['cameraNear'].value = camera.near;
+        view.ssaoPass.uniforms['cameraFar'].value = camera.far;
+
+        // Bloom
+
+        view.bloomPass.enabled = cs.bloom;
+        view.bloomPass.strength = cs.bloomStrength;
+        view.bloomPass.radius = cs.bloomRadius;
+        view.bloomPass.threshold = cs.bloomThreshold;
+
+        // Levels
+
+        view.levelsShader.enabled = (cs.levelsInBlack > 0.0 || cs.levelsInGamma < (1.0 - 0.00001) || cs.levelsInGamma > (1.0 + 0.00001) ||
+            cs.levelsInWhite < 1.0 || cs.levelsOutBlack > 0.0 || cs.levelsOutWhite < 1.0);
+
+        if (view.levelsShader.enabled)
+        {
+            view.levelsShader.uniforms['inBlack'].value = cs.levelsInBlack;
+            view.levelsShader.uniforms['inGamma'].value = cs.levelsInGamma;
+            view.levelsShader.uniforms['inWhite'].value = cs.levelsInWhite;
+            view.levelsShader.uniforms['outBlack'].value = cs.levelsOutBlack;
+            view.levelsShader.uniforms['outWhite'].value = cs.levelsOutWhite;
+        }
+
+        // Anti-aliasing
+
+        if (cs.antiAliasing)
+        {
+            view.fxaaShader.enabled = true;
+            view.fxaaShader.uniforms['resolution'].value.set(1.0 / width, 1.0 / height);
+        }
+        else
+        {
+            view.fxaaShader.enabled = false;
+        }
+
+        // Start rendering
+
+        if (cs.ssao)
+        {
+            // If SSAO is active, we need to render the scene to a depth buffer that will be used later
+            // by the SSAO shader.
+
+            if (view.depthRenderTarget.width !== width || view.depthRenderTarget.height !== height)
+            {
+                view.depthRenderTarget.setSize(width, height);  // Resize the depth buffer if required
+            }
+
+            // Render to depth buffer
+
+            this.scene.background = null;       // Some effects should be disabled during depth buffer rendering
+            this.lensFlare.visible = false;
+            this.scene.overrideMaterial = view.depthMaterial;
+            this.webglRenderer.render(this.scene, camera, view.depthRenderTarget, true);    // Render to depth buffer now!
+            this.scene.overrideMaterial = null;
+        }
+
+        // Render all passes
+
+        this.lensFlare.visible = cs.sun === 'SIMPLELENSFLARE';  // Display lens flare if required
+        this.scene.background = this.currenSkyBoxTexture;
+        this.renderingView = view;
+        view.composer.render();
+        this.renderingView = null;
+    }
+};
+
+
+
+/**
+ * BBP / HBP
+ *
+ * Composer settings. This is where you specify global post-processing settings
+ * such as ssao, etc. Composer settings can be accessed in scene.composerSettings.
+ * Once modified you need to call scene.applyComposerSettings to reflect the changes
+ * in the 3D scene.
+ */
+
+GZ3D.ComposerSettings = function ()
+{
+    this.shadows = false;
+    this.antiAliasing = true;
+
+    this.ssao = false;                       // Screen space ambient occlusion
+    this.ssaoDisplay = false;
+    this.ssaoClamp = 0.8;
+    this.ssaoLumInfluence = 0.7;
+
+    this.rgbCurve = {'red':[],'green':[],'blue':[]};    // Color correction, disabled by default
+
+    this.levelsInBlack = 0.0;     // Color levels
+    this.levelsInGamma = 1.0;
+    this.levelsInWhite = 1.0;
+    this.levelsOutBlack = 0.0;
+    this.levelsOutWhite = 1.0;
+
+    this.skyBox = '';      // The file path of the sky box (without file extenstion) or empty string for plain color background
+
+    this.sun = '';         // empty string for no sun or "SIMPLELENSFLARE" for simple lens flare rendering
+
+    this.bloom = false;             // Bloom
+    this.bloomStrength = 1.0;
+    this.bloomRadius = 0.37;
+    this.bloomThreshold = 0.98;
+
+    this.fog = false;               // Fog
+    this.fogDensity = 0.05;
+    this.fogColor = '#b2b2b2';   // CSS style
+
+};
+
+
 
 /*global $:false */
 /*global angular*/
@@ -3916,6 +4755,129 @@ GZ3D.GZIface.prototype.parseMaterial = function(material)
 };
 */
 
+/**
+ * GZ3D Levels. Simply color levels shader.
+ *
+ */
+
+GZ3D.LevelsShader = {
+
+	uniforms: {
+
+		'tDiffuse': { value: null },
+
+		// Levels parameters
+
+		'inBlack': { value: 0.0 },
+		'inWhite': { value: 1.0 },
+		'inGamma': { value: 1.0 },
+
+		'outBlack': { value: 0.0 },
+		'outWhite': { value: 1.0 },
+	},
+
+	vertexShader: [
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'vUv = uv;',
+		'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+
+		'}'
+
+	].join('\n'),
+
+	fragmentShader: [
+
+		'uniform float inBlack,inWhite,inGamma,outBlack,outWhite;',
+		'uniform sampler2D tDiffuse;',
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'vec4 texel = texture2D( tDiffuse, vUv );',
+
+		'float outf =  (outWhite - outBlack);',
+
+		'texel[0] = pow((texel[0] - inBlack) / (inWhite - inBlack),inGamma) * outf + outBlack;',
+		'texel[1] = pow((texel[1] - inBlack) / (inWhite - inBlack),inGamma) * outf + outBlack;',
+		'texel[2] = pow((texel[2] - inBlack) / (inWhite - inBlack),inGamma) * outf + outBlack;',
+
+		'gl_FragColor = texel;',
+
+		'}'
+
+	].join('\n')
+
+};
+
+
+
+/**
+ * This shader is based on THREE.LuminosityHighPassShader of the ThreeJS examples.
+ */
+
+GZ3D.LuminosityHighPassShader = {
+
+  shaderID: 'luminosityHighPass',
+
+	uniforms: {
+
+		'tDiffuse': { type: 't', value: null },
+		'luminosityThreshold': { type: 'f', value: 1.0 },
+		'smoothWidth': { type: 'f', value: 1.0 },
+		'defaultColor': { type: 'c', value: new THREE.Color( 0x000000 ) },
+		'defaultOpacity':  { type: 'f', value: 0.0 },
+
+	},
+
+	vertexShader: [
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+			'vUv = uv;',
+
+			'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+
+		'}'
+
+	].join('\n'),
+
+	fragmentShader: [
+
+		'uniform sampler2D tDiffuse;',
+		'uniform vec3 defaultColor;',
+		'uniform float defaultOpacity;',
+		'uniform float luminosityThreshold;',
+		'uniform float smoothWidth;',
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+			'vec4 texel = texture2D( tDiffuse, vUv );',
+
+			'vec3 luma = vec3( 0.299, 0.587, 0.114 );',
+
+			'float v = dot( texel.xyz, luma );',
+
+			'vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );',
+
+			'float alpha = smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v );',
+
+			'gl_FragColor = mix( outputColor, texel, alpha );',
+
+		'}'
+
+	].join('\n')
+
+};
+
 // Based on TransformControls.js
 // original author: arodic / https://github.com/arodic
 
@@ -5104,6 +6066,54 @@ GZ3D.Manipulator.prototype = Object.create(THREE.EventDispatcher.prototype);
 
 
 /**
+ *
+ * GZ3D Multiply Shader
+ */
+
+GZ3D.MultiplyShader = {
+
+	uniforms: {
+
+		'tDiffuse': { value: null },
+		'tMultiply': { value: null },
+	},
+
+	vertexShader: [
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'vUv = uv;',
+		'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+
+		'}'
+
+	].join('\n'),
+
+	fragmentShader: [
+
+		'uniform sampler2D tDiffuse;',
+		'uniform sampler2D tMultiply;',
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'vec4 texel = texture2D( tDiffuse, vUv );',
+		'vec4 tmul = texture2D( tMultiply, vUv );',
+
+		'gl_FragColor =tmul;',
+
+		'}'
+
+	].join('\n')
+
+};
+
+
+
+/**
  * Created by Sandro Weber (webers@in.tum.de).
  */
 
@@ -5137,7 +6147,7 @@ GZ3D.MultiView.prototype.init = function()
 
     this.mainContainer.style.zIndex = 0;
 
-    this.renderMethod = GZ3D.MULTIVIEW_RENDER_COPY2CANVAS;
+     this.renderMethod = GZ3D.MULTIVIEW_RENDER_COPY2CANVAS;
     if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_VIEWPORTS) {
         this.mainContainer.appendChild(this.gz3dScene.getDomElement());
     }
@@ -5355,14 +6365,7 @@ GZ3D.MultiView.prototype.renderToViewport = function(view)
     webglRenderer.setScissor( viewport.x, viewport.y, viewport.w, viewport.h );
     webglRenderer.enableScissorTest ( true );
 
-    if (this.gz3dScene.effectsEnabled) {
-        this.gz3dScene.scene.overrideMaterial = this.depthMaterial;
-        this.gz3dScene.renderer.render(this.gz3dScene.scene, view.camera, this.depthTarget);
-        this.gz3dScene.scene.overrideMaterial = null;
-        this.gz3dScene.composer.render();
-    } else {
-        webglRenderer.render(this.gz3dScene.scene, view.camera);
-    }
+    this.gz3dScene.composer.render(view);
 };
 
 GZ3D.MultiView.prototype.renderAndCopyToCanvas = function(view)
@@ -5382,16 +6385,9 @@ GZ3D.MultiView.prototype.renderAndCopyToCanvas = function(view)
     if (webglRenderer.context.canvas.height < height) {
         webglRenderer.context.canvas.height = height;
     }
-    webglRenderer.setViewport( 0, 0, width, height );
 
-    if (this.gz3dScene.effectsEnabled) {
-        this.gz3dScene.scene.overrideMaterial = this.depthMaterial;
-        this.gz3dScene.renderer.render(this.gz3dScene.scene, view.camera, this.depthTarget);
-        this.gz3dScene.scene.overrideMaterial = null;
-        this.gz3dScene.composer.render();
-    } else {
-        webglRenderer.render(this.gz3dScene.scene, view.camera);
-    }
+    this.gz3dScene.composer.render(view);
+
 
     // copy rendered image over to view canvas
     var srcX = 0;
@@ -5822,6 +6818,115 @@ GZ3D.RadialMenu.prototype.setNumberOfItems = function(number)
 };
 
 /**
+ *
+ * GZ3D RGB Curves correction shader.
+ */
+
+GZ3D.RGBCurvesShader = {
+
+	uniforms: {
+
+		'tDiffuse': { value: null },
+		'tCurveMapper': { value: null },
+	},
+
+	vertexShader: [
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'vUv = uv;',
+		'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+
+		'}'
+
+	].join('\n'),
+
+	fragmentShader: [
+
+		'uniform sampler2D tCurveMapper;',
+		'uniform sampler2D tDiffuse;',
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+		'vec4 texel = texture2D( tDiffuse, vUv );',
+
+		'texel[0] = texture2D( tCurveMapper, vec2(texel[0],0) )[0];',
+		'texel[1] = texture2D( tCurveMapper, vec2(texel[1],0) )[1];',
+		'texel[2] = texture2D( tCurveMapper, vec2(texel[2],0) )[2];',
+
+		'gl_FragColor = texel;',
+
+		'}'
+
+	].join('\n')
+
+};
+
+// This method takes one curve per channel and render it to a ramp texture that is used by the shader
+// to correct the colors.
+
+GZ3D.RGBCurvesShader.setupCurve = function (redCurve, greenCurve, blueCurve, shader)
+{
+	var rwidth = 256, rheight = 1, rsize = rwidth * rheight;
+	var tcolor = new THREE.Color(0xffffff);
+	var dataColor = new Uint8Array(rsize * 3);
+	var i;
+
+
+	for (var col = 0; col < 3; col++)
+	{
+		var colarr;
+
+		switch (col)
+		{
+			case 0: colarr = redCurve; break;
+			case 1: colarr = greenCurve; break;
+			case 2: colarr = blueCurve; break;
+		}
+
+		for (i = 0; i < rwidth; i++)
+		{
+			dataColor[i * 3 + col] = i;
+		}
+
+		if (colarr.length > 2)
+		{
+			var curve = new THREE.CatmullRomCurve3(colarr);
+
+			var steps = rwidth * 10.0;
+
+			for (i = 0; i <= (steps+1.0); i++)
+			{
+				var vec = curve.getPoint(i / steps);
+				var x = Math.floor(vec.x * (rwidth - 1));
+				var val = Math.floor(vec.y * 255);
+
+				dataColor[x * 3 + col] = Math.max(Math.min(val,255.0),0.0);
+			}
+		}
+	}
+
+	var colorRampTexture = shader.uniforms['tCurveMapper'].value;
+
+	if (colorRampTexture!==null)
+	{
+		colorRampTexture.dispose();
+	}
+
+	colorRampTexture = new THREE.DataTexture(dataColor, rwidth, rheight, THREE.RGBFormat);
+	shader.uniforms['tCurveMapper'].value = colorRampTexture;
+
+	colorRampTexture.needsUpdate = true;
+
+};
+
+
+
+
+/**
  * The scene is where everything is placed, from objects, to lights and cameras.
  * @constructor
  */
@@ -5853,7 +6958,7 @@ GZ3D.Scene.prototype.init = function()
   this.manipulationMode = 'view';
   this.pointerOnMenu = false;
 
-  this.renderer = new THREE.WebGLRenderer({antialias: true });
+  this.renderer = new THREE.WebGLRenderer({antialias: false }); // antialiasing Will be handled as a post-processing pass
   this.renderer.setClearColor(0xb2b2b2, 1); // Sky
   this.renderer.setSize( window.innerWidth, window.innerHeight);
 
@@ -5876,7 +6981,11 @@ GZ3D.Scene.prototype.init = function()
   this.defaultCameraLookAt = new THREE.Vector3(0.0, 0.0, 0.0);
   this.resetView();
 
-  // animated visual model to replace raw server side robot meshes
+  // create post-processing composer
+  this.composer = new GZ3D.Composer(this);
+  this.composerSettings = new GZ3D.ComposerSettings();
+
+ // animated visual model to replace raw server side robot meshes
   this.animatedModel = null;
   this.animatedModelPosition = new THREE.Vector3(0, 0, 0);
   this.animatedModelRotation = new THREE.Vector3(0, 0, 0);
@@ -5935,42 +7044,8 @@ GZ3D.Scene.prototype.init = function()
 
   this.emitter = new EventEmitter2({ verbose: true });
 
-  // SSAO
-  this.effectsEnabled = false;
 
- // depth
- // var depthShader = THREE.ShaderLib[ 'depthRGBA'];  // It seems that the depthRGBA shader does not exist
-                                                      // anymore in THREEJS version 78. It has been replaced
-                                                      // by another shader called 'depth'. Need to investigate
-                                                      // about that, but I guess that the 'depth' buffer is a
-                                                      // floating point buffer that does not need to be RGBA unpacked.
-                                                      // I just replaced it with the new shader for now, it does not
-                                                      // seems to break anything:
-  var depthShader = THREE.ShaderLib[ 'depth'];        // <-
 
-  var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
-
-  this.depthMaterial = new THREE.ShaderMaterial( {
-      fragmentShader: depthShader.fragmentShader,
-      vertexShader: depthShader.vertexShader,
-      uniforms: depthUniforms } );
-  this.depthMaterial.blending = THREE.NoBlending;
-
-  // postprocessing
-  this.composer = new THREE.EffectComposer(this.renderer );
-  this.composer.addPass( new THREE.RenderPass(this.scene,this.camera));
-
-  this.depthTarget = new THREE.WebGLRenderTarget( window.innerWidth,
-      window.innerHeight, { minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter, format: THREE.RGBAFormat } );
-
-  var effect = new THREE.ShaderPass( THREE.SSAOShader );
-  effect.uniforms[ 'tDepth' ].value = this.depthTarget;
-  effect.uniforms[ 'size' ].value.set( window.innerWidth, window.innerHeight );
-  effect.uniforms[ 'cameraNear' ].value = this.camera.near;
-  effect.uniforms[ 'cameraFar' ].value = this.camera.far;
-  effect.renderToScreen = true;
-  this.composer.addPass( effect );
 
   // Radial menu (only triggered by touch)
   this.radialMenu = new GZ3D.RadialMenu(this.getDomElement());
@@ -6366,11 +7441,6 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
     }
   }
 
-  // F2 for turning on effects
-  if (event.keyCode === 113)
-  {
-    this.effectsEnabled = !this.effectsEnabled;
-  }
 
   // Esc/R/T for changing manipulation modes
   if (event.keyCode === 27) // Esc
@@ -8036,6 +9106,8 @@ GZ3D.Scene.prototype.selectEntity = function(object)
   }
 };
 
+
+
 /**
  * View joints
  * Toggle: if there are joints, hide, otherwise, show.
@@ -8315,6 +9387,16 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
   });
 };
 
+/**
+ * Apply composer settings
+ * Reflect the post-processing composer settings in the 3D scene.
+ * @param updateColorCurve
+*/
+
+  GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve)
+  {
+    this.composer.applyComposerSettings(updateColorCurve);
+  };
 /**
  * SDF parser constructor initializes SDF parser with the given parameters
  * and defines a DOM parser function to parse SDF XML files
@@ -9490,4 +10572,218 @@ GZ3D.SpawnModel.prototype.generateUniqueName = function(entity)
       return entity+'_'+i;
     }
   }
+};
+
+/**
+ * SSAO Shader for occlusion ambient
+ *
+ * This is a customized version of the THREE.SSAOShader shader. It uses slightly different user variables.
+ *
+ */
+
+GZ3D.SSAOShader = {
+
+	uniforms: {
+
+		'tDiffuse':     { value: null },
+		'tDepth':       { value: null },
+		'size':         { value: new THREE.Vector2( 512, 512 ) },
+		'cameraNear':   { value: 1 },
+		'cameraFar':    { value: 100 },
+		'onlyAO':       { value: 0 },
+		'aoClamp':      { value: 0.5 },
+		'lumInfluence': { value: 0.5 }
+
+	},
+
+	vertexShader: [
+
+		'varying vec2 vUv;',
+
+		'void main() {',
+
+			'vUv = uv;',
+
+			'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+
+		'}'
+
+	].join( '\n' ),
+
+	fragmentShader: [
+
+		'uniform float cameraNear;',
+		'uniform float cameraFar;',
+
+		'uniform bool onlyAO;',      // use only ambient occlusion pass?
+
+		'uniform vec2 size;',        // texture width, height
+		'uniform float aoClamp;',    // depth clamp - reduces haloing at screen edges
+
+		'uniform float lumInfluence;',  // how much luminance affects occlusion
+
+		'uniform sampler2D tDiffuse;',
+		'uniform sampler2D tDepth;',
+
+		'varying vec2 vUv;',
+
+		// '#define PI 3.14159265',
+		'#define DL 2.399963229728653',  // PI * ( 3.0 - sqrt( 5.0 ) )
+		'#define EULER 2.718281828459045',
+
+		// user variables
+
+		'const int samples = 8;',     // ao sample count
+		'const float radius = 5.0;',  // ao radius
+
+		'const bool useNoise = false;',      // use noise instead of pattern for sample dithering
+		'const float noiseAmount = 0.0003;', // dithering amount
+
+		'const float diffArea = 0.4;',   // self-shadowing reduction
+		'const float gDisplace = 0.6;',  // gauss bell center
+
+
+		// RGBA depth
+
+		'#include <packing>',
+
+		// generating noise / pattern texture for dithering
+
+		'vec2 rand( const vec2 coord ) {',
+
+			'vec2 noise;',
+
+			'if ( useNoise ) {',
+
+				'float nx = dot ( coord, vec2( 12.9898, 78.233 ) );',
+				'float ny = dot ( coord, vec2( 12.9898, 78.233 ) * 2.0 );',
+
+				'noise = clamp( fract ( 43758.5453 * sin( vec2( nx, ny ) ) ), 0.0, 1.0 );',
+
+			'} else {',
+
+				'float ff = fract( 1.0 - coord.s * ( size.x / 2.0 ) );',
+				'float gg = fract( coord.t * ( size.y / 2.0 ) );',
+
+				'noise = vec2( 0.25, 0.75 ) * vec2( ff ) + vec2( 0.75, 0.25 ) * gg;',
+
+			'}',
+
+			'return ( noise * 2.0  - 1.0 ) * noiseAmount;',
+
+		'}',
+
+		'float readDepth( const in vec2 coord ) {',
+
+			'float cameraFarPlusNear = cameraFar + cameraNear;',
+			'float cameraFarMinusNear = cameraFar - cameraNear;',
+			'float cameraCoef = 2.0 * cameraNear;',
+
+			// 'return ( 2.0 * cameraNear ) / ( cameraFar + cameraNear - unpackDepth( texture2D( tDepth, coord ) ) * ( cameraFar - cameraNear ) );',
+			'return cameraCoef / ( cameraFarPlusNear - unpackRGBAToDepth( texture2D( tDepth, coord ) ) * cameraFarMinusNear );',
+
+
+		'}',
+
+		'float compareDepths( const in float depth1, const in float depth2, inout int far ) {',
+
+			'float garea = 2.0;',                         // gauss bell width
+			'float diff = ( depth1 - depth2 ) * 100.0;',  // depth difference (0-100)
+
+			// reduce left bell width to avoid self-shadowing
+
+			'if ( diff < gDisplace ) {',
+
+				'garea = diffArea;',
+
+			'} else {',
+
+				'far = 1;',
+
+			'}',
+
+			'float dd = diff - gDisplace;',
+			'float gauss = pow( EULER, -2.0 * dd * dd / ( garea * garea ) );',
+			'return gauss;',
+
+		'}',
+
+		'float calcAO( float depth, float dw, float dh ) {',
+
+			'float dd = radius - depth * radius;',
+			'vec2 vv = vec2( dw, dh );',
+
+			'vec2 coord1 = vUv + dd * vv;',
+			'vec2 coord2 = vUv - dd * vv;',
+
+			'float temp1 = 0.0;',
+			'float temp2 = 0.0;',
+
+			'int far = 0;',
+			'temp1 = compareDepths( depth, readDepth( coord1 ), far );',
+
+			// DEPTH EXTRAPOLATION
+
+			'if ( far > 0 ) {',
+
+				'temp2 = compareDepths( readDepth( coord2 ), depth, far );',
+				'temp1 += ( 1.0 - temp1 ) * temp2;',
+
+			'}',
+
+			'return temp1;',
+
+		'}',
+
+		'void main() {',
+
+			'vec2 noise = rand( vUv );',
+			'float depth = readDepth( vUv );',
+
+			'float tt = clamp( depth, aoClamp, 1.0 );',
+
+			'float w = ( 1.0 / size.x )  / tt + ( noise.x * ( 1.0 - noise.x ) );',
+			'float h = ( 1.0 / size.y ) / tt + ( noise.y * ( 1.0 - noise.y ) );',
+
+			'float ao = 0.0;',
+
+			'float dz = 1.0 / float( samples );',
+			'float z = 1.0 - dz / 2.0;',
+			'float l = 0.0;',
+
+			'for ( int i = 0; i <= samples; i ++ ) {',
+
+				'float r = sqrt( 1.0 - z );',
+
+				'float pw = cos( l ) * r;',
+				'float ph = sin( l ) * r;',
+				'ao += calcAO( depth, pw * w, ph * h );',
+				'z = z - dz;',
+				'l = l + DL;',
+
+			'}',
+
+			'ao /= float( samples );',
+			'ao = 1.0 - ao;',
+
+			'vec3 color = texture2D( tDiffuse, vUv ).rgb;',
+
+			'vec3 lumcoeff = vec3( 0.299, 0.587, 0.114 );',
+			'float lum = dot( color.rgb, lumcoeff );',
+			'vec3 luminance = vec3( lum );',
+
+			'vec3 final = vec3( color * mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );',  // mix( color * ao, white, luminance )
+
+			'if ( onlyAO ) {',
+
+				'final = vec3( mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );',  // ambient occlusion only
+
+			'}',
+
+			'gl_FragColor = vec4( final, 1.0 );',
+
+		'}'
+
+	].join( '\n' )
+
 };

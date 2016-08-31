@@ -38,7 +38,7 @@
       ROBOT_VIEW: 11,
       CODE_EDITOR: 12,
       JOINT_PLOT: 13,
-      GRAPHICS_PERFORMANCE: 14,
+      ENVIRONMENT_SETTINGS: 14,
       BRAIN_VISUALIZER: 15,
       USER_NAVIGATION: 16
     })
@@ -873,7 +873,6 @@
           });
         };
 
-        $scope.showBrainvisualizerPanel = false;
         $scope.brainvisualizerClick = function()
         {
           if ($scope.helpModeActivated)
@@ -890,6 +889,34 @@
           }
         };
 
+
+        // Environment settings panel
+
+        $scope.showEnvironmentSettingsPanel = false;
+        $scope.toggleEnvironmentSettings = function()
+        {
+            $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
+            nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
+                           category: 'Simulation-GUI',
+                           value: $scope.showEnvironmentSettingsPanel
+          });
+        };
+
+        $scope.environmentSettingsClick = function()
+        {
+          if ($scope.helpModeActivated)
+          {
+            return $scope.help($scope.UI.ENVIRONMENT_SETTINGS);
+          }
+          else if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel)
+          {
+            return;
+          }
+          else
+          {
+            return $scope.toggleEnvironmentSettings();
+          }
+        };
 
       }]);
 } ());

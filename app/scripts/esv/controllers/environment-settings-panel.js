@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp').controller('brainvisualizerPanelCtrl',
+  angular.module('exdFrontendApp').controller('environmentSettingsPanelCtrl',
     ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler',
     function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler) {
 
@@ -10,6 +10,10 @@
     $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
     $scope.panelIsOpen = false;
+    $scope.activeTab = {};
+    $scope.activeTab.quality = false;
+    $scope.activeTab.color = false;
+    $scope.activeTab.environment = false;
 
     $scope.openCallback = function() {
       // The Panel is opened
@@ -24,11 +28,11 @@
     // clean up on leaving
     $scope.$on("$destroy", function() {
       // prevent calling the select functions of the tabs
-      $scope.showBrainvisualizerPanel = false;
+      $scope.showEnvironmentSettingsPanel = false;
     });
 
-    $scope.$watch('showBrainvisualizerPanel', function() {
-      if ($scope.showBrainvisualizerPanel) {
+    $scope.$watch('showEnvironmentSettingsPanel', function() {
+      if ($scope.showEnvironmentSettingsPanel) {
         $scope.openCallback();
       } else {
         $scope.closeCallback();

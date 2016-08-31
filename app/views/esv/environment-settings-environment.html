@@ -1,0 +1,136 @@
+<!-- build:css(.tmp) styles/esv/environment-settings-environment.css -->
+<link rel="stylesheet" href="styles/esv/environment-settings-environment.css" />
+<!-- endbuild -->
+
+<h3>Environment Settings</h3>
+<p>This is where you add some environment effects such as a sky box.</p>
+
+<hr>
+
+<div class="environment-settings-environment-wrapper">
+
+    <div class="environment-settings-option-subblock">
+
+        <div class="environment-settings-radio-group">
+
+            <span> Sky Box </br></br> </span>
+
+            <label>
+        <input class="environment-settings-radio" type="radio"
+        ng-model="selectedSky" ng-value="0" ng-change="updateEnvSettings()">None</label>
+
+            <label>
+        <input class="environment-settings-radio" type="radio"
+        ng-model="selectedSky" ng-value="1" ng-change="updateEnvSettings()">Gradient</label>
+
+            <label>
+        <input class="environment-settings-radio" type="radio"
+        ng-model="selectedSky" ng-value="2" ng-change="updateEnvSettings()">Sky</label>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+<hr>
+
+
+<div class="environment-settings-environment-wrapper">
+
+    <div class="environment-settings-option-subblock">
+
+        <div class="environment-settings-radio-group">
+
+            <span> Sun </br></br> </span>
+
+            <label>
+        <input class="environment-settings-radio" type="radio"
+        ng-model="selectedSun" ng-value="0" ng-change="updateEnvSettings()">None</label>
+
+            <label>
+        <input class="environment-settings-radio" type="radio"
+        ng-model="selectedSun" ng-value="1" ng-change="updateEnvSettings()">Lens Flare</label>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<hr>
+
+<div class="environment-settings-environment-wrapper">
+
+    <div class="environment-settings-option-subblock">
+
+        <label class="environment-settings-checkbox-label">
+        <input class="environment-settings-checkbox" type="checkbox"
+        ng-model="bloom"
+        ng-change="updateEnvSettings()">Bloom</label>
+
+        <div class="environment-settings-option-subblock-environment"  ng-show="bloom">
+
+
+            <label>Threshold
+                <input  type="range" ng-change="updateEnvSettings()" ng-model="bloomThreshold"
+                    step="0.01" min="0" max="1.0" ng-mouseup="$event.stopPropagation(); focus('container');" class="esv-envsettings-bloom-slider"/>
+                </label>
+
+            <label>Strength
+
+                <input type="range" ng-change="updateEnvSettings()" ng-model="bloomStrength"
+                    step="0.01" min="0" max="1.0" ng-mouseup="$event.stopPropagation(); focus('container');" class="esv-envsettings-bloom-slider" />
+                </label>
+
+
+            <label>Radius
+
+            <input  type="range" ng-change="updateEnvSettings()" ng-model="bloomRadius" step="0.01" min="0" max="3.0"
+                ng-mouseup="$event.stopPropagation(); focus('container');" class="esv-envsettings-bloom-slider"/>
+
+            </label>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+<hr>
+
+<div class="environment-settings-environment-wrapper">
+
+    <div class="environment-settings-option-subblock">
+
+        <label class="environment-settings-checkbox-label">
+        <input class="environment-settings-checkbox" type="checkbox"
+        ng-model="fog"
+        ng-change="updateEnvSettings()">Fog</label>
+
+        <div class="environment-settings-option-subblock-environment" ng-show="fog">
+
+            <label>Density
+                <input  type="range" ng-change="updateEnvSettings()" ng-model="fogDensity"
+                        step="0.01" min="0" max="0.3" ng-mouseup="$event.stopPropagation(); focus('container');" class="esv-envsettings-bloom-slider">
+                </input>
+            </label>
+
+           <label>Color
+                <input  type="text" ng-change="updateEnvSettings()" ng-model="fogColor">
+                </input>
+            </label>
+
+        </div>
+
+    </div>
+
+
+</div>
