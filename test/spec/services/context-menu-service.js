@@ -40,7 +40,7 @@ describe('Services: contextMenuState', function (){
 
   it('should hide menu when calling toggleContextMenu(false)', function(){
 
-    spyOn(contextMenuState, 'hideMenu');
+    spyOn(contextMenuState, 'hideMenu').andCallThrough();
 
     contextMenuState.toggleContextMenu(false);
 

@@ -5,8 +5,16 @@ describe('Directive: object-inspector', function () {
   var $rootScope, $compile, $scope, $document;
   var objectInspectorElement, objectInspectorService;
 
+  var baseEventHandlerMock = {
+    suppressAnyKeyPress: jasmine.createSpy('suppressAnyKeyPress')
+  };
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
+  beforeEach(module(function ($provide) {
+    $provide.value('baseEventHandler', baseEventHandlerMock);
+  }));
+
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
                               _$document_,
@@ -27,10 +35,14 @@ describe('Directive: object-inspector', function () {
 
 
   it('should hide objectInspectorService when closing', function () {
-
     objectInspectorService.isShown = true;
     $scope.$destroy();
     expect(objectInspectorService.isShown).toBe(false);
+  });
+
+  it('should call baseEventHandler.suppressAnyKeyPress on suppressKeyPress', function () {
+    $scope.$$childTail.suppressKeyPress();
+    expect(baseEventHandlerMock.suppressAnyKeyPress).toHaveBeenCalled();
   });
 
 });

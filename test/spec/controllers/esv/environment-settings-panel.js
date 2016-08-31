@@ -99,7 +99,7 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
   });
 
   it('should call suppressAnyKeyPress from baseEventHandler service', function () {
-    scope.suppressKeyPress(event);
+    scope.suppressKeyPress();
     expect(baseEventHandlerMock.suppressAnyKeyPress).toHaveBeenCalled();
   });
 });
