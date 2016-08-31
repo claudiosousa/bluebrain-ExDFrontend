@@ -28,7 +28,6 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.movementSpeed = 0.05;
   this.lookSpeed = 0.01;
   this.touchSensitivity = 0.01;
-  this.mouseWheelSensitivity = 0.25;
 
   this.target = new THREE.Vector3();
   this.lookVertical = true;
@@ -123,11 +122,6 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     } else {
       this.endLookAround();
     }
-  };
-
-  this.onMouseWheel = function (event) {
-    var delta = Math.max(-1, Math.min(1, (-event.wheelDelta || event.detail)));
-    this.object.translateZ(delta * this.mouseWheelSensitivity);
   };
 
   this.onTouchStart = function (event) {
@@ -407,8 +401,6 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.domElement.addEventListener('touchstart', bind(this, this.onTouchStart), false);
   this.domElement.addEventListener('touchmove', bind(this, this.onTouchMove), false);
   this.domElement.addEventListener('touchend', bind(this, this.onTouchEnd), false);
-  this.domElement.addEventListener('mousewheel', bind(this, this.onMouseWheel), false);
-  this.domElement.addEventListener('DOMMouseScroll', bind(this, this.onMouseWheel), false);
 
   domElementForKeyBindings.addEventListener('keydown', bind(this, this.onKeyDown), false);
   domElementForKeyBindings.addEventListener('keyup', bind(this, this.onKeyUp), false);
