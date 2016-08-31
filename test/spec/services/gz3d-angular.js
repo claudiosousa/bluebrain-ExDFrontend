@@ -31,7 +31,7 @@ describe('testing the gz3d service', function () {
   SceneObject.getDomElement = jasmine.createSpy('getDomElement').andReturn(DomElement);
   SceneObject.setWindowSize = jasmine.createSpy('setWindowSize');
   var GuiObject = {};
-  var GZIfaceObject = {};
+  var GZIfaceObject = { addCanDeletePredicate: angular.noop };
   var SdfParserObject = {};
   GZ3D = {};
   GZ3D.Scene = jasmine.createSpy('Scene').andReturn(SceneObject);

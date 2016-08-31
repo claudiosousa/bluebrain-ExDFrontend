@@ -24,6 +24,7 @@
       'objectInspectorService',
       'backendInterfaceService',
       'hbpDialogFactory',
+      'isNotARobotPredicate',
       function ($document,
         STATE,
         EDIT_MODE,
@@ -36,7 +37,8 @@
         contextMenuState,
         objectInspectorService,
         backendInterfaceService,
-        hbpDialogFactory) {
+        hbpDialogFactory,
+        isNotARobotPredicate) {
         return {
           templateUrl: 'views/esv/environment-designer.html',
           restrict: 'E',
@@ -154,10 +156,11 @@
                 },
 
                 show: function (model) {
-                  var isRobot = model.name.indexOf('robot') !== -1;
+                   //don't delete the robot
+                  var canDelete = isNotARobotPredicate(model);
 
                   this.visible = this.items[0].visible = true;
-                  this.items[1].visible = !isRobot; //don't delete the robot
+                  this.items[1].visible = canDelete;
 
                   return true;
                 }
