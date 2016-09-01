@@ -4,7 +4,6 @@ describe('Directive: Curve Editor', function ()
 {
   var $rootScope, element;
 
-
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(inject(function (
@@ -43,11 +42,14 @@ describe('Directive: Curve Editor', function ()
     $rootScope.rgbcurve = { 'red': [[0, 0], [0.5, 0.5], [1.0, 1.0]], 'green': [], 'blue': [] };
     $rootScope.$digest();
 
+
     var event = {};
     var canvas = element.find('#rgb-curve-canvas')[0];
 
-    event.clientX = canvas.width / 2;
-    event.clientY = canvas.height / 2;
+    var rect = canvas.getBoundingClientRect();
+
+    event.clientX = rect.left + canvas.width / 2;
+    event.clientY = rect.top + canvas.height / 2;
 
     $rootScope.$$childTail.mouseDown(event);
 
@@ -60,6 +62,31 @@ describe('Directive: Curve Editor', function ()
     expect($rootScope.$$childTail.curve.red.length).toBeGreaterThan(2);
   });
 
+  it('should add new point', function ()
+  {
+    $rootScope.rgbcurve = { 'red': [[0, 0], [1.0, 1.0]], 'green': [], 'blue': [] };
+    $rootScope.$digest();
+
+    var event = {};
+    var canvas = element.find('#rgb-curve-canvas')[0];
+
+    var rect = canvas.getBoundingClientRect();
+
+    event.clientX = rect.left + canvas.width / 2;
+    event.clientY = rect.top + canvas.height / 2;
+
+    $rootScope.$$childTail.mouseDown(event);
+
+    event.clientX += 5;
+    event.clientY += 5;
+    $rootScope.$$childTail.mouseMove(event);
+    $rootScope.$$childTail.mouseUp(event);
+    $rootScope.$$childTail.mouseOut(event);
+
+    expect($rootScope.$$childTail.curve.red.length).toBeGreaterThan(2);
+  });
+
+
   it('should handles an undefined curve', function ()
   {
     $rootScope.rgbcurve = undefined;
@@ -67,6 +94,12 @@ describe('Directive: Curve Editor', function ()
     $rootScope.$digest();
 
     expect($rootScope.$$childTail.curve).toBeDefined();
+  });
+
+  it('should propery destroy itself', function ()
+  {
+    $rootScope.$destroy();
+    expect($rootScope.$$childTail).toBe(null);
   });
 
 
