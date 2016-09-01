@@ -3,9 +3,7 @@
 
   angular.module('exdFrontendApp')
     .directive('editorPanel', [
-      'simulationInfo',
-      'gz3d',
-      function (simulationInfo, gz3d) {
+      function () {
         return {
           templateUrl: 'views/esv/editor-panel.html',
           restrict: 'E',
