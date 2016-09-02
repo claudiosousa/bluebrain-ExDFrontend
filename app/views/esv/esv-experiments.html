@@ -29,6 +29,8 @@
           <div ng-if="exp.id == pageState.selected && config.canLaunchExperiments">
             <br/>
             <i ng-if="exp.configuration.timeout != undefined">Timeout: {{exp.configuration.timeout | timeDDHHMMSS}}</i><br/>
+            <!-- temporary placeholder to notify the user an experiment requires multiple processes -->
+            <i>Brain processes: {{exp.configuration.brainProcesses}}</i><br/>
             <span>
               <i>Available backends:</i>
               <i  class="label-availability"
