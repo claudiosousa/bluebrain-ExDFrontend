@@ -213,7 +213,8 @@
         var simInitData = {
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
-          contextID: $stateParams.ctx
+          contextID: $stateParams.ctx,
+          brainProcesses: 1
         };
 
         // Create a new simulation.
