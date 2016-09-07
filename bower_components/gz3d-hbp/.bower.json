@@ -13,7 +13,9 @@
   "dependencies": {
     "three.js": "threejs#r79",
     "eventemitter2": "latest",
-    "xml2json": "latest"
+    "xml2json": "latest",
+    "roslibjs": "~0.17.0",
+    "lodash": "^4.15.0"
   },
   "keywords": [
     "gzweb",

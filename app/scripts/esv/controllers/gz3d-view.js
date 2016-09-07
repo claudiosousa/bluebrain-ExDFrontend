@@ -322,6 +322,7 @@
             /* Listen for status informations */
             stateService.startListeningForStatusInformation();
             stateService.addMessageCallback(messageCallback);
+            stateService.addStateCallback(stateCallback);
 
             // Show the splash screen for the progress of the asset loading
             $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open($scope.onSceneLoaded);
@@ -362,9 +363,9 @@
         };
 
         //When resetting do something
-        $scope.resetListenerUnbindHandler = $scope.$on('RESET', function(event, resetType) {
+        $scope.resetListenerUnbindHandler = $scope.$on('RESET', function (event, resetType) {
 
-          if(resetType === RESET_TYPE.RESET_FULL) {
+          if (resetType === RESET_TYPE.RESET_FULL) {
             $scope.resetGUI();
           }
         });
@@ -376,15 +377,15 @@
           };
 
           hbpDialogFactory.confirm({
-            'title' : 'Reset Menu',
+            'title': 'Reset Menu',
             'templateUrl': 'views/esv/reset-checklist-template.html',
             'scope': $scope
-          }).then(function() {
-                    stateService.ensureStateBeforeExecuting(
-                      STATE.PAUSED,
-                      $scope.__resetButtonClickHandler
-                    );
-                  });
+          }).then(function () {
+            stateService.ensureStateBeforeExecuting(
+              STATE.PAUSED,
+              $scope.__resetButtonClickHandler
+            );
+          });
         };
 
         $scope.__resetButtonClickHandler = function () {
@@ -401,18 +402,18 @@
           }
           else { // Backend-bound reset
 
-            if($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
+            if ($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
               $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
 
               var resetWhat, downloadWhat = '';
 
               (function (resetType) { //customize user message depending on the reset type
-                if(resetType === RESET_TYPE.RESET_WORLD) {
+                if (resetType === RESET_TYPE.RESET_WORLD) {
                   resetWhat = 'Environment';
                   downloadWhat = 'World SDF ';
                 }
-                else if(resetType === RESET_TYPE.RESET_BRAIN) {
+                else if (resetType === RESET_TYPE.RESET_BRAIN) {
                   resetWhat = 'Brain';
                   downloadWhat = 'brain configuration file ';
                 }
@@ -421,9 +422,9 @@
               var messageHeadline = 'Resetting ' + resetWhat;
               var messageSubHeadline = 'Downloading ' + downloadWhat + 'from the Collab';
 
-              _.defer(function() {
+              _.defer(function () {
                 splash.spin = true;
-                splash.setMessage({headline: messageHeadline, subHeadline: messageSubHeadline});
+                splash.setMessage({ headline: messageHeadline, subHeadline: messageSubHeadline });
               });
 
               backendInterfaceService.resetCollab(
@@ -742,18 +743,34 @@
             delete $scope.assetLoadingSplashScreen;
           }
 
-          if (angular.isDefined(gz3d.iface) && angular.isDefined(gz3d.iface.webSocket)) {
-            gz3d.iface.webSocket.close();
-          }
+          closeSimulationConnections();
           gz3d.deInitialize();
         });
 
-        $scope.onSimulationDone = function () {
+        function closeSimulationConnections() {
+          // Stop listening for status messages
+          if (gz3d.iface && gz3d.iface.webSocket) {
+            gz3d.iface.webSocket.close();
+          }
           // Stop listening for status messages
           stateService.stopListeningForStatusInformation();
+        }
+
+        function stateCallback(newState) {
+          if (newState === STATE.STOPPED) {
+            if (gz3d.iface && gz3d.iface.webSocket) {
+              gz3d.iface.webSocket.disableRebirth();
+            }
+          }
+        }
+
+        $scope.onSimulationDone = function () {
+
+          closeSimulationConnections();
 
           // unregister the message callback
           stateService.removeMessageCallback(messageCallback);
+          stateService.removeStateCallback(stateCallback);
 
           // Stop/Cancel loading assets
           // The window.stop() method is not supported by Internet Explorer
@@ -764,6 +781,8 @@
           else if (angular.isDefined($document.execCommand)) {
             $document.execCommand("Stop", false);
           }
+
+
         };
 
         $scope.help = function (uiElement) {
@@ -861,30 +880,25 @@
           $location.path('esv-web');
         };
 
-     // Brain visualizer
+        // Brain visualizer
 
         $scope.showBrainvisualizerPanel = false;
-        $scope.toggleBrainvisualizer = function()
-        {
-            $scope.showBrainvisualizerPanel = !$scope.showBrainvisualizerPanel;
-            nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
-                           category: 'Simulation-GUI',
-                           value: $scope.showBrainvisualizerPanel
+        $scope.toggleBrainvisualizer = function () {
+          $scope.showBrainvisualizerPanel = !$scope.showBrainvisualizerPanel;
+          nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
+            category: 'Simulation-GUI',
+            value: $scope.showBrainvisualizerPanel
           });
         };
 
-        $scope.brainvisualizerClick = function()
-        {
-          if ($scope.helpModeActivated)
-          {
+        $scope.brainvisualizerClick = function () {
+          if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.BRAIN_VISUALIZER);
           }
-          else if ($scope.brainvisualizerIsDisabled || $scope.loadingBrainvisualizerPanel)
-          {
+          else if ($scope.brainvisualizerIsDisabled || $scope.loadingBrainvisualizerPanel) {
             return;
           }
-          else
-          {
+          else {
             return $scope.toggleBrainvisualizer();
           }
         };
@@ -893,27 +907,22 @@
         // Environment settings panel
 
         $scope.showEnvironmentSettingsPanel = false;
-        $scope.toggleEnvironmentSettings = function()
-        {
-            $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
-            nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
-                           category: 'Simulation-GUI',
-                           value: $scope.showEnvironmentSettingsPanel
+        $scope.toggleEnvironmentSettings = function () {
+          $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
+          nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
+            category: 'Simulation-GUI',
+            value: $scope.showEnvironmentSettingsPanel
           });
         };
 
-        $scope.environmentSettingsClick = function()
-        {
-          if ($scope.helpModeActivated)
-          {
+        $scope.environmentSettingsClick = function () {
+          if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.ENVIRONMENT_SETTINGS);
           }
-          else if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel)
-          {
+          else if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel) {
             return;
           }
-          else
-          {
+          else {
             return $scope.toggleEnvironmentSettings();
           }
         };
