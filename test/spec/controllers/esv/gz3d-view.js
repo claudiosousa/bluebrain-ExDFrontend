@@ -74,6 +74,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     setDefaultPose: jasmine.createSpy('setDefaultPose')
   };
 
+  var simulationConfigServiceMock = {};
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -125,6 +126,59 @@ describe('Controller: Gz3dViewCtrl', function () {
   }));
 
   beforeEach(module(function ($provide) {
+
+    var collab3DSettingsServiceMock = {};
+
+    collab3DSettingsServiceMock.loadSettings = function()
+    {
+      var res = {};
+      res.finally = function (callback)
+      {
+        callback(true);
+      };
+      return res;
+    };
+
+    $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
+
+    simulationConfigServiceMock.simulateCatch = false;
+
+    simulationConfigServiceMock.doesConfigFileExist = function ()
+    {
+      var res = {};
+      res.then = function (callback)
+      {
+        callback(true);
+      };
+      return res;
+    };
+
+    simulationConfigServiceMock.loadConfigFile = function ()
+    {
+      var that = this;
+      var res = {};
+      res.then = function (callback)
+      {
+        callback('{"shadows":true,"antiAliasing":true,"ssao":false,"ssaoDisplay":false,"ssaoClamp":0.8,"ssaoLumInfluence":0.7,"rgbCurve":{"red":[[0,0],[0.277587890625,0.2623291015625],[0.683837890625,0.7545166015625],[1,1]],"green":[[0,0],[0.324462890625,0.3560791015625],[0.636962890625,0.7193603515625],[1,1]],"blue":[[0,0],[0.515869140625,0.4693603515625],[1,1]]},"levelsInBlack":0.14,"levelsInGamma":1.44,"levelsInWhite":1,"levelsOutBlack":0,"levelsOutWhite":1,"skyBox":"img/3denv/sky/clouds/clouds","sun":"SIMPLELENSFLARE","bloom":true,"bloomStrength":"0.35","bloomRadius":0.37,"bloomThreshold":0.98,"fog":true,"fogDensity":"0.04","fogColor":"#d8ccb1"}');
+
+        var catchres = {};
+
+        catchres.catch = function(callback)
+        {
+          if (that.simulateCatch)
+          {
+            callback();
+          }
+        };
+
+        return catchres;
+      };
+      return res;
+    };
+
+    $provide.value('simulationConfigService', simulationConfigServiceMock);
+
+
     var gz3dMock = {
       Initialize : jasmine.createSpy('Initialize'),
       deInitialize : jasmine.createSpy('deInitialize'),
@@ -272,6 +326,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     backendInterfaceServiceMock.reset.reset();
     backendInterfaceServiceMock.resetCollab.reset();
   }));
+
+
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
@@ -950,14 +1006,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('visible');
     });
 
-    it('should toggle the rendering performance', function() {
-      expect(gz3d.scene.renderer.shadowMapEnabled).toBe(false);
-      expect(scope.showShadows).toBe(undefined);
-      scope.toggleGraphicsPerformance();
-      expect(gz3d.scene.setShadowMaps).toHaveBeenCalledWith(true);
-      expect(scope.showShadows).toBe(true);
-    });
-
     it('should toggle the help mode variable', function() {
       expect(scope.helpModeActivated).toBe(false);
       scope.toggleHelpMode();
@@ -1248,6 +1296,22 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
+    it('should init brain visualizer data', function ()
+    {
+      simulationConfigServiceMock.simulateCatch = false;
+      scope.initBrainvisualizerData();
+      scope.$digest();
+      expect(scope.loadingBrainvisualizerPanel).toBe(false);
+    });
+
+    it('should disable brain visualizer when no data', function ()
+    {
+      simulationConfigServiceMock.simulateCatch = true;
+      scope.initBrainvisualizerData();
+      scope.$digest();
+      expect(scope.brainvisualizerIsDisabled).toBe(true);
+    });
+
     it('should enable display of the brainvisualizer panel', function ()
     {
       scope.showBrainvisualizerPanel = false;
@@ -1258,6 +1322,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should open of the brainvisualizer panel', function ()
     {
+      scope.loadingBrainvisualizerPanel = false;
+      scope.brainvisualizerIsDisabled = false;
       scope.showBrainvisualizerPanel = false;
       stateParams.ctx = '';
       scope.brainvisualizerClick();
@@ -1317,6 +1383,13 @@ describe('Controller: Gz3dViewCtrl', function () {
         collabExperimentLockService: collabExperimentLockService
 
       });
+    });
+
+    it('should init default environment settings', function ()
+    {
+        stateParams.ctx = '';
+        scope.initComposerSettings();
+        expect(scope.loadingEnvironmentSettingsPanel).toBe(false);
     });
 
     it('should enable display of the environment settings panel', function ()

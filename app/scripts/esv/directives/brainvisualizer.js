@@ -7,22 +7,25 @@
         return {
           templateUrl: 'views/esv/brainvisualizer.html',
           restrict: 'E',
-          scope:true,
-          link:function(scope, element, attrs)
+          scope: {
+            data: "="
+          },
+                    link:function(scope, element, attrs)
           {
             var brain3D;
             var brainContainer = element.find('.esv-brainvisualizer-main');
 
+            var parentScope = scope.$parent;
             //----------------------------------------------
             // Init brain 3D visualizer when the panel is open
 
-            scope.$watch('showBrainvisualizerPanel', function ()
+            parentScope.$watch('showBrainvisualizerPanel', function ()
             {
-              var visible = scope.showBrainvisualizerPanel;
+              var visible = parentScope.showBrainvisualizerPanel;
 
               if (visible && brain3D === undefined)
               {
-                brain3D = new BRAIN3D.MainView(brainContainer[0], BRAIN3D.embeddedData, 'img/brainvisualizer/brain3dball.png', 'img/brainvisualizer/brain3dballsimple.png');
+                brain3D = new BRAIN3D.MainView(brainContainer[0], scope.data, 'img/brainvisualizer/brain3dball.png', 'img/brainvisualizer/brain3dballsimple.png');
 
                 // Update UI with default brain 3D visualizer
 

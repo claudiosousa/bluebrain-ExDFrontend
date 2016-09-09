@@ -16,13 +16,23 @@
 
             scope.selectedColorChannel = 0;
 
-            scope.$watch('showEnvironmentSettingsPanel', function ()
+            scope.composerSettingsToUI = function ()
             {
               if (scope.showEnvironmentSettingsPanel)
               {
                 scope.composerSettings = gz3d.scene.composerSettings;
                 scope.inGamma = (1.0 - (gz3d.scene.composerSettings.levelsInGamma - 1.0));
               }
+            };
+
+            scope.$watch('showEnvironmentSettingsPanel', function ()
+            {
+              scope.composerSettingsToUI();
+            });
+
+            scope.$watch('gz3d.scene.composerSettings', function ()
+            {
+              scope.composerSettingsToUI();
             });
 
             //----------------------------------------------

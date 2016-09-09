@@ -14,7 +14,7 @@
             //----------------------------------------------
             // Init the values
 
-            scope.$watch('showEnvironmentSettingsPanel', function ()
+            scope.composerSettingsToUI = function ()
             {
               if (scope.showEnvironmentSettingsPanel)
               {
@@ -26,12 +26,23 @@
                 scope.ambientOcclusionLum = cs.ssaoLumInfluence;
                 scope.antiAliasingEnabled = cs.antiAliasing;
               }
+            };
+
+            scope.$watch('showEnvironmentSettingsPanel', function ()
+            {
+              scope.composerSettingsToUI();
             });
+
+            scope.$watch('gz3d.scene.composerSettings', function ()
+            {
+              scope.composerSettingsToUI();
+            });
+
 
             //----------------------------------------------
             // UI to 3D scene
 
-            scope.updateEnvQualitySettings = function()
+            scope.updateEnvQualitySettings = function ()
             {
               gz3d.scene.composerSettings.shadows = scope.renderShadows;
               gz3d.scene.composerSettings.ssao = scope.renderAmbientOcclusion;

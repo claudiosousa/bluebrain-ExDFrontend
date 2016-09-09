@@ -941,7 +941,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve)
         {
             // Color curve
 
-            if (updateColorCurve)
+            if (updateColorCurve && view.rgbCurvesShader!==undefined)
             {
                 if ((cs.rgbCurve['red'] === undefined || cs.rgbCurve['red'].length < 2) &&
                     (cs.rgbCurve['green'] === undefined || cs.rgbCurve['green'].length < 2) &&

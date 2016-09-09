@@ -2,12 +2,8 @@
   'use strict';
 
   angular.module('exdFrontendApp').controller('environmentSettingsPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler) {
-
-    var serverConfig = simulationInfo.serverConfig;
-    $scope.simulationID = simulationInfo.simulationID;
-    $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
+    ['$rootScope', '$scope', 'bbpConfig', 'gz3d', 'baseEventHandler',
+    function ($rootScope, $scope, bbpConfig, gz3d, baseEventHandler) {
 
     $scope.panelIsOpen = false;
     $scope.activeTab = {};

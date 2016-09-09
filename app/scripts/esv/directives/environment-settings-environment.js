@@ -24,11 +24,19 @@
             scope.fogDensity = 0;
             scope.fogColor = "";
 
-            scope.skyList = ['','img/3denv/sky/gradient/gradient','img/3denv/sky/clouds/clouds'];
-            scope.sunList = ['','SIMPLELENSFLARE'];
-            scope.skyDefaultFogList = ['#b2b2b2','#cddde9','#d8ccb1'];
+            scope.skyList = ['',
+              'img/3denv/sky/gradient/gradient',
+              'img/3denv/sky/softgradient/softgradient',
+              'img/3denv/sky/blur/blur',
+              'img/3denv/sky/skyblur/skyblur',
+              'img/3denv/sky/clouds/clouds'
+              ];
 
-            scope.$watch('showEnvironmentSettingsPanel', function ()
+            scope.skyDefaultFogList = ['#b2b2b2', '#cddde9', '#97a2af', '#c7c0bc','#3c4146', '#d8ccb1'];
+
+            scope.sunList = ['', 'SIMPLELENSFLARE'];
+
+            scope.composerSettingsToUI = function ()
             {
               if (scope.showEnvironmentSettingsPanel)
               {
@@ -46,7 +54,18 @@
                 scope.fogDensity = cs.fogDensity;
                 scope.fogColor = cs.fogColor;
               }
+            };
+
+            scope.$watch('showEnvironmentSettingsPanel', function ()
+            {
+              scope.composerSettingsToUI();
             });
+
+            scope.$watch('gz3d.scene.composerSettings', function ()
+            {
+              scope.composerSettingsToUI();
+            });
+
 
             //----------------------------------------------
             // UI to 3D scene
