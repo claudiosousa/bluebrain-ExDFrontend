@@ -24,7 +24,13 @@
       }"
        ng-model="stateMachine.code"
        ui-refresh="stateMachine.code"
+       ng-attr-id="state-machine-{{stateMachine.id}}"
        ng-change="onStateMachineChange(stateMachine)">
+  </div>
+  <div ng-repeat="(type, error) in stateMachine.error">
+    <div class="alert alert-danger" role="alert">
+      {{error.message}} <b>({{type}})</b>
+    </div>
   </div>
   <button type="button" class="btn btn-default btn-md"
     ng-click="update(stateMachine)"

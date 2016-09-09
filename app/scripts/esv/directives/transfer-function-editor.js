@@ -10,6 +10,13 @@
       NO_OR_MULTIPLE_NAMES: 'NoOrMultipleNames'
     });
 
+  angular.module('exdFrontendApp.Constants')
+    // Constants for CLE error source types
+    .constant('SOURCE_TYPE', {
+      TRANSFER_FUNCTION: 'Transfer Function',
+      STATE_MACHINE: 'State Machine'
+    });
+
   angular.module('exdFrontendApp').directive('transferFunctionEditor', [
       '$log',
       'backendInterfaceService',
@@ -21,6 +28,7 @@
       '$timeout',
       'documentationURLs',
       'SIMULATION_FACTORY_CLE_ERROR',
+      'SOURCE_TYPE',
       'simulationInfo',
       'hbpDialogFactory',
     function (
@@ -34,6 +42,7 @@
         $timeout,
         documentationURLs,
         SIMULATION_FACTORY_CLE_ERROR,
+        SOURCE_TYPE,
         simulationInfo,
         hbpDialogFactory
     ) {
@@ -77,6 +86,7 @@
         scope.stateService = stateService;
         scope.STATE = STATE;
         scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
+        scope.SOURCE_TYPE = SOURCE_TYPE;
         var ScriptObject = pythonCodeHelper.ScriptObject;
 
         scope.populations = [];
@@ -122,7 +132,8 @@
         };
 
         scope.onNewErrorMessageReceived = function(msg) {
-          if (msg.severity < 2) { // Error message is not critical and can be fixed
+          if (msg.severity < 2 && msg.sourceType === scope.SOURCE_TYPE.TRANSFER_FUNCTION) {
+            // Error message is not critical and can be fixed
             var flawedTransferFunction = _.find(scope.transferFunctions, {'id': msg.functionName});
             if (flawedTransferFunction === undefined){
                 // if we couldn't find the tf from the id, try against the name

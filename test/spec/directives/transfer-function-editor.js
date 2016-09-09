@@ -5,7 +5,7 @@ describe('Directive: transferFunctionEditor', function () {
   var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, isolateScope,
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
-    SIMULATION_FACTORY_CLE_ERROR, pythonCodeHelper, ScriptObject, simulationInfo,
+    SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
     hbpDialogFactory;
 
   var backendInterfaceServiceMock = {
@@ -65,6 +65,7 @@ describe('Directive: transferFunctionEditor', function () {
                               _stateService_,
                               _STATE_,
                               _SIMULATION_FACTORY_CLE_ERROR_,
+                              _SOURCE_TYPE_,
                               _pythonCodeHelper_,
                               _simulationInfo_,
                               _hbpDialogFactory_) {
@@ -78,6 +79,7 @@ describe('Directive: transferFunctionEditor', function () {
     roslib = _roslib_;
     STATE = _STATE_;
     SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
+    SOURCE_TYPE = _SOURCE_TYPE_;
     stateService = _stateService_;
     backendInterfaceService = _backendInterfaceService_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
@@ -265,13 +267,20 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should fill the error field of the flawed transfer function', function () {
       var errorType = isolateScope.ERROR.RUNTIME;
-      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1 };
+      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
       msg.functionName = 'tf2';
       msg.errorType = errorType = isolateScope.ERROR.LOADING;
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[1].error[errorType]).toEqual(msg);
+    });
+
+    it('should ignore state machine errors', function () {
+      var errorType = isolateScope.ERROR.RUNTIME;
+      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.STATE_MACHINE };
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(transferFunctions[0].error[errorType]).toBeUndefined();
     });
 
     it('should set to undefined the runtime and loading error fields of a tf if the state reset succeeds', function () {
@@ -292,7 +301,7 @@ describe('Directive: transferFunctionEditor', function () {
     it('should report syntax error', function () {
       var firstTFName = transferFunctions[0].name;
       var errorType = isolateScope.ERROR.COMPILE;
-      var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3, errorType: errorType, severity: 1 };
+      var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3, errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
@@ -314,7 +323,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should highlight the error line in the transfer function editor', function () {
       var compile = isolateScope.ERROR.COMPILE;
-      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1 };
+      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       var tf1 = transferFunctions[0];
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
@@ -324,7 +333,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should call the compile error clean-up callback if a new compile error is received', function () {
       var compile = isolateScope.ERROR.COMPILE;
-      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1 };
+      var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       isolateScope.onNewErrorMessageReceived(msg);
@@ -339,7 +348,7 @@ describe('Directive: transferFunctionEditor', function () {
       var namingError = isolateScope.ERROR.NO_OR_MULTIPLE_NAMES;
       var tf1 = transferFunctions[0];
       tf1.name = '';
-      var msg = { functionName: 'tf1', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1 };
+      var msg = { functionName: 'tf1', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andReturn(tf1);
@@ -352,7 +361,7 @@ describe('Directive: transferFunctionEditor', function () {
       var tf1 = transferFunctions[0];
       tf1.name = 'NewFunctionName';
       tf1.id = 'OldFunctionName';
-      var msg = { functionName: 'NewFunctionName', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1 };
+      var msg = { functionName: 'NewFunctionName', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andCallFake(function(arg1, arg2){
