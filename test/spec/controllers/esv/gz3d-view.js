@@ -140,7 +140,7 @@ describe('Controller: Gz3dViewCtrl', function () {
           pickerNames: ''
         },
         emitter: {
-          emit: jasmine.createSpy('emit'),
+          emit: jasmine.createSpy('emit')
         },
         setManipulationMode : jasmine.createSpy('setManipulationMode'),
         controls: {
@@ -176,6 +176,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     var testLightHelper = new THREE.Object3D();
     testLightHelper.name = 'test_lightHelper';
     testLightHelper.visible = false;
+    gz3dMock.scene.scene.showLightHelpers = true;
     gz3dMock.scene.scene.add(testLightHelper);
     //provide gz3dMock
     $provide.value('gz3d', gz3dMock);
@@ -337,7 +338,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     lockServiceMock = {
       tryAddLock : jasmine.createSpy('tryAddLock').andReturn(callback.promise),
       onLockChanged: jasmine.createSpy('onLockChanged').andCallFake(function (fn) { onLockChangedCallback = fn; }),
-      releaseLock: jasmine.createSpy('releaseLock').andReturn(callback.promise),
+      releaseLock: jasmine.createSpy('releaseLock').andReturn(callback.promise)
     };
     collabExperimentLockServiceMock.createLockServiceForContext = function(){
       return lockServiceMock;
@@ -1178,7 +1179,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       scope.onSceneLoaded();
 
-      expect(scope.setLightHelperVisibility).toHaveBeenCalledWith(true);
+      expect(scope.setLightHelperVisibility).toHaveBeenCalled();
       expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
       expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
     });
@@ -1188,9 +1189,10 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
 
-      scope.setLightHelperVisibility(true);
+      gz3d.scene.showLightHelpers = true;
 
-      expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
+      scope.setLightHelperVisibility();
+
       expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
     });
 
