@@ -15,7 +15,15 @@ describe('Services: objectInspectorService', function () {
       },
       setViewAs: jasmine.createSpy('setViewAs'),
       setManipulationMode: jasmine.createSpy('setManipulationMode'),
-      selectEntity: jasmine.createSpy('selectEntity')
+      selectEntity: jasmine.createSpy('selectEntity'),
+
+      modelManipulator: {
+        isSelected: jasmine.createSpy('isSelected').andReturn(false),
+        onPointerMove: {},
+        selected: '',
+        handleAxisLockEnd: jasmine.createSpy('handleAxisLockEnd'),
+        selectPicker: jasmine.createSpy('selectPicker')
+      }
     },
     gui: {
       guiEvents: new window.EventEmitter2({ verbose: true })
@@ -242,4 +250,395 @@ describe('Services: objectInspectorService', function () {
     expect(colorableObjectService.setEntityMaterial).toHaveBeenCalled();
 
   });
+
+  it('should test onMouseMove', function () {
+    var mouseEvent = {'test': 0};
+
+    objectInspectorService.setSelectPicker(true);
+
+    spyOn(objectInspectorService, 'setSelectPicker');
+
+    objectInspectorService.onMouseMove(mouseEvent);
+
+    expect(objectInspectorService.mouseEvent).toBe(mouseEvent);
+
+    expect(gz3d.scene.modelManipulator.selectPicker).toHaveBeenCalled();
+    expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(false);
+  });
+
+  it('should test onMouseUp when gz3d.scene', function () {
+    objectInspectorService.onMouseUp();
+    expect(gz3d.scene.modelManipulator.handleAxisLockEnd).toHaveBeenCalled();
+  });
+});
+
+describe('Services: objectInspectorService2', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: null
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when scene is null', function () {
+    // expect no exception
+    expect(objectInspectorService.onXYZKeystroke()).toBeUndefined();
+  });
+
+  it('should test onMouseUp', function () {
+    // expect no exception
+    expect(objectInspectorService.onMouseUp()).toBeUndefined();
+  });
+});
+
+describe('Services: objectInspectorService3', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: {
+      manipulationMode: 'translate',
+      modelManipulator: {
+        selected: 'null',
+        pickerMeshes: [{'TX':'test'}],
+        highlightPicker: jasmine.createSpy('highlightPicker')
+      }
+    }
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when modelManipulator.selected is \'null\' and X press', function () {
+    var event = {keyCode:88};
+    spyOn(objectInspectorService, 'setSelectPicker');
+    spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
+    spyOn(document, 'addEventListener');
+
+    objectInspectorService.onXYZKeystroke(event);
+
+    expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(true);
+  });
+
+});
+
+describe('Services: objectInspectorService4', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: {
+      manipulationMode: 'translate',
+      modelManipulator: {
+        selected: 'TX',
+        pickerMeshes: [{'TX':'test'}],
+        handleAxisLockEnd: jasmine.createSpy('handleAxisLockEnd')
+      }
+    }
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when modelManipulator.selected is not \'null\'', function () {
+    objectInspectorService.onXYZKeystroke();
+    expect(gz3d.scene.modelManipulator.handleAxisLockEnd).toHaveBeenCalled();
+  });
+
+});
+
+
+describe('Services: objectInspectorService5', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: {
+      manipulationMode: 'rotate',
+      modelManipulator: {
+        selected: 'null',
+        pickerMeshes: [{'RY':'test'}],
+        highlightPicker: jasmine.createSpy('highlightPicker')
+      }
+    }
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when rotate', function () {
+    var event = {keyCode:89};
+    spyOn(objectInspectorService, 'setSelectPicker');
+    spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
+    spyOn(document, 'addEventListener');
+
+    objectInspectorService.onXYZKeystroke(event);
+
+    expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(true);
+  });
+
+});
+
+describe('Services: objectInspectorService6', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: {
+      manipulationMode: 'rotate',
+      modelManipulator: {
+        selected: 'null',
+        pickerMeshes: [{'RZ':'test'}],
+        highlightPicker: jasmine.createSpy('highlightPicker')
+      }
+    }
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when Z', function () {
+    var event = {keyCode:90};
+    spyOn(objectInspectorService, 'setSelectPicker');
+    spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
+    spyOn(document, 'addEventListener');
+
+    objectInspectorService.onXYZKeystroke(event);
+
+    expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(true);
+  });
+
+});
+
+describe('Services: objectInspectorService7', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: {
+      manipulationMode: 'rotate',
+      modelManipulator: {
+        selected: 'null',
+        pickerMeshes: [{'RZ':'test'}],
+        highlightPicker: jasmine.createSpy('highlightPicker')
+      }
+    }
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when AnyKey', function () {
+    var event = {keyCode:0};
+    spyOn(objectInspectorService, 'setSelectPicker');
+    spyOn(objectInspectorService, 'getMeshByName').andReturn(null);
+    spyOn(document, 'addEventListener');
+
+    objectInspectorService.onXYZKeystroke(event);
+  });
+});
+
+
+describe('Services: objectInspectorService8', function () {
+  var $timeout, objectInspectorService, colorableObjectService;
+  var gz3d, stateService, EDIT_MODE, STATE;
+
+  var gz3dMock = {
+    scene: {
+      manipulationMode: 'translate',
+      modelManipulator: {
+        selected: 'null',
+        pickerMeshes: [{'TX':'test'}],
+        highlightPicker: jasmine.createSpy('highlightPicker'),
+        selectPicker: jasmine.createSpy('selectPicker')
+      }
+    }
+  };
+
+  // provide mock objects
+  beforeEach(module(function ($provide) {
+    $provide.value('gz3d', gz3dMock);
+    $provide.value('stateService', {});
+  }));
+
+  beforeEach(function () {
+    // load the module.
+    module('simulationInfoService');
+    module('simulationControlServices');
+    module('colorableObjectModule');
+    module('objectInspectorModule');
+    module('experimentServices');
+    module('exdFrontendApp.Constants');
+
+    // inject service for testing.
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+      $timeout = _$timeout_;
+      objectInspectorService = _objectInspectorService_;
+      gz3d = _gz3d_;
+      stateService = _stateService_;
+      EDIT_MODE = _EDIT_MODE_;
+      STATE = _STATE_;
+      colorableObjectService = _colorableObjectService_;
+    });
+  });
+
+  it('should test onXYZKeystroke when modelManipulator.selected is \'null\', X press and mouseMove', function () {
+    var event = {keyCode:88};
+    spyOn(objectInspectorService, 'setSelectPicker');
+    spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
+    spyOn(document, 'addEventListener');
+    spyOn(objectInspectorService, 'getMouseEvent').andReturn(true);
+
+    objectInspectorService.onXYZKeystroke(event);
+
+    expect(gz3d.scene.modelManipulator.selectPicker).toHaveBeenCalled();
+  });
+
 });

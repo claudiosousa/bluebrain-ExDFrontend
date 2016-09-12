@@ -1,4 +1,4 @@
-<div id="object-inspector" class="object-inspector-widget" resizeable ng-show="objectInspectorService.isShown" ng-keydown="suppressKeyPress($event)">
+<div id="object-inspector" class="object-inspector-widget" resizeable ng-show="objectInspectorService.isShown">
   <!-- sections of the object inspector -->
   <ol class="sections-list">
     <!-- section - object identifier -->
@@ -21,22 +21,25 @@
                 <i class="glyphicon glyphicon-move"></i>
               </button>
             </li>
-            <li class="transform-elements-listitem">
+            <li class="transform-elements-listitem" ng-keydown="suppressKeyPress($event)">
               <ol class="vec3-num-input-list">
                 <li class="vec3-num-input-item">
                   <input interactive id="oi-translate-x" type="number" name="translate-x" class="vec3-num-input"
-                         ng-model="objectInspectorService.translation.x"
-                         ng-change="objectInspectorService.onObjectChange()">
+                          ng-model="objectInspectorService.translation.x"
+                          ng-change="objectInspectorService.onObjectChange()"
+                          style="{{objectInspectorService.selectedStyle['TX']}}">
                 </li>
                 <li class="vec3-num-input-item">
                   <input interactive id="oi-translate-y" type="number" name="translate-y" class="vec3-num-input"
                          ng-model="objectInspectorService.translation.y"
-                         ng-change="objectInspectorService.onObjectChange()">
+                         ng-change="objectInspectorService.onObjectChange()"
+                         style="{{objectInspectorService.selectedStyle['TY']}}">
                 </li>
                 <li class="vec3-num-input-item">
                   <input interactive id="oi-translate-z" type="number" name="translate-z" class="vec3-num-input"
                          ng-model="objectInspectorService.translation.z"
-                         ng-change="objectInspectorService.onObjectChange()">
+                         ng-change="objectInspectorService.onObjectChange()"
+                         style="{{objectInspectorService.selectedStyle['TZ']}}">
                 </li>
               </ol>
             </li>
@@ -53,22 +56,25 @@
                 <i class="glyphicon glyphicon-repeat"></i>
               </button>
             </li>
-            <li class="transform-elements-listitem">
+            <li class="transform-elements-listitem" ng-keydown="suppressKeyPress($event)">
               <ol class="vec3-num-input-list">
                 <li class="vec3-num-input-item">
                   <input interactive id="oi-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
                          ng-model="objectInspectorService.rotationEuler.x"
-                         ng-change="objectInspectorService.onObjectChange()">
+                         ng-change="objectInspectorService.onObjectChange()"
+                         style="{{objectInspectorService.selectedStyle['RX']}}">
                 </li>
                 <li class="vec3-num-input-item">
                   <input interactive id="oi-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
                          ng-model="objectInspectorService.rotationEuler.y"
-                         ng-change="objectInspectorService.onObjectChange()">
+                         ng-change="objectInspectorService.onObjectChange()"
+                         style="{{objectInspectorService.selectedStyle['RY']}}">
                 </li>
                 <li class="vec3-num-input-item">
                   <input interactive id="oi-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
                          ng-model="objectInspectorService.rotationEuler.z"
-                         ng-change="objectInspectorService.onObjectChange()">
+                         ng-change="objectInspectorService.onObjectChange()"
+                         style="{{objectInspectorService.selectedStyle['RZ']}}">
                 </li>
               </ol>
             </li>
@@ -77,7 +83,7 @@
       </ol>
     </li>
     <!-- section - view modes -->
-    <li class="section-item" ng-show="objectInspectorService.selectedObject">
+    <li class="section-item" ng-show="objectInspectorService.selectedObject" ng-keydown="suppressKeyPress($event)">
       <label for="oi-viewmode-normal"><input id="oi-viewmode-normal" type="radio" name="viewmode-normal"
                                              class="input-radio-check"
                                              ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.NORMAL)">Normal</label>

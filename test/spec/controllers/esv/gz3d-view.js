@@ -63,7 +63,8 @@ describe('Controller: Gz3dViewCtrl', function () {
   };
 
   var objectInspectorServiceMock = {
-    update: jasmine.createSpy('update')
+    update: jasmine.createSpy('update'),
+    removeEventListeners: jasmine.createSpy('removeEventListeners')
   };
 
   var userNavigationServiceMock = {

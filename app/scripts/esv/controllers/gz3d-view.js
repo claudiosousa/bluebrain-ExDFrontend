@@ -359,6 +359,10 @@
         $scope.simControlButtonHandler = function (newState) {
           $scope.updateSimulation(newState);
           $scope.setEditMode(EDIT_MODE.VIEW);
+
+          if (objectInspectorService !== null) {
+            objectInspectorService.removeEventListeners();
+          }
         };
 
         //When resetting do something

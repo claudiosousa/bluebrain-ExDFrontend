@@ -4920,6 +4920,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   this.gizmo = new THREE.Object3D();
 
   this.pickerNames = [];
+  this.pickerMeshes = [];
 
   var scope = this;
 
@@ -5059,6 +5060,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   mesh.name = 'TX';
   pickerAxes['translate'].add(mesh);
   this.pickerNames.push(mesh.name);
+  this.pickerMeshes[mesh.name] = mesh;
 
   mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
   mesh.position.y = 0.7;
@@ -5066,6 +5068,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   mesh.name = 'TY';
   pickerAxes['translate'].add(mesh);
   this.pickerNames.push(mesh.name);
+  this.pickerMeshes[mesh.name] = mesh;
 
   mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
   mesh.position.z = 0.7;
@@ -5074,6 +5077,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   mesh.name = 'TZ';
   pickerAxes['translate'].add(mesh);
   this.pickerNames.push(mesh.name);
+  this.pickerMeshes[mesh.name] = mesh;
 
   if(this.mobile)
   {
@@ -5232,6 +5236,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   mesh.name = 'RX';
   pickerAxes['rotate'].add(mesh);
   this.pickerNames.push(mesh.name);
+  this.pickerMeshes[mesh.name] = mesh;
 
   mesh = new THREE.Mesh(geometry, new HandleMaterial(green, false));
   mesh.rotation.z = Math.PI;
@@ -5240,6 +5245,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   mesh.name = 'RY';
   pickerAxes['rotate'].add(mesh);
   this.pickerNames.push(mesh.name);
+  this.pickerMeshes[mesh.name] = mesh;
 
   mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, false));
   mesh.rotation.z = -Math.PI/2;
@@ -5247,6 +5253,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   mesh.name = 'RZ';
   pickerAxes['rotate'].add(mesh);
   this.pickerNames.push(mesh.name);
+  this.pickerMeshes[mesh.name] = mesh;
 
   if(this.mobile)
   {
@@ -5690,6 +5697,43 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     scope.document.removeEventListener('touchend', onTouchEnd, false);
   }
 
+  this.highlightPicker = function (picker) {
+    highlightPicker(picker);
+  };
+
+  function highlightPicker(picker) {
+
+    if (picker)
+    {
+      if (hovered !== picker)
+      {
+        if (hovered !== null)
+        {
+          hovered.material.color.copy(hoveredColor);
+        }
+
+        selectedPicker = picker;
+        hovered = picker;
+        hoveredColor.copy(hovered.material.color);
+
+        hovered.material.color.offsetHSL(0, 0, -0.3);
+
+        scope.dispatchEvent(changeEvent);
+      }
+      scope.hovered = true;
+    }
+    else if (hovered !== null)
+    {
+      hovered.material.color.copy(hoveredColor);
+
+      hovered = null;
+
+      scope.dispatchEvent(changeEvent);
+
+      scope.hovered = false;
+    }
+  }
+
   /**
    * Window event callback
    * @param {} event
@@ -5701,39 +5745,38 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     if(event.button === 0 && scope.selected === 'null')
     {
       var intersect = intersectObjects(event, pickerAxes[scope.mode].children);
-
-        if(intersect)
-        {
-          if(hovered !== intersect.object)
-          {
-            if(hovered !== null)
-            {
-              hovered.material.color.copy(hoveredColor);
-            }
-
-            selectedPicker = intersect.object;
-            hovered = intersect.object;
-            hoveredColor.copy(hovered.material.color);
-
-            hovered.material.color.offsetHSL(0, 0, -0.3);
-
-            scope.dispatchEvent(changeEvent);
-          }
-          scope.hovered = true;
-        }
-        else if(hovered !== null)
-        {
-          hovered.material.color.copy(hoveredColor);
-
-          hovered = null;
-
-          scope.dispatchEvent(changeEvent);
-
-          scope.hovered = false;
-      }
+      highlightPicker(intersect.object);
     }
     scope.document.addEventListener('mousemove', onPointerMove, false);
     scope.document.addEventListener('mouseup', onMouseUp, false);
+  }
+
+  this.selectPicker = function (event) {
+    selectPicker(event);
+  };
+  function selectPicker(event) {
+    scope.selected = selectedPicker.name;
+
+    scope.update();
+    scope.setIntersectionPlane();
+
+    var planeIntersect = intersectObjects(event,
+      [intersectionPlanes[currentPlane]]);
+
+    if(planeIntersect)
+    {
+      oldPosition.copy(scope.object.position);
+
+      oldRotationMatrix.extractRotation(scope.object.matrix);
+      worldRotationMatrix.extractRotation(scope.object.matrixWorld);
+
+      parentRotationMatrix.extractRotation(
+        scope.object.parent.matrixWorld);
+      parentScale.setFromMatrixScale(tempMatrix.getInverse(
+        scope.object.parent.matrixWorld));
+
+      offset.copy(planeIntersect.point);
+    }
   }
 
   /**
@@ -5753,34 +5796,16 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
     if(intersect)
     {
-        scope.selected = selectedPicker.name;
-
-        scope.update();
-        scope.setIntersectionPlane();
-
-        var planeIntersect = intersectObjects(event,
-            [intersectionPlanes[currentPlane]]);
-
-        if(planeIntersect)
-        {
-          oldPosition.copy(scope.object.position);
-
-          oldRotationMatrix.extractRotation(scope.object.matrix);
-          worldRotationMatrix.extractRotation(scope.object.matrixWorld);
-
-          parentRotationMatrix.extractRotation(
-              scope.object.parent.matrixWorld);
-          parentScale.setFromMatrixScale(tempMatrix.getInverse(
-              scope.object.parent.matrixWorld));
-
-          offset.copy(planeIntersect.point);
-        }
+      selectPicker(event);
     }
 
     scope.document.addEventListener('mousemove', onPointerMove, false);
     scope.document.addEventListener('mouseup', onMouseUp, false);
   }
 
+  this.onPointerMove = function (event) {
+    onPointerMove(event);
+  };
   /**
    * Window event callback (mouse move and touch move)
    * @param {} event
@@ -5799,6 +5824,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
     if(planeIntersect)
     {
+      var initPosition = Object.assign({}, scope.object.position);
       point.copy(planeIntersect.point);
 
       if((scope.mode === 'translate') && isSelected('T'))
@@ -5869,6 +5895,15 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
                   scope.snapDist) * scope.snapDist;
             }
           }
+        }
+
+        // workaround for the problem when an object jumps straight to (0,0,0) on translation
+        if (scope.object.position.x == 0 &&
+            scope.object.position.y == 0 &&
+            scope.object.position.z == 0) {
+          // a "jump" detected -> keep the object at initial position
+          scope.object.position.copy(initPosition);
+          selectPicker(event);
         }
       }
       else if((scope.mode === 'rotate') && isSelected('R'))
@@ -5990,12 +6025,21 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     scope.dispatchEvent(changeEvent);
   }
 
-  function onMouseUp(event)
-  {
+  this.handleAxisLockEnd = function () {
+    handleAxisLockEnd();
+  };
+
+  function handleAxisLockEnd() {
+    highlightPicker();
     scope.selected = 'null';
 
     scope.document.removeEventListener('mousemove', onPointerMove, false);
     scope.document.removeEventListener('mouseup', onMouseUp, false);
+  }
+
+  function onMouseUp(event)
+  {
+    handleAxisLockEnd();
   }
 
   /**
@@ -6029,6 +6073,9 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     return intersections[0] ? intersections[0] : false;
   }
 
+  this.isSelected = function (name) {
+    return isSelected(name);
+  };
   /**
    * Checks if given name is currently selected
    * @param {} name
