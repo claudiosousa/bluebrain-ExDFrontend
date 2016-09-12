@@ -370,7 +370,7 @@
         //When resetting do something
         $scope.resetListenerUnbindHandler = $scope.$on('RESET', function (event, resetType) {
 
-          if (resetType === RESET_TYPE.RESET_FULL) {
+          if(resetType === RESET_TYPE.RESET_FULL || resetType === RESET_TYPE.RESET_WORLD) {
             $scope.resetGUI();
           }
         });
@@ -488,6 +488,10 @@
           gz3d.scene.controls.onMouseUpManipulator('initRotation');
           $scope.lightDiffuse = INITIAL_LIGHT_DIFFUSE;
           gz3d.scene.resetView(); //update the default camera position, if defined
+          if (objectInspectorService !== null) {
+            gz3d.scene.selectEntity(null);
+            objectInspectorService.toggleView(false);
+          }
         };
 
         $scope.notifyResetToWidgets = function (resetType) {

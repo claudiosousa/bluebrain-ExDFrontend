@@ -63,9 +63,13 @@ describe('Controller: Gz3dViewCtrl', function () {
   };
 
   var objectInspectorServiceMock = {
-    toggleView: jasmine.createSpy('toggleView'),
+<<<<<<< HEAD
     update: jasmine.createSpy('update'),
     removeEventListeners: jasmine.createSpy('removeEventListeners')
+=======
+    toggleView: jasmine.createSpy('toggleView'),
+    update: jasmine.createSpy('update')
+>>>>>>> [NRRPLT-4044] Hide Inspect Window After Reset
   };
 
   var userNavigationServiceMock = {
@@ -521,7 +525,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
     });
 
-    it('should hide object inspector window when resetting', function() {
+    it('should hide object inspecor window when resetting', function() {
       scope.request = { resetType: RESET_TYPE.RESET_FULL };
 
       scope.__resetButtonClickHandler();
