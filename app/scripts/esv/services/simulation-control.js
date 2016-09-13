@@ -137,7 +137,7 @@
             statusListener.unsubscribe();
             statusListener.removeAllListeners();
             statusListener = undefined;
-          }        
+          }
           rosConnection = undefined;
         }
 
@@ -159,10 +159,12 @@
         });
       };
 
-      var launchExperimentInPossibleServers = function (experiment, envSDFData) {
+      var launchExperimentInPossibleServers = function (experiment, launchSingleMode, envSDFData) {
 
         var fatalErrorOccurred = false,
           serversToTry = experiment.devServer ? [experiment.devServer] : _.clone(experiment.availableServers);
+
+        var brainProcesses = (launchSingleMode) ? 1 : experiment.configuration.brainProcesses;
 
         var oneSimulationFailed = function (failure) {
           if (failure.error && failure.error.data) {
@@ -176,7 +178,7 @@
           return experimentProxyService.getServerConfig(server)
             .then(function (serverConfig) {
               function launch(datUrl) {
-                return launchExperimentOnServer(experiment.configuration.experimentConfiguration, datUrl, server, serverConfig)
+                return launchExperimentOnServer(experiment.configuration.experimentConfiguration, brainProcesses, server, serverConfig)
                   .catch(oneSimulationFailed);
               }
               if (envSDFData) {
@@ -196,10 +198,11 @@
 
           return launchInServer(nextServer[0]).catch(launchInNextServer); //try with nextServer, catch => launchInNextServer
         }
+
         return launchInNextServer();
       };
 
-      var launchExperimentOnServer = function (experimentConfiguration, environmentConfiguration, server, serverConfiguration) {
+      var launchExperimentOnServer = function (experimentConfiguration, brainProcesses, server, serverConfiguration) {
         var deferred = $q.defer();
 
         _.defer(function () { deferred.notify({ main: 'Create new Simulation...' }); }); //called once caller has the promise
@@ -211,7 +214,7 @@
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
           contextID: $stateParams.ctx,
-          brainProcesses: 1
+          brainProcesses: brainProcesses
         };
 
         // Create a new simulation.
@@ -265,11 +268,11 @@
         return deferred.promise;
       };
 
-      var startNewExperiment = function (experiment, envSDFData) {
+      var startNewExperiment = function (experiment, launchSingleMode, envSDFData) {
         nrpAnalytics.eventTrack('Start', { category: 'Experiment' });
         nrpAnalytics.tickDurationEvent('Server-initialization');
 
-        return launchExperimentInPossibleServers(experiment, envSDFData);
+        return launchExperimentInPossibleServers(experiment, launchSingleMode, envSDFData);
       };
 
       // Public methods of the service
