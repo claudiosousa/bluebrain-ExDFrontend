@@ -158,7 +158,7 @@
                 var found = angular.isDefined(tf);
                 if (found && !tf.dirty)
                 {
-                  tf = transferFunction;
+                  tf.code = transferFunction.code;
                 } else if (!found) {
                   scope.transferFunctions.unshift(transferFunction);
                 }

@@ -89,10 +89,20 @@
             return populations;
           };
 
-          scope.apply = function() {
+          scope.agreeAction = function () {
+            scope.apply(1);
+          };
+          scope.doNotAgreeAction = function () {
+            scope.apply(2);
+          };
+
+          /**
+           * @param {integer} [change_population]
+           */
+          scope.apply = function(change_population) {
             scope.loading = true;
             backendInterfaceService.setBrain(
-              scope.pynnScript, scope.stringsToLists(scope.populations), 'py', 'text',
+              scope.pynnScript, scope.stringsToLists(scope.populations), 'py', 'text', change_population,
               function() { // Success callback
                 scope.loading = false;
                 scope.getDoc().markClean();
@@ -100,14 +110,24 @@
                 hbpDialogFactory.alert({title: 'Success.', template: 'Successfully updated brain.'});
               },
               function(result) { // Failure callback
-                scope.loading = false;
-                scope.clearError();
-                scope.markError(
-                  result.data.error_message,
-                  result.data.error_line,
-                  result.data.error_column
-                );
-                hbpDialogFactory.alert({title: 'Error.', template: result.data.error_message});
+                  scope.loading = false;
+                  scope.clearError();
+                if (result.data.handle_population_change) {
+                  hbpDialogFactory.confirm({title: 'Change TFs',
+                    confirmLabel: 'Yes',
+                    cancelLabel: 'No',
+                    template: 'Would you like to have your transfer functions updated with the new population name?',
+                    closable: false
+                  }).then(scope.agreeAction, scope.doNotAgreeAction);
+                }
+                else {
+                  scope.markError(
+                    result.data.error_message,
+                    result.data.error_line,
+                    result.data.error_column
+                  );
+                  hbpDialogFactory.alert({title: 'Error.', template: result.data.error_message});
+                }
               });
           };
 
