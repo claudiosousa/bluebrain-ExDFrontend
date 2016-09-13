@@ -299,7 +299,8 @@ module.exports = function (grunt) {
                     '!<%= yeoman.dist %>/img/common/preview*.png',
                     '!<%= yeoman.dist %>/img/esv/keyboard-control.svg',
                     '!<%= yeoman.dist %>/img/common/intro-get-started.png',
-                    '!<%= yeoman.dist %>/img/common/intro-bg.jpg'
+                    '!<%= yeoman.dist %>/img/common/intro-bg.jpg',
+                    '!<%= yeoman.dist %>/img/3denv/**/*.{png,jpg,jpeg,gif,webp,svg}',
                 ]
             }
         },
