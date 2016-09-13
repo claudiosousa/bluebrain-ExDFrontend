@@ -55,6 +55,9 @@
           /* Manage before other since others may depend on state changes */
           if (angular.isDefined(message.state) && (message.state !== thisStateService.currentState)) {
             thisStateService.currentState = message.state;
+            if (message.state === STATE.STOPPED){
+            rosConnection.disableRebirth();
+          }
             triggerStateCallbacks();
           }
 

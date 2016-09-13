@@ -137,10 +137,7 @@
             statusListener.unsubscribe();
             statusListener.removeAllListeners();
             statusListener = undefined;
-          }
-          if (rosConnection) {
-            rosConnection.close();
-          }
+          }        
           rosConnection = undefined;
         }
 

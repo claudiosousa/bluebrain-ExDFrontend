@@ -10,7 +10,8 @@ describe('Services: simulation state', function () {
       roslib;
 
   var rosConnectionObject = {
-    close: jasmine.createSpy('close')
+    close: jasmine.createSpy('close'),
+    disableRebirth: angular.noop
   };
   var returnedRosConnectionObject = {
       unsubscribe: jasmine.createSpy('unsubscribe'),

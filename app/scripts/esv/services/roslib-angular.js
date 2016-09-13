@@ -20,12 +20,9 @@
     // throw an error (since the core library is globally accessible).
     // delete($window.ROSLIB); // Unfortunately we cannot delete it, since gz3d.js is relying on it :(
 
-    var connections = {};
-
     // custom ROSLIB methods
     ROSLIB.getOrCreateConnectionTo = function (url) {
 
-      var ros;
       if (!bbpConfig.get('localmode.forceuser', false)) {
         var token = [];
         var clientID = bbpConfig.get('auth.clientId', '');
@@ -43,30 +40,8 @@
         }
         url = url + '/?token=' + token[0].access_token;
       }
-      if (! connections[url]) {
-        ros = new ROSLIB.Ros({
-          url: url
-        });
-        connections[url] = ros;
-      } else {
-        ros = connections[url];
-        console.log('Reusing already established connection to ' + url);
-      }
 
-      ros.on('connection', function () {
-        console.log('Connected to websocket server: ' + url);
-      });
-
-      ros.on('error', function (error) {
-        console.error('Error connecting to websocket server (' + url + '):', error);
-      });
-
-      ros.on('close', function () {
-        delete connections[url];
-        console.log('Connection closed to websocket server: ' + url);
-      });
-
-      return ros;
+      return new ROSLIB.PhoenixRos({ url: url });
     };
 
     ROSLIB.createTopic = function (connection, topicName, messageType, additionalOptions) {
