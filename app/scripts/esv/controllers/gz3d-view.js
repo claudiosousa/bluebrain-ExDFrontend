@@ -350,7 +350,6 @@
               assetLoadingSplash.setProgress(data);
             });
 
-            sceneInitialized.resolve();
           }
         });
 
@@ -362,6 +361,7 @@
 
           // make light's helper geometry visible
           gz3d.scene.showLightHelpers = true;
+          sceneInitialized.resolve();
           $scope.setLightHelperVisibility();
           userNavigationService.init();
         };
