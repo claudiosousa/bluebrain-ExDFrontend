@@ -13,7 +13,9 @@
         return {
           getExperiments: getExperiments,
           getImages: getImages,
-          getServerConfig: _.memoize(getServerConfig)
+          getServerConfig: _.memoize(getServerConfig),
+          getJoinableServers: getJoinableServers,
+          getAvailableServers: getAvailableServers
         };
 
         function getServerConfig(serverId) {
@@ -26,12 +28,19 @@
             .then(function (response) { return response.data; });
         }
 
-        function getExperiments(contextId, experimentId) {
+        function getExperiments() {
           var url = getProxyUrl()  + '/experiments';
-          if (experimentId) {
-            url += '?contextId=' + contextId + '&experimentId=' + experimentId;
-          }
           return $http.get(url)
+            .then(function (response) { return response.data; });
+        }
+
+        function getJoinableServers(contextId) {
+          return $http.get(getProxyUrl() + '/joinableServers/' + contextId)
+            .then(function (response) { return response.data; });
+        }
+
+        function getAvailableServers(experimentId) {
+          return $http.get(getProxyUrl() + '/availableServers/' + experimentId)
             .then(function (response) { return response.data; });
         }
       }

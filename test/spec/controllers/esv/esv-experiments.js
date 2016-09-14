@@ -3,6 +3,7 @@
 
   var ctx = 'context_id';
   var experimentID = 'experimentID';
+  var experimentFolderUUID = 'experimentFolderUUID';
   var hostName = 'myBackend';
 
   var matureExperiment = {
@@ -42,7 +43,7 @@
         joinableServers: []
       }
     },
-    collabExperimentResponse: { contextID: ctx, experimentID: experimentID },
+    collabExperimentResponse: { contextID: ctx, experimentID: experimentID, experimentFolderUUID: experimentFolderUUID},
     server: {
       gzweb: {
         assets: 'http://localhost:8040',
@@ -64,7 +65,7 @@
 
   describe('Controller: esvExperimentsCtrl', function () {
     var $controller, $httpBackend, $rootScope, $templateCache, $compile, $stateParams, $interval,
-      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window;
+      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q;
 
     var serverErrorMock = {
       display: jasmine.createSpy('display')
@@ -77,7 +78,7 @@
     }));
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_,
-      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_) {
+      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_) {
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
@@ -93,6 +94,8 @@
       proxyUrl = bbpConfig.get('api.proxy.url');
       oidcUrl = bbpConfig.get('api.user.v0');
       $window = _$window_;
+      collabFolderAPIService = _collabFolderAPIService_;
+      $q = _$q_;
     }));
 
     afterEach(function () {
@@ -358,23 +361,28 @@
       describe('with cloned experiment', function () {
 
         beforeEach(function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
+          $httpBackend.whenGET(new RegExp(proxyUrl + '/joinableServers/')).respond(200, []);
+          $httpBackend.whenGET(new RegExp(proxyUrl + '/availableServers/')).respond(200, matureExperiment.availableServers);
+          spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+          spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(''));
         });
 
         it('should select first experiment if only one experiment is shown', function () {
+          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           renderEsvWebPage({ experiments: { matureExperiment: matureExperiment } });
           expect($rootScope.pageState.selected).toBeDefined($rootScope.experiments[0].id);
         });
 
         it('should not select an experiment if multiple experiments are shown', function () {
+          $httpBackend.whenGET(collabContextUrl).respond(200, {});
           renderEsvWebPage();
           expect($rootScope.pageState.selected).toBeUndefined();
         });
 
         it('should only show the launch button when the experiment exists in collab', function () {
+          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var page = renderEsvWebPage();
           page.find('.experiment-box').first().click();
-
           checkButtonsVisibility(page, { launch: 1, upload: 0, clone: 0 });
         });
 

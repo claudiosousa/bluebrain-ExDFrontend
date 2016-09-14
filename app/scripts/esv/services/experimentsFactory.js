@@ -63,10 +63,29 @@
           return service;
 
           function initialize() {
-            service.experiments = experimentProxyService.getExperiments(contextId, experimentId)
-              .then(function (exps) { return (experimentsDict = exps); })
-              .then(transformExperiments)
-              .then(_.map);
+            if (contextId && experimentId) {
+              var exp = {};
+              exp[experimentId] = {configuration:{"maturity": "production"}};
+              service.experiments = experimentProxyService.getJoinableServers(contextId)
+                .then(function(joinableServers){
+                  exp[experimentId].joinableServers = joinableServers;
+                  return experimentProxyService.getAvailableServers(experimentId);
+                })
+                .then(function(availableServers){
+                  exp[experimentId].availableServers = availableServers;
+                  return exp;
+                })
+                .then(function (exp) {return (experimentsDict = exp); })
+                .then(updateCollabExperimentDetails)
+                .then(transformExperiments)
+                .then(_.map);
+            }
+            else{
+              service.experiments = experimentProxyService.getExperiments()
+                .then(function (exps) {return (experimentsDict = exps); })
+                .then(transformExperiments)
+                .then(_.map);
+            }
             // TODO(Luc): don't perform GET request on the SlurmMonitor server if localmode is true
             service.clusterAvailability = slurminfoService.get().$promise.then(transformClusterAvailability);
             updateExperimentImages();
@@ -75,6 +94,18 @@
             updateExperimentsInterval = $interval(refreshExperimentsAndCluster, SERVER_POLL_INTERVAL);
           }
 
+          function updateCollabExperimentDetails(experiment){
+            return loadExperimentDetails().then(function(experimentDetails){
+              experiment[experimentId].configuration.name = experimentDetails.name;
+              experiment[experimentId].configuration.description = experimentDetails.desc;
+              experiment[experimentId].configuration.timeout = parseInt(experimentDetails.timeout);
+              experiment[experimentId].configuration.experimentConfiguration = "";
+              return experiment;
+            },
+            function(error){
+              return experiment;
+            });
+          }
           function transformExperiments(experiments) {
             return _.forEach(experiments, function (exp, expId) {
               exp.id = expId;
@@ -159,6 +190,18 @@
             });
           }
 
+          function loadExperimentDetails(){
+            return getExperimentDetailsFromCollab("experiment_configuration.xml")
+            .then(function(fileContent){
+              var xml = $($.parseXML(fileContent));
+              return $q.resolve({ name: xml.find("name").text(), desc: xml.find("description").text(), timeout: xml.find("timeout").text()});
+            },
+            function(){
+              return $q.reject();
+            });
+          }
+
+
           function updateUptime() {
             service.experiments.then(function (exps) {
               exps.forEach(function (exp) {
@@ -192,19 +235,37 @@
           }
 
           function refreshExperimentsAndCluster() {
-            experimentProxyService.getExperiments(contextId, experimentId)
-              .then(transformExperiments)
-              .then(function (experiments) {
-                _.forOwn(experiments, function (exp, expId) {
-                  ['availableServers', 'joinableServers'].forEach(function (prop) {
-                    experimentsDict[expId][prop] = exp[prop];
-                  });
-                  exp.joinableServers.forEach(function (sim) {
+            if (contextId && experimentId){
+              experimentProxyService.getJoinableServers(contextId)
+                .then(function(joinableServers){
+                  experimentsDict[experimentId].joinableServers = joinableServers;
+                  experimentsDict[experimentId].joinableServers.forEach(function (sim) {
                     sim.stopping = stoppingDict[sim.server] && stoppingDict[sim.server][sim.runningSimulation.simulationID];
                   });
-                  updateUptime();
+                  return experimentProxyService.getAvailableServers(experimentId);
+                })
+                .then(function(availableServers){
+                  experimentsDict[experimentId].availableServers = availableServers;
+                  return experimentsDict;
+                })
+                .then(transformExperiments)
+                .then(updateCollabExperimentDetails);
+            }
+            else {
+              experimentProxyService.getExperiments()
+                .then(transformExperiments)
+                .then(function (experiments) {
+                  _.forOwn(experiments, function (exp, expId) {
+                    ['availableServers', 'joinableServers'].forEach(function (prop) {
+                      experimentsDict[expId][prop] = exp[prop];
+                    });
+                    exp.joinableServers.forEach(function (sim) {
+                      sim.stopping = stoppingDict[sim.server] && stoppingDict[sim.server][sim.runningSimulation.simulationID];
+                    });
+                    updateUptime();
+                  });
                 });
-              });
+              }
 
             if (!localmode.forceuser) {
               slurminfoService.get().$promise
