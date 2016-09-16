@@ -339,7 +339,8 @@
           nrpAnalytics.tickDurationEvent('Simulate');
 
           // make light's helper geometry visible
-          $scope.setLightHelperVisibility(true);
+          gz3d.scene.showLightHelpers = true;
+          $scope.setLightHelperVisibility();
           userNavigationService.init();
         };
 
@@ -410,7 +411,7 @@
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
               $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
 
-              var resetWhat, downloadWhat = '';
+              var resetWhat = '', downloadWhat = '';
 
               (function (resetType) { //customize user message depending on the reset type
                 if (resetType === RESET_TYPE.RESET_WORLD) {
@@ -500,12 +501,10 @@
           }
         };
 
-        $scope.setLightHelperVisibility = function (visible) {
-          gz3d.scene.showLightHelpers = visible;
-
+        $scope.setLightHelperVisibility = function () {
           gz3d.scene.scene.traverse(function (node) {
             if (node.name.indexOf('_lightHelper') > -1) {
-              node.visible = visible;
+              node.visible = gz3d.scene.showLightHelpers;
             }
           });
         };

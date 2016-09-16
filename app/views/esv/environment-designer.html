@@ -96,6 +96,10 @@
           </li>
         </ul>
       </div>
+      <div>
+        <input id="lightsVisibilityCheckbox" type="checkbox" ng-model="gz3d.scene.showLightHelpers" ng-change="setLightHelperVisibility()" />
+        <label for="lightsVisibilityCheckbox">Show Visualization of lights</label>
+      </div>
     </div>
     <hr>
     <div ng-repeat="category in categories" id="insertMenu-{{category.path}}">
