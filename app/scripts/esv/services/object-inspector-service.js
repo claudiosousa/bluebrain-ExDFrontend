@@ -22,6 +22,7 @@
           rotationEuler: new THREE.Euler(),
           floatPrecision: 5,
           showCollision: undefined,
+          selectedStyle: [],
 
           toggleView: function (show) {
             var showing;
@@ -66,12 +67,20 @@
             gz3d.scene.setViewAs(this.selectedObject, mode);
           },
 
+          removeEventListeners: function () {
+            document.removeEventListener('keydown', objectInspectorService.onXYZKeystroke);
+            document.removeEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove);
+            document.removeEventListener('mouseup', objectInspectorService.onMouseUp);
+            document.removeEventListener('mousemove', objectInspectorService.onMouseMove);
+          },
+
           setManipulationMode: function (mode) {
             if (gz3d.scene.manipulationMode === mode) {
               return;
             } else {
               switch (mode) {
                 case EDIT_MODE.VIEW:
+                  objectInspectorService.removeEventListeners();
                   gz3d.scene.setManipulationMode(mode);
                   break;
                 case EDIT_MODE.TRANSLATE:
@@ -84,6 +93,11 @@
                   );
                   // as view mode deselects any selected object, reselect here
                   gz3d.scene.selectEntity(this.selectedObject);
+
+                  document.addEventListener('keydown', objectInspectorService.onXYZKeystroke, false);
+                  document.addEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove, false);
+                  document.addEventListener('mousemove', objectInspectorService.onMouseMove, false);
+
                   break;
               }
             }
@@ -103,15 +117,115 @@
                 });
               }
             });
+          },
+
+          onXYZKeystroke: function (event) {
+            if (gz3d.scene === null) {
+              return;
+            }
+
+            if (gz3d.scene.modelManipulator.selected === 'null') {
+              var prefix = '';
+              if (gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) {
+                prefix = 'T';
+              } else if (gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) {
+                prefix = 'R';
+              }
+
+              var ix = null;
+              switch (event.keyCode) {
+                case 88:
+                  ix = prefix + 'X';
+                  break;
+                case 89:
+                  ix = prefix + 'Y';
+                  break;
+                case 90:
+                  ix = prefix + 'Z';
+                  break;
+              }
+
+              if (ix === null) {
+                return;
+              }
+
+              var selected = objectInspectorService.getMeshByName(ix);
+              if (selected) {
+                document.addEventListener('mouseup', objectInspectorService.onMouseUp, false);
+
+                gz3d.scene.modelManipulator.highlightPicker(selected);
+                if (objectInspectorService.getMouseEvent()) {
+                  gz3d.scene.modelManipulator.selectPicker(objectInspectorService.getMouseEvent());
+                }
+                else {
+                  objectInspectorService.setSelectPicker(true);
+                }
+              }
+            }
+            else {
+              /// gracefully exit axis lock mode on any key press
+              gz3d.scene.modelManipulator.handleAxisLockEnd();
+            }
+            update();
+          },
+
+          getMouseEvent: function () {
+            return objectInspectorService.mouseEvent;
+          },
+
+          getMeshByName: function (ix) {
+            return gz3d.scene.modelManipulator.pickerMeshes[ix];
+          },
+
+          setSelectPicker: function (value) {
+            objectInspectorService.doSelectPicker = value;
+          },
+
+          /** captures mouse move events for gz3d.scene.modelManipulator.selectPicker invocation */
+          onMouseMove: function (event) {
+            objectInspectorService.mouseEvent = event;
+            if (objectInspectorService.doSelectPicker) {
+              gz3d.scene.modelManipulator.selectPicker(objectInspectorService.mouseEvent);
+              objectInspectorService.setSelectPicker(false);
+              update();
+            }
+          },
+
+          onMouseUp: function (event) {
+            if (gz3d.scene === null) {
+              return;
+            }
+            gz3d.scene.modelManipulator.handleAxisLockEnd();
+            update();
           }
         };
 
+        var updateStyle = function (idx) {
+          var selectedStyle = "background-color:yellow;";
+          if (gz3d.scene.modelManipulator.isSelected(idx)) {
+            objectInspectorService.selectedStyle[idx] = selectedStyle;
+          } else {
+            objectInspectorService.selectedStyle[idx] = "";
+          }
+        };
+        var updateStyles = function () {
+          updateStyle('TX');
+          updateStyle('TY');
+          updateStyle('TZ');
+
+          updateStyle('RX');
+          updateStyle('RY');
+          updateStyle('RZ');
+        };
         var update = function () {
           // update selected object
           objectInspectorService.selectedObject = gz3d.scene.selectedEntity;
-          if (angular.isUndefined(objectInspectorService.selectedObject)) {
+          if (angular.isUndefined(objectInspectorService.selectedObject) ||
+              objectInspectorService.selectedObject === null) {
             return;
           }
+
+          updateStyles();
 
           // update translation, rotation
           objectInspectorService.translation.copy(objectInspectorService.selectedObject.position);
@@ -150,6 +264,9 @@
           } else {
             objectInspectorService.showCollision = objectInspectorService.selectedObject.showCollision;
           }
+        };
+        objectInspectorService.update = function () {
+          update();
         };
 
         var guiEventsRegistered = false;
