@@ -7,11 +7,15 @@
     'documentationURLs',
     'STATE',
     '$timeout',
+    'simulationInfo',
+    'hbpDialogFactory',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
               STATE,
-              $timeout) {
+              $timeout,
+              simulationInfo,
+              hbpDialogFactory) {
       return {
         templateUrl: 'views/esv/smach-editor.html',
         restrict: 'E',
@@ -19,6 +23,8 @@
           control: '='
         },
         link: function (scope, element, attrs) {
+          scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+          scope.isSavingToCollab = false;
 
           scope.STATE = STATE;
           scope.stateMachines = [];
@@ -176,6 +182,23 @@
 
               textReader.readAsText(file);
             }
+          };
+
+          scope.saveSMIntoCollabStorage = function () {
+            scope.isSavingToCollab = true;
+            var stateMachines = {};
+            _.forEach(scope.stateMachines, function(stateMachine){
+              stateMachines[stateMachine.id] = stateMachine.code;
+            });
+            backendInterfaceService.saveStateMachines(
+              simulationInfo.contextID,
+              stateMachines,
+              function() { // Success callback
+                scope.isSavingToCollab = false;
+              },function() { // Failure callback
+                scope.isSavingToCollab = false;
+              }
+            );
           };
         }
       };

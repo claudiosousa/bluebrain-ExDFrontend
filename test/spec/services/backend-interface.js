@@ -25,35 +25,36 @@ describe('Services: backendInterfaceService', function () {
     RESET_TYPE = _RESET_TYPE_;
   }));
 
+  afterEach(function () {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
+  });
+
   it('should set the server base URL correctly', function () {
     expect(backendInterfaceService.getServerBaseUrl()).toEqual(simulationInfo.serverBaseUrl);
   });
 
   it('should make a PUT request on /experiment/:context_id/sdf_world', function () {
-    $httpBackend.whenPUT(urlRegex).respond(200);
     var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
-    backendInterfaceService.saveSDF(contextID);
-    $httpBackend.flush();
-    /*jshint camelcase: false */
-    var contextObject = {context_id: contextID};
+    var contextObject = {'context_id': contextID};
     $httpBackend.expectPUT(
       simulationInfo.serverBaseUrl + '/experiment/' +
-      contextID + '/sdf_world', contextObject , contextObject
-    );
+      contextID + '/sdf_world', contextObject
+    ).respond(200);
+    backendInterfaceService.saveSDF(contextID);
+    $httpBackend.flush();
   });
 
   it('should make a PUT request on /experiment/:context_id/brain', function () {
-    $httpBackend.whenPUT(urlRegex).respond(200);
     var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
     var somePopulations = {'population1': [1, 2, 3], 'population2': [3, 4, 5] };
-    backendInterfaceService.saveBrain(contextID, 'some source', somePopulations);
-    $httpBackend.flush();
-    /*jshint camelcase: false */
-    var contextObject = {context_id: contextID};
+    var contextObject = {'data': 'some source', 'additional_populations': somePopulations};
     $httpBackend.expectPUT(
       simulationInfo.serverBaseUrl + '/experiment/' +
-      contextID + '/brain', contextObject , contextObject
-    );
+      contextID + '/brain', contextObject
+    ).respond(200);
+    backendInterfaceService.saveBrain(contextID, 'some source', somePopulations);
+    $httpBackend.flush();
   });
 
   it('should call serverError.display when the saveSDF PUT request fails', function () {
@@ -65,19 +66,15 @@ describe('Services: backendInterfaceService', function () {
 
   it('should make a PUT request on /experiment/:context_id/transfer_functions', function () {
     var tfMock = [ 'someTF1', 'someTF2' ];
-    $httpBackend.whenPUT(urlRegex).respond(200);
     var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
-
-    backendInterfaceService.saveTransferFunctions(contextID, tfMock);
-    $httpBackend.flush();
-    /*jshint camelcase: false */
-    var contextObject = {context_id: contextID};
-    var tfObject = { transfer_functions: tfMock };
-
+    var contextObject = {'context_id': contextID};
+    var tfObject = { 'transfer_functions': tfMock };
     $httpBackend.expectPUT(
       simulationInfo.serverBaseUrl + '/experiment/' +
-        contextID + '/tf_world', contextObject , angular.extend(contextObject, tfObject)
-    );
+        contextID + '/transfer-functions', angular.extend(contextObject, tfObject)
+    ).respond(200);
+    backendInterfaceService.saveTransferFunctions(contextID, tfMock);
+    $httpBackend.flush();
   });
 
   it('should call the success callback when the setTransferFunction PUT request succeeds', function () {
@@ -174,6 +171,32 @@ describe('Services: backendInterfaceService', function () {
     expect(callback).toHaveBeenCalled();
   });
 
+  it('should make a PUT request on /experiment/:context_id/state_machines', function () {
+    var smMock = [ 'someSM1', 'someSM2' ];
+    var contextID = '97923877-13ea-4b43-ac31-6b79e130d344';
+    var successCallback = jasmine.createSpy('callback');
+    var failureCallback = jasmine.createSpy('callback');
+    $httpBackend.expectPUT(
+      simulationInfo.serverBaseUrl + '/experiment/' +
+        contextID + '/state-machines', {'context_id': contextID, 'state_machines': smMock}
+    ).respond(200);
+    backendInterfaceService.saveStateMachines(contextID, smMock, successCallback, failureCallback);
+    $httpBackend.flush();
+
+    expect(successCallback).toHaveBeenCalled();
+    expect(failureCallback).not.toHaveBeenCalled();
+  });
+
+  it('should call failure callback when PUT state-machines fails', function () {
+    $httpBackend.whenPUT(urlRegex).respond(500);
+    var successCallback = jasmine.createSpy('callback');
+    var failureCallback = jasmine.createSpy('callback');
+    backendInterfaceService.saveStateMachines('97923877-13ea-4b43-ac31-6b79e130d344', [ 'someSM1', 'someSM2' ], successCallback, failureCallback);
+    $httpBackend.flush();
+
+    expect(successCallback).not.toHaveBeenCalled();
+    expect(failureCallback).toHaveBeenCalled();
+  });
   it('should call the success callback when the getBrain GET request succeeds', function () {
     $httpBackend.whenGET(urlRegex).respond(200);
     var callback = jasmine.createSpy('callback');
