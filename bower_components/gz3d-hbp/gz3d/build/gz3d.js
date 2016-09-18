@@ -4055,6 +4055,8 @@ GZ3D.GZIface.prototype.updateModelFromMsg = function (modelObj, modelMsg) {
       var visualObj = linkObj.getObjectByName(visual.name);
       this.updateVisualFromMsg(visualObj, visual);
     }
+    //update view mode, possibly overwritten by visual/material update
+    this.scene.setViewAs(modelObj, modelObj.viewAs);
   }
 };
 
@@ -9153,14 +9155,13 @@ GZ3D.Scene.prototype.onRightClick = function(event, callback)
  */
 GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
 {
-  // Toggle
-  if (model.viewAs === viewAs)
-  {
-    viewAs = 'normal';
-  }
-
   function materialViewAs(material)
   {
+    if (!material.originalOpacity)
+    {
+      material.originalOpacity = material.opacity;
+    }
+
     if (materials.indexOf(material.id) === -1)
     {
       materials.push(material.id);
@@ -9168,24 +9169,15 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
 
       if (viewAs === 'transparent')
       {
-        if (material.opacity)
-        {
-          material.originalOpacity = material.opacity;
-        }
-        else
-        {
-          material.originalOpacity = 1.0;
-        }
         material.opacity = 0.25;
       }
-      else
+      else  // normal or wireframe
       {
         material.opacity = material.originalOpacity ? material.originalOpacity : 1.0;
       }
     }
   }
 
-  var wireframe;
   var descendants = [];
   var materials = [];
   model.getDescendants(descendants);
