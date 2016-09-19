@@ -1271,6 +1271,21 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
 
+    it('should open the log-console panel', function ()
+    {
+      scope.showLogConsole = false;
+      scope.logConsoleClick();
+      expect(scope.showLogConsole).toBe(true);
+    });
+
+    it('should display help of the log-console panel', function ()
+    {
+      scope.showLogConsole = false;
+      scope.helpModeActivated = true;
+      scope.logConsoleClick();
+      expect(scope.showLogConsole).toBe(false);
+    });
+
   });
 
 

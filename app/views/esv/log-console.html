@@ -1,0 +1,14 @@
+<div id="log-console-panel" class="log-console-panel-widget" resizeable>
+    <!-- build:css(.tmp) styles/esv/log-console.css -->
+    <link rel="stylesheet" href="styles/esv/log-console.css" />
+    <!-- endbuild -->
+
+    <div class="log-console-panel-header" movable-anchor-for-id="log-console-panel">
+        <h5 class="log-console-panel-title">Log console</h5>
+    </div>
+    <button type="button" class="button-close" ng-click="toggleVisibility()">×</button>
+    <div class="log-console-panel-content log-list">
+        <span ng-if="logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
+        <div class="log" ng-repeat="log in logs">[{{log.time}}] {{log.msg}}</div>
+    </div>
+</div>

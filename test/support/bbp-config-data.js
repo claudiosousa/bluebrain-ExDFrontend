@@ -81,5 +81,12 @@ window.bbpConfig = {
   "localmode": {
     "forceuser": false,
     "ownerID": "vonarnim"
+  },
+  'ros-topics': {
+    'spikes': '/monitor/spike_recorder',
+    'joint': '/joint_states',
+    'status': '/ros_cle_simulation/status',
+    'cleError': '/ros_cle_simulation/cle_error',
+    'logs': '/ros_cle_simulation/logs'
   }
 };
