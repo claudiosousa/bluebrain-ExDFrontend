@@ -75,7 +75,7 @@
 
       thisStateService.startListeningForStatusInformation = function() {
         var rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
-        var statusTopic = simulationInfo.serverConfig.rosbridge.topics.status;
+        var statusTopic = bbpConfig.get('ros-topics').status;
         rosConnection = roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
         statusListener = roslib.createStringTopic(rosConnection, statusTopic);
 

@@ -126,9 +126,9 @@
 
   module.factory('experimentSimulationService', [
     '$q', '$http', '$log', '$timeout', '$stateParams', 'nrpAnalytics',
-    'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'simulationSDFWorld', 'experimentProxyService',
+    'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'simulationSDFWorld', 'experimentProxyService', 'bbpConfig',
     function ($q, $http, $log, $timeout, $stateParams, nrpAnalytics, simulationState,
-      simulationGenerator, roslib, STATE, simulationSDFWorld, experimentProxyService) {
+      simulationGenerator, roslib, STATE, simulationSDFWorld, experimentProxyService, bbpConfig) {
       var rosConnection, statusListener;
 
       var registerForStatusInformation = function (rosbridgeConfiguration, setProgressMessage) {
@@ -137,14 +137,14 @@
             statusListener.unsubscribe();
             statusListener.removeAllListeners();
             statusListener = undefined;
-          }        
+          }
           rosConnection = undefined;
         }
 
         destroyCurrentConnection();
 
         rosConnection = roslib.getOrCreateConnectionTo(rosbridgeConfiguration.websocket);
-        statusListener = roslib.createStringTopic(rosConnection, rosbridgeConfiguration.topics.status);
+        statusListener = roslib.createStringTopic(rosConnection, bbpConfig.get('ros-topics').status);
 
         statusListener.subscribe(function (data) {
           var message = JSON.parse(data.data);

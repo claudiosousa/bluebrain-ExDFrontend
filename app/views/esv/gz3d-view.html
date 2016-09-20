@@ -100,8 +100,8 @@
         <!-- WEBGL-context -->
 
         <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
-        <spiketrain server="{{rosbridgeWebsocketUrl}}" topic="{{spikeTopic}}" movable ng-show="showSpikeTrain"></spiketrain>
-        <joint-plot server="{{rosbridgeWebsocketUrl}}" topic="{{jointTopic}}" movable ng-show="showJointPlot"></joint-plot>
+        <spiketrain server="{{rosbridgeWebsocketUrl}}" topic="{{rosTopics.spikeTopic}}" movable ng-show="showSpikeTrain"></spiketrain>
+        <joint-plot server="{{rosbridgeWebsocketUrl}}" topic="{{rosTopics.jointTopic}}" movable ng-show="showJointPlot"></joint-plot>
         <!-- HelpText -->
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PAUSE_BUTTON]='Here you can pause the simulation on the server.'">
@@ -311,6 +311,11 @@
               </div>
               <!-- brain visualizer icon-->
 
+              <!-- log console icon -->
+              <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showLogConsole}" ng-click="logConsoleClick()">
+                  <i class="fa fa-terminal fa-2x vertcenter"></i>
+              </div>
+              <!-- log console icon-->
             </div>
 
             <!-- owner information -->
@@ -414,6 +419,13 @@
         <!-- Environment settings panel --->
         <environment-settings-panel></environment-settings-panel>
         <!-- Environment setting panel --->
+
+        <log-console
+          server="{{rosbridgeWebsocketUrl}}"
+          topic="{{rosTopics.logs}}"
+          ng-show="showLogConsole"
+          toggle-visibility="toggleLogConsole()">
+        </log-console>
 
       </div>
       <!-- container -->

@@ -40,7 +40,8 @@
       JOINT_PLOT: 13,
       ENVIRONMENT_SETTINGS: 14,
       BRAIN_VISUALIZER: 15,
-      USER_NAVIGATION: 16
+      USER_NAVIGATION: 16,
+      LOG_CONSOLE: 17
     })
     .constant('INITIAL_LIGHT_DIFFUSE', 1)
     .constant('MINIMAL_LIGHT_DEFUSE', 0.2);
@@ -110,9 +111,8 @@
           );
         }
 
+        $scope.rosTopics = bbpConfig.get('ros-topics');
         $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
-        $scope.spikeTopic = serverConfig.rosbridge.topics.spikes;
-        $scope.jointTopic = serverConfig.rosbridge.topics.joint;
 
         $scope.STATE = STATE;
         $scope.UI = UI;
@@ -666,8 +666,6 @@
               view.container.style.visibility = view.active ? 'visible' : 'hidden';
             }
           });
-
-
         };
 
         // graphics performance settings
@@ -907,6 +905,26 @@
           }
           else {
             return $scope.toggleBrainvisualizer();
+          }
+        };
+
+        // log console
+        $scope.showLogConsole = false;
+        $scope.toggleLogConsole = function () {
+          $scope.showLogConsole = !$scope.showLogConsole;
+          nrpAnalytics.eventTrack('Toggle-log-console', {
+            category: 'Simulation-GUI',
+            value: $scope.showLogConsole
+          });
+        };
+
+
+        $scope.logConsoleClick = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.LOG_CONSOLE);
+          }
+          else {
+            return $scope.toggleLogConsole();
           }
         };
 
