@@ -71,9 +71,9 @@
             }
           };
 
-          $scope.startNewExperiment = function (experiment, sdfData) {
+          $scope.startNewExperiment = function (experiment, launchSingleMode, sdfData) {
             $scope.pageState.startingExperiment = experiment.id;
-            experimentsService.startExperiment(experiment, sdfData)
+            experimentsService.startExperiment(experiment, launchSingleMode, sdfData)
               .then(function (path) { $location.path(path); },// succeeded
               function () { $scope.pageState.startingExperiment = null; },// failed
               function (msg) { $scope.progressMessage = msg; }); //in progress
@@ -117,6 +117,7 @@
               }];
             });
         }
+
         if (!$stateParams.ctx) {
           loadExperiments();
         } else {

@@ -212,8 +212,8 @@
             });
           }
 
-          function startExperiment(experiment, envSDFData) {
-            return experimentSimulationService.startNewExperiment(experiment, envSDFData)
+          function startExperiment(experiment, launchSingleMode, envSDFData) {
+            return experimentSimulationService.startNewExperiment(experiment, launchSingleMode, envSDFData)
               .catch(function (fatalErrorWasShown) {
                 if (!fatalErrorWasShown) {
                   hbpDialogFactory.alert({
@@ -276,7 +276,6 @@
                 });
               });
             }
-
           }
 
           function transformClusterAvailability(clusterAvailability) {

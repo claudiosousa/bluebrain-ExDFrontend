@@ -174,7 +174,7 @@ describe('experimentSimulationService', function () {
     $httpBackend.whenPUT('http://localhost:8080/simulation/state').respond(200, {});
 
     var progressNotification = jasmine.createSpy(progressNotification);
-    experimentSimulationService.startNewExperiment(experiment, {})
+    experimentSimulationService.startNewExperiment(experiment, true, {})
       .then(angular.noop, angular.noop, progressNotification);
     $httpBackend.flush(3);
     statusListenerSubscribe({ data: JSON.stringify({ progress: { task: 'true', subtask: 'subtask' } }) });
