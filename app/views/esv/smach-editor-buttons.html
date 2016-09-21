@@ -1,6 +1,14 @@
 <button type="button" class="btn btn-default btn-md" ng-click="create()">
   <i class="glyphicon glyphicon-star"></i><span> New</span>
 </button>
+<button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+        ng-click="saveSMIntoCollabStorage()"
+        ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
+        v-busy="isSavingToCollab"
+        v-busy-label="Saving to Collab"
+        v-pressable>
+  <i class="glyphicon glyphicon-book"></i><span> Save to Collab</span>
+</button>
 <button class="btn btn-default btn-md" type="file"
         ngf-select="loadStateMachine($file)" accept=".py"
         ng-disabled="stateService.statePending">

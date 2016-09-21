@@ -104,6 +104,14 @@
         });
       };
 
+      var resourceStateMachineExperiment = function(backendBaseUrl) {
+        return $resource(backendBaseUrl + '/experiment/:context_id/state-machines', {}, {
+          save: {
+            method: 'PUT',
+            interceptor: {responseError: serverError.display}
+          }
+        });
+      };
      var resourceReset = function (backendBaseUrl) {
        return $resource(backendBaseUrl + '/simulation/:sim_id/reset', {}, {
          reset: {
@@ -201,6 +209,14 @@
               sim_id: simulationInfo.simulationID, state_machine_name: name
             }, callback
           );
+        },
+        saveStateMachines: function(contextID, transferFunctions, successCallback, errorCallback) {
+          var data = {
+            context_id: contextID,
+            state_machines: transferFunctions
+          };
+          return resourceStateMachineExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID }, data,
+            successCallback, errorCallback);
         },
 
         getTransferFunctions: function (callback) {

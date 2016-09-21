@@ -14,11 +14,13 @@ describe('Directive: smachEditor', function () {
     pythonCodeHelper,
     ScriptObject,
     stateMachines,
-    $timeout;
+    $timeout,
+    simulationInfo;
 
   var backendInterfaceServiceMock = {
     getStateMachines: jasmine.createSpy('getStateMachines'),
     setStateMachine: jasmine.createSpy('setStateMachine'),
+    saveStateMachines: jasmine.createSpy('saveStateMachines'),
     deleteStateMachine: jasmine.createSpy('deleteStateMachine'),
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl')
   };
@@ -36,12 +38,18 @@ describe('Directive: smachEditor', function () {
       };
     }
   };
+ var simulationInfoMock = {
+     contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+     simulationID : 'mocked_simulation_id',
+     isCollabExperiment: true
+ };
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
+    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,
@@ -50,7 +58,8 @@ describe('Directive: smachEditor', function () {
                               _backendInterfaceService_,
                               $templateCache,
                               _pythonCodeHelper_,
-                              _$timeout_) {
+                              _$timeout_,
+                              _simulationInfo_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -58,6 +67,7 @@ describe('Directive: smachEditor', function () {
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
     $timeout = _$timeout_;
+    simulationInfo =_simulationInfo_;
 
     $scope = $rootScope.$new();
     $templateCache.put(VIEW, '');
@@ -74,6 +84,7 @@ describe('Directive: smachEditor', function () {
     expect(isolateScope.stateMachines).toEqual([]);
     expect(backendInterfaceService.getStateMachines).toHaveBeenCalled();
     expect(isolateScope.backendDocumentationURL).toEqual('backendDocumentationURL');
+    expect(isolateScope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
   });
 
   describe('Retrieving, saving and deleting stateMachines', function () {
@@ -153,13 +164,28 @@ describe('Directive: smachEditor', function () {
         var buttonMock = { attr: jasmine.createSpy('attr') };
         spyOn(document, 'querySelector').andReturn(buttonMock);
         spyOn(window, 'Blob').andReturn({});
-        var URLMock = { createObjectURL: jasmine.createSpy('createObjectURL') }; 
+        var URLMock = { createObjectURL: jasmine.createSpy('createObjectURL') };
         window.URL = URLMock;
         isolateScope.save(new ScriptObject('stateMachineId','Some code'));
         expect(document.querySelector).toHaveBeenCalled();
         expect(URLMock.createObjectURL).toHaveBeenCalled();
       });
 
+      it('should save state machine code to collab', function() {
+        var sm = new ScriptObject('SM', 'Code of SM');
+        isolateScope.stateMachines = [sm];
+        expect(isolateScope.isSavingToCollab).toEqual(false);
+        isolateScope.saveSMIntoCollabStorage();
+        var sms = {};
+        sms[sm.id] = sm.code;
+        expect(backendInterfaceService.saveStateMachines).toHaveBeenCalledWith(simulationInfo.contextID, sms, jasmine.any(Function), jasmine.any(Function));
+        expect(isolateScope.isSavingToCollab).toEqual(true);
+        backendInterfaceService.saveStateMachines.argsForCall[0][2]();
+        expect(isolateScope.isSavingToCollab).toBe(false);
+        isolateScope.isSavingToCollab = true;
+        backendInterfaceService.saveStateMachines.argsForCall[0][3]();
+        expect(isolateScope.isSavingToCollab).toBe(false);
+      });
   });
 
   describe('Editing state machines', function () {
