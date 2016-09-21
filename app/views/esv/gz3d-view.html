@@ -263,12 +263,6 @@
               </div>
               <!-- toggle robot camera view -->
 
-              <!-- toggle graphics performance
-              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.GRAPHICS_PERFORMANCE, 'active': showShadows}" ng-click="(!helpModeActivated) ? toggleGraphicsPerformance() : help(UI.GRAPHICS_PERFORMANCE);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
-                <i class="fa fa-tachometer fa-2x vertcenter"></i>
-              </div>
-              toggle graphics performance -->
-
               <!-- environment settings panel -->
               <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow"
                   ng-class="{'highlighted': currentSelectedUIElement === UI.ENVIRONMENT_SETTINGS, 'active': showEnvironmentSettingsPanel, disabled: environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
@@ -295,7 +289,6 @@
 
 
               <!-- code editor icon -->
-
               <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel, disabled: editIsDisabled || loadingEditPanel}" ng-click="editClick()" tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}." tooltip-trigger="mouseenter" tooltip-enable="editIsDisabled" v-busy="loadingEditPanel" v-busy-label="Loading the edit panel">
                 <i class="fa fa-pencil-square-o fa-2x vertcenter"></i>
               </div>
@@ -306,7 +299,11 @@
                   ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showBrainvisualizerPanel, disabled: brainvisualizerIsDisabled || loadingBrainvisualizerPanel}"
                   ng-click="brainvisualizerClick()"
                   v-busy="loadingBrainvisualizerPanel"
-                  v-busy-label="Loading the brain visualizer">
+                  v-busy-label="Loading the brain visualizer"
+                  tooltip-trigger="mouseenter"
+                  tooltip-enable="brainvisualizerIsDisabled"
+                  tooltip="Sorry, there is no brainvisualizer data for this experiment"
+                  >
                 <i class="fa fa-asterisk fa-2x vertcenter"></i>
               </div>
               <!-- brain visualizer icon-->

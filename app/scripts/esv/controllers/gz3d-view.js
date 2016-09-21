@@ -58,7 +58,8 @@
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'INITIAL_LIGHT_DIFFUSE', 'MINIMAL_LIGHT_DEFUSE', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
-      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate',
+      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate','collab3DSettingsService','$q',
+      'simulationConfigService',
       function ($rootScope, $scope, $stateParams, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -69,7 +70,7 @@
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
         simulationInfo, INITIAL_LIGHT_DIFFUSE, MINIMAL_LIGHT_DEFUSE, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
-        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate) {
+        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate,collab3DSettingsService, $q,simulationConfigService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -186,6 +187,10 @@
                 $scope.updateInitialCameraPose(experimentTemplate.cameraPose);
                 $scope.setAnimatedRobotModel(experimentTemplate.visualModel, experimentTemplate.visualModelParams);
                 simulationInfo.experimentID = experimentID;
+                sceneInitialized.promise.then(function(){
+                  $scope.initComposerSettings();
+                  $scope.initBrainvisualizerData();
+                });
               }
             });
           });
@@ -265,6 +270,7 @@
         };
 
         // Query the state of the simulation
+        var sceneInitialized = $q.defer();
         stateService.getCurrentState().then(function () {
           if (stateService.currentState === STATE.STOPPED) {
             // The Simulation is already Stopped, so do nothing more but show the alert popup
@@ -282,6 +288,7 @@
             gz3d.Initialize();
             gz3d.iface.addCanDeletePredicate(isNotARobotPredicate);
             gz3d.iface.addCanDeletePredicate($scope.viewState.hasEditRights);
+
 
             // Handle touch clicks to toggle the context menu
             // This is used to save the position of a touch start event used for content menu toggling
@@ -329,6 +336,8 @@
             gz3d.iface.setAssetProgressCallback(function (data) {
               assetLoadingSplash.setProgress(data);
             });
+
+            sceneInitialized.resolve();
           }
         });
 
@@ -668,15 +677,17 @@
           });
         };
 
-        // graphics performance settings
-        $scope.toggleGraphicsPerformance = function () {
-          var isShadowsEnabled = gz3d.scene.renderer.shadowMapEnabled;
-          $scope.showShadows = !isShadowsEnabled;
-          nrpAnalytics.eventTrack('Toggle-shadows', {
-            category: 'Simulation-GUI',
-            value: $scope.showShadows
+        // Init composer settings
+
+        $scope.initComposerSettings = function ()
+        {
+          $scope.loadingEnvironmentSettingsPanel = true;
+
+          collab3DSettingsService.loadSettings()
+          .finally(function ()
+          {
+            $scope.loadingEnvironmentSettingsPanel = false;
           });
-          gz3d.scene.setShadowMaps($scope.showShadows);
         };
 
         // navigation mode
@@ -886,6 +897,37 @@
         };
 
         // Brain visualizer
+
+        $scope.brainvisualizerIsDisabled = true;
+
+      // Init brainvisualizer data
+
+        $scope.initBrainvisualizerData = function ()
+        {
+          var brainVisualizationDataExists = simulationConfigService.doesConfigFileExist('brainvisualizer');
+          brainVisualizationDataExists.then(function (exists)
+          {
+            if (exists)
+            {
+              $scope.brainvisualizerIsDisabled = false;
+              $scope.loadingBrainvisualizerPanel = true;
+
+              simulationConfigService.loadConfigFile('brainvisualizer')
+                .then(function (file)
+                {
+                  $scope.loadingBrainvisualizerPanel = false;
+
+                  $scope.brainVisualizerData = JSON.parse(file);
+                  $scope.brainvisualizerIsDisabled = ($scope.brainVisualizerData === undefined);
+                })
+                .catch(function ()
+                {
+                  $scope.loadingBrainvisualizerPanel = false;
+                  $scope.brainvisualizerIsDisabled = true;
+                });
+            }
+          });
+        };
 
         $scope.showBrainvisualizerPanel = false;
         $scope.toggleBrainvisualizer = function () {

@@ -8,9 +8,29 @@
     <h5 class="environment-settings-panel-title">3D Environment Settings</h5>
   </div>
 
-  <!--
-  <environmentsettings class="environment-settings-panel-content" > </environmentsettings>
--->
+  <div class="environment-settings-panel-bottom">
+
+  <div class="environment-settings-panel-bottom_buttons">
+
+      <button type="button" class="btn btn-default"
+            ng-click="resetSettings()"
+            ng-mouseup="$event.stopPropagation(); focus('container');">
+
+            <i class="glyphicon glyphicon-repeat"></i>
+            <span> Reset Settings</span>
+      </button>
+
+      <button type="button" class="btn btn-default"
+            ng-click="saveSettings()"
+            ng-disabled="!simulationInfo.isCollabExperiment || !simulationInfo.contextID"
+            ng-mouseup="$event.stopPropagation(); focus('container');">
+
+            <i class="glyphicon glyphicon-download"></i>
+            <span> Save Settings</span>
+      </button>
+
+    </div>
+  </div>
 
   <div class="environment-settings-panel-content">
 
@@ -27,7 +47,12 @@
         <environment-settings-colors></environment-settings-colors>
       </tab>
     </tabset>
+
+
   </div>
 
   <button type="button" class="button-close" data-ng-click="toggleEnvironmentSettings()">×</button>
+
+
 </div>
+
