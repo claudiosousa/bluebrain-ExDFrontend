@@ -193,6 +193,9 @@
               this.removeAvatar();
               var avatarCollision = true;
               this.createAvatar(avatarCollision);
+
+              this.freeCameraControls.domElement.removeEventListener('mousewheel', this.freeCameraControls.onMouseWheel);
+              this.freeCameraControls.domElement.removeEventListener('DOMMouseScroll', this.freeCameraControls.onMouseWheel);
             },
 
             setModeFreeCamera: function() {
@@ -213,6 +216,11 @@
                 var lookAt = this.currentPosition.clone().add(this.currentDirection.clone().multiplyScalar(100));
                 this.userCamera.lookAt(lookAt);
               }
+
+              window.firstPersonControls = this.freeCameraControls;
+              this.freeCameraControls.domElement.addEventListener('mousewheel', this.freeCameraControls.onMouseWheel, false);
+              this.freeCameraControls.domElement.addEventListener('DOMMouseScroll', this.freeCameraControls.onMouseWheel, false);
+
               this.freeCameraControls.enabled = true;
               gz3d.scene.controls = this.freeCameraControls;
             }

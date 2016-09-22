@@ -52,7 +52,11 @@ describe('Services: userNavigationService', function () {
 
     // free camera mocks
     var firstPersonControlsMock = {
-      enabled: false
+      enabled: false,
+      domElement: {
+        addEventListener: jasmine.createSpy('addEventListener'),
+        removeEventListener: jasmine.createSpy('removeEventListener')
+      }
     };
     $provide.value('firstPersonControls', firstPersonControlsMock);
 
@@ -334,7 +338,7 @@ describe('Services: userNavigationService', function () {
 
     // test for switching modes
     userNavigationService.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
-    userNavigationService.freeCameraControls = {};
+    userNavigationService.freeCameraControls = firstPersonControls;
     userNavigationService.userCamera = camera;
 
     userNavigationService.setModeHumanBody();
