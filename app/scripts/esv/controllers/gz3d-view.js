@@ -788,17 +788,6 @@
           stateService.removeMessageCallback(messageCallback);
           stateService.removeStateCallback(stateCallback);
 
-          // Stop/Cancel loading assets
-          // The window.stop() method is not supported by Internet Explorer
-          // https://developer.mozilla.org/de/docs/Web/API/Window/stop
-          if (angular.isDefined($window.stop)) {
-            $window.stop();
-          }
-          else if (angular.isDefined($document.execCommand)) {
-            $document.execCommand("Stop", false);
-          }
-
-
         };
 
         $scope.help = function (uiElement) {

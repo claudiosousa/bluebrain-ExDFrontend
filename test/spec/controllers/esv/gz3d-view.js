@@ -1524,19 +1524,6 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
 
     });
 
-    it('should call execCommand on destroy', function () {
-      // Fake IE browser behavior
-      // The stop() method is not supported by Internet Explorer
-      // https://developer.mozilla.org/de/docs/Web/API/Window/stop
-      document.execCommand = jasmine.createSpy('execCommand');
-      scope.onSimulationDone();
-      expect(window.stop).toHaveBeenCalled();
-      expect(document.execCommand).not.toHaveBeenCalled();
-      window.stop = undefined;
-      scope.onSimulationDone();
-      expect(document.execCommand).toHaveBeenCalled();
-    });
-
     it('should close rosbridge connections on onSimulationDone', function() {
       stateService.stopListeningForStatusInformation.reset();
       stateService.removeMessageCallback.reset();
@@ -1546,7 +1533,6 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
 
       expect(stateService.stopListeningForStatusInformation).toHaveBeenCalled();
       expect(stateService.removeMessageCallback).toHaveBeenCalled();
-      expect(window.stop).toHaveBeenCalled();
     });
   });
 

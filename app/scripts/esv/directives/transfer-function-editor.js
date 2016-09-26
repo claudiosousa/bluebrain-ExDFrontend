@@ -280,13 +280,15 @@
 
         scope.saveTFIntoCollabStorage = function () {
           scope.isSavingToCollab = true;
-          // update all transfer functions
-          _.forEach(scope.transferFunctions, scope.update);
           backendInterfaceService.saveTransferFunctions(
             simulationInfo.contextID,
             _.map(scope.transferFunctions, 'code'),
             function() { // Success callback
               scope.isSavingToCollab = false;
+              if (stateService.currentState !== STATE.STOPPED) {
+                // update all transfer functions
+                _.forEach(scope.transferFunctions, scope.update);
+              }
             },function() { // Failure callback
               hbpDialogFactory.alert({
                 title: "Error.",
