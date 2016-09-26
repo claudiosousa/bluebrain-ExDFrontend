@@ -28,6 +28,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.movementSpeed = 0.05;
   this.lookSpeed = 0.01;
   this.touchSensitivity = 0.01;
+  this.mouseWheelSensitivity = 0.25;
 
   this.target = new THREE.Vector3();
   this.lookVertical = true;
@@ -122,6 +123,11 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     } else {
       this.endLookAround();
     }
+  };
+
+  this.onMouseWheel = function (event) {
+    var delta = Math.max(-1, Math.min(1, (-event.wheelDelta || event.detail)));
+    window.firstPersonControls.object.translateZ(delta * window.firstPersonControls.mouseWheelSensitivity);
   };
 
   this.onTouchStart = function (event) {
