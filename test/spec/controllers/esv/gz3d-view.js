@@ -43,7 +43,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       lockServiceMock,
       q,
       callback,
-      onLockChangedCallback;
+      onLockChangedCallback,
+      experimentProxyService,
+      experimentList;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -286,6 +288,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
     $provide.value('serverError', jasmine.createSpy('serverError'));
     $provide.value('panels', { open: jasmine.createSpy('open') });
+    var proxyMock = {
+      getExperiments: jasmine.createSpy('getExperiments').andReturn({ then: jasmine.createSpy('then') }),
+    };
+    $provide.value('experimentProxyService', proxyMock);
+    var experimentListMock = {
+      experiments: jasmine.createSpy('experiments'),
+    };
+    $provide.value('experimentList',jasmine.createSpy('experimentList').andReturn(experimentListMock));
     simulationInfo = {
       serverConfig: { rosbridge: {topics: {} }},
       serverID: stateParamsMock.serverID,
@@ -360,6 +370,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _RESET_TYPE_,
                               _objectInspectorService_,
                               _collabExperimentLockService_,
+                              _experimentProxyService_,
+                              _experimentList_,
                               _$q_) {
     controller = $controller;
     rootScope = $rootScope;
@@ -391,6 +403,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     RESET_TYPE = _RESET_TYPE_;
     objectInspectorService = _objectInspectorService_;
     collabExperimentLockService = _collabExperimentLockService_;
+    experimentProxyService =_experimentProxyService_;
+    experimentList = _experimentList_;
     q = _$q_;
 
     callback = q.defer();
@@ -404,7 +418,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     };
 
     scope.viewState = {};
-
     simulations = [
       { simulationID: 0, experimentConfiguration: 'fakeExperiment0', state: STATE.CREATED },
       { simulationID: 1, experimentConfiguration: 'fakeExperiment1', state: STATE.INITIALIZED },
@@ -540,6 +553,74 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(simulationInfo.experimentID).toBeDefined();
     });
 
+    it('should initialize experimentDetails', function() {
+      window.bbpConfig.localmode.forceuser = true;
+      controller('Gz3dViewCtrl', {
+        $rootScope: rootScope,
+        $scope: scope
+      });
+      scope.experimentConfiguration = 'test_config';
+      spyOn(scope, 'updateInitialCameraPose');
+      spyOn(scope, 'setAnimatedRobotModel');
+      simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+      var experimentDetails = {
+        'experimentID': {
+          'configuration': {
+            'experimentConfiguration': 'FakeExperiment',
+            'description': 'fakeDescription',
+            'name': 'experimentName',
+            'cameraPose': 'fakeCamerPose',
+            'visualModel': 'fakeVisualModel',
+            'visualModelParams': 'fakeModelParams'
+          }
+        }
+      };
+      var promise = experimentProxyService.getExperiments();
+      promise.then.mostRecentCall.args[0](experimentDetails);
+
+      expect(simulationInfo.experimentID).toBe('experimentID');
+      expect(scope.ExperimentDescription).toBe(experimentDetails.experimentID.configuration.description);
+      expect(scope.ExperimentName).toBe(experimentDetails.experimentID.configuration.name);
+      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(experimentDetails.experimentID.configuration.cameraPose);
+      expect(scope.setAnimatedRobotModel).toHaveBeenCalledWith(experimentDetails.experimentID.configuration.visualModel, experimentDetails.experimentID.configuration.visualModelParams);
+
+      window.bbpConfig.localmode.forceuser = false;
+    });
+
+    it('should initialize experimentDetails when in collab mode', function() {
+      window.bbpConfig.localmode.forceuser = true;
+      controller('Gz3dViewCtrl', {
+        $rootScope: rootScope,
+        $scope: scope
+      });
+      scope.experimentConfiguration = 'test_config';
+      scope.isCollabExperiment = true;
+      spyOn(scope, 'updateInitialCameraPose');
+      spyOn(scope, 'setAnimatedRobotModel');
+      simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+      var experimentDetails = {
+        'data': {
+          'experimentID': {
+            'experimentConfiguration': 'FakeExperiment',
+            'description': 'fakeDescription',
+            'name': 'experimentName',
+            'cameraPose': 'fakeCamerPose',
+            'visualModel': 'fakeVisualModel',
+            'visualModelParams': 'fakeModelParams'
+          }
+        }
+      };
+      expect(experimentList().experiments.mostRecentCall.args[0]).toEqual({'context_id': simulationInfo.contextID});
+      experimentList().experiments.mostRecentCall.args[1](experimentDetails);
+
+      expect(simulationInfo.experimentID).toBe('experimentID');
+      expect(scope.ExperimentDescription).toBe(experimentDetails.data.experimentID.description);
+      expect(scope.ExperimentName).toBe(experimentDetails.data.experimentID.name);
+      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(experimentDetails.data.experimentID.cameraPose);
+      expect(scope.setAnimatedRobotModel).toHaveBeenCalledWith(experimentDetails.data.experimentID.visualModel, experimentDetails.data.experimentID.visualModelParams);
+
+      window.bbpConfig.localmode.forceuser = false;
+    });
     it('should ensure that the state is PAUSED when resetting', function() {
       scope.resetButtonClickHandler();
 

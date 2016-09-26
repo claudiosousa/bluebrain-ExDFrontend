@@ -58,8 +58,8 @@
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo', 'INITIAL_LIGHT_DIFFUSE', 'MINIMAL_LIGHT_DEFUSE', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
-      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate','collab3DSettingsService','$q',
-      'simulationConfigService',
+      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
+      'simulationConfigService', 'experimentProxyService',
       function ($rootScope, $scope, $stateParams, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -70,7 +70,8 @@
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
         simulationInfo, INITIAL_LIGHT_DIFFUSE, MINIMAL_LIGHT_DEFUSE, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
-        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate,collab3DSettingsService, $q,simulationConfigService) {
+        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
+        simulationConfigService, experimentProxyService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -173,27 +174,39 @@
         } else {
           $scope.viewState.userID = bbpConfig.get('localmode.ownerID');
         }
+        var setExperimentDetails = function(experimentID, experimentDetails){
+          $scope.ExperimentDescription = experimentDetails.description;
+          $scope.ExperimentName = experimentDetails.name;
+          $scope.updateInitialCameraPose(experimentDetails.cameraPose);
+          $scope.setAnimatedRobotModel(experimentDetails.visualModel, experimentDetails.visualModelParams);
+          simulationInfo.experimentID = experimentID;
+          sceneInitialized.promise.then(function(){
+            $scope.initComposerSettings();
+            $scope.initBrainvisualizerData();
+          });
+        };
         simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, function (data) {
           $scope.viewState.ownerID = data.owner;
           $scope.experimentConfiguration = data.experimentConfiguration;
           $scope.environmentConfiguration = data.environmentConfiguration;
           $scope.creationDate = data.creationDate;
-          // get experiment list from current server
-          experimentList(simulationInfo.serverBaseUrl).experiments(function (data) {
-            angular.forEach(data.data, function (experimentTemplate, experimentID) {
-              if (experimentTemplate.experimentConfiguration === $scope.experimentConfiguration) {
-                $scope.ExperimentDescription = experimentTemplate.description;
-                $scope.ExperimentName = experimentTemplate.name;
-                $scope.updateInitialCameraPose(experimentTemplate.cameraPose);
-                $scope.setAnimatedRobotModel(experimentTemplate.visualModel, experimentTemplate.visualModelParams);
-                simulationInfo.experimentID = experimentID;
-                sceneInitialized.promise.then(function(){
-                  $scope.initComposerSettings();
-                  $scope.initBrainvisualizerData();
-                });
+          if ($scope.isCollabExperiment){
+            experimentList(simulationInfo.serverBaseUrl).experiments({context_id: simulationInfo.contextID},
+              function(data){
+                var experimentID = Object.keys(data.data)[0];
+                setExperimentDetails(experimentID, data.data[experimentID]);
               }
+            );
+          }
+          else {
+            experimentProxyService.getExperiments().then(function (data){
+              angular.forEach(data, function (experimentTemplate, experimentID) {
+                if (experimentTemplate.configuration.experimentConfiguration === $scope.experimentConfiguration) {
+                  setExperimentDetails(experimentID, experimentTemplate.configuration);
+                }
+              });
             });
-          });
+          }
           if (!bbpConfig.get('localmode.forceuser', false)) {
             experimentsFactory.getOwnerDisplayName(data.owner).then(function (owner) {
               $scope.owner = owner;
