@@ -4,7 +4,7 @@
   angular.module('exdFrontendApp')
     .service('isNotARobotPredicate', function () {
       return function (entity) {
-        return entity.name.indexOf('robot') === -1;
+        return entity && entity.name.indexOf('robot') === -1;
       };
     });
 })();
