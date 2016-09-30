@@ -4106,12 +4106,18 @@ GZ3D.GZIface.prototype.createLightFromMsg = function(light)
   }
   else if (light.type === this.scene.LIGHT_SPOT)
   {
-    direction = light.direction;
+    direction = new THREE.Vector3();
+    direction.x = light.direction.x;
+    direction.y = light.direction.y;
+    direction.z = light.direction.z;
     range = light.range;
   }
   else if (light.type === this.scene.LIGHT_DIRECTIONAL)
   {
-    direction = light.direction;
+    direction = new THREE.Vector3();
+    direction.x = light.direction.x;
+    direction.y = light.direction.y;
+    direction.z = light.direction.z;
     range = null;
   }
 
