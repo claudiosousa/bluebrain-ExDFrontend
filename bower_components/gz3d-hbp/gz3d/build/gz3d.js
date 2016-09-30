@@ -89,7 +89,9 @@
 
     function off(topic, fn) {
       events[topic].splice(events[topic].indexOf(fn));
-      connections[url].off(topic, fn);
+      if (connections[url]) {
+        connections[url].off(topic, fn);
+      }
     }
 
     function once(topic, fn) {
@@ -5887,7 +5889,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     scope.setIntersectionPlane();
 
     var planeIntersect = intersectObjects(event,
-      [intersectionPlanes[currentPlane]]);
+        [intersectionPlanes[currentPlane]]);
 
     if(planeIntersect)
     {
@@ -5897,9 +5899,9 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
       worldRotationMatrix.extractRotation(scope.object.matrixWorld);
 
       parentRotationMatrix.extractRotation(
-        scope.object.parent.matrixWorld);
+          scope.object.parent.matrixWorld);
       parentScale.setFromMatrixScale(tempMatrix.getInverse(
-        scope.object.parent.matrixWorld));
+          scope.object.parent.matrixWorld));
 
       offset.copy(planeIntersect.point);
     }
@@ -5932,6 +5934,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   this.onPointerMove = function (event) {
     onPointerMove(event);
   };
+
   /**
    * Window event callback (mouse move and touch move)
    * @param {} event
@@ -6022,11 +6025,10 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
             }
           }
         }
-
         // workaround for the problem when an object jumps straight to (0,0,0) on translation
-        if (scope.object.position.x == 0 &&
-            scope.object.position.y == 0 &&
-            scope.object.position.z == 0) {
+        if (scope.object.position.x === 0 &&
+            scope.object.position.y === 0 &&
+            scope.object.position.z === 0) {
           // a "jump" detected -> keep the object at initial position
           scope.object.position.copy(initPosition);
           selectPicker(event);
@@ -6205,18 +6207,11 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   /**
    * Checks if given name is currently selected
    * @param {} name
-   * @returns {bool}
+   * @returns {boolean}
    */
   function isSelected(name)
   {
-    if(scope.selected.search(name) !== -1)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return scope.selected.search(name) !== -1;
   }
 
   /**
