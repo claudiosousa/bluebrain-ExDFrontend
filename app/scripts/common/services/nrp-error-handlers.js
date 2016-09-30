@@ -113,6 +113,15 @@
         if (filter(response)) {
           $log.error(response);
           var nrpError = nrpErrorService.getBasicError();
+
+          var errorSource = response.data;
+          if (errorSource) {
+            if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
+              /// failure is presumably a Xvfb_Xvn_Error
+              nrpError.template = "Job allocation failed. Please try again.";
+            }
+          }
+
           hbpDialogFactory.alert(nrpError);
           var code = "No code", template = "No template";
           if (_.isObject(nrpError)) {
