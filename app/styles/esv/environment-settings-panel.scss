@@ -18,7 +18,7 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
    }
 
   @extend .pop-over-viewer;
-   display: flex !important;
+   display: flex;
    top: 3%;
    left: 3%;
    width: $environmentSettingsPanelStartWidth;

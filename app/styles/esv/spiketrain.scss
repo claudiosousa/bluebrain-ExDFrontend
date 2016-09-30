@@ -9,7 +9,7 @@ $spikeTrainMargin: 5px;
   @extend .pop-over-viewer;
   @include compute-top($spikeTrainBottom, $spikeTrainHeight);
   height: $spikeTrainHeight;
-  display: flex !important;
+  display: flex;
 }
 
 .spikegraph.ng-hide {

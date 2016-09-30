@@ -5,7 +5,7 @@ $objectInspectorMinHeight: 380px;
 
 .object-inspector-widget {
   @extend .pop-over-viewer;
-  display: flex !important;
+  display: flex;
   top: 2%;
   left: unset;
   right: 2%;

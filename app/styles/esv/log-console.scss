@@ -14,7 +14,7 @@ $logConsolePanelHeadingHeightTotal: $logConsolePanelHeadingHeight+2 * $logConsol
 .log-console-panel-widget {
     @extend .pop-over-viewer;
     z-index: 10;
-    display: flex !important;
+    display: flex;
     top: 2%;
     left: 2%;
     width: $logConsolePanelStartWidth;
