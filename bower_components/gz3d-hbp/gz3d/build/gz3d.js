@@ -8213,10 +8213,10 @@ GZ3D.Scene.prototype.createDirectionalLight = function(obj, color, intensity,
   lightObj.shadow.camera.far = 50;
   lightObj.shadow.mapSize.width = 2048;
   lightObj.shadow.mapSize.height = 2048;
-  lightObj.shadow.camera.bottom = -10;
-  lightObj.shadow.camera.left = -10;
-  lightObj.shadow.camera.right = 10;
-  lightObj.shadow.camera.top = 10;
+  lightObj.shadow.camera.bottom = -15;
+  lightObj.shadow.camera.left = -15;
+  lightObj.shadow.camera.right = 15;
+  lightObj.shadow.camera.top = 15;
   lightObj.shadow.bias = 0.0001;
   lightObj.position.set(0,0,0);
 
