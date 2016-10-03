@@ -10707,15 +10707,19 @@ GZ3D.SpawnModel.prototype.moveSpawnedModel = function(positionX, positionY)
   this.ray.set(this.scene.camera.position,
       vector.sub(this.scene.camera.position).normalize());
   var point = this.ray.intersectPlane(this.plane);
-  point.z = this.obj.position.z;
 
-  if(this.snapDist)
+  if (point)
   {
-    point.x = Math.round(point.x / this.snapDist) * this.snapDist;
-    point.y = Math.round(point.y / this.snapDist) * this.snapDist;
-  }
+    point.z = this.obj.position.z;
 
-  this.scene.setPose(this.obj, point, new THREE.Quaternion());
+    if (this.snapDist)
+    {
+      point.x = Math.round(point.x / this.snapDist) * this.snapDist;
+      point.y = Math.round(point.y / this.snapDist) * this.snapDist;
+    }
+
+    this.scene.setPose(this.obj, point, new THREE.Quaternion());
+  }
 };
 
 /**
