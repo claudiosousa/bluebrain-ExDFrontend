@@ -11,7 +11,7 @@ $brainvisualizerPanelHeadingHeightTotal: $brainvisualizerPanelHeadingHeight + 2 
 
 .brainvisualizer-panel-widget {
   @extend .pop-over-viewer;
-  display: flex !important;
+  display: flex;
   top: 2%;
   left: 2%;
   width: $brainvisualizerPanelStartWidth;

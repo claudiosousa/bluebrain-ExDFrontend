@@ -86,22 +86,23 @@
     }
   </script>
 
-    <div id="gz3d-body" data-role="page" data-theme="b" data-content-theme="c" class="esv-flex-container esv-flex-greedy-element" oncontextmenu="return false;">
+    <!-- page is display:none until the page spicific css were loaded --->
+    <div data-role="page" data-theme="b" data-content-theme="c" style="display:none" class="gz3d-body ng-cloak" oncontextmenu="return false;">
       <!-- Alert popup --->
-      <div class="alert alert-warning" ng-show="viewState.isJoiningStoppedSimulation">
+      <div class="alert alert-warning ng-hide" ng-show="viewState.isJoiningStoppedSimulation">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
         Sorry, the simulation you just wanted to join is already stopped.
         <button class="btn btn-warning btn-xs pull-right" ui-sref="esv-web">&times;</button>
       </div>
       <!-- container -->
-      <div class="esv-flex-container esv-flex-greedy-element">
+      <div class="gz3d-container">
         <!-- WEBGL-context   -->
-        <div data-role="content" id="container" class="esv-flex-container esv-flex-greedy-element" ng-mousedown="onContainerMouseDown($event);"></div>
+        <div data-role="content" id="container" class="gz3d-webgl" ng-mousedown="onContainerMouseDown($event);"></div>
         <!-- WEBGL-context -->
 
-        <div class="keyboard-control-info" ng-show="showKeyboardControlInfoDiv"></div>
-        <spiketrain server="{{rosbridgeWebsocketUrl}}" topic="{{rosTopics.spikes}}" movable ng-show="showSpikeTrain"></spiketrain>
-        <joint-plot server="{{rosbridgeWebsocketUrl}}" topic="{{rosTopics.joint}}" movable ng-show="showJointPlot"></joint-plot>
+        <div class="keyboard-control-info ng-hide" ng-show="showKeyboardControlInfoDiv"></div>
+        <spiketrain server="{{rosbridgeWebsocketUrl}}" class="ng-hide" topic="{{rosTopics.spikes}}" movable ng-show="showSpikeTrain"></spiketrain>
+        <joint-plot server="{{rosbridgeWebsocketUrl}}" class="ng-hide" topic="{{rosTopics.joint}}" movable ng-show="showJointPlot"></joint-plot>
         <!-- HelpText -->
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PAUSE_BUTTON]='Here you can pause the simulation on the server.'">
@@ -124,7 +125,7 @@
         <div id="overlay" class="esv-overlay noselect">
           <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
             <div ng-if="viewState.isOwner"
-                 class="hbp-toolbar-action"
+                 class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STARTED) : help(UI.PLAY_BUTTON);"
@@ -132,7 +133,7 @@
               <i class="glyphicon glyphicon-play"></i>
             </div>
             <div ng-if="viewState.isOwner"
-                 class="hbp-toolbar-action"
+                 class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.PAUSED) : help(UI.PAUSE_BUTTON);"
@@ -140,7 +141,7 @@
               <i class="glyphicon glyphicon-pause"></i>
             </div>
             <div ng-if="viewState.isOwner"
-                 class="hbp-toolbar-action"
+                 class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}"
                  ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STOPPED) : help(UI.STOP_BUTTON);"
@@ -149,7 +150,7 @@
               <i class="glyphicon glyphicon-stop"></i>
             </div>
             <div ng-if="viewState.isOwner"
-                 class="hbp-toolbar-action"
+                 class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}"
                  ng-click="(!helpModeActivated) ? resetButtonClickHandler() : help(UI.RESET_BUTTON);"
@@ -158,7 +159,7 @@
                           (stateService.currentState !== STATE.FAILED)">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
-            <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)">
+            <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)" class="ng-hide">
               <div class="hbp-toolbar-large-tool hbp-time-display default-cursor" ng-class="{'highlighted': currentSelectedUIElement === UI.TIME_DISPLAY}" ng-click="(!helpModeActivated) ? null : help(UI.TIME_DISPLAY)">
                 <div>
                   <div>
@@ -244,20 +245,20 @@
               </div>
 
               <!-- toggle spiketrain -->
-              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN, 'active': showSpikeTrain}" ng-click="(!helpModeActivated) ? toggleSpikeTrain() : help(UI.SPIKETRAIN);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action ng-hide" ng-class="{'highlighted': currentSelectedUIElement === UI.SPIKETRAIN, 'active': showSpikeTrain}" ng-click="(!helpModeActivated) ? toggleSpikeTrain() : help(UI.SPIKETRAIN);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <img src="img/esv/spiketrain_logo.png">
               </div>
               <!-- toggle spiketrain -->
 
               <!-- toggle jointPlot -->
-              <div class="hbp-toolbar-action" ng-class="{'highlighted': currentSelectedUIElement === UI.JOINT_PLOT, 'active': showJointPlot}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.JOINT_PLOT);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action ng-hide" ng-class="{'highlighted': currentSelectedUIElement === UI.JOINT_PLOT, 'active': showJointPlot}" ng-click="(!helpModeActivated) ? toggleJointPlot() : help(UI.JOINT_PLOT);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <img src="img/esv/jointplot_logo.png">
               </div>
 
               <!-- toggle jointPlot -->
 
               <!-- toggle robot camera view -->
-              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW, 'active': showRobotView}" ng-click="(!helpModeActivated) ? toggleRobotView() : help(UI.ROBOT_VIEW);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action hide-overflow ng-hide" ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW, 'active': showRobotView}" ng-click="(!helpModeActivated) ? toggleRobotView() : help(UI.ROBOT_VIEW);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <!--<img src="img/esv/robot_view_icon.png" width=32 height=32>-->
                 <i class="fa fa-eye fa-2x vertcenter"></i>
               </div>
@@ -274,7 +275,7 @@
               <!-- brain visualizer icon-->
 
               <!-- navigation mode -->
-              <div class="hbp-toolbar-action hide-overflow" ng-class="{'highlighted': currentSelectedUIElement === UI.USER_NAVIGATION, 'active': showNavigationModeMenu}" ng-click="(!helpModeActivated) ? toggleNavigationModeMenu() : help(UI.USER_NAVIGATION);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+              <div class="hbp-toolbar-action hide-overflow ng-hide" ng-class="{'highlighted': currentSelectedUIElement === UI.USER_NAVIGATION, 'active': showNavigationModeMenu}" ng-click="(!helpModeActivated) ? toggleNavigationModeMenu() : help(UI.USER_NAVIGATION);" ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <i class="fa fa-compass fa-2x vertcenter"></i>
                 <div ng-show="showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -128px; background-color: lightgrey;">
                   <div class="hbp-toolbar-action hide-overflow" ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY)}" ng-click="setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);">
@@ -337,7 +338,7 @@
         </div>
         <!-- overlay -->
 
-        <context-menu></context-menu>
+           <context-menu></context-menu>
         <object-inspector></object-inspector>
 
         <!-- large top-right help icon -->
@@ -346,7 +347,7 @@
         <!-- large top-right help icon -->
 
         <!-- Description -->
-        <div class="description-window panels" ng-show="helpModeActivated && (stateService.currentState != STATE.STOPPED)">
+        <div class="description-window panels ng-hide" ng-show="helpModeActivated && (stateService.currentState != STATE.STOPPED)">
           <div>
             <div class="help-title">{{ExperimentName}}:</div>
             <div class="help-text pre">{{ExperimentDescription}}</div>
@@ -398,7 +399,7 @@
         <!-- Description -->
 
         <!-- Toolbar-Help window --->
-        <div class="toolbar-help-window panels" ng-show="helpModeActivated && (stateService.currentState != STATE.STOPPED)">
+        <div class="toolbar-help-window panels ng-hide" ng-show="helpModeActivated && (stateService.currentState != STATE.STOPPED)">
           <div class="help-title">UI-Element Description:</div>
           <div class="help-text" ng-show="currentSelectedUIElement === UI.UNDEFINED">(A description will be displayed here when you click on the corresponding user interface element)</div>
           <div class="help-text pre" ng-show="currentSelectedUIElement != UI.UNDEFINED">{{helpDescription}}</div>
@@ -418,6 +419,7 @@
         <!-- Environment setting panel --->
 
         <log-console
+          class="ng-hide"
           server="{{rosbridgeWebsocketUrl}}"
           topic="{{rosTopics.logs}}"
           ng-show="showLogConsole"

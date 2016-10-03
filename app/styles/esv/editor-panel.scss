@@ -11,7 +11,7 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
 
 .editor-panel-widget {
   @extend .pop-over-viewer;
-  display: flex !important;
+  display: flex;
   top: 2%;
   left: 2%;
   width: $editorPanelStartWidth;
