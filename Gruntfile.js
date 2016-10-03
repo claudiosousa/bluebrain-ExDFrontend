@@ -129,13 +129,13 @@ module.exports = function (grunt) {
             },
             livereload: {
                 options: {
-                    open: true,
+                    open: { target: 'http://localhost:<%= connect.options.port %>' },
                     protocol: 'http'
                 }
             },
             livereload_https: {
                 options: {
-                    open: true,
+                    open: { target: 'https://localhost:<%= connect.options.port %>' },
                     protocol: 'https'
                 }
             },
