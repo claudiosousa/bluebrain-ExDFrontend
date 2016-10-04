@@ -896,6 +896,10 @@
         $scope.exit = function () {
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           $location.path('esv-web');
+          $timeout(function ()
+          {
+            $window.location.reload();
+          });
         };
 
         // Brain visualizer

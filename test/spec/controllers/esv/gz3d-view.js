@@ -120,7 +120,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
   }));
 
-    beforeEach(module('contextMenuStateService', function ($provide) {
+  beforeEach(module('contextMenuStateService', function ($provide) {
     $provide.value('contextMenuState', {
       toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
       pushItemGroup : jasmine.createSpy('pushItemGroup')
@@ -380,6 +380,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
     timeout = _$timeout_;
     window = _$window_;
+    window.location.reload = function () { };
     document = _$document_;
     location = _$location_;
     stateParams = _$stateParams_;
