@@ -25,6 +25,7 @@
                 scope.ambientOcclusionClamp = cs.ssaoClamp;
                 scope.ambientOcclusionLum = cs.ssaoLumInfluence;
                 scope.antiAliasingEnabled = cs.antiAliasing;
+                scope.renderPBR = cs.pbrMaterial===undefined?false:cs.pbrMaterial;
               }
             };
 
@@ -49,6 +50,7 @@
               gz3d.scene.composerSettings.ssaoClamp = scope.ambientOcclusionClamp;
               gz3d.scene.composerSettings.ssaoLumInfluence = scope.ambientOcclusionLum;
               gz3d.scene.composerSettings.antiAliasing = scope.antiAliasingEnabled;
+              gz3d.scene.composerSettings.pbrMaterial = scope.renderPBR;
 
               gz3d.scene.applyComposerSettings();
             };

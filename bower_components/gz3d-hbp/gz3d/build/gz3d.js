@@ -682,6 +682,8 @@ GZ3D.Composer = function (gz3dScene)
     this.webglRenderer = gz3dScene.renderer;
     this.currenSkyBoxTexture = null;
     this.currentSkyBoxID = '';
+    this.pbrMaterial = false;
+    this.pbrTotalLoadingTextures = 0;
 
     //-----------------------------------
     // Sun, lens flare
@@ -859,11 +861,93 @@ GZ3D.Composer.prototype.initView = function (view)
 };
 
 /**
+ * Update PBR Material
+ *
+ */
+
+GZ3D.Composer.prototype.updatePBRMaterial = function (node)
+{
+    if (this.pbrMaterial)
+    {
+        if (node.material.pbrMaterialDescription !== undefined)
+        {
+            if (node.pbrMeshMaterial === undefined)
+            {
+                // Need to initialize the PBR material and store both material for future use
+
+                // Load textures
+
+                var materialParams = {};
+                var textureLoader = new THREE.TextureLoader();
+
+                if (!this.loadedPBRTextures)
+                {
+                    this.loadedPBRTextures = {};
+                }
+
+                var that = this;
+
+                Object.keys(node.material.pbrMaterialDescription).forEach(function (maptype)
+                {
+                    if (!that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]])
+                    {
+                        that.loadingPBR = true;
+                        that.pbrTotalLoadingTextures += 1;
+
+                        materialParams[maptype] = textureLoader.load(node.material.pbrMaterialDescription[maptype],
+                        function()
+                        {
+                            that.pbrTotalLoadingTextures -= 1;
+                        },
+                        undefined,
+                        function()
+                        {
+                            that.pbrTotalLoadingTextures -= 1;
+                        });
+
+                        materialParams[maptype].wrapS = THREE.RepeatWrapping;
+                        that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]] = materialParams[maptype];
+                    }
+                    else
+                    {
+                        materialParams[maptype] = that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]];
+                    }
+                });
+
+                node.pbrMeshMaterial = new THREE.MeshStandardMaterial(materialParams);
+                node.stdMeshMaterial = node.material;
+                node.pbrMeshMaterial.roughness = 1.0;
+                node.pbrMeshMaterial.metalness = 1.0;
+
+                node.pbrMeshMaterial.aoMapIntensity = 3.0;
+
+            }
+
+            node.pbrMeshMaterial.envMap = this.currenSkyBoxTexture; // Update skybox
+
+            if (!this.loadingPBR)
+            {
+                node.material = node.pbrMeshMaterial;
+                node.material.needsUpdate = true;
+            }
+        }
+    }
+    else
+    {
+        if (node.stdMeshMaterial !== undefined)
+        {
+            node.material = node.stdMeshMaterial;
+            node.material.needsUpdate = true;
+        }
+    }
+};
+
+/**
  * Apply composer settings
  *
  */
 
-GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve)
+GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,forcePBRUpdate)
 {
     // Updates the composer internal data with the latest settings.
 
@@ -911,6 +995,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve)
     if (this.currentSkyBoxID !== cs.skyBox)
     {
         this.currentSkyBoxID = cs.skyBox;
+        forcePBRUpdate = true;
 
         if (this.currentSkyBoxID === '')
         {
@@ -934,6 +1019,29 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve)
         }
     }
 
+    // PBR material
+
+    if (this.pbrMaterial !== cs.pbrMaterial || forcePBRUpdate)
+    {
+        this.pbrMaterial = cs.pbrMaterial;
+
+        var that = this;
+
+        this.scene.traverse(function (node)
+        {
+            if (node.material)
+            {
+                if (forcePBRUpdate && node.stdMeshMaterial)
+                {
+                    node.material = node.stdMeshMaterial;
+                }
+
+                that.updatePBRMaterial(node);
+                node.material.needsUpdate = true;
+            }
+        });
+    }
+
     // Now updates per-view settings. Please note that most of the settings need no update since
     // they are used directly from the render pass.
 
@@ -943,7 +1051,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve)
         {
             // Color curve
 
-            if (updateColorCurve && view.rgbCurvesShader!==undefined)
+            if (updateColorCurve && view.rgbCurvesShader !== undefined)
             {
                 if ((cs.rgbCurve['red'] === undefined || cs.rgbCurve['red'].length < 2) &&
                     (cs.rgbCurve['green'] === undefined || cs.rgbCurve['green'].length < 2) &&
@@ -1005,6 +1113,16 @@ GZ3D.Composer.prototype.render = function (view)
         this.initView(view);
     }
 
+    if (this.pbrMaterial)
+    {
+        if (this.loadingPBR && this.pbrTotalLoadingTextures===0)
+        {
+            this.loadingPBR = false;
+            this.applyComposerSettings(false,true);
+            this.loadingPBR = (this.pbrTotalLoadingTextures!==0);
+        }
+    }
+
     var camera = view.camera;
     var width = view.container.canvas.width;
     var height = view.container.canvas.height;
@@ -1012,7 +1130,6 @@ GZ3D.Composer.prototype.render = function (view)
     var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
 
     this.webglRenderer.setViewport(0, 0, width, height);
-
 
     if (this.minimalRender || nopostProcessing) // No post processing is required, directly render to the screen.
     {
@@ -1133,9 +1250,9 @@ GZ3D.ComposerSettings = function ()
     this.levelsOutBlack = 0.0;
     this.levelsOutWhite = 1.0;
 
-    this.skyBox = '';      // The file path of the sky box (without file extenstion) or empty string for plain color background
+    this.skyBox = '';               // The file path of the sky box (without file extension) or empty string for plain color background
 
-    this.sun = '';         // empty string for no sun or "SIMPLELENSFLARE" for simple lens flare rendering
+    this.sun = '';                  // empty string for no sun or "SIMPLELENSFLARE" for simple lens flare rendering
 
     this.bloom = false;             // Bloom
     this.bloomStrength = 1.0;
@@ -1144,7 +1261,9 @@ GZ3D.ComposerSettings = function ()
 
     this.fog = false;               // Fog
     this.fogDensity = 0.05;
-    this.fogColor = '#b2b2b2';   // CSS style
+    this.fogColor = '#b2b2b2';      // CSS style
+
+    this.pbrMaterial = false;       // Phyically based material
 
 };
 

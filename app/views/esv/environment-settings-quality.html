@@ -19,10 +19,22 @@
 
 <label class="environment-settings-checkbox-label">
     <input class="environment-settings-checkbox" type="checkbox"
+     ng-model="renderPBR"
+    ng-change="updateEnvQualitySettings()">Physically Based Rendering (PBR)</label>
+
+<br>
+
+<hr class="environment-settings-hr" >
+
+<label class="environment-settings-checkbox-label">
+    <input class="environment-settings-checkbox" type="checkbox"
      ng-model="renderAmbientOcclusion"
     ng-change="updateEnvQualitySettings()">Ambient Occlusion</label>
 
 <br>
+
+
+
 
 <div class="environment-settings-option-subblock" ng-show="renderAmbientOcclusion">
 

@@ -1159,6 +1159,7 @@ THREE.ColladaLoader = function () {
 
 								var _copied_material = material3js.clone();
 								_copied_material.side = THREE.DoubleSide;
+								_copied_material.pbrMaterialDescription = material3js.pbrMaterialDescription;
 								double_sided_materials[ instance_material.symbol ] = _copied_material;
 
 							}
@@ -3107,6 +3108,9 @@ THREE.ColladaLoader = function () {
 						}
 
 					}
+					if (geom.faceVertexUvs.length < 2)
+						geom.faceVertexUvs[1] = geom.faceVertexUvs[0]; // 2nd set of UVs required for aoMap
+
 
 				} else {
 
@@ -3604,6 +3608,7 @@ THREE.ColladaLoader = function () {
 				case 'diffuse':
 				case 'specular':
 				case 'transparent':
+				case 'reflective':
 
 					this[ child.nodeName ] = ( new ColorOrTexture() ).parse( child );
 					break;
@@ -3624,7 +3629,6 @@ THREE.ColladaLoader = function () {
 							this[ 'bump' ] = ( new ColorOrTexture() ).parse( child );
 						}
 					} else {
-						console.warn( "Shader.prototype.parse: Attribute 'bumptype' missing from bump node - defaulting to 'HEIGHTFIELD'" );
 						this[ 'bump' ] = ( new ColorOrTexture() ).parse( child );
 					}
 
@@ -3674,6 +3678,47 @@ THREE.ColladaLoader = function () {
 
 		}
 
+		var pbrMaterial = null;
+
+		// Check for PBR material
+		if (this.effect !== undefined &&
+			this.effect.surface !== undefined)
+		{
+			var pbrKeyToThreeJSMap = {
+				'Base_Color': 'map',
+				'Metallic': 'metalnessMap',
+				'Roughness': 'roughnessMap',
+				'Mixed_AO': 'aoMap',
+				'Emissive': 'emissiveMap',
+				'Normal': 'normalMap',
+				'Height': 'displacementMap'
+			};
+
+			for (var surface in this.effect.surface)
+			{
+				if (surface.indexOf("PBR_") >= 0)
+				{
+					for (var k in pbrKeyToThreeJSMap)
+					{
+						if (surface.indexOf(k) >= 0)
+						{
+							var image = images[this.effect.surface[surface].init_from];
+
+							if (image)
+							{
+								if (pbrMaterial === null)
+								{
+									pbrMaterial = {};
+								}
+
+								pbrMaterial[pbrKeyToThreeJSMap[k]] = baseUrl + image.init_from;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		var keys = {
 			'diffuse':'map',
 			'ambient':'lightMap',
@@ -3691,8 +3736,8 @@ THREE.ColladaLoader = function () {
 				case 'emission':
 				case 'diffuse':
 				case 'specular':
-				case 'bump':
-				case 'normal':
+			//	case 'bump':
+			//	case 'normal':
 
 					var cot = this[ prop ];
 
@@ -3712,8 +3757,6 @@ THREE.ColladaLoader = function () {
 									var image = images[ surface.init_from ];
 
 									if ( image ) {
-
-                    //var texture = THREE.ImageUtils.loadTexture(baseUrl + image.init_from);
 
 										var loader = new THREE.TextureLoader();
 										var texture = loader.load( baseUrl + image.init_from);
@@ -3796,7 +3839,7 @@ THREE.ColladaLoader = function () {
 			case 'phong':
 			case 'blinn':
 
-				if (props.diffuse != undefined) 
+				if (props.diffuse != undefined)
 				{
 					props.color = props.diffuse;
 					delete props.diffuse;
@@ -3807,7 +3850,7 @@ THREE.ColladaLoader = function () {
 			case 'lambert':
 			default:
 
-				if (props.diffuse != undefined) 
+				if (props.diffuse != undefined)
 				{
 					props.color = props.diffuse;
 					delete props.diffuse;
@@ -3815,6 +3858,11 @@ THREE.ColladaLoader = function () {
 				this.material = new THREE.MeshLambertMaterial( props );
 				break;
 
+		}
+
+		if (pbrMaterial !== null)
+		{
+			this.material.pbrMaterialDescription = pbrMaterial;	// If PBR material has been found, store it for future usage
 		}
 
 		return this.material;
