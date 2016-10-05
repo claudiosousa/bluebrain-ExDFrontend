@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   angular.module('exdFrontendApp')
-    .constant('MAX_PANEL_ZINDEX', 1020)//panels z-index start at this value and go
+    .constant('MAX_PANEL_ZINDEX', 400)//panels z-index start at this value and go
     .directive('showOnTop', ['MAX_PANEL_ZINDEX',
       function (MAX_PANEL_ZINDEX) {
         var panels = []; //panels beeing managed by the 'showOnTop' directive
