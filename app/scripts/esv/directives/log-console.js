@@ -10,6 +10,7 @@
             return {
                 templateUrl: 'views/esv/log-console.html',
                 restrict: 'E',
+                replace: true,
                 scope: {
                     server: '@',
                     topic: '@',
