@@ -54,7 +54,14 @@
           /* State messages */
           /* Manage before other since others may depend on state changes */
           if (angular.isDefined(message.state) && (message.state !== thisStateService.currentState)) {
-            thisStateService.currentState = message.state;
+
+            if (message.state !== STATE.CREATED)
+            {
+              // This is a tempory fix. The problem should be fixed in the backend. See NRRPLT-4148 and NRRPLT-4172.
+
+              thisStateService.currentState = message.state;
+            }
+
             if (message.state === STATE.STOPPED){
             rosConnection.disableRebirth();
           }
