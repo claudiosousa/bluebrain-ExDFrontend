@@ -80,7 +80,13 @@
               </button>
 
               <!-- Option to Launch in Single Process Mode -->
-              <button ng-if="exp.configuration.brainProcesses > 1" class="btn btn-default" ng-click="startNewExperiment(exp, true)">
+              <button ng-if="config.canLaunchExperiments && exp.configuration.brainProcesses > 1 && userinfo.hasEditRights" class="btn btn-default" ng-click="startNewExperiment(exp, true)">
+                <i class="fa fa-plus"></i> Launch in Single Process Mode
+              </button>
+
+              <!-- No edit rights: launch in single process button disabled -->
+              <button ng-if="config.canLaunchExperiments && exp.configuration.brainProcesses > 1 && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip"
+                tooltip="Sorry, you don't have sufficient rights to launch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch in Single Process Mode
               </button>
 
