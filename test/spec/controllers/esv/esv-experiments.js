@@ -15,7 +15,7 @@
     joinableServers: [{
       server: hostName,
       runningSimulation: {
-        owner: '300568',
+        owner: 'vonarnim',
         simulationID: 1
       }
     }]
@@ -27,7 +27,7 @@
       nodes: [20, 14, 0, 34]
     },
     me: {
-      id: '300568',
+      id: 'vonarnim',
       username: 'cmartins',
       displayName: 'Claudio Sousa'
     },
@@ -57,7 +57,7 @@
     userQuery: {
       _embedded: {
         users: [{
-          id: '300358'
+          id: 'vonarnim'
         }]
       }
     }
@@ -246,7 +246,6 @@
     it('should trigger the right requests when stoping a simulation', function () {
       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
-
       var simulationUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation/' + defaultPageOptions.startExperiment.simulationID + '/state';
       //get server config
       $httpBackend.whenGET(proxyUrl + '/server/' + hostName).respond(200, defaultPageOptions.server);
