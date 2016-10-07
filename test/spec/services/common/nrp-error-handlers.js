@@ -178,4 +178,22 @@ describe('Services: nrp-error-handlers', function () {
     serverError.display(response);
     expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
   });
+
+  it('should show a user friendly error message to the user', function() {
+    var response = { data: { message: 'This is a serious error', type: 'serious'} };
+    serverError.display(response);
+    expect(hbpDialogFactory.alert.callCount).toBe(1);
+    expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toNotBe('error template');
+    expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
+    expect(nrpErrorService.httpError.callCount).toBe(1);
+  });
+
+  it('should show the actual error message to the user', function() {
+    var response = { data: { message: 'This is a serious error', type: 'serious'} };
+    serverError.display(response, true);
+    expect(hbpDialogFactory.alert.callCount).toBe(1);
+    expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toBe('error template');
+    expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
+    expect(nrpErrorService.httpError.callCount).toBe(1);
+  });
 });

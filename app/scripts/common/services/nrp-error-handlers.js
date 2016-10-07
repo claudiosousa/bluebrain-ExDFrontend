@@ -104,7 +104,7 @@
         return true;
       };
 
-      var display = function(response) {
+      var display = function(response, keepErrorMessage) {
         response = angular.extend({
             human_readable: nrpErrorService.httpError(response).template
           },
@@ -115,6 +115,9 @@
           var nrpError = nrpErrorService.getBasicError();
 
           var errorSource = response.data;
+          if(keepErrorMessage){
+            nrpError.template = response.human_readable;
+          }
           if (errorSource) {
             if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
               /// failure is presumably a Xvfb_Xvn_Error

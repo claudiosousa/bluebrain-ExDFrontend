@@ -45,7 +45,7 @@
       var isFatal = isFatalError(error);
       if (isFatal) {
         // If it is a fatal error, then we go through the normal error handling
-        serverError.display(error);
+        serverError.display(error, true);
       } else {
         // Log error on console
         $log.debug(error);
