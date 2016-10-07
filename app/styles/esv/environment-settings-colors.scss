@@ -23,11 +23,13 @@
 }
 
 .environment-settings-color-levels-title {
-    font-weight: bold;
+    font-weight: normal;
     font-size: 16px;
-}
+    font-family: 'Gotham', sans-serif;
+  }
 
-.environment-settings-color-levels-slider-label {
+.environment-settings-color-levels label {
     font-weight: normal;
     font-size: 12px;
+    font-family: 'Gotham', sans-serif;
 }
