@@ -12,7 +12,7 @@
 
         <div class="environment-settings-option-subblock">
 
-            <div class="environment-settings-radio-group">
+            <div>
 
                 <label>
             <input class="environment-settings-radio" type="radio"
@@ -52,23 +52,23 @@
 
             <div class="environment-settings-option-subblock">
 
-                <label class="environment-settings-color-levels-slider-label">Black Point</label>
+                <label>Black Point</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsInBlack" step="0.01" min="0" max="0.5"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label class="environment-settings-color-levels-slider-label">Midtone</label>
+                <label>Midtone</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="inGamma" step="0.01" min="0.5" max="1.5"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label class="environment-settings-color-levels-slider-label">White Point</label>
+                <label>White Point</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsInWhite" step="0.01" min="0.5" max="1.0"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label class="environment-settings-color-levels-slider-label">Output Black</label>
+                <label>Output Black</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsOutBlack" step="0.01" min="0" max="0.5"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label class="environment-settings-color-levels-slider-label">Output White</label>
+                <label>Output White</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsOutWhite" step="0.01" min="0.5" max="1.0"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 

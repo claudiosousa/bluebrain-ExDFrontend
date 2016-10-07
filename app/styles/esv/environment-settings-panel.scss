@@ -101,37 +101,27 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
                                   not supported by any browser */
 }
 
-.environment-settings-checkbox-label
-{
- font-style: normal;
- font-weight: normal;
- font-family: Courier, monospace;
- font-size: 15px;
- }
-
-.environment-settings-checkbox {
+input.environment-settings-checkbox[type="checkbox"],
+input.environment-settings-radio[type="radio"] {
   padding: 0;
   margin:0;
-  vertical-align: bottom;
+  vertical-align: middle;
+  top: -2px;
   position: relative;
-  top: -6px;
-  right: 5px;
 }
-
-.environment-settings-radio-group
- {
+input.environment-settings-checkbox[type="checkbox"]{
+  margin-right: 10px;
+}
+input.environment-settings-radio[type="radio"]{
+    margin-right: 6px;
+    margin-left: 20px;
+}
+environment-settings-panel label
+{
   font-style: normal;
   font-weight: normal;
-  font-family: Courier, monospace;
   font-size: 15px;
-}
-
-.environment-settings-radio {
-  vertical-align: bottom;
-  position: relative;
-  top: -6px;
-  left:5px;
-  width:30px;
+  font-family: 'Gotham', sans-serif;
 }
 
 .environment-settings-option-subblock {
