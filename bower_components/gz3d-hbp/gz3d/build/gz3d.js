@@ -1305,9 +1305,6 @@ var modelList =
       {modelPath:'vr_screen', modelTitle:'Virtual Screen'},
       {modelPath:'viz_poster', modelTitle:'Poster 1'},
       {modelPath:'viz_poster_2', modelTitle:'Poster 2'},
-
-      {modelPath:'icub_model', modelTitle:'iCub'},
-      {modelPath:'lauron_model', modelTitle:'Lauron'},
       {modelPath:'user_avatar_basic', modelTitle:'user avatar (collision)'},
       {modelPath:'user_avatar_basic_no-collision', modelTitle:'user avatar (no collision)'}
     ]}
