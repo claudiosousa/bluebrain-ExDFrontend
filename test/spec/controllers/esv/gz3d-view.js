@@ -771,6 +771,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should open splash screen with callbackOnClose', function () {
       stateService.getCurrentState().then.mostRecentCall.args[0]();
       stateService.currentState = STATE.STOPPED;
+      scope.sceneLoading = false;
       //Test the messageCallback
       scope.splashScreen = undefined;
       stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});

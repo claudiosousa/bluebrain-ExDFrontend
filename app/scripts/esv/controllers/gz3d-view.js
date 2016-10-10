@@ -119,6 +119,7 @@
         $scope.STATE = STATE;
         $scope.UI = UI;
         $scope.RESET_TYPE = RESET_TYPE;
+        $scope.sceneLoading = true;
 
         //Collab info used by reset
         $scope.isCollabExperiment = simulationInfo.isCollabExperiment;
@@ -239,12 +240,19 @@
         /* Timeout messages are displayed in the toolbar. */
         var messageCallback = function (message) {
           /* Progress messages (except start state progress messages which are handled by another progress bar) */
-          if (angular.isDefined(message.progress) && message.state !== STATE.STARTED) {
+          if (angular.isDefined(message.progress)) {
+
+            var stateStopFailed = stateService.currentState === STATE.STOPPED || stateService.currentState === STATE.FAILED;
+
             /* splashScreen == null means it has been already closed and should not be reopened */
-            if ($scope.splashScreen !== null) {
+            if ($scope.splashScreen !== null &&
+                !$scope.sceneLoading &&
+               (angular.isDefined(message.state) ||
+               (stateStopFailed || (angular.isDefined(message.progress.subtask) && message.progress.subtask.length>0 ))))
+            {
               $scope.splashScreen = $scope.splashScreen || splash.open(
                 !message.progress.block_ui,
-                ((stateService.currentState === STATE.STOPPED || stateService.currentState === STATE.FAILED) ? $scope.exit : undefined));
+                (stateStopFailed ? $scope.exit : undefined));
             }
             if (angular.isDefined(message.progress.done) && message.progress.done) {
               splash.spin = false;
@@ -364,6 +372,7 @@
           sceneInitialized.resolve();
           $scope.setLightHelperVisibility();
           userNavigationService.init();
+          $scope.sceneLoading = false;
         };
 
         // Lights management
