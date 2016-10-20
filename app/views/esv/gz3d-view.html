@@ -124,12 +124,11 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay noselect">
           <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
-            <div ng-if="viewState.isOwner"
-                 class="hbp-toolbar-action ng-hide"
+            <div ng-if="viewState.isOwner && stateService.currentState === STATE.PAUSED"
+                 class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}"
-                 ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STARTED) : help(UI.PLAY_BUTTON);"
-                 ng-show="(stateService.currentState === STATE.PAUSED)">
+                 ng-click="(!helpModeActivated) ? simControlButtonHandler(STATE.STARTED) : help(UI.PLAY_BUTTON);">
               <i class="glyphicon glyphicon-play"></i>
             </div>
             <div ng-if="viewState.isOwner"
