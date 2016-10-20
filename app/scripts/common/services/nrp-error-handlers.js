@@ -118,7 +118,7 @@
           if(keepErrorMessage){
             nrpError.template = response.human_readable;
           }
-          if (errorSource) {
+          if (errorSource && errorSource.message) {
             if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
               /// failure is presumably a Xvfb_Xvn_Error
               nrpError.template = "Job allocation failed. Please try again.";
