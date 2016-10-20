@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+/* global console: false */
+
   // This file contains a service for the splash screen as well as a controller
   // which manages the scope of the displayed HTML. We use a simple observer here
   // in order to notify the controller whenever an update message comes in.
@@ -89,6 +91,13 @@
         });
       });
     });
+    // Give 15 seconds for assets to be loaded
+    $timeout(function() {
+      if($scope.loadedAssets === 0){
+        console.error("Asset loading timeout occured.");
+        $scope.isError = true;
+      }
+    }, 15000);
   }]);
 
 }());
