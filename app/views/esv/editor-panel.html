@@ -21,7 +21,8 @@
       <tab heading="State Machine (SMACH)" active="activeTab.statemachine"
            select="disableKeyBindings(); controls.statemachine.refresh()"
            deselect="reenableKeyBindings()">
-        <smach-editor control="controls.statemachine"/>
+        <smach-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
+                      control="controls.statemachine"/>
       </tab>
       <tab heading="Brain Editor" active="activeTab.pynneditor"
            select="disableKeyBindings(); controls.pynneditor.refresh()"

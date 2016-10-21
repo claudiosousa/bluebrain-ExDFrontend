@@ -5,14 +5,22 @@
     'backendInterfaceService',
     'pythonCodeHelper',
     'documentationURLs',
+    'roslib',
     'STATE',
+    'stateService',
+    'SIMULATION_FACTORY_CLE_ERROR',
+    'SOURCE_TYPE',
     '$timeout',
     'simulationInfo',
     'hbpDialogFactory',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
+              roslib,
               STATE,
+              stateService,
+              SIMULATION_FACTORY_CLE_ERROR,
+              SOURCE_TYPE,
               $timeout,
               simulationInfo,
               hbpDialogFactory) {
@@ -27,6 +35,8 @@
           scope.isSavingToCollab = false;
 
           scope.STATE = STATE;
+          scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
+          scope.SOURCE_TYPE = SOURCE_TYPE;
           scope.stateMachines = [];
           var ScriptObject = pythonCodeHelper.ScriptObject;
           var addedStateMachineCount = 0;
@@ -67,13 +77,21 @@
           };
 
           scope.update = function(stateMachine) {
-            backendInterfaceService.setStateMachine(
-              stateMachine.id,
-              stateMachine.code,
-              function(){
-                stateMachine.dirty = false;
-                stateMachine.local = false;
-              });
+            stateService.ensureStateBeforeExecuting(
+              STATE.PAUSED,
+              function () {
+                delete stateMachine.error[scope.ERROR.RUNTIME];
+                delete stateMachine.error[scope.ERROR.LOADING];
+                backendInterfaceService.setStateMachine(
+                  stateMachine.id,
+                  stateMachine.code,
+                  function(){
+                    stateMachine.dirty = false;
+                    stateMachine.local = false;
+                    scope.cleanCompileError(stateMachine);
+                  });
+              }
+            );
           };
 
           scope.onStateMachineChange = function (stateMachine) {
@@ -200,6 +218,49 @@
               }
             );
           };
+
+          scope.getStateMachineEditor = function(stateMachine) {
+            var id = 'state-machine-' + stateMachine.id;
+            var codeMirrorDiv = document.getElementById(id).firstChild;
+            return codeMirrorDiv.CodeMirror;
+          };
+
+          scope.onNewErrorMessageReceived = function(msg) {
+            if (msg.severity < 2 && msg.sourceType === scope.SOURCE_TYPE.STATE_MACHINE) {
+              // Error message is not critical and can be fixed
+              var flawedStateMachine = _.find(scope.stateMachines, {'id': msg.functionName});
+              if (flawedStateMachine === undefined){
+                  // if we couldn't find the sm from the id, try against the name
+                  flawedStateMachine = _.find(scope.stateMachines, {'name': msg.functionName});
+              }
+              // Remove error line highlighting if a new compile error is received
+              if (msg.errorType === scope.ERROR.COMPILE) {
+                scope.cleanCompileError(flawedStateMachine);
+              }
+              flawedStateMachine.error[msg.errorType] = msg;
+              if (msg.lineNumber >= 0) { // Python Syntax Error
+                // Error line highlighting
+                var editor = scope.getStateMachineEditor(flawedStateMachine);
+                var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
+                msg.lineHandle = editor.getLineHandle(codeMirrorLineNumber);
+                editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
+              }
+            }
+          };
+
+          scope.cleanCompileError = function(stateMachine) {
+            var compileError = stateMachine.error[scope.ERROR.COMPILE];
+            var lineHandle = compileError ? compileError.lineHandle : undefined;
+            if (angular.isDefined(lineHandle)) {
+              var editor = scope.getStateMachineEditor(stateMachine);
+              editor.removeLineClass(lineHandle, 'background', 'alert-danger');
+            }
+            delete stateMachine.error[scope.ERROR.COMPILE];
+          };
+
+          var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
+          scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
+          scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
         }
       };
     }
