@@ -81,7 +81,12 @@
         name: 'esv-web',
         url: '/esv-web?ctx',
         templateUrl: 'views/esv/esv-experiments.html',
-        controller: 'esvExperimentsCtrl'
+        controller: 'esvExperimentsCtrl',
+        resolve: {
+          oidcToken: ['oidcClientService', function (oidcClientService) {
+            return oidcClientService.ensureSession();
+          }]
+        }
       };
 
       var supportState = {
