@@ -956,6 +956,11 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
 
     var cs = this.gz3dScene.composerSettings;
 
+    if (cs.pbrMaterial === undefined)
+    {
+        cs.pbrMaterial = true;
+    }
+
     this.gz3dScene.setShadowMaps(cs.shadows);   // Update shadow state
 
     // Fog
@@ -1263,7 +1268,7 @@ GZ3D.ComposerSettings = function ()
     this.fogDensity = 0.05;
     this.fogColor = '#b2b2b2';      // CSS style
 
-    this.pbrMaterial = false;       // Phyically based material
+    this.pbrMaterial = true;       // Physically based material
 
 };
 
