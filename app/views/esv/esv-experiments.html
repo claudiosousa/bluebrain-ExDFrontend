@@ -150,12 +150,12 @@
                       type="button" class="btn btn-default" ng-disabled="(simul.runningSimulation.state === STATE.CREATED) || simul.stopping">Join »</a>
                     <!-- Stop button enabled provided simulation state is consistent-->
                     <a analytics-on analytics-event="Stop" analytics-category="Experiment" ng-click="stopSimulation(simul, exp);" type="button"
-                      class="btn btn-default" ng-if="userinfo.hasEditRights && (simul.runningSimulation.state !== STATE.CREATED) && userinfo.userID == simul.runningSimulation.owner" ng-disabled="simul.stopping">
+                      class="btn btn-default" ng-if="canStopSimulation(simul)" ng-disabled="simul.stopping">
                       <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
                     </a>
                     <!-- No edit rights: stop button disabled -->
                     <a type="button" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have sufficient rights to stop the simulation." tooltip-trigger="mouseenter"
-                      tooltip-placement="top" ng-if="!userinfo.hasEditRights && (simul.runningSimulation.state !== STATE.CREATED) && userinfo.userID == simul.runningSimulation.owner"> Stop
+                      tooltip-placement="top" ng-if="!canStopSimulation(simul)"> Stop
                   </a>
                   </td>
                 </tr>
