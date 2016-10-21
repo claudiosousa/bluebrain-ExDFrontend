@@ -45,6 +45,7 @@ describe('Services: userNavigationService', function () {
 
     var avatarControlsMock = {
       enabled: false,
+      avatarRadius: 0.15,
       avatarEyeHeight: 1.6,
       applyPose: jasmine.createSpy('applyPose')
     };
@@ -245,7 +246,7 @@ describe('Services: userNavigationService', function () {
     expect(avatarControls.applyPose).toHaveBeenCalledWith(defaultPositionMock, defaultLookAtMock);
     expect(avatarControls.lockVerticalMovement).toBe(true);
     expect(gz3d.scene.viewManager.mainUserView.camera.parent).toBe(avatar);
-    expect(gz3d.scene.viewManager.mainUserView.camera.position.set).toHaveBeenCalledWith(0, 0, avatarControls.avatarEyeHeight);
+    expect(gz3d.scene.viewManager.mainUserView.camera.position.set).toHaveBeenCalledWith(0, avatarControls.avatarRadius, avatarControls.avatarEyeHeight);
     expect(gz3d.scene.viewManager.mainUserView.camera.updateMatrixWorld).toHaveBeenCalled();
     expect(gz3d.scene.controls).toBe(avatarControls);
     expect(avatarControls.enabled).toBe(true);

@@ -7759,18 +7759,15 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
  */
 GZ3D.Scene.prototype.getRayCastModel = function(pos, intersect)
 {
-  var vector = new THREE.Vector3(
-      ((pos.x - this.renderer.domElement.offsetLeft)
-      / window.innerWidth) * 2 - 1,
-      -((pos.y - this.renderer.domElement.offsetTop)
-      / window.innerHeight) * 2 + 1, 1);
-  vector.unproject(this.camera);
-  var ray = new THREE.Raycaster( this.camera.position,
-      vector.sub(this.camera.position).normalize() );
+  var normalizedScreenCoords = new THREE.Vector2(
+    ((pos.x - this.renderer.domElement.offsetLeft) / window.innerWidth) * 2 - 1,
+    -((pos.y - this.renderer.domElement.offsetTop) / window.innerHeight) * 2 + 1
+  );
 
-  var allObjects = [];
-  this.scene.getDescendants(allObjects);
-  var objects = ray.intersectObjects(allObjects);
+  var raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(normalizedScreenCoords, this.camera);
+
+  var objects = raycaster.intersectObjects(this.scene.children, true);
 
   var model;
   var point;
