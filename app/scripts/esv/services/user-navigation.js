@@ -144,7 +144,7 @@
 
               // add camera to avatar object
               this.userCamera.parent = this.avatarObject;
-              this.userCamera.position.set(0, 0, this.avatarControls.avatarEyeHeight);
+              this.userCamera.position.set(0, this.avatarControls.avatarRadius, this.avatarControls.avatarEyeHeight);
               this.userCamera.updateMatrixWorld();
 
               // set and activate controls

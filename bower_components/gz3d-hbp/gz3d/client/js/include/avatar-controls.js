@@ -19,6 +19,8 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
     this.domElementPointerBindings.setAttribute('tabindex', -1);
   }
 
+  // hardcoded values, should be requestable from model at some point
+  this.avatarRadius = 0.15;
   this.avatarEyeHeight = 1.6;
   this.avatarWaistHeight = 0.8;
 
