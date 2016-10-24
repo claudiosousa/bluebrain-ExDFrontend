@@ -263,25 +263,10 @@ describe('Directive: spiketrain', function () {
     expect($scope.onScreenSizeChanged).toHaveBeenCalled();
   });
 
-  it('should hide canvas while resizing', function () {
-    var canvas = $scope.canvas;
-    var styles = [ canvas[0].style, canvas[1].style ];
-    expect(styles[0].visibility).toBe('');
-    expect(styles[1].visibility).toBe('');
-    $scope.onResizeBegin();
-    expect(styles[0].visibility).toBe('hidden');
-    expect(styles[1].visibility).toBe('hidden');
-  });
-
-
-  it('should show canvas once resizing is done', function () {
-    var canvas = $scope.canvas;
-    var styles = [ canvas[0].style, canvas[1].style ];
-    expect(styles[0].visibility).toBe('');
-    expect(styles[1].visibility).toBe('');
+  it('should redraw spikes on canvas once resizing is done', function () {
+    spyOn($scope, 'onScreenSizeChanged');
     $scope.onResizeEnd();
-    expect(styles[0].visibility).toBe('visible');
-    expect(styles[1].visibility).toBe('visible');
+    expect($scope.onScreenSizeChanged).toHaveBeenCalled();
   });
 
   it('should call the startSpikeDisplay function', function () {

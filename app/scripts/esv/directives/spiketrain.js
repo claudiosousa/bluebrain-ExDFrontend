@@ -39,8 +39,23 @@
 
           var fontSize = Number(scope.ctx[0].font.split('px')[0]);
 
-          // Main functions, get called each time a spike message is received, It redraws the canvas.
+          // Keeps messages to redraw spikes when spike monitor is resized
+          var messages = [];
+
+          // Called each time a spike message is received
           scope.onNewSpikesMessageReceived = function (message) {
+            messages.push(message);
+            // How many messages are not needed
+            var d = messages.length - $(document).width();
+            if (d > 0) {
+              // Remove them
+              messages.splice(0, d);
+            }
+            plotSingleMessageSpikes(message);
+          };
+
+          // Plots spikes from a message
+          function plotSingleMessageSpikes(message) {
             if (angular.isDefined(message) && angular.isDefined(message.spikes) && angular.isDefined(message.neuronCount)) {
               // If the left canvas is out of the parent div, append it to the right of the other canvas
               if (scope.xPosition >= scope.canvas[scope.currentCanvasIndex].width) {
@@ -105,7 +120,7 @@
               otherCanvas.style.left = - scope.xPosition + 'px';
               currentCanvas.style.left = otherCanvas.width - scope.xPosition + 'px';
             }
-          };
+          }
 
           // Unfortunately, this is mandatory. The canvas size can't be set to 100% of its container,
           var previousSize = { height: 0, width: 0 };
@@ -114,6 +129,11 @@
               calculateCanvasHeight();
               previousSize.height = scope.splikeContainer.offsetHeight;
               previousSize.width = scope.splikeContainer.offsetWidth;
+            }
+
+            // Draw spikes on refreshed canvas
+            for (var i = 0; i < messages.length; i = i + 1) {
+              plotSingleMessageSpikes(messages[i]);
             }
           };
 
@@ -145,17 +165,9 @@
             otherCanvas.style.left = -scope.xPosition;
           }
 
-          scope.onResizeBegin = function () {
-            // Hide the canvas while we resize
-            scope.canvas[0].style.visibility = 'hidden';
-            scope.canvas[1].style.visibility = 'hidden';
-          };
-
           scope.onResizeEnd = function () {
-            // Show the canvas again after recalculating
+            // Redraw spikes on changed canvas
             scope.onScreenSizeChanged();
-            scope.canvas[0].style.visibility = 'visible';
-            scope.canvas[1].style.visibility = 'visible';
           };
 
           // Draw a separator line to visualize that there is data missing during the closed state of the visualization
