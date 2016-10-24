@@ -48,6 +48,11 @@
           });
         };
 
+        $scope.canStopSimulation = function (simul) {
+          return $scope.userinfo && $scope.userinfo.hasEditRights &&
+            ($scope.userinfo.userID === simul.runningSimulation.owner || $scope.userinfo.forceuser);
+        };
+
         var loadExperiments = function (ctx, experimentId, experimentFolderUUID) {
           var experimentsService = experimentsFactory.createExperimentsService(ctx, experimentId, experimentFolderUUID);
           experimentsService.initialize();

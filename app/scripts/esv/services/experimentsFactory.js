@@ -34,7 +34,8 @@
           if (localmode.forceuser) {
             return $q.when({
               userID: bbpConfig.get('localmode.ownerID'),
-              hasEditRights: true
+              hasEditRights: true,
+              forceuser: true
             });
           }
           return $q.all([
@@ -43,7 +44,8 @@
           ]).then(function (userInfo) {
             return {
               userID: userInfo[0].id,
-              hasEditRights: userInfo[1]
+              hasEditRights: userInfo[1],
+              forceuser: false
             };
           });
         }
