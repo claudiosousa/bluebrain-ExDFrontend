@@ -1,20 +1,24 @@
 'use strict';
 
 describe('Services: experimentsFactory', function () {
-  var $q, experimentProxyService, collabFolderAPIService, experimentsFactory, scope, httpBackend, $interval;
+  var $q, experimentProxyService, collabFolderAPIService, experimentsFactory, scope, $interval,
+    hbpDialogFactory, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR;
 
   beforeEach(module('experimentServices'));
   beforeEach(module('exdFrontendApp'));
-  beforeEach(inject(function (_$q_, _experimentProxyService_, _collabFolderAPIService_, _experimentsFactory_, _$rootScope_, _$httpBackend_, _$interval_) {
+  beforeEach(inject(function (_$q_, _experimentProxyService_, _collabFolderAPIService_, _experimentsFactory_, _$rootScope_, _$httpBackend_, _$interval_,
+    _hbpDialogFactory_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_) {
     $q = _$q_;
     experimentProxyService = _experimentProxyService_;
     collabFolderAPIService = _collabFolderAPIService_;
     experimentsFactory = _experimentsFactory_;
     scope = _$rootScope_;
-    httpBackend = _$httpBackend_;
     $interval = _$interval_;
+    hbpDialogFactory = _hbpDialogFactory_;
+    FAIL_ON_SELECTED_SERVER_ERROR = _FAIL_ON_SELECTED_SERVER_ERROR_;
+    FAIL_ON_ALL_SERVERS_ERROR = _FAIL_ON_ALL_SERVERS_ERROR_;
 
-    httpBackend.whenGET(new RegExp('.*')).respond({});
+    _$httpBackend_.whenGET(new RegExp('.*')).respond({});
     spyOn(console, 'error');
   }));
 
@@ -145,6 +149,39 @@ describe('Services: experimentsFactory', function () {
       expect(experiments[0].joinableServers).toEqual(joinableServer);
     });
    scope.$apply();
-
   });
+
+  function startExperimentWithDataShouldTriggerError(experiments, expectedError){
+    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
+    spyOn(experimentProxyService, 'getImages').andReturn($q.when({ '0': 'fakeImage' }));
+    spyOn(experimentProxyService, 'getServerConfig').andReturn($q.reject());
+    spyOn(collabFolderAPIService, 'getFolderFile');
+    var exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    spyOn(hbpDialogFactory, 'alert');
+    exp.experiments
+      .then(function (experiments) {
+        return exp.startExperiment(experiments[0]);
+      })
+      .catch(function () {
+        expect(hbpDialogFactory.alert).toHaveBeenCalledWith(expectedError);
+      });
+    scope.$apply();
+
+  }
+  it('should trigger a specific error when it fails to start an experiment from a list of servers', function () {
+    startExperimentWithDataShouldTriggerError(
+      [{ joinableServers: [], configuration: {}, availableServers: [] }],
+      FAIL_ON_ALL_SERVERS_ERROR
+    );
+  });
+
+  it('should trigger a specific error when it fails to start an experiment from a specific DEV servers', function () {
+    startExperimentWithDataShouldTriggerError(
+      [{ joinableServers: [], configuration: {}, availableServers: [], devServer: 'devServer' }],
+      FAIL_ON_SELECTED_SERVER_ERROR
+    );
+  });
+
 });
