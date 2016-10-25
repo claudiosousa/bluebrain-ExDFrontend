@@ -78,16 +78,20 @@
     };
   });
 
+  module.constant('NO_CLUSTER_AVAILABLE_ERR_MSG', 'No resources available on the cluster. Please try again later.');
+
   module.factory('serverError', [
     'nrpErrorService',
     'hbpDialogFactory',
     'nrpAnalytics',
     '$log',
+    'NO_CLUSTER_AVAILABLE_ERR_MSG',
     function(
       nrpErrorService,
       hbpDialogFactory,
       nrpAnalytics,
-      $log
+      $log,
+      NO_CLUSTER_AVAILABLE_ERR_MSG
     ) {
       var filter = function(response) {
         if (response) {
@@ -122,6 +126,10 @@
             if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
               /// failure is presumably a Xvfb_Xvn_Error
               nrpError.template = "Job allocation failed. Please try again.";
+            }
+            if (errorSource.message.toLowerCase().indexOf('no resources available') !== -1) {
+              /// failure is presumably a lack of available resources on the cluster
+              nrpError.template = NO_CLUSTER_AVAILABLE_ERR_MSG;
             }
           }
 

@@ -133,13 +133,14 @@ describe('Services: nrp-error-handlers', function () {
 
 describe('Services: nrp-error-handlers', function () {
   var serverError;
-  var hbpDialogFactory, nrpErrorService;
+  var hbpDialogFactory, nrpErrorService, NO_CLUSTER_AVAILABLE_ERR_MSG;
 
   beforeEach(module('nrpErrorHandlers'));
-  beforeEach(inject(function(_serverError_,_hbpDialogFactory_, _nrpErrorService_){
+  beforeEach(inject(function(_serverError_,_hbpDialogFactory_, _nrpErrorService_, _NO_CLUSTER_AVAILABLE_ERR_MSG_){
     serverError = _serverError_;
     hbpDialogFactory =  _hbpDialogFactory_;
     nrpErrorService = _nrpErrorService_;
+    NO_CLUSTER_AVAILABLE_ERR_MSG = _NO_CLUSTER_AVAILABLE_ERR_MSG_;
     spyOn(hbpDialogFactory, 'alert');
     spyOn(nrpErrorService, 'httpError').andReturn({'template': 'error template'});
   }));
@@ -195,5 +196,12 @@ describe('Services: nrp-error-handlers', function () {
     expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toBe('error template');
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
     expect(nrpErrorService.httpError.callCount).toBe(1);
+  });
+
+  it('should show a specific error when cluster resources aren\'t available', function() {
+    var response = { data: {message:'Internal server error: service [/ros_cle_simulation/create_new_simulation] responded with an error: error processing request: No resources available on the cluster. Try again later.',type:'General error'} };
+    serverError.display(response, true);
+    expect(hbpDialogFactory.alert.callCount).toBe(1);
+    expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toBe(NO_CLUSTER_AVAILABLE_ERR_MSG);
   });
 });
