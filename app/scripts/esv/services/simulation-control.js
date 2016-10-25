@@ -27,6 +27,13 @@
   }]);
 
   module.factory('simulationCreationInterceptor', ['$q', '$log', 'serverError', function ($q, $log, serverError) {
+    // white list of non-fatal error regexps
+    var NON_FATAL_ERRORS_WHITELIST = [
+      'Another',
+      'timeout',
+      /previous one.*terminated/
+    ];
+
     //returns true if the error is unlisted as blocking or is a cluster error
     var isFatalError = function (error) {
       if (!error.data) {
@@ -36,10 +43,9 @@
       if (!angular.isString(errorMsg) || (errorMsg.indexOf('cluster') >= 0) || (errorMsg.indexOf('Internal') >= 0)) {
         return true;
       }
-      if ((errorMsg.indexOf('Another') >= 0) || (errorMsg.indexOf('timeout') >= 0)) {
-        return false; // white list of non-fatal errors
-      }
-      return true;
+      return !_.some(NON_FATAL_ERRORS_WHITELIST, function (nonFatalErrMsg) {
+        return errorMsg.match(nonFatalErrMsg);
+      });
     };
     return function (error) {
       var isFatal = isFatalError(error);
@@ -255,7 +261,7 @@
                 }
                 switch (data.state) {
                   case STATE.CREATED: //CREATED --(initialize)--> PAUSED --(stop)--> STOPPED
-                      return updateSimulationState(STATE.INITIALIZED).then(_.partial(updateSimulationState, STATE.STOPPED));
+                    return updateSimulationState(STATE.INITIALIZED).then(_.partial(updateSimulationState, STATE.STOPPED));
                   case STATE.STARTED: //STARTED --(stop)--> STOPPED
                   case STATE.PAUSED:  //PAUSED  --(stop)--> STOPPED
                   case STATE.HALTED:  //HALTED  --(stop)--> FAILED

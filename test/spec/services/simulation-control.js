@@ -349,3 +349,35 @@ describe('Services: experimentSimulationService (Stopping the simulation)', func
    }
   });
 });
+
+
+describe('Factory: simulationCreationInterceptor', function () {
+  var simulationCreationInterceptor, scope, serverError;
+
+  beforeEach(module('simulationControlServices'));
+  beforeEach(inject(function ($rootScope, _simulationCreationInterceptor_, _serverError_) {
+    scope = $rootScope;
+    simulationCreationInterceptor = _simulationCreationInterceptor_;
+    serverError = _serverError_;
+  }));
+
+  it('should distinguish fatal from non fatal error', function () {
+    var errorMessagesAndFatality = {
+      'Another <- non fatal error': false,
+      'something -> timeout <- happened ': false,
+      'bla bla -> previous one <- bla bla -> terminated <- bla bla': false,
+      'very much fatal': true,
+      'oops': true
+    };
+
+    spyOn(serverError, 'display').andReturn();
+    _.forEach(errorMessagesAndFatality, function (fatal, msg) {
+      simulationCreationInterceptor({ data: msg })
+        .catch(function (err) {
+          expect(err.isFatal).toBe(fatal);
+        });
+      scope.$apply();
+    });
+  });
+
+});
