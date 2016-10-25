@@ -3,11 +3,21 @@
 
   angular.module('experimentServices')
     .constant('SERVER_POLL_INTERVAL', 10 * 1000)
+    .constant('FAIL_ON_ALL_SERVERS_ERROR', {
+      title: 'No server is currently available',
+      template: 'No server can handle your simulation at the moment. Please try again later'
+    })
+    .constant('FAIL_ON_SELECTED_SERVER_ERROR', {
+      title: 'The selected server is currently not available',
+      template: 'The selected server cannot handle your simulation at the moment. Please try again later'
+    })
     .factory('experimentsFactory',
     ['$q', '$interval', 'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
       'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory', 'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
+      'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR',
       function ($q, $interval, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
-        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService) {
+        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService,
+        FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR) {
         var localmode = {
           forceuser: bbpConfig.get('localmode.forceuser', false),
           ownerID: bbpConfig.get('localmode.ownerID', null)
@@ -218,10 +228,7 @@
             return experimentSimulationService.startNewExperiment(experiment, launchSingleMode, envSDFData)
               .catch(function (fatalErrorWasShown) {
                 if (!fatalErrorWasShown) {
-                  hbpDialogFactory.alert({
-                    title: 'No server is currently available',
-                    template: 'No server can handle your simulation at the moment. Please try again later'
-                  });
+                  hbpDialogFactory.alert(experiment.devServer ? FAIL_ON_SELECTED_SERVER_ERROR: FAIL_ON_ALL_SERVERS_ERROR);
                 }
                 return $q.reject(fatalErrorWasShown);
               });
