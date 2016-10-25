@@ -9675,9 +9675,9 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
  * @param updateColorCurve
 */
 
-  GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve)
+  GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate)
   {
-    this.composer.applyComposerSettings(updateColorCurve);
+    this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate);
   };
 /**
  * SDF parser constructor initializes SDF parser with the given parameters

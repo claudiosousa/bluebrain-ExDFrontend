@@ -220,7 +220,8 @@ describe('Controller: Gz3dViewCtrl', function () {
           ]
         },
         scene: new THREE.Scene(),
-        selectEntity: jasmine.createSpy('selectEntity')
+        selectEntity: jasmine.createSpy('selectEntity'),
+        applyComposerSettings: jasmine.createSpy('applyComposerSettings')
       },
       iface: {
         addCanDeletePredicate: angular.noop,
@@ -647,6 +648,10 @@ describe('Controller: Gz3dViewCtrl', function () {
         scope.request,
         jasmine.any(Function),
         jasmine.any(Function));
+
+      var successCallback = backendInterfaceService.reset.mostRecentCall.args[1];
+      successCallback();
+      expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, true);
     });
 
     it('should notify the widgets when resetting', function() {
