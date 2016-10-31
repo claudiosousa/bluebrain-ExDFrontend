@@ -10,6 +10,10 @@
       'collabConfigService',
       '$window',
       'CLUSTER_THRESHOLDS',
+      'hbpDialogFactory',
+      'collabFolderAPIService',
+      'collabExperimentLockService',
+      '$timeout',
       function (
         $scope,
         $location,
@@ -18,11 +22,26 @@
         experimentsFactory,
         collabConfigService,
         $window,
-        CLUSTER_THRESHOLDS
+        CLUSTER_THRESHOLDS,
+        hbpDialogFactory,
+        collabFolderAPIService,
+        collabExperimentLockService,
+        $timeout
       ) {
         $scope.STATE = STATE;
         $scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
         $scope.pageState = {};
+        $scope.isCollabExperiment = $stateParams.ctx ? true : false;
+        $scope.isSavingToCollab = false;
+        $scope.formInfo ={};
+        $scope.descID = "descID";
+        $scope.nameID = "nameID";
+        $scope.editing = {};
+        $scope.editing[$scope.descID]= false;
+        $scope.editing[$scope.nameID]= false;
+        if ($scope.isCollabExperiment){
+          var lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
+        }
         $scope.config = {
           loadingMessage: 'Loading list of experiments...',
           canLaunchExperiments: true,
@@ -61,6 +80,8 @@
           experimentsService.experiments.then(function (experiments) {
             $scope.experiments = experiments;
             if (experiments.length === 1) {
+              $scope.formInfo.name = experiments[0].configuration.name;
+              $scope.formInfo.desc = experiments[0].configuration.description;
               $scope.pageState.selected = experiments[0].id;
             }
           });
@@ -76,6 +97,114 @@
               $scope.pageState.selected = experiment.id;
               $scope.pageState.showJoin = false;
             }
+          };
+
+          $scope.editExperiment = function(elementID) {
+            if ($scope.isCollabExperiment) {
+              $scope.loadingEdit = true;
+              lockService.tryAddLock()
+                .then(function(result) {
+                  if (!result.success && result.lock && result.lock.lockInfo.user.id !== $scope.userinfo.userID) {
+                    hbpDialogFactory.alert({
+                      title: "Error",
+                      template: "Sorry you cannot edit at this time. Only one user can edit at a time and " + result.lock.lockInfo.user.displayName + " started editing " + moment(new Date(result.lock.lockInfo.date)).fromNow() + ". Please try again later."
+                    });
+                  }
+                  else {
+                    $scope.loadingEdit = false;
+                    $scope.editing[elementID] = true;
+                    $timeout(function(){
+                      $window.document.getElementById(elementID).focus();
+                    },0);
+                  }
+                })
+                .catch(function(){
+                  hbpDialogFactory.alert({
+                    title: "Error",
+                    template: "There was an error in opening the edit feature, please try again later."
+                  });
+                })
+                .finally(function(){
+                  $scope.loadingEdit = false;
+                });
+            }
+          };
+
+          $scope.stopEditingExperimentDetails = function(editingKey){
+            lockService.releaseLock()
+              .catch(function () {
+                hbpDialogFactory.alert({
+                  title: "Error",
+                  template: "The edit lock could not be released. Please remove it manually from the Storage area."
+                });
+              });
+            $scope.formInfo.name = $scope.experiments[0].configuration.name;
+            $scope.formInfo.desc = $scope.experiments[0].configuration.description;
+            $scope.editing[editingKey] = false;
+          };
+          var shouldSave = function(input, originalValue, editingKey){
+            if (!input || input.trim().length === 0){
+              hbpDialogFactory.alert({
+                title: "Error",
+                template: "Name/Description of an experiment cannot be empty."
+              });
+              return false;
+            }
+            if ($scope.containsTags(input)){
+              hbpDialogFactory.alert({
+                title: "Error",
+                template: "Name/Description of an experiment cannot contain an HTML tag."
+              });
+              return false;
+            }
+            if (input === originalValue){
+              $scope.isSavingToCollab = false;
+              $scope.stopEditingExperimentDetails(editingKey);
+              return false;
+            }
+            return true;
+          };
+
+          $scope.saveExperimentDetails = function(newDetails, editingKey){
+            var experiment = $scope.experiments[0];
+            var originalValue = editingKey === $scope.nameID ? experiment.configuration.name: experiment.configuration.description;
+            if (!shouldSave(newDetails, originalValue, editingKey)){
+              return;
+            }
+            $scope.isSavingToCollab = true;
+            var xml = experimentsService.getCollabExperimentXML();
+            if (!xml){
+              hbpDialogFactory.alert({
+                title: "Error",
+                template: "Something went wrong when retrieving the experiment_configuration.xml file from the collab storage. Please check the file exists and is not empty."
+              });
+              $scope.isSavingToCollab = false;
+              return;
+            }
+            xml = xml.replace(originalValue, newDetails);
+            collabFolderAPIService.deleteFile(experimentFolderUUID, "experiment_configuration.xml").then(function(){
+             collabFolderAPIService.createFolderFile(experimentFolderUUID, "experiment_configuration.xml", xml, {type: 'application/hbp-neurorobotics+xml'}).then(function(){
+               $scope.isSavingToCollab = false;
+               if (editingKey === $scope.nameID){
+                 experiment.configuration.name = newDetails;
+               }
+               else {
+                 experiment.configuration.description = newDetails;
+               }
+               $scope.stopEditingExperimentDetails(editingKey);
+              }, function(){
+                $scope.isSavingToCollab = false;
+                hbpDialogFactory.alert({
+                  title: "Error.",
+                  template: "Error while saving updated experiment details to Collab storage."
+                });
+              });
+            });
+          };
+          $scope.containsTags = function(input){
+            var div = document.createElement("div");
+            div.innerHTML = input;
+            return div.innerText !== input;
           };
 
           $scope.startNewExperiment = function (experiment, launchSingleMode, sdfData) {
@@ -126,7 +255,7 @@
             });
         }
 
-        if (!$stateParams.ctx) {
+        if (!$scope.isCollabExperiment) {
           loadExperiments();
         } else {
           loadCollabExperiments();
