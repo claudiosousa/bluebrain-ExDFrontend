@@ -17,7 +17,12 @@
       STATE_MACHINE: 'State Machine'
     });
 
-  angular.module('exdFrontendApp').directive('transferFunctionEditor', [
+  angular.module('exdFrontendApp')
+  .constant('DEFAULT_TF_CODE', '@nrp.Robot2Neuron()\ndef {0}(t):\n\
+    #log the first timestep (20ms), each couple of seconds\n\
+    if (t%2<0.02):\n\
+        clientLogger.info(\'Hello world at time \' + str(t))')
+  .directive('transferFunctionEditor', [
       '$log',
       'backendInterfaceService',
       'STATE',
@@ -31,6 +36,7 @@
       'SOURCE_TYPE',
       'simulationInfo',
       'hbpDialogFactory',
+      'DEFAULT_TF_CODE',
     function (
         $log,
         backendInterfaceService,
@@ -44,7 +50,8 @@
         SIMULATION_FACTORY_CLE_ERROR,
         SOURCE_TYPE,
         simulationInfo,
-        hbpDialogFactory
+        hbpDialogFactory,
+        DEFAULT_TF_CODE
     ) {
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
@@ -247,7 +254,7 @@
 
         scope.create = function () {
           var id = "transferfunction_" + addedTransferFunctionCount;
-          var code = "@nrp.Robot2Neuron()\ndef " + id + "(t):\n    print \"Hello world at time \" + str(t)";
+          var code = DEFAULT_TF_CODE.replace('{0}', id);
           var transferFunction = new ScriptObject(id, code);
           transferFunction.dirty = true;
           transferFunction.local = true;

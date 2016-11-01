@@ -63,7 +63,7 @@
     "laxbreak"      : false,    // Tolerate unsafe line breaks e.g. `return [\n] x` without semicolons.
     "laxcomma"      : false,    // Suppress warnings about comma-first coding style.
     "loopfunc"      : false,    // Allow functions to be defined within loops.
-    "multistr"      : false,    // Tolerate multi-line strings.
+    "multistr"      : true,    // Tolerate multi-line strings.
     "onecase"       : false,    // Tolerate switches with just one case.
     "proto"         : false,    // Tolerate __proto__ property. This property is deprecated.
     "regexdash"     : false,    // Tolerate unescaped last dash i.e. `[-...]`.

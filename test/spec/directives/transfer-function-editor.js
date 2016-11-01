@@ -6,7 +6,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
-    hbpDialogFactory;
+    hbpDialogFactory, DEFAULT_TF_CODE;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -68,7 +68,8 @@ describe('Directive: transferFunctionEditor', function () {
                               _SOURCE_TYPE_,
                               _pythonCodeHelper_,
                               _simulationInfo_,
-                              _hbpDialogFactory_) {
+                              _hbpDialogFactory_,
+                              _DEFAULT_TF_CODE_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -89,6 +90,7 @@ describe('Directive: transferFunctionEditor', function () {
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
     hbpDialogFactory = _hbpDialogFactory_;
+    DEFAULT_TF_CODE = _DEFAULT_TF_CODE_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
@@ -408,7 +410,7 @@ describe('Directive: transferFunctionEditor', function () {
       var tfNewName = 'transferfunction_' + n;
       var expectedTF = {
            id: tfNewName,
-           code: '@nrp.Robot2Neuron()\ndef ' + tfNewName + '(t):\n    print \"Hello world at time \" + str(t)',
+           code: DEFAULT_TF_CODE.replace('{0}', tfNewName),
            dirty: true, local: true, name: tfNewName,
            error: {}
       };
