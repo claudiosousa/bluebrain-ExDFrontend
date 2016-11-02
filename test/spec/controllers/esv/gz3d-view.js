@@ -580,6 +580,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       var promise = experimentProxyService.getExperiments();
       promise.then.mostRecentCall.args[0](experimentDetails);
 
+      scope.$digest(); // force the $watch to be evaluated in experimentDetails
       expect(simulationInfo.experimentID).toBe('experimentID');
       expect(scope.ExperimentDescription).toBe(experimentDetails.experimentID.configuration.description);
       expect(scope.ExperimentName).toBe(experimentDetails.experimentID.configuration.name);
@@ -615,6 +616,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(experimentList().experiments.mostRecentCall.args[0]).toEqual({'context_id': simulationInfo.contextID});
       experimentList().experiments.mostRecentCall.args[1](experimentDetails);
 
+      scope.$digest(); // force the $watch to be evaluated in experimentDetails
       expect(simulationInfo.experimentID).toBe('experimentID');
       expect(scope.ExperimentDescription).toBe(experimentDetails.data.experimentID.description);
       expect(scope.ExperimentName).toBe(experimentDetails.data.experimentID.name);

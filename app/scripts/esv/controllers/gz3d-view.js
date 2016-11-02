@@ -178,9 +178,11 @@
         var setExperimentDetails = function(experimentID, experimentDetails){
           $scope.ExperimentDescription = experimentDetails.description;
           $scope.ExperimentName = experimentDetails.name;
-          $scope.updateInitialCameraPose(experimentDetails.cameraPose);
-          $scope.setAnimatedRobotModel(experimentDetails.visualModel, experimentDetails.visualModelParams);
           simulationInfo.experimentID = experimentID;
+          $scope.$watch(angular.isDefined(gz3d.scene), function(){
+            $scope.updateInitialCameraPose(experimentDetails.cameraPose);
+            $scope.setAnimatedRobotModel(experimentDetails.visualModel, experimentDetails.visualModelParams);
+          });
           sceneInitialized.promise.then(function(){
             $scope.initComposerSettings();
             $scope.initBrainvisualizerData();
