@@ -13,7 +13,9 @@
         'NAVIGATION_MODES',
         'gz3d',
         'hbpIdentityUserDirectory',
-        function (NAVIGATION_MODES, gz3d, hbpIdentityUserDirectory) {
+        'simulationInfo',
+        'roslib',
+        function (NAVIGATION_MODES, gz3d, hbpIdentityUserDirectory, simulationInfo, roslib) {
           return {
 
             navigationMode: undefined,
@@ -21,6 +23,7 @@
             avatarObjectName: undefined,
             avatarNameBase: 'user_avatar',
             avatarInitialized: false,
+            userDataInitialized: false,
             avatarModelPathWithCollision: 'user_avatar_basic',
             avatarModelPathNoCollision: 'user_avatar_basic_no-collision',
             userCamera: undefined,
@@ -29,14 +32,15 @@
             userID: undefined,
             userDisplayName: undefined,
 
+            rosbridgeWebsocketUrl: undefined,
+            roslib: undefined,
+
             init: function() {
 
-              this.navigationMode = undefined;
+              this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+              this.roslib = roslib;
 
               this.userCamera = gz3d.scene.viewManager.mainUserView.camera;
-              if (!angular.isDefined(this.userCamera.parent)) {
-                gz3d.scene.scene.add(this.userCamera);
-              }
 
               // react to updates from gazebo server
               gz3d.iface.modelInfoTopic.subscribe(this.onModelInfo.bind(this));
@@ -47,16 +51,16 @@
               var that = this;
               hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
                 that.setUserData(profile);
+
+                that.removeAvatar();
+
+                // set up controls
+                var domElementForKeyBindings = document.getElementsByTagName('body')[0];
+                that.freeCameraControls = new THREE.FirstPersonControls(that.userCamera, gz3d.scene.container, domElementForKeyBindings);
+
+                // start in free camera mode
+                that.setModeFreeCamera();
               });
-
-              that.removeAvatar();
-
-              // set up controls
-              var domElementForKeyBindings = document.getElementsByTagName('body')[0];
-              this.freeCameraControls = new THREE.FirstPersonControls(this.userCamera, gz3d.scene.container, domElementForKeyBindings);
-
-              // start in free camera mode
-              this.setModeFreeCamera();
             },
 
             deinit: function() {
@@ -71,6 +75,7 @@
               this.userID = profile.id;
               this.userDisplayName = profile.displayName;
               this.avatarObjectName = this.avatarNameBase + '_' + this.userID;
+              this.userDataInitialized = true;
             },
 
             onModelInfo: function(modelMessage) {
@@ -93,7 +98,7 @@
               var avatar;
               var found = false;
               gz3d.scene.scene.traverse(function(node) {
-                if (!found && node.name && node.name === that.avatarObjectName) {
+                if (!found && node.name && node.name.indexOf(that.avatarObjectName) !== -1) {
                   avatar = node;
                   found = true;
                 }
@@ -124,16 +129,7 @@
               // avatar controls
               this.freeCameraControls.enabled = false;
               var domElementForKeyBindings = document.getElementsByTagName('body')[0];
-              this.avatarControls = new THREE.AvatarControls(gz3d.scene, this.avatarObject, this.userCamera, gz3d.scene.container, domElementForKeyBindings);
-              // set pose
-              if (angular.isDefined(this.currentPosition) && angular.isDefined(this.currentDirection)) {
-                // current position saved before
-                var lookAt = this.currentPosition.clone().add(this.currentDirection.clone().multiplyScalar(100));
-                this.avatarControls.applyPose(this.currentPosition, lookAt);
-              } else {
-                // no current position, default
-                this.avatarControls.applyPose(this.defaultPosition, this.defaultLookAt);
-              }
+              this.avatarControls = new THREE.AvatarControls(this, gz3d, this.avatarObject, this.userCamera, gz3d.scene.container, domElementForKeyBindings);
 
               switch (this.navigationMode) {
                 case NAVIGATION_MODES.HUMAN_BODY:
@@ -142,10 +138,19 @@
                       break;
               }
 
-              // add camera to avatar object
-              this.userCamera.parent = this.avatarObject;
+              // attach camera to avatar object
+              this.avatarObject.add(this.userCamera);
               this.userCamera.position.set(0, this.avatarControls.avatarRadius, this.avatarControls.avatarEyeHeight);
+              this.userCamera.quaternion.set(0, 0, 0, 1);
               this.userCamera.updateMatrixWorld();
+
+              // set pose
+              if (angular.isDefined(this.currentPosition) && angular.isDefined(this.currentDirection) && angular.isDefined(this.currentLookAt)) {
+                this.avatarControls.applyPose(this.currentPosition, this.currentLookAt);
+              } else {
+                // no current position, default
+                this.avatarControls.applyPose(this.defaultPosition, this.defaultLookAt);
+              }
 
               // set and activate controls
               gz3d.scene.controls = this.avatarControls;
@@ -175,6 +180,13 @@
               this.userCamera.updateMatrixWorld();
               this.currentPosition = this.userCamera.getWorldPosition();
               this.currentDirection = this.userCamera.getWorldDirection();
+              var raycaster = new THREE.Raycaster(this.currentPosition, this.currentDirection);
+              var intersections = raycaster.intersectObjects(gz3d.scene.scene.children, true);
+              if (intersections.length > 0) {
+                this.currentLookAt = new THREE.Vector3().copy(intersections[0].point);
+              } else {
+                this.currentLookAt = this.currentPosition.clone().add(this.currentDirection.clone().multiplyScalar(100));
+              }
             },
 
             setModeHumanBody: function() {
@@ -182,13 +194,14 @@
                 return;
               }
 
+              this.saveCurrentPose();
+              // detach camera
+              gz3d.scene.scene.add(this.userCamera);
+
               this.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
 
               this.freeCameraControls.enabled = false;
               gz3d.scene.controls = undefined;
-
-              this.saveCurrentPose();
-              this.userCamera.parent = gz3d.scene.scene;
 
               this.removeAvatar();
               var avatarCollision = true;
@@ -206,7 +219,9 @@
               this.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
 
               this.saveCurrentPose();
-              this.userCamera.parent = gz3d.scene.scene;
+
+              // detach camera
+              gz3d.scene.scene.add(this.userCamera);
 
               this.removeAvatar();
 

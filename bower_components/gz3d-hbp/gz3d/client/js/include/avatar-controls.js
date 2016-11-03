@@ -5,11 +5,13 @@
 /* global THREE: true */
 /* global console: false */
 
-THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBindings, domElementKeyboardBindings)
+THREE.AvatarControls = function(userNavigationService, gz3d, avatar, camera, domElementPointerBindings, domElementKeyboardBindings)
 {
   'use strict';
 
-  this.gz3dScene = gz3dScene;
+  this.userNavigationService = userNavigationService;
+
+  this.gz3d = gz3d;
   this.avatar = avatar;
   this.camera = camera;
   this.domElementPointerBindings = angular.isDefined(domElementPointerBindings) ? domElementPointerBindings : document;
@@ -22,7 +24,6 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
   // hardcoded values, should be requestable from model at some point
   this.avatarRadius = 0.15;
   this.avatarEyeHeight = 1.6;
-  this.avatarWaistHeight = 0.8;
 
   // Set to false to disable this control
   this.enabled = false;
@@ -31,11 +32,12 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
 
   this.lockVerticalMovement = false;
 
-  this.movementSpeed = 0.05;
+  this.movementSpeed = 2.0;
   this.lookSpeed = 0.01;
   this.touchSensitivity = 0.01;
 
   this.lookVertical = true;
+  this.thirdPerson = false;
 
   this.azimuth = 0.0;
   this.zenith = 0.0;
@@ -69,6 +71,25 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
   this.userStartPosition = new THREE.Vector3();
   this.cameraLookDirection = new THREE.Vector3();
 
+  // init ROS velocity topic for avatar movement
+  this.rosConnection = this.userNavigationService.roslib.getOrCreateConnectionTo(this.userNavigationService.rosbridgeWebsocketUrl);
+
+  this.linearVelocityTopicName = '/' + this.avatar.name + '/user_avatar_basic/body/cmd_vel';
+  this.linearVelocityTopic = this.userNavigationService.roslib.createTopic(
+    this.rosConnection,
+    this.linearVelocityTopicName,
+    'geometry_msgs/Vector3'
+  );
+  this.linearVelocity = new THREE.Vector3();
+
+  this.avatarRotationTopicName = '/' + this.avatar.name + '/cmd_rot';
+  this.avatarRotationTopic = this.userNavigationService.roslib.createTopic(
+    this.rosConnection,
+    this.avatarRotationTopicName,
+    'geometry_msgs/Quaternion'
+  );
+  this.avatarRotation = new THREE.Quaternion();
+
   this.onMouseDown = function (event) {
     // HBP-NRP: The next three lines are commented since this leads to problems in chrome with respect
     // to AngularJS, also see: [NRRPLT-1992]
@@ -85,7 +106,7 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
 
     switch (event.button) {
       case 0:
-        //this.updateSphericalAngles();
+        //this.updateSphericalAnglesFromForwardVector();
         this.mousePosOnKeyDown.set(event.pageX, event.pageY);
         this.mousePosCurrent.copy(this.mousePosOnKeyDown);
         this.azimuthOnMouseDown = this.azimuth;
@@ -110,8 +131,8 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
     switch (event.button) {
       case 0:
         this.mouseDragOn = false;
-        this.azimuthOnMouseDown = this.azimuth;
-        this.zenithOnMouseDown = this.zenith;
+        //this.azimuthOnMouseDown = this.azimuth;
+        //this.zenithOnMouseDown = this.zenith;
         break;
     }
   };
@@ -135,7 +156,7 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
     switch (event.touches.length) {
       case 1:
         // look around
-        this.updateSphericalAngles();
+        this.updateSphericalAnglesFromForwardVector();
         this.mousePosOnKeyDown.set(event.touches[0].pageX, event.touches[0].pageY);
         this.mousePosCurrent.copy(this.mousePosOnKeyDown);
         this.azimuthOnMouseDown = this.azimuth;
@@ -272,6 +293,17 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
       case 70: /*F*/ this.moveDown = false; break;
 
       case 81: /*Q*/ this.freeze = !this.freeze; break;// TODO(Luc): handles this from gz3d-view.js with some visual indication that the scene is frozen
+
+      case 84: /*T*/ {
+        this.thirdPerson = !this.thirdPerson;
+        if (this.thirdPerson) {
+          this.camera.position.set(0, -5, this.avatarEyeHeight + 1);
+        } else {
+          this.camera.position.set(0, this.avatarRadius, this.avatarEyeHeight);
+        }
+        this.camera.updateMatrixWorld();
+        break;
+      }
     }
   };
 
@@ -317,7 +349,7 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
     // update orientation
     var camWorldPosition = this.camera.getWorldPosition();
     var vecForward = new THREE.Vector3().add(lookAt).sub(camWorldPosition).normalize();
-    this.updateSphericalAngles(vecForward);
+    this.updateSphericalAnglesFromForwardVector(vecForward);
   };
 
   /**
@@ -341,7 +373,7 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
     // check for intersection below position
     var upVector = this.camera.up.clone();
     var raycaster = new THREE.Raycaster(position, upVector.negate());
-    var intersects = raycaster.intersectObjects(gz3dScene.scene.children, true);
+    var intersects = raycaster.intersectObjects(gz3d.scene.scene.children, true);
     for (var i=0; i < intersects.length; i=i+1) {
       // check that we hit some actual geometry and it is not our own avatar
       if (intersects[i].object instanceof THREE.Mesh && !isObjectPartOfAvatar(intersects[i].object)) {
@@ -351,7 +383,7 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
 
     // if no hits below, check if avatar can be placed above
     raycaster.set(position, upVector.negate());
-    intersects = raycaster.intersectObjects(gz3dScene.scene.children, true);
+    intersects = raycaster.intersectObjects(gz3d.scene.scene.children, true);
     for (var j=0; j < intersects.length; j=j+1) {
       if (intersects[i].object instanceof THREE.Mesh && !isObjectPartOfAvatar(intersects[i].object)) {
         return intersects[i].point;
@@ -362,25 +394,164 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
   };
 
   /**
-   * Update avatar quaternion from current azimuth and zenith
-   */
-  this.updateAvatarOrientation = function() {
-    this.avatar.quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), this.azimuth);
-    this.avatar.updateMatrixWorld();
-    this.camera.quaternion.setFromAxisAngle(new THREE.Vector3(-1, 0, 0), this.zenith);
-    this.camera.updateMatrixWorld();
-  };
-
-  /**
    * update spherical angles by a world forward vector
    * @param vecForward
      */
-  this.updateSphericalAngles = function(vecForward) {
+  this.updateSphericalAnglesFromForwardVector = function(vecForward) {
     vecForward.normalize();
 
-    this.azimuthOnMouseDown = this.azimuth = Math.atan2(vecForward.y, vecForward.x) - 0.5*Math.PI;
-    this.zenithOnMouseDown = this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, /*1.5*Math.PI*/Math.acos(vecForward.z) + Math.PI));
-    this.updateAvatarOrientation();
+    this.azimuth = Math.atan2(vecForward.y, vecForward.x) - 0.5 * Math.PI;
+    this.azimuthOnMouseDown = this.azimuth;
+
+    this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, Math.acos(vecForward.z) + Math.PI));
+    this.zenithOnMouseDown = this.zenith;
+  };
+
+  this.updateSphericalAnglesFromUserInput = function(timeDelta) {
+    /* --- rotation by means of a manipulator --- */
+    var ROTATION_SPEED_FACTOR = 0.1;
+    if (this.rotateUp || this.rotateDown) {
+      var sign = this.rotateUp ? 1.0 : -1.0;
+      this.fpRotate(0.0, sign * ROTATION_SPEED_FACTOR * timeDelta);
+    }
+    if (this.rotateRight) {
+      this.fpRotate(ROTATION_SPEED_FACTOR * timeDelta, 0.0);
+    }
+    if (this.rotateLeft) {
+      this.fpRotate(-ROTATION_SPEED_FACTOR * timeDelta, 0.0);
+    }
+
+    /* --- rotation by means of a mouse drag --- */
+    if (this.mouseDragOn) {
+      var actualLookSpeed = timeDelta * this.lookSpeed;
+      if (!this.mouseBindingsEnabled) {
+        actualLookSpeed = 0;
+      }
+
+      var mouseDelta = new THREE.Vector2().subVectors(this.mousePosCurrent, this.mousePosOnKeyDown);
+
+      this.azimuth = this.azimuthOnMouseDown - mouseDelta.x * actualLookSpeed;
+
+      // horizontally rotate the whole user object instead of only camera/"head" for now
+
+      if (this.lookVertical) {
+        this.zenith = this.zenithOnMouseDown + mouseDelta.y * actualLookSpeed;
+        this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith));
+      } else {
+        this.zenith = Math.PI / 2;
+      }
+    }
+  };
+
+  this.publishPose = function()
+  {
+    var matrix = this.avatar.matrixWorld;
+    var translation = new THREE.Vector3();
+    var quaternion = new THREE.Quaternion();
+    var scale = new THREE.Vector3();
+    matrix.decompose(translation, quaternion, scale);
+
+    var objectMsg =
+    {
+      name : this.avatar.name,
+      id : this.avatar.userData,
+      createEntity : 0,
+      position :
+      {
+        x: translation.x,
+        y: translation.y,
+        z: translation.z
+      },
+      orientation :
+      {
+        w: quaternion.w,
+        x: quaternion.x,
+        y: quaternion.y,
+        z: quaternion.z
+      }
+    };
+
+    this.gz3d.iface.modelModifyTopic.publish(objectMsg);
+  };
+
+  /**
+   * Update avatar quaternion from current azimuth
+   */
+  this.updateAvatarRotation = function() {
+    /*if (this.azimuth > Math.PI) {
+      this.azimuth -= 2 * Math.PI;
+    } else if (this.azimuth < -Math.PI) {
+      this.azimuth += 2 * Math.PI;
+    }*/
+
+    this.avatarRotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), this.azimuth);
+    this.avatarRotation.normalize();
+  };
+
+  /**
+   * Update avatar quaternion from current azimuth
+   */
+  this.publishAvatarRotation = function() {
+    var rotationMsg = new ROSLIB.Message({
+      x: this.avatarRotation.x,
+      y: this.avatarRotation.y,
+      z: this.avatarRotation.z,
+      w: this.avatarRotation.w
+    });
+
+    this.avatarRotationTopic.publish(rotationMsg);
+  };
+
+  /**
+   * Update camera quaternion from current azimuth and zenith
+   */
+  this.updateCameraRotation = function() {
+    var rotation = new THREE.Quaternion();
+    rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(-1, 0, 0), this.zenith));
+    this.camera.quaternion.copy(rotation);
+    this.camera.updateMatrixWorld();
+  };
+
+  this.updateLinearVelocity = function(delta) {
+    var speed = 0;
+    speed = delta * this.movementSpeed;
+    if (this.shiftHold) {
+      speed = speed * this.speedUpFactor;
+    }
+
+    this.linearVelocity.set(0, 0, 0);
+    if (this.moveForward) {
+      this.linearVelocity.y = 1;
+    }
+    if (this.moveBackward) {
+      this.linearVelocity.y = -1;
+    }
+    if (this.moveLeft) {
+      this.linearVelocity.x = -1;
+    }
+    if (this.moveRight) {
+      this.linearVelocity.x = 1;
+    }
+    if (!(this.lockVerticalMovement)) {
+      if (this.moveUp) {
+        this.linearVelocity.z = 1;
+      }
+      if (this.moveDown) {
+        this.linearVelocity.z = -1;
+      }
+    }
+    this.linearVelocity.normalize().multiplyScalar(speed);
+    this.linearVelocity.applyQuaternion(this.avatar.quaternion);
+  };
+
+  this.publishLinearVelocity = function() {
+    var velocityMsg = new ROSLIB.Message({
+      x: this.linearVelocity.x,
+      y: this.linearVelocity.y,
+      z: this.linearVelocity.z
+    });
+
+    this.linearVelocityTopic.publish(velocityMsg);
   };
 
   /**
@@ -392,97 +563,33 @@ THREE.AvatarControls = function(gz3dScene, avatar, camera, domElementPointerBind
       return;
     }
 
-    if (this.applyPoseDuringUpdate) {
-      this.setPose(this.applyPosePosition, this.applyPoseLookAt);
-      this.applyPoseDuringUpdate = false;
-    }
-
     if (delta === undefined) {
       delta = 1.0;
     }
 
-    var speed = 0.0;
+    if (this.applyPoseDuringUpdate) {
+      this.setPose(this.applyPosePosition, this.applyPoseLookAt);
+      this.publishPose();
 
-    if (!this.freeze) {
-      /* --- translation --- */
-      speed = delta * this.movementSpeed;
-      if (this.shiftHold) {
-        speed = speed * this.speedUpFactor;
-      }
+      //gz3d.scene.emitter.emit('entityChanged', this.avatar);
+      var vecForward = new THREE.Vector3().subVectors(this.applyPoseLookAt, this.applyPosePosition).normalize();
+      this.updateSphericalAnglesFromForwardVector(vecForward);
 
-      if (this.moveForward) {
-        this.avatar.translateY(speed);
-      }
-      if (this.moveBackward) {
-        this.avatar.translateY(-speed);
-      }
-      if (this.moveLeft) {
-        this.avatar.translateX(-speed);
-      }
-      if (this.moveRight) {
-        this.avatar.translateX(speed);
-      }
-      this.avatar.updateMatrixWorld();
-      if (this.lockVerticalMovement) {
-        // determine position on ground
-        var projectionOrigin = this.avatar.getWorldPosition().clone().add(this.camera.up.clone().multiplyScalar(this.avatarWaistHeight));
-        var pos = this.projectOntoGround(projectionOrigin);
-        if (angular.isDefined(pos)) {
-          var diff = new THREE.Vector3().subVectors(pos, this.avatar.getWorldPosition());
-          if (diff.length() > 0.01) {
-            this.avatar.position.copy(pos);
-          }
-        }
-      } else {
-        if (this.moveUp) {
-          this.avatar.translateZ(speed);
-        }
-        if (this.moveDown) {
-          this.avatar.translateZ(-speed);
-        }
-      }
-
-
-      /* --- rotation by means of a manipulator --- */
-      var ROTATION_SPEED_FACTOR = 0.1;
-      if (this.rotateUp || this.rotateDown) {
-        var sign = this.rotateUp ? 1.0 : -1.0;
-        this.fpRotate(0.0, sign * ROTATION_SPEED_FACTOR * speed);
-      }
-      if (this.rotateRight) {
-        this.fpRotate(ROTATION_SPEED_FACTOR * speed, 0.0);
-      }
-      if (this.rotateLeft) {
-        this.fpRotate(-ROTATION_SPEED_FACTOR * speed, 0.0);
-      }
-
-      /* --- rotation by means of a mouse drag --- */
-      if (this.mouseDragOn) {
-        var actualLookSpeed = delta * this.lookSpeed;
-        if (!this.mouseBindingsEnabled) {
-          actualLookSpeed = 0;
-        }
-
-        var mouseDelta = new THREE.Vector2();
-        mouseDelta.x = this.mousePosCurrent.x - this.mousePosOnKeyDown.x;
-        mouseDelta.y = this.mousePosCurrent.y - this.mousePosOnKeyDown.y;
-
-        this.azimuth = this.azimuthOnMouseDown - mouseDelta.x * actualLookSpeed;
-        this.azimuth = this.azimuth % (2 * Math.PI);
-
-        // horizontally rotate the whole user object instead of only camera/"head" for now
-
-        if (this.lookVertical) {
-          this.zenith = this.zenithOnMouseDown + mouseDelta.y * actualLookSpeed;
-          this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith));
-        } else {
-          this.zenith = Math.PI / 2;
-        }
-      }
-
-      this.updateAvatarOrientation();
-      this.gz3dScene.emitter.emit('entityChanged', this.avatar);
+      this.applyPoseDuringUpdate = false;
     }
+    else {
+      if (!this.freeze) {
+        this.updateLinearVelocity(delta);
+        this.publishLinearVelocity();
+
+        this.updateSphericalAnglesFromUserInput(delta);
+      }
+    }
+
+    this.updateAvatarRotation();
+    this.publishAvatarRotation();
+
+    this.updateCameraRotation();
   };
 
   this.onMouseDownManipulator = function(action) {

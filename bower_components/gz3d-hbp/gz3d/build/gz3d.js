@@ -1309,9 +1309,7 @@ var modelList =
       {modelPath:'vr_lamp', modelTitle:'Stand Lamp'},
       {modelPath:'vr_screen', modelTitle:'Virtual Screen'},
       {modelPath:'viz_poster', modelTitle:'Poster 1'},
-      {modelPath:'viz_poster_2', modelTitle:'Poster 2'},
-      {modelPath:'user_avatar_basic', modelTitle:'user avatar (collision)'},
-      {modelPath:'user_avatar_basic_no-collision', modelTitle:'user avatar (no collision)'}
+      {modelPath:'viz_poster_2', modelTitle:'Poster 2'}
     ]}
   ];
 
@@ -10303,37 +10301,62 @@ GZ3D.SdfParser.prototype.loadSDF = function(modelName)
 GZ3D.SdfParser.prototype.spawnModelFromSDF = function(sdfObj)
 {
   // create the model
-  var modelObj = new THREE.Object3D();
-  modelObj.name = sdfObj.model['@name'];
-  //TODO: is that needed
-  //modelObj.userData = sdfObj.model.@id;
-
-  var pose;
-  var i, j, k;
-  var visualObj;
-  var linkObj, linkPose;
-
-  if (sdfObj.model.pose)
-  {
-    pose = this.parsePose(sdfObj.model.pose);
-    this.scene.setPose(modelObj, pose.position, pose.orientation);
-  }
-
-  //convert link object to link array
-  if (!(sdfObj.model.link instanceof Array))
-  {
-    sdfObj.model.link = [sdfObj.model.link];
-  }
-
-  for (i = 0; i < sdfObj.model.link.length; ++i)
-  {
-    linkObj = this.createLink(sdfObj.model.link[i]);
-    modelObj.add(linkObj);
-  }
+  var modelObj = this.createModel(sdfObj.model);
 
   //  this.scene.add(modelObj);
   return modelObj;
 
+};
+
+GZ3D.SdfParser.prototype.createModel = function(model)
+{
+  // create the model
+  var modelObj = new THREE.Object3D();
+  modelObj.name = model.name;
+  //TODO: is that needed
+  //modelObj.userData = sdfObj.model.@id;
+
+  var pose;
+
+  if (model.pose)
+  {
+    pose = this.parsePose(model.pose);
+    this.scene.setPose(modelObj, pose.position, pose.orientation);
+  }
+
+  // go through nested models
+  if (model.model)
+  {
+    //convert link object to link array
+    if (!(model.model instanceof Array))
+    {
+      model.model = [model.model];
+    }
+
+    for (var i = 0; i < model.model.length; ++i)
+    {
+      var newModelObj = this.createModel(model.model[i]);
+      modelObj.add(newModelObj);
+    }
+  }
+
+  // go through links
+  if (model.link)
+  {
+    //convert link object to link array
+    if (!(model.link instanceof Array))
+    {
+      model.link = [model.link];
+    }
+
+    for (var j = 0; j < model.link.length; ++j)
+    {
+      var newLinkObj = this.createLink(model.link[j]);
+      modelObj.add(newLinkObj);
+    }
+  }
+
+  return modelObj;
 };
 
 /**
@@ -10390,6 +10413,22 @@ GZ3D.SdfParser.prototype.createLink = function(link)
         }
       }
 
+    }
+  }
+
+  // go through sub-links
+  if (link.link)
+  {
+    //convert link object to link array
+    if (!(link.link instanceof Array))
+    {
+      link.link = [link.link];
+    }
+
+    for (var k = 0; k < link.link.length; ++k)
+    {
+      var newLinkObj = this.createLink(link.link[k]);
+      linkObj.add(newLinkObj);
     }
   }
 
