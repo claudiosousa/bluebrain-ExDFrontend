@@ -29,19 +29,20 @@
       STOP_BUTTON: 2,
       RESET_BUTTON: 3,
       TIME_DISPLAY: 4,
-      LIGHT_SLIDER: 5,
-      CAMERA_TRANSLATION: 6,
-      CAMERA_ROTATION: 7,
-      SPIKETRAIN: 8,
-      OWNER_DISPLAY: 9,
-      EXIT_BUTTON: 10,
-      ROBOT_VIEW: 11,
-      CODE_EDITOR: 12,
-      JOINT_PLOT: 13,
-      ENVIRONMENT_SETTINGS: 14,
-      BRAIN_VISUALIZER: 15,
-      USER_NAVIGATION: 16,
-      LOG_CONSOLE: 17
+      INCREASE_LIGHT: 5,
+      DECREASE_LIGHT: 6,
+      CAMERA_TRANSLATION: 7,
+      CAMERA_ROTATION: 8,
+      SPIKETRAIN: 9,
+      OWNER_DISPLAY: 10,
+      EXIT_BUTTON: 11,
+      ROBOT_VIEW: 12,
+      CODE_EDITOR: 13,
+      JOINT_PLOT: 14,
+      ENVIRONMENT_SETTINGS: 15,
+      BRAIN_VISUALIZER: 16,
+      USER_NAVIGATION: 17,
+      LOG_CONSOLE: 18
     })
     .constant('INITIAL_LIGHT_DIFFUSE', 1)
     .constant('MINIMAL_LIGHT_DEFUSE', 0.2);
@@ -94,16 +95,14 @@
               if (result.locked && result.lockInfo.user.id === $scope.viewState.userID) {
                 // don't lock edit button if the current user is the owner of the lock.
                 setEditDisabled(false);
-              }
-              else if (!result.locked && $scope.userEditingID === $scope.viewState.userID) {
+              } else if (!result.locked && $scope.userEditingID === $scope.viewState.userID) {
                 if ($scope.showEditorPanel) {
                   // we are the current user editing, but our lock has been released...
                   // (this can happen if two users want to edit at the same time)
                   $window.alert("You no longer have the lock to edit anymore. Please try again.");
                   $scope.toggleEditors();
                 }
-              }
-              else {
+              } else {
                 if (result.locked) {
                   setLockDateAndUser(result.lockInfo);
                 }
@@ -200,8 +199,7 @@
                 setExperimentDetails(experimentID, data.data[experimentID]);
               }
             );
-          }
-          else {
+          } else {
             experimentProxyService.getExperiments().then(function (data){
               angular.forEach(data, function (experimentTemplate, experimentID) {
                 if (experimentTemplate.configuration.experimentConfiguration === $scope.experimentConfiguration) {
@@ -214,7 +212,6 @@
             experimentsFactory.getOwnerDisplayName(data.owner).then(function (owner) {
               $scope.owner = owner;
             });
-
           } else {
             $scope.owner = bbpConfig.get('localmode.ownerID');
             $scope.viewState.isOwner = true;
@@ -266,8 +263,7 @@
                 // so we don't have to close the websocket, just the splash screen.
                 splash.close();
                 $scope.splashScreen = undefined;
-              }
-              else {
+              } else {
                 // the modal is non blocking (i.e. w/ button) ->
                 // we are closing the simulation thus we have to
                 // cleanly close ros websocket and stop window
@@ -359,7 +355,6 @@
             gz3d.iface.setAssetProgressCallback(function (data) {
               assetLoadingSplash.setProgress(data);
             });
-
           }
         });
 
@@ -378,7 +373,10 @@
         };
 
         // Lights management
-        $scope.modifyLight = function (direction) {
+        $scope.modifyLightClickHandler = function (direction, button) {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI[button]);
+          }
           $scope.lightDiffuse += MINIMAL_LIGHT_DEFUSE * direction;
           if ($scope.lightDiffuse < MINIMAL_LIGHT_DEFUSE) {
             $scope.lightDiffuse = MINIMAL_LIGHT_DEFUSE;
@@ -391,10 +389,12 @@
         };
 
         // play/pause/stop button handler
-        $scope.simControlButtonHandler = function (newState) {
+        $scope.simControlButtonHandler = function (newState, button) {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI[button]);
+          }
           $scope.updateSimulation(newState);
           $scope.setEditMode(EDIT_MODE.VIEW);
-
           if (objectInspectorService !== null) {
             objectInspectorService.removeEventListeners();
           }
@@ -402,18 +402,18 @@
 
         //When resetting do something
         $scope.resetListenerUnbindHandler = $scope.$on('RESET', function (event, resetType) {
-
           if(resetType === RESET_TYPE.RESET_FULL || resetType === RESET_TYPE.RESET_WORLD) {
             $scope.resetGUI();
           }
         });
 
         $scope.resetButtonClickHandler = function () {
-
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.RESET_BUTTON);
+          }
           $scope.request = {
             resetType: RESET_TYPE.NO_RESET
           };
-
           hbpDialogFactory.confirm({
             'title': 'Reset Menu',
             'templateUrl': 'views/esv/reset-checklist-template.html',
@@ -427,7 +427,6 @@
         };
 
         $scope.__resetButtonClickHandler = function () {
-
           var resetType = $scope.request.resetType;
           if (resetType === RESET_TYPE.NO_RESET) { return; }
 
@@ -437,9 +436,7 @@
             if (resetType === RESET_TYPE.RESET_CAMERA_VIEW) {
               gz3d.scene.resetView();
             }
-          }
-          else { // Backend-bound reset
-
+          } else { // Backend-bound reset
             if ($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
               $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
@@ -450,8 +447,7 @@
                 if (resetType === RESET_TYPE.RESET_WORLD) {
                   resetWhat = 'Environment';
                   downloadWhat = 'World SDF ';
-                }
-                else if (resetType === RESET_TYPE.RESET_BRAIN) {
+                } else if (resetType === RESET_TYPE.RESET_BRAIN) {
                   resetWhat = 'Brain';
                   downloadWhat = 'brain configuration file ';
                 }
@@ -488,8 +484,7 @@
                   }
                 }
               );
-            }
-            else {
+            } else {
               //other kinds of reset
               backendInterfaceService.reset(
                 $scope.request,
@@ -512,6 +507,12 @@
                 }
               );
             }
+          }
+        };
+
+        $scope.timeDisplayClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            $scope.help($scope.UI.TIME_DISPLAY);
           }
         };
 
@@ -552,14 +553,11 @@
         // i.e., only visuals bearing the name screen_glass or COLORABLE_VISUAL can be modified by this function.
         $scope.setMaterialOnEntity = function (material) {
           var selectedEntity = gz3d.scene.selectedEntity;
-
           if (!selectedEntity) {
             $log.error('Could not change color since there was no object selected');
             return;
           }
-
           colorableObjectService.setEntityMaterial(simulationInfo, selectedEntity, material);
-
           // Hide context menu after a color was assigned
           contextMenuState.toggleContextMenu(false);
         };
@@ -568,26 +566,20 @@
         var colorableMenuItemGroup = {
           id: 'changeColor',
           visible: false,
-          items: [
-            {
-              html: '<materials-chooser on-select="setMaterialOnEntity(material)"/>',
-              callback: function (event) {
-                event.stopPropagation();
-              },
-              visible: false
-            }
-          ],
-
+          items: [{
+            html: '<materials-chooser on-select="setMaterialOnEntity(material)"/>',
+            callback: function (event) {
+              event.stopPropagation();
+            },
+            visible: false
+          }],
           hide: function () {
             this.visible = this.items[0].visible = false;
           },
-
           show: function (model) {
             var isInViewMode = (gz3d.scene.manipulationMode === EDIT_MODE.VIEW);
-
             var isColorableEntity = colorableObjectService.isColorableEntity(model);
             var show = isInViewMode && isColorableEntity;
-
             return (this.visible = this.items[0].visible = show);
           }
         };
@@ -631,7 +623,10 @@
 
         // This should be integrated to the tutorial story when
         // it will be implemented !
-        $scope.showKeyboardControlInfo = function () {
+        $scope.cameraTranslationButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.CAMERA_TRANSLATION);
+          }
           if (!hasNavigationAlreadyBeenClicked) {
             hasNavigationAlreadyBeenClicked = true;
             $scope.showKeyboardControlInfoDiv = true;
@@ -657,7 +652,6 @@
           if (pose !== null && angular.isDefined(gz3d.scene)) {
             gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
           }
-
           userNavigationService.setDefaultPose.apply(userNavigationService, pose);
         };
 
@@ -668,9 +662,18 @@
           }
         };
 
+        $scope.cameraRotationButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.CAMERA_ROTATION);
+          }
+        };
+
         // Spiketrain
         $scope.showSpikeTrain = false;
-        $scope.toggleSpikeTrain = function () {
+        $scope.spikeTrainButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.SPIKE_TRAIN);
+          }
           $scope.showSpikeTrain = !$scope.showSpikeTrain;
           nrpAnalytics.eventTrack('Toggle-spike-train', {
             category: 'Simulation-GUI',
@@ -680,7 +683,10 @@
 
         // JointPlot
         $scope.showJointPlot = false;
-        $scope.toggleJointPlot = function () {
+        $scope.jointPlotButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.JOINT_PLOT);
+          }
           $scope.showJointPlot = !$scope.showJointPlot;
           nrpAnalytics.eventTrack('Toggle-joint-plot', {
             category: 'Simulation-GUI',
@@ -689,7 +695,10 @@
         };
 
         // robot view
-        $scope.toggleRobotView = function () {
+        $scope.robotViewButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.ROBOT_VIEW);
+          }
           $scope.showRobotView = !$scope.showRobotView;
           nrpAnalytics.eventTrack('Toggle-robot-view', {
             category: 'Simulation-GUI',
@@ -704,14 +713,11 @@
         };
 
         // Init composer settings
-
         $scope.initComposerSettings = function ()
         {
           $scope.loadingEnvironmentSettingsPanel = true;
-
           collab3DSettingsService.loadSettings()
-          .finally(function ()
-          {
+          .finally(function () {
             $scope.loadingEnvironmentSettingsPanel = false;
           });
         };
@@ -720,7 +726,10 @@
         $scope.NAVIGATION_MODES = NAVIGATION_MODES;
         $scope.showNavigationModeMenu = false;
 
-        $scope.toggleNavigationModeMenu = function () {
+        $scope.navigationModeMenuClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.USER_NAVIGATION);
+          }
           $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
         };
 
@@ -759,7 +768,6 @@
         $scope.$on("$destroy", function () {
           // unbind resetListener callback
           $scope.resetListenerUnbindHandler();
-
           nrpAnalytics.durationEventTrack('Simulate', {
             category: 'Simulation'
           });
@@ -784,7 +792,6 @@
             }
             delete $scope.assetLoadingSplashScreen;
           }
-
           closeSimulationConnections();
           gz3d.deInitialize();
         });
@@ -807,21 +814,17 @@
         }
 
         $scope.onSimulationDone = function () {
-
           closeSimulationConnections();
-
           // unregister the message callback
           stateService.removeMessageCallback(messageCallback);
           stateService.removeStateCallback(stateCallback);
-
         };
 
         $scope.help = function (uiElement) {
           if ($scope.currentSelectedUIElement === uiElement) {
             $scope.helpDescription = "";
             $scope.currentSelectedUIElement = UI.UNDEFINED;
-          }
-          else {
+          } else {
             $scope.helpDescription = $scope.helpText[uiElement];
             $scope.currentSelectedUIElement = uiElement;
             nrpAnalytics.eventTrack('Help', {
@@ -853,8 +856,7 @@
         $scope.toggleEditors = function () {
           if (!$stateParams.ctx) {
             showEditPanel();
-          }
-          else {
+          } else {
             // only use locks if we are in a collab i.e. ctx is set
             if (!$scope.showEditorPanel) {
               $scope.loadingEditPanel = true;
@@ -862,12 +864,10 @@
               lockService.tryAddLock()
                 .then(function (result) {
                   if (!result.success && result.lock && result.lock.lockInfo.user.id !== $scope.viewState.userID) {
-
                     setLockDateAndUser(result.lock.lockInfo);
                     $window.alert("Sorry you cannot edit at this time. Only one user can edit at a time and " + $scope.userEditing + " started editing " + $scope.timeEditStarted + ". Please try again later.");
                     setEditDisabled(true);
-                  }
-                  else {
+                  } else {
                     $scope.userEditingID = $scope.viewState.userID;
                     showEditPanel();
                   }
@@ -878,8 +878,7 @@
                 .finally(function () {
                   $scope.loadingEditPanel = false;
                 });
-            }
-            else {
+            } else {
               showEditPanel();
               removeEditLock();
             }
@@ -894,14 +893,12 @@
           });
         }
 
-        $scope.editClick = function () {
+        $scope.codeEditorButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.CODE_EDITOR);
-          }
-          else if ($scope.editIsDisabled || $scope.loadingEditPanel) {
+          } else if ($scope.editIsDisabled || $scope.loadingEditPanel) {
             return;
-          }
-          else {
+          } else {
             return $scope.toggleEditors();
           }
         };
@@ -916,31 +913,24 @@
         };
 
         // Brain visualizer
-
         $scope.brainvisualizerIsDisabled = true;
 
-      // Init brainvisualizer data
-
+        // Init brainvisualizer data
         $scope.initBrainvisualizerData = function ()
         {
           var brainVisualizationDataExists = simulationConfigService.doesConfigFileExist('brainvisualizer');
           brainVisualizationDataExists.then(function (exists)
           {
-            if (exists)
-            {
+            if (exists) {
               $scope.brainvisualizerIsDisabled = false;
               $scope.loadingBrainvisualizerPanel = true;
-
               simulationConfigService.loadConfigFile('brainvisualizer')
-                .then(function (file)
-                {
+                .then(function (file) {
                   $scope.loadingBrainvisualizerPanel = false;
-
                   $scope.brainVisualizerData = JSON.parse(file);
                   $scope.brainvisualizerIsDisabled = ($scope.brainVisualizerData === undefined);
                 })
-                .catch(function ()
-                {
+                .catch(function () {
                   $scope.loadingBrainvisualizerPanel = false;
                   $scope.brainvisualizerIsDisabled = true;
                 });
@@ -957,21 +947,22 @@
           });
         };
 
-        $scope.brainvisualizerClick = function () {
+        $scope.brainVisualizerButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.BRAIN_VISUALIZER);
-          }
-          else if ($scope.brainvisualizerIsDisabled || $scope.loadingBrainvisualizerPanel) {
+          } else if ($scope.brainvisualizerIsDisabled || $scope.loadingBrainvisualizerPanel) {
             return;
-          }
-          else {
+          } else {
             return $scope.toggleBrainvisualizer();
           }
         };
 
         // log console
         $scope.showLogConsole = false;
-        $scope.toggleLogConsole = function () {
+        $scope.logConsoleButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.LOG_CONSOLE);
+          }
           $scope.showLogConsole = !$scope.showLogConsole;
           nrpAnalytics.eventTrack('Toggle-log-console', {
             category: 'Simulation-GUI',
@@ -979,38 +970,35 @@
           });
         };
 
-
-        $scope.logConsoleClick = function () {
+        // Owner information
+        $scope.ownerInformationClickHandler = function () {
           if ($scope.helpModeActivated) {
-            return $scope.help($scope.UI.LOG_CONSOLE);
-          }
-          else {
-            return $scope.toggleLogConsole();
+            return $scope.help($scope.UI.OWNER_DISPLAY);
           }
         };
-
 
         // Environment settings panel
-
         $scope.showEnvironmentSettingsPanel = false;
-        $scope.toggleEnvironmentSettings = function () {
-          $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
-          nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
-            category: 'Simulation-GUI',
-            value: $scope.showEnvironmentSettingsPanel
-          });
-        };
 
-        $scope.environmentSettingsClick = function () {
+        $scope.environmentSettingsClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.ENVIRONMENT_SETTINGS);
-          }
-          else if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel) {
+          } else if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel) {
             return;
+          } else {
+            $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
+            nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
+              category: 'Simulation-GUI',
+              value: $scope.showEnvironmentSettingsPanel
+            });
           }
-          else {
-            return $scope.toggleEnvironmentSettings();
+        };
+
+        $scope.exitButtonClickHandler = function () {
+          if ($scope.helpModeActivated) {
+            return $scope.help($scope.UI.EXIT_BUTTON);
           }
+          $scope.exit();
         };
 
       }]);

@@ -522,9 +522,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.showEditorPanel).toBe(false);
     });
 
-    it('should toggle showEditorPanel visibility on editClick()', function () {
+    it('should toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function () {
       scope.showEditorPanel = true;
-      scope.editClick();
+      scope.codeEditorButtonClickHandler();
       expect(scope.showEditorPanel).toBe(false);
     });
 
@@ -958,11 +958,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       var initiaLightness = 1.0;
       scope.lightDiffuse = initiaLightness;
 
-      scope.modifyLight(1);
+      scope.modifyLightClickHandler(1, 'INCREASE_LIGHT');
       expect(scope.lightDiffuse).toBeGreaterThan(initiaLightness);
 
-      scope.modifyLight(-1);
-      scope.modifyLight(-1);
+      scope.modifyLightClickHandler(-1, 'DECREASE_LIGHT');
+      scope.modifyLightClickHandler(-1, 'DECREASE_LIGHT');
       expect(scope.lightDiffuse).toBeLessThan(initiaLightness);
     });
 
@@ -1040,7 +1040,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
     });
 
-
     it('should not set edit mode if the new mode is equal to the current one', function() {
       gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
 
@@ -1051,7 +1050,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       //true case
       scope.setEditMode(EDIT_MODE.EDIT);
       expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.EDIT);
-
     });
 
     it('should correctly execute simControlButtonHandler', function() {
@@ -1070,13 +1068,13 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should toggle the showSpikeTrain variable', function() {
       expect(scope.showSpikeTrain).toBe(false);
-      scope.toggleSpikeTrain();
+      scope.spikeTrainButtonClickHandler();
       expect(scope.showSpikeTrain).toBe(true);
     });
 
     it('should toggle the showJoinPlot variable', function() {
       expect(scope.showJointPlot).toBe(false);
-      scope.toggleJointPlot();
+      scope.jointPlotButtonClickHandler();
       expect(scope.showJointPlot).toBe(true);
     });
 
@@ -1088,18 +1086,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.viewManager.views[1].type).toBe('camera');
       expect(gz3d.scene.viewManager.views[1].active).toBe(false);
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
-      scope.toggleRobotView();
+      scope.robotViewButtonClickHandler();
       expect(scope.showRobotView).toBe(true);
       expect(gz3d.scene.viewManager.views[0].active).toBe(false);
       expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('hidden');
       expect(gz3d.scene.viewManager.views[1].active).toBe(true);
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('visible');
-    });
-
-    it('should toggle the help mode variable', function() {
-      expect(scope.helpModeActivated).toBe(false);
-      scope.toggleHelpMode();
-      expect(scope.helpModeActivated).toBe(true);
     });
 
     it('should call nrpBackendVersions.get and set scope.versions with retrieved back-end versions', function() {
@@ -1159,8 +1151,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.iface.webSocket).not.toBeDefined();
     });
 
-    it('should show the help text correctly', function() {
-      scope.helpText[UI.PLAY_BUTTON] = 'FakeText';
+    it('should toggle the help mode variable and show the help text correctly', function() {
       scope.helpModeActivated = false;
       scope.toggleHelpMode();
 
@@ -1168,25 +1159,87 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.helpDescription).toBe('');
       expect(scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
 
-      scope.help(UI.PLAY_BUTTON);
-
+      scope.simControlButtonHandler('state', 'PLAY_BUTTON');
       expect(scope.currentSelectedUIElement).toBe(UI.PLAY_BUTTON);
-      expect(scope.helpDescription).toBe('FakeText');
-
-      scope.help(UI.PLAY_BUTTON);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.PLAY_BUTTON]);
+      scope.simControlButtonHandler('state', 'PLAY_BUTTON');
       expect(scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
       expect(scope.helpDescription).toBe('');
+
+      scope.resetButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.RESET_BUTTON);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.RESET_BUTTON]);
+
+      scope.timeDisplayClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.TIME_DISPLAY);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.TIME_DISPLAY]);
+
+      scope.modifyLightClickHandler(1, 'INCREASE_LIGHT');
+      expect(scope.currentSelectedUIElement).toBe(UI.INCREASE_LIGHT);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.INCREASE_LIGHT]);
+
+      scope.modifyLightClickHandler(1, 'DECREASE_LIGHT');
+      expect(scope.currentSelectedUIElement).toBe(UI.DECREASE_LIGHT);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.DECREASE_LIGHT]);
+
+      scope.cameraTranslationButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.CAMERA_TRANSLATION);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.CAMERA_TRANSLATION]);
+
+      scope.cameraRotationButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.CAMERA_ROTATION);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.CAMERA_ROTATION]);
+
+      scope.spikeTrainButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.SPIKE_TRAIN);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.SPIKE_TRAIN]);
+
+      scope.jointPlotButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.JOINT_PLOT);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.JOINT_PLOT]);
+
+      scope.robotViewButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.ROBOT_VIEW);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.ROBOT_VIEW]);
+
+      scope.ownerInformationClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.OWNER_DISPLAY);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.OWNER_DISPLAY]);
+
+      scope.environmentSettingsClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.ENVIRONMENT_SETTINGS);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.ENVIRONMENT_SETTINGS]);
+
+      scope.navigationModeMenuClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.USER_NAVIGATION);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.USER_NAVIGATION]);
+
+      scope.codeEditorButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.CODE_EDITOR);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.CODE_EDITOR]);
+
+      scope.brainVisualizerButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.BRAIN_VISUALIZER);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.BRAIN_VISUALIZER]);
+
+      scope.logConsoleButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.LOG_CONSOLE);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.LOG_CONSOLE]);
+
+      scope.exitButtonClickHandler();
+      expect(scope.currentSelectedUIElement).toBe(UI.EXIT_BUTTON);
+      expect(scope.helpDescription).toBe(scope.helpText[UI.EXIT_BUTTON]);
     });
 
     it('should set the visibility state of the keyboard info panel properly', function() {
       expect(scope.showKeyboardControlInfoDiv).toBe(false);
-      scope.showKeyboardControlInfo();
+      scope.cameraTranslationButtonClickHandler();
       expect(scope.showKeyboardControlInfoDiv).toBe(true);
       timeout.flush();
       expect(scope.showKeyboardControlInfoDiv).toBe(false);
 
       // After a second call, the div should not be displayed again
-      scope.showKeyboardControlInfo();
+      scope.cameraTranslationButtonClickHandler();
       expect(scope.showKeyboardControlInfoDiv).toBe(false);
     });
 
@@ -1226,7 +1279,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.setAnimatedRobotModel(modelName, modelParams);
       expect(gz3d.scene.setAnimatedRobotModel).toHaveBeenCalled();
     });
-
   });
 
   describe('(EditMode)', function() {
@@ -1416,7 +1468,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.brainvisualizerIsDisabled = false;
       scope.showBrainvisualizerPanel = false;
       stateParams.ctx = '';
-      scope.brainvisualizerClick();
+      scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(true);
     });
 
@@ -1425,7 +1477,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.showBrainvisualizerPanel = false;
       scope.helpModeActivated = true;
       stateParams.ctx = '';
-      scope.brainvisualizerClick();
+      scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(false);
       scope.helpModeActivated = false;
     });
@@ -1435,16 +1487,15 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.showBrainvisualizerPanel = false;
       scope.brainvisualizerIsDisabled = true;
       stateParams.ctx = '';
-      scope.brainvisualizerClick();
+      scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(false);
       scope.brainvisualizerIsDisabled = false;
     });
 
-
     it('should open the log-console panel', function ()
     {
       scope.showLogConsole = false;
-      scope.logConsoleClick();
+      scope.logConsoleButtonClickHandler();
       expect(scope.showLogConsole).toBe(true);
     });
 
@@ -1452,10 +1503,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     {
       scope.showLogConsole = false;
       scope.helpModeActivated = true;
-      scope.logConsoleClick();
+      scope.logConsoleButtonClickHandler();
       expect(scope.showLogConsole).toBe(false);
     });
-
   });
 
 
@@ -1486,7 +1536,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     {
       scope.showEnvironmentSettingsPanel = false;
       stateParams.ctx = '';
-      scope.toggleEnvironmentSettings();
+      scope.environmentSettingsClickHandler();
       expect(scope.showEnvironmentSettingsPanel).toBe(true);
     });
 
@@ -1494,7 +1544,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     {
       scope.showEnvironmentSettingsPanel = false;
       stateParams.ctx = '';
-      scope.environmentSettingsClick();
+      scope.environmentSettingsClickHandler();
       expect(scope.showEnvironmentSettingsPanel).toBe(true);
     });
 
@@ -1503,19 +1553,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.showEnvironmentSettingsPanel = false;
       scope.helpModeActivated = true;
       stateParams.ctx = '';
-      scope.environmentSettingsClick();
+      scope.environmentSettingsClickHandler();
       expect(scope.showEnvironmentSettingsPanel).toBe(false);
       scope.helpModeActivated = false;
     });
-
-
-
-
   });
-
 });
-
-
 
 
 describe('Controller: Gz3dViewCtrl - mocked window', function () {
@@ -1605,13 +1648,11 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
 
   describe('(Clean up code tested with a mocked window object)', function () {
 
-
     beforeEach(function () {
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope
       });
-
     });
 
     it('should close rosbridge connections on onSimulationDone', function() {
@@ -1625,5 +1666,4 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
       expect(stateService.removeMessageCallback).toHaveBeenCalled();
     });
   });
-
 });
