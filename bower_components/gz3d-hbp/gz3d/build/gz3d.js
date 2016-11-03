@@ -9713,10 +9713,11 @@ GZ3D.SdfParser = function(scene, gui, gziface)
 GZ3D.SdfParser.prototype.init = function()
 {
   var that = this;
+  var errorMsg = 'GzWeb is currently running without a server and' +
+    ' materials could not be loaded. When connected, the scene will be reinitialized.';
   this.gziface.emitter.on('error', function() {
-    that.gui.guiEvents.emit('notification_popup', 'GzWeb is currently running' +
-            'without a server, and materials could not be loaded.' +
-            'When connected scene will be reinitialized', 5000);
+    console.debug(errorMsg);
+    that.gui.guiEvents.emit('notification_popup', errorMsg, 5000);
     that.onConnectionError();
   });
 
@@ -9727,8 +9728,8 @@ GZ3D.SdfParser.prototype.init = function()
   this.gziface.emitter.on('gzstatus', function(gzstatus) {
     if (gzstatus === 'error')
     {
-      that.gui.guiEvents.emit('notification_popup', 'GzWeb is currently ' +
-              'running without a GzServer, and Scene is reinitialized.', 5000);
+      console.debug(errorMsg);
+      that.gui.guiEvents.emit('notification_popup', errorMsg, 5000);
       that.onConnectionError();
     }
   });
