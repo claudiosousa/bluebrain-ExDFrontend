@@ -255,10 +255,9 @@
             }
           };
 
-          documentationURLs.getDocumentationURLs().then(function(data) {
-            scope.backendDocumentationURL = data.backendDocumentationURL;
-            scope.platformDocumentationURL = data.platformDocumentationURL;
-          });
+          var docs = documentationURLs.getDocumentationURLs();
+          scope.backendDocumentationURL = docs.backendDocumentationURL;
+          scope.platformDocumentationURL = docs.platformDocumentationURL;
 
           scope.$parent.$on("$destroy", function () {
             // Fix for Bug NRRPLT-3442.

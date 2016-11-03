@@ -33,14 +33,11 @@ describe('Directive: smachEditor', function () {
   {
     getDocumentationURLs: function() {
       return {
-        then: function(callback) {
-          return callback({
             cleDocumentationURL: 'cleDocumentationURL',
             backendDocumentationURL: 'backendDocumentationURL'
-          });
-        }
-      };
-    }
+          };
+
+      }
   };
  var simulationInfoMock = {
      contextID: '97923877-13ea-4b43-ac31-6b79e130d344',

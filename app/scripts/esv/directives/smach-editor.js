@@ -41,10 +41,9 @@
           var ScriptObject = pythonCodeHelper.ScriptObject;
           var addedStateMachineCount = 0;
 
-          documentationURLs.getDocumentationURLs().then(function(data) {
-            scope.backendDocumentationURL = data.backendDocumentationURL;
-            scope.platformDocumentationURL = data.platformDocumentationURL;
-          });
+          var docs = documentationURLs.getDocumentationURLs();
+          scope.backendDocumentationURL = docs.backendDocumentationURL;
+          scope.platformDocumentationURL = docs.platformDocumentationURL;
 
           scope.refreshLayout = function(editor) {
             // This updates the layout of the editor also onLoad
