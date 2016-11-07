@@ -109,36 +109,61 @@
 
               'sm = StateMachine(outcomes=[FINISHED, ERROR, PREEMPTED])\n\n'+
 
+              'import hbp_nrp_excontrol.nrp_states as states\n'+
+              '\n'+
               'with sm:\n'+
               '    # Waits until a simulation time of 20s is reached\n'+
               '    StateMachine.add(\n'+
               '     "timeline_condition",\n'+
               '     states.WaitToClockState(20),\n'+
-              '     transitions = {\'valid\': \'timeline_condition\',\n'+
-              '                    \'invalid\': FINISHED,\n'+
-              '                    \'preempted\': PREEMPTED}\n'+
+              '     transitions = {"valid": "timeline_condition",\n'+
+              '                    "invalid": "set_left_screen_red",\n'+
+              '                    "preempted": PREEMPTED}\n'+
               '    )\n'+
-              '    # Uncomment this to add a state that sets the color of a material\n'+
-              '    #StateMachine.add(\n'+
-              '    #  "set_left_screen_red",\n'+
-              '    #  states.SetMaterialColorServiceState("left_vr_screen",\n'+
-              '    #                                      "body",\n'+
-              '    #                                      "screen_glass",\n'+
-              '    #                                      "Gazebo/Red"),\n'+
-              '    #  transitions = {\'succeeded\': FINISHED,\n' +
-              '    #                 \'aborted\': FINISHED,\n'+
-              '    #                 \'preempted\': PREEMPTED}\n'+
-              '    #)\n\n'+
-              '    # Uncomment this to monitor the robot pose\n'+
-              '    #StateMachine.add(\n'+
-              '    # "wait_for_husky_left",\n'+
-              '    # states.RobotPoseMonitorState(lambda ud, p: not ((-1 < p.position.x < 1) and\n'+
-              '    #                                                 (-2.5 < p.position.y < -1.8) and\n'+
-              '    #                                                 (0 < p.position.z < 1))),\n'+
-              '    #  transitions = {\'valid\': \'wait_for_husky_left\',\n' +
-              '    #                 \'invalid\': \'set_left_screen_red\',\n'+
-              '    #                 \'preempted\': PREEMPTED}\n'+
-              '    #)\n\n';
+              '    StateMachine.add(\n'+
+              '      "set_left_screen_red",\n'+
+              '      states.SetMaterialColorServiceState("left_vr_screen",\n'+
+              '                                          "body",\n'+
+              '                                          "screen_glass",\n'+
+              '                                          "Gazebo/RedGlow"),\n'+
+              '      transitions = {"succeeded": "delay_set_left_screen_blue",\n'+
+              '                     "aborted": FINISHED,\n'+
+              '                     "preempted": "set_left_screen_green"}\n'+
+              '    )\n'+
+              '    StateMachine.add(\n'+
+              '      "set_left_screen_blue",\n'+
+              '      states.SetMaterialColorServiceState("left_vr_screen",\n'+
+              '                                          "body",\n'+
+              '                                          "screen_glass",\n'+
+              '                                          "Gazebo/BlueGlow"),\n'+
+              '      transitions = {"succeeded": "delay_set_left_screen_red",\n'+
+              '                     "aborted": FINISHED,\n'+
+              '                     "preempted": "set_left_screen_green"}\n'+
+              '    )\n'+
+              '    StateMachine.add(\n'+
+              '      "delay_set_left_screen_blue",\n'+
+              '      states.ClockDelayState(5),\n'+
+              '      transitions = {"invalid": "set_left_screen_blue",\n'+
+              '                     "valid": "delay_set_left_screen_blue",\n'+
+              '                     "preempted": "set_left_screen_green"}\n'+
+              '    )\n'+
+              '    StateMachine.add(\n'+
+              '      "delay_set_left_screen_red",\n'+
+              '      states.ClockDelayState(5),\n'+
+              '      transitions = {"invalid": "set_left_screen_red",\n'+
+              '                     "valid": "delay_set_left_screen_red",\n'+
+              '                     "preempted": "set_left_screen_green"}\n'+
+              '    )\n'+
+              '    StateMachine.add(\n'+
+              '      "set_left_screen_green",\n'+
+              '      states.SetMaterialColorServiceState("left_vr_screen",\n'+
+              '                                          "body",\n'+
+              '                                          "screen_glass",\n'+
+              '                                          "Gazebo/GreenGlow"),\n'+
+              '      transitions = {"succeeded": FINISHED,\n'+
+              '                     "aborted": FINISHED,\n'+
+              '                     "preempted": PREEMPTED}\n'+
+              '    )\n\n';
 
             code = code ? code : defaultCode;
             var id = scope.generateID(count);
