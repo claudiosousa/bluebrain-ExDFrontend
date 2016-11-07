@@ -29,7 +29,8 @@
         <tbody>
         <tr ng-repeat="(population, indices) in populations">
           <td>
-             <input type="text" size="25" ng-model="population" ng-focus="onFocusChange(population);" ng-blur="processChange(population);" ng-pattern="/^([a-zA-Z_]+[\w_]*)$/" required>
+             <input type="text" size="25" ng-model="population" ng-focus="onFocusChange(indices.id);"
+                    ng-blur="processChange(population);" ng-pattern="/^([a-zA-Z_]+[\w_]*)$/" required>
             </input>
           </td>
           <td ng-if-start="isSlice(indices)">
@@ -51,7 +52,7 @@
             </input>
           </td>
           <td>
-            <button type="button" class="btn btn-default btn-md" ng-click="deletePopulation(population);">
+            <button type="button" class="btn btn-default btn-md" ng-click="deletePopulation(indices.id);">
               <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
             </button>
           </td>

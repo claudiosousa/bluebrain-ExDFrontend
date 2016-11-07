@@ -71,6 +71,13 @@
                 neuronPopulations[name] = {list: str};
               }
             });
+
+            for (var p in neuronPopulations) {
+              if (neuronPopulations.hasOwnProperty(p)) {
+                scope.attachPopulationID(neuronPopulations, p);
+              }
+            }
+
             return neuronPopulations;
           };
 
@@ -178,13 +185,26 @@
             return indices.hasOwnProperty('from') && indices.hasOwnProperty('to');
           };
 
-          scope.deletePopulation = function(population) {
-            delete scope.populations[population];
+          scope.deletePopulation = function(populationId) {
+            angular.forEach(scope.populations, function(population, name) {
+              if (population.id === populationId) {
+                delete scope.populations[name];
+              }
+            });
+          };
+
+          /** population.id is used to delete a population as its name may be 'undefined' due
+              to ng-pattern mismatch
+          */
+          scope.attachPopulationID = function (populations, index) {
+            populations[index].id = scope.generatePopulationID(populations);
           };
 
           scope.addList = function() {
             var neuronName = scope.generatePopulationName();
             scope.populations[neuronName] = { list: '0, 1, 2' };
+
+            scope.attachPopulationID(scope.populations, neuronName);
           };
 
           var defaultSlice = {
@@ -196,6 +216,8 @@
           scope.addSlice = function() {
             var neuronName = scope.generatePopulationName();
             scope.populations[neuronName] = angular.copy(defaultSlice);
+
+            scope.attachPopulationID(scope.populations, neuronName);
           };
 
           scope.generatePopulationName = function() {
@@ -205,6 +227,18 @@
               suffix += 1;
             }
             return prefix + suffix;
+          };
+
+          scope.generatePopulationID = function (populations) {
+            var maxId = 0;
+            for (var p in populations) {
+              if (populations.hasOwnProperty(p)) {
+                if (populations[p].id > maxId) {
+                  maxId = populations[p].id;
+                }
+              }
+            }
+            return maxId + 1;
           };
 
           scope.parseName = function(error){
@@ -267,16 +301,33 @@
             scope.control.refresh = undefined;
           });
 
-          scope.onFocusChange = function(population) {
-            scope.focusedName = population;
+          scope.onFocusChange = function(populationId) {
+            scope.focusedId = populationId;
           };
 
-          scope.processChange = function(population) {
-            if (population === scope.focusedName) {
+          scope.processChange = function(newPopulationName) {
+            if (typeof newPopulationName === 'undefined') {
               return;
             }
-            scope.populations[population] = angular.copy(scope.populations[scope.focusedName]);
-            delete scope.populations[scope.focusedName];
+            if (typeof scope.focusedId === 'undefined') {
+              return;
+            }
+
+            if (scope.populations.hasOwnProperty(newPopulationName)) {
+              if (scope.populations[newPopulationName].id === scope.focusedId) {
+                return;
+              }
+            }
+
+            angular.forEach(scope.populations, function(population, name) {
+              if (scope.populations[scope.focusedId] === population) {
+                return;
+              }
+              if (population.id === scope.focusedId) {
+                scope.populations[newPopulationName] = angular.copy(population);
+                delete scope.populations[name];
+              }
+            });
           };
         }
       };

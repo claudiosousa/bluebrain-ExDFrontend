@@ -353,20 +353,20 @@ describe('Directive: pynnEditor', function () {
 
     beforeEach(function () {
       isolateScope.populations = {
-            'population1': [2],
+            'population1': { list: '2', id: 1 },
             'population2': [2,2],
             'population_2': [2, 1],
             'population_6': [4, 5],
             'population_10': { 'from': 1, 'to': 10, 'step': 1},
             'list_1': [1, 2, 3],
             'slice1': { 'from': 1, 'to': 10, 'step': 1},
-            'slice2': { 'from': 2, 'to': 10}
+            'slice2': { 'from': 2, 'to': 10, id: 2}
           };
     });
 
     it('should delete a population in the scope.populations object', function() {
-      isolateScope.deletePopulation('population1');
-      isolateScope.deletePopulation('slice2');
+      isolateScope.deletePopulation(1);
+      isolateScope.deletePopulation(2);
       expect(Object.keys(isolateScope.populations).length).toBe(6);
       expect(isolateScope.populations.population1).toBeUndefined();
       expect(isolateScope.populations.slice2).toBeUndefined();
@@ -387,11 +387,11 @@ describe('Directive: pynnEditor', function () {
       // Add a list with default value {list: '0, 1, 2'} and default name of form population_<number>
       var defaultList = {list: '0, 1, 2'};
       isolateScope.addList();
-      expect(isolateScope.populations.population_0).toEqual(defaultList);
+      expect(isolateScope.populations.population_0.list).toEqual(defaultList.list);
       isolateScope.addList();
-      expect(isolateScope.populations.population_1).toEqual(defaultList);
+      expect(isolateScope.populations.population_1.list).toEqual(defaultList.list);
       isolateScope.addList();
-      expect(isolateScope.populations.population_3).toEqual(defaultList);
+      expect(isolateScope.populations.population_3.list).toEqual(defaultList.list);
       expect(Object.keys(isolateScope.populations).length).toBe(11);
 
       // Add a slice with default value {'from': 0, 'to': 1, 'step': 1} and default name of form population_<number>
@@ -401,10 +401,13 @@ describe('Directive: pynnEditor', function () {
         'step': 1
       };
       isolateScope.addSlice();
+      delete isolateScope.populations.population_4.id;
       expect(isolateScope.populations.population_4).toEqual(defaultSlice);
       isolateScope.addSlice();
+      delete isolateScope.populations.population_5.id;
       expect(isolateScope.populations.population_5).toEqual(defaultSlice);
       isolateScope.addSlice();
+      delete isolateScope.populations.population_7.id;
       expect(isolateScope.populations.population_7).toEqual(defaultSlice);
       expect(isolateScope.populations.population_7).not.toBe(isolateScope.populations.population_9);
       expect(Object.keys(isolateScope.populations).length).toBe(14);
@@ -443,7 +446,7 @@ describe('Directive: pynnEditor', function () {
     it('should test whether populations of type list have been converted into strings', function() {
       expect(isolateScope.populations.list_1).toEqual([1,2,3]);
       isolateScope.preprocessPopulations(isolateScope.populations);
-      expect(isolateScope.populations.list_1).toEqual({list: '1,2,3'});
+      expect(isolateScope.populations.list_1).toEqual({list: '1,2,3', id: 8});
       angular.forEach(isolateScope.populations, function(population){
         if (!isolateScope.isSlice(population)) {
           expect(typeof(population.list)).toBe('string');
@@ -452,24 +455,37 @@ describe('Directive: pynnEditor', function () {
     });
 
     it('should check whether selected population name changes', function() {
-      var popName = 'testPop';
-      isolateScope.onFocusChange(popName);
+      var popId = 1;
+      isolateScope.onFocusChange(popId);
 
-      expect(isolateScope.focusedName).toEqual(popName);
+      expect(isolateScope.focusedId).toEqual(popId);
     });
 
     it('should check processChange whether selected population name changes', function() {
-      var popName = 'population2';
-      isolateScope.onFocusChange(popName);
+      var popId = 1;
+      isolateScope.onFocusChange(popId);
 
+      var popName = 'newPop';
       isolateScope.processChange(popName);
-      expect(isolateScope.focusedName).toEqual(popName);
+      expect(isolateScope.focusedId).toEqual(popId);
 
       var popName2 = 'population2-1';
 
       isolateScope.processChange(popName2);
       expect(isolateScope.populations[popName2]).toBeDefined();
       expect(isolateScope.populations[popName]).toBeUndefined();
+    });
+
+    it('should check processChange whether undefined population name does not affect', function() {
+      var popId = 1;
+      isolateScope.onFocusChange(popId);
+      isolateScope.processChange(undefined);
+      expect(isolateScope.focusedId).toEqual(popId);
+
+      var popName2 = 'population2-1';
+      isolateScope.focusedId = undefined;
+      isolateScope.processChange(popName2);
+      expect(isolateScope.populations[popName2]).toBeUndefined();
     });
 
   });
