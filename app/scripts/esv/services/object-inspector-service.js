@@ -69,8 +69,8 @@
 
           removeEventListeners: function () {
             document.removeEventListener('keydown', objectInspectorService.onXYZKeystroke);
+            document.removeEventListener('mouseup', objectInspectorService.onUpdateNeeded);
             document.removeEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove);
-            document.removeEventListener('mouseup', objectInspectorService.onMouseUp);
             document.removeEventListener('mousemove', objectInspectorService.onMouseMove);
           },
 
@@ -95,6 +95,7 @@
                   gz3d.scene.selectEntity(this.selectedObject);
 
                   document.addEventListener('keydown', objectInspectorService.onXYZKeystroke, false);
+                  document.addEventListener('mouseup', objectInspectorService.onUpdateNeeded, false);
                   document.addEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove, false);
                   document.addEventListener('mousemove', objectInspectorService.onMouseMove, false);
 
@@ -151,7 +152,7 @@
 
               var selected = objectInspectorService.getMeshByName(ix);
               if (selected) {
-                document.addEventListener('mouseup', objectInspectorService.onMouseUp, false);
+                document.addEventListener('mouseup', objectInspectorService.onAxisMoveEnd, false);
 
                 gz3d.scene.modelManipulator.highlightPicker(selected);
                 if (objectInspectorService.getMouseEvent()) {
@@ -187,15 +188,26 @@
             if (objectInspectorService.doSelectPicker) {
               gz3d.scene.modelManipulator.selectPicker(objectInspectorService.mouseEvent);
               objectInspectorService.setSelectPicker(false);
+            }
+
+            if (gz3d.scene.modelManipulator.selected !== 'null') {
               update();
             }
           },
 
-          onMouseUp: function (event) {
+          onAxisMoveEnd: function (event) {
             if (gz3d.scene === null) {
               return;
             }
             gz3d.scene.modelManipulator.handleAxisLockEnd();
+            update();
+            document.removeEventListener('mouseup', objectInspectorService.onAxisMoveEnd);
+          },
+
+          onUpdateNeeded: function (event) {
+            if (gz3d.scene === null) {
+              return;
+            }
             update();
           }
         };
@@ -217,6 +229,7 @@
           updateStyle('RY');
           updateStyle('RZ');
         };
+
         var update = function () {
           // update selected object
           objectInspectorService.selectedObject = gz3d.scene.selectedEntity;

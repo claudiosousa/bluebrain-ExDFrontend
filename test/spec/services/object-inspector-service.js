@@ -266,8 +266,8 @@ describe('Services: objectInspectorService', function () {
     expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(false);
   });
 
-  it('should test onMouseUp when gz3d.scene', function () {
-    objectInspectorService.onMouseUp();
+  it('should test onAxisMoveEnd when gz3d.scene', function () {
+    objectInspectorService.onAxisMoveEnd();
     expect(gz3d.scene.modelManipulator.handleAxisLockEnd).toHaveBeenCalled();
   });
 });
@@ -312,9 +312,9 @@ describe('Services: objectInspectorService2', function () {
     expect(objectInspectorService.onXYZKeystroke()).toBeUndefined();
   });
 
-  it('should test onMouseUp', function () {
+  it('should test onAxisMoveEnd', function () {
     // expect no exception
-    expect(objectInspectorService.onMouseUp()).toBeUndefined();
+    expect(objectInspectorService.onAxisMoveEnd()).toBeUndefined();
   });
 });
 

@@ -16,6 +16,10 @@
               objectInspectorService.isShown = false;
             });
 
+            scope.minimized = false;
+            scope.collapsedTransform = false;
+            scope.collapsedVisuals = false;
+
             scope.OBJECT_VIEW_MODE = OBJECT_VIEW_MODE;
 
             scope.suppressKeyPress = function(event) {

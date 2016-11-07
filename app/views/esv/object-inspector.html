@@ -1,112 +1,175 @@
-<div show-on-top id="object-inspector" class="object-inspector-widget ng-hide" resizeable ng-show="objectInspectorService.isShown">
+<div show-on-top id="object-inspector" class="object-inspector-widget ng-hide" ng-show="objectInspectorService.isShown">
+  <div id="header" movable-anchor-for-id="object-inspector">
+    <!-- window label -->
+    <h7 id="window-label">Object Inspector</h7>
+    <!-- window buttons -->
+    <ol id="window-buttons" class="inline-list">
+      <!-- minimize button -->
+      <button type="button" class="btn btn-xs" ng-click="minimized = !minimized">
+        <i ng-class="{'fa fa-expand': minimized, 'fa fa-compress': !minimized}" aria-hidden="true"></i>
+      </button>
+      <!-- close button -->
+      <button type="button" class="btn btn-xs" data-ng-click="objectInspectorService.toggleView(false)">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </ol>
+  </div>
   <!-- sections of the object inspector -->
-  <ol class="sections-list">
-    <!-- section - object identifier -->
-    <li class="section-item" movable-anchor-for-id="object-inspector">
-      <h3 class="selected-object-name">{{objectInspectorService.selectedObject ?
-        objectInspectorService.selectedObject.name :
-        'nothing selected'}}</h3>
-    </li>
-    <!-- section - transform -->
-    <li class="section-item" ng-show="objectInspectorService.selectedObject">
-      <ol class="sub-sections-list">
-        <!-- sub-section - translate -->
-        <li class="sub-section-item" ng-show="objectInspectorService.selectedObject.position">
-          <h5>Translate</h5>
-          <ol class="transform-elements-list">
-            <li class="transform-elements-listitem">
-              <button type="button" class="btn btn-xs btn-rounded"
-                      ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
-                      ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
-                <i class="glyphicon glyphicon-move"></i>
-              </button>
-            </li>
-            <li class="transform-elements-listitem" ng-keydown="suppressKeyPress($event)">
-              <ol class="vec3-num-input-list">
-                <li class="vec3-num-input-item">
-                  <input interactive id="oi-translate-x" type="number" name="translate-x" class="vec3-num-input"
-                          ng-model="objectInspectorService.translation.x"
-                          ng-change="objectInspectorService.onObjectChange()"
-                          style="{{objectInspectorService.selectedStyle['TX']}}">
-                </li>
-                <li class="vec3-num-input-item">
-                  <input interactive id="oi-translate-y" type="number" name="translate-y" class="vec3-num-input"
-                         ng-model="objectInspectorService.translation.y"
-                         ng-change="objectInspectorService.onObjectChange()"
-                         style="{{objectInspectorService.selectedStyle['TY']}}">
-                </li>
-                <li class="vec3-num-input-item">
-                  <input interactive id="oi-translate-z" type="number" name="translate-z" class="vec3-num-input"
-                         ng-model="objectInspectorService.translation.z"
-                         ng-change="objectInspectorService.onObjectChange()"
-                         style="{{objectInspectorService.selectedStyle['TZ']}}">
-                </li>
-              </ol>
-            </li>
-          </ol>
-        </li>
-        <!-- sub-section - rotate -->
-        <li class="sub-section-item" ng-show="objectInspectorService.selectedObject.rotation">
-          <h5>Rotate</h5>
-          <ol class="transform-elements-list">
-            <li class="transform-elements-listitem">
-              <button type="button" class="btn btn-xs btn-rounded"
-                      ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
-                      ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
-                <i class="glyphicon glyphicon-repeat"></i>
-              </button>
-            </li>
-            <li class="transform-elements-listitem" ng-keydown="suppressKeyPress($event)">
-              <ol class="vec3-num-input-list">
-                <li class="vec3-num-input-item">
-                  <input interactive id="oi-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
-                         ng-model="objectInspectorService.rotationEuler.x"
-                         ng-change="objectInspectorService.onObjectChange()"
-                         style="{{objectInspectorService.selectedStyle['RX']}}">
-                </li>
-                <li class="vec3-num-input-item">
-                  <input interactive id="oi-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
-                         ng-model="objectInspectorService.rotationEuler.y"
-                         ng-change="objectInspectorService.onObjectChange()"
-                         style="{{objectInspectorService.selectedStyle['RY']}}">
-                </li>
-                <li class="vec3-num-input-item">
-                  <input interactive id="oi-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
-                         ng-model="objectInspectorService.rotationEuler.z"
-                         ng-change="objectInspectorService.onObjectChange()"
-                         style="{{objectInspectorService.selectedStyle['RZ']}}">
-                </li>
-              </ol>
-            </li>
-          </ol>
-        </li>
-      </ol>
-    </li>
-    <!-- section - view modes -->
-    <li class="section-item" ng-show="objectInspectorService.selectedObject" ng-keydown="suppressKeyPress($event)">
-      <label for="oi-viewmode-normal"><input id="oi-viewmode-normal" type="radio" name="viewmode-normal"
-                                             class="input-radio-check"
-                                             ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.NORMAL)">Normal</label>
-      <label for="oi-viewmode-transparent"><input id="oi-viewmode-transparent" type="radio" name="viewmode-normal"
-                                                  class="input-radio-check"
-                                                  ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.TRANSPARENT)">Transparent</label>
-      <label for="oi-viewmode-wireframe"><input id="oi-viewmode-wireframe" type="radio" name="viewmode-normal"
-                                                class="input-radio-check"
-                                                ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.WIREFRAME)">Wireframe</label>
-    </li>
-    <!-- section - Change material -->
-    <li class="section-item" ng-show="objectInspectorService.hasColorableVisual">
-      <h5>Change color</h5>
-      <materials-chooser on-select="objectInspectorService.selectMaterial(material)"/>
-    </li>
-    <!-- section - physical properties -->
-    <li class="section-item" ng-show="objectInspectorService.selectedObject">
-      <label for="oi-show-collision"><input id="oi-show-collision" type="checkbox" name="show-collision"
-                                            class="input-radio-check"
-                                            ng-model="objectInspectorService.showCollision"
-                                            ng-change="objectInspectorService.onShowCollisionChange()">Show Collision Geometry</label>
-    </li>
-  </ol>
-  <button type="button" class="button-close" data-ng-click="objectInspectorService.toggleView(false)">×</button>
+  <div id="sections" ng-show="!minimized">
+    <ol class="sections-list">
+      <!-- section - object identifier -->
+      <li class="section-item">
+        <h4 class="selected-object-name">{{objectInspectorService.selectedObject ?
+          objectInspectorService.selectedObject.name :
+          'nothing selected'}}</h4>
+      </li>
+      <!-- section - transform -->
+      <li class="section-item" ng-show="objectInspectorService.selectedObject">
+        <ol class="sub-sections-list">
+          <!-- sub-section - header, minimal view of sub-section -->
+          <li class="sub-section-item" ng-show="objectInspectorService.selectedObject.position">
+            <ol class="inline-list">
+              <li class="inline-listitem">
+                <i ng-class="{'collapse-element fa fa-plus-square-o': collapsedTransform, 'collapse-element fa fa-minus-square-o': !collapsedTransform}" aria-hidden="true" ng-click="collapsedTransform = !collapsedTransform"></i>
+              </li>
+              <li class="inline-listitem inline-spaced">Transform</li>
+              <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.position">
+                <button type="button" class="btn btn-xs btn-rounded"
+                        ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
+                        ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
+                  <i class="fa fa-arrows" aria-hidden="true"></i>
+                </button>
+              </li>
+              <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.rotation">
+                <button type="button" class="btn btn-xs btn-rounded"
+                        ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
+                        ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
+                  <i class="fa fa-repeat" aria-hidden="true"></i>
+                </button>
+              </li>
+            </ol>
+          </li>
+          <!-- sub-section - numerical translation, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedTransform">
+            <h6>Translation</h6>
+            <ol class="vec3-num-input-list" ng-show="objectInspectorService.selectedObject.position">
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-translate-x" type="number" name="translate-x" class="vec3-num-input"
+                       ng-model="objectInspectorService.translation.x"
+                       ng-change="objectInspectorService.onObjectChange()"
+                       style="{{objectInspectorService.selectedStyle['TX']}}">
+              </li>
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-translate-y" type="number" name="translate-y" class="vec3-num-input"
+                       ng-model="objectInspectorService.translation.y"
+                       ng-change="objectInspectorService.onObjectChange()"
+                       style="{{objectInspectorService.selectedStyle['TY']}}">
+              </li>
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-translate-z" type="number" name="translate-z" class="vec3-num-input"
+                       ng-model="objectInspectorService.translation.z"
+                       ng-change="objectInspectorService.onObjectChange()"
+                       style="{{objectInspectorService.selectedStyle['TZ']}}">
+              </li>
+            </ol>
+          </li>
+          <!-- sub-section - numerical rotation, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedTransform">
+            <h6>Rotation</h6>
+            <ol class="vec3-num-input-list" ng-show="objectInspectorService.selectedObject.rotation">
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
+                       ng-model="objectInspectorService.rotationEuler.x"
+                       ng-change="objectInspectorService.onObjectChange()"
+                       style="{{objectInspectorService.selectedStyle['RX']}}">
+              </li>
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
+                       ng-model="objectInspectorService.rotationEuler.y"
+                       ng-change="objectInspectorService.onObjectChange()"
+                       style="{{objectInspectorService.selectedStyle['RY']}}">
+              </li>
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
+                       ng-model="objectInspectorService.rotationEuler.z"
+                       ng-change="objectInspectorService.onObjectChange()"
+                       style="{{objectInspectorService.selectedStyle['RZ']}}">
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <!-- section - visuals -->
+      <li class="section-item" ng-show="objectInspectorService.selectedObject">
+        <ol class="sub-sections-list">
+          <!-- sub-section - header, minimal view of sub-section -->
+          <li class="sub-section-item" ng-show="objectInspectorService.selectedObject.position">
+            <ol class="inline-list">
+              <li class="inline-listitem">
+                <i ng-class="{'collapse-element fa fa-plus-square-o': collapsedVisuals, 'collapse-element fa fa-minus-square-o': !collapsedVisuals}" aria-hidden="true" ng-click="collapsedVisuals = !collapsedVisuals"></i>
+              </li>
+              <li class="inline-listitem inline-spaced">Visuals</li>
+            </ol>
+          </li>
+          <!-- sub-section - view mode, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedVisuals">
+            <h6>View Modes</h6>
+            <ul class="input-list">
+              <li class="input-listitem">
+                <input id="oi-viewmode-normal" type="radio" name="viewmode-normal" class="input-radio-checkbox"
+                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.NORMAL)">
+                Normal
+              </li>
+              <li class="input-listitem">
+                <input id="oi-viewmode-transparent" type="radio" name="viewmode-normal" class="input-radio-checkbox"
+                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.TRANSPARENT)">
+                Transparent
+              </li>
+              <li class="input-listitem">
+                <input id="oi-viewmode-wireframe" type="radio" name="viewmode-normal" class="input-radio-checkbox"
+                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.WIREFRAME)">
+                Wireframe
+              </li>
+            </ul>
+          </li>
+          <!-- sub-section - material, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedVisuals && objectInspectorService.hasColorableVisual">
+            <h6>Material</h6>
+            <materials-chooser on-select="objectInspectorService.selectMaterial(material)"/>
+          </li>
+          <!-- sub-section - collisions, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedVisuals">
+            <h6>Collision</h6>
+            <ul class="input-list">
+              <li class="input-listitem">
+                <input id="oi-show-collision" type="checkbox" name="show-collision" class="input-radio-checkbox" ng-model="objectInspectorService.showCollision"
+                       ng-change="objectInspectorService.onShowCollisionChange()">
+                Show Collision Geometry
+              </li>
+            </ul>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </div>
+  <!-- minimized view -->
+  <div id="minimal-view" ng-show="minimized" movable-anchor-for-id="object-inspector">
+    <ol class="inline-list">
+      <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.position">
+        <button type="button" class="btn btn-sm btn-rounded"
+                ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
+                ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
+          <i class="fa fa-lg fa-arrows" aria-hidden="true"></i>
+        </button>
+      </li>
+      <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.rotation">
+        <button type="button" class="btn btn-sm btn-rounded"
+                ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
+                ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
+          <i class="fa fa-lg fa-repeat" aria-hidden="true"></i>
+        </button>
+      </li>
+    </ol>
+  </div>
 </div>
 

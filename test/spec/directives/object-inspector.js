@@ -30,7 +30,6 @@ describe('Directive: object-inspector', function () {
 
   it('should produce an element that is movable and resizeable', function () {
     expect(objectInspectorElement.prop('outerHTML')).toContain('movable');
-    expect(objectInspectorElement.prop('outerHTML')).toContain('resizeable');
   });
 
 

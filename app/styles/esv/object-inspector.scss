@@ -1,112 +1,179 @@
 @import "pop-over-viewer.scss";
 
-$objectInspectorMinWidth: 360px;
-$objectInspectorMinHeight: 380px;
+$objectInspectorMinWidth: 280px;
+$objectInspectorMinHeight: 40px;
 
 .object-inspector-widget {
   @extend .pop-over-viewer;
+
   display: flex;
+  flex-direction: column;
   top: 2%;
   left: unset;
+
   right: 2%;
   width: $objectInspectorMinWidth;
   height: auto;
   min-width: $objectInspectorMinWidth;
   min-height: $objectInspectorMinHeight;
 
-  .selected-object-name {
-    text-align: center;
+  background: white;
+}
+
+#header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 5px;
+
+  #window-label {
+    flex-basis: 80%;
+    padding-left: 5px;
+    margin-right: 5px;
+
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #e1e1e1;
+    background: #f8f8f8;
   }
 
-  .sections-list {
-    position: relative;
-    list-style-type: none;
-    padding: 0px;
-    width: 100%;
+  #window-buttons {
+    user-select: none;
+  }
+}
 
-    .section-item {
-      display: block;
-      border-bottom: thin solid black;
-      padding: 10px;
+#sections {
+}
 
-      .sub-sections-list {
-        list-style-type: none;
-        padding: 0px;
+#minimal-view {
+  width: 100%;
+  padding: 5px;
+  margin: 0px;
+}
 
-        .sub-section-item {
-          display: block;
-          padding: 5px;
-        }
-      }
+.selected-object-name {
+  text-align: center;
+  padding: 0px;
+  margin: 0px;
+}
 
-      .transform-elements-list {
-        list-style-type: none;
-        padding-left: 0px;
+.sections-list {
+  position: relative;
+  list-style-type: none;
+  width: 100%;
+  padding: 0px;
 
-        .transform-elements-listitem {
-          display: inline;
-          margin-right: 5px;
+  .section-item {
+    display: block;
+    border-bottom: thin solid black;
+    margin: 0px;
+    padding: 5px;
 
-          .vec3-num-input-list {
-            display: inline;
-            list-style-type: none;
-            padding-left: 0px;
+    .sub-sections-list {
+      list-style-type: none;
+      padding: 0px;
 
-            .vec3-num-input-item {
-              display: inline;
-
-              .vec3-num-input {
-                min-width: 50px;
-                width: 29%;
-              }
-
-              #oi-translate-x {
-                border-bottom: 2px solid red;
-              }
-
-              #oi-translate-y {
-                border-bottom: 2px solid green;
-              }
-
-              #oi-translate-z {
-                border-bottom: 2px solid blue;
-              }
-
-              #oi-rot-euler-x {
-                border-bottom: 2px solid red;
-              }
-
-              #oi-rot-euler-y {
-                border-bottom: 2px solid green;
-              }
-
-              #oi-rot-euler-z {
-                border-bottom: 2px solid blue;
-              }
-            }
-          }
-        }
-      }
-
-      .input-radio-check {
-        margin-left: 5px;
-        margin-right: 2px;
+      .sub-section-item {
+        display: block;
+        padding: 2px;
       }
     }
   }
+}
 
-  .button-close {
-    position: absolute;
-    top: 5px;
-    right: 5px;
+.inline-list {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+  user-select: none;
+
+  .inline-listitem {
+    display: inline;
   }
 
-  .btn-rounded {
-    box-shadow: inset -2px -2px 10px 0px rgba(0,0,0,0.2);
+  .inline-spaced {
+    margin: 0px 15px 0px 15px;
   }
+}
 
-  .btn-rounded:active,
-  .btn-rounded.active {
-    box-shadow: inset 3px 3px 10px 0px rgba(0,0,0,0.3);
+.collapse-element {
+  margin-left: 5px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.vec3-num-input-list {
+  list-style-type: none;
+  margin-left: 5%;
+  padding: 0px;
+
+  .vec3-num-input-item {
+    display: inline;
+
+    .vec3-num-input {
+      min-width: 50px;
+      width: 30%;
+    }
+
+    #oi-translate-x {
+      border-bottom: 2px solid red;
+    }
+
+    #oi-translate-y {
+      border-bottom: 2px solid green;
+    }
+
+    #oi-translate-z {
+      border-bottom: 2px solid blue;
+    }
+
+    #oi-rot-euler-x {
+      border-bottom: 2px solid red;
+    }
+
+    #oi-rot-euler-y {
+      border-bottom: 2px solid green;
+    }
+
+    #oi-rot-euler-z {
+      border-bottom: 2px solid blue;
+    }
   }
+}
+
+.input-list {
+  list-style: none;
+
+  .input-listitem {
+    margin-left: 5px;
+  }
+}
+
+.input-radio-checkbox {
+  padding: 0px 5px 0px 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.button-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.button-minimize {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+}
+
+.btn-rounded {
+  box-shadow: inset -2px -2px 10px 0px rgba(0,0,0,0.2);
+}
+
+.btn-rounded:active,
+.btn-rounded.active {
+  box-shadow: inset 3px 3px 10px 0px rgba(0,0,0,0.3);
 }
