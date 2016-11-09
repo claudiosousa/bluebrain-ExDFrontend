@@ -288,7 +288,7 @@ describe('Directive: environment-designer', function () {
     expect($scope.defaultEntityCreatedCallback).toHaveBeenCalled();
   });
 
-    it('should create a new dummy anchor and click it when exporting the environment', function () {
+  it('should create a new dummy anchor and click it when exporting the environment', function () {
     var exportSpy = jasmine.createSpy('export');
     simulationSDFWorld.andCallFake(function () {
       return {
@@ -299,20 +299,21 @@ describe('Directive: environment-designer', function () {
     });
 
     var dummyAnchorElement = {
-      setAttribute: jasmine.createSpy('setAttribute'),
-      style: {
-        display: undefined
-      },
+      style: {},
       click: jasmine.createSpy('click')
     };
 
-    spyOn(angular, 'element').andCallFake(function () {
-      return [dummyAnchorElement];
+    spyOn(document, 'createElement').andCallFake(function () {
+      return dummyAnchorElement;
     });
+
+    spyOn(document.body, 'appendChild');
+    spyOn(document.body, 'removeChild');
 
     $scope.exportSDFWorld();
     expect(exportSpy).toHaveBeenCalled();
-    expect(angular.element).toHaveBeenCalled();
+    expect(document.body.appendChild).toHaveBeenCalled();
+    expect(document.body.removeChild).toHaveBeenCalled();
     expect(dummyAnchorElement.click).toHaveBeenCalled();
   });
 

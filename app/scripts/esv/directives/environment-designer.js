@@ -169,10 +169,13 @@
 
             scope.exportSDFWorld = function () {
               simulationSDFWorld(simulationInfo.serverBaseUrl).export({}, function (data) {
-                angular.element('<a ' +
-                  'href="data:text/xml;charset=utf-8,' + encodeURIComponent(data.sdf) + '" ' +
-                  'download="world.sdf" />')[0]
-                  .click();
+                var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.style.display = 'none';
+                link.download = 'world.sdf';
+                link.href = 'data:text/xml;charset=utf-8,' + encodeURIComponent(data.sdf);
+                link.click();
+                document.body.removeChild(link);
               });
             };
 
