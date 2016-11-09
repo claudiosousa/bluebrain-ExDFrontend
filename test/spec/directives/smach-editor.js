@@ -340,7 +340,7 @@ describe('Directive: smachEditor', function () {
         var sm = stateMachines[0];
         var name = 'statemachine_' + n;
         expect(sm.name).toEqual(name);
-        expect(sm.id).toEqual(name + '_' + date + '_front-end_generated');
+        expect(sm.id).toEqual(name + '_' + date + '_frontend_generated');
         expect(sm.code).toContain('import hbp_nrp_excontrol');
         expect(sm.code).toContain('from smach import StateMachine');
         expect(sm.code).toContain('StateMachine.add(');
@@ -362,6 +362,8 @@ describe('Directive: smachEditor', function () {
       it('should retrieve the name of the state from its id', function () {
         var name = 'statemachine_3';
         var id = name + '_1000234677_front-end_generated';
+        expect(isolateScope.getStateMachineName(id)).toEqual(name);
+        id = name + '_1000234677_frontend_generated';
         expect(isolateScope.getStateMachineName(id)).toEqual(name);
       });
 
@@ -385,7 +387,7 @@ describe('Directive: smachEditor', function () {
         expect(stateMachines).toEqual([]);
         $timeout.flush();
         stateMachines = isolateScope.stateMachines;
-        var expectedStateMachineId = expectedName + '_666_front-end_generated';
+        var expectedStateMachineId = expectedName + '_666_frontend_generated';
         var sm = stateMachines[0];
         expect(sm.id).toEqual(expectedStateMachineId);
         expect(sm.name).toEqual(expectedName);
