@@ -417,6 +417,22 @@ describe('Directive: transferFunctionEditor', function () {
       expect(transferFunctions[0]).toEqual(expectedTF);
     });
 
+    it('should be able to create tfs at the end of the list', function () {
+      var numberOfNewFunctions = 3;
+      for (var i = 0; i < numberOfNewFunctions; i = i + 1) {
+        isolateScope.create(true);//append at the end
+      }
+      var n = numberOfNewFunctions - 1;
+      var tfNewName = 'transferfunction_' + n;
+      var expectedTF = {
+        id: tfNewName,
+        code: DEFAULT_TF_CODE.replace('{0}', tfNewName),
+        dirty: true, local: true, name: tfNewName,
+        error: {}
+      };
+      expect(transferFunctions[transferFunctions.length-1]).toEqual(expectedTF);
+    });
+
     it('should update a TF properly when editing it', function() {
       var tf1Code = '@customdecorator(toto)\ndef tf1(var1, var2):\n\t#put your code here';
       var tf1CodeNewCode = '@customdecorator(toto)\ndef tf_new_name(var1, var2):\n\t#put your code here';

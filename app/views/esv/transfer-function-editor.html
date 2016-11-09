@@ -54,7 +54,7 @@
 <h4>
   Transfer functions
 </h4>
-<div ng-include src="'views/esv/transfer-function-editor-buttons.html'"></div>
+<transfer-function-editor-buttons></transfer-function-editor-buttons>
 <div ng-repeat="transferFunction in transferFunctions">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
@@ -84,4 +84,4 @@
   </button>
 </div>
 <hr>
-<div ng-show="transferFunctions[0]" ng-include src="'views/esv/transfer-function-editor-buttons.html'"></div>
+<transfer-function-editor-buttons ng-show="transferFunctions[0]" append-at-end="true"></transfer-function-editor-buttons>
