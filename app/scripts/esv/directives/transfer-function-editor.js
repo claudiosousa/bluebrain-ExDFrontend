@@ -252,13 +252,17 @@
           }
         };
 
-        scope.create = function () {
+        scope.create = function (appendAtEnd) {
           var id = "transferfunction_" + addedTransferFunctionCount;
           var code = DEFAULT_TF_CODE.replace('{0}', id);
           var transferFunction = new ScriptObject(id, code);
           transferFunction.dirty = true;
           transferFunction.local = true;
-          scope.transferFunctions.unshift(transferFunction);
+          if (appendAtEnd) {
+            scope.transferFunctions.push(transferFunction);
+          } else {
+            scope.transferFunctions.unshift(transferFunction);
+          }
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
         };
 
