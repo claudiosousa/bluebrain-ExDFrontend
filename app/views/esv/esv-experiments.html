@@ -31,25 +31,27 @@
             <i ng-if="exp.configuration.timeout != undefined">Timeout: {{exp.configuration.timeout | timeDDHHMMSS}}</i><br/>
             <!-- temporary placeholder to notify the user an experiment requires multiple processes -->
             <i>Brain processes: {{exp.configuration.brainProcesses}}</i><br/>
-            <span>
+            <span ng-if="devMode && config.canLaunchExperiments">
               <i>Available backends:</i>
               <i  class="label-availability"
                   tooltip="A backend VM is required to control the simulation">
                  {{exp.availableServers.length}}
               </i>
-            </span>
-            <div ng-if="devMode && config.canLaunchExperiments">
+              <br/>
               <i>Use server:</i>
               <select ng-model="exp.devServer">
                 <option value="">All servers</option>
                 <option ng-repeat="server in exp.availableServers" value="{{server}}">{{server}}</option>
               </select>
-            </div>
             <br>
             <i>Cluster availability: </i>
-            <i class="label-availability" tooltip="A cluster node is required to run the robot simulation" ng-class="clusterAvailability.free < 4 ? (clusterAvailability.free < 2 ? 'label-danger' : 'label-warning') : 'label-success' ">
+            <i class="label-availability" tooltip="A cluster node is required to run the robot simulation" ng-class="clusterAvailability.free < CLUSTER_THRESHOLDS.AVAILABLE ? (clusterAvailability.free < CLUSTER_THRESHOLDS.UNAVAILABLE ? 'label-danger' : 'label-warning') : 'label-success' ">
               {{clusterAvailability.free}} / {{clusterAvailability.total}}
             </i>
+            <br/>
+            </span>
+            <i>Server status: </i>
+             <i class="server-icon {{exp.serverStatusClass}}" title="{{exp.serverStatus}}"></i>
           </div>
           <div collapse="!config.canCloneExperiments || (exp.id != pageState.selected) || !isCloneRequested">
             <div class="list-entry-container center">

@@ -2,12 +2,12 @@
 
 describe('Services: experimentsFactory', function () {
   var $q, experimentProxyService, collabFolderAPIService, experimentsFactory, scope, $interval,
-    hbpDialogFactory, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR;
+    hbpDialogFactory, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, slurminfoService;
 
   beforeEach(module('experimentServices'));
   beforeEach(module('exdFrontendApp'));
   beforeEach(inject(function (_$q_, _experimentProxyService_, _collabFolderAPIService_, _experimentsFactory_, _$rootScope_, _$httpBackend_, _$interval_,
-    _hbpDialogFactory_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_) {
+    _hbpDialogFactory_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_, _slurminfoService_) {
     $q = _$q_;
     experimentProxyService = _experimentProxyService_;
     collabFolderAPIService = _collabFolderAPIService_;
@@ -17,6 +17,7 @@ describe('Services: experimentsFactory', function () {
     hbpDialogFactory = _hbpDialogFactory_;
     FAIL_ON_SELECTED_SERVER_ERROR = _FAIL_ON_SELECTED_SERVER_ERROR_;
     FAIL_ON_ALL_SERVERS_ERROR = _FAIL_ON_ALL_SERVERS_ERROR_;
+    slurminfoService =_slurminfoService_;
 
     _$httpBackend_.whenGET(new RegExp('.*')).respond({});
     spyOn(console, 'error');
@@ -182,6 +183,54 @@ describe('Services: experimentsFactory', function () {
       [{ joinableServers: [], configuration: {}, availableServers: [], devServer: 'devServer' }],
       FAIL_ON_SELECTED_SERVER_ERROR
     );
+  });
+
+  it('cluster availability should be set correctly', function() {
+    var experiments = [{availableServers:[], joinableServers:[]}];
+    var image = {'0' : 'fakeImage'};
+    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
+    spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
+    spyOn(slurminfoService, 'get').andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,100]})});
+    var exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    exp.experiments.then(function(experiments){
+      expect(experiments[0].serverStatus).toBe('Unavailable');
+      expect(experiments[0].serverStatusClass).toBe('label-danger');
+    });
+    scope.$apply();
+
+    experiments = [{availableServers:['one_server'], joinableServers:[]}];
+    experimentProxyService.getExperiments.andReturn($q.when(experiments));
+    slurminfoService.get.andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,100]})});
+    exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    exp.experiments.then(function(experiments){
+      expect(experiments[0].serverStatus).toBe('Available');
+      expect(experiments[0].serverStatusClass).toBe('label-success');
+    });
+    scope.$apply();
+
+    slurminfoService.get.andReturn({'$promise':$q.when({'free':2, 'nodes': [0,0,100]})});
+    exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    exp.experiments.then(function(experiments){
+      expect(experiments[0].serverStatus).toBe('Restricted');
+      expect(experiments[0].serverStatusClass).toBe('label-warning');
+    });
+    scope.$apply();
+
+    slurminfoService.get.andReturn({'$promise':$q.when({'free':0, 'nodes': [0,0,100]})});
+    exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    exp.experiments.then(function(experiments){
+      expect(experiments[0].serverStatus).toBe('Unavailable');
+      expect(experiments[0].serverStatusClass).toBe('label-danger');
+    });
+    scope.$apply();
   });
 
 });

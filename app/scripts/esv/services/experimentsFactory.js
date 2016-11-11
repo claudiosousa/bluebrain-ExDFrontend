@@ -1,6 +1,12 @@
 (function (){
   'use strict';
 
+  angular.module('exdFrontendApp.Constants')
+    .constant('CLUSTER_THRESHOLDS', {
+      UNAVAILABLE: 2,
+      AVAILABLE: 4,
+  });
+
   angular.module('experimentServices')
     .constant('SERVER_POLL_INTERVAL', 10 * 1000)
     .constant('FAIL_ON_ALL_SERVERS_ERROR', {
@@ -14,10 +20,10 @@
     .factory('experimentsFactory',
     ['$q', '$interval', 'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
       'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory', 'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
-      'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR',
+      'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS',
       function ($q, $interval, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
         hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService,
-        FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR) {
+        FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
         var localmode = {
           forceuser: bbpConfig.get('localmode.forceuser', false),
           ownerID: bbpConfig.get('localmode.ownerID', null)
@@ -258,7 +264,8 @@
                   return experimentsDict;
                 })
                 .then(transformExperiments)
-                .then(updateCollabExperimentDetails);
+                .then(updateCollabExperimentDetails)
+                .then(updateClusterAvailability);
             }
             else {
               experimentProxyService.getExperiments()
@@ -273,9 +280,12 @@
                     });
                     updateUptime();
                   });
-                });
+                })
+                .then(updateClusterAvailability);
               }
+          }
 
+          function updateClusterAvailability(){
             if (!localmode.forceuser) {
               slurminfoService.get().$promise
                 .then(transformClusterAvailability)
@@ -285,17 +295,37 @@
                 });
               });
             }
+            else {
+              // localmode, we will not use the cluster
+              transformClusterAvailability();
+            }
           }
 
           function transformClusterAvailability(clusterAvailability) {
-            var result = { free: 'NaN', total: 'NaN'}; // Displayed if there is an issue with the Slurmonitor server
-            if (clusterAvailability) {
-              result.free = clusterAvailability.free;
-              result.total = clusterAvailability.nodes[3];
-            }
-            return result;
+            return service.experiments.then(function(experiments){
+              var result = { free: 'NaN', total: 'NaN'}; // Displayed if there is an issue with the Slurmonitor server
+              if (clusterAvailability) {
+                result.free = clusterAvailability.free;
+                result.total = clusterAvailability.nodes[3];
+              }
+              for (var i=0; i < experiments.length; i++){
+                var exp = experiments[i];
+                if (!exp.availableServers || exp.availableServers.length === 0 || (clusterAvailability && result.free < CLUSTER_THRESHOLDS.UNAVAILABLE)){
+                  exp.serverStatus = "Unavailable";
+                  exp.serverStatusClass = "label-danger";
+                }
+                else if ((exp.availableServers.length > 0 && !clusterAvailability) || (clusterAvailability && result.free > CLUSTER_THRESHOLDS.AVAILABLE)){
+                  exp.serverStatus = "Available";
+                  exp.serverStatusClass = "label-success";
+                }
+                else {
+                  exp.serverStatus = "Restricted";
+                  exp.serverStatusClass = "label-warning";
+                }
+              }
+              return result;
+            });
           }
-
           function destroy() {
             $interval.cancel(updateUptimeInterval);
             $interval.cancel(updateExperimentsInterval);

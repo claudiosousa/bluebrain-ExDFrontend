@@ -9,6 +9,7 @@
       'experimentsFactory',
       'collabConfigService',
       '$window',
+      'CLUSTER_THRESHOLDS',
       function (
         $scope,
         $location,
@@ -16,11 +17,12 @@
         STATE,
         experimentsFactory,
         collabConfigService,
-        $window
+        $window,
+        CLUSTER_THRESHOLDS
       ) {
         $scope.STATE = STATE;
+        $scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
         $scope.pageState = {};
-
         $scope.config = {
           loadingMessage: 'Loading list of experiments...',
           canLaunchExperiments: true,
