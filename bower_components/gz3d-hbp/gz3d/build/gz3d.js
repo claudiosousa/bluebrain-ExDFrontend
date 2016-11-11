@@ -1134,8 +1134,6 @@ GZ3D.Composer.prototype.render = function (view)
     var cs = this.gz3dScene.composerSettings;
     var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
 
-    this.webglRenderer.setViewport(0, 0, width, height);
-
     if (this.minimalRender || nopostProcessing) // No post processing is required, directly render to the screen.
     {
         this.lensFlare.visible = false;
@@ -6413,19 +6411,6 @@ GZ3D.MultiplyShader = {
 GZ3D.MULTIVIEW_MAX_VIEW_COUNT = 10;
 GZ3D.MULTIVIEW_MAINVIEW_NAME = 'main_view';
 
-/**
- * GZ3D.MULTIVIEW_RENDER_VIEWPORTS uses view containers as transparent references to determine viewports for rendering (one single canvas).
- * This is broken in combination with shadowmaps at the moment. See renderToViewport() method.
- *
- * @type {number}
- */
-GZ3D.MULTIVIEW_RENDER_VIEWPORTS = 1;
-/**
- * GZ3D.MULTIVIEW_RENDER_COPY2CANVAS renders views offscreen then copies into the view containers (multiple separate canvases).
- * @type {number}
- */
-GZ3D.MULTIVIEW_RENDER_COPY2CANVAS = 2;
-
 GZ3D.MultiView = function(gz3dScene, mainContainer)
 {
     this.gz3dScene = gz3dScene;
@@ -6440,10 +6425,7 @@ GZ3D.MultiView.prototype.init = function()
 
     this.mainContainer.style.zIndex = 0;
 
-     this.renderMethod = GZ3D.MULTIVIEW_RENDER_COPY2CANVAS;
-    if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_VIEWPORTS) {
-        this.mainContainer.appendChild(this.gz3dScene.getDomElement());
-    }
+    this.mainContainer.appendChild(this.gz3dScene.renderer.domElement);
 
     this.createRenderContainerCallback = function() {
         var renderContainer = document.createElement('div');
@@ -6562,13 +6544,9 @@ GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
     var aspectRatio = parseInt(displayParams.height, 10) / parseInt(displayParams.width, 10);
     viewContainer.style.minHeight = Math.floor(parseInt(viewContainer.style.minWidth, 10) * aspectRatio) + 'px';
 
-    if (this.renderMethod === GZ3D.MULTIVIEW_RENDER_COPY2CANVAS) {
-        // canvas
-        viewContainer.canvas = document.createElement('canvas');
-        viewContainer.appendChild( viewContainer.canvas );
-        viewContainer.canvas.style.width = '100%';
-        viewContainer.canvas.style.height = '100%';
-    }
+    viewContainer.canvas = this.gz3dScene.renderer.context.canvas;
+    viewContainer.canvas.style.width = '100%';
+    viewContainer.canvas.style.height = '100%';
 
     return viewContainer;
 };
@@ -6628,72 +6606,24 @@ GZ3D.MultiView.prototype.renderViews = function()
         var view = this.views[i];
 
         if (view.active) {
-            switch(this.renderMethod) {
-                case GZ3D.MULTIVIEW_RENDER_VIEWPORTS:
-                    this.renderToViewport(view);
-                    break;
-                case GZ3D.MULTIVIEW_RENDER_COPY2CANVAS:
-                    this.renderAndCopyToCanvas(view);
-                    break;
-            }
+            this.renderToViewport(view);
         }
     }
 };
 
-/**
- * !IMPORTANT!
- * https://github.com/mrdoob/three.js/issues/3532
- * This is at the moment not a good idea, see issue above. ScissorTest will scramble shadowmaps.
- *
- * @param view
- */
 GZ3D.MultiView.prototype.renderToViewport = function(view)
 {
     this.updateCamera(view);  //TODO: better solution with resize callback, also adjust camera helper
 
     var webglRenderer = this.gz3dScene.renderer;
+    view.container.canvas.width = view.container.canvas.clientWidth;
+    view.container.canvas.height = view.container.canvas.clientHeight;
 
     var viewport = this.getViewport(view);
     webglRenderer.setViewport( viewport.x, viewport.y, viewport.w, viewport.h );
     webglRenderer.setScissor( viewport.x, viewport.y, viewport.w, viewport.h );
-    webglRenderer.enableScissorTest ( true );
 
     this.gz3dScene.composer.render(view);
-};
-
-GZ3D.MultiView.prototype.renderAndCopyToCanvas = function(view)
-{
-    this.updateCamera(view);  //TODO: better solution with resize callback, also adjust camera helper
-
-    var webglRenderer = this.gz3dScene.renderer;
-
-    var width = view.container.canvas.clientWidth;
-    var height = view.container.canvas.clientHeight;
-    view.container.canvas.width = width;
-    view.container.canvas.height = height;
-
-    if (webglRenderer.context.canvas.width < width) {
-        webglRenderer.context.canvas.width = width;
-    }
-    if (webglRenderer.context.canvas.height < height) {
-        webglRenderer.context.canvas.height = height;
-    }
-
-    this.gz3dScene.composer.render(view);
-
-
-    // copy rendered image over to view canvas
-    var srcX = 0;
-    var srcY = webglRenderer.context.canvas.height - height + 1;
-    var dstX = 0;
-    var dstY = 0;
-    // no cleaner solution right now, should be coming though: https://github.com/mrdoob/three.js/pull/6723#issuecomment-134129027
-    // this kills performance a little ...
-    if ( srcX >= 0 && srcY >= 0 && width >= 1 && height >= 1 ) {
-        view.container.canvas.getContext('2d').drawImage( webglRenderer.context.canvas,
-            srcX, srcY, width, height,
-            dstX, dstY, width, height );
-    }
 };
 
 GZ3D.MultiView.prototype.showCameras = function(show)
@@ -7254,6 +7184,7 @@ GZ3D.Scene.prototype.init = function()
   this.renderer = new THREE.WebGLRenderer({antialias: false }); // antialiasing Will be handled as a post-processing pass
   this.renderer.setClearColor(0xb2b2b2, 1); // Sky
   this.renderer.setSize( window.innerWidth, window.innerHeight);
+  this.renderer.setScissorTest(true);
 
   // shadows
   this.renderer.shadowMap.enabled = false;
