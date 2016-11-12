@@ -79,9 +79,7 @@
 
   describe('Controller: AssetLoadingSplashCtrl', function () {
     var scope,
-      log,
       timeout,
-      filter,
       assetLoadingSplash,
       Ctrl;
 
@@ -95,19 +93,15 @@
       $provide.value('$scope', scopeMock);
       $provide.value('$timeout', timeoutMock);
     }));
-    beforeEach(inject(function (_$scope_, _$timeout_, _$filter_, _$log_, _assetLoadingSplash_, $controller) {
+    beforeEach(inject(function (_$scope_, _$timeout_, _assetLoadingSplash_, $controller) {
       scope = _$scope_;
-      log = _$log_;
       timeout = _$timeout_;
-      filter = _$filter_;
       assetLoadingSplash = _assetLoadingSplash_;
 
       assetLoadingSplashMock.setProgressObserver = jasmine.createSpy('setProgressObserver');
       assetLoadingSplashMock.close = jasmine.createSpy('close');
 
       scope.$apply = jasmine.createSpy('$apply');
-
-      spyOn(log, 'error');
 
       Ctrl = $controller('AssetLoadingSplashCtrl', {
         $scope: scope
@@ -116,7 +110,6 @@
 
     it('should initialize the object properly', function () {
       expect(scope.progressData).toEqual({});
-      expect(scope.percentage).toEqual(0);
       expect(assetLoadingSplash.setProgressObserver).toHaveBeenCalled();
     });
 
@@ -124,11 +117,8 @@
       assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
 
-      timeout.mostRecentCall.args[0]();
-
-      var ncalls = scope.$apply.calls.length;
-      scope.$apply.calls[ncalls-2].args[0]();
-      scope.$apply.calls[ncalls-1].args[0]();
+      var ncalls = timeout.calls.length;
+      timeout.calls[ncalls-1].args[0]();
 
       expect(scope.progressData).toBe(exampleData);
       expect(scope.loadedAssets).toEqual(1);
@@ -148,11 +138,8 @@
       assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
       expect(assetLoadingSplash.close).toHaveBeenCalled();
 
-      timeout.mostRecentCall.args[0]();
-
-      var ncalls = scope.$apply.calls.length;
-      scope.$apply.calls[ncalls-2].args[0]();
-      scope.$apply.calls[ncalls-1].args[0]();
+      var ncalls = timeout.calls.length;
+      timeout.calls[ncalls-1].args[0]();
 
       expect(scope.loadedAssets).toEqual(3);
       expect(scope.totalAssets).toEqual(3);

@@ -4465,41 +4465,9 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         }
 
         var modelUri = uriPath + '/' + modelName;
-        // Use coarse version on touch devices
-        if (modelUri.indexOf('.dae') !== -1 /*&& isTouchDevice*/) // Modified for HBP, we do use coarse models all the time
-        {
-          modelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
 
-          if(modelUri.indexOf('_coarse') !== -1) //dae is already a coarse model
-          {
-            modelUri = modelUri+'.dae';
-          }
-          else { // check if a coarse version is available
-            var checkModel = new XMLHttpRequest();
-            // We use a double technique to disable the cache for these requests:
-            // 1. We create a custom url by adding the time as a parameter.
-            // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
-            // Since browsers and servers vary in their behaviour, we use both of these tricks.
-            // PS: These requests do not load the dae files, they just verify if they exist on the server
-            // so that we can choose between coarse or reqular models.
-            checkModel.open('HEAD', modelUri+'_coarse.dae?timestamp=' + new Date().getTime(), false);
-            checkModel.setRequestHeader('If-Modified-Since', 'Sat, 1 Jan 2026 00:00:00 GMT');
-
-            try { checkModel.send(); } catch(err) { console.log(modelUri + ': no coarse version'); }
-
-            if (checkModel.status === 404) {
-              modelUri = modelUri+'.dae';
-            }
-            else {
-              modelUri = modelUri+'_coarse.dae';
-            }
-          }
-        }
-
-        var materialName = parent.name + '::' + modelUri;
-        this.entityMaterial[materialName] = mat;
-
-        // Progress update: Add this asset to the assetProgressArray
+        // Progress update: Add this asset to the assetProgressArray, always do this before async call
+        // for dae-s below so that asset list is the proper length for splash progress without blocking
         var element = {};
         element.id = parent.name;
         element.url = modelUri;
@@ -4508,38 +4476,105 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         element.done = false;
         GZ3D.assetProgressData.assets.push(element);
 
-        this.scene.loadMesh(modelUri, submesh,
-            centerSubmesh, function(dae) {
-              if (that.entityMaterial[materialName])
-              {
-                var allChildren = [];
-                dae.getDescendants(allChildren);
-                for (var c = 0; c < allChildren.length; ++c)
-                {
-                  if (allChildren[c] instanceof THREE.Mesh)
+        // Use coarse version on touch devices
+        if (modelUri.indexOf('.dae') !== -1 /*&& isTouchDevice*/) // Modified for HBP, we do use coarse models all the time
+        {
+          var checkModel = new XMLHttpRequest();
+
+          // check if the filename ends with coarse.dae, if not check if a coarse file exsits
+          var checkModelUri = modelUri;
+          if(! checkModelUri.endsWith('_coarse.dae'))
+          {
+            checkModelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
+            checkModelUri = checkModelUri + '_coarse.dae';
+          }
+
+          // We use a double technique to disable the cache for these requests:
+          // 1. We create a custom url by adding the time as a parameter.
+          // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
+          // Since browsers and servers vary in their behaviour, we use both of these tricks.
+          // PS: These requests do not load the dae files, they just verify if they exist on the server
+          // so that we can choose between coarse or reqular models.
+          checkModel.open('HEAD', checkModelUri + '?timestamp=' + new Date().getTime());
+          checkModel.setRequestHeader('If-Modified-Since', 'Sat, 1 Jan 2026 00:00:00 GMT');
+          checkModel.onload = function() {
+            if (checkModel.status !== 404) {
+              element.url = checkModelUri; // coarse model found, use it
+            }
+
+            var materialName = parent.name + '::' + element.url;
+            that.entityMaterial[materialName] = mat;
+
+            that.scene.loadMesh(element.url, submesh,
+                centerSubmesh, function(dae) {
+                  if (that.entityMaterial[materialName])
                   {
-                    that.scene.setMaterial(allChildren[c],
-                        that.entityMaterial[materialName]);
-                    break;
+                    var allChildren = [];
+                    dae.getDescendants(allChildren);
+                    for (var c = 0; c < allChildren.length; ++c)
+                    {
+                      if (allChildren[c] instanceof THREE.Mesh)
+                      {
+                        that.scene.setMaterial(allChildren[c],
+                            that.entityMaterial[materialName]);
+                        break;
+                      }
+                    }
                   }
+                  parent.add(dae);
+                  loadGeom(parent);
+                  // Progress update: execute callback
+                  element.done = true;
+                  if (GZ3D.assetProgressCallback) {
+                    GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+                  }
+                }, function(progress) {
+                  element.progress = progress.loaded;
+                  element.totalSize = progress.total;
+                  element.error = progress.error;
+                  if (GZ3D.assetProgressCallback) {
+                    GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+                  }
+                });
+          };
+
+          // try to check for coarse model, retry a few times in case of intermittent network issues
+          // (note: exception is only for network/routing issues or other failures, not if model does not exist)
+          // if all retries fail, reflect an error in the assets loading screen
+          var retries = 5;
+          var checked = false;
+          while (!checked && retries > 0) {
+
+            try {
+              --retries;
+              checkModel.send();
+              checked = true;
+            }
+            catch(err) {
+
+              // log the network failure
+              console.error(modelUri + ': error checking for coarse version');
+              console.error(err);
+
+              // all retries failed, mark the asset as failed
+              if (retries === 0) {
+                element.error = true;
+                if (GZ3D.assetProgressCallback) {
+                  GZ3D.assetProgressCallback(GZ3D.assetProgressData);
                 }
               }
-              parent.add(dae);
-              loadGeom(parent);
+            }
+          }
+        }
 
-              // Progress update: execute callback
-              element.done = true;
-              if (GZ3D.assetProgressCallback) {
-                GZ3D.assetProgressCallback(GZ3D.assetProgressData);
-              }
-            }, function(progress){
-              element.progress = progress.loaded;
-              element.totalSize = progress.total;
-              element.error = progress.error;
-              if (GZ3D.assetProgressCallback) {
-                GZ3D.assetProgressCallback(GZ3D.assetProgressData);
-              }
-            });
+        // non-dae mesh, not supported by the mesh pipeline, log and display a loading error
+        else {
+          console.error('Unsupported model mesh, non dae file: ' + modelUri);
+          element.error = true;
+          if (GZ3D.assetProgressCallback) {
+            GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+          }
+        }
       }
     }
   }

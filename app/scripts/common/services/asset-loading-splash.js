@@ -58,9 +58,8 @@
 
   }]);
 
-  module.controller('AssetLoadingSplashCtrl', ['$scope', '$log', '$filter', '$timeout', 'assetLoadingSplash', function ($scope, $log, $filter, $timeout, assetLoadingSplash) {
+  module.controller('AssetLoadingSplashCtrl', ['$scope', '$timeout', 'assetLoadingSplash', function ($scope, $timeout, assetLoadingSplash) {
     $scope.progressData = {};
-    $scope.percentage = 0;
     $scope.isError = false;
     $scope.loadedAssets = 0;
     $scope.totalAssets = 0;
@@ -73,8 +72,6 @@
       var isDone = true;
       var loadedAssets = 0;
 
-      $scope.$apply(function() { $scope.totalAssets = data.assets.length; });
-
       angular.forEach(data.assets, function(element, index) {
         loadedAssets += element.done ? 1 : 0;
         isDone = isDone && element.done;
@@ -83,12 +80,12 @@
       if (data.prepared && isDone && !$scope.isError ) { // if there were errors, a button is showed for the user to explicitly close the splash
           assetLoadingSplash.close();
       }
+
       // We use $timeout to prevent "digest already in progress" error.
       $timeout(function() {
-        $scope.$apply(function() {
-          $scope.progressData = data;
-          $scope.loadedAssets = loadedAssets;
-        });
+        $scope.progressData = data;
+        $scope.loadedAssets = loadedAssets;
+        $scope.totalAssets = data.assets.length;
       });
     });
     // Give 15 seconds for assets to be loaded
