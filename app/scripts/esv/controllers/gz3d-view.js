@@ -178,10 +178,17 @@
           $scope.ExperimentDescription = experimentDetails.description;
           $scope.ExperimentName = experimentDetails.name;
           simulationInfo.experimentID = experimentID;
-          $scope.$watch(angular.isDefined(gz3d.scene), function(){
-            $scope.updateInitialCameraPose(experimentDetails.cameraPose);
-            $scope.setAnimatedRobotModel(experimentDetails.visualModel, experimentDetails.visualModelParams);
-          });
+          var sceneWatch = $scope.$watch(
+            function() {
+              return typeof gz3d.scene !== 'undefined' && typeof gz3d.scene.scene !== 'undefined';
+            }, function(sceneReady) {
+              if (sceneReady) {
+                $scope.updateInitialCameraPose(experimentDetails.cameraPose);
+                $scope.setAnimatedRobotModel(experimentDetails.visualModel, experimentDetails.visualModelParams);
+                sceneWatch(); // deregister watch
+              }
+            }
+          );
           sceneInitialized.promise.then(function(){
             $scope.initComposerSettings();
             $scope.initBrainvisualizerData();
@@ -649,14 +656,14 @@
         };
 
         $scope.updateInitialCameraPose = function (pose) {
-          if (pose !== null && angular.isDefined(gz3d.scene)) {
+          if (pose !== null) {
             gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
           }
           userNavigationService.setDefaultPose.apply(userNavigationService, pose);
         };
 
         $scope.setAnimatedRobotModel = function (model, params) {
-          if (model !== null && params !== null && angular.isDefined(gz3d.scene)) {
+          if (model !== null && params !== null) {
             params.unshift(model); // argument to apply must be a single list
             gz3d.scene.setAnimatedRobotModel.apply(gz3d.scene, params);
           }
