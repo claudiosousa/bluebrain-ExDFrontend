@@ -159,15 +159,15 @@
 
    it('should not close the splash and set isError when loading assets timeout occurs', function () {
       scope.isError = false;
-      scope.loadedAssets = 0;
+      scope.totalAssets = 0;
       timeout.mostRecentCall.args[0]();
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
       expect(scope.isError).toBeTruthy();
     });
 
-   it('should do nothing if timeout occurs but some assets are loaded', function () {
+   it('should do nothing if timeout occurs but assets loading is in progress', function () {
       scope.isError = false;
-      scope.loadedAssets = 1;
+      scope.totalAssets = 1;
       timeout.mostRecentCall.args[0]();
       expect(scope.isError).toBeFalsy();
     });
