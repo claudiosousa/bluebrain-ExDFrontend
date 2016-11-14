@@ -23,17 +23,17 @@
           return $resource(backendBaseUrl + '/simulation/:sim_id/state-machines', {}, {
             get: {
               method: 'GET',
-              interceptor: {responseError: serverError.display}
+              interceptor: {responseError: serverError.displayHTTPError}
             },
             put: {
               method: 'PUT',
               url: backendBaseUrl + '/simulation/:sim_id/state-machines/:state_machine_name',
-              interceptor: {responseError: serverError.display}
+              interceptor: {responseError: serverError.displayHTTPError}
             },
             delete: {
               method: 'DELETE',
               url: backendBaseUrl + '/simulation/:sim_id/state-machines/:state_machine_name',
-              interceptor: {responseError: serverError.display}
+              interceptor: {responseError: serverError.displayHTTPError}
             }
         });
       };
@@ -42,7 +42,7 @@
         return $resource(backendBaseUrl + '/simulation/:sim_id/transfer-functions', {}, {
           transferFunctions: {
             method: 'GET',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           },
           patch: {
             method: 'PUT',
@@ -51,7 +51,7 @@
           delete: {
             method: 'DELETE',
             url: backendBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           }
         });
       };
@@ -60,7 +60,7 @@
         return $resource(backendBaseUrl + '/simulation/:sim_id/brain', {}, {
           get: {
             method: 'GET',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           },
           put: {
             method: 'PUT'
@@ -72,7 +72,7 @@
         return $resource(backendBaseUrl + '/simulation/:sim_id/populations', {}, {
           get: {
             method: 'GET',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           }
         });
       };
@@ -81,7 +81,7 @@
         return $resource(backendBaseUrl + '/experiment/:context_id/brain', {}, {
           save: {
             method: 'PUT',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           }
         });
       };
@@ -90,7 +90,7 @@
         return $resource(backendBaseUrl + '/experiment/:context_id/sdf_world', {}, {
           save: {
             method: 'PUT',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           }
         });
       };
@@ -99,7 +99,7 @@
         return $resource(backendBaseUrl + '/experiment/:context_id/transfer-functions', {}, {
           save: {
             method: 'PUT',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           }
         });
       };
@@ -108,7 +108,7 @@
         return $resource(backendBaseUrl + '/experiment/:context_id/state-machines', {}, {
           save: {
             method: 'PUT',
-            interceptor: {responseError: serverError.display}
+            interceptor: {responseError: serverError.displayHTTPError}
           }
         });
       };
@@ -116,7 +116,7 @@
        return $resource(backendBaseUrl + '/simulation/:sim_id/reset', {}, {
          reset: {
            method: 'PUT',
-           interceptor: {responseError: serverError.display}
+           interceptor: {responseError: serverError.displayHTTPError}
          }
        });
      };
@@ -125,7 +125,7 @@
        return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders', {}, {
          dump: {
            method: 'PUT',
-           interceptor: {responseError: serverError.display},
+           interceptor: {responseError: serverError.displayHTTPError},
            url: backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders'
          }
        });
@@ -135,7 +135,7 @@
        return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/reset', {}, {
          reset: {
            method: 'PUT',
-           interceptor: {responseError: serverError.display}
+           interceptor: {responseError: serverError.displayHTTPError}
          }
        });
      };

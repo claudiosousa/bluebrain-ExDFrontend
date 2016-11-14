@@ -68,7 +68,7 @@
       $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q;
 
     var serverErrorMock = {
-      display: jasmine.createSpy('display')
+      displayHTTPError: jasmine.createSpy('displayHTTPError')
     };
 
     beforeEach(module('exdFrontendApp'));
@@ -331,7 +331,7 @@
         $httpBackend.whenGET(collabContextUrl).respond(502, {});
         renderEsvWebPage();
         expect($rootScope.experiments).toMatch([{ error: { name: 'Internal Error', description: 'Database unavailable' } }]);
-        expect(serverErrorMock.display).toHaveBeenCalled();
+        expect(serverErrorMock.displayHTTPError).toHaveBeenCalled();
       });
 
       describe('yet to clone', function () {

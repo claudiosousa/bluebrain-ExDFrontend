@@ -20,7 +20,7 @@
       return $resource(baseUrl + '/simulation/:sim_id', {}, {
         simulation: {
           method: 'GET',
-          interceptor: { responseError: serverError.display }
+          interceptor: { responseError: serverError.displayHTTPError }
         }
       });
     };
@@ -51,7 +51,7 @@
       var isFatal = isFatalError(error);
       if (isFatal) {
         // If it is a fatal error, then we go through the normal error handling
-        serverError.display(error, true);
+        serverError.displayHTTPError(error, true);
       } else {
         // Log error on console
         $log.debug(error);
@@ -65,7 +65,7 @@
       return $resource(baseUrl + '/simulation/:sim_id/state', {}, {
         state: {
           method: 'GET',
-          interceptor: { responseError: serverError.display }
+          interceptor: { responseError: serverError.displayHTTPError }
         },
         update: { // this method initializes, starts, stops, or pauses the simulation
           method: 'PUT',
@@ -96,7 +96,7 @@
       return $resource(baseUrl + '/simulation/sdf_world', {}, {
         export: {
           method: 'GET',
-          interceptor: { responseError: serverError.display }
+          interceptor: { responseError: serverError.displayHTTPError }
         },
         import: {
           method: 'PUT',
@@ -111,7 +111,7 @@
       return $resource(baseUrl + '/simulation/:sim_id/interaction/material_change', {}, {
         updateMaterial: {
           method: 'PUT',
-          interceptor: { responseError: serverError.display }
+          interceptor: { responseError: serverError.displayHTTPError }
         }
       });
     };
@@ -124,7 +124,7 @@
           method: 'GET',
           // prevent the user to wait for long time since our servers can only handle one request at a time (yet).
           timeout: EXPERIMENTS_GET_TIMEOUT,
-          interceptor: { responseError: serverError.display }
+          interceptor: { responseError: serverError.displayHTTPError }
         }
       });
     };

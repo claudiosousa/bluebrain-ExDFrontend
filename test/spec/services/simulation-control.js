@@ -208,7 +208,7 @@ describe('Services: error handling', function () {
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
 
   var serverErrorMock = jasmine.createSpy('serverError');
-  serverErrorMock.display = jasmine.createSpy('display');
+  serverErrorMock.displayHTTPError = jasmine.createSpy('displayHTTPError');
   beforeEach(module(function ($provide) {
     $provide.value('serverError', serverErrorMock);
     $provide.value('roslib', roslibMock);
@@ -219,7 +219,7 @@ describe('Services: error handling', function () {
 
     httpBackend = $httpBackend;
     serverError = _serverError_;
-    serverError.display.reset();
+    serverError.displayHTTPError.reset();
     simulationControl = _simulationControl_;
     simulationGenerator = _simulationGenerator_;
     simulationState = _simulationState_;
@@ -233,7 +233,7 @@ describe('Services: error handling', function () {
      httpBackend.verifyNoOutstandingRequest();
    });
 
-  it('should call once serverError.display for every failing service', function() {
+  it('should call once serverError.displayHTTPError for every failing service', function() {
     var serverURL = 'http://bbpce014.epfl.ch:8080';
     var response;
     httpBackend.whenGET(/\/simulation/).respond(400);
@@ -242,24 +242,24 @@ describe('Services: error handling', function () {
     simulationControl(serverURL).simulation(simulationID);
     httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id);
     httpBackend.flush();
-    expect(serverError.display.callCount).toBe(1);
-    response = serverError.display.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.callCount).toBe(1);
+    response = serverError.displayHTTPError.mostRecentCall.args[0];
     expect(response.status).toBe(400);
-    serverError.display.reset();
+    serverError.displayHTTPError.reset();
 
     simulationState(serverURL).state(simulationID);
     httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id + '/state');
     httpBackend.flush();
-    expect(serverError.display.callCount).toBe(1);
-    response = serverError.display.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.callCount).toBe(1);
+    response = serverError.displayHTTPError.mostRecentCall.args[0];
     expect(response.status).toBe(400);
-    serverError.display.reset();
+    serverError.displayHTTPError.reset();
 
     objectControl(serverURL).updateMaterial(simulationID, {});
     httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/material_change', {});
     httpBackend.flush();
-    expect(serverError.display.callCount).toBe(1);
-    response = serverError.display.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.callCount).toBe(1);
+    response = serverError.displayHTTPError.mostRecentCall.args[0];
     expect(response.status).toBe(500);
   });
 });
@@ -370,7 +370,7 @@ describe('Factory: simulationCreationInterceptor', function () {
       'oops': true
     };
 
-    spyOn(serverError, 'display').andReturn();
+    spyOn(serverError, 'displayHTTPError').andReturn();
     _.forEach(errorMessagesAndFatality, function (fatal, msg) {
       simulationCreationInterceptor({ data: msg })
         .catch(function (err) {

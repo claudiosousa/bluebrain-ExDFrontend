@@ -157,12 +157,21 @@
               flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = editor.getLineHandle(codeMirrorLineNumber);
               editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
             }
+            if (_.isNull(element[0].offsetParent)) {
+              // the editor is currently hidden: we have to display the error in a popup
+              var nrpError = {
+                title: 'Transfer function error',
+                template: msg.functionName + ':' + msg.lineNumber + ": " + msg.message,
+                label: 'OK'
+              };
+              serverError.displayError(nrpError);
+            }
           }
         };
 
         var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
         scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
-        scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
+        scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived, true);
 
 
         scope.control.refresh = function () {
@@ -179,10 +188,18 @@
                 } else if (!found) {
                   scope.transferFunctions.unshift(transferFunction);
                 }
+                // force the TF to refresh (the tf.code might not have changed)
+                $timeout(function() {
+                  var curEditor = scope.getTransferFunctionEditor(transferFunction);
+                  curEditor.refresh();
+                }, 0, false);
              });
           });
           refreshPopulations();
         };
+
+        // initialize transfer functions
+        scope.control.refresh();
 
         scope.cleanCompileError = function(transferFunction) {
           var compileError = transferFunction.error[scope.ERROR.COMPILE];
@@ -213,7 +230,7 @@
                   }
                 },
                 function(data) {
-                  serverError.display(data);
+                  serverError.displayHTTPError(data);
                   if (restart) {
                     stateService.setCurrentState(STATE.STARTED);
                   }

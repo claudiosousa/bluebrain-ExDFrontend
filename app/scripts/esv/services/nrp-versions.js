@@ -36,7 +36,7 @@
         return $resource(baseUrl + '/version', {}, {
           get: {
             method: 'GET',
-            interceptor: { responseError: serverError.display },
+            interceptor: { responseError: serverError.displayHTTPError },
             transformResponse: parseResponseComponentVersions
           }
         });
@@ -47,7 +47,7 @@
       return $resource('version.json', {}, {
         get: {
           method: 'GET',
-          interceptor: { responseError: serverError.display },
+          interceptor: { responseError: serverError.displayHTTPError },
           transformResponse: parseResponseComponentVersions
         }
       });

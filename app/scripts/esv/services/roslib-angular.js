@@ -60,6 +60,10 @@
       });
     };
 
+    // overwrite subscribe function of topics to add the parameter makeAngularAware
+    // when makeAngularAware is true, the callback is called within a $rootScope.$apply()
+    // optimally all ros callbacks should be wrapped in a $rootScope.$apply()
+    // but some topics publish at too high frequency which degrades performances a lot (eg, spikes)
     ROSLIB.Topic.prototype.subscribe = (function(originalSub) {
       return function(callback, makeAngularAware) {
         var that = this;

@@ -8,7 +8,7 @@ describe('Services: backendInterfaceService', function () {
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module(function ($provide) {
     $provide.value('simulationInfo', { serverBaseUrl: 'server-base-url'});
-    $provide.value('serverError', {display: jasmine.createSpy('display')});
+    $provide.value('serverError', {displayHTTPError: jasmine.createSpy('displayHTTPError')});
   }));
   beforeEach(inject(function (
     _backendInterfaceService_,
@@ -57,11 +57,11 @@ describe('Services: backendInterfaceService', function () {
     $httpBackend.flush();
   });
 
-  it('should call serverError.display when the saveSDF PUT request fails', function () {
+  it('should call serverError.displayHTTPError when the saveSDF PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     backendInterfaceService.saveSDF('97923877-13ea-4b43-ac31-6b79e130d344');
     $httpBackend.flush();
-    expect(serverError.display).toHaveBeenCalled();
+    expect(serverError.displayHTTPError).toHaveBeenCalled();
   });
 
   it('should make a PUT request on /experiment/:context_id/transfer_functions', function () {
@@ -109,11 +109,11 @@ describe('Services: backendInterfaceService', function () {
     expect(callback).toHaveBeenCalled();
   });
 
-  it('should call serverError.display when the saveTransferFunctions PUT request fails', function () {
+  it('should call serverError.displayHTTPError when the saveTransferFunctions PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     backendInterfaceService.saveTransferFunctions('97923877-13ea-4b43-ac31-6b79e130d344');
     $httpBackend.flush();
-    expect(serverError.display).toHaveBeenCalled();
+    expect(serverError.displayHTTPError).toHaveBeenCalled();
   });
 
   it('should call /simulation/:sim_id/reset with the right params when calling reset from a given simulation', function() {
@@ -148,11 +148,11 @@ describe('Services: backendInterfaceService', function () {
     expect(callback).toHaveBeenCalled();
   });
 
-  it('should call serverError.display when the setStateMachine PUT request fails', function () {
+  it('should call serverError.displayHTTPError when the setStateMachine PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     backendInterfaceService.setStateMachine('setStateMachineName', {}, function() {});
     $httpBackend.flush();
-    expect(serverError.display).toHaveBeenCalled();
+    expect(serverError.displayHTTPError).toHaveBeenCalled();
   });
 
   it('should call the success callback when the setStateMachine PUT request succeeds', function () {
