@@ -28,14 +28,14 @@
           canUploadEnvironment: true
         };
 
-        $scope.uploadEnvironmentAndStart = function (experiment) {
+        $scope.uploadEnvironmentAndStart = function (experiment, launchSingleMode) {
           var inputElement = angular.element('<input type="file" />');
           inputElement.bind('change', function () {
             // Uploading the SDF file
             var reader = new FileReader();
             reader.readAsText(inputElement[0].files[0], 'UTF-8');
             reader.onload = function (evt) {
-              $scope.startNewExperiment(experiment, evt.target.result);
+              $scope.startNewExperiment(experiment, launchSingleMode, evt.target.result);
             };
           });
           inputElement[0].click();
