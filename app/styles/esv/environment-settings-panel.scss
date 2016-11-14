@@ -103,19 +103,9 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
 
 input.environment-settings-checkbox[type="checkbox"],
 input.environment-settings-radio[type="radio"] {
-  padding: 0;
-  margin:0;
-  vertical-align: middle;
   top: -2px;
-  position: relative;
 }
-input.environment-settings-checkbox[type="checkbox"]{
-  margin-right: 10px;
-}
-input.environment-settings-radio[type="radio"]{
-    margin-right: 6px;
-    margin-left: 20px;
-}
+
 environment-settings-panel label
 {
   font-style: normal;
@@ -126,7 +116,6 @@ environment-settings-panel label
 
 .environment-settings-option-subblock {
   margin:10px 50px 10px 10px;
-
 };
 
 .environment-settings-textfield
