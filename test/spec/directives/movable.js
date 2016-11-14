@@ -4,20 +4,9 @@ describe('Directive: Movable', function () {
 
   beforeEach(module('exdFrontendApp'));
 
-  var element,
-    $scope,
-    $document,
-    $rootScope,
-    $compile;
+  var $scope, $document, $rootScope, $compile;
 
-  var logMock = {error: jasmine.createSpy('error')};
-  var startX = 110;
-  var startY = 110;
-
-  beforeEach(module(function ($provide) {
-    $provide.value('$log', logMock);
-  }));
-
+  var element, elementDOM;
 
   function createMovableElement(useAnchor) {
     $scope = $rootScope.$new();
@@ -28,6 +17,11 @@ describe('Directive: Movable', function () {
       left:   '100px',
       width:  '100px',
       height: '100px'
+    });
+    elementDOM = element[0];
+    elementDOM.getBoundingClientRect = jasmine.createSpy('getBoundingClientRect').andReturn({
+      left: parseInt(elementDOM.style.left, 10),
+      top: parseInt(elementDOM.style.top, 10)
     });
   }
 
@@ -51,86 +45,101 @@ describe('Directive: Movable', function () {
   });
 
   it('should move the element on mouse move', function () {
-    var endX = 115;
-    var endY = 130;
-    var originalTop = element.offset().top;
-    var originalLeft = element.offset().left;
-    element.triggerHandler({type: 'mousedown', pageX: startX, pageY: startY});
-    $scope.$digest();
-    $document.triggerHandler({type: 'mousemove', pageX: endX, pageY: endY});
-    $scope.$digest();
-    expect(element.css('top')).toBe(originalTop + (endY - startY) + 'px');
-    expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
+    var delta = 50;
 
-    $document.triggerHandler({type: 'mouseup', pageX: endX, pageY: endY});
+    var initialBoundingRect = elementDOM.getBoundingClientRect();
 
-    // Should not trigger any more
-    $document.triggerHandler({type: 'mousemove', pageX: 120, pageY: 140});
+    var expectedLeft = ((initialBoundingRect.left + delta) / window.innerWidth) * 100;
+    var expectedTop = ((initialBoundingRect.top + delta) / window.innerHeight) * 100;
+
+    // trigger mouse down
+    element.triggerHandler({type: 'mousedown', pageX: 0, pageY: 0});
+    $scope.$digest();
+
+    // trigger mouse move
+    $document.triggerHandler({type: 'mousemove', pageX: delta, pageY: delta});
+    $scope.$digest();
+
+    expect(parseFloat(elementDOM.style.left)).toBeCloseTo(expectedLeft, 2);
+    expect(parseFloat(elementDOM.style.top)).toBeCloseTo(expectedTop, 2);
+
+    // trigger mouse up
+    $document.triggerHandler({type: 'mouseup', pageX: 0, pageY: 0});
+
+    // Should not move any more
+    $document.triggerHandler({type: 'mousemove', pageX: delta, pageY: delta});
     $scope.$digest();
     // should still be the same as above
-    expect(element.css('top')).toBe(originalTop + (endY - startY) + 'px');
-    expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
+    expect(parseFloat(elementDOM.style.left)).toBeCloseTo(expectedLeft, 2);
+    expect(parseFloat(elementDOM.style.top)).toBeCloseTo(expectedTop, 2);
   });
 
   it('should move the element out of the window', function () {
-    var endX = 100;
-    var endY = 100;
-    var originalTop = element.offset().top;
-    var originalLeft = element.offset().left;
+    var startX = 100, startY = 0;
+    var delta = 200;
+
+    var initialBoundingRect = elementDOM.getBoundingClientRect();
+
+    var expectedLeft = ((initialBoundingRect.left + delta) / window.innerWidth) * 100;
+    var expectedTop = ((initialBoundingRect.top + delta) / window.innerHeight) * 100;
+
     element.triggerHandler({ type: 'mousedown', pageX: startX, pageY: startY });
     $scope.$digest();
-    $document.triggerHandler({ type: 'mousemove', pageX: endX, pageY: endY });
+    $document.triggerHandler({ type: 'mousemove', pageX: startX + delta, pageY: startY + delta });
     $scope.$digest();
-    expect(element.css('top')).toBe(originalTop + endX - startX + 'px');
-    expect(element.css('left')).toBe(originalLeft + endY - startY + 'px');
+    expect(parseFloat(elementDOM.style.left)).toBeCloseTo(expectedLeft, 2);
+    expect(parseFloat(elementDOM.style.top)).toBeCloseTo(expectedTop, 2);
 
-    $document.triggerHandler({ type: 'mouseup', pageX: endX, pageY: endY });
+    $document.triggerHandler({ type: 'mouseup', pageX: startX + delta, pageY: startY + delta });
   });
 
   it('should move the element with a touch gesture', function () {
-    var endX = 115;
-    var endY = 130;
-    var originalTop = element.offset().top;
-    var originalLeft = element.offset().left;
-    element.triggerHandler({type: 'touchstart', originalEvent : {
-      touches : [ { pageX : startX, pageY: startY } ]
-    }});
-    $scope.$digest();
-    $document.triggerHandler({type: 'touchmove', originalEvent : {
-      touches : [ { pageX : endX, pageY: endY } ]
-    }});
-    $scope.$digest();
-    expect(element.css('top')).toBe(originalTop + (endY - startY) + 'px');
-    expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
+    var startX = 0, startY = 0;
+    var delta = 100;
 
-    $document.triggerHandler({type: 'touchend', originalEvent : {
-      touches : [ { pageX : endX, pageY: endY } ]
-    }});
+    var initialBoundingRect = elementDOM.getBoundingClientRect();
 
-    // Should not trigger any more
-    $document.triggerHandler({type: 'touchmove', originalEvent : {
-      touches : [ { pageX : 120, pageY: 140 } ]
-    }});
+    // trigger mouse down
+    element.triggerHandler({type: 'touchstart', pageX: startX, pageY: startY});
+    $scope.$digest();
+
+    var expectedLeft = ((initialBoundingRect.left + delta) / window.innerWidth) * 100;
+    var expectedTop = ((initialBoundingRect.top + delta) / window.innerHeight) * 100;
+
+    // trigger mouse move
+    $document.triggerHandler({type: 'touchmove', pageX: startX + delta, pageY: startY + delta });
+    $scope.$digest();
+
+    expect(parseFloat(elementDOM.style.left)).toBeCloseTo(expectedLeft, 2);
+    expect(parseFloat(elementDOM.style.top)).toBeCloseTo(expectedTop, 2);
+
+    // trigger mouse up
+    $document.triggerHandler({type: 'touchend', pageX: startX + delta, pageY: startY + delta});
+
+    // Should not move any more
+    $document.triggerHandler({type: 'touchmove', pageX: 120, pageY: 140});
     $scope.$digest();
     // should still be the same as above
-    expect(element.css('top')).toBe(originalTop + (endY - startY) + 'px');
-    expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
+    expect(parseFloat(elementDOM.style.left)).toBeCloseTo(expectedLeft, 2);
+    expect(parseFloat(elementDOM.style.top)).toBeCloseTo(expectedTop, 2);
   });
 
   it('should move element using movable anchor', function () {
     createMovableElement(true);
     var delta = 112;
 
-    var originalTop = element.offset().top;
-    var originalLeft = element.offset().left;
+    var initialBoundingRect = elementDOM.getBoundingClientRect();
     var child = element.children().first();
+
+    var expectedLeft = ((initialBoundingRect.left + delta) / window.innerWidth) * 100;
+    var expectedTop = ((initialBoundingRect.top + delta) / window.innerHeight) * 100;
 
     child.triggerHandler({ type: 'mousedown', pageX: 0, pageY: 0 });
     $scope.$digest();
     $document.triggerHandler({ type: 'mousemove', pageX: delta, pageY: delta });
     $scope.$digest();
-    expect(element.css('top')).toBe(originalTop + delta + 'px');
-    expect(element.css('left')).toBe(originalLeft + delta + 'px');
+    expect(parseFloat(elementDOM.style.left)).toBeCloseTo(expectedLeft, 2);
+    expect(parseFloat(elementDOM.style.top)).toBeCloseTo(expectedTop, 2);
   });
 
   it('should NOT move element using outside movable anchor', function () {

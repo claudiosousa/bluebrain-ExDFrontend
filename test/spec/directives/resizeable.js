@@ -53,8 +53,8 @@ describe('Directive: resizeable', function () {
 
     it('should handle the resize correctly', function () {
       var resizeAction = resizeElement(elementToResize, {dx: 60, dy: 30});
-      expect(resizeAction.newWidth).toBe(resizeAction.mouseMoveEvent.pageX - elementToResize.top);
-      expect(resizeAction.newHeight).toBe(resizeAction.mouseMoveEvent.pageY - elementToResize.left);
+      expect(resizeAction.newWidth).toBe(((resizeAction.mouseMoveEvent.pageX - elementToResize.left) / window.innerWidth) * 100);
+      expect(resizeAction.newHeight).toBe(((resizeAction.mouseMoveEvent.pageY - elementToResize.top) / window.innerHeight) * 100);
     });
   });
 
@@ -70,8 +70,8 @@ describe('Directive: resizeable', function () {
       elementToResize.initialHeight = 120;
       var deltas = {dx: 50, dy: 60};
       var resizeAction = resizeElement(elementToResize, deltas);
-      expect(resizeAction.newWidth).toBe(resizeAction.mouseMoveEvent.pageX - elementToResize.top);
-      expect(resizeAction.newHeight).toBe(resizeAction.mouseMoveEvent.pageY - elementToResize.left);
+      expect(resizeAction.newWidth).toBe(((resizeAction.mouseMoveEvent.pageX - elementToResize.left) / window.innerWidth) * 100);
+      expect(resizeAction.newHeight).toBe(((resizeAction.mouseMoveEvent.pageY - elementToResize.top) / window.innerHeight) * 100);
     });
 
   });

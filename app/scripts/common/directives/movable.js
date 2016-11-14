@@ -3,11 +3,14 @@
 
   angular.module('exdFrontendApp').directive('movable', ['$document', function ($document) {
     var MARGIN = 8;
-    var BOTTOM_BAR_HIGHT = 43;
+    var BOTTOM_BAR_HEIGHT = 43;
 
     return {
       restrict: 'A',
       link: function (scope, element, attrs) {
+        // just to get from e.g. 0.41 to 41 for css percentage values
+        var FRACTION_TO_PERCENTAGE = 100;
+
         var initialCoordinates, initialBoundingRect,
           dragElement = attrs.movableAnchor ? element.find(attrs.movableAnchor) : $(element[0]);
 
@@ -47,10 +50,12 @@
           var dY = coordinates.y - initialCoordinates.y;
 
           if (coordinates.x < window.innerWidth - MARGIN && coordinates.x > MARGIN) {
-            element.css({ left: initialBoundingRect.left + dX + 'px' });
+            var relativeLeft = ((initialBoundingRect.left + dX) / window.innerWidth) * FRACTION_TO_PERCENTAGE;
+            element.css({left: relativeLeft + '%'});
           }
-          if (coordinates.y < window.innerHeight - MARGIN - BOTTOM_BAR_HIGHT && coordinates.y > MARGIN) {
-            element.css({ top: initialBoundingRect.top + dY + 'px' });
+          if (coordinates.y < window.innerHeight - MARGIN - BOTTOM_BAR_HEIGHT && coordinates.y > MARGIN) {
+            var relativeTop = ((initialBoundingRect.top + dY) / window.innerHeight) * FRACTION_TO_PERCENTAGE;
+            element.css({top: relativeTop + '%'});
           }
         };
 

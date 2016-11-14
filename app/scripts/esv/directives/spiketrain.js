@@ -287,6 +287,7 @@
                 $timeout(scope.onScreenSizeChanged, 0);
               }
             });
+            angular.element($window).on('resize', scope.onScreenSizeChanged);
 
             // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
             // ROS topic.
@@ -308,6 +309,7 @@
 
             scope.$on('$destroy', function () {
               angular.element($window).off('resize.spiketrain');
+              angular.element($window).off('resize', scope.onScreenSizeChanged);
               $(display).off('.spiketrain .spiketrain_down');
             });
           }
