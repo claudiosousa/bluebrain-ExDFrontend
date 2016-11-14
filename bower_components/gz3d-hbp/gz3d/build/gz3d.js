@@ -196,12 +196,27 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
     var linkParent = new THREE.Object3D();
 
     // Set gray, phong-shaded material for loaded model
-    // TODO: Texturing/GLSL shading; find out what is available in the COLLADA loader implementation
-    collada.scene.traverse (function (child) {
-      if (child instanceof THREE.Mesh) {
-        var transparentMaterial = new THREE.MeshPhongMaterial({color: 0x707070});
-        transparentMaterial.wireframe = false;
-        child.material = transparentMaterial;
+    collada.scene.traverse(function (child)
+    {
+      if (child instanceof THREE.Mesh)
+      {
+        var applyDefaultMaterial = true;
+
+        if (child.material instanceof THREE.MultiMaterial)
+        {
+          if (child.material.materials[0].pbrMaterialDescription !== undefined)
+          {
+            child.material = child.material.materials[0];
+            applyDefaultMaterial = false;
+          }
+        }
+
+        if (applyDefaultMaterial)
+        {
+          var transparentMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
+          transparentMaterial.wireframe = false;
+          child.material = transparentMaterial;
+        }
       }
     });
 
@@ -915,12 +930,24 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                 });
 
                 node.pbrMeshMaterial = new THREE.MeshStandardMaterial(materialParams);
+                node.pbrMeshMaterial.transparent = node.material.transparent;
+                node.pbrMeshMaterial.opacity = node.material.opacity;
+
+                if (node.pbrMeshMaterial.transparent)
+                {
+                    node.pbrMeshMaterial.side = THREE.FrontSide;
+                    node.pbrMeshMaterial.depthWrite = false;
+                }
+
+                node.pbrMeshMaterial.blending = node.material.blending;
+                node.pbrMeshMaterial.blendSrc = node.material.blendSrc;
+                node.pbrMeshMaterial.blendDst = node.material.blendDst;
+                node.pbrMeshMaterial.blendEquation = node.material.blendEquation;
                 node.stdMeshMaterial = node.material;
                 node.pbrMeshMaterial.roughness = 1.0;
                 node.pbrMeshMaterial.metalness = 1.0;
-
+                node.pbrMeshMaterial.skinning = node.stdMeshMaterial.skinning;
                 node.pbrMeshMaterial.aoMapIntensity = 3.0;
-
             }
 
             node.pbrMeshMaterial.envMap = this.currenSkyBoxTexture; // Update skybox
