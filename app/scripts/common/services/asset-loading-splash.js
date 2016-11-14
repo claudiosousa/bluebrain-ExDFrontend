@@ -88,9 +88,9 @@
         $scope.totalAssets = data.assets.length;
       });
     });
-    // Give 15 seconds for assets to be loaded
+    // Give 15 seconds for asset loading progress to be received
     $timeout(function() {
-      if($scope.loadedAssets === 0){
+      if($scope.totalAssets === 0){
         console.error("Asset loading timeout occured.");
         $scope.isError = true;
       }
