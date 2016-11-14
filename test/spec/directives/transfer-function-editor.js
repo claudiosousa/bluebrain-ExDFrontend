@@ -21,9 +21,8 @@ describe('Directive: transferFunctionEditor', function () {
   {
     getDocumentationURLs: function() {
       return {
-        then: function(callback) {
-          return callback({cleDocumentationURL: 'cleDocumentationURL',
-            backendDocumentationURL: 'backendDocumentationURL'});}
+          cleDocumentationURL: 'cleDocumentationURL',
+          backendDocumentationURL: 'backendDocumentationURL'
       };
     }
   };

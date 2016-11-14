@@ -127,10 +127,9 @@
         scope.transferFunctions = [];
         var addedTransferFunctionCount = 0;
 
-        documentationURLs.getDocumentationURLs().then(function(data) {
-          scope.cleDocumentationURL = data.cleDocumentationURL;
-          scope.platformDocumentationURL = data.platformDocumentationURL;
-        });
+        var docs = documentationURLs.getDocumentationURLs();
+        scope.cleDocumentationURL = docs.cleDocumentationURL;
+        scope.platformDocumentationURL = docs.platformDocumentationURL;
 
         scope.getTransferFunctionEditor = function(transferFunction) {
           var id = 'transfer-function-' + transferFunction.id;
