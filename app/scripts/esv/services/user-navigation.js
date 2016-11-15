@@ -3,7 +3,7 @@
 (function () {
     'use strict';
 
-    angular.module('userNavigationModule', [])
+    angular.module('userNavigationModule', ['nrpUser'])
       .constant('NAVIGATION_MODES', {
         FREE_CAMERA: 'FreeCamera',
         GHOST: 'Ghost',
@@ -12,10 +12,10 @@
       .factory('userNavigationService', [
         'NAVIGATION_MODES',
         'gz3d',
-        'hbpIdentityUserDirectory',
+        'nrpUser',
         'simulationInfo',
         'roslib',
-        function (NAVIGATION_MODES, gz3d, hbpIdentityUserDirectory, simulationInfo, roslib) {
+        function (NAVIGATION_MODES, gz3d, nrpUser, simulationInfo, roslib) {
           return {
 
             navigationMode: undefined,
@@ -49,7 +49,7 @@
               this.avatarObjectName = this.avatarNameBase;
               // get user info
               var that = this;
-              hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
+              nrpUser.getCurrentUser().then(function (profile) {
                 that.setUserData(profile);
 
                 that.removeAvatar();
