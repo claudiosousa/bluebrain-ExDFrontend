@@ -1,3 +1,9 @@
+<button type="button" class="btn btn-default btn-md" ng-click="addList()">
+  <i class="glyphicon glyphicon-star"></i><span> New list</span>
+</button>
+<button type="button" class="btn btn-default btn-md" ng-click="addSlice()">
+  <i class="glyphicon glyphicon-star"></i><span> New slice</span>
+</button>
 <button type="button" class="btn btn-default btn-md"
         ng-click="apply(0)"
         ng-disabled="loading || stateService.statePending || !populationForm.$valid"

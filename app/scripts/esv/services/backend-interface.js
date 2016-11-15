@@ -197,11 +197,11 @@
             }
           );
         },
-        setStateMachine: function (name, data, successCallback) {
+        setStateMachine: function (name, data, successCallback, errorCallback) {
           resourceStateMachineSimulation(simulationInfo.serverBaseUrl).put({
             sim_id: simulationInfo.simulationID,
             state_machine_name: name
-          }, data, successCallback);
+          }, data, successCallback, errorCallback);
         },
         deleteStateMachine: function (name, callback) {
           resourceStateMachineSimulation(simulationInfo.serverBaseUrl).delete(

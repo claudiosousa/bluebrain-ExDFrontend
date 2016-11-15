@@ -31,19 +31,19 @@ describe('Directive: smachEditor', function () {
 
   var documentationURLsMock =
   {
-    getDocumentationURLs: function() {
+    getDocumentationURLs: function () {
       return {
-            cleDocumentationURL: 'cleDocumentationURL',
-            backendDocumentationURL: 'backendDocumentationURL'
-          };
+        cleDocumentationURL: 'cleDocumentationURL',
+        backendDocumentationURL: 'backendDocumentationURL'
+      };
 
-      }
+    }
   };
- var simulationInfoMock = {
-     contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
-     simulationID : 'mocked_simulation_id',
-     isCollabExperiment: true
- };
+  var simulationInfoMock = {
+    contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+    simulationID: 'mocked_simulation_id',
+    isCollabExperiment: true
+  };
 
   var roslibMock = {};
   var returnedConnectionObject = {};
@@ -84,7 +84,7 @@ describe('Directive: smachEditor', function () {
     SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
     SOURCE_TYPE = _SOURCE_TYPE_;
     $timeout = _$timeout_;
-    simulationInfo =_simulationInfo_;
+    simulationInfo = _simulationInfo_;
     editorMock.getLineHandle = jasmine.createSpy('getLineHandle').andReturn(0);
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
@@ -161,7 +161,7 @@ describe('Directive: smachEditor', function () {
       var sm = new ScriptObject('SM', 'Code of SM');
       isolateScope.stateMachines = [sm];
       isolateScope.update(sm);
-      expect(backendInterfaceService.setStateMachine).toHaveBeenCalledWith(sm.id, sm.code, jasmine.any(Function));
+      expect(backendInterfaceService.setStateMachine).toHaveBeenCalledWith(sm.id, sm.code, jasmine.any(Function), jasmine.any(Function));
       sm.dirty = true;
       sm.local = true;
       backendInterfaceService.setStateMachine.mostRecentCall.args[2]();
@@ -185,14 +185,16 @@ describe('Directive: smachEditor', function () {
     });
 
     it('should save state machine code to a file', function () {
-      var buttonMock = {attr: jasmine.createSpy('attr')};
-      spyOn(document, 'querySelector').andReturn(buttonMock);
+      spyOn(document.body, 'appendChild').andCallThrough();
+      spyOn(document.body, 'removeChild').andCallThrough();
       spyOn(window, 'Blob').andReturn({});
       var URLMock = {createObjectURL: jasmine.createSpy('createObjectURL')};
       window.URL = URLMock;
       isolateScope.save(new ScriptObject('stateMachineId', 'Some code'));
-      expect(document.querySelector).toHaveBeenCalled();
       expect(URLMock.createObjectURL).toHaveBeenCalled();
+      var link = document.body.appendChild.mostRecentCall.args[0];
+      expect(link.download).toBe('stateMachines.py');
+      expect(document.body.removeChild).toHaveBeenCalledWith(link);
     });
 
     it('should save state machine code to collab', function () {
@@ -209,198 +211,198 @@ describe('Directive: smachEditor', function () {
       isolateScope.isSavingToCollab = true;
       backendInterfaceService.saveStateMachines.argsForCall[0][3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
-      });
+    });
 
     it('should fill the error field of the flawed state machine', function () {
-        var errorType = isolateScope.ERROR.RUNTIME;
-        var msg = {
-          functionName: 'SM0',
-          message: 'You nearly broke the platform!',
-          errorType: errorType,
-          severity: 1,
-          sourceType: SOURCE_TYPE.STATE_MACHINE
-        };
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(stateMachines[0].error[errorType]).toEqual(msg);
-        msg.functionName = 'SM1';
-        msg.errorType = errorType = isolateScope.ERROR.LOADING;
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(stateMachines[1].error[errorType]).toEqual(msg);
-      });
+      var errorType = isolateScope.ERROR.RUNTIME;
+      var msg = {
+        functionName: 'SM0',
+        message: 'You nearly broke the platform!',
+        errorType: errorType,
+        severity: 1,
+        sourceType: SOURCE_TYPE.STATE_MACHINE
+      };
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(stateMachines[0].error[errorType]).toEqual(msg);
+      msg.functionName = 'SM1';
+      msg.errorType = errorType = isolateScope.ERROR.LOADING;
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(stateMachines[1].error[errorType]).toEqual(msg);
+    });
 
     it('should ignore transfer function errors', function () {
-        var errorType = isolateScope.ERROR.RUNTIME;
-        var msg = {
-          functionName: 'SM0',
-          message: 'You nearly broke the platform!',
-          errorType: errorType,
-          severity: 1,
-          sourceType: SOURCE_TYPE.TRANSFER_FUNCTION
-        };
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(stateMachines[0].error[errorType]).toBeUndefined();
-      });
+      var errorType = isolateScope.ERROR.RUNTIME;
+      var msg = {
+        functionName: 'SM0',
+        message: 'You nearly broke the platform!',
+        errorType: errorType,
+        severity: 1,
+        sourceType: SOURCE_TYPE.TRANSFER_FUNCTION
+      };
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(stateMachines[0].error[errorType]).toBeUndefined();
+    });
 
     it('should report syntax error', function () {
-        var firstSMName = stateMachines[0].name;
-        var errorType = isolateScope.ERROR.COMPILE;
-        var msg = {
-          functionName: firstSMName,
-          message: 'Minor syntax error',
-          lineNumber: 3,
-          errorType: errorType,
-          severity: 1,
-          sourceType: SOURCE_TYPE.STATE_MACHINE
-        };
-        spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(stateMachines[0].error[errorType]).toEqual(msg);
-        expect(editorMock.getLineHandle).toHaveBeenCalled();
-        expect(editorMock.addLineClass).toHaveBeenCalled();
-      });
+      var firstSMName = stateMachines[0].name;
+      var errorType = isolateScope.ERROR.COMPILE;
+      var msg = {
+        functionName: firstSMName,
+        message: 'Minor syntax error',
+        lineNumber: 3,
+        errorType: errorType,
+        severity: 1,
+        sourceType: SOURCE_TYPE.STATE_MACHINE
+      };
+      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(stateMachines[0].error[errorType]).toEqual(msg);
+      expect(editorMock.getLineHandle).toHaveBeenCalled();
+      expect(editorMock.addLineClass).toHaveBeenCalled();
+    });
 
     it('should call the compile error clean-up callback if a new compile error is received', function () {
-        var compile = isolateScope.ERROR.COMPILE;
-        var msg = {
-          functionName: 'SM1',
-          message: 'You are in trouble!',
-          lineNumber: 1,
-          errorType: compile,
-          severity: 1,
-          sourceType: SOURCE_TYPE.STATE_MACHINE
-        };
-        spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
-        spyOn(isolateScope, 'cleanCompileError');
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(isolateScope.cleanCompileError).toHaveBeenCalled();
-        msg.errorType = isolateScope.ERROR.RUNTIME;
-        isolateScope.cleanCompileError.reset();
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(isolateScope.cleanCompileError).not.toHaveBeenCalled();
-      });
+      var compile = isolateScope.ERROR.COMPILE;
+      var msg = {
+        functionName: 'SM1',
+        message: 'You are in trouble!',
+        lineNumber: 1,
+        errorType: compile,
+        severity: 1,
+        sourceType: SOURCE_TYPE.STATE_MACHINE
+      };
+      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(isolateScope, 'cleanCompileError');
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(isolateScope.cleanCompileError).toHaveBeenCalled();
+      msg.errorType = isolateScope.ERROR.RUNTIME;
+      isolateScope.cleanCompileError.reset();
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(isolateScope.cleanCompileError).not.toHaveBeenCalled();
+    });
 
     it('should retrieve the flawed state machine using its ID when an error is received', function () {
-        var namingError = isolateScope.ERROR.COMPILE;
-        var sm1 = stateMachines[0];
-        sm1.name = '';
-        var msg = {
-          functionName: 'SM1',
-          message: 'Invalid def name',
-          lineNumber: -1,
-          errorType: namingError,
-          severity: 1,
-          sourceType: SOURCE_TYPE.STATE_MACHINE
-        };
-        spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
-        spyOn(isolateScope, 'cleanCompileError');
-        spyOn(_, 'find').andReturn(sm1);
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(_.find).toHaveBeenCalledWith(isolateScope.stateMachines, {'id': msg.functionName});
-      });
+      var namingError = isolateScope.ERROR.COMPILE;
+      var sm1 = stateMachines[0];
+      sm1.name = '';
+      var msg = {
+        functionName: 'SM1',
+        message: 'Invalid def name',
+        lineNumber: -1,
+        errorType: namingError,
+        severity: 1,
+        sourceType: SOURCE_TYPE.STATE_MACHINE
+      };
+      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(isolateScope, 'cleanCompileError');
+      spyOn(_, 'find').andReturn(sm1);
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(_.find).toHaveBeenCalledWith(isolateScope.stateMachines, {'id': msg.functionName});
+    });
 
     it('should retrieve the flawed state machine using its name when no state machine found using its ID when an error is received', function () {
-        var namingError = isolateScope.ERROR.COMPILE;
-        var sm1 = stateMachines[0];
-        sm1.name = 'NewFunctionName';
-        sm1.id = 'OldFunctionName';
-        var msg = {
-          functionName: 'NewFunctionName',
-          message: 'Invalid def name',
-          lineNumber: -1,
-          errorType: namingError,
-          severity: 1,
-          sourceType: SOURCE_TYPE.STATE_MACHINE
-        };
-        spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
-        spyOn(isolateScope, 'cleanCompileError');
-        spyOn(_, 'find').andCallFake(function (arg1, arg2) {
-          if (Object.keys(arg2)[0] === 'id') {
-            return undefined;
-          }
-          return sm1;
-        });
-        isolateScope.onNewErrorMessageReceived(msg);
-        expect(Object.keys(_.find.mostRecentCall.args[1])[0]).toBe('name');
-      });
-    });
-
-    describe('Editing state machines', function () {
-
-      it('should create state machines properly', function () {
-        var numberOfNewStateMachines = 3;
-        var date = 666;
-        spyOn(Date, 'now').andReturn(date);
-        for (var i = 0; i < numberOfNewStateMachines; ++i) {
-          isolateScope.create();
+      var namingError = isolateScope.ERROR.COMPILE;
+      var sm1 = stateMachines[0];
+      sm1.name = 'NewFunctionName';
+      sm1.id = 'OldFunctionName';
+      var msg = {
+        functionName: 'NewFunctionName',
+        message: 'Invalid def name',
+        lineNumber: -1,
+        errorType: namingError,
+        severity: 1,
+        sourceType: SOURCE_TYPE.STATE_MACHINE
+      };
+      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(isolateScope, 'cleanCompileError');
+      spyOn(_, 'find').andCallFake(function (arg1, arg2) {
+        if (Object.keys(arg2)[0] === 'id') {
+          return undefined;
         }
-        var n = numberOfNewStateMachines - 1;
-        var sm = stateMachines[0];
-        var name = 'statemachine_' + n;
-        expect(sm.name).toEqual(name);
-        expect(sm.id).toEqual(name + '_' + date + '_frontend_generated');
-        expect(sm.code).toContain('import hbp_nrp_excontrol');
-        expect(sm.code).toContain('from smach import StateMachine');
-        expect(sm.code).toContain('StateMachine.add(');
+        return sm1;
       });
-
-      it('should update script flags properly when editing the state machine code', function () {
-        var smCode = 'class MyStateMachine(DefaultStateMachine):\n    def populate():\n        return None';
-        var smCodeNewCode = 'class MyStateMachine(DefaultMachine):\n    def populate():\n        return []';
-        stateMachines[0] = {code: smCode, dirty: false, local: false, id: 'sm'};
-        var sm = stateMachines[0];
-        sm.code = smCodeNewCode;
-        isolateScope.onStateMachineChange(sm);
-        expect(stateMachines).toEqual(
-          [
-            {code: smCodeNewCode, dirty: true, local: false, id: 'sm'}
-          ]);
-      });
-
-      it('should retrieve the name of the state from its id', function () {
-        var name = 'statemachine_3';
-        var id = name + '_1000234677_front-end_generated';
-        expect(isolateScope.getStateMachineName(id)).toEqual(name);
-        id = name + '_1000234677_frontend_generated';
-        expect(isolateScope.getStateMachineName(id)).toEqual(name);
-      });
-
-      it('should load to back-end memory a state machine from file', function () {
-        var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
-        var expectedName = 'statemachine_0';
-        var stateMachineCode = 'some code';
-        var fileReaderMock = {
-          readAsText: readAsTextSpy
-        };
-        var eventMock = {
-          target: {result: stateMachineCode}
-        };
-        spyOn(window, 'FileReader').andReturn(fileReaderMock);
-        spyOn(Date, 'now').andReturn(666);
-
-        isolateScope.loadStateMachine('someFile');
-        expect(window.FileReader).toHaveBeenCalled();
-        expect(readAsTextSpy).toHaveBeenCalled();
-        fileReaderMock.onload(eventMock);
-        expect(stateMachines).toEqual([]);
-        $timeout.flush();
-        stateMachines = isolateScope.stateMachines;
-        var expectedStateMachineId = expectedName + '_666_frontend_generated';
-        var sm = stateMachines[0];
-        expect(sm.id).toEqual(expectedStateMachineId);
-        expect(sm.name).toEqual(expectedName);
-        expect(sm.code).toEqual(stateMachineCode);
-      });
-
-      it('should not try to load an invalid file', function () {
-        var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
-        var fileReaderMock = {
-          readAsText: readAsTextSpy
-        };
-        spyOn(window, 'FileReader').andReturn(fileReaderMock);
-
-        isolateScope.loadStateMachine({$error: 'some error'});
-        expect(window.FileReader).not.toHaveBeenCalled();
-      });
-
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(Object.keys(_.find.mostRecentCall.args[1])[0]).toBe('name');
     });
+  });
+
+  describe('Editing state machines', function () {
+
+    it('should create state machines properly', function () {
+      var numberOfNewStateMachines = 3;
+      var date = 666;
+      spyOn(Date, 'now').andReturn(date);
+      for (var i = 0; i < numberOfNewStateMachines; ++i) {
+        isolateScope.create();
+      }
+      var n = numberOfNewStateMachines - 1;
+      var sm = stateMachines[0];
+      var name = 'statemachine_' + n;
+      expect(sm.name).toEqual(name);
+      expect(sm.id).toEqual(name + '_' + date + '_frontend_generated');
+      expect(sm.code).toContain('import hbp_nrp_excontrol');
+      expect(sm.code).toContain('from smach import StateMachine');
+      expect(sm.code).toContain('StateMachine.add(');
+    });
+
+    it('should update script flags properly when editing the state machine code', function () {
+      var smCode = 'class MyStateMachine(DefaultStateMachine):\n    def populate():\n        return None';
+      var smCodeNewCode = 'class MyStateMachine(DefaultMachine):\n    def populate():\n        return []';
+      stateMachines[0] = {code: smCode, dirty: false, local: false, id: 'sm'};
+      var sm = stateMachines[0];
+      sm.code = smCodeNewCode;
+      isolateScope.onStateMachineChange(sm);
+      expect(stateMachines).toEqual(
+        [
+          {code: smCodeNewCode, dirty: true, local: false, id: 'sm'}
+        ]);
+    });
+
+    it('should retrieve the name of the state from its id', function () {
+      var name = 'statemachine_3';
+      var id = name + '_1000234677_front-end_generated';
+      expect(isolateScope.getStateMachineName(id)).toEqual(name);
+      id = name + '_1000234677_frontend_generated';
+      expect(isolateScope.getStateMachineName(id)).toEqual(name);
+    });
+
+    it('should load to back-end memory a state machine from file', function () {
+      var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
+      var expectedName = 'statemachine_0';
+      var stateMachineCode = 'some code';
+      var fileReaderMock = {
+        readAsText: readAsTextSpy
+      };
+      var eventMock = {
+        target: {result: stateMachineCode}
+      };
+      spyOn(window, 'FileReader').andReturn(fileReaderMock);
+      spyOn(Date, 'now').andReturn(666);
+
+      isolateScope.loadStateMachine('someFile');
+      expect(window.FileReader).toHaveBeenCalled();
+      expect(readAsTextSpy).toHaveBeenCalled();
+      fileReaderMock.onload(eventMock);
+      expect(stateMachines).toEqual([]);
+      $timeout.flush();
+      stateMachines = isolateScope.stateMachines;
+      var expectedStateMachineId = expectedName + '_666_frontend_generated';
+      var sm = stateMachines[0];
+      expect(sm.id).toEqual(expectedStateMachineId);
+      expect(sm.name).toEqual(expectedName);
+      expect(sm.code).toEqual(stateMachineCode);
+    });
+
+    it('should not try to load an invalid file', function () {
+      var readAsTextSpy = jasmine.createSpy('readAsTextSpy');
+      var fileReaderMock = {
+        readAsText: readAsTextSpy
+      };
+      spyOn(window, 'FileReader').andReturn(fileReaderMock);
+
+      isolateScope.loadStateMachine({$error: 'some error'});
+      expect(window.FileReader).not.toHaveBeenCalled();
+    });
+
+  });
 });

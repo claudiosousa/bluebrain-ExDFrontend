@@ -42,12 +42,6 @@
     ng-click="delete(stateMachine)">
     <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
   </button>
-  <a id="save-state-machine-to-file-{{stateMachine.id}}"
-    href=""
-    class="btn btn-default btn-md"
-    ng-click="save(stateMachine)"
-    download="{{stateMachine.id}}.py"><i class="glyphicon glyphicon-download"></i><span> Download</span>
-  </a>
 </div>
 <hr>
 <div ng-show="stateMachines.length !== 0" ng-include src="'views/esv/smach-editor-buttons.html'"></div>

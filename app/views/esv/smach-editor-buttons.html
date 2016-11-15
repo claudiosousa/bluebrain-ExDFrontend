@@ -9,6 +9,9 @@
         v-pressable>
   <i class="glyphicon glyphicon-book"></i><span> Save to Collab</span>
 </button>
+<button class="btn btn-default btn-md" ng-click="save()">
+ <i class="glyphicon glyphicon-download"></i><span> Download</span>
+</button>
 <button class="btn btn-default btn-md" type="file"
         ngf-select="loadStateMachine($file)" accept=".py"
         ng-disabled="stateService.statePending">
