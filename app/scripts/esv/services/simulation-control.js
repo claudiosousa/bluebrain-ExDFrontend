@@ -183,8 +183,8 @@
         function launchInServer(server) {
           return experimentProxyService.getServerConfig(server)
             .then(function (serverConfig) {
-              function launch(datUrl) {
-                return launchExperimentOnServer(experiment.configuration.experimentConfiguration, brainProcesses, server, serverConfig)
+              function launch(environmentConfiguration) {
+                return launchExperimentOnServer(experiment.configuration.experimentConfiguration, environmentConfiguration, brainProcesses, server, serverConfig)
                   .catch(oneSimulationFailed);
               }
               if (envSDFData) {
@@ -208,7 +208,7 @@
         return launchInNextServer();
       };
 
-      var launchExperimentOnServer = function (experimentConfiguration, brainProcesses, server, serverConfiguration) {
+      var launchExperimentOnServer = function (experimentConfiguration, environmentConfiguration, brainProcesses, server, serverConfiguration) {
         var deferred = $q.defer();
 
         _.defer(function () { deferred.notify({ main: 'Create new Simulation...' }); }); //called once caller has the promise
@@ -222,6 +222,10 @@
           contextID: $stateParams.ctx,
           brainProcesses: brainProcesses
         };
+
+        if (!!environmentConfiguration) {
+          simInitData.environmentConfiguration = environmentConfiguration.path;
+        }
 
         // Create a new simulation.
         simulationGenerator(serverURL).create(simInitData).$promise
