@@ -3,6 +3,10 @@
   var pointFrequency = 5.0; // number of points per seconds
   var topicSubCb;
 
+  /* global n3Charts */
+
+  n3Charts.Factory.Transition.defaultDuration = 100;
+
   function configureJointPlot(scope, roslib) {
     scope.curves = {};
     scope.selectedJoints = {};
@@ -67,11 +71,9 @@
       }
 
       _.forOwn(scope.curves, function (values, name) {
-        scope.curves[name] = _.filter(values, function (point) {
-          return point.time >= scope.plotOptions.axes.x.min;
-        });
+        while (values.length && values[0].time < scope.plotOptions.axes.x.min)
+          values.shift();
       });
-
       _.forEach(message.name, function (name, idx) {
         scope.properties.forEach(function (prop) {
           scope.curves[name + '_' + prop].push({
