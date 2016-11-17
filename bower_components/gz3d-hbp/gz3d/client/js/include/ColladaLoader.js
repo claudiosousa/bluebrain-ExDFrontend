@@ -3661,18 +3661,31 @@ THREE.ColladaLoader = function () {
 	Shader.prototype.create = function() {
 
 		var props = {};
-
 		var transparent = false;
 
-		if (this['transparency'] !== undefined && this['transparent'] !== undefined) {
-			// convert transparent color RBG to average value
-			var transparentColor = this['transparent'];
-			var transparencyLevel = (this.transparent.color.r + this.transparent.color.g + this.transparent.color.b) / 3 * this.transparency;
+		if (this['transparency'] !== undefined) {
 
-			if (transparencyLevel > 0) {
+			var transparencyLevel = 0.0;
+
+			if (this['transparent'] !== undefined)
+			{
+				// convert transparent color RBG to average value
+
+				var transparentColor = this['transparent'];
+				transparencyLevel = (this.transparent.color.r + this.transparent.color.g + this.transparent.color.b) / 3 * this.transparency;
+			}
+			else
+			{
+				// In case there is no RGB color (textures), use only the transparency level
+
+				transparencyLevel = 1 - this.transparency;
+			}
+
+			if (transparencyLevel > 0)
+			{
 				transparent = true;
-				props[ 'transparent' ] = true;
-				props[ 'opacity' ] = 1 - transparencyLevel;
+				props['transparent'] = true;
+				props['opacity'] = 1 - transparencyLevel;
 
 			}
 
