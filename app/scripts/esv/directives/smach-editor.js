@@ -6,6 +6,7 @@
     'pythonCodeHelper',
     'documentationURLs',
     'roslib',
+    'serverError',
     'STATE',
     'stateService',
     'SIMULATION_FACTORY_CLE_ERROR',
@@ -17,6 +18,7 @@
               pythonCodeHelper,
               documentationURLs,
               roslib,
+              serverError,
               STATE,
               stateService,
               SIMULATION_FACTORY_CLE_ERROR,
@@ -75,7 +77,8 @@
               });
           };
 
-          scope.update = function(stateMachine) {
+          scope.update = function (stateMachine) {
+            var restart = stateService.currentState === STATE.STARTED;
             stateService.ensureStateBeforeExecuting(
               STATE.PAUSED,
               function () {
@@ -84,10 +87,18 @@
                 backendInterfaceService.setStateMachine(
                   stateMachine.id,
                   stateMachine.code,
-                  function(){
+                  function () {
                     stateMachine.dirty = false;
                     stateMachine.local = false;
                     scope.cleanCompileError(stateMachine);
+                    if (restart) {
+                      stateService.setCurrentState(STATE.STARTED);
+                    }
+                  }, function (data) {
+                    serverError.display(data);
+                    if (restart) {
+                      stateService.setCurrentState(STATE.STARTED);
+                    }
                   });
               }
             );
@@ -205,10 +216,17 @@
             return 'statemachine_' + count + '_' + Date.now() + '_frontend_generated';
           };
 
-          scope.save = function (stateMachine) {
-            var file = new Blob([stateMachine.code], {type: "plain/text", endings: 'native'});
-            var button = angular.element(document.querySelector('#save-state-machine-to-file-' + stateMachine.id));
-            button.attr("href", URL.createObjectURL(file));
+          scope.save = function() {
+            var stateMachinesCodeText = _.flatMap(scope.stateMachines,function (stateMachine){
+              return [stateMachine.name,"\n",stateMachine.code];});
+            var file = new Blob(stateMachinesCodeText, {type: "plain/text", endings: 'native'});
+            var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.style.display = 'none';
+                link.download = 'stateMachines.py';
+                link.href = URL.createObjectURL(file);
+                link.click();
+                document.body.removeChild(link);
           };
 
           scope.loadStateMachine = function(file) {

@@ -12,9 +12,6 @@
     There is no PyNN script available for this experiment.
   </div>
   <div ng-show="pynnScript !== undefined" >
-    <hr>
-    <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
-    <hr>
     <p>Populations (set of neurons indices) can be defined here and referred to in transfer functions:
     </p>
     <form name="populationForm">
@@ -59,12 +56,7 @@
         </tr>
         </tbody>
       </table>
-      <button type="button" class="btn btn-default btn-md" ng-click="addList()">
-        <i class="glyphicon glyphicon-star"></i><span> New list</span>
-      </button>
-      <button type="button" class="btn btn-default btn-md" ng-click="addSlice()">
-        <i class="glyphicon glyphicon-star"></i><span> New slice</span>
-      </button>
+      <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
     </form>
     <hr>
     <div id="codeEditor" ui-codemirror ui-codemirror-opts="{
@@ -78,6 +70,6 @@
          ui-refresh='refreshCodemirror'>
     </div>
     <hr>
-    <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
   </div>
+  <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
 </div>

@@ -24,13 +24,7 @@
     <i class="glyphicon glyphicon-book"></i>
     <span> Save to Collab</span>
   </button>
-  <button type="button" class="btn btn-default"
-          ng-click="exportSDFWorld()"
-          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
-    <i class="glyphicon glyphicon-download"></i>
-    <span> Download</span>
-  </button>
-  <hr>
+
 
   <div ng-controller="insertControl">
     <div id="insertMenu-simple_shapes">
@@ -120,9 +114,16 @@
             </div>
           </li>
         </ul>
+        <hr>
       </div>
     </div>
   </div>
+  <button type="button" class="btn btn-default"
+          ng-click="exportSDFWorld()"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
+    <i class="glyphicon glyphicon-download"></i>
+    <span> Download World</span>
+  </button>
 </div>
 
 

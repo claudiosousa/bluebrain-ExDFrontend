@@ -6,7 +6,9 @@
     'documentationURLs',
     'hbpDialogFactory',
     'simulationInfo',
-    function (backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo) {
+    'STATE',
+    'stateService',
+    function (backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService) {
       return {
         templateUrl: 'views/esv/pynn-editor.html',
         restrict: 'E',
@@ -106,35 +108,43 @@
           /**
            * @param {integer} [change_population]
            */
-          scope.apply = function(change_population) {
+          scope.apply = function (change_population) {
+            var restart = stateService.currentState === STATE.STARTED;
             scope.loading = true;
-            backendInterfaceService.setBrain(
-              scope.pynnScript, scope.stringsToLists(scope.populations), 'py', 'text', change_population,
-              function() { // Success callback
-                scope.loading = false;
-                scope.getDoc().markClean();
-                scope.clearError();
-                hbpDialogFactory.alert({title: 'Success.', template: 'Successfully updated brain.'});
-              },
-              function(result) { // Failure callback
-                  scope.loading = false;
-                  scope.clearError();
-                if (result.data.handle_population_change) {
-                  hbpDialogFactory.confirm({title: 'Change TFs',
-                    confirmLabel: 'Yes',
-                    cancelLabel: 'No',
-                    template: 'Would you like to have your transfer functions updated with the new population name?',
-                    closable: false
-                  }).then(scope.agreeAction, scope.doNotAgreeAction);
-                }
-                else {
-                  scope.markError(
-                    result.data.error_message,
-                    result.data.error_line,
-                    result.data.error_column
-                  );
-                  hbpDialogFactory.alert({title: 'Error.', template: result.data.error_message});
-                }
+            stateService.ensureStateBeforeExecuting(
+              STATE.PAUSED,
+              function () {
+                backendInterfaceService.setBrain(
+                  scope.pynnScript, scope.stringsToLists(scope.populations), 'py', 'text', change_population,
+                  function () { // Success callback
+                    scope.loading = false;
+                    scope.getDoc().markClean();
+                    scope.clearError();
+                    if (restart) {
+                      stateService.setCurrentState(STATE.STARTED);
+                    }
+                  },
+                  function (result) { // Failure callback
+                    scope.loading = false;
+                    scope.clearError();
+                    if (result.data.handle_population_change) {
+                      hbpDialogFactory.confirm({
+                        title: 'Change TFs',
+                        confirmLabel: 'Yes',
+                        cancelLabel: 'No',
+                        template: 'Would you like to have your transfer functions updated with the new population name?',
+                        closable: false
+                      }).then(scope.agreeAction, scope.doNotAgreeAction);
+                    }
+                    else {
+                      scope.markError(
+                        result.data.error_message,
+                        result.data.error_line,
+                        result.data.error_column
+                      );
+                      hbpDialogFactory.alert({title: 'Error.', template: result.data.error_message});
+                    }
+                  });
               });
           };
 
