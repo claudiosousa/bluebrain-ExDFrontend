@@ -52,7 +52,8 @@
       'environmentServiceModule',
       'experimentServices',
       'nrpBrowserDetection',
-      'vButton'])
+      'vButton',
+      'nrpUser'])
     // Routes
     .config(function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
       // Configuring routes using `angular-ui-router` states.

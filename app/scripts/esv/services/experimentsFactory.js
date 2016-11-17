@@ -69,7 +69,7 @@
             stopExperiment: stopExperiment,
             getCurrentUserInfo: getCurrentUserInfo,
             experiments: null,
-            clusterAvailability: { free: 'N/A', total: 'N/A'} // Default for local mode
+            clusterAvailability: $q.when({ free: 'N/A', total: 'N/A'}) // Default for local mode
           };
 
           return service;
@@ -98,8 +98,8 @@
                 .then(transformExperiments)
                 .then(_.map);
             }
-            // TODO(Luc): don't perform GET request on the SlurmMonitor server if localmode is true
-            service.clusterAvailability = slurminfoService.get().$promise.then(transformClusterAvailability);
+            if (!localmode.forceuser)
+              service.clusterAvailability = slurminfoService.get().$promise.then(transformClusterAvailability);
             updateExperimentImages();
             updateUptime();
             updateUptimeInterval = $interval(updateUptime, 1000);

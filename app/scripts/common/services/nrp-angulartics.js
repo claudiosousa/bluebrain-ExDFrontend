@@ -4,20 +4,21 @@
   /* global moment: false */
   var module = angular.module('nrpAngulartics', [
     'hbpCommon',
+    'nrpUser',
     'angulartics',
     'angulartics.google.analytics']);
 
   module.factory('nrpAnalytics', [
     '$analytics',
-    'hbpIdentityUserDirectory',
-    function($analytics, hbpIdentityUserDirectory) {
+    'nrpUser',
+    function($analytics, nrpUser) {
       var durationClocks = {};
 
       function eventTrack (actionName, options) {
         if (_.isObject(options) && _.isBoolean(options.value)) {
           options.value = _.toInteger(options.value);
         }
-        return hbpIdentityUserDirectory.getCurrentUser().then(function(user) {
+        return nrpUser.getCurrentUser().then(function(user) {
           var extendedOptions = _.extend(options, {
             label: user.displayName
           });
