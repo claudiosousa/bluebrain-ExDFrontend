@@ -156,11 +156,11 @@ describe('Directive: pynnEditor', function () {
       'data': '// A PyNN script',
       'data_type': 'text',
       'filename': '/path/filename.py',
-      'additional_populations': {
-        'list1': [1, 2, 3],
-        'index1': [9],
-        'slice0': {'from': 0, 'to':10}
-      }
+      'additional_populations': [
+        { list: '1,2,3', name: 'list1', id: 1 },
+        { list: '9', name: 'index1', id: 2 },
+        { name: 'slice0', from: 0, to: 10, step: 1, id: 3 }
+      ]
     };
     var data2 = {
       'brain_type': 'h5',
@@ -186,7 +186,6 @@ describe('Directive: pynnEditor', function () {
       $scope.control.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toEqual(expected_script);
-      expected_populations.slice0.step = 1;
       expect(isolateScope.populations).toEqual(expected_populations);
     });
 
@@ -200,7 +199,7 @@ describe('Directive: pynnEditor', function () {
 
     it('should apply changes made on the pynn script and the brain population properly', function () {
       isolateScope.pynnScript = expected_script;
-      isolateScope.populations = {'index': {list: '1'}};
+      isolateScope.populations = [{name: 'index', list: '1'}];
       isolateScope.apply(0);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
         isolateScope.pynnScript,
@@ -218,7 +217,7 @@ describe('Directive: pynnEditor', function () {
 
     it('should set brain with change_population parameter', function () {
       isolateScope.pynnScript = expected_script;
-      isolateScope.populations = {'index': {list: '1'}};
+      isolateScope.populations = [{name: 'index', list: '1'}];
       isolateScope.apply(1);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
         isolateScope.pynnScript,
@@ -352,72 +351,57 @@ describe('Directive: pynnEditor', function () {
   describe('Testing GUI operations on brain populations', function () {
 
     beforeEach(function () {
-      isolateScope.populations = {
-            'population1': { list: '2', id: 1 },
-            'population2': [2,2],
-            'population_2': [2, 1],
-            'population_6': [4, 5],
-            'population_10': { 'from': 1, 'to': 10, 'step': 1},
-            'list_1': [1, 2, 3],
-            'slice1': { 'from': 1, 'to': 10, 'step': 1},
-            'slice2': { 'from': 2, 'to': 10, id: 2}
-          };
+      isolateScope.populations = [
+        { name: 'population_1', list: '2' },
+        { name: 'population_2', list: '2,2' },
+        { name: 'population_3', list: '2,1' },
+        { name: 'population_4', list: '4,5' },
+        { name: 'population_5', from: 1, to: 10 },
+        { name: 'population_6', list: '1,2,3' },
+        { name: 'population_7', from: 1, to: 10 },
+        { name: 'population_8', from: 2, to: 10 }
+      ];
     });
 
     it('should delete a population in the scope.populations object', function() {
+      isolateScope.deletePopulation(0);
       isolateScope.deletePopulation(1);
-      isolateScope.deletePopulation(2);
       expect(Object.keys(isolateScope.populations).length).toBe(6);
-      expect(isolateScope.populations.population1).toBeUndefined();
-      expect(isolateScope.populations.slice2).toBeUndefined();
+      expect(isolateScope.populations[0].name).toEqual('population_2');
+      expect(isolateScope.populations[1].name).toEqual('population_4');
     });
 
    it('should generate a new population name', function() {
-      expect(isolateScope.populations.population_2).toBeDefined();
+      expect(isolateScope.populations[0]).toBeDefined();
       var neuronName = isolateScope.generatePopulationName();
       expect(neuronName).toBe('population_0');
       expect(isolateScope.generatePopulationName()).toBe(neuronName);
-      isolateScope.populations.population_0 = 15;
-      expect(isolateScope.generatePopulationName()).toBe('population_1');
-      isolateScope.populations.population_1 = 150;
-      expect(isolateScope.generatePopulationName()).toBe('population_3');
     });
 
     it('should add a population in the scope.populations object', function() {
       // Add a list with default value {list: '0, 1, 2'} and default name of form population_<number>
       var defaultList = {list: '0, 1, 2'};
       isolateScope.addList();
-      expect(isolateScope.populations.population_0.list).toEqual(defaultList.list);
-      isolateScope.addList();
-      expect(isolateScope.populations.population_1.list).toEqual(defaultList.list);
-      isolateScope.addList();
-      expect(isolateScope.populations.population_3.list).toEqual(defaultList.list);
-      expect(Object.keys(isolateScope.populations).length).toBe(11);
+      expect(isolateScope.populations[isolateScope.populations.length - 1].list).toEqual(defaultList.list);
+      expect(isolateScope.populations.length).toBe(9);
 
       // Add a slice with default value {'from': 0, 'to': 1, 'step': 1} and default name of form population_<number>
-      var defaultSlice = {
-        'from': 0,
-        'to': 1,
-        'step': 1
+      var expectedSlice = {
+        name: 'population_9',
+        from: 0,
+        to: 1,
+        step: 1,
+        id: 10
       };
       isolateScope.addSlice();
-      delete isolateScope.populations.population_4.id;
-      expect(isolateScope.populations.population_4).toEqual(defaultSlice);
-      isolateScope.addSlice();
-      delete isolateScope.populations.population_5.id;
-      expect(isolateScope.populations.population_5).toEqual(defaultSlice);
-      isolateScope.addSlice();
-      delete isolateScope.populations.population_7.id;
-      expect(isolateScope.populations.population_7).toEqual(defaultSlice);
-      expect(isolateScope.populations.population_7).not.toBe(isolateScope.populations.population_9);
-      expect(Object.keys(isolateScope.populations).length).toBe(14);
+      expect(isolateScope.populations[isolateScope.populations.length - 1].name).toEqual(expectedSlice.name);
+      expect(isolateScope.populations.length).toBe(10);
     });
 
     it('should test whether a population is a slice or not', function() {
       // A slice is discriminated by means of its properties 'from' and 'to'.
       // Thus isSlice(population) is false if population is a list (JS array or {list: '1,2,3'} object).
-      expect(isolateScope.isSlice([1, 2, 3])).toBe(false);
-      expect(isolateScope.isSlice(1)).toBe(false);
+      expect(isolateScope.isSlice({list: '1, 2, 3', name: 'test_population'})).toBe(false);
       expect(isolateScope.isSlice({})).toBe(false);
       expect(isolateScope.isSlice({'from': 0})).toBe(false);
       expect(isolateScope.isSlice({'to': 10, 'step': 3})).toBe(false);
@@ -431,12 +415,12 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.isSlice(slice)).toBe(false);
     });
 
-
     it('should test whether step default values are added in populations of type slice', function() {
-      expect(isolateScope.populations.slice2.step).toBeUndefined();
-      isolateScope.preprocessPopulations(isolateScope.populations);
-      expect(isolateScope.populations.slice2.step).toBe(1);
-      angular.forEach(isolateScope.populations, function(population){
+      var populations = { 'slice1': { from: 0, to: 1 },
+                         'slice2': { from: 0, to: 1}
+                        };
+      populations = isolateScope.preprocessPopulations(populations);
+      angular.forEach(populations, function(population){
         if (isolateScope.isSlice(population)) {
           expect(population.step).toBeGreaterThan(0);
         }
@@ -444,50 +428,13 @@ describe('Directive: pynnEditor', function () {
     });
 
     it('should test whether populations of type list have been converted into strings', function() {
-      expect(isolateScope.populations.list_1).toEqual([1,2,3]);
-      isolateScope.preprocessPopulations(isolateScope.populations);
-      expect(isolateScope.populations.list_1).toEqual({list: '1,2,3', id: 8});
-      angular.forEach(isolateScope.populations, function(population){
-        if (!isolateScope.isSlice(population)) {
-          expect(typeof(population.list)).toBe('string');
-        }
+      var populations = { 'list_1': { list: [1, 2, 3] },
+                          'list_2': { list: [4, 5, 6] }
+                        };
+      populations = isolateScope.preprocessPopulations(populations);
+      angular.forEach(populations, function(population){
+        expect(typeof(population.list)).toBe('string');
       });
     });
-
-    it('should check whether selected population name changes', function() {
-      var popId = 1;
-      isolateScope.onFocusChange(popId);
-
-      expect(isolateScope.focusedId).toEqual(popId);
-    });
-
-    it('should check processChange whether selected population name changes', function() {
-      var popId = 1;
-      isolateScope.onFocusChange(popId);
-
-      var popName = 'newPop';
-      isolateScope.processChange(popName);
-      expect(isolateScope.focusedId).toEqual(popId);
-
-      var popName2 = 'population2-1';
-
-      isolateScope.processChange(popName2);
-      expect(isolateScope.populations[popName2]).toBeDefined();
-      expect(isolateScope.populations[popName]).toBeUndefined();
-    });
-
-    it('should check processChange whether undefined population name does not affect', function() {
-      var popId = 1;
-      isolateScope.onFocusChange(popId);
-      isolateScope.processChange(undefined);
-      expect(isolateScope.focusedId).toEqual(popId);
-
-      var popName2 = 'population2-1';
-      isolateScope.focusedId = undefined;
-      isolateScope.processChange(popName2);
-      expect(isolateScope.populations[popName2]).toBeUndefined();
-    });
-
   });
-
 });
