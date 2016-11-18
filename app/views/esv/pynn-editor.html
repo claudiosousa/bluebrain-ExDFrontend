@@ -1,17 +1,20 @@
 <!-- build:css(.tmp) styles/esv/pynn-editor.css -->
-<link rel="stylesheet" href="styles/esv/pynn-editor.css" />
+<link rel="stylesheet" href="styles/esv/pynn-editor.css"/>
 <!-- endbuild -->
 
 <div class="pynn-editor-widget">
   <h3>PyNN Brain Editor</h3>
-  <p><a target="_blank" href="http://neuralensemble.org/PyNN/">PyNN</a> (pronounced 'pine') is a simulator-independent language for building neuronal network models.
+  <p><a target="_blank" href="http://neuralensemble.org/PyNN/">PyNN</a> (pronounced 'pine') is a simulator-independent
+    language for building neuronal network models.
     Network model scripts may use the PyNN API to load a network, but the network must not be executed.
-    However, there are <a target="_blank" href="{{platformDocumentationURL}}/nrp/user_manual/simulation_setup/hard_reset.html">a few points</a> that should be taken into consideration when changing neuronal networks during a simulation.
+    However, there are <a target="_blank"
+                          href="{{platformDocumentationURL}}/nrp/user_manual/simulation_setup/hard_reset.html">a few
+      points</a> that should be taken into consideration when changing neuronal networks during a simulation.
   </p>
   <div ng-show="pynnScript === undefined" class="alert alert-info" role="alert">
     There is no PyNN script available for this experiment.
   </div>
-  <div ng-show="pynnScript !== undefined" >
+  <div ng-show="pynnScript !== undefined">
     <p>Populations (set of neurons indices) can be defined here and referred to in transfer functions:
     </p>
     <form name="populationForm">
@@ -26,21 +29,24 @@
         <tbody>
         <tr ng-repeat="(population, indices) in populations">
           <td>
-             <input type="text" size="25" ng-model="population" ng-focus="onFocusChange(indices.id);"
-                    ng-blur="processChange(population);" ng-pattern="/^([a-zA-Z_]+[\w_]*)$/" required>
+            <input type="text" size="25" ng-model="population" ng-focus="onFocusChange(indices.id);"
+                   ng-blur="processChange(population);" ng-pattern="/^([a-zA-Z_]+[\w_]*)$/" required>
             </input>
           </td>
           <td ng-if-start="isSlice(indices)">
             <label>from</label>
-            <input size="5" type="number" class="neuron-index-field" ng-model="indices.from" min="0" placeholder="0" required>
+            <input size="5" type="number" class="neuron-index-field" ng-model="indices.from" min="0" placeholder="0"
+                   required>
             </input>
           </td>
           <td><label>to</label>
-            <input size="5" type="number" class="neuron-index-field" ng-model="indices.to" min="1" required placeholder="1">
+            <input size="5" type="number" class="neuron-index-field" ng-model="indices.to" min="1" required
+                   placeholder="1">
             </input>
           </td>
           <td ng-if-end><label>step</label>
-            <input size="5" type="number" class="neuron-index-field" ng-model="indices.step" min="1" placeholder="1" required>
+            <input size="5" type="number" class="neuron-index-field" ng-model="indices.step" min="1" placeholder="1"
+                   required>
             </input>
           </td>
           <td ng-if="!isSlice(indices)" colspan="3">
@@ -70,6 +76,15 @@
          ui-refresh='refreshCodemirror'>
     </div>
     <hr>
+    <div>
+      <button type="button" class="btn btn-default btn-md"
+              ng-click="apply(0)"
+              ng-disabled="loading || stateService.statePending || !populationForm.$valid"
+              v-busy="loading || stateService.statePending"
+              v-busy-label="Applying changes"
+              v-pressable>
+        <i class="glyphicon glyphicon-ok-circle" aria-hidden="true"></i>
+        <span> Apply</span>
+    </div>
   </div>
-  <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
 </div>
