@@ -729,7 +729,7 @@ a[id^="insert-entity-"]
   }
 }
 
-.viewContainer {
+.render-view-container {
   position: absolute;
   minWidth: 50px;
   maxWidth: 100%;
@@ -737,17 +737,5 @@ a[id^="insert-entity-"]
   boxShadow: 0px 0px 0px 3px rgba(0,0,0,0.3);
   borderRadius: 2px;
   background: rgba(0,0,0,0);
-}
-
-.viewContainer > .frustumCheckbox {
-  position: absolute;
-  left: 5px;
-  bottom: 9px;
-}
-
-.viewContainer > .frustumLabel {
-  position: absolute;
-  left: 20px;
-  bottom: 0px;
 }
 

@@ -95,22 +95,12 @@ describe('testing the gz3d service', function () {
     expect(testRenderContainerAdjustable.getAttribute('movable')).not.toEqual(undefined);
     expect(testRenderContainerAdjustable.getAttribute('resizeable')).not.toEqual(undefined);
     expect(testRenderContainerAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
-    expect(testRenderContainerAdjustable.className).toEqual('camera-view ng-scope');
-    expect(testRenderContainerAdjustable.innerHTML).toContain('class="camera-view-label"');
-    expect(testRenderContainerAdjustable.innerHTML).toContain('test_rendercontainer_adjustable');
-    expect(testRenderContainerAdjustable.innerHTML).toContain('<input type="checkbox" name="test_rendercontainer_adjustable_options" value="show_frustum" id="test_rendercontainer_adjustable_show_frustum" class="frustumCheckbox">');
-    expect(testRenderContainerAdjustable.innerHTML).toContain('<label for="test_rendercontainer_adjustable_show_frustum" class="frustumLabel">show frustum</label>');
+    expect(testRenderContainerAdjustable.getAttribute('camera-name')).toEqual('test_rendercontainer_adjustable');
+    expect(testRenderContainerAdjustable.className).toEqual('render-view-container camera-view-window ng-scope');
+
     expect(testRenderContainerNotAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
-    expect(testRenderContainerNotAdjustable.className).toEqual('camera-view ng-scope');
-    expect(testRenderContainerNotAdjustable.innerHTML).toContain('class="camera-view-label"');
-    expect(testRenderContainerNotAdjustable.innerHTML).toContain('test_rendercontainer_unadjustable');
-    expect(testRenderContainerNotAdjustable.innerHTML).toContain('<input type="checkbox" name="test_rendercontainer_unadjustable_options" value="show_frustum" id="test_rendercontainer_unadjustable_show_frustum" class="frustumCheckbox">');
-    expect(testRenderContainerNotAdjustable.innerHTML).toContain('<label for="test_rendercontainer_unadjustable_show_frustum" class="frustumLabel">show frustum</label>');
-
-
-    expect(cameraHelper.visible).toBe(false);
-    $(testRenderContainerAdjustable).find('input').click();
-    expect(cameraHelper.visible).toBe(true);
+    expect(testRenderContainerNotAdjustable.getAttribute('camera-name')).toEqual('test_rendercontainer_unadjustable');
+    expect(testRenderContainerNotAdjustable.className).toEqual('render-view-container camera-view-window ng-scope');
   });
 
   it('should not initialize when already initialized', function() {

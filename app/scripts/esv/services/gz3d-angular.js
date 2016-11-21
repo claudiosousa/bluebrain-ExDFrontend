@@ -103,40 +103,15 @@
       }
 
       returnValue.createRenderContainer = function(adjustable, name) {
-        var renderContainer, adjustableAttributes;
+        var renderContainer, renderContainerHTML;
         if (adjustable) {
-          adjustableAttributes = "movable resizeable";
+          renderContainerHTML = '<camera-view movable resizeable keep-aspect-ratio class="render-view-container camera-view-window" camera-name=' + name + '></camera-view>';
         }
-        var renderContainerHTML =
-          '<div '+ adjustableAttributes +' keep-aspect-ratio class="camera-view">' +
-          '<div class="camera-view-label">' + name + '</div> ' +
-          '</div>';
+        else {
+          renderContainerHTML = '<camera-view keep-aspect-ratio class="render-view-container camera-view-window" camera-name=' + name + '></camera-view>';
+        }
 
         renderContainer = $compile(renderContainerHTML)($rootScope)[0];
-
-        // add checkbox to toggle display of view's camera frustum
-        var checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = name + '_options';
-        checkbox.value = 'show_frustum';
-        checkbox.id = name + '_show_frustum';
-        checkbox.className = 'frustumCheckbox';
-        checkbox.onclick = function(event) {
-          var target = event.currentTarget;
-          var viewName = target.id.substr(0, target.id.search('_show_frustum'));
-          var cameraHelper = returnValue.scene.viewManager.getViewByName(viewName).camera.cameraHelper;
-          if (angular.isDefined(cameraHelper)) {
-            cameraHelper.visible = checkbox.checked;
-          }
-        };
-
-        var label = document.createElement('label');
-        label.htmlFor = checkbox.id;
-        label.className = 'frustumLabel';
-        label.appendChild(document.createTextNode('show frustum'));
-
-        renderContainer.appendChild(checkbox);
-        renderContainer.appendChild(label);
 
         return renderContainer;
       };
