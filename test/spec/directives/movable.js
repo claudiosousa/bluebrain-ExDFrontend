@@ -4,10 +4,11 @@ describe('Directive: Movable', function () {
 
   beforeEach(module('exdFrontendApp'));
 
-  var element;
-  var $log;
-  var $scope;
-  var $document;
+  var element,
+    $scope,
+    $document,
+    $rootScope,
+    $compile;
 
   var logMock = {error: jasmine.createSpy('error')};
   var startX = 110;
@@ -17,18 +18,25 @@ describe('Directive: Movable', function () {
     $provide.value('$log', logMock);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, _$log_, _$document_) {
+
+  function createMovableElement(useAnchor) {
     $scope = $rootScope.$new();
-    element = $compile('<div movable></div>')($scope);
-    $log = _$log_;
-    $document = _$document_;
+    element = $compile('<div movable ' + (useAnchor ? 'movable-anchor="*"' : '') + '><div></div></div>')($scope);
+    $scope.$digest();
     element.css({
       top:    '100px',
       left:   '100px',
       width:  '100px',
       height: '100px'
     });
-    $scope.$digest();
+  }
+
+  beforeEach(inject(function (_$rootScope_, _$compile_, _$document_) {
+    $rootScope = _$rootScope_;
+    $compile = _$compile_;
+    $document = _$document_;
+
+    createMovableElement();
   }));
 
   it('should change the cursor to be the movable-cursor', function () {
@@ -64,19 +72,19 @@ describe('Directive: Movable', function () {
     expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
   });
 
-  it('should NOT move the element out of the window', function () {
+  it('should move the element out of the window', function () {
     var endX = 100;
     var endY = 100;
-    var originalTop = element.css('top');
-    var originalLeft = element.css('left');
-    element.triggerHandler({type: 'mousedown', pageX: startX, pageY: startY});
+    var originalTop = element.offset().top;
+    var originalLeft = element.offset().left;
+    element.triggerHandler({ type: 'mousedown', pageX: startX, pageY: startY });
     $scope.$digest();
-    $document.triggerHandler({type: 'mousemove', pageX: endX, pageY: endY});
+    $document.triggerHandler({ type: 'mousemove', pageX: endX, pageY: endY });
     $scope.$digest();
-    expect(element.css('top')).toBe(originalTop);
-    expect(element.css('left')).toBe(originalLeft);
+    expect(element.css('top')).toBe(originalTop + endX - startX + 'px');
+    expect(element.css('left')).toBe(originalLeft + endY - startY + 'px');
 
-    $document.triggerHandler({type: 'mouseup', pageX: endX, pageY: endY});
+    $document.triggerHandler({ type: 'mouseup', pageX: endX, pageY: endY });
   });
 
   it('should move the element with a touch gesture', function () {
@@ -109,4 +117,31 @@ describe('Directive: Movable', function () {
     expect(element.css('left')).toBe(originalLeft + (endX - startX) + 'px');
   });
 
+  it('should move element using movable anchor', function () {
+    createMovableElement(true);
+    var delta = 112;
+
+    var originalTop = element.offset().top;
+    var originalLeft = element.offset().left;
+    var child = element.children().first();
+
+    child.triggerHandler({ type: 'mousedown', pageX: 0, pageY: 0 });
+    $scope.$digest();
+    $document.triggerHandler({ type: 'mousemove', pageX: delta, pageY: delta });
+    $scope.$digest();
+    expect(element.css('top')).toBe(originalTop + delta + 'px');
+    expect(element.css('left')).toBe(originalLeft + delta + 'px');
+  });
+
+  it('should NOT move element using outside movable anchor', function () {
+    createMovableElement(true);
+
+    var originalTop = element.css('top');
+    var originalLeft = element.css('left');
+    element.triggerHandler({ type: 'mousedown', pageX: 0, pageY: 0 });
+    $scope.$digest();
+    $document.triggerHandler({ type: 'mousemove', pageX: 10, pageY: 10 });
+    expect(element.css('top')).toBe(originalTop);
+    expect(element.css('left')).toBe(originalLeft);
+  });
 });

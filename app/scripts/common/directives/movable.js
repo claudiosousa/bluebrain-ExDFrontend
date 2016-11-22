@@ -2,66 +2,68 @@
   'use strict';
 
   angular.module('exdFrontendApp').directive('movable', ['$document', function ($document) {
+    var MARGIN = 8;
+    var BOTTOM_BAR_HIGHT = 43;
+
     return {
       restrict: 'A',
-      link: function (scope, element, attr) {
-        var startX = 0, startY = 0, x = 0, y = 0;
+      link: function (scope, element, attrs) {
+        var initialCoordinates, initialBoundingRect,
+          dragElement = attrs.movableAnchor ? element.find(attrs.movableAnchor) : $(element[0]);
 
-        element.css({
-          cursor: 'move',
-          position: 'absolute'
+        dragElement.css({
+          cursor: 'move'
         });
 
-        element.on('mousedown touchstart', function (event) {
+        element.css({
+          position: 'absolute'
+        });
+        var getEventCoordinates = function (event) {
+          var isTouchEvent = event.originalEvent && event.originalEvent.touches;
+          var eventX = isTouchEvent ? event.originalEvent.touches[0].pageX : event.pageX;
+          var eventY = isTouchEvent ? event.originalEvent.touches[0].pageY : event.pageY;
+          return { x: eventX, y: eventY };
+        };
+
+        var onPointerDown = function (event) {
           // Prevent default dragging of selected content
           event.preventDefault();
           event.stopPropagation();
 
+          initialCoordinates = getEventCoordinates(event);
+          initialBoundingRect = element[0].getBoundingClientRect();
+
+          $document.on('mousemove touchmove', onPointerMove);
+          $document.on('mouseup touchend', onPointerUp);
+        };
+
+        dragElement.on('mousedown touchstart', onPointerDown);
+
+        var onPointerMove = function (event) {
+          event.stopPropagation();
+
           var coordinates = getEventCoordinates(event);
-          startX = coordinates.x;
-          startY = coordinates.y;
+          var dX = coordinates.x - initialCoordinates.x;
+          var dY = coordinates.y - initialCoordinates.y;
 
-          x = element.position().left;
-          y = element.position().top;
+          if (coordinates.x < window.innerWidth - MARGIN && coordinates.x > MARGIN) {
+            element.css({ left: initialBoundingRect.left + dX + 'px' });
+          }
+          if (coordinates.y < window.innerHeight - MARGIN - BOTTOM_BAR_HIGHT && coordinates.y > MARGIN) {
+            element.css({ top: initialBoundingRect.top + dY + 'px' });
+          }
+        };
 
-          $document.on('mousemove touchmove', mousemove);
-          $document.on('mouseup touchend', mouseup);
+        var onPointerUp = function (event) {
+          event.stopPropagation();
+          $document.off('mousemove touchmove', onPointerMove);
+          $document.off('mouseup touchend', onPointerUp);
+        };
+
+        scope.$on('$destroy', function () {
+          $document.off('mousemove touchmove', onPointerMove);
         });
-
-        function mousemove(event) {
-          event.stopPropagation();
-
-          var coordinates = getEventCoordinates(event);
-          var dX = coordinates.x - startX;
-          var dY = coordinates.y - startY;
-
-          // "-1" is needed to prevent the scrollbars to appear
-          if ((y + dY < window.innerHeight - element.outerHeight() - 1) && (y + dY > 0)) {
-            element.css({
-              top: y + dY + 'px'
-            });
-          }
-          if ((x + dX < window.innerWidth - element.outerWidth()) && (x + dX > 0)) {
-            element.css({
-              left: x + dX + 'px'
-            });
-          }
-        }
-
-        function mouseup(event) {
-          event.stopPropagation();
-          $document.off('mousemove touchmove', mousemove);
-          $document.off('mouseup touchend', mouseup);
-        }
-
-        function getEventCoordinates(event) {
-          var isTouchEvent = event.originalEvent && event.originalEvent.touches;
-          var eventX = isTouchEvent ? event.originalEvent.touches[0].pageX : event.pageX;
-          var eventY = isTouchEvent ? event.originalEvent.touches[0].pageY : event.pageY;
-          return {x: eventX, y: eventY};
-        }
-
       }
     };
   }]);
-}());
+} ());
