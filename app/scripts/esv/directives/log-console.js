@@ -14,7 +14,8 @@
                 scope: {
                     server: '@',
                     topic: '@',
-                    toggleVisibility: '&'
+                    toggleVisibility: '&',
+                    logReceived: '&'
                 },
                 link: function(scope, element) {
                     ['server', 'topic']
@@ -30,6 +31,8 @@
 
                     function newMessageReceived(message) {
                         $timeout(function() {
+                            scope.logReceived();
+
                             scope.logs.push({
                                 time: moment().format('HH:mm:ss'),
                                 msg: message.data
