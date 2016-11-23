@@ -643,6 +643,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
 
       scope.__resetButtonClickHandler();
+      timeout.flush(100);
 
       scope.isCollabExperiment = false; //Collab IS NOT available
 
@@ -653,8 +654,9 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       var successCallback = backendInterfaceService.reset.mostRecentCall.args[1];
       successCallback();
+      timeout.flush(100);
       expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, false);
-    });
+     });
 
     it('should notify the widgets when resetting', function() {
       spyOn(scope, 'notifyResetToWidgets').andCallThrough();
@@ -662,6 +664,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.request = { resetType: RESET_TYPE.RESET_WORLD };
 
       scope.__resetButtonClickHandler();
+      timeout.flush(100);
 
       expect(scope.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
     });
@@ -670,6 +673,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.request = { resetType: RESET_TYPE.RESET_FULL };
 
       scope.__resetButtonClickHandler();
+      timeout.flush(100);
 
       expect(objectInspectorService.toggleView).toHaveBeenCalled();
       expect(gz3d.scene.selectEntity).toHaveBeenCalled();
@@ -691,12 +695,14 @@ describe('Controller: Gz3dViewCtrl', function () {
 
         hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
 
+        timeout.flush(100);
         expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
 
         //ensureStateBeforeExecuting's first parameter is a state, second is a callback
         var resetFunction = stateService.ensureStateBeforeExecuting.mostRecentCall.args[1];
 
         resetFunction(); // call the callback
+        timeout.flush(100);
 
         //open splash
         expect(splash.open).toHaveBeenCalled();
@@ -729,6 +735,7 @@ describe('Controller: Gz3dViewCtrl', function () {
         scope.splashScreen = 'isDefined';
 
         backendInterfaceService.resetCollab.mostRecentCall.args[3](); //3 is the failure callback
+        timeout.flush(100);
 
         expect(hbpDialogFactory.alert).toHaveBeenCalledWith(
           { title: 'Error.',
@@ -764,6 +771,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.request = { resetType: RESET_TYPE.RESET_CAMERA_VIEW };
 
       scope.__resetButtonClickHandler();
+      timeout.flush(100);
       expect(gz3d.scene.resetView).toHaveBeenCalled();
     });
 
