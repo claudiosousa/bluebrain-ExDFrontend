@@ -5,36 +5,35 @@ var urlEsvPage = urlStartPage + '/#/esv-web';
 
 module.exports = {
 
-    SCREENSHOTS_PATH : 'test_e2e/screenshots/',
+    SCREENSHOTS_PATH: 'test_e2e/screenshots/',
 
     // Buttons
-    button : {
-        START_PAGE : 'Get started!',
-        LAUNCH : 'Launch',
-        EDIT : 'Edit',
-        JOIN : 'Join',
+    button: {
+        START_PAGE: 'Get started!',
+        LAUNCH: 'Launch',
+        JOIN: 'Join'
     },
 
     // Timeouts
-    timeout : {
-        RESPOND : 1000,
-        SHORT : 5000,
-        LONG : 300000,
+    timeout: {
+        RESPOND: 1000, //a small delay for webpages to react 
+        SHORT: 5000,
+        LONG: 300000,
     },
 
     // Experiments
-    EXPERIMENT : {
-        _1 : 'Husky Braitenberg experiment',
-        _2 : 'Husky Braitenberg experiment in the SpaceBotCup 2013 arena',
-        _3 : 'LAURON V Braitenberg experiment',
-        _4 : 'LAURON V Braitenberg experiment in the SpaceBotCup 2013 arena',
-    },
+    // Should be added for each new experiments present 
+    // Or automatically detected a list of available experiments
+    EXPERIMENT:
 
+        ['Husky Braitenberg experiment',
+         'Husky Braitenberg experiment with automatically switching screens'
+        ]
+    ,
     // Url
-    url : {
-        Start : urlStartPage,
-        Esv : urlEsvPage,
-        LOGIN : 'https://services.humanbrainproject.eu/oidc/login',
+    url: {
+        Start: urlStartPage,
+        Esv: urlEsvPage
     },
 
 };
