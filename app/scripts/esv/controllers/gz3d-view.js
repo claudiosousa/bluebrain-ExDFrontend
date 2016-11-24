@@ -499,7 +499,7 @@
                   //do not close the splash if successful
                   //it will be closed by messageCallback
 
-                  gz3d.scene.applyComposerSettings(true,true);
+                  gz3d.scene.applyComposerSettings(true,false);
                 },
                 function () { // Failure callback
                   hbpDialogFactory.alert(

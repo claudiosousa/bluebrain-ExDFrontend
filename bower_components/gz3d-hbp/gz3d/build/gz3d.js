@@ -1134,6 +1134,38 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
 };
 
 /**
+ * Apply composer settings to a specific 3D model
+ *
+ */
+
+GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
+{
+    var that = this;
+
+    function updatePBRForModel(node)
+    {
+        if (node.material)
+        {
+            if (node.stdMeshMaterial)
+            {
+                node.material = node.stdMeshMaterial;
+            }
+
+            that.updatePBRMaterial(node);
+            node.material.needsUpdate = true;
+        }
+    }
+
+    updatePBRForModel(model);
+
+    model.traverse(function (node)
+    {
+        updatePBRForModel(node);
+    });
+};
+
+
+/**
  * Render the scene and apply the post-processing effects.
  *
  */
@@ -3600,6 +3632,7 @@ GZ3D.GZIface.prototype.onConnected = function()
       if (modelObj)
       {
         this.scene.add(modelObj);
+        this.scene.applyComposerSettingsToModel(modelObj);
         guiEvents.emit('notification_popup', message.name+' inserted');
       }
 
@@ -4678,6 +4711,8 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
         }
       }
     }
+
+    that.scene.applyComposerSettingsToModel(visualObj);
   }
 };
 
@@ -9670,6 +9705,19 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
   {
     this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate);
   };
+
+/**
+ * Apply composer settings to a specific model
+ * Update a model with the post-processing composer settings
+ * @param updateColorCurve
+*/
+
+  GZ3D.Scene.prototype.applyComposerSettingsToModel = function(model)
+  {
+    this.composer.applyComposerSettingsToModel(model);
+  };
+
+
 /**
  * SDF parser constructor initializes SDF parser with the given parameters
  * and defines a DOM parser function to parse SDF XML files

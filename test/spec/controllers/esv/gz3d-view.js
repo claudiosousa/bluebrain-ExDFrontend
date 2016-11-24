@@ -653,7 +653,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       var successCallback = backendInterfaceService.reset.mostRecentCall.args[1];
       successCallback();
-      expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, true);
+      expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, false);
     });
 
     it('should notify the widgets when resetting', function() {
