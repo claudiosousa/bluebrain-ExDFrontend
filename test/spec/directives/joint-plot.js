@@ -7,9 +7,9 @@ describe('Directive: joint-plot', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
 
-  var $scope, parentscope, element, roslib, window, RESET_TYPE;
+  var $scope, parentscope, element, roslib, simulationInfo, bbpConfig, window, RESET_TYPE;
   var SERVER_URL = 'ws://localhost:1234';
-  var JOINT_TOPIC = '/gazebo/joint_states';
+  var JOINT_TOPIC = '/joint_states';
 
   // TODO(Stefan) extract this to a common place, it is used in several places!
   var roslibMock = {};
@@ -32,18 +32,29 @@ describe('Directive: joint-plot', function () {
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
   roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
 
+  var simulationInfoMock = {
+    serverConfig: {
+      rosbridge: {
+        websocket: SERVER_URL
+      }
+    }
+  };
+
   beforeEach(module(function ($provide) {
     $provide.value('roslib', roslibMock);
+    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, $window, _roslib_, _RESET_TYPE_) {
+  beforeEach(inject(function ($rootScope, $compile, $window, _roslib_, _RESET_TYPE_, _simulationInfo_, _bbpConfig_) {
     parentscope = $rootScope.$new();
     parentscope.showJointPlot = true;
-    element = $compile('<joint-plot server="' + SERVER_URL + '" topic="' + JOINT_TOPIC + '" ng-show="showJointPlot"></joint-plot>')(parentscope);
+    element = $compile('<joint-plot></joint-plot>')(parentscope);
     parentscope.$digest();
 
-    $scope = element.isolateScope();
+    $scope = element.scope();
     roslib = _roslib_;
+    simulationInfo = _simulationInfo_;
+    bbpConfig = _bbpConfig_;
     window = $window;
     $scope.selectedJoints = {
       jointa: true,
@@ -54,12 +65,10 @@ describe('Directive: joint-plot', function () {
     RESET_TYPE = _RESET_TYPE_;
   }));
 
-  it('should replace the element with the appropriate content', function () {
+  it('should set websocket url and joint topic correctly', function () {
     // Compile a piece of HTML containing the directive
-    expect(element.prop('outerHTML')).toContain('class="jointplot');
-    expect(element.prop('outerHTML')).toContain(JOINT_TOPIC);
-    expect(element.prop('outerHTML')).toContain(SERVER_URL);
-    expect(element.prop('outerHTML')).toContain('<svg');
+    expect($scope.server).toBe(SERVER_URL);
+    expect($scope.jointTopic).toBe(JOINT_TOPIC);
   });
 
   it('should clear the plot on RESET event', function () {
@@ -216,15 +225,28 @@ describe('Directive: joint-plot (missing necessary attributes)', function () {
   var element;
   var $log;
   var $scope;
+  var simulationInfo, bbpConfig;
 
   var logMock = {error: jasmine.createSpy('error')};
 
+  var simulationInfoMock = {
+    serverConfig: {
+      rosbridge: {
+        websocket: ''
+      }
+    }
+  };
+
   beforeEach(module(function ($provide) {
     $provide.value('$log', logMock);
+    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile,_$log_) {
+  beforeEach(inject(function ($rootScope, $compile, _$log_, _simulationInfo_, _bbpConfig_) {
     $scope = $rootScope.$new();
+    simulationInfo = _simulationInfo_;
+    bbpConfig = _bbpConfig_;
+    bbpConfig.get('ros-topics').joint = '';
     element = $compile('<joint-plot></joint-plot>')($scope);
     $scope.$digest();
     $log = _$log_;
@@ -232,7 +254,7 @@ describe('Directive: joint-plot (missing necessary attributes)', function () {
 
   it('should log to error in case we have left out necessary attributes', function() {
     expect($log.error).toHaveBeenCalledWith('The server property was not specified!');
-    expect($log.error).toHaveBeenCalledWith('The topic property was not specified!');
+    expect($log.error).toHaveBeenCalledWith('The jointTopic property was not specified!');
   });
 
 });

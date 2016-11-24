@@ -11,8 +11,9 @@
    * # Gz3dViewCtrl
    * Controller of the exdFrontendApp
    */
+
   angular.module('exdFrontendApp.Constants')
-    // constants for the server side status
+  // constants for the server side status
     .constant('STATE', {
       CREATED: 'created',
       STARTED: 'started',
@@ -33,7 +34,7 @@
       DECREASE_LIGHT: 6,
       CAMERA_TRANSLATION: 7,
       CAMERA_ROTATION: 8,
-      SPIKETRAIN: 9,
+      SPIKE_TRAIN: 9,
       OWNER_DISPLAY: 10,
       EXIT_BUTTON: 11,
       ROBOT_VIEW: 12,
@@ -75,7 +76,6 @@
         $scope.simulationInfo = simulationInfo;
 
         stateService.Initialize();
-        var serverConfig = simulationInfo.serverConfig;
         $scope.helpModeActivated = false;
         $scope.helpDescription = '';
         $scope.helpText = {};
@@ -113,7 +113,7 @@
         }
 
         $scope.rosTopics = bbpConfig.get('ros-topics');
-        $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
+        $scope.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
 
         $scope.STATE = STATE;
         $scope.UI = UI;
@@ -360,7 +360,7 @@
         // Lights management
         $scope.modifyLightClickHandler = function (direction, button) {
           if ($scope.helpModeActivated) {
-            return $scope.help($scope.UI[button]);
+            return $scope.help(button);
           }
 
           if (direction < 0 && $scope.isGlobalLightMinReached())

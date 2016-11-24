@@ -1,4 +1,6 @@
-<div id="spiketrain-widget" resizeable class="spikegraph" close-widget="spikeTrainButtonClickHandler()" style="display: flex;">
+<link rel="stylesheet" href="styles/esv/spiketrain.css" />
+
+<div id="spiketrain-widget" movable resizeable show-on-top class="spikegraph" style="display: flex;" class="ng-hide" ng-show="showSpikeTrain">
   <div class="leftaxis">
     <div class="spikearrow">
       <p class="legend">NeuronID</p>
@@ -10,5 +12,5 @@
       <canvas id="spiketrain-canvas-2"></canvas>
     </div>
   </div>
-  <button type="button" class="button-close" data-ng-click="closeWidget()">×</button>
+  <button type="button" class="button-close" data-ng-click="spikeTrainButtonClickHandler()">×</button>
 </div>

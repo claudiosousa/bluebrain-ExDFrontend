@@ -247,7 +247,7 @@
       //simulation url
       var experimentID = Object.keys(defaultPageOptions.experiments)[0];
       var simulationID = defaultPageOptions.startExperiment.simulationID;
-      var expectedLocation = ['esv-web/gz3d-view/' + hostName + '/' + experimentID + '/' + simulationID];
+      var expectedLocation = ['esv-web/experiment-view/' + hostName + '/' + experimentID + '/' + simulationID];
 
       expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
     });
@@ -291,7 +291,7 @@
       page.find('a[analytics-event="Join"]').click();
       var experimentID = Object.keys(defaultPageOptions.experiments)[0];
       var simulationID = defaultPageOptions.startExperiment.simulationID;
-      var expectedLocation = ['esv-web/gz3d-view/' + hostName + '/' + experimentID + '/' + simulationID];
+      var expectedLocation = ['esv-web/experiment-view/' + hostName + '/' + experimentID + '/' + simulationID];
       expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
     });
 

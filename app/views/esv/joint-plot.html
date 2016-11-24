@@ -1,4 +1,6 @@
-<div class="jointplot-wrapper" resizeable close-widget="jointPlotButtonClickHandler()" style="display:flex;">
+<link rel="stylesheet" href="styles/esv/joint-plot.css" />
+
+<div class="jointplot-wrapper" movable resizeable show-on-top style="display:flex;" class="ng-hide" ng-show="showJointPlot">
   <div class="jointplot" ng-show="allJoints.length > 0">
     <div class="property-selector">
       <div ng-repeat="prop in properties">
@@ -24,5 +26,5 @@
   <div class="jointplot" ng-hide="allJoints.length > 0">
     <h4>Start the simulation to display the plot</h4>
   </div>
-  <button type="button" class="button-close" data-ng-click="closeWidget()">×</button>
+  <button type="button" class="button-close" data-ng-click="jointPlotButtonClickHandler()">×</button>
 </div>

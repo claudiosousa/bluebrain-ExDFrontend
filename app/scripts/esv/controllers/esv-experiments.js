@@ -223,7 +223,7 @@
           };
 
           $scope.joinExperiment = function (simul, exp) {
-            var path = 'esv-web/gz3d-view/' + simul.server + '/' + exp.id + '/' + simul.runningSimulation.simulationID;
+            var path = 'esv-web/experiment-view/' + simul.server + '/' + exp.id + '/' + simul.runningSimulation.simulationID;
             $location.path(path);
           };
 
