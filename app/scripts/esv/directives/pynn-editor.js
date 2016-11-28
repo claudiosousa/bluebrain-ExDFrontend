@@ -2,13 +2,17 @@
   'use strict';
 
   angular.module('exdFrontendApp').directive('pynnEditor', [
+    '$timeout',
     'backendInterfaceService',
     'documentationURLs',
     'hbpDialogFactory',
     'simulationInfo',
     'STATE',
     'stateService',
-    function (backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService) {
+    'autoSaveService',
+    function ($timeout, backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService) {
+      var DIRTY_TYPE = 'BRAIN';
+
       return {
         templateUrl: 'views/esv/pynn-editor.html',
         restrict: 'E',
@@ -19,6 +23,7 @@
 
           scope.isCollabExperiment = simulationInfo.isCollabExperiment;
           scope.loading = false;
+          scope.collabDirty = false;
           scope.refreshCodemirror = false;
           scope.isSavingToCollab = false;
 
@@ -38,6 +43,11 @@
           };
 
           scope.control.refresh = function () {
+            if (scope.collabDirty){
+              $timeout(function () { scope.refreshCodemirror = !scope.refreshCodemirror; }, 100);
+              return;
+            }
+
             scope.loading = true;
             backendInterfaceService.getBrain(function(response) {
               if (response.brain_type === "py") {
@@ -194,6 +204,9 @@
               scope.stringsToLists(scope.populations),
               function() { // Success callback
                 scope.isSavingToCollab = false;
+                scope.collabDirty = false;
+                autoSaveService.clearDirty(DIRTY_TYPE);
+
               },function() { // Failure callback
                 hbpDialogFactory.alert({
                   title: "Error.",
@@ -237,6 +250,15 @@
             scope.populations.splice(index, 1);
             scope.updateRegexPatterns();
           };
+
+          scope.onBrainChange = function() {
+            scope.collabDirty = scope.isCollabExperiment;
+            autoSaveService.setDirty(DIRTY_TYPE, [scope.pynnScript, scope.populations]);
+          };
+
+          scope.$watch('pynnScript', function(after, before) { if (before) scope.onBrainChange();});
+          scope.$watchCollection('populations', function(after, before) { if (before) scope.onBrainChange();});
+
 
           scope.addList = function() {
             var regex = generateRegexPattern(populationNames(), scope.populations.length);
@@ -319,7 +341,13 @@
             // button.
             scope.control.refresh = undefined;
           });
+
+          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved) {
+            scope.collabDirty = true;
+            scope.pynnScript = autoSaved[0];
+            scope.populations = autoSaved[1];
+          });
         }
       };
     }]);
-}());
+} ());

@@ -4,8 +4,8 @@
   /* global console: false */
 
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler) {
+    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService',
+    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler,autoSaveService) {
 
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
@@ -29,6 +29,8 @@
 
     $scope.openCallback = function() {
       // The Panel is opened
+      autoSaveService.checkAutoSavedWork();
+
       $scope.panelIsOpen = true;
       if($scope.activeTab.transferfunction === true ||
         $scope.activeTab.statemachine === true ||
@@ -56,6 +58,8 @@
           $scope.controls.pynneditor.refresh();
         }
       }
+
+
     };
 
     // update UI

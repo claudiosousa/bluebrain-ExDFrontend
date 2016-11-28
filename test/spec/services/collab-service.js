@@ -137,7 +137,7 @@ describe('Services: collab-folder-api-service', function () {
   it('test downloadFile calls hbpFileStore with expected parameters', function() {
     spyOn(hbpFileStore, 'getContent');
     collabFolderAPIService.downloadFile('FakeFolderId');
-    expect(hbpFileStore.getContent).toHaveBeenCalledWith('FakeFolderId');
+    expect(hbpFileStore.getContent).toHaveBeenCalledWith('FakeFolderId', undefined);
     hbpFileStore.getContent.reset();
     // test with some custom config
     collabFolderAPIService.downloadFile('FakeFolderId', {responseType: 'blob'});

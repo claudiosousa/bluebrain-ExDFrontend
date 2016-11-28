@@ -6,7 +6,7 @@
 
 <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
         ng-click="saveTFIntoCollabStorage()"
-        ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
+        ng-disabled="stateService.currentState === STATE.INITIALIZED || !collabDirty"
         v-busy="isSavingToCollab"
         v-busy-label="Saving to Collab"
         v-pressable>

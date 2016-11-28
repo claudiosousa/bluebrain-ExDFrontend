@@ -68,10 +68,7 @@
     };
 
     this.downloadFile = function(id, customConfig){
-      if (customConfig){
-        return hbpFileStore.getContent(id, customConfig);
-      }
-      return hbpFileStore.getContent(id);
+      return hbpFileStore.getContent(id, customConfig);
     };
 
     //gets the experiment folder uuid for a Collab context
@@ -85,6 +82,18 @@
         deferred.reject(err);
       });
       return deferred.promise;
+    };
+
+    var entityUrl = function(entity) {
+      return baseUrl+'/'+entity._entityType.split(':')[0]+'/'+entity._uuid;
+    };
+
+    this.uploadEntity = function(file, entity) {
+      return $http.post(entityUrl(entity)+'/content/upload', file, angular.extend({
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        }
+      })).$promise;
     };
  }]);
 
