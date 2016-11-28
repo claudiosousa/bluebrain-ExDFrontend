@@ -971,10 +971,18 @@
             return $scope.help($scope.UI.LOG_CONSOLE);
           }
           $scope.showLogConsole = !$scope.showLogConsole;
+          if ($scope.showLogConsole)
+            $scope.missedConsoleLogs = 0;
           nrpAnalytics.eventTrack('Toggle-log-console', {
             category: 'Simulation-GUI',
             value: $scope.showLogConsole
           });
+        };
+
+        $scope.missedConsoleLogs = 0;
+        $scope.consoleLogReceived = function () {
+          if (!$scope.showLogConsole)
+            $scope.missedConsoleLogs++;
         };
 
         // Owner information

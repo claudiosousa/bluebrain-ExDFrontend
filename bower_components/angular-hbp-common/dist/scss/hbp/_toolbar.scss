@@ -123,6 +123,7 @@ $hbp-toolbar-button-count: 5;
     cursor: pointer;
 
     border-right: 1px solid $hbp-color-toolbar-border;
+    position: relative;
 
     &:hover {
         box-shadow: inset 0 0 20px $hbp-color-shadow;
