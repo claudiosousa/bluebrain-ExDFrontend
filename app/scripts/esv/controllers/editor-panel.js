@@ -36,16 +36,33 @@
         gz3d.scene.controls.keyboardBindingsEnabled = false;
       }
 
-      if ($scope.activeTab.transferfunction === true) {
-        $scope.controls.transferfunction.refresh();
-      }
-      else if ($scope.activeTab.statemachine === true) {
-        $scope.controls.statemachine.refresh();
-      }
-      else if ($scope.activeTab.pynneditor === true) {
-        $scope.controls.pynneditor.refresh();
+      $scope.refresh();
+    };
+
+    $scope.refresh = function ()
+    {
+      if ($scope.panelIsOpen)
+      {
+        if ($scope.activeTab.transferfunction === true)
+        {
+          $scope.controls.transferfunction.refresh();
+        }
+        else if ($scope.activeTab.statemachine === true)
+        {
+          $scope.controls.statemachine.refresh();
+        }
+        else if ($scope.activeTab.pynneditor === true)
+        {
+          $scope.controls.pynneditor.refresh();
+        }
       }
     };
+
+    // update UI
+    $scope.$on("UPDATE_PANEL_UI", function() {
+      // prevent calling the select functions of the tabs
+      $scope.refresh();
+    });
 
     $scope.closeCallback = function() {
       // The Panel is closed
