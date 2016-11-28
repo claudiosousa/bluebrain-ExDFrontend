@@ -13,19 +13,19 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
 
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:hover,
-  .nav-tabs > li.active > a:focus{
-      background: transparent;
-   }
+  .nav-tabs > li.active > a:focus {
+    background: transparent;
+  }
 
   @extend .pop-over-viewer;
-   display: flex;
-   top: 3%;
-   left: 3%;
-   width: $environmentSettingsPanelStartWidth;
-   height: $environmentSettingsPanelStartHeight;
-   min-width: $environmentSettingsPanelMinWidth;
-   min-height: $environmentSettingsPanelMinHeight;
-   background:rgba(255,255,255,0.90);
+  display: flex;
+  top: 3%;
+  left: 3%;
+  width: $environmentSettingsPanelStartWidth;
+  height: $environmentSettingsPanelStartHeight;
+  min-width: $environmentSettingsPanelMinWidth;
+  min-height: $environmentSettingsPanelMinHeight;
+  background:rgba(255,255,255,0.90);
 
   .environment-settings-panel-close {
     position: absolute;
@@ -104,6 +104,22 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
 input.environment-settings-checkbox[type="checkbox"],
 input.environment-settings-radio[type="radio"] {
   top: -2px;
+}
+
+.environment-settings-checkbox-label
+{
+ font-style: normal;
+ font-weight: normal;
+ font-family: Courier, monospace;
+ font-size: 15px;
+}
+
+.environment-settings-checkbox {
+  padding: 0;
+  margin:0;
+  vertical-align: bottom;
+  position: relative;
+  right: 5px;
 }
 
 environment-settings-panel label

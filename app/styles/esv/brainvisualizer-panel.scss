@@ -5,6 +5,8 @@ $brainvisualizerPanelStartWidthLargeScreen: 950px;
 $brainvisualizerPanelStartHeight: 500px;
 $brainvisualizerPanelMinWidth: 100px;
 $brainvisualizerPanelMinHeight: 75px;
+$brainvisualizerPanelMaxWidth: 500px;
+$brainvisualizerPanelMaxHeight: 375px;
 $brainvisualizerPanelHeadingHeight: 25px;
 $brainvisualizerPanelHeadingMargin: 5px;
 $brainvisualizerPanelHeadingHeightTotal: $brainvisualizerPanelHeadingHeight + 2 * $brainvisualizerPanelHeadingMargin;
@@ -18,6 +20,8 @@ $brainvisualizerPanelHeadingHeightTotal: $brainvisualizerPanelHeadingHeight + 2 
   height: $brainvisualizerPanelStartHeight;
   min-width: $brainvisualizerPanelMinWidth;
   min-height: $brainvisualizerPanelMinHeight;
+  max-width: $brainvisualizerPanelMaxWidth;
+  max-height: $brainvisualizerPanelMaxHeight;
   background: white;
 
   .brainvisualizer-panel-close {

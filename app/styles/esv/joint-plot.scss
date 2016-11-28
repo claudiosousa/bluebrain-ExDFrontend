@@ -4,12 +4,16 @@ $jointPlotBottom: 65px;
 $jointPlotHeight: 400px;
 $jointPlotPadding: 10px;
 
+$rgbCurveEditorMinWidth: 650px;
+$rgbCurveEditorMinHeight: 150px;
+
 .jointplot-wrapper {
   @extend .pop-over-viewer;
   @include compute-top($jointPlotBottom, $jointPlotHeight);
   display: flex;
   height: $jointPlotHeight;
-  min-width: 600px;
+  min-width: $rgbCurveEditorMinWidth;
+  min-height: $rgbCurveEditorMinHeight;
 
   &.resizing .linechart-wrapper{
     visibility: hidden;

@@ -4,12 +4,17 @@ $spikeTrainBottom: 65px;
 $spikeTrainHeight: 175px;
 $spikeTrainMargin: 5px;
 
+$spikeTrainMinWidth: 700px;
+$spikeTrainMinHeight: 160px;
+
 
 .spikegraph {
   @extend .pop-over-viewer;
   @include compute-top($spikeTrainBottom, $spikeTrainHeight);
   height: $spikeTrainHeight;
   display: flex;
+  min-width: $spikeTrainMinWidth;
+  min-height: $spikeTrainMinHeight;
 }
 
 .spikegraph.ng-hide {
