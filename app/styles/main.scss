@@ -6,6 +6,7 @@ $icon-font-path: "/bower_components/hbp-collaboratory-theme/dist/fonts/";
 @import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 @import "hbp-collaboratory-theme/dist/sass/theme.scss";
 @import "angular-hbp-document-client/dist/scss/angular-hbp-document-client.scss";
+@import "font-awesome/scss/font-awesome.scss";
 // endbower
 
 @import "toolbar-extensions";
@@ -19,6 +20,10 @@ $icon-font-path: "/bower_components/hbp-collaboratory-theme/dist/fonts/";
 html, body, [ui-view] {
   width: 100%;
   height: 100%;
+}
+
+body.gz3d-view-route{
+  overflow:hidden;
 }
 
 // Accounts for the fixed navbar
@@ -57,6 +62,7 @@ canvas {
 // will not cover the toolbar.
 #overlay {
   z-index: 1000;
+  position: absolute;
 }
 
 .esv-overlay {
