@@ -310,16 +310,20 @@
               <!-- environment settings panel -->
 
               <!-- navigation mode -->
-              <div class="hbp-toolbar-action hide-overflow ng-hide"
+              <div class="hbp-toolbar-action ng-hide"
                    ng-class="{'highlighted': currentSelectedUIElement === UI.USER_NAVIGATION, 'active': showNavigationModeMenu}"
                    ng-click="navigationModeMenuClickHandler()"
                    ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <i class="fa fa-compass fa-2x vertcenter"></i>
                 <div ng-show="showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -128px; background-color: lightgrey;">
-                  <div class="hbp-toolbar-action hide-overflow" ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY)}" ng-click="setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);">
+                  <div class="hbp-toolbar-action hide-overflow"
+                       ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY)}"
+                       ng-click="setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);">
                     <i class="fa fa-male fa-2x vertcenter"></i>
                   </div>
-                  <div class="hbp-toolbar-action hide-overflow" ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.FREE_CAMERA)}" ng-click="setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);">
+                  <div class="hbp-toolbar-action hide-overflow"
+                       ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.FREE_CAMERA)}"
+                       ng-click="setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);">
                     <i class="fa fa-video-camera fa-2x vertcenter"></i>
                   </div>
                 </div>
