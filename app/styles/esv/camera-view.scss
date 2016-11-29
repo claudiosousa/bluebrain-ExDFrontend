@@ -1,0 +1,22 @@
+.camera-view-window {
+  border: 2px solid black;
+}
+
+.camera-view-label {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  padding: 5px;
+
+  font-weight: bold;
+  text-shadow: white 0 0 5px, white 0 0 5px, white 0 0 5px;
+}
+
+.show-frustum-label {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  padding: 5px;
+
+  text-shadow: white 0 0 5px, white 0 0 5px, white 0 0 5px;
+}

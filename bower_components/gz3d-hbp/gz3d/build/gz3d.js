@@ -6578,6 +6578,7 @@ GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
     var viewContainer;
     if (name === GZ3D.MULTIVIEW_MAINVIEW_NAME) {
         viewContainer = document.createElement('div');
+        viewContainer.className += 'render-view-container';
     } else {
         if (!angular.isDefined(this.createRenderContainerCallback)) {
             console.error('GZ3D.MultiView.createViewContainer() - no callback for creating view reference container defined');
@@ -6590,8 +6591,6 @@ GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
         console.error('GZ3D.MultiView.createViewContainer() - could not create view container via callback');
         return undefined;
     }
-
-    viewContainer.className += (viewContainer.className.length > 0) ? ' viewContainer' : 'viewContainer';
 
     // z-index
     var zIndexTop = parseInt(this.mainContainer.style.zIndex, 10) + this.views.length + 1;
