@@ -6,7 +6,8 @@
     .constant('EDIT_MODE', {
       VIEW: 'view',
       TRANSLATE: 'translate',
-      ROTATE: 'rotate'
+      ROTATE: 'rotate',
+      SCALE: 'scale'
     });
 
   angular.module('exdFrontendApp')

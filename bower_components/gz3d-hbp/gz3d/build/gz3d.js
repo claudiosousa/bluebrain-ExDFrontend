@@ -3827,6 +3827,12 @@ GZ3D.GZIface.prototype.onConnected = function()
         y : translation.y,
         z : translation.z
       },
+      scale :
+      {
+        x : scale.x,
+        y : scale.y,
+        z : scale.z
+      },
       orientation :
       {
         w: quaternion.w,
@@ -3933,11 +3939,11 @@ GZ3D.GZIface.prototype.onConnected = function()
     var modelMsg =
     {
       name : entity.parent.name,
-      id : entity.parent.userData,
+      id : entity.parent.userData.id,
       link:
       {
         name: entity.name,
-        id: entity.userData,
+        id: entity.userData.id,
         self_collide: entity.serverProperties.self_collide,
         gravity: entity.serverProperties.gravity,
         kinematic: entity.serverProperties.kinematic
@@ -3980,6 +3986,12 @@ GZ3D.GZIface.prototype.onConnected = function()
         x : translation.x,
         y : translation.y,
         z : translation.z
+      },
+      scale :
+      {
+        x : scale.x,
+        y : scale.y,
+        z : scale.z
       },
       orientation :
       {
@@ -4143,11 +4155,47 @@ GZ3D.GZIface.prototype.updateStatsGuiFromMsg = function(stats)
   this.gui.setSimTime(simTimeValue);
 };
 
+var getShapeName = function(object3D) {
+
+  var getObject3DGeometryType = function() {
+      var geometryType = null;
+
+      //object::link::visual::Mesh
+      object3D.traverse(function(node) {
+        if(!geometryType && node.name.indexOf('link::visual') >= 0) {
+          //current node is a link::visual node, test the mesh geometry
+          node.traverse(function (subnode) {
+            if (subnode instanceof THREE.Mesh) {
+              geometryType = subnode.geometry;
+            }
+          });
+        }
+      });
+
+      return geometryType;
+    };
+
+  var shapeName = 'complex';
+
+  var geomType = getObject3DGeometryType();
+
+  if(geomType instanceof THREE.BoxGeometry) {
+      shapeName = 'box';
+  } else if (geomType instanceof THREE.CylinderGeometry) {
+      shapeName = 'cylinder';
+  } else if (geomType instanceof THREE.SphereGeometry) {
+      shapeName = 'sphere';
+  }
+
+  return shapeName;
+
+};
+
 GZ3D.GZIface.prototype.createModelFromMsg = function(model)
 {
   var modelObj = new THREE.Object3D();
   modelObj.name = model.name;
-  modelObj.userData = model.id;
+  modelObj.userData.id = model.id;
   if (model.pose)
   {
     this.scene.setPose(modelObj, model.pose.position, model.pose.orientation);
@@ -4170,7 +4218,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     var link = model.link[j];
     var linkObj = new THREE.Object3D();
     linkObj.name = link.name;
-    linkObj.userData = link.id;
+    linkObj.userData.id = link.id;
     linkObj.serverProperties =
         {
           self_collide: link.self_collide,
@@ -4185,13 +4233,13 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     }
     modelObj.add(linkObj);
 
-    // only load individual link visuals if they are not replace by an animated model
+    // only load individual link visuals if they are not replaced by an animated model
     if (animatedModel === null)
     {
       for (var k = 0; k < link.visual.length; ++k)
       {
         var visual = link.visual[k];
-        var visualObj = this.createVisualFromMsg(visual);
+        var visualObj = this.createVisualFromMsg(visual, model.scale);
         if (visualObj && !visualObj.parent) {
           linkObj.add(visualObj);
         }
@@ -4203,7 +4251,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
         for (var m = 0; m < link.collision[l].visual.length; ++m)
         {
           var collisionVisual = link.collision[l].visual[m];
-          var collisionVisualObj = this.createVisualFromMsg(collisionVisual);
+          var collisionVisualObj = this.createVisualFromMsg(collisionVisual, model.scale);
           if (collisionVisualObj && !collisionVisualObj.parent) {
             linkObj.add(collisionVisualObj);
           }
@@ -4227,6 +4275,18 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
     modelObj.joint = model.joint;
   }
 
+  if(model.scale)
+  {
+    this.scene.setScale(modelObj, model.scale);
+  }
+
+  var shapeName = getShapeName(modelObj);
+
+  modelObj.userData.shapeName = shapeName;
+  modelObj.userData.isSimpleShape = (shapeName !== 'complex');
+  modelObj.getShapeName  = function () { return this.userData.shapeName; };
+  modelObj.isSimpleShape = function () { return this.userData.isSimpleShape; };
+
   return modelObj;
 };
 
@@ -4236,6 +4296,11 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
 // merging the two methods and extracting the different things to parameters (or any other means
 // of configuration).
 GZ3D.GZIface.prototype.updateModelFromMsg = function (modelObj, modelMsg) {
+
+  if(modelMsg.scale)  {
+    this.scene.setScale(modelObj, modelMsg.scale);
+  }
+
   for (var j = 0; j < modelMsg.link.length; ++j) {
     var link = modelMsg.link[j];
     var linkObj = modelObj.children[j];
@@ -4250,7 +4315,7 @@ GZ3D.GZIface.prototype.updateModelFromMsg = function (modelObj, modelMsg) {
   }
 };
 
-GZ3D.GZIface.prototype.createVisualFromMsg = function(visual)
+GZ3D.GZIface.prototype.createVisualFromMsg = function(visual, modelScale)
 {
   if (visual.geometry)
   {
@@ -4266,7 +4331,7 @@ GZ3D.GZIface.prototype.createVisualFromMsg = function(visual)
     visualObj.castShadow = visual.cast_shadows;
     visualObj.receiveShadow = visual.receive_shadows;
 
-    this.createGeom(geom, visual.material, visualObj);
+    this.createGeom(geom, visual.material, visualObj, modelScale);
 
     return visualObj;
   }
@@ -4453,25 +4518,30 @@ GZ3D.GZIface.prototype.parseUri = function(uri)
   return uriPath + '/' + uri.substring(idx);
 };
 
-GZ3D.GZIface.prototype.createGeom = function(geom, material, parent)
+GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
 {
   var obj;
   var uriPath = GZ3D.assetsPath;
   var that = this;
   var mat = this.parseMaterial(material);
+
+  //geometries' sizes in scene messages are scaled, must un-scale them first
+  //cfr. physics::Link::UpdateVisualGeomSDF
   if (geom.box)
   {
-    obj = this.scene.createBox(geom.box.size.x, geom.box.size.y,
-        geom.box.size.z);
+    var unScaledSize = (new THREE.Vector3().copy(geom.box.size)).divide(modelScale);
+    obj = this.scene.createBox(unScaledSize.x, unScaledSize.y, unScaledSize.z);
   }
   else if (geom.cylinder)
   {
-    obj = this.scene.createCylinder(geom.cylinder.radius,
-        geom.cylinder.length);
+    var unscaledRadiusCylinder = geom.cylinder.radius / Math.max(modelScale.x, modelScale.y);
+    var unScaledLength = geom.cylinder.length / modelScale.z;
+    obj = this.scene.createCylinder(unscaledRadiusCylinder, unScaledLength);
   }
   else if (geom.sphere)
   {
-    obj = this.scene.createSphere(geom.sphere.radius);
+    var unscaledRadiusSphere = geom.sphere.radius / Math.max(modelScale.x, modelScale.y, modelScale.z);
+    obj = this.scene.createSphere(unscaledRadiusSphere);
   }
   else if (geom.plane)
   {
@@ -5241,13 +5311,23 @@ GZ3D.LuminosityHighPassShader = {
 // Based on TransformControls.js
 // original author: arodic / https://github.com/arodic
 
+
+GZ3D.TRANSFORM_TYPE_NAME_PREFIX = {
+  TRANSLATE: 'T',
+  SCALE:     'S',
+  ROTATE:    'R',
+  ALL:       'A',
+  NONE:      'N'
+};
+
 /**
- * Manipulator to perform translate and rotate transforms on objects
+ * Manipulator to perform translate, scale and rotate transforms on objects
  * within the scene.
  * @constructor
  */
 GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 {
+
   // Needs camera for perspective
   this.camera = camera;
 
@@ -5261,7 +5341,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   // Object to be manipulated
   this.object = undefined;
 
-  // translate / rotate
+  // translate / rotate / scale
   this.mode = 'translate';
 
   // world / local
@@ -5284,10 +5364,19 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
   var scope = this;
 
-  var changeEvent = {type: 'change'};
+  var changeEvent = function(_transform) { //TRANSFORM_TYPE_NAME_PREFIX
+
+    if(_transform) {
+        return {type: 'change', transform: _transform};
+    } else {
+        return {type: 'change', transform: GZ3D.TRANSFORM_TYPE_NAME_PREFIX.NONE};
+    }
+  };
 
   var ray = new THREE.Raycaster();
   var pointerVector = new THREE.Vector3();
+  var startRay = new THREE.Ray();
+  var lastRay = new THREE.Ray();
 
   var point = new THREE.Vector3();
   var offset = new THREE.Vector3();
@@ -5314,6 +5403,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
   var oldPosition = new THREE.Vector3();
   var oldRotationMatrix = new THREE.Matrix4();
+  var oldScale = new THREE.Vector3();
 
   var parentRotationMatrix  = new THREE.Matrix4();
   var parentScale = new THREE.Vector3();
@@ -5340,12 +5430,14 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
   for(var i in intersectionPlaneList)
   {
-    intersectionPlanes[intersectionPlaneList[i]] =
+    var currentIntersectionPlane =
         new THREE.Mesh(new THREE.PlaneGeometry(500, 500));
-    intersectionPlanes[intersectionPlaneList[i]].material.side =
-        THREE.DoubleSide;
-    intersectionPlanes[intersectionPlaneList[i]].visible = false;
-    planes.add(intersectionPlanes[intersectionPlaneList[i]]);
+
+    currentIntersectionPlane.material.side = THREE.DoubleSide;
+    currentIntersectionPlane.visible = false;
+
+    intersectionPlanes[intersectionPlaneList[i]] = currentIntersectionPlane;
+    planes.add(currentIntersectionPlane);
   }
 
   intersectionPlanes['YZ'].rotation.set(0, Math.PI/2, 0);
@@ -5394,183 +5486,203 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   var magenta = new THREE.Color(0xff00ff);
   var yellow = new THREE.Color(0xffff00);
 
-  var geometry, mesh;
+  function buildArrowManipulator(transformType) {// 'translate' or 'scale'
+
+    var geometry, mesh;
+
+    var transformTypePrefix =
+      (transformType === 'translate') ? GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE: GZ3D.TRANSFORM_TYPE_NAME_PREFIX.SCALE;
+
+    pickerAxes[transformType] = new THREE.Object3D();
+    displayAxes[transformType] = new THREE.Object3D();
+    scope.gizmo.add(pickerAxes[transformType]);
+    scope.gizmo.add(displayAxes[transformType]);
+
+    // Picker cylinder
+    if(scope.mobile) {
+      geometry = new THREE.CylinderGeometry(0.5, 0.01, 1.4, 10, 1, false);
+    }
+    else {
+      geometry = new THREE.CylinderGeometry(0.2, 0.1, 0.8, 4, 1, false);
+    }
+
+    mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true));
+    mesh.position.x = 0.7;
+    mesh.rotation.z = -Math.PI/2;
+    bakeTransformations(mesh);
+    mesh.name = transformTypePrefix + 'X';
+    pickerAxes[transformType].add(mesh);
+    scope.pickerNames.push(mesh.name);
+    scope.pickerMeshes[mesh.name] = mesh;
+
+    mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
+    mesh.position.y = 0.7;
+    bakeTransformations(mesh);
+    mesh.name = transformTypePrefix + 'Y';
+    pickerAxes[transformType].add(mesh);
+    scope.pickerNames.push(mesh.name);
+    scope.pickerMeshes[mesh.name] = mesh;
+
+    mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
+    mesh.position.z = 0.7;
+    mesh.rotation.x = Math.PI/2;
+    bakeTransformations(mesh);
+    mesh.name = transformTypePrefix + 'Z';
+    pickerAxes[transformType].add(mesh);
+    scope.pickerNames.push(mesh.name);
+    scope.pickerMeshes[mesh.name] = mesh;
+
+    if(scope.mobile)
+    {
+      // Display cylinder
+      geometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 10, 1, false);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true));
+      mesh.position.x = 0.5;
+      mesh.rotation.z = -Math.PI/2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'X';
+      displayAxes[transformType].add(mesh);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
+      mesh.position.y = 0.5;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'Y';
+      displayAxes[transformType].add(mesh);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
+      mesh.position.z = 0.5;
+      mesh.rotation.x = Math.PI/2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'Z';
+      displayAxes[transformType].add(mesh);
+
+      // Display arrow tip
+      if(transformTypePrefix === GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE) {  // translate -> cone tip
+        geometry =  new THREE.CylinderGeometry(0, 0.15, 0.4, 10, 1, false);
+      }
+      else { // scale -> box tip
+        geometry = new THREE.BoxGeometry(0.3, 0.5, 0.3);
+      }
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true));
+      mesh.position.x = 1.2;
+      mesh.rotation.z = -Math.PI/2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'X';
+      displayAxes[transformType].add(mesh);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
+      mesh.position.y = 1.2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'Y';
+      displayAxes[transformType].add(mesh);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
+      mesh.position.z = 1.2;
+      mesh.rotation.x = Math.PI/2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'Z';
+      displayAxes[transformType].add(mesh);
+    }
+    else
+    {
+      // Display lines
+      geometry = new THREE.Geometry();
+      geometry.vertices.push(
+          new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0),
+          new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0),
+          new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)
+      );
+      geometry.colors.push(
+          red, red, green, green, blue, blue
+      );
+      var material = new THREE.LineBasicMaterial({
+          vertexColors: THREE.VertexColors,
+          depthTest: false,
+          depthWrite: false,
+          transparent: true
+      });
+      mesh = new THREE.LineSegments(geometry, material);
+      displayAxes[transformType].add(mesh);
+
+      // Display (arrow tip)
+      if(transformType === 'translate') { // translate -> cone tip
+        geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 4, 1, true);
+      }
+      else { // scale -> box tip
+        geometry = new THREE.BoxGeometry( 0.1, 0.2, 0.1);
+      }
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true, 1));
+      mesh.position.x = 1.1;
+      mesh.rotation.z = -Math.PI/2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'X';
+      displayAxes[transformType].add(mesh);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true, 1));
+      mesh.position.y = 1.1;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'Y';
+      displayAxes[transformType].add(mesh);
+
+      mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true, 1));
+      mesh.position.z = 1.1;
+      mesh.rotation.x = Math.PI/2;
+      bakeTransformations(mesh);
+      mesh.name = transformTypePrefix + 'Z';
+      displayAxes[transformType].add(mesh);
+
+      if(transformType === 'translate'){
+        // Picker and display octahedron for TXYZ
+        var T = transformTypePrefix;
+        mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.1, 0), new HandleMaterial(white, true, 0.25));
+        mesh.name = T + 'XYZ';
+        scope.pickerNames.push(mesh.name);
+        displayAxes[transformType].add(mesh);
+        pickerAxes[transformType].add(mesh.clone());
+
+        // Picker and display planes
+        geometry = new THREE.PlaneGeometry(0.3, 0.3);
+
+        mesh = new THREE.Mesh(geometry, new HandleMaterial(yellow, 0.25));
+        mesh.position.set(0.15, 0.15, 0);
+        bakeTransformations(mesh);
+        mesh.name = T + 'XY';
+        scope.pickerNames.push(mesh.name);
+        displayAxes[transformType].add(mesh);
+        pickerAxes[transformType].add(mesh.clone());
+
+        mesh = new THREE.Mesh(geometry, new HandleMaterial(cyan, 0.25));
+        mesh.position.set(0, 0.15, 0.15);
+        mesh.rotation.y = Math.PI/2;
+        bakeTransformations(mesh);
+        mesh.name = T + 'YZ';
+        scope.pickerNames.push(mesh.name);
+        displayAxes[transformType].add(mesh);
+        pickerAxes[transformType].add(mesh.clone());
+
+        mesh = new THREE.Mesh(geometry, new HandleMaterial(magenta, 0.25));
+        mesh.position.set(0.15, 0, 0.15);
+        mesh.rotation.x = Math.PI/2;
+        bakeTransformations(mesh);
+        mesh.name = T + 'XZ';
+        scope.pickerNames.push(mesh.name);
+        displayAxes[transformType].add(mesh);
+        pickerAxes[transformType].add(mesh.clone());
+      }
+    }
+  }
 
   // Translate
+  buildArrowManipulator('translate');
 
-  pickerAxes['translate'] = new THREE.Object3D();
-  displayAxes['translate'] = new THREE.Object3D();
-  this.gizmo.add(pickerAxes['translate']);
-  this.gizmo.add(displayAxes['translate']);
-
-  // Picker cylinder
-  if(this.mobile)
-  {
-    geometry = new THREE.CylinderGeometry(0.5, 0.01, 1.4, 10, 1, false);
-  }
-  else
-  {
-    geometry = new THREE.CylinderGeometry(0.2, 0.1, 0.8, 4, 1, false);
-  }
-
-  mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true));
-  mesh.position.x = 0.7;
-  mesh.rotation.z = -Math.PI/2;
-  bakeTransformations(mesh);
-  mesh.name = 'TX';
-  pickerAxes['translate'].add(mesh);
-  this.pickerNames.push(mesh.name);
-  this.pickerMeshes[mesh.name] = mesh;
-
-  mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
-  mesh.position.y = 0.7;
-  bakeTransformations(mesh);
-  mesh.name = 'TY';
-  pickerAxes['translate'].add(mesh);
-  this.pickerNames.push(mesh.name);
-  this.pickerMeshes[mesh.name] = mesh;
-
-  mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
-  mesh.position.z = 0.7;
-  mesh.rotation.x = Math.PI/2;
-  bakeTransformations(mesh);
-  mesh.name = 'TZ';
-  pickerAxes['translate'].add(mesh);
-  this.pickerNames.push(mesh.name);
-  this.pickerMeshes[mesh.name] = mesh;
-
-  if(this.mobile)
-  {
-    // Display cylinder
-    geometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 10, 1, false);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true));
-    mesh.position.x = 0.5;
-    mesh.rotation.z = -Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TX';
-    displayAxes['translate'].add(mesh);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
-    mesh.position.y = 0.5;
-    bakeTransformations(mesh);
-    mesh.name = 'TY';
-    displayAxes['translate'].add(mesh);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
-    mesh.position.z = 0.5;
-    mesh.rotation.x = Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TZ';
-    displayAxes['translate'].add(mesh);
-
-    // Display cone (arrow tip)
-    geometry = new THREE.CylinderGeometry(0, 0.15, 0.4, 10, 1, false);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true));
-    mesh.position.x = 1.2;
-    mesh.rotation.z = -Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TX';
-    displayAxes['translate'].add(mesh);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true));
-    mesh.position.y = 1.2;
-    bakeTransformations(mesh);
-    mesh.name = 'TY';
-    displayAxes['translate'].add(mesh);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true));
-    mesh.position.z = 1.2;
-    mesh.rotation.x = Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TZ';
-    displayAxes['translate'].add(mesh);
-  }
-  else
-  {
-    // Display lines
-    geometry = new THREE.Geometry();
-    geometry.vertices.push(
-        new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0),
-        new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0),
-        new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)
-    );
-    geometry.colors.push(
-        red, red, green, green, blue, blue
-    );
-    var material = new THREE.LineBasicMaterial({
-        vertexColors: THREE.VertexColors,
-        depthTest: false,
-        depthWrite: false,
-        transparent: true
-    });
-    mesh = new THREE.LineSegments(geometry, material);
-    displayAxes['translate'].add(mesh);
-
-    // Display cone (arrow tip)
-    geometry = new THREE.CylinderGeometry(0, 0.05, 0.2, 4, 1, true);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(red, true, 1));
-    mesh.position.x = 1.1;
-    mesh.rotation.z = -Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TX';
-    displayAxes['translate'].add(mesh);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(green, true, 1));
-    mesh.position.y = 1.1;
-    bakeTransformations(mesh);
-    mesh.name = 'TY';
-    displayAxes['translate'].add(mesh);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(blue, true, 1));
-    mesh.position.z = 1.1;
-    mesh.rotation.x = Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TZ';
-    displayAxes['translate'].add(mesh);
-
-    // Picker and display octahedron for TXYZ
-    mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.1, 0),
-        new HandleMaterial(white, true, 0.25));
-    mesh.name = 'TXYZ';
-    this.pickerNames.push(mesh.name);
-    displayAxes['translate'].add(mesh);
-    pickerAxes['translate'].add(mesh.clone());
-
-    // Picker and display planes
-    geometry = new THREE.PlaneGeometry(0.3, 0.3);
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(yellow, 0.25));
-    mesh.position.set(0.15, 0.15, 0);
-    bakeTransformations(mesh);
-    mesh.name = 'TXY';
-    this.pickerNames.push(mesh.name);
-    displayAxes['translate'].add(mesh);
-    pickerAxes['translate'].add(mesh.clone());
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(cyan, 0.25));
-    mesh.position.set(0, 0.15, 0.15);
-    mesh.rotation.y = Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TYZ';
-    this.pickerNames.push(mesh.name);
-    displayAxes['translate'].add(mesh);
-    pickerAxes['translate'].add(mesh.clone());
-
-    mesh = new THREE.Mesh(geometry, new HandleMaterial(magenta, 0.25));
-    mesh.position.set(0.15, 0, 0.15);
-    mesh.rotation.x = Math.PI/2;
-    bakeTransformations(mesh);
-    mesh.name = 'TXZ';
-    this.pickerNames.push(mesh.name);
-    displayAxes['translate'].add(mesh);
-    pickerAxes['translate'].add(mesh.clone());
-
-  }
+  // Scale
+  buildArrowManipulator('scale');
 
   // Rotate
+  var geometry, mesh;
 
   pickerAxes['rotate'] = new THREE.Object3D();
   displayAxes['rotate'] = new THREE.Object3D();
@@ -5872,7 +5984,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
   /**
    * Set mode
-   * @param {string} value - translate | rotate
+   * @param {string} value - translate | scale | rotate
    */
   this.setMode = function(value)
   {
@@ -5910,7 +6022,10 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
        eye.applyMatrix4(tempMatrix.getInverse(scope.object.matrixWorld));
     }
 
-    if (isSelected('TXYZ'))
+    var T = GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE;
+    var S = GZ3D.TRANSFORM_TYPE_NAME_PREFIX.SCALE;
+
+    if (isSelected(T+'XYZ') || isSelected(S+'XYZ'))
     {
       if (Math.abs(eye.x) > Math.abs(eye.y) &&
           Math.abs(eye.x) > Math.abs(eye.z))
@@ -5927,15 +6042,15 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
         currentPlane = 'XY';
       }
     }
-    else if (isSelected('RX') || isSelected('TYZ'))
+    else if (isSelected('RX') || isSelected(T+'YZ') || isSelected(S+'YZ'))
     {
       currentPlane = 'YZ';
     }
-    else if (isSelected('RY') || isSelected('TXZ'))
+    else if (isSelected('RY') || isSelected(T+'XZ') || isSelected(S+'XZ'))
     {
       currentPlane = 'XZ';
     }
-    else if (isSelected('RZ') || isSelected('TXY'))
+    else if (isSelected('RZ') || isSelected(T+'XY') || isSelected(S+'XY'))
     {
       currentPlane = 'XY';
     }
@@ -6003,7 +6118,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
         // Darken color
         selectedPicker.material.color.offsetHSL(0, 0, -0.3);
 
-        scope.dispatchEvent(changeEvent);
+        scope.dispatchEvent(changeEvent());
       }
 
       scope.selected = selectedPicker.name;
@@ -6048,7 +6163,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
     selectedPicker = null;
 
-    scope.dispatchEvent(changeEvent);
+    scope.dispatchEvent(changeEvent());
 
     scope.selected = 'null';
     scope.hovered = false;
@@ -6078,7 +6193,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
         hovered.material.color.offsetHSL(0, 0, -0.3);
 
-        scope.dispatchEvent(changeEvent);
+        scope.dispatchEvent(changeEvent());
       }
       scope.hovered = true;
     }
@@ -6088,7 +6203,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
       hovered = null;
 
-      scope.dispatchEvent(changeEvent);
+      scope.dispatchEvent(changeEvent());
 
       scope.hovered = false;
     }
@@ -6121,11 +6236,18 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     scope.setIntersectionPlane();
 
     var planeIntersect = intersectObjects(event,
-        [intersectionPlanes[currentPlane]]);
+       [intersectionPlanes[currentPlane]]);
 
-    if(planeIntersect)
-    {
+    var rect = domElement.getBoundingClientRect();
+    var x = (event.clientX - rect.left) / rect.width;
+    var y = (event.clientY - rect.top) / rect.height;
+
+    startRay.copy(ray.ray);// copy the ray used to raycast from the start point
+
+    if(planeIntersect) {
+
       oldPosition.copy(scope.object.position);
+      oldScale.copy(scope.object.scale);
 
       oldRotationMatrix.extractRotation(scope.object.matrix);
       worldRotationMatrix.extractRotation(scope.object.matrixWorld);
@@ -6183,12 +6305,21 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     var planeIntersect = intersectObjects(event,
         [intersectionPlanes[currentPlane]]);
 
+    var rect = domElement.getBoundingClientRect();
+    var x = (event.clientX - rect.left) / rect.width;
+    var y = (event.clientY - rect.top) / rect.height;
+
+    lastRay.copy(ray.ray);// copy the ray used to raycast from the end point
+
+    var transformType;
+
     if(planeIntersect)
     {
       var initPosition = Object.assign({}, scope.object.position);
+      var currentObject = scope.object;
       point.copy(planeIntersect.point);
 
-      if((scope.mode === 'translate') && isSelected('T'))
+      if((scope.mode === 'translate') && isSelected(GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE))
       {
         point.sub(offset);
         point.multiply(parentScale);
@@ -6235,24 +6366,24 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
           point.applyMatrix4(tempMatrix.getInverse(parentRotationMatrix));
 
-          scope.object.position.copy(oldPosition);
-          scope.object.position.add(point);
+          currentObject.position.copy(oldPosition);
+          currentObject.position.add(point);
 
           if(scope.snapDist)
           {
             if(isSelected('X'))
             {
-              scope.object.position.x = Math.round(scope.object.position.x /
+              currentObject.position.x = Math.round(currentObject.position.x /
                   scope.snapDist) * scope.snapDist;
             }
             if(isSelected('Y'))
             {
-              scope.object.position.y = Math.round(scope.object.position.y /
+              currentObject.position.y = Math.round(currentObject.position.y /
                   scope.snapDist) * scope.snapDist;
             }
             if(isSelected('Z'))
             {
-              scope.object.position.z = Math.round(scope.object.position.z /
+              currentObject.position.z = Math.round(currentObject.position.z /
                   scope.snapDist) * scope.snapDist;
             }
           }
@@ -6265,8 +6396,167 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
           scope.object.position.copy(initPosition);
           selectPicker(event);
         }
+
+        transformType = GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE;
       }
-      else if((scope.mode === 'rotate') && isSelected('R'))
+      else if((scope.mode === 'scale') && isSelected(GZ3D.TRANSFORM_TYPE_NAME_PREFIX.SCALE))
+      {
+        if(!currentObject.isSimpleShape()) { return; }
+
+        var distanceToPlane = function(plane, origin, dir) {
+            var denom = plane.normal.dot(dir);
+            if(Math.abs(denom) < 1e-3) {
+                return 0;
+            }
+            else {
+                var nom = origin.dot(plane.normal) - plane.constant;
+                return -(nom/denom);
+            }
+        };
+
+        // adapted from gazebo::gui:ModelManipulator
+        var axis = new THREE.Vector3();
+
+        if(isSelected('X')) { axis.x = 1;}
+        if(isSelected('Y')) { axis.y = 1;}
+        if(isSelected('Z')) { axis.z = 1;}
+
+        var getMouseMoveDistance = function(startRay, endRay, pose, axis, isLocal) {
+
+            var origin1 = startRay.origin;
+            var direction1 = startRay.direction;
+
+            var origin2 = endRay.origin;
+            var direction2 = endRay.direction;
+
+            var planeNorm = new THREE.Vector3(0,0,0);
+            var projNorm = new THREE.Vector3(0,0,0);
+
+            var planeNormOther = new THREE.Vector3(0,0,0);
+
+            if(axis.x > 0 && axis.y > 0) {
+                planeNorm.z = 1;
+                projNorm.z = 1;
+            }
+            else if(axis.z > 0)
+            {
+                planeNorm.y = 1;
+                projNorm.x = 1;
+                planeNormOther.x = 1;
+            }
+            else if (axis.x > 0)
+            {
+                planeNorm.z = 1;
+                projNorm.y = 1;
+                planeNormOther.y = 1;
+            }
+            else if (axis.y > 0)
+            {
+                planeNorm.z = 1;
+                projNorm.x = 1;
+                planeNormOther.x = 1;
+            }
+
+            if(isLocal) {
+                planeNorm.applyQuaternion(pose.rot);
+                projNorm.applyQuaternion(pose.rot);
+            }
+
+            // Fine tune ray casting: cast a second ray and compare the two rays' angle
+            // to plane. Use the one that is less parallel to plane for better results.
+            var angle = (direction1).dot(planeNorm);
+            if(isLocal) {
+                planeNormOther.applyQuaternion(pose.rot);
+            }
+            var angleOther = (direction1).dot(planeNormOther);
+            if(Math.abs(angleOther) > Math.abs(angle)) {
+                projNorm = planeNorm;
+                planeNorm = planeNormOther;
+            }
+
+            // Compute the distance from the camera to plane
+            var d = (pose.pos).dot(planeNorm);
+            var plane = new THREE.Plane(planeNorm, d);
+
+            var dist1 = distanceToPlane(plane, origin1, direction1);
+            var dist2 = distanceToPlane(plane, origin2, direction1);
+            var tmpVector = new THREE.Vector3();
+
+            // Compute two points on the plane. The first point is the current
+            // mouse position, the second is the previous mouse position
+            tmpVector.copy(direction1).multiplyScalar(dist1); // dir1 * dist1
+            var p1 = new THREE.Vector3().addVectors(origin1,tmpVector); //origin1 + (dir1 * dist1)
+
+            tmpVector.copy(direction2).multiplyScalar(dist2);
+            var p2 = new THREE.Vector3().addVectors(origin2, tmpVector);
+
+            if(isLocal) {
+                var p1MinusP2 = tmpVector;
+
+                p1MinusP2.subVectors(p1, p2); //(p1-p2)
+
+                // p1 = p1 - (projNorm * (p1-p2).Dot(projNorm));
+                p1.sub(projNorm.multiplyScalar(p1MinusP2.dot(projNorm)));
+            }
+
+             var distance = tmpVector.subVectors(p1, p2);
+
+             if(!isLocal) { distance.multiply(axis); }
+
+             return distance;
+        };
+
+        var updateScale = function(scaleVector, axis, shape) { // impose uniform transformation constraints on simple shapes
+
+            switch (shape) {
+                case 'cylinder': //X=Y Z
+                   if (axis.x > 0) {
+                      scaleVector.y = scaleVector.x;
+                   }
+                   else if(axis.y > 0) {
+                      scaleVector.x = scaleVector.y;
+                   }
+                   break;
+                case 'sphere': //X=Y=Z
+                   if(axis.x > 0) {
+                        scaleVector.y = scaleVector.z = scaleVector.x;
+                   }
+                   else if(axis.y > 0) {
+                        scaleVector.x = scaleVector.z = scaleVector.y;
+                   }
+                   else if(axis.z > 0) {
+                        scaleVector.x = scaleVector.y = scaleVector.z;
+                   }
+                   break;
+                case undefined: // undefined --> do nothing
+                   break;
+                // box and complex --> do nothing
+              }
+        };
+
+        var objectWorldPose = {'pos': currentObject.getWorldPosition(), 'rot': currentObject.getWorldQuaternion()};
+
+        var mouseDistance =
+            getMouseMoveDistance(startRay, lastRay, objectWorldPose, axis, (scope.space === 'local'));
+
+        mouseDistance.multiply(axis);//filter out unselected component. i.e. keep only the coordinates set to 1 in axis.
+
+        var objectWorldInverseRotation = (objectWorldPose.rot).clone().inverse();
+        mouseDistance.applyQuaternion(objectWorldInverseRotation);
+
+        var scale = (new THREE.Vector3(1,1,1).sub(mouseDistance)); // 1 - mouseDistance
+
+        //check simple shapes constraints
+        updateScale(scale, axis, currentObject.getShapeName());
+
+        var absScale = new THREE.Vector3(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
+        var newScale = absScale.multiply(oldScale);
+
+        currentObject.scale.copy(newScale);
+
+        transformType = GZ3D.TRANSFORM_TYPE_NAME_PREFIX.SCALE;
+      }
+      else if((scope.mode === 'rotate') && isSelected(GZ3D.TRANSFORM_TYPE_NAME_PREFIX.ROTATE))
       {
         point.sub(worldPosition);
         point.multiply(parentScale);
@@ -6293,7 +6583,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
           tempQuaternion.multiplyQuaternions(tempQuaternion, quaternionE);
           tempQuaternion.multiplyQuaternions(tempQuaternion, quaternionXYZ);
 
-          scope.object.quaternion.copy(tempQuaternion);
+          currentObject.quaternion.copy(tempQuaternion);
         }
         else if(scope.selected === 'RXYZE')
         {
@@ -6309,7 +6599,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
           tempQuaternion.multiplyQuaternions(tempQuaternion, quaternionX);
           tempQuaternion.multiplyQuaternions(tempQuaternion, quaternionXYZ);
 
-          scope.object.quaternion.copy(tempQuaternion);
+          currentObject.quaternion.copy(tempQuaternion);
           */
         }
         else
@@ -6343,7 +6633,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
               quaternionXYZ.multiplyQuaternions(quaternionXYZ, quaternionZ);
             }
 
-            scope.object.quaternion.copy(quaternionXYZ);
+            currentObject.quaternion.copy(quaternionXYZ);
           }
           else if (scope.space === 'world')
           {
@@ -6375,14 +6665,17 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
             tempQuaternion.multiplyQuaternions(tempQuaternion, quaternionXYZ);
 
-            scope.object.quaternion.copy(tempQuaternion);
+            currentObject.quaternion.copy(tempQuaternion);
           }
         }
+
+        transformType = GZ3D.TRANSFORM_TYPE_NAME_PREFIX.ROTATE;
       }
+
     }
 
     scope.update();
-    scope.dispatchEvent(changeEvent);
+    scope.dispatchEvent(changeEvent(transformType));
   }
 
   this.handleAxisLockEnd = function () {
@@ -7362,16 +7655,13 @@ GZ3D.Scene.prototype.init = function()
   this.getDomElement().addEventListener( 'touchend',
       function(event) {that.onPointerUp(event);}, false );
 
-  // Handles for translating and rotating objects
+  // Handles for translating, scaling and rotating objects
   this.modelManipulator = new GZ3D.Manipulator(this.camera, isTouchDevice,
       this.getDomElement());
 
   this.timeDown = null;
 
   this.emitter = new EventEmitter2({ verbose: true });
-
-
-
 
   // Radial menu (only triggered by touch)
   this.radialMenu = new GZ3D.RadialMenu(this.getDomElement());
@@ -8006,6 +8296,16 @@ GZ3D.Scene.prototype.setPose = function(model, position, orientation)
   model.quaternion.x = orientation.x;
   model.quaternion.y = orientation.y;
   model.quaternion.z = orientation.z;
+};
+
+/**
+ * Set the scale of a model
+ * @param {THREE.Object3D} model
+ * @param {THREE.Vector3} scale
+ */
+GZ3D.Scene.prototype.setScale = function(model, scale) {
+  model.scale.copy(scale);
+  model.updateMatrixWorld();
 };
 
 GZ3D.Scene.prototype.removeAll = function()
@@ -9045,7 +9345,7 @@ GZ3D.Scene.prototype.setMaterial = function(obj, material)
 };
 
 /**
- * Set manipulation mode (view/translate/rotate)
+ * Set manipulation mode (view/translate/rotate/scale)
  * @param {string} mode
  */
 GZ3D.Scene.prototype.setManipulationMode = function(mode)
@@ -9115,7 +9415,7 @@ GZ3D.Scene.prototype.showCollision = function(show)
 /**
  * Attach manipulator to an object
  * @param {THREE.Object3D} model
- * @param {string} mode (translate/rotate)
+ * @param {string} mode (translate/rotate/scale)
  */
 GZ3D.Scene.prototype.attachManipulator = function(model,mode)
 {
@@ -9225,12 +9525,11 @@ GZ3D.Scene.prototype.showBoundingBox = function(model)
   // w.r.t. world
   box.setFromObject(model);
   // center vertices with object
-  box.min.x = box.min.x - model.position.x;
-  box.min.y = box.min.y - model.position.y;
-  box.min.z = box.min.z - model.position.z;
-  box.max.x = box.max.x - model.position.x;
-  box.max.y = box.max.y - model.position.y;
-  box.max.z = box.max.z - model.position.z;
+  box.min.sub(model.position);
+  box.min.divide(model.scale);
+
+  box.max.sub(model.position);
+  box.max.divide(model.scale);
 
   var vertex = new THREE.Vector3(box.max.x, box.max.y, box.max.z); // 0
   this.boundingBox.geometry.vertices[0].copy(vertex);
@@ -9422,8 +9721,21 @@ GZ3D.Scene.prototype.selectEntity = function(object)
       this.showBoundingBox(object);
       this.selectedEntity = object;
     }
-    this.attachManipulator(object, this.manipulationMode);
+
+    //when scaling and object is not a simple shape, remove manipulator and switch to view mode
+    if(this.manipulationMode === 'scale' && !object.isSimpleShape())
+    {
+      this.modelManipulator.detach();
+      this.scene.remove(this.modelManipulator.gizmo);
+      this.manipulationMode = 'view';
+    }
+    else
+    {
+      this.attachManipulator(object, this.manipulationMode);
+    }
+
     guiEvents.emit('setTreeSelected', object.name);
+
   }
   else
   {
@@ -10380,7 +10692,7 @@ GZ3D.SdfParser.prototype.createModel = function(model)
   var modelObj = new THREE.Object3D();
   modelObj.name = model.name;
   //TODO: is that needed
-  //modelObj.userData = sdfObj.model.@id;
+  //modelObj.userData.id = sdfObj.model.@id;
 
   var pose;
 
@@ -10528,6 +10840,7 @@ GZ3D.SdfParser.prototype.addModelByType = function(model, type)
     euler.setFromQuaternion(quaternion);
     sdf = this.createBoxSDF(translation, euler);
     modelObj = this.spawnFromSDF(sdf);
+    modelObj.userData.isSimpleShape = true;
   }
   else if (type === 'sphere')
   {
@@ -10535,6 +10848,7 @@ GZ3D.SdfParser.prototype.addModelByType = function(model, type)
     euler.setFromQuaternion(quaternion);
     sdf = this.createSphereSDF(translation, euler);
     modelObj = this.spawnFromSDF(sdf);
+    modelObj.userData.isSimpleShape = true;
   }
   else if (type === 'cylinder')
   {
@@ -10542,6 +10856,7 @@ GZ3D.SdfParser.prototype.addModelByType = function(model, type)
     euler.setFromQuaternion(quaternion);
     sdf = this.createCylinderSDF(translation, euler);
     modelObj = this.spawnFromSDF(sdf);
+    modelObj.userData.isSimpleShape = true;
   }
   else if (type === 'spotlight')
   {
@@ -10728,14 +11043,17 @@ GZ3D.SpawnModel.prototype.start = function(entity, callback)
   if (entity === 'box')
   {
     mesh = this.scene.createBox(1, 1, 1);
+    this.obj.userData.shapeName = entity;
   }
   else if (entity === 'sphere')
   {
     mesh = this.scene.createSphere(0.5);
+    this.obj.userData.shapeName = entity;
   }
   else if (entity === 'cylinder')
   {
     mesh = this.scene.createCylinder(0.5, 1.0);
+    this.obj.userData.shapeName = entity;
   }
   else if (entity === 'pointlight')
   {
