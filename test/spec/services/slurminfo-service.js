@@ -34,7 +34,7 @@ describe('Services: slurminfo', function () {
   describe('Unavailable cluster', function() {
     var serverErrorMock = {};
     var serverError;
-    serverErrorMock.display = jasmine.createSpy('display');
+    serverErrorMock.displayHTTPError = jasmine.createSpy('displayHTTPError');
 
     beforeEach(module(function ($provide) {
       $provide.value('serverError', serverErrorMock);
@@ -54,7 +54,7 @@ describe('Services: slurminfo', function () {
       slurminfoService.get(function(data) { result = data; });
       httpBackend.expectGET(restServiceUrl);
       httpBackend.flush();
-      var response = serverError.display.mostRecentCall.args[0];
+      var response = serverError.displayHTTPError.mostRecentCall.args[0];
       expect(response.status).toBe(-1);
       expect(response.data).not.toBe('');
     });

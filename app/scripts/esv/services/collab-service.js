@@ -9,11 +9,11 @@
     return $resource(baseUrl + '/collab/configuration/:contextID', {}, {
       clone: {
         method: 'PUT',
-        interceptor: {responseError: serverError.display}
+        interceptor: {responseError: serverError.displayHTTPError}
       },
       get: {
         method: 'GET',
-        interceptor: {responseError: serverError.display}
+        interceptor: {responseError: serverError.displayHTTPError}
       }
     });
   }]);

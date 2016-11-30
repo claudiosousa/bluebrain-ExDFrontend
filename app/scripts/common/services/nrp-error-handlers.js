@@ -108,7 +108,22 @@
         return true;
       };
 
-      var display = function(response, keepErrorMessage) {
+      var displayError = function(nrpError) {
+        hbpDialogFactory.alert(nrpError);
+
+        // record the error in the analytics
+        var code = "No code", template = "No template";
+        if (_.isObject(nrpError)) {
+          code = nrpError.code || code;
+          template = nrpError.template || template;
+        }
+        nrpAnalytics.eventTrack(code, {
+          category: 'Error',
+          label: template
+        });
+      };
+
+      var displayHTTPError = function(response, keepErrorMessage) {
         response = angular.extend({
             human_readable: nrpErrorService.httpError(response).template
           },
@@ -133,16 +148,8 @@
             }
           }
 
-          hbpDialogFactory.alert(nrpError);
-          var code = "No code", template = "No template";
-          if (_.isObject(nrpError)) {
-            code = nrpError.code || code;
-            template = nrpError.template || template;
-          }
-          nrpAnalytics.eventTrack(code, {
-            category: 'Error',
-            label: template
-          });
+          // display the parsed http error
+          displayError(nrpError);
         }
         else {
           $log.debug(response);
@@ -151,7 +158,8 @@
 
       return {
         filter: filter,
-        display: display
+        displayHTTPError: displayHTTPError,
+        displayError: displayError
       };
     }]);
 }());

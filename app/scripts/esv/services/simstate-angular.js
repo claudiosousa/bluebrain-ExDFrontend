@@ -163,7 +163,7 @@
           },
           function (data) {
             thisStateService.statePending = false;
-            serverError.display(data);
+            serverError.displayHTTPError(data);
             deferred.reject();
           }
         );

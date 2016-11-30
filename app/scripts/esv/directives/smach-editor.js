@@ -95,7 +95,7 @@
                       stateService.setCurrentState(STATE.STARTED);
                     }
                   }, function (data) {
-                    serverError.display(data);
+                    serverError.displayHTTPError(data);
                     if (restart) {
                       stateService.setCurrentState(STATE.STARTED);
                     }

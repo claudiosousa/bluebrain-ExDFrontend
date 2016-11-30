@@ -100,8 +100,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions = isolateScope.transferFunctions;
   }));
 
-  it('should init the transferFunctions variable', function () {
-    $scope.control.refresh();
+  it('should request transferFunctions on initialization', function () {
     expect(isolateScope.transferFunctions).toEqual([]);
     expect(isolateScope.ERROR).toBeDefined();
     expect(backendInterfaceService.getTransferFunctions).toHaveBeenCalled();
@@ -146,35 +145,33 @@ describe('Directive: transferFunctionEditor', function () {
     expect(isolateScope.populations).toEqual([population]);
   });
 
-  describe('Retrieving, saving and deleting transferFunctions', function () {
+  describe('Retrieving transferFunctions', function () {
     var tf1Name = 'tf1';
     var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
-    var tf2Name = 'tf2';
-    var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + ' (varx):\n\t#put your code here';
-    var tf3Code = '#I am not valid';
-    var response = { data: {'tf3': tf3Code, 'tf2' : tf2Code, 'tf1': tf1Code} };
-    var expectedTf1, expectedTf2, expectedTf3;
-    var expected = [];
+    var response = { data: {'tf1': tf1Code} };
+    var expectedTf1, expected;
 
     beforeEach(function(){
-      $scope.control.refresh();
       expectedTf1 = new ScriptObject('tf1', tf1Code);
-      expectedTf2 = new ScriptObject('tf2', tf2Code);
-      expectedTf3 = new ScriptObject('tf3', tf3Code);
-      expected = [expectedTf1, expectedTf2, expectedTf3];
-      isolateScope.transferFunctions = angular.copy(expected);
-      transferFunctions = isolateScope.transferFunctions;
+      expected = [expectedTf1];
     });
 
     it('should handle the retrieved transferFunctions properly', function () {
+      // call the callback given to getTransferFunctions with a response mock
+      var editorMock = { refresh: jasmine.createSpy('refresh') };
+      spyOn(document, 'getElementById').andReturn({ firstChild: { CodeMirror: editorMock}});
+
       backendInterfaceService.getTransferFunctions.mostRecentCall.args[0](response);
-      expect(_.findIndex(transferFunctions, expectedTf1)).not.toBe(-1);
-      expect(_.findIndex(transferFunctions, expectedTf2)).not.toBe(-1);
-      expect(_.findIndex(transferFunctions, expectedTf3)).not.toBe(-1);
-      expect(transferFunctions.length).toBe(3);
+      expect(_.findIndex(isolateScope.transferFunctions, expectedTf1)).not.toBe(-1);
+      expect(isolateScope.transferFunctions.length).toBe(1);
       // This order is not guaranteed. Still, keys are printed in insertion order on all major browsers
       // See http://stackoverflow.com/questions/5525795/does-javascript-guarantee-object-property-order
-      expect(transferFunctions).toEqual(expected);
+      expect(isolateScope.transferFunctions).toEqual(expected);
+
+      // The tfs should be refreshed on initialization
+      expect(editorMock.refresh).not.toHaveBeenCalled();
+      $timeout.flush();
+      expect(editorMock.refresh).toHaveBeenCalled();
     });
 
     it('should call the refresh function', function() {
@@ -189,6 +186,29 @@ describe('Directive: transferFunctionEditor', function () {
       callback();
       expect(editor.refresh).toHaveBeenCalled();
       expect(callback).not.toBeDefined();
+    });
+
+  });
+
+  describe('Saving and deleting TransferFunctions', function() {
+    var tf1Name = 'tf1';
+    var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
+    var tf2Name = 'tf2';
+    var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + ' (varx):\n\t#put your code here';
+    var tf3Code = '#I am not valid';
+    var expectedTf1, expectedTf2, expectedTf3;
+    var expected = [];
+
+    beforeEach(function(){
+      $scope.control.refresh();
+      expectedTf1 = new ScriptObject('tf1', tf1Code);
+      expectedTf2 = new ScriptObject('tf2', tf2Code);
+      expectedTf3 = new ScriptObject('tf3', tf3Code);
+      expected = [expectedTf1, expectedTf2, expectedTf3];
+      transferFunctions = angular.copy(expected);
+      // We now assume that the transferFunctions are already retrieved
+      isolateScope.transferFunctions = angular.copy(expected);
+      transferFunctions = isolateScope.transferFunctions;
     });
 
     it('should save back the tf properly', function () {
@@ -275,6 +295,26 @@ describe('Directive: transferFunctionEditor', function () {
       msg.errorType = errorType = isolateScope.ERROR.LOADING;
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[1].error[errorType]).toEqual(msg);
+    });
+
+    it('should display error in a popup when tf editor is not shown', function () {
+      var errorType = isolateScope.ERROR.RUNTIME;
+      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
+
+      spyOn(hbpDialogFactory, 'alert');
+      expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
+
+      // can't find a way to set offsetParent in phantomjs, or force element display
+      // element[0].offsetParent = "toto";
+      // isolateScope.onNewErrorMessageReceived(msg);
+      // expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
+
+      // the editor is not visible
+      element[0].style.display = 'none';
+      isolateScope.onNewErrorMessageReceived(msg);
+      expect(hbpDialogFactory.alert).toHaveBeenCalled();
+
+      hbpDialogFactory.alert.reset();
     });
 
     it('should ignore state machine errors', function () {
@@ -367,7 +407,7 @@ describe('Directive: transferFunctionEditor', function () {
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andCallFake(function(arg1, arg2){
         if (Object.keys(arg2)[0] === 'id'){
-            return undefined;
+          return undefined;
         }
         return tf1;
       });
@@ -395,7 +435,6 @@ describe('Directive: transferFunctionEditor', function () {
       expect(tf1.error[isolateScope.ERROR.COMPILE]).not.toBeDefined();
       expect(tf1.error[isolateScope.ERROR.NO_OR_MULTIPLE_NAMES]).not.toBeDefined();
     });
-
   });
 
   describe('Editing transferFunctions', function () {
@@ -518,10 +557,12 @@ describe('Directive: transferFunctionEditor', function () {
       backendInterfaceService.saveTransferFunctions.argsForCall[0][2]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
+
       spyOn(hbpDialogFactory, 'alert');
       backendInterfaceService.saveTransferFunctions.argsForCall[0][3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       expect(hbpDialogFactory.alert).toHaveBeenCalled();
+      hbpDialogFactory.alert.reset();
     });
 
   });
@@ -535,6 +576,10 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
   var backendInterfaceServiceMock = {};
   backendInterfaceServiceMock.getPopulations = function () {
     isolateScope.onPopulationsReceived(shownPopulation);
+  };
+
+  backendInterfaceServiceMock.getTransferFunctions = function () {
+    return [];
   };
 
   var documentationURLsMock =

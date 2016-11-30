@@ -134,7 +134,7 @@
           return $resource(simulationInfo.serverBaseUrl + '/simulation/:sim_id/resources', {}, {
             get: {
               method: 'GET',
-              interceptor: { responseError: serverError.display }
+              interceptor: { responseError: serverError.displayHTTPError }
             }
           }).get({ sim_id: simulationInfo.simulationID }).$promise
             .then(function (response)

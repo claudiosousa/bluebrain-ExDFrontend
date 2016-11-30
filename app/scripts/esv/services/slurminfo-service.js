@@ -9,7 +9,7 @@
 
     // When we can't access the viz cluster frontend no error message is returned
     // We therefore add one here
-    var errorWrapper = _.wrap(serverError.display, function(errDisplayFn, response) {
+    var errorWrapper = _.wrap(serverError.displayHTTPError, function(errDisplayFn, response) {
       if (response.status === -1) {
         response = angular.extend(response, {
           data: "Could not probe vizualization cluster"
