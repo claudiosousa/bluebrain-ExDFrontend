@@ -255,10 +255,6 @@ describe('Directive: environment-designer', function () {
 
     //should emit 'spawn_entity_start'
     expect(window.guiEvents.emit).toHaveBeenCalledWith('spawn_entity_start', 'box');
-
-    //should close panel
-    expect(panels.close).toHaveBeenCalled();
-
   });
 
   it('should open object inspector after adding a model', function () {
@@ -283,9 +279,13 @@ describe('Directive: environment-designer', function () {
 
     $scope.addModel(objName);
 
+    // $scope.defaultEntityCreatedCallback is overwritten within
+    // $scope.interceptEntityCreationEvent()
+    var toBeCalled = $scope.defaultEntityCreatedCallback;
+
     $scope.interceptEntityCreationEvent(obj);
 
-    expect($scope.defaultEntityCreatedCallback).toHaveBeenCalled();
+    expect(toBeCalled).toHaveBeenCalled();
   });
 
   it('should create a new dummy anchor and click it when exporting the environment', function () {

@@ -98,6 +98,7 @@
 
               scope.defaultEntityCreatedCallback(model, type);
               scope.gz3d.iface.gui.emitter._events.entityCreated = scope.defaultEntityCreatedCallback;
+              scope.defaultEntityCreatedCallback = scope.interceptEntityCreationEvent;
               // local variable <model> holds a temporary object;
               // another THREE.Object3D is about to be created by
               // modelUpdate method from GZ3D.GZIface.prototype.onConnected
@@ -115,8 +116,6 @@
 
                 scope.defaultEntityCreatedCallback = scope.gz3d.iface.gui.emitter._events.entityCreated;
                 scope.gz3d.iface.gui.emitter._events.entityCreated = scope.interceptEntityCreationEvent;
-
-                panels.close();
               }
             };
 
