@@ -83,6 +83,7 @@
 
       GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
       GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
+      GZ3D.animatedModel = simulationInfo.animatedModel;
 
       if (!bbpConfig.get('localmode.forceuser', false)) {
         var token;

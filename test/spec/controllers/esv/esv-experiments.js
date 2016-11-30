@@ -209,13 +209,14 @@
       //get server config
       $httpBackend.whenGET(proxyUrl + '/server/' + hostName).respond(200, defaultPageOptions.server);
       //start experiment
-      $httpBackend.whenPOST(defaultPageOptions.server.gzweb['nrp-services'] + '/simulation').respond(200, defaultPageOptions.startExperiment);
+      var startUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation';
+      $httpBackend.whenPOST(startUrl).respond(200, defaultPageOptions.startExperiment);
       //mock roslib
       spyOn(roslib, 'createStringTopic').andReturn({ subscribe: angular.noop });
       //start experiment
-      $httpBackend.whenPOST(defaultPageOptions.server.gzweb['nrp-services'] + '/simulation').respond(200, defaultPageOptions.startExperiment);
+      $httpBackend.whenPOST(startUrl).respond(200, defaultPageOptions.startExperiment);
       //update experiement state
-      $httpBackend.whenPUT(defaultPageOptions.server.gzweb['nrp-services'] + '/simulation/' + defaultPageOptions.startExperiment.simulationID + '/state')
+      $httpBackend.whenPUT(startUrl + '/' + defaultPageOptions.startExperiment.simulationID + '/state')
         .respond(200, {});
 
       spyOn($location, 'path');
@@ -225,7 +226,10 @@
       $httpBackend.flush();
 
       //simulation url
-      expect($location.path.mostRecentCall.args).toMatch(['esv-web/gz3d-view/' + hostName + '/' + defaultPageOptions.startExperiment.simulationID]);
+      var experimentID = Object.keys(defaultPageOptions.experiments)[0];
+      var simulationID = defaultPageOptions.startExperiment.simulationID;
+      var expectedLocation = ['esv-web/gz3d-view/' + hostName + '/' + experimentID + '/' + simulationID];
+      expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
     });
 
     it('should reset startingExperiment when failing to launch an experiment', function () {
@@ -235,7 +239,8 @@
       //get server config
       $httpBackend.whenGET(proxyUrl + '/server/' + hostName).respond(200, defaultPageOptions.server);
       //start experiment
-      $httpBackend.whenPOST(defaultPageOptions.server.gzweb['nrp-services'] + '/simulation').respond(500, defaultPageOptions.startExperiment);
+      var startUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation';
+      $httpBackend.whenPOST(startUrl).respond(500, defaultPageOptions.startExperiment);
 
       page.find('[analytics-event="Launch"]').click();
       expect($rootScope.pageState.startingExperiment).toBe($rootScope.experiments[0].id);
@@ -243,14 +248,12 @@
       expect($rootScope.pageState.startingExperiment).toBe(null);
     });
 
-    it('should trigger the right requests when stoping a simulation', function () {
+    it('should trigger the right requests when stopping a simulation', function () {
       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
       var simulationUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation/' + defaultPageOptions.startExperiment.simulationID + '/state';
       //get server config
       $httpBackend.whenGET(proxyUrl + '/server/' + hostName).respond(200, defaultPageOptions.server);
-      //start experiment
-      // $httpBackend.whenPOST(defaultPageOptions.server.gzweb['nrp-services'] + '/simulation').respond(500, defaultPageOptions.startExperiment);
       //get simulation state
       $httpBackend.whenGET(simulationUrl).respond(200, { state: 'halted' });
       //get simulation state
@@ -266,7 +269,10 @@
 
       spyOn($location, 'path');
       page.find('a[analytics-event="Join"]').click();
-      expect($location.path.mostRecentCall.args).toMatch(['esv-web/gz3d-view/' + hostName + '/' + defaultPageOptions.startExperiment.simulationID]);
+      var experimentID = Object.keys(defaultPageOptions.experiments)[0];
+      var simulationID = defaultPageOptions.startExperiment.simulationID;
+      var expectedLocation = ['esv-web/gz3d-view/' + hostName + '/' + experimentID + '/' + simulationID];
+      expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
     });
 
     it('should requery experiements after SERVER_POLL_INTERVAL', function () {

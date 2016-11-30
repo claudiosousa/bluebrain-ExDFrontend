@@ -187,7 +187,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       scene : {
         resetView: jasmine.createSpy('resetView'),
         setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
-        setAnimatedRobotModel: jasmine.createSpy('setAnimatedRobotModel'),
         container : {
           addEventListener : jasmine.createSpy('addEventListener')
         },
@@ -291,6 +290,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       experiments: jasmine.createSpy('experiments'),
     };
     $provide.value('experimentList',jasmine.createSpy('experimentList').andReturn(experimentListMock));
+    var configuration = { description: 'The Husky robot plays chess with Icub', name: 'TrueBlue', cameraPose: { x: 1.0, y: 2.0, z: 3.0 } };
     simulationInfo = {
       serverConfig: { rosbridge: {topics: {} }},
       serverID: 'bbpce016',
@@ -298,7 +298,9 @@ describe('Controller: Gz3dViewCtrl', function () {
       serverBaseUrl: 'http://bbpce016.epfl.ch:8080',
       Initialize: jasmine.createSpy('Initialize'),
       mode: undefined,
-      contextID: '97923877-13ea-4b43-ac31-6b79e130d344'
+      contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+      experimentDetails: configuration,
+      experimentID: 'experimentID'
     };
     $provide.value('simulationInfo', simulationInfo);
 
@@ -539,12 +541,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       window.bbpConfig.localmode.forceuser = false;
     });
 
-    it('should initialize simulationInfo.experimentID', function() {
-      var promise = hbpIdentityUserDirectory.getCurrentUser();
-      promise.then.mostRecentCall.args[0](otherUserInfo4321);
-      expect(simulationInfo.experimentID).toBeDefined();
-    });
-
     it('should initialize experimentDetails', function() {
       window.bbpConfig.localmode.forceuser = true;
       controller('Gz3dViewCtrl', {
@@ -553,29 +549,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
       scope.experimentConfiguration = 'test_config';
       spyOn(scope, 'updateInitialCameraPose');
-      spyOn(scope, 'setAnimatedRobotModel');
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
-      var experimentDetails = {
-        'experimentID': {
-          'configuration': {
-            'experimentConfiguration': 'FakeExperiment',
-            'description': 'fakeDescription',
-            'name': 'experimentName',
-            'cameraPose': 'fakeCamerPose',
-            'visualModel': 'fakeVisualModel',
-            'visualModelParams': 'fakeModelParams'
-          }
-        }
-      };
-      var promise = experimentProxyService.getExperiments();
-      promise.then.mostRecentCall.args[0](experimentDetails);
-
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
-      expect(simulationInfo.experimentID).toBe('experimentID');
-      expect(scope.ExperimentDescription).toBe(experimentDetails.experimentID.configuration.description);
-      expect(scope.ExperimentName).toBe(experimentDetails.experimentID.configuration.name);
-      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(experimentDetails.experimentID.configuration.cameraPose);
-      expect(scope.setAnimatedRobotModel).toHaveBeenCalledWith(experimentDetails.experimentID.configuration.visualModel, experimentDetails.experimentID.configuration.visualModelParams);
+      var configuration = simulationInfo.experimentDetails;
+      expect(scope.ExperimentDescription).toBe(configuration.description);
+      expect(scope.ExperimentName).toBe(configuration.name);
+      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(configuration.cameraPose);
 
       window.bbpConfig.localmode.forceuser = false;
     });
@@ -586,33 +565,14 @@ describe('Controller: Gz3dViewCtrl', function () {
         $rootScope: rootScope,
         $scope: scope
       });
-      scope.experimentConfiguration = 'test_config';
       scope.isCollabExperiment = true;
       spyOn(scope, 'updateInitialCameraPose');
-      spyOn(scope, 'setAnimatedRobotModel');
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
-      var experimentDetails = {
-        'data': {
-          'experimentID': {
-            'experimentConfiguration': 'FakeExperiment',
-            'description': 'fakeDescription',
-            'name': 'experimentName',
-            'cameraPose': 'fakeCamerPose',
-            'visualModel': 'fakeVisualModel',
-            'visualModelParams': 'fakeModelParams'
-          }
-        }
-      };
-      expect(experimentList().experiments.mostRecentCall.args[0]).toEqual({'context_id': simulationInfo.contextID});
-      experimentList().experiments.mostRecentCall.args[1](experimentDetails);
-
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
-      expect(simulationInfo.experimentID).toBe('experimentID');
-      expect(scope.ExperimentDescription).toBe(experimentDetails.data.experimentID.description);
-      expect(scope.ExperimentName).toBe(experimentDetails.data.experimentID.name);
-      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(experimentDetails.data.experimentID.cameraPose);
-      expect(scope.setAnimatedRobotModel).toHaveBeenCalledWith(experimentDetails.data.experimentID.visualModel, experimentDetails.data.experimentID.visualModelParams);
-
+      var configuration = simulationInfo.experimentDetails;
+      expect(scope.ExperimentDescription).toBe(configuration.description);
+      expect(scope.ExperimentName).toBe(configuration.name);
+      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(configuration.cameraPose);
       window.bbpConfig.localmode.forceuser = false;
     });
     it('should ensure that the state is PAUSED when resetting', function() {
@@ -1253,23 +1213,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       var camPose =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0];
       scope.updateInitialCameraPose(camPose);
       expect(gz3d.scene.setDefaultCameraPose).toHaveBeenCalled();
-    });
-
-    it('should update simulation\'s animated robot visual model', function(){
-      var modelName = 'test/meshes/test_animated.dae';
-      var modelParams =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0, 1.0];
-
-      // all variations of invalid arguments
-      scope.setAnimatedRobotModel(null, null);
-      expect(gz3d.scene.setAnimatedRobotModel).not.toHaveBeenCalled();
-      scope.setAnimatedRobotModel(modelName, null);
-      expect(gz3d.scene.setAnimatedRobotModel).not.toHaveBeenCalled();
-      scope.setAnimatedRobotModel(null, modelParams);
-      expect(gz3d.scene.setAnimatedRobotModel).not.toHaveBeenCalled();
-
-      // valid when both arguments provided
-      scope.setAnimatedRobotModel(modelName, modelParams);
-      expect(gz3d.scene.setAnimatedRobotModel).toHaveBeenCalled();
     });
   });
 
