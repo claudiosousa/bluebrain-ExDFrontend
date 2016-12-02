@@ -49,7 +49,7 @@
 
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl',
-    ['$rootScope', '$scope', '$stateParams', '$timeout',
+    ['$rootScope', '$scope', '$timeout',
       '$location', '$window', '$document', '$log', 'bbpConfig',
       'hbpIdentityUserDirectory',
       'simulationControl', 'colorableObjectService', 'experimentList',
@@ -61,7 +61,7 @@
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
       'simulationConfigService', 'experimentProxyService',
-      function ($rootScope, $scope, $stateParams, $timeout,
+      function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
         simulationControl, colorableObjectService, experimentList,
@@ -86,10 +86,12 @@
         $scope.userEditingID = "";
         $scope.userEditing = "";
         $scope.timeEditStarted = "";
+        //Collab info used by reset
+        $scope.isCollabExperiment = simulationInfo.isCollabExperiment;
 
-        if ($stateParams.ctx) {
+        if ($scope.isCollabExperiment) {
           // only use locks if we are in a collab
-          var lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
+          var lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
           var cancelLockSubscription = lockService.onLockChanged(
             function (result) {
               if (result.locked && result.lockInfo.user.id === $scope.viewState.userID) {
@@ -120,8 +122,6 @@
         $scope.RESET_TYPE = RESET_TYPE;
         $scope.sceneLoading = true;
 
-        //Collab info used by reset
-        $scope.isCollabExperiment = simulationInfo.isCollabExperiment;
 
         function ViewState() {
           this.isInitialized = false;
@@ -781,7 +781,7 @@
 
           userNavigationService.deinit();
 
-          if ($stateParams.ctx) {
+          if ($scope.isCollabExperiment) {
             cancelLockSubscription();
             removeEditLock();
           }
@@ -847,7 +847,7 @@
         }
 
         function removeEditLock() {
-          lockService.releaseLock()
+          return lockService.releaseLock()
             .catch(function () {
               $window.alert("I could not release the edit lock. Please remove it manually from the Storage area.");
             });
@@ -861,7 +861,7 @@
 
         $scope.showEditorPanel = false;
         $scope.toggleEditors = function () {
-          if (!$stateParams.ctx) {
+          if (!$scope.isCollabExperiment) {
             showEditPanel();
           } else {
             // only use locks if we are in a collab i.e. ctx is set
@@ -911,14 +911,25 @@
         };
 
         $scope.exit = function () {
+          if ($scope.isCollabExperiment) {
+            cancelLockSubscription();
+            return removeEditLock().then(function(){
+              exitSimulation();
+            });
+          }
+          else {
+            exitSimulation();
+            return $q.when();
+          }
+        };
+        function exitSimulation(){
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           $location.path('esv-web');
           $timeout(function ()
           {
             $window.location.reload();
           });
-        };
-
+        }
         // Brain visualizer
         $scope.brainvisualizerIsDisabled = true;
 
