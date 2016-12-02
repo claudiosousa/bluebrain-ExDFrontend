@@ -437,6 +437,10 @@
           var resetType = $scope.request.resetType;
           if (resetType === RESET_TYPE.NO_RESET) { return; }
 
+          stateService.setCurrentState(STATE.PAUSED);
+
+          $timeout(function(){
+
           $scope.notifyResetToWidgets(resetType);
 
           if (resetType >= 256) { // Frontend-bound reset
@@ -493,7 +497,7 @@
               );
             } else {
               //other kinds of reset
-              backendInterfaceService.reset(
+                backendInterfaceService.reset(
                 $scope.request,
                 function () { // Success callback
                   //do not close the splash if successful
@@ -515,6 +519,7 @@
               );
             }
           }
+          }, 100);
         };
 
         $scope.timeDisplayClickHandler = function () {
