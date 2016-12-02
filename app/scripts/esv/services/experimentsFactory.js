@@ -304,22 +304,35 @@
           function transformClusterAvailability(clusterAvailability) {
             return service.experiments.then(function(experiments){
               var result = { free: 'NaN', total: 'NaN'}; // Displayed if there is an issue with the Slurmonitor server
+              var clusterInfo = "\nCluster availability: ";
               if (clusterAvailability) {
                 result.free = clusterAvailability.free;
                 result.total = clusterAvailability.nodes[3];
+                clusterInfo += result.free +"/"+ result.total + ".";
+              }
+              else {
+                clusterInfo += "No information available.";
               }
               for (var i=0; i < experiments.length; i++){
                 var exp = experiments[i];
-                if (!exp.availableServers || exp.availableServers.length === 0 || (clusterAvailability && result.free < CLUSTER_THRESHOLDS.UNAVAILABLE)){
-                  exp.serverStatus = "Unavailable";
+                var extraInfo = "\nBackends: ";
+                if (exp.availableServers){
+                  extraInfo += exp.availableServers.length + ".";
+                }
+                else {
+                  extraInfo += "No information available.";
+                }
+                extraInfo += clusterInfo;
+                if (!exp.availableServers || exp.availableServers.length === 0){
+                  exp.serverStatus = "Unavailable." + extraInfo;
                   exp.serverStatusClass = "label-danger";
                 }
-                else if ((exp.availableServers.length > 0 && !clusterAvailability) || (clusterAvailability && result.free > CLUSTER_THRESHOLDS.AVAILABLE)){
-                  exp.serverStatus = "Available";
+                else if (clusterAvailability && result.free > CLUSTER_THRESHOLDS.AVAILABLE){
+                  exp.serverStatus = "Available." +  extraInfo;
                   exp.serverStatusClass = "label-success";
                 }
                 else {
-                  exp.serverStatus = "Restricted";
+                  exp.serverStatus = "Restricted." + extraInfo;
                   exp.serverStatusClass = "label-warning";
                 }
               }

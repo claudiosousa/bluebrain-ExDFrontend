@@ -190,44 +190,56 @@ describe('Services: experimentsFactory', function () {
     var image = {'0' : 'fakeImage'};
     spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
     spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
-    spyOn(slurminfoService, 'get').andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,100]})});
+    spyOn(slurminfoService, 'get').andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,0,100]})});
     var exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
     exp.experiments.then(function(experiments){
-      expect(experiments[0].serverStatus).toBe('Unavailable');
+      expect(experiments[0].serverStatus).toEqual('Unavailable.\nBackends: 0.\nCluster availability: 50/100.');
       expect(experiments[0].serverStatusClass).toBe('label-danger');
     });
     scope.$apply();
 
     experiments = [{availableServers:['one_server'], joinableServers:[]}];
     experimentProxyService.getExperiments.andReturn($q.when(experiments));
-    slurminfoService.get.andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,100]})});
+    slurminfoService.get.andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,0,100]})});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
     exp.experiments.then(function(experiments){
-      expect(experiments[0].serverStatus).toBe('Available');
+      expect(experiments[0].serverStatus).toBe('Available.\nBackends: 1.\nCluster availability: 50/100.');
       expect(experiments[0].serverStatusClass).toBe('label-success');
     });
     scope.$apply();
 
-    slurminfoService.get.andReturn({'$promise':$q.when({'free':2, 'nodes': [0,0,100]})});
+    slurminfoService.get.andReturn({'$promise':$q.when({'free':2, 'nodes': [0,0,0,100]})});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
     exp.experiments.then(function(experiments){
-      expect(experiments[0].serverStatus).toBe('Restricted');
+      expect(experiments[0].serverStatus).toBe('Restricted.\nBackends: 1.\nCluster availability: 2/100.');
       expect(experiments[0].serverStatusClass).toBe('label-warning');
     });
     scope.$apply();
 
-    slurminfoService.get.andReturn({'$promise':$q.when({'free':0, 'nodes': [0,0,100]})});
+    slurminfoService.get.andReturn({'$promise':$q.when({'free':0, 'nodes': [0,0,0,100]})});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
     exp.experiments.then(function(experiments){
-      expect(experiments[0].serverStatus).toBe('Unavailable');
+      expect(experiments[0].serverStatus).toBe('Restricted.\nBackends: 1.\nCluster availability: 0/100.');
+      expect(experiments[0].serverStatusClass).toBe('label-warning');
+    });
+    scope.$apply();
+
+    experiments = [{joinableServers:[]}];
+    experimentProxyService.getExperiments.andReturn($q.when(experiments));
+    slurminfoService.get.andReturn({'$promise':$q.when('')});
+    exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    exp.experiments.then(function(experiments){
+      expect(experiments[0].serverStatus).toBe('Unavailable.\nBackends: No information available.\nCluster availability: No information available.');
       expect(experiments[0].serverStatusClass).toBe('label-danger');
     });
     scope.$apply();
