@@ -294,6 +294,10 @@
               $timeout(update, 0);//force scope.$apply
             }
           });
+
+          gz3d.gui.guiEvents.on('delete_entity', function () {
+              $timeout(update, 0);//force scope.$apply
+          });
         };
 
         return objectInspectorService;

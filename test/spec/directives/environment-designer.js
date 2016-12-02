@@ -107,7 +107,7 @@ describe('Directive: environment-designer', function () {
     /*jshint camelcase: false */
     gz3dMock = {
       iface: {gui: {emitter:{_events: {entityCreated: jasmine.createSpy('entityCreated')}}}},
-      gui: {emitter: {emit: jasmine.createSpy('emit')}, guiEvents: {_events: {notification_popup: jasmine.createSpy('notification_popup')}}},
+      gui: {emitter: {emit: jasmine.createSpy('emit')}, guiEvents: {emit: jasmine.createSpy('emit'), _events: {notification_popup: jasmine.createSpy('notification_popup')}}},
       scene: sceneMock,
       toggleScreenChangeMenu: jasmine.createSpy('toggleScreenChangeMenu')
     };
@@ -320,10 +320,9 @@ describe('Directive: environment-designer', function () {
   it('should emit delete_entity and toggle menu when deleteModel is called', function () {
     $scope.deleteModel();//call function
     //should emit 'delete_entity'
-    expect($scope.gz3d.gui.emitter.emit).toHaveBeenCalled();
+    expect($scope.gz3d.gui.guiEvents.emit).toHaveBeenCalledWith('delete_entity');
     //should toggle menu
     expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
-
   });
 
   it('should correctly saveSDFIntoCollabStorage', function () {
