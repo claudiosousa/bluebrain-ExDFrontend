@@ -41,6 +41,26 @@
   opacity: 0;
 }
 
+.human-navigation-info {
+  position: absolute;
+  bottom: 100px;
+  right: 50px;
+  background:rgba(255, 255, 255, 0.8);
+  width: 400px;
+  height: 50px;
+  line-height: 50px;
+  border-radius: 8px;
+  border-color: black;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+  text-align: center;
+}
+
+.human-navigation-info.ng-hide {
+  opacity: 0;
+}
+
 .help-icon {
   color: darkgray;
   position: fixed;

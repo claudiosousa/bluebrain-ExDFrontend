@@ -101,6 +101,9 @@
         <!-- WEBGL-context -->
 
         <div show-on-top class="keyboard-control-info ng-hide" ng-show="showKeyboardControlInfoDiv"></div>
+        <div show-on-top class="human-navigation-info ng-hide" ng-show="showHumanNavInfoDiv">
+          <span>When paused, avatar navigation is not possible</span>
+        </div>
         <spiketrain show-on-top server="{{rosbridgeWebsocketUrl}}" class="ng-hide" topic="{{rosTopics.spikes}}" movable ng-show="showSpikeTrain"></spiketrain>
         <joint-plot show-on-top server="{{rosbridgeWebsocketUrl}}" class="ng-hide" topic="{{rosTopics.joint}}" movable ng-show="showJointPlot"></joint-plot>
         <!-- HelpText -->
@@ -316,8 +319,8 @@
                    ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <i class="fa fa-compass fa-2x vertcenter"></i>
                 <div ng-show="showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -128px; background-color: lightgrey;">
-                  <div class="hbp-toolbar-action hide-overflow"
-                       ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY)}"
+                 <div  class="hbp-toolbar-action hide-overflow"
+                       ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY), 'disabled-image': stateService.currentState === STATE.PAUSED}"
                        ng-click="setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);">
                     <i class="fa fa-male fa-2x vertcenter"></i>
                   </div>
