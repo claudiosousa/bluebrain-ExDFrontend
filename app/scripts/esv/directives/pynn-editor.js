@@ -58,30 +58,67 @@
             });
           };
 
+          /** Convert Populations Object into array and create for each population a unique
+             * regular expression to avoid duplicate names.
+          */
+
           scope.preprocessPopulations = function(neuronPopulations) {
-            angular.forEach(neuronPopulations, function(population, name){
-              var isSlice = scope.isSlice(population);
-              // If the step field of a slice is undefined, we set it to its default value, i.e., 1.
-              // This way the population form remains valid.
-              if (isSlice && !population.step) {
-                population.step = 1;
+            var populationNames = Object.keys(neuronPopulations);
+            var populationsArray = populationNames.map(function (name, index) {
+              var populationObject = neuronPopulations[name];
+              populationObject.name = name;
+              var isSlice = scope.isSlice(populationObject);
+              if (isSlice && !populationObject.step) {
+                populationObject.step = 1;
               }
               if (!isSlice) {
-                // It must be a list.
-                // We convert a JS array into a string for display in HTML input tag: [1,2,3] --> '1,2,3'
-                var str = population.toString();
-                neuronPopulations[name] = {list: str};
+                var str = populationObject.toString();
+                populationObject.list = str;
               }
+              populationObject.regex = generateRegexPattern(populationNames, index);
+              return populationObject;
             });
-
-            for (var p in neuronPopulations) {
-              if (neuronPopulations.hasOwnProperty(p)) {
-                scope.attachPopulationID(neuronPopulations, p);
-              }
-            }
-
-            return neuronPopulations;
+            return populationsArray;
           };
+
+          function objectifyPopulations(neuroPopulations) {
+            var populations = angular.copy(neuroPopulations);
+            var populationsObject = {};
+            angular.forEach(populations, function(population, index) {
+              var name = population.name;
+              delete population.name;
+              populationsObject[name] = population;
+            });
+            return populationsObject;
+          }
+
+          function populationNames() {
+            var names = scope.populations.map(function (obj) {
+              return obj.name;
+            });
+            return names;
+          }
+
+          function generateRegexPattern(currentPopulationNames, index) {
+            var pattern = '([A-z_]+[\\w_]*)$';
+            var populationNames = angular.copy(currentPopulationNames);
+            populationNames.splice(index, 1);
+            populationNames = populationNames.filter(function(item) {
+              return item !== undefined;
+            });
+            if (populationNames.length === 0) {
+              return pattern;
+            } else {
+              var exclude = '^\\b(?!\\b' + populationNames.join('\\b|\\b') + '\\b)';
+              return exclude + pattern;
+            }
+        }
+
+        scope.updateRegexPatterns = function() {
+          for (var i = 0; i < scope.populations.length; i++) {
+              scope.populations[i].regex = generateRegexPattern(populationNames(), i);
+          }
+        };
 
           scope.stringsToLists = function(neuronPopulations) {
             var populations = angular.copy(neuronPopulations);
@@ -111,11 +148,12 @@
           scope.apply = function (change_population) {
             var restart = stateService.currentState === STATE.STARTED;
             scope.loading = true;
+            var populations = objectifyPopulations(scope.populations);
             stateService.ensureStateBeforeExecuting(
               STATE.PAUSED,
               function () {
                 backendInterfaceService.setBrain(
-                  scope.pynnScript, scope.stringsToLists(scope.populations), 'py', 'text', change_population,
+                  scope.pynnScript, scope.stringsToLists(populations), 'py', 'text', change_population,
                   function () { // Success callback
                     scope.loading = false;
                     scope.getDoc().markClean();
@@ -191,64 +229,35 @@
             return ret;
           };
 
-          scope.isSlice = function(indices) {
-            return indices.hasOwnProperty('from') && indices.hasOwnProperty('to');
+          scope.isSlice = function(population) {
+            return population.hasOwnProperty('from') && population.hasOwnProperty('to');
           };
 
-          scope.deletePopulation = function(populationId) {
-            angular.forEach(scope.populations, function(population, name) {
-              if (population.id === populationId) {
-                delete scope.populations[name];
-              }
-            });
-          };
-
-          /** population.id is used to delete a population as its name may be 'undefined' due
-              to ng-pattern mismatch
-          */
-          scope.attachPopulationID = function (populations, index) {
-            populations[index].id = scope.generatePopulationID(populations);
+          scope.deletePopulation = function(index) {
+            scope.populations.splice(index, 1);
+            scope.updateRegexPatterns();
           };
 
           scope.addList = function() {
-            var neuronName = scope.generatePopulationName();
-            scope.populations[neuronName] = { list: '0, 1, 2' };
-
-            scope.attachPopulationID(scope.populations, neuronName);
-          };
-
-          var defaultSlice = {
-            'from': 0,
-            'to': 1,
-            'step': 1
+            var regex = generateRegexPattern(populationNames(), scope.populations.length);
+            scope.populations.push({ name: scope.generatePopulationName(), list: '0, 1, 2', regex: regex});
+            scope.updateRegexPatterns();
           };
 
           scope.addSlice = function() {
-            var neuronName = scope.generatePopulationName();
-            scope.populations[neuronName] = angular.copy(defaultSlice);
-
-            scope.attachPopulationID(scope.populations, neuronName);
+            var regex = generateRegexPattern(populationNames(), scope.populations.length);
+            scope.populations.push({ name: scope.generatePopulationName(), from: 0, to: 1, step: 1, regex: regex});
+            scope.updateRegexPatterns();
           };
 
           scope.generatePopulationName = function() {
             var prefix = 'population_';
             var suffix = 0;
-            while(prefix + suffix in scope.populations) {
+            var existingNames = populationNames();
+            while(existingNames.indexOf(prefix + suffix) >= 0) {
               suffix += 1;
             }
             return prefix + suffix;
-          };
-
-          scope.generatePopulationID = function (populations) {
-            var maxId = 0;
-            for (var p in populations) {
-              if (populations.hasOwnProperty(p)) {
-                if (populations[p].id > maxId) {
-                  maxId = populations[p].id;
-                }
-              }
-            }
-            return maxId + 1;
           };
 
           scope.parseName = function(error){
@@ -310,35 +319,6 @@
             // button.
             scope.control.refresh = undefined;
           });
-
-          scope.onFocusChange = function(populationId) {
-            scope.focusedId = populationId;
-          };
-
-          scope.processChange = function(newPopulationName) {
-            if (typeof newPopulationName === 'undefined') {
-              return;
-            }
-            if (typeof scope.focusedId === 'undefined') {
-              return;
-            }
-
-            if (scope.populations.hasOwnProperty(newPopulationName)) {
-              if (scope.populations[newPopulationName].id === scope.focusedId) {
-                return;
-              }
-            }
-
-            angular.forEach(scope.populations, function(population, name) {
-              if (scope.populations[scope.focusedId] === population) {
-                return;
-              }
-              if (population.id === scope.focusedId) {
-                scope.populations[newPopulationName] = angular.copy(population);
-                delete scope.populations[name];
-              }
-            });
-          };
         }
       };
     }]);
