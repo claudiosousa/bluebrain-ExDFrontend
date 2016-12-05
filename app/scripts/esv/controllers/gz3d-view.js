@@ -504,6 +504,11 @@
                   //it will be closed by messageCallback
 
                   gz3d.scene.applyComposerSettings(true,false);
+
+                  if (resetType === RESET_TYPE.RESET_BRAIN)
+                  {
+                    $scope.$broadcast('UPDATE_PANEL_UI');
+                  }
                 },
                 function () { // Failure callback
                   hbpDialogFactory.alert(
