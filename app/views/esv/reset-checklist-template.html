@@ -1,57 +1,85 @@
-<fieldset>
-    <ul style="list-style: none">
-        <b>Simulation</b>
+<!-- build:css(.tmp) styles/esv/reset-checklist-template.css -->
+<link rel="stylesheet" href="styles/esv/reset-checklist-template.css" />
+<!-- endbuild -->
 
-        <li >
-            <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}"
-                   tooltip="Reset also the simulation timeout." tooltip-trigger="mouseenter" tooltip-placement="top">
+<div class="reset-checklist-template">
+    <fieldset>
+        <ul style="list-style: none">
+            <b>Simulation</b>
+
+            <li>
+
+                <label>
+
+                <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}" tooltip="Reset also the simulation timeout."
+                    tooltip-trigger="mouseenter" tooltip-placement="top">
+                </input>
+
                 Reset Simulation
-            </input>
-        </li>
-        <br/>
+                </label>
 
-        <b>Camera</b>
-        <li>
+            </li>
+            <br/>
+
+            <b>Camera</b>
+            <li>
+                <label>
+
             <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_CAMERA_VIEW}}">
-                Reset Camera View
             </input>
-        </li>
-        <br/>
 
-        <span>
+            Reset Camera View
+            </label>
+
+            </li>
+            <br/>
+
+            <span>
             <b>Brain</b>
             <li>
+                <label>
+
                 <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
                         tooltip="{{isCollabExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
                         tooltip-trigger="mouseenter" tooltip-placement="top">
-                    Reset the Neural Network
                 </input>
+                    Reset the Neural Network
+                </label>
+
             </li>
             <br/>
         </span>
 
-        <span>
+            <span>
             <b>Environment</b>
             <li>
+                <label>
+
                 <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio"
                         tooltip="{{isCollabExperiment?'Reset Environment Poses to the last saved state':'Reset the poses of models to the original state'}}" tooltip-trigger="mouseenter" tooltip-placement="top">
-                    Reset Environment Poses
                 </input>
+                Reset Environment Poses
+                </label>
+
             </li>
             <br/>
             </span>
 
-        <span>
+            <span>
             <b>Robot</b>
             <li>
+                <label>
                 <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_ROBOT_POSE}}" type="radio"
                        tooltip="Reset Robot to the original position and rotation." tooltip-trigger="mouseenter" tooltip-placement="top">
-                    Reset Robot Frame
                 </input>
+                  Reset Robot Frame
+                </label>
+
             </li>
             <br/>
         </span>
 
-    </ul>
-</fieldset>
-<br/>
+        </ul>
+    </fieldset>
+    <br/>
+</div>
