@@ -753,16 +753,31 @@
         $scope.setNavigationMode = function (mode) {
           switch (mode) {
             case NAVIGATION_MODES.FREE_CAMERA:
+              document.removeEventListener('keydown', $scope.displayHumanNavInfo);
               userNavigationService.setModeFreeCamera();
               break;
 
             case NAVIGATION_MODES.GHOST:
+              document.removeEventListener('keydown', $scope.displayHumanNavInfo);
               userNavigationService.setModeGhost();
               break;
 
             case NAVIGATION_MODES.HUMAN_BODY:
-              userNavigationService.setModeHumanBody();
+              if (stateService.currentState !== STATE.PAUSED) {
+                document.addEventListener('keydown', $scope.displayHumanNavInfo);
+                userNavigationService.setModeHumanBody();
+              }
               break;
+          }
+        };
+
+        $scope.showHumanNavInfoDiv = false;
+        $scope.displayHumanNavInfo = function (event) {
+          if (stateService.currentState === STATE.PAUSED) {
+            $scope.showHumanNavInfoDiv = true;
+            $timeout(function () {
+              $scope.showHumanNavInfoDiv = false;
+            }, 5000);
           }
         };
 
@@ -1025,6 +1040,10 @@
           }
           $scope.exit();
         };
+
+        $scope.$on('$destroy', function () {
+          document.removeEventListener('keydown', $scope.displayHumanNavInfo);
+        });
 
       }]);
 } ());
