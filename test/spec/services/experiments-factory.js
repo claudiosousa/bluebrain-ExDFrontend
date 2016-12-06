@@ -244,5 +244,37 @@ describe('Services: experimentsFactory', function () {
     });
     scope.$apply();
   });
+});
+describe('Services: experimentsFactory forceuser=true', function () {
+  var $q, experimentProxyService, experimentsFactory, scope;
 
+  beforeEach(module('experimentServices'));
+  beforeEach(module('exdFrontendApp'));
+  beforeEach(function(){
+     window.bbpConfig.localmode.forceuser = true;
+  });
+  beforeEach(inject(function (_$q_, _experimentProxyService_, _experimentsFactory_, _$rootScope_, _$httpBackend_) {
+    $q = _$q_;
+    experimentProxyService = _experimentProxyService_;
+    experimentsFactory = _experimentsFactory_;
+    scope = _$rootScope_;
+    _$httpBackend_.whenGET(new RegExp('.*')).respond({});
+    spyOn(console, 'error');
+  }));
+
+  it('cluster availability should be set correctly when forceuser is true', function() {
+    var experiments = [{availableServers:[], joinableServers:[]}];
+    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
+    var exp = experimentsFactory.createExperimentsService();
+    exp.initialize();
+    scope.$apply();
+    exp.experiments.then(function(experiments){
+      expect(experiments[0].serverStatus).toBe('Unavailable');
+      expect(experiments[0].serverStatusClass).toBe('label-danger');
+    });
+  });
+
+  afterEach(function(){
+    window.bbpConfig.localmode.forceuser = false;
+  });
 });

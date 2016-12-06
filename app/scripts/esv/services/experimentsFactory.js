@@ -104,8 +104,12 @@
                 .then(transformExperiments)
                 .then(_.map);
             }
-            if (!localmode.forceuser)
+            if (!localmode.forceuser){
               service.clusterAvailability = slurminfoService.get().$promise.then(transformClusterAvailability);
+            }
+            else {
+              transformClusterAvailability();
+            }
             updateExperimentImages();
             updateUptime();
             updateUptimeInterval = $interval(updateUptime, 1000);
