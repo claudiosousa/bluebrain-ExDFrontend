@@ -2,16 +2,16 @@
 
 /* global THREE: true */
 
-function createKeyEvent(eventType, key) {
+function createKeyEvent(eventType, code) {
   var event = document.createEvent('Event');
-  event.keyCode = key;
+  event.code = code;
   event.shiftKey = false;
   event.initEvent(eventType, true, true);
   return event;
 }
 
-function createKeyEventWithShift(eventType, key) {
-  var event = createKeyEvent(eventType, key);
+function createKeyEventWithShift(eventType, code) {
+  var event = createKeyEvent(eventType, code);
   event.shiftKey = true;
   return event;
 }
@@ -52,8 +52,8 @@ function createTwoTouchEvent(targetElement, eventType, pageX1, pageY1, pageX2, p
   return event;
 }
 
-function triggerKeyEvent(targetElement, eventType, key) {
-  var event = createKeyEvent(eventType, key);
+function triggerKeyEvent(targetElement, eventType, code) {
+  var event = createKeyEvent(eventType, code);
   targetElement.dispatchEvent(event);
 }
 
@@ -136,12 +136,12 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle key events for W/A/S/D/R/F/Q', inject(function() {
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 87/*W*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 65/*A*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 83/*S*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 68/*D*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 82/*R*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 70/*F*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyW');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyA');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyS');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyD');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyR');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyF');
 
     //expect(firstPersonControls.onKeyDown.callCount).toEqual(7);
     expect(firstPersonControls.moveForward).toBe(true);
@@ -151,12 +151,12 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toBe(true);
     expect(firstPersonControls.moveDown).toBe(true);
 
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 87/*W*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 65/*A*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 83/*S*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 68/*D*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 82/*R*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 70/*F*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyW');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyA');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyS');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyD');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyR');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyF');
 
     expect(firstPersonControls.moveForward).toBe(false);
     expect(firstPersonControls.moveLeft).toBe(false);
@@ -165,21 +165,21 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toBe(false);
     expect(firstPersonControls.moveDown).toBe(false);
 
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 81/*Q*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyQ');
     expect(firstPersonControls.freeze).toBe(true);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 81/*Q*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyQ');
     expect(firstPersonControls.freeze).toBe(false);
   }));
 
   it('should handle key events for up/left/down/right/pageup/pagedown', inject(function() {
     //spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
 
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 38/*up*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 37/*left*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 40/*down*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 39/*right*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 33/*pageup*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keydown', 34/*pagedown*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'ArrowUp');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'ArrowLeft');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'ArrowDown');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'ArrowRight');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'PageUp');
+    triggerKeyEvent(domElementForKeyBindings, 'keydown', 'PageDown');
     expect(firstPersonControls.shiftHold).toEqual(false);
     expect(firstPersonControls.moveForward).toEqual(true);
     expect(firstPersonControls.moveLeft).toEqual(true);
@@ -188,12 +188,12 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toEqual(true);
     expect(firstPersonControls.moveDown).toEqual(true);
 
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 38/*up*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 37/*left*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 40/*down*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 39/*right*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 33/*pageup*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 34/*pagedown*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowUp');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowLeft');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowDown');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowRight');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageUp');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageDown');
 
     expect(firstPersonControls.moveForward).toEqual(false);
     expect(firstPersonControls.moveLeft).toEqual(false);
@@ -206,12 +206,12 @@ describe('FirstPersonControls', function () {
   it('should handle key events for up/left/down/right/pageup/pagedown with Shift modifier', inject(function() {
     //spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
 
-    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 38/*up*/);
-    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 37/*left*/);
-    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 40/*down*/);
-    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 39/*right*/);
-    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 33/*pageup*/);
-    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 34/*pagedown*/);
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'ArrowUp');
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'ArrowLeft');
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'ArrowDown');
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'ArrowRight');
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'PageUp');
+    triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'PageDown');
 
     expect(firstPersonControls.shiftHold).toEqual(true);
     expect(firstPersonControls.moveForward).toEqual(true);
@@ -221,12 +221,12 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveUp).toEqual(true);
     expect(firstPersonControls.moveDown).toEqual(true);
 
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 38/*up*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 37/*left*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 40/*down*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 39/*right*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 33/*pageup*/);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 34/*pagedown*/);
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowUp');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowLeft');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowDown');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'ArrowRight');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageUp');
+    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageDown');
 
     expect(firstPersonControls.shiftHold).toEqual(false);
     expect(firstPersonControls.moveForward).toEqual(false);
