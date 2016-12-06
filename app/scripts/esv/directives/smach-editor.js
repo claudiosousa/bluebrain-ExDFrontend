@@ -218,7 +218,7 @@
 
           scope.save = function() {
             var stateMachinesCodeText = _.flatMap(scope.stateMachines,function (stateMachine){
-              return [stateMachine.name,"\n",stateMachine.code];});
+              return [stateMachine.code];});
             var file = new Blob(stateMachinesCodeText, {type: "plain/text", endings: 'native'});
             var link = document.createElement('a');
                 document.body.appendChild(link);

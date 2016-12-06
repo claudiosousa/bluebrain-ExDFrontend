@@ -190,8 +190,10 @@ describe('Directive: smachEditor', function () {
       spyOn(window, 'Blob').andReturn({});
       var URLMock = {createObjectURL: jasmine.createSpy('createObjectURL')};
       window.URL = URLMock;
-      isolateScope.save(new ScriptObject('stateMachineId', 'Some code'));
+      isolateScope.stateMachines = [{name: 'stateMachineName', code: 'Some code'}];
+      isolateScope.save();
       expect(URLMock.createObjectURL).toHaveBeenCalled();
+      expect(window.Blob.mostRecentCall.args[0]).toNotContain('stateMachineName');
       var link = document.body.appendChild.mostRecentCall.args[0];
       expect(link.download).toBe('stateMachines.py');
       expect(document.body.removeChild).toHaveBeenCalledWith(link);
