@@ -12,7 +12,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       window,
       document,
       location,
-      stateParams,
       cameraManipulation,
       splash,
       simulationState,
@@ -45,7 +44,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       callback,
       onLockChangedCallback,
       experimentProxyService,
-      experimentList;
+      experimentList,
+      lockServiceCancelCallback;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -274,12 +274,6 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     $provide.value('colorableObjectService', colorableObjectServiceMock);
 
-    var stateParamsMock = {
-      mode : undefined,
-      serverID : 'bbpce016',
-      simulationID : 'mocked_simulation_id'
-    };
-    $provide.value('$stateParams', stateParamsMock);
     var hbpIdentityUserDirectoryMock = {
       getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn({then: jasmine.createSpy('then')}),
       get: jasmine.createSpy('get').andReturn({then: jasmine.createSpy('then')})
@@ -299,8 +293,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('experimentList',jasmine.createSpy('experimentList').andReturn(experimentListMock));
     simulationInfo = {
       serverConfig: { rosbridge: {topics: {} }},
-      serverID: stateParamsMock.serverID,
-      simulationID: stateParamsMock.simulationID,
+      serverID: 'bbpce016',
+      simulationID: 'mocked_simulation_id',
       serverBaseUrl: 'http://bbpce016.epfl.ch:8080',
       Initialize: jasmine.createSpy('Initialize'),
       mode: undefined,
@@ -349,7 +343,6 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _$window_,
                               _$document_,
                               _$location_,
-                              _$stateParams_,
                               _cameraManipulation_,
                               _splash_,
                               _assetLoadingSplash_,
@@ -384,7 +377,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     window.location.reload = function () { };
     document = _$document_;
     location = _$location_;
-    stateParams = _$stateParams_;
     cameraManipulation = _cameraManipulation_;
     splash = _splash_;
     assetLoadingSplash = _assetLoadingSplash_;
@@ -410,9 +402,10 @@ describe('Controller: Gz3dViewCtrl', function () {
     q = _$q_;
 
     callback = q.defer();
+    lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
     lockServiceMock = {
       tryAddLock : jasmine.createSpy('tryAddLock').andReturn(callback.promise),
-      onLockChanged: jasmine.createSpy('onLockChanged').andCallFake(function (fn) { onLockChangedCallback = fn; }),
+      onLockChanged: jasmine.createSpy('onLockChanged').andCallFake(function (fn) {onLockChangedCallback = fn; return lockServiceCancelCallback;}),
       releaseLock: jasmine.createSpy('releaseLock').andReturn(callback.promise)
     };
     collabExperimentLockServiceMock.createLockServiceForContext = function(){
@@ -451,11 +444,8 @@ describe('Controller: Gz3dViewCtrl', function () {
   }));
 
   describe('(ViewMode)', function () {
-    var currentUserInfo1234, currentUserInfo1234Hash, otherUserInfo4321, $stateParams;
+    var currentUserInfo1234, currentUserInfo1234Hash, otherUserInfo4321;
 
-    beforeEach(inject(function (_$stateParams_) {
-      $stateParams = _$stateParams_;
-    }));
     beforeEach(function () {
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
@@ -503,8 +493,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should condition editability', function () {
       window.bbpConfig.localmode.forceuser = true;
-      $stateParams.ctx = 'a context id';
 
+      simulationInfo.isCollabExperiment = true;
       controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope
@@ -1252,13 +1242,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should go back to the esv-web page when no "ctx" parameter was in the url', function() {
-      stateParams.ctx = undefined;
-      scope.exit();
-      expect(location.path()).toEqual('/esv-web');
-    });
-
-    it('should go back to the esv-web page when a "ctx" parameter was in the url', function() {
-      stateParams.ctx = 'fake_ctx_id';
+      scope.isCollabExperiment = false;
       scope.exit();
       expect(location.path()).toEqual('/esv-web');
     });
@@ -1291,7 +1275,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   describe('(EditMode)', function() {
     beforeEach(function () {
-      stateParams.ctx = 'a context id';
+      simulationInfo.isCollabExperiment = true;
       lockServiceMock.tryAddLock.reset();
       lockServiceMock.releaseLock.reset();
 
@@ -1299,13 +1283,20 @@ describe('Controller: Gz3dViewCtrl', function () {
         $rootScope: rootScope,
         $scope: scope,
         collabExperimentLockService: collabExperimentLockService
+      });
+    });
 
+    it('should go back to the esv-web page when a "ctx" parameter was in the url', function() {
+      scope.exit().then(function(){
+        expect(location.path()).toEqual('/esv-web');
+        expect(lockServiceCancelCallback).toHaveBeenCalled();
+        expect(lockServiceMock.releaseLock).toHaveBeenCalled();
       });
     });
 
     it('should enable display of the editor panel', function () {
       scope.showEditorPanel = false;
-      stateParams.ctx = '';
+      scope.isCollabExperiment = false;
       scope.toggleEditors();
       expect(scope.showEditorPanel).toBe(true);
     });
@@ -1434,15 +1425,9 @@ describe('Controller: Gz3dViewCtrl', function () {
   {
     beforeEach(function ()
     {
-      stateParams.ctx = 'a context id';
-      lockServiceMock.tryAddLock.reset();
-      lockServiceMock.releaseLock.reset();
-
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope,
-        collabExperimentLockService: collabExperimentLockService
-
       });
     });
 
@@ -1465,7 +1450,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should enable display of the brainvisualizer panel', function ()
     {
       scope.showBrainvisualizerPanel = false;
-      stateParams.ctx = '';
       scope.toggleBrainvisualizer();
       expect(scope.showBrainvisualizerPanel).toBe(true);
     });
@@ -1475,7 +1459,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.loadingBrainvisualizerPanel = false;
       scope.brainvisualizerIsDisabled = false;
       scope.showBrainvisualizerPanel = false;
-      stateParams.ctx = '';
       scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(true);
     });
@@ -1484,7 +1467,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     {
       scope.showBrainvisualizerPanel = false;
       scope.helpModeActivated = true;
-      stateParams.ctx = '';
       scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(false);
       scope.helpModeActivated = false;
@@ -1494,7 +1476,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     {
       scope.showBrainvisualizerPanel = false;
       scope.brainvisualizerIsDisabled = true;
-      stateParams.ctx = '';
       scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(false);
       scope.brainvisualizerIsDisabled = false;
@@ -1521,21 +1502,14 @@ describe('Controller: Gz3dViewCtrl', function () {
   {
     beforeEach(function ()
     {
-      stateParams.ctx = 'a context id';
-      lockServiceMock.tryAddLock.reset();
-      lockServiceMock.releaseLock.reset();
-
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope,
-        collabExperimentLockService: collabExperimentLockService
-
       });
     });
 
     it('should init default environment settings', function ()
     {
-        stateParams.ctx = '';
         scope.initComposerSettings();
         expect(scope.loadingEnvironmentSettingsPanel).toBe(false);
     });
@@ -1543,7 +1517,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should enable display of the environment settings panel', function ()
     {
       scope.showEnvironmentSettingsPanel = false;
-      stateParams.ctx = '';
       scope.environmentSettingsClickHandler();
       expect(scope.showEnvironmentSettingsPanel).toBe(true);
     });
@@ -1551,7 +1524,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should open of the environment settings panel', function ()
     {
       scope.showEnvironmentSettingsPanel = false;
-      stateParams.ctx = '';
       scope.environmentSettingsClickHandler();
       expect(scope.showEnvironmentSettingsPanel).toBe(true);
     });
@@ -1560,7 +1532,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     {
       scope.showEnvironmentSettingsPanel = false;
       scope.helpModeActivated = true;
-      stateParams.ctx = '';
       scope.environmentSettingsClickHandler();
       expect(scope.showEnvironmentSettingsPanel).toBe(false);
       scope.helpModeActivated = false;
@@ -1600,11 +1571,6 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
       removeMessageCallback: jasmine.createSpy('removeMessageCallback'),
       getCurrentState: getCurrentStateSpy
     });
-    var stateParamsMock = {
-      serverID : 'bbpce016',
-      simulationID : 'mocked_simulation_id'
-    };
-    $provide.value('$stateParams', stateParamsMock);
     var gz3dMock = {
       Initialize : jasmine.createSpy('Initialize'),
       deInitialize : jasmine.createSpy('deInitialize'),
