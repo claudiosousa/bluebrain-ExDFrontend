@@ -15,7 +15,7 @@
 </button>
 <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
         ng-click="saveIntoCollabStorage()"
-        ng-disabled="loading || stateService.statePending || !populationForm.$valid"
+        ng-disabled="loading || stateService.statePending || !populationForm.$valid || !collabDirty"
         v-busy="isSavingToCollab"
         v-busy-label="Saving to Collab"
         v-pressable>

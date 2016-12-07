@@ -36,6 +36,7 @@
       'SOURCE_TYPE',
       'simulationInfo',
       'hbpDialogFactory',
+      'autoSaveService',
       'DEFAULT_TF_CODE',
     function (
         $log,
@@ -51,8 +52,11 @@
         SOURCE_TYPE,
         simulationInfo,
         hbpDialogFactory,
+        autoSaveService,
         DEFAULT_TF_CODE
     ) {
+    var DIRTY_TYPE = 'TF';
+
     return {
       templateUrl: 'views/esv/transfer-function-editor.html',
       restrict: 'E',
@@ -63,6 +67,7 @@
 
         scope.isCollabExperiment = simulationInfo.isCollabExperiment;
         scope.isSavingToCollab = false;
+        scope.collabDirty = false;
         scope.refreshLayout = function(editor) {
           // This updates the layout of the editor also onLoad
           // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
@@ -175,6 +180,14 @@
 
 
         scope.control.refresh = function () {
+          if (scope.collabDirty){
+            $timeout(function(){
+              _.forEach(scope.transferFunctions, function(tf){
+                scope.getTransferFunctionEditor(tf).refresh();
+              });
+            }, 100);
+            return;
+          }
           backendInterfaceService.getTransferFunctions(
             function (response) {
               _.forEach(response.data, function(code, id) {
@@ -243,6 +256,8 @@
         scope.onTransferFunctionChange = function (transferFunction) {
           transferFunction.name = pythonCodeHelper.getFunctionName(transferFunction.code);
           transferFunction.dirty = true;
+          scope.collabDirty = scope.isCollabExperiment;
+          autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
           if (transferFunction.local) {
             transferFunction.id = transferFunction.name;
           }
@@ -280,6 +295,8 @@
             scope.transferFunctions.unshift(transferFunction);
           }
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
+          scope.collabDirty = scope.isCollabExperiment;
+          autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
         };
 
         scope.buildTransferFunctionFile = function(transferFunctions) {
@@ -323,6 +340,8 @@
             _.map(scope.transferFunctions, 'code'),
             function() { // Success callback
               scope.isSavingToCollab = false;
+              scope.collabDirty = false;
+              autoSaveService.clearDirty(DIRTY_TYPE);
               if (stateService.currentState !== STATE.STOPPED) {
                 // update all transfer functions
                 _.forEach(scope.transferFunctions, scope.update);
@@ -375,6 +394,11 @@
             textReader.readAsText(file);
           }
         };
+
+        autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved){
+          scope.collabDirty = true;
+          scope.transferFunctions = autoSaved;
+        });
       }
     };
   }]);

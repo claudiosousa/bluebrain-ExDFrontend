@@ -14,7 +14,14 @@ describe('Directive: transferFunctionEditor', function () {
     setTransferFunction: jasmine.createSpy('setTransferFunction'),
     deleteTransferFunction: jasmine.createSpy('deleteTransferFunction'),
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl'),
-    saveTransferFunctions: jasmine.createSpy('saveTransferFunctions')
+    saveTransferFunctions: jasmine.createSpy('saveTransferFunctions'),
+    saveCSVRecordersFiles: jasmine.createSpy('backendInterfaceServiceMock')
+  };
+
+  var autoSaveServiceMock ={
+    registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
+    setDirty: jasmine.createSpy('setDirty'),
+    clearDirty: jasmine.createSpy('clearDirty')
   };
 
   var documentationURLsMock =
@@ -48,6 +55,7 @@ describe('Directive: transferFunctionEditor', function () {
     $provide.value('stateService', currentStateMock);
     $provide.value('roslib', roslibMock);
     $provide.value('simulationInfo', simulationInfoMock);
+    $provide.value('autoSaveService', autoSaveServiceMock);
   }));
 
   var editorMock = {};
@@ -134,6 +142,45 @@ describe('Directive: transferFunctionEditor', function () {
     expect(population.showDetails).toBe(true);
     isolateScope.togglePopulationParameters(population);
     expect(population.showDetails).toBe(false);
+  });
+
+  it('should set the saving flag correctly if csv saving succeed', function() {
+    expect(isolateScope.isSavingCSVToCollab).toBeFalsy();
+    isolateScope.saveCSVIntoCollabStorage();
+    expect(backendInterfaceServiceMock.saveCSVRecordersFiles).toHaveBeenCalled();
+    expect(isolateScope.isSavingCSVToCollab).toBe(true);
+    backendInterfaceServiceMock.saveCSVRecordersFiles.mostRecentCall.args[1]();
+    expect(isolateScope.isSavingCSVToCollab).toBe(false);
+  });
+
+  it('should set the saving flag correctly if csv saving failed', function() {
+    expect(isolateScope.isSavingCSVToCollab).toBeFalsy();
+    isolateScope.saveCSVIntoCollabStorage();
+    expect(backendInterfaceServiceMock.saveCSVRecordersFiles).toHaveBeenCalled();
+    expect(isolateScope.isSavingCSVToCollab).toBe(true);
+    backendInterfaceServiceMock.saveCSVRecordersFiles.mostRecentCall.args[2]();
+    expect(isolateScope.isSavingCSVToCollab).toBe(false);
+  });
+
+  it('should set dirty status of autosaved stuff found', function() {
+    var tfs = 'tfs';
+    expect(autoSaveServiceMock.registerFoundAutoSavedCallback).toHaveBeenCalled();
+    autoSaveServiceMock.registerFoundAutoSavedCallback.mostRecentCall.args[1](tfs);
+    expect(isolateScope.transferFunctions).toBe(tfs);
+    expect(isolateScope.collabDirty).toBe(true);
+  });
+
+   it('should refresh code editors on refresh if dirty', function() {
+    isolateScope.collabDirty = true;
+    isolateScope.transferFunctions = [1, 2, 3];
+    var refreshSpy = jasmine.createSpy(refreshSpy);
+    spyOn(isolateScope, 'getTransferFunctionEditor').andReturn({ refresh: refreshSpy });
+    isolateScope.control.refresh();
+    $timeout.flush(100);
+    $rootScope.$digest();
+    expect(isolateScope.getTransferFunctionEditor.calls.length).toBe(3);
+    expect(refreshSpy.calls.length).toBe(3);
+
   });
 
   it('should add new populations correctly', function() {

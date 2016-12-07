@@ -14,6 +14,7 @@
     '$timeout',
     'simulationInfo',
     'hbpDialogFactory',
+    'autoSaveService',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
@@ -25,7 +26,11 @@
               SOURCE_TYPE,
               $timeout,
               simulationInfo,
-              hbpDialogFactory) {
+              hbpDialogFactory,
+              autoSaveService) {
+
+      var DIRTY_TYPE = 'SM';
+
       return {
         templateUrl: 'views/esv/smach-editor.html',
         restrict: 'E',
@@ -35,6 +40,7 @@
         link: function (scope, element, attrs) {
           scope.isCollabExperiment = simulationInfo.isCollabExperiment;
           scope.isSavingToCollab = false;
+          scope.collabDirty = false;
 
           scope.STATE = STATE;
           scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
@@ -59,6 +65,15 @@
           };
 
           scope.control.refresh = function () {
+            if (scope.collabDirty){
+              $timeout(function(){
+                _.forEach(scope.stateMachines, function(tf){
+                  scope.getStateMachineEditor(tf).refresh();
+                });
+              }, 100);
+              return;
+            }
+
             backendInterfaceService.getStateMachines(
               function (response) {
                 _.forEach(response.data, function(code, id) {
@@ -106,6 +121,8 @@
 
           scope.onStateMachineChange = function (stateMachine) {
             stateMachine.dirty = true;
+            scope.collabDirty = scope.isCollabExperiment;
+            autoSaveService.setDirty(DIRTY_TYPE, scope.stateMachines);
           };
 
           scope.create = function(code) {
@@ -183,6 +200,9 @@
             stateMachine.name = scope.getStateMachineName(id);
             scope.stateMachines.unshift(stateMachine);
             addedStateMachineCount = addedStateMachineCount + 1;
+            scope.collabDirty = scope.isCollabExperiment;
+            autoSaveService.setDirty(DIRTY_TYPE, scope.stateMachines);
+
             return stateMachine;
           };
 
@@ -255,6 +275,8 @@
               stateMachines,
               function() { // Success callback
                 scope.isSavingToCollab = false;
+                scope.collabDirty = false;
+                autoSaveService.clearDirty(DIRTY_TYPE);
               },function() { // Failure callback
                 scope.isSavingToCollab = false;
               }
@@ -303,6 +325,12 @@
           var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
           scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
           scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
+
+          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved){
+            scope.collabDirty = true;
+            scope.stateMachines = autoSaved;
+          });
+
         }
       };
     }
