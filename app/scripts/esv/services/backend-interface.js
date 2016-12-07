@@ -38,6 +38,14 @@
         });
       };
 
+      var resourceExtendSimulationSimulation = function(backendBaseUrl, options) {
+        return $resource(backendBaseUrl + '/simulation/:sim_id/extend_timeout', options, {
+          extendTimeout: {
+            method: 'POST'
+          }
+        });
+      };
+
       var resourceTransferFunctionSimulation = function(backendBaseUrl) {
         return $resource(backendBaseUrl + '/simulation/:sim_id/transfer-functions', {}, {
           transferFunctions: {
@@ -280,6 +288,10 @@
             {sim_id: simulationInfo.simulationID, context_id: contextID },
             resetData, successCallback, errorCallback
           );
+        },
+        extendTimeout:function(){
+          return resourceExtendSimulationSimulation(simulationInfo.serverBaseUrl, {sim_id: simulationInfo.simulationID})
+            .extendTimeout().$promise;
         }
       };
 

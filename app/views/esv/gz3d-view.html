@@ -173,12 +173,12 @@
                   <div>
                     <span>Simulation time:</span><br/>
                     <span>Real time:</span><br/>
-                    <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 60 ? 'red' : '' }">Timeout:</span>
+                    <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 300 ? 'red' : '' }">Timeout:</span>
                   </div>
                   <div>
                     <span id="simTime">{{simulationTimeText | timeDDHHMMSS}}</span><br/>
                     <span id="realTime">{{realTimeText | timeDDHHMMSS}}</span><br/>
-                    <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 60 ? 'red' : '' }">{{simTimeoutText | timeDDHHMMSS}}</span>
+                    <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 300 ? 'red' : '' }">{{simTimeoutText | timeDDHHMMSS}}</span>
                   </div>
                 </div>
               </div>
@@ -498,5 +498,6 @@
 
       <div class="ros-reconnecting"></div>
 
+      <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}"></simulation-timeout-extender>
     </div>
     <!-- page -->
