@@ -68,26 +68,8 @@
         scope.isCollabExperiment = simulationInfo.isCollabExperiment;
         scope.isSavingToCollab = false;
         scope.collabDirty = false;
-        scope.refreshLayout = function(editor) {
-          // This updates the layout of the editor also onLoad
-          // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
-          // and remove the listener afterwards
-          var r = function() {
-            editor.refresh();
-            editor.off("change", r);
-          };
-          editor.on("change", r);
-        };
-
-        scope.onEditorLoad = function(editor) {
-          scope.refreshLayout(editor);
-          editor.on('focus', function() {
-            editor.refresh();
-          });
-        };
 
         scope.editorOptions = {
-          onLoad: scope.onEditorLoad,
           lineWrapping : true,
           lineNumbers: true,
           readOnly: false,
@@ -178,14 +160,17 @@
         scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
         scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived, true);
 
+		    function refreshAllEditors() {
+          $timeout(function() {
+            _.forEach(scope.transferFunctions, function(tf) {
+              scope.getTransferFunctionEditor(tf).refresh();
+            });
+          }, 200);
+        }
 
         scope.control.refresh = function () {
           if (scope.collabDirty){
-            $timeout(function(){
-              _.forEach(scope.transferFunctions, function(tf){
-                scope.getTransferFunctionEditor(tf).refresh();
-              });
-            }, 100);
+            refreshAllEditors();
             return;
           }
           backendInterfaceService.getTransferFunctions(
@@ -198,21 +183,14 @@
                 if (found && !tf.dirty)
                 {
                   tf.code = transferFunction.code;
-
-                  var curEditor = scope.getTransferFunctionEditor(transferFunction);
+				          var curEditor = scope.getTransferFunctionEditor(transferFunction);
                   curEditor.clearHistory();
                   curEditor.markClean();
-
                 } else if (!found) {
                   scope.transferFunctions.unshift(transferFunction);
                 }
-
-                // force the TF to refresh (the tf.code might not have changed)
-                $timeout(function() {
-                  var curEditor = scope.getTransferFunctionEditor(transferFunction);
-                  curEditor.refresh();
-                }, 100, false); // This timeout has been added to avoid display problems with the CodeMirror container
-             });
+              });
+ 			        refreshAllEditors();
           });
           refreshPopulations();
         };
