@@ -78,7 +78,6 @@ describe('Services: objectInspectorService', function () {
     });
   });
 
-
   // check to see if it has the expected function
   it('should be initialized correctly', function () {
     expect(objectInspectorService.isShown).toBe(false);
@@ -153,6 +152,20 @@ describe('Services: objectInspectorService', function () {
     gz3d.gui.guiEvents.emit('setTreeSelected');
     $timeout.flush();
     expect(objectInspectorService.showCollision).toBe(true);
+  });
+
+  it('should react to \'delete_entity\' event correctly: shown', function () {
+
+    gz3d.scene.selectedEntity = dummyObject;
+    objectInspectorService.toggleView(true);
+    expect(objectInspectorService.isShown).toBe(true);
+
+    gz3d.gui.guiEvents.emit('delete_entity');
+    gz3d.scene.selectedEntity = null;
+
+    $timeout.flush();
+    expect(objectInspectorService.selectedObject).toBeFalsy();
+
   });
 
   it('should react correctly to changes to the object', function () {
@@ -237,7 +250,7 @@ describe('Services: objectInspectorService', function () {
     objectInspectorService.toggleView(true);
 
     objectInspectorService.toggleView(true);
-    expect(gz3d.gui.guiEvents.on.calls.length).toBe(1);
+    expect(gz3d.gui.guiEvents.on.calls.length).toBe(2);
     // gz3d.gui.guiEvents.emit('setTreeSelected');
     // $timeout.flush();
   });

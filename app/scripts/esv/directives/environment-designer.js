@@ -120,9 +120,8 @@
             };
 
             scope.deleteModel = function () {
-              var entity = gz3d.scene.selectedEntity;
-              gz3d.gui.emitter.emit('deleteEntity', entity);
-              contextMenuState.toggleContextMenu(false);
+                gz3d.gui.guiEvents.emit('delete_entity');
+                contextMenuState.toggleContextMenu(false);
             };
 
             // Edit and Delete object context Menu item
