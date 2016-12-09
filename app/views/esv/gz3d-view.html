@@ -165,11 +165,13 @@
                           (stateService.currentState !== STATE.FAILED)">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
-            <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)" class="ng-hide">
+            <div ng-class="{'disabled': (stateService.currentState === STATE.HALTED) ||
+                                        (stateService.currentState === STATE.STOPPED) ||
+                                        (stateService.currentState === STATE.FAILED)}">
               <div class="hbp-toolbar-large-tool hbp-time-display default-cursor"
                    ng-class="{'highlighted': currentSelectedUIElement === UI.TIME_DISPLAY}"
                    ng-click="timeDisplayClickHandler()">
-                <div>
+                <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)">
                   <div>
                     <span>Simulation time:</span><br/>
                     <span>Real time:</span><br/>
@@ -179,6 +181,12 @@
                     <span id="simTime">{{simulationTimeText | timeDDHHMMSS}}</span><br/>
                     <span id="realTime">{{realTimeText | timeDDHHMMSS}}</span><br/>
                     <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 300 ? 'red' : '' }">{{simTimeoutText | timeDDHHMMSS}}</span>
+                  </div>
+                </div>
+                <div ng-show="stateService.currentState === STATE.HALTED">
+                  <div>
+                    <span>An exception occurred in the simulation.</span><br />
+                    <span>The simulation needs to be terminated.</span>
                   </div>
                 </div>
               </div>

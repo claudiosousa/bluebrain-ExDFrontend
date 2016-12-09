@@ -187,12 +187,14 @@
 .disabled-image {
   opacity: 0.4;
   filter: alpha(opacity=40); /* msie */
+  pointer-events: none;
 }
 
 .disabled {
   opacity: 0.6;
   filter: alpha(opacity=60); /* msie */
   cursor: help;
+  pointer-events: none;
 }
 
 .missed-console-badge{
