@@ -16,6 +16,8 @@
 
         // This amount of pixels is used in order to avoid scrollbars to appear on the right / on the bottom.
         var SAFETY_PAD = 4;
+        // just to get from e.g. 0.41 to 41 for css percentage values
+        var FRACTION_TO_PERCENTAGE = 100;
 
         // The little handle that the user drags around for resizing. It will be appended to the element that
         // should be resizeable and is only visible through a small image that visually indicates its resizeability.
@@ -100,8 +102,8 @@
             "offsetY": adjustedPageY - currentY
           });
 
-          element.css("height", newSize.height + "px");
-          element.css("width", newSize.width + "px");
+          element.css("height", (newSize.height / window.innerHeight) * FRACTION_TO_PERCENTAGE + '%');
+          element.css("width", (newSize.width / window.innerWidth) * FRACTION_TO_PERCENTAGE + '%');
 
           // Adjust all non local variables.
           currentHeight = newSize.height;
