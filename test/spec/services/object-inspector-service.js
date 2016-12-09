@@ -226,6 +226,79 @@ describe('Services: objectInspectorService', function () {
     expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(dummyObject);
   });
 
+  it('should highlight the the correct fields when manipulating an object', function () {
+
+    objectInspectorService.selectedStyle = {
+      'TX': '', 'TY': '', 'TZ': '',
+      'RX': '', 'RY': '', 'RZ': ''
+    };
+
+    var containsStr = function(a, b) {return a.search(b) !== -1;};
+
+    var buildIsSelectedFunction = function(manipulatorAxis) {
+       return function (idx) {
+          return containsStr(manipulatorAxis, idx);
+       };
+    };
+
+    var test =  function (manipulatorAxisUnderTest) {
+
+       //iterate over selectedStyle
+       angular.forEach(
+        objectInspectorService.selectedStyle,
+        function(fieldStyle, field) {
+
+          var transform = field[0];
+          var axis = field[1];
+
+          if(containsStr(manipulatorAxisUnderTest, transform) &&
+             containsStr(manipulatorAxisUnderTest, axis)) {
+
+             expect(fieldStyle).not.toBe('');//highlighted
+          }
+          else {
+            if(manipulatorAxisUnderTest !== 'RE') {
+              expect(fieldStyle).toBe('');//not highlighted
+            }
+            else if (transform === 'R') { //cheking R{X,Y,Z} fields
+              //since RE is selected, every field must be highlighted
+              expect(fieldStyle).not.toBe('');//highlighted
+            }
+          }
+        }
+       );
+    };
+
+    gz3d.scene.selectedEntity =
+      objectInspectorService.selectedObject =
+        gz3d.scene.modelManipulator.selected = dummyObject;
+
+    var invokeUpdate = function(manipulatorAxes) {
+        //set isSelected function
+        gz3d.scene.modelManipulator.isSelected = buildIsSelectedFunction(manipulatorAxes);
+        objectInspectorService.onMouseMove(); //invoke update
+    };
+
+    //Translate
+    angular.forEach(
+      ['TX', 'TY', 'TZ', 'TXY', 'TXZ','TYZ'],
+      function (manipulatorAxes) {
+        invokeUpdate(manipulatorAxes);
+        test(manipulatorAxes);
+      }
+    );
+
+    //Rotate
+    angular.forEach(
+      ['RX', 'RY', 'RZ', 'RE'],
+      function (manipulatorAxes) {
+        invokeUpdate(manipulatorAxes);
+        test(manipulatorAxes);
+      }
+    );
+
+  });
+
   it('should change collision geometry visibility', function () {
     spyOn(collisionVisualMock, 'traverse').andCallThrough();
 
@@ -240,7 +313,7 @@ describe('Services: objectInspectorService', function () {
     expect(meshMock.visible).toBe(true);
   });
 
-  it('should trigger  change collision geometry visibility', function () {
+  it('should trigger change collision geometry visibility', function () {
     spyOn(collisionVisualMock, 'traverse').andCallThrough();
   });
 
@@ -435,7 +508,6 @@ describe('Services: objectInspectorService4', function () {
 
 });
 
-
 describe('Services: objectInspectorService5', function () {
   var $timeout, objectInspectorService, colorableObjectService;
   var gz3d, stateService, EDIT_MODE, STATE;
@@ -597,7 +669,6 @@ describe('Services: objectInspectorService7', function () {
     objectInspectorService.onXYZKeystroke(event);
   });
 });
-
 
 describe('Services: objectInspectorService8', function () {
   var $timeout, objectInspectorService, colorableObjectService;
