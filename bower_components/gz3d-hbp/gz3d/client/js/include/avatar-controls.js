@@ -574,6 +574,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d, avatar, camera, dom
      */
   this.update = function(delta) {
     if (!this.enabled) {
+      if (this.mouseDragOn)
+      {
+        this.endLookAround();
+      }
       return;
     }
 
