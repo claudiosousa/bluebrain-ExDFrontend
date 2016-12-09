@@ -184,8 +184,12 @@
           return experimentProxyService.getServerConfig(server)
             .then(function (serverConfig) {
               function launch(environmentConfiguration) {
-                return launchExperimentOnServer(experiment.configuration.experimentConfiguration, environmentConfiguration, brainProcesses, server, serverConfig)
-                  .catch(oneSimulationFailed);
+                return launchExperimentOnServer(
+                  experiment.id,
+                  experiment.configuration.experimentConfiguration,
+                  environmentConfiguration,
+                  brainProcesses, server, serverConfig
+                ).catch(oneSimulationFailed);
               }
               if (envSDFData) {
                 return simulationSDFWorld(serverConfig.gzweb['nrp-services']).import({ sdf: envSDFData }).$promise
@@ -208,7 +212,14 @@
         return launchInNextServer();
       };
 
-      var launchExperimentOnServer = function (experimentConfiguration, environmentConfiguration, brainProcesses, server, serverConfiguration) {
+      var launchExperimentOnServer = function (
+        experimentID,
+        experimentConfiguration,
+        environmentConfiguration,
+        brainProcesses,
+        server,
+        serverConfiguration
+      ) {
         var deferred = $q.defer();
 
         _.defer(function () { deferred.notify({ main: 'Create new Simulation...' }); }); //called once caller has the promise
@@ -239,7 +250,9 @@
             }
             // initialize the newly created simulation
             return updateSimulationState(STATE.INITIALIZED)
-              .then(function () { deferred.resolve('esv-web/gz3d-view/' + server + '/' + createData.simulationID); });
+              .then(function () { deferred.resolve(
+                'esv-web/gz3d-view/' + server + '/' + experimentID + '/' + createData.simulationID);
+            });
           }).catch(function (err) {
             deferred.reject(err);
           });

@@ -148,7 +148,7 @@
                   <td>{{simul.runningSimulation.state}}</td>
                   <td>
                     <!-- Join button enabled provided simulation state is consistent-->
-                    <a analytics-on analytics-event="Join" analytics-category="Experiment" ng-click="(simul.runningSimulation.state === STATE.CREATED) || simul.stopping || joinExperiment(simul);"
+                    <a analytics-on analytics-event="Join" analytics-category="Experiment" ng-click="(simul.runningSimulation.state === STATE.CREATED) || simul.stopping || joinExperiment(simul, exp);"
                       type="button" class="btn btn-default" ng-disabled="(simul.runningSimulation.state === STATE.CREATED) || simul.stopping">Join »</a>
                     <!-- Stop button enabled provided simulation state is consistent-->
                     <a analytics-on analytics-event="Stop" analytics-category="Experiment" ng-click="stopSimulation(simul, exp);" type="button"

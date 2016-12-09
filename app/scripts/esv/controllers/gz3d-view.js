@@ -52,7 +52,7 @@
     ['$rootScope', '$scope', '$timeout',
       '$location', '$window', '$document', '$log', 'bbpConfig',
       'hbpIdentityUserDirectory',
-      'simulationControl', 'colorableObjectService', 'experimentList',
+      'simulationControl', 'colorableObjectService',
       'timeDDHHMMSSFilter', 'splash',
       'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
@@ -60,11 +60,11 @@
       'simulationInfo', 'INITIAL_LIGHT_DIFFUSE', 'MINIMAL_LIGHT_DEFUSE', 'hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
-      'simulationConfigService', 'experimentProxyService',
+      'simulationConfigService',
       function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
-        simulationControl, colorableObjectService, experimentList,
+        simulationControl, colorableObjectService,
         timeDDHHMMSSFilter, splash,
         assetLoadingSplash, STATE, nrpBackendVersions,
         nrpFrontendVersion, UI,
@@ -72,7 +72,7 @@
         simulationInfo, INITIAL_LIGHT_DIFFUSE, MINIMAL_LIGHT_DEFUSE, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
-        simulationConfigService, experimentProxyService) {
+        simulationConfigService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -166,7 +166,6 @@
 
         $scope.lightDiffuse = INITIAL_LIGHT_DIFFUSE;
 
-        simulationInfo.experimentID = 'experiment-not-found';
         if (!bbpConfig.get('localmode.forceuser', false)) {
           hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
             $scope.viewState.userID = profile.id;
@@ -174,17 +173,15 @@
         } else {
           $scope.viewState.userID = bbpConfig.get('localmode.ownerID');
         }
-        var setExperimentDetails = function(experimentID, experimentDetails){
-          $scope.ExperimentDescription = experimentDetails.description;
-          $scope.ExperimentName = experimentDetails.name;
-          simulationInfo.experimentID = experimentID;
+        var setExperimentDetails = function(){
+          $scope.ExperimentDescription = simulationInfo.experimentDetails.description;
+          $scope.ExperimentName = simulationInfo.experimentDetails.name;
           var sceneWatch = $scope.$watch(
             function() {
               return typeof gz3d.scene !== 'undefined' && typeof gz3d.scene.scene !== 'undefined';
             }, function(sceneReady) {
               if (sceneReady) {
-                $scope.updateInitialCameraPose(experimentDetails.cameraPose);
-                $scope.setAnimatedRobotModel(experimentDetails.visualModel, experimentDetails.visualModelParams);
+                $scope.updateInitialCameraPose(simulationInfo.experimentDetails.cameraPose);
                 sceneWatch(); // deregister watch
               }
             }
@@ -199,22 +196,8 @@
           $scope.experimentConfiguration = data.experimentConfiguration;
           $scope.environmentConfiguration = data.environmentConfiguration;
           $scope.creationDate = data.creationDate;
-          if ($scope.isCollabExperiment){
-            experimentList(simulationInfo.serverBaseUrl).experiments({context_id: simulationInfo.contextID},
-              function(data){
-                var experimentID = Object.keys(data.data)[0];
-                setExperimentDetails(experimentID, data.data[experimentID]);
-              }
-            );
-          } else {
-            experimentProxyService.getExperiments().then(function (data){
-              angular.forEach(data, function (experimentTemplate, experimentID) {
-                if (experimentTemplate.configuration.experimentConfiguration === $scope.experimentConfiguration) {
-                  setExperimentDetails(experimentID, experimentTemplate.configuration);
-                }
-              });
-            });
-          }
+          setExperimentDetails();
+
           if (!bbpConfig.get('localmode.forceuser', false)) {
             experimentsFactory.getOwnerDisplayName(data.owner).then(function (owner) {
               $scope.owner = owner;
@@ -497,7 +480,7 @@
               );
             } else {
               //other kinds of reset
-                backendInterfaceService.reset(
+              backendInterfaceService.reset(
                 $scope.request,
                 function () { // Success callback
                   //do not close the splash if successful
@@ -670,13 +653,6 @@
             gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
           }
           userNavigationService.setDefaultPose.apply(userNavigationService, pose);
-        };
-
-        $scope.setAnimatedRobotModel = function (model, params) {
-          if (model !== null && params !== null) {
-            params.unshift(model); // argument to apply must be a single list
-            gz3d.scene.setAnimatedRobotModel.apply(gz3d.scene, params);
-          }
         };
 
         $scope.cameraRotationButtonClickHandler = function () {

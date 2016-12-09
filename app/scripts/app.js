@@ -68,7 +68,7 @@
 
       var gz3dViewState = {
         name: 'gz3d-view',
-        url: '/esv-web/gz3d-view/:serverID/:simulationID?ctx',
+        url: '/esv-web/gz3d-view/:serverID/:experimentID/:simulationID?ctx',
         templateUrl: 'views/esv/gz3d-view.html',
         controller: 'Gz3dViewCtrl',
         onEnter: function ($document) {
@@ -79,7 +79,8 @@
         },
         resolve: {
           siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
-            return simulationInfo.initialize($stateParams.serverID, $stateParams.simulationID, $stateParams.ctx);
+            return simulationInfo.initialize(
+              $stateParams.serverID, $stateParams.experimentID, $stateParams.simulationID, $stateParams.ctx);
           }]
         }
       };

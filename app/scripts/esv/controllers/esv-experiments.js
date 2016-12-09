@@ -91,8 +91,9 @@
             experimentsService.stopExperiment(simulation, experiment);
           };
 
-          $scope.joinExperiment = function (simul) {
-            $location.path('esv-web/gz3d-view/' + simul.server + '/' + simul.runningSimulation.simulationID);
+          $scope.joinExperiment = function (simul, exp) {
+            var path = 'esv-web/gz3d-view/' + simul.server + '/' + exp.id + '/' + simul.runningSimulation.simulationID;
+            $location.path(path);
           };
 
           $scope.$on('$destroy', function () {

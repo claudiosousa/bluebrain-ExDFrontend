@@ -184,13 +184,13 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
   // Progress update: Add this asset to the assetProgressArray
   var element = {};
   element.id = modelName;
-  element.url = this.scene.animatedModel;
+  element.url = GZ3D.animatedModel.assetsPath;
   element.progress = 0;
   element.totalSize = 0;
   element.done = false;
   GZ3D.assetProgressData.assets.push(element);
   var scene = this.scene;
-  this.loader.load(this.scene.animatedModel, function (collada) {
+  this.loader.load(element.url, function (collada) {
     var modelParent = new THREE.Object3D();
     modelParent.name = modelName + '_animated';
     var linkParent = new THREE.Object3D();
@@ -240,13 +240,14 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
      modelParent.add(model_parent_axes);*/
 
     // Use scale, position, and rotation offsets provided in animated robot model specification
-    modelParent.scale.x = modelParent.scale.y = modelParent.scale.z = scene.animatedModelScale;
-    modelParent.position.x = modelParent.position.x + scene.animatedModelPosition.x;
-    modelParent.position.y = modelParent.position.y + scene.animatedModelPosition.y;
-    modelParent.position.z = modelParent.position.z + scene.animatedModelPosition.z;
-    modelParent.rotation.x = modelParent.rotation.x + scene.animatedModelRotation.x;
-    modelParent.rotation.y = modelParent.rotation.y + scene.animatedModelRotation.y;
-    modelParent.rotation.z = modelParent.rotation.z + scene.animatedModelRotation.z;
+    var p = GZ3D.animatedModel.visualModelParams;
+    modelParent.scale.x = modelParent.scale.y = modelParent.scale.z = p[6];
+    modelParent.position.x = modelParent.position.x + p[0] ;
+    modelParent.position.y = modelParent.position.y + p[1];
+    modelParent.position.z = modelParent.position.z + p[2];
+    modelParent.rotation.x = modelParent.rotation.x + p[3];
+    modelParent.rotation.y = modelParent.rotation.y + p[4];
+    modelParent.rotation.z = modelParent.rotation.z + p[5];
 
     // Build list of bones in rig, and attach it to scene node (userData) for later retrieval in animation handling
     var getBoneList = function (object) {
@@ -4144,7 +4145,7 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
 
   // Check for client-side-only animated model for robot
   var animatedModel = new GZ3D.AnimatedModel(this.scene);
-  if (model.name === 'robot' && this.scene.animatedModel)
+  if (model.name === 'robot' && GZ3D.animatedModel)
   {
     animatedModel.loadAnimatedModel(model.name);
     this.animatedModels[model.name] = animatedModel;
@@ -7305,12 +7306,6 @@ GZ3D.Scene.prototype.init = function()
   this.composer = new GZ3D.Composer(this);
   this.composerSettings = new GZ3D.ComposerSettings();
 
- // animated visual model to replace raw server side robot meshes
-  this.animatedModel = null;
-  this.animatedModelPosition = new THREE.Vector3(0, 0, 0);
-  this.animatedModelRotation = new THREE.Vector3(0, 0, 0);
-  this.animatedModelScale = 1.0;
-
   // Grid
   this.grid = new THREE.GridHelper(10, 1,new THREE.Color( 0xCCCCCC ),new THREE.Color( 0x4D4D4D ));
   this.grid.name = 'grid';
@@ -9130,26 +9125,6 @@ GZ3D.Scene.prototype.setCameraPose = function(xPos, yPos, zPos, xLookAt, yLookAt
   this.camera.position = new THREE.Vector3(xPos, yPos, zPos);
   this.camera.lookAt(new THREE.Vector3(xLookAt, yLookAt, zLookAt));
   this.camera.updateMatrix();
-};
-
-/**
- * Set the animated visual model and placement for robot (replaces raw server side meshes
- * within the same base package).
- * @param {String} model - the path of the model to use
- * @param {Float} xPos - x offset
- * @param {Float} yPos - y offset
- * @param {Float} zPos - z offset
- * @param {Float} xRot - x axis rotation
- * @param {Float} yRot - y axis rotation
- * @param {Float} zRot - z axis rotation
- * @param {Float} scale - visual scale to apply to raw mesh
- */
-GZ3D.Scene.prototype.setAnimatedRobotModel = function(model, xPos, yPos, zPos, xRot, yRot, zRot, scale)
-{
-  this.animatedModel =  GZ3D.assetsPath + '/' + model;
-  this.animatedModelPosition = new THREE.Vector3(xPos, yPos, zPos);
-  this.animatedModelRotation = new THREE.Vector3(xRot, yRot, zRot);
-  this.animatedModelScale = scale;
 };
 
 /**
