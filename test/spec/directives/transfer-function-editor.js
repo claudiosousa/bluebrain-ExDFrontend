@@ -205,7 +205,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should handle the retrieved transferFunctions properly', function () {
       // call the callback given to getTransferFunctions with a response mock
-      var editorMock = { refresh: jasmine.createSpy('refresh') };
+      var editorMock = { refresh: jasmine.createSpy('refresh'),  clearHistory: jasmine.createSpy('clearHistory'),markClean: jasmine.createSpy('markClean') };
       spyOn(document, 'getElementById').andReturn({ firstChild: { CodeMirror: editorMock}});
 
       backendInterfaceService.getTransferFunctions.mostRecentCall.args[0](response);
@@ -219,6 +219,8 @@ describe('Directive: transferFunctionEditor', function () {
       expect(editorMock.refresh).not.toHaveBeenCalled();
       $timeout.flush();
       expect(editorMock.refresh).toHaveBeenCalled();
+      expect(editorMock.clearHistory).toHaveBeenCalled();
+      expect(editorMock.markClean).toHaveBeenCalled();
     });
 
     it('should call the refresh function', function() {

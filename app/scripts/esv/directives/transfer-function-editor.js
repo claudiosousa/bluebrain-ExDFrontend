@@ -204,6 +204,8 @@
                 // force the TF to refresh (the tf.code might not have changed)
                 $timeout(function() {
                   var curEditor = scope.getTransferFunctionEditor(transferFunction);
+                  curEditor.clearHistory();
+                  curEditor.markClean();
                   curEditor.refresh();
                 }, 0, false);
              });
