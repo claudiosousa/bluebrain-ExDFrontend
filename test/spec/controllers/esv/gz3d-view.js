@@ -73,7 +73,10 @@ describe('Controller: Gz3dViewCtrl', function () {
   var userNavigationServiceMock = {
     init: jasmine.createSpy('init'),
     deinit: jasmine.createSpy('deinit'),
-    setDefaultPose: jasmine.createSpy('setDefaultPose')
+    setDefaultPose: jasmine.createSpy('setDefaultPose'),
+    isUserAvatar: jasmine.createSpy('isUserAvatar').andCallFake(function(entity) {
+      return entity.name === 'user-avatar';
+    })
   };
 
   var simulationConfigServiceMock = {};
@@ -522,9 +525,16 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should have editRights when owner', function () {
       scope.viewState.isOwner = false;
-      expect(scope.viewState.hasEditRights()).toBe(false);
+      expect(scope.viewState.hasEditRights({name: 'not-user-avatar'})).toBe(false);
       scope.viewState.isOwner = true;
-      expect(scope.viewState.hasEditRights()).toBe(true);
+      expect(scope.viewState.hasEditRights({name: 'not-user-avatar'})).toBe(true);
+      expect(userNavigationServiceMock.isUserAvatar).toHaveBeenCalled();
+    });
+
+    it('should have editRights for user avatar', function () {
+      scope.viewState.isOwner = false;
+      expect(scope.viewState.hasEditRights({name: 'user-avatar'})).toBe(true);
+      expect(userNavigationServiceMock.isUserAvatar).toHaveBeenCalled();
     });
 
     it('should set the forced user id in full local mode' , function () {
@@ -777,24 +787,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.simulationTimeText).toBe(1);
       // test "realTime"
       expect(scope.realTimeText).toBe(2);
-    });
-
-    it('should NOT open splash screen with when destroy or exit has been called', function () {
-      scope.splashScreen = splashInstance;
-      scope.$destroy();
-      splash.close.reset();
-
-      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
-      expect(splash.close).not.toHaveBeenCalled();
-      expect(scope.splashScreen).toBe(null);
-
-      scope.splashScreen = splashInstance;
-      scope.exit();
-      splash.close.reset();
-
-      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
-      expect(splash.close).not.toHaveBeenCalled();
-      expect(scope.splashScreen).toBe(null);
     });
 
     it('should set a color on the selected screen', function() {
@@ -1113,17 +1105,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       window.document.getElementById = backup;
     });
 
-    it('should close gzbridge and splash screens on $destroy', function() {
+    it('should close gzbridge on $destroy', function() {
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
-      scope.splashScreen = splashInstance;
 
       // call the method under test
       scope.$destroy();
 
-      expect(splash.close).toHaveBeenCalled();
-      expect(scope.splashScreen).toBe(null);
-      expect(assetLoadingSplash.close).toHaveBeenCalled();
       expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
       expect(gz3d.deInitialize).toHaveBeenCalled();
     });

@@ -179,14 +179,10 @@ describe('Services: userNavigationService', function () {
   });
 
   it(' - deinit()', function () {
-    spyOn(userNavigationService, 'getUserAvatar').andReturn(avatar);
-    spyOn(gz3d.scene.scene, 'remove');
 
     userNavigationService.deinit();
 
-    expect(userNavigationService.getUserAvatar).toHaveBeenCalled();
-    expect(gz3d.gui.emitter.emit).toHaveBeenCalledWith('deleteEntity', avatar);
-    expect(gz3d.scene.scene.remove).toHaveBeenCalledWith(avatar);
+    expect(userNavigationService.removeAvatar).toHaveBeenCalled();
   });
 
   it(' - setUserData()', function () {

@@ -66,11 +66,7 @@
             },
 
             deinit: function() {
-              var avatar = this.getUserAvatar();
-              if (angular.isDefined(avatar)) {
-                gz3d.gui.emitter.emit('deleteEntity', avatar);
-                gz3d.scene.scene.remove(avatar);
-              }
+              this.removeAvatar();
             },
 
             setUserData: function(profile) {
@@ -89,6 +85,10 @@
               if (!this.avatarInitialized) {
                 this.initAvatar();
               }
+            },
+
+            isUserAvatar: function(entity) {
+              return entity.name.indexOf(this.avatarObjectName) !== -1;
             },
 
             getUserAvatar: function() {
@@ -168,7 +168,6 @@
               var avatar = this.getUserAvatar();
               if (angular.isDefined(avatar)) {
                 gz3d.gui.emitter.emit('deleteEntity', avatar);
-                gz3d.scene.scene.remove(avatar);
               }
               this.avatarInitialized = false;
             },

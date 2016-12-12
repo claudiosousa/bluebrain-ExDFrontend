@@ -127,8 +127,8 @@
           this.isOwner = false;
           var _userID, _ownerID;
           var viewState = this;
-          this.hasEditRights = function () {
-            return viewState.isOwner;
+          this.hasEditRights = function (entity) {
+            return viewState.isOwner || userNavigationService.isUserAvatar(entity);
           };
 
           Object.defineProperty(this, 'userID',
@@ -293,7 +293,6 @@
             gz3d.Initialize();
             gz3d.iface.addCanDeletePredicate(isNotARobotPredicate);
             gz3d.iface.addCanDeletePredicate($scope.viewState.hasEditRights);
-
 
             // Handle touch clicks to toggle the context menu
             // This is used to save the position of a touch start event used for content menu toggling
@@ -812,35 +811,11 @@
         };
 
         // clean up on leaving
-        $scope.$on("$destroy", function () {
-          // unbind resetListener callback
-          $scope.resetListenerUnbindHandler();
-          nrpAnalytics.durationEventTrack('Simulate', {
-            category: 'Simulation'
-          });
+        $scope.$on('$destroy', function () {
+          /* NOT CALLED AUTOMATICALLY ON EXITING AN EXPERIMENT */
+          /* possible cause of memory leaks */
 
-          userNavigationService.deinit();
-
-          if ($scope.isCollabExperiment) {
-            cancelLockSubscription();
-            removeEditLock(true);
-          }
-          // Close the splash screens
-          if (angular.isDefined($scope.splashScreen)) {
-            if (angular.isDefined(splash)) {
-              splash.close();
-            }
-            delete $scope.splashScreen;
-            $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
-          }
-          if (angular.isDefined($scope.assetLoadingSplashScreen)) {
-            if (angular.isDefined(assetLoadingSplash)) {
-              assetLoadingSplash.close();
-            }
-            delete $scope.assetLoadingSplashScreen;
-          }
-          closeSimulationConnections();
-          gz3d.deInitialize();
+          cleanUp();
         });
 
         function closeSimulationConnections() {
@@ -964,7 +939,10 @@
             return $q.when();
           }
         };
-        function exitSimulation(){
+
+        function exitSimulation() {
+          cleanUp();
+
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           $location.path('esv-web');
           $timeout(function ()
@@ -972,6 +950,36 @@
             $window.location.reload();
           });
         }
+
+        function cleanUp() {
+          userNavigationService.deinit();
+
+          document.removeEventListener('keydown', $scope.displayHumanNavInfo);
+
+          // unbind resetListener callback
+          $scope.resetListenerUnbindHandler();
+          nrpAnalytics.durationEventTrack('Simulate', {
+            category: 'Simulation'
+          });
+
+          if ($scope.isCollabExperiment) {
+            cancelLockSubscription();
+            removeEditLock();
+          }
+
+          // Close the splash screens
+          if (angular.isDefined($scope.assetLoadingSplashScreen)) {
+            if (angular.isDefined(assetLoadingSplash)) {
+              assetLoadingSplash.close();
+            }
+            delete $scope.assetLoadingSplashScreen;
+          }
+
+          closeSimulationConnections();
+          gz3d.deInitialize();
+
+        }
+
         // Brain visualizer
         $scope.brainvisualizerIsDisabled = true;
 
@@ -1068,10 +1076,6 @@
           }
           $scope.exit();
         };
-
-        $scope.$on('$destroy', function () {
-          document.removeEventListener('keydown', $scope.displayHumanNavInfo);
-        });
 
       }]);
 } ());
