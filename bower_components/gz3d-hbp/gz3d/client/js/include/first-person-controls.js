@@ -299,7 +299,12 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.update = function(delta) {
-    if (!this.enabled) {
+    if (!this.enabled)
+    {
+      if (this.mouseDragOn)
+      {
+        this.endLookAround();
+      }
       return;
     }
 
