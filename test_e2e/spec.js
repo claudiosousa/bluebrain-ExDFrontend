@@ -1,386 +1,181 @@
-// Currently the loglevel is on ERROR, hence we work around a bit here
-console.log = function(data){
-  console.error((new Date).toISOString().replace(/z|t/gi,' ').trim() + ': ' + data);
-};
-
-// String of simulation time into seconds
-// Input String looks like: "dd hh:mm:ss"
-function simTimeInSeconds(timeString) {
-  var split = timeString.split(' ')[1].split(':');
-  return 60 * 60 * split[0] + 60 * split[1] + split[2];
-}
-
-// Function to take screenshots
-var fs = require('fs');
-function writeScreenShot(data, filename) {
-  var stream = fs.createWriteStream(parameters.SCREENSHOTS_PATH + filename);
-  stream.write(new Buffer(data, 'base64'));
-  stream.end();
-};
-
-// Parameters
 var parameters = require('./parameters.js');
+var experimentList = parameters.EXPERIMENT;
+//helper functions
+//TODO
 
-// Experiment used for protractor test
-// Will loop over all the experiments in the future
-var experimentName = parameters.EXPERIMENT._2;
+//action functions
 
-// Login as user and selection of ESV
-function login() {
-
+function connectToHomePage() {
   var deferred = protractor.promise.defer();
-
-  // Connecting to the main page
   browser.driver.get(parameters.url.Start);
-  console.log('Connecting to ' + parameters.url.Start)
-
-  // Login
-  browser.driver.wait(function () {
-    return browser.driver.getCurrentUrl().then(function (url) {
-      console.log('Now we are on ' + url);
-      return url == parameters.url.LOGIN;
-    });
-  }, parameters.timeout.LONG).then(function () {
-    console.log('Entering username and password');
-    browser.driver.findElement(by.id('j_username')).sendKeys(browser.params.login.user);
-    browser.driver.findElement(by.id('j_password')).sendKeys(browser.params.login.password);
-    console.log('Submiting username and password');
-    browser.driver.findElement(by.name('submit')).click();
-  });
-
-  browser.driver.sleep(parameters.timeout.SHORT);
-  browser.driver.takeScreenshot().then(function (data) {
-    writeScreenShot(data, 'Testshot1.png');
-    console.log('Testshot1_Login');
-  });
-
-  // Redirects to main page if login is successful
-  // Waits until timeout if login unsuccessful
-  browser.driver.wait(function () {
-    return browser.driver.getCurrentUrl().then(function (url) {
-      return url === parameters.url.Start + '/#/';
-    });
-  }, parameters.timeout.LONG).then(function () {
-    console.log('Login successful, proceeding to main page');
-    element(by.cssContainingText('.network-name', parameters.button.START_PAGE)).click().then(function () {
-      browser.driver.wait(function () {
-        return browser.driver.getCurrentUrl().then(function (url) {
-          return url === parameters.url.Esv;
-        });
-      }, parameters.timeout.LONG).then(function () {
-        console.log('Now we are on ' + parameters.url.Esv);
-        browser.driver.sleep(parameters.timeout.SHORT);
-        browser.driver.takeScreenshot().then(function (data) {
-          writeScreenShot(data, 'Testshot2.png');
-          console.log('Testshot2_ESV_Web');
-        });
-        deferred.fulfill();
-      });
-    });
-  });
-
+  browser.driver.sleep(parameters.timeout.RESPOND);
+  expect(browser.driver.getCurrentUrl()).toEqual(parameters.url.Start + "/#/");
+  console.log('Got to the home page');
+  console.log('Expectation checked : Current url matches the expected url');
+  deferred.fulfill();
   return deferred.promise;
 }
 
-// Initialization of new simulation
-function initializeSimulation(experiment,button) {
-
+function connectToEsvPage() {
   var deferred = protractor.promise.defer();
-  var splash = element(by.css('.splash'));
-  var loading = element(by.css('.fa.fa-2x.fa-spinner.fa-spin'));
-
-  browser.ignoreSynchronization = true;
-
-  // Waits for the list of experiments to load
+  browser.driver.get(parameters.url.Esv);
   browser.driver.sleep(parameters.timeout.RESPOND);
-  browser.driver.wait(protractor.until.elementIsNotVisible(loading), parameters.timeout.LONG).then(function () {
-    console.log('Waited for ' + (parameters.timeout.SHORT/1000) + 's now to be sure page is completely loaded');
-    // Initializes 'experiment'
-    element(by.cssContainingText('.h4', experiment)).click().then(function () {
-      console.log('Clicked on the experiment containing text: "' + experiment + '"');
-    });
+  expect(browser.driver.getCurrentUrl()).toEqual(parameters.url.Esv);
+  console.log('Got to the experiments page');
+  console.log('Expectation checked : Current url matches the expected url');
+  deferred.fulfill();
+  return deferred.promise;
+}
 
+function clickExperiment(experimentName) {
+  var deferred = protractor.promise.defer();
+  var experimentElement = element(by.cssContainingText('.h4', experimentName))
+  experimentElement.click().then(function () {
+    console.log('Action : Clicked on the experiment: ' + experimentName);
     browser.driver.sleep(parameters.timeout.SHORT);
-    browser.driver.takeScreenshot().then(function (data) {
-      writeScreenShot(data, 'Testshot3.png');
-      console.log('Testshot3_Experiment_click');
-    });
-
-    element(by.partialButtonText(button)).click().then(function () {
-      console.log('Clicked on button: "' + button + '"');
-      browser.driver.wait(function () {
-        return browser.driver.getCurrentUrl().then(function (url) {
-          return url !== parameters.url.Esv;
-        });
-      }, parameters.timeout.LONG).then(function () {
-        console.log('Waiting for assets to load');
-        browser.driver.sleep(parameters.timeout.SHORT);
-        // Waits for the simulation to load
-        browser.driver.wait(protractor.ExpectedConditions.stalenessOf(splash), parameters.timeout.LONG).then(function () {
-          console.log('Simulation initialized');
-          browser.driver.sleep(parameters.timeout.SHORT);
-          browser.driver.takeScreenshot().then(function (data) {
-            writeScreenShot(data, 'Testshot4.png');
-            console.log('Testshot4_Simulation');
-          });
-          deferred.fulfill();
-        });
-      });
-    });
   });
-
+  deferred.fulfill();
   return deferred.promise;
 }
 
-// Join existing simulation
-function joinSimulation(experiment) {
-
+function launchExperiment() {
   var deferred = protractor.promise.defer();
+  var launchButton = element(by.partialButtonText(parameters.button.LAUNCH));
   var splash = element(by.css('.splash'));
   var loading = element(by.css('.fa.fa-2x.fa-spinner.fa-spin'));
-
-  browser.ignoreSynchronization = true;
-
-  // Waits for the list of experiments to load
-  browser.driver.sleep(parameters.timeout.RESPOND);
-  browser.driver.wait(protractor.until.elementIsNotVisible(loading), parameters.timeout.LONG).then(function () {
-    console.log('Waited for ' + (parameters.timeout.SHORT/1000) + 's now to be sure page is completely loaded');
-    element(by.cssContainingText('.h4', experiment)).click().then(function () {
-      console.log('Clicked on the (first) experiment containing text: "' + experiment + '"');
-      console.log('Clicking on button: ' + parameters.button.JOIN);
-      element(by.partialButtonText(parameters.button.JOIN)).click();
-
-      browser.driver.sleep(parameters.timeout.SHORT);
-      browser.driver.takeScreenshot().then(function (data) {
-        writeScreenShot(data, 'Testshot5.png');
-        console.log('Testshot5_Experiment_join');
-      });
-
-    });
-    // It joins the first experiment listed, still needs to be reworked
-    browser.driver.sleep(parameters.timeout.RESPOND);
-    element.all(by.cssContainingText('.btn',parameters.button.JOIN)).then(function (items) {
-      items[1].click().then(function () {
-        console.log('Clicked on button: ' + parameters.button.JOIN);
-        browser.driver.wait(function () {
-          return browser.driver.getCurrentUrl().then(function (url) {
-            return url !== parameters.url.Esv;
-          });
-        }, parameters.timeout.LONG).then(function () {
-          console.log('Waiting for assets to load');
-          browser.driver.sleep(parameters.timeout.SHORT);
-          // Waits for the simulation to load
-          browser.driver.wait(protractor.ExpectedConditions.stalenessOf(splash), parameters.timeout.LONG).then(function () {
-            console.log('Simulation initialized');
-            browser.driver.sleep(parameters.timeout.SHORT);
-            browser.driver.takeScreenshot().then(function (data) {
-              writeScreenShot(data, 'Testshot6.png');
-              console.log('Testshot6_Simulation_join');
-            });
-            deferred.fulfill();
-          });
-        });
-      });
-    });
+  launchButton.click().then(function () {
+    console.log('Info : Launched experiment');
   });
-    
-  return deferred.promise;  
+  //wait until page has finished loading (i.e. the splash icon has dissapeared)
+  browser.driver.wait(protractor.ExpectedConditions.stalenessOf(splash), parameters.timeout.LONG).then(function () {
+    console.log("Info : Experiment initialized");
+    deferred.fulfill();
+  });
+  return deferred.promise;
 }
 
-// Start simulation
 function startSimulation() {
-
   var deferred = protractor.promise.defer();
-
-  element(by.css('.glyphicon.glyphicon-play')).click().then(function() {
-    console.log('Simulation started (time should change)');
-    element(by.id('simTime')).getText().then(function (text) {
-      console.log('Simulation time: ' + text);
-        simulationTimeStart = text;
-    });
+  var startButton = element(by.css('.glyphicon.glyphicon-play'));
+  startButton.click().then(function () {
+    console.log('Action : Clicked play button');
+  })
+  //check if time progresses
+  element(by.id('simTime')).getText().then(function (text) {
+    console.log('Simulation time: ' + text);
+    simulationTimeStart = text;
     // Simulation time should change
     browser.driver.sleep(parameters.timeout.SHORT).then(function () {
       element(by.id('simTime')).getText().then(function (text) {
         console.log('Simulation time: ' + text);
         expect(simulationTimeStart !== text).toBe(true);
-
-          browser.driver.sleep(parameters.timeout.SHORT);
-          browser.driver.takeScreenshot().then(function (data) {
-            writeScreenShot(data, 'Testshot7.png');
-            console.log('Testshot7_start');
-          });
-
+        console.log(' Expectation checked : Simulation time progressed');
         deferred.fulfill();
       });
     });
   });
-
   return deferred.promise;
 }
 
-// Pause simulation
 function pauseSimulation() {
-
-  var deferred = protractor.promise.defer();
-
-  element(by.css('.glyphicon.glyphicon-pause')).click().then(function () {
-    console.log('Simulation paused (time should not change more than 2s)')
-  });
-  element(by.id('simTime')).getText().then(function (text) {
-    console.log('Simulation time: ' + text);
-    simulationTime = simTimeInSeconds(text);
-  });
-  // Simulation time should not change
+  var deffered = protractor.promise.defer();
+  var pauseButton = element(by.css('.glyphicon.glyphicon-pause'));
+  pauseButton.click().then(function () {
+    console.log('Action : Clicked play button');
+    deffered.fulfill();
+  })
   browser.driver.sleep(parameters.timeout.SHORT);
-  element(by.id('simTime')).getText().then(function (text) {
-    console.log('Simulation time: ' + text);
-    var deviation = simTimeInSeconds(text) - simulationTime;
-    console.log('Deviation = ' + deviation);
-    expect(deviation <= 2).toBe(true); //a slow response from server can cause error
+  return deffered.promise;
+}
 
+function stopSiulation() {
+  var deffered = protractor.promise.defer();
+  var stopButton = element(by.css('.glyphicon.glyphicon-stop'));
+  var OKButton = element(by.partialButtonText('OK'));
+  stopButton.click().then(function () {
+    console.log('Action : Clicked stop button');
     browser.driver.sleep(parameters.timeout.SHORT);
-    browser.driver.takeScreenshot().then(function (data) {
-      writeScreenShot(data, 'Testshot8.png');
-      console.log('Testshot8_pause');
+  })
+  browser.driver.wait(element(by.partialButtonText('OK')).click(), parameters.timeout.LONG).then(function () {
+    browser.driver.getCurrentUrl().then(function (url) {
+      console.log('Action : Clicked OK button');
+      console.log('Info : Simulation exitted');
+      console.log('Info : Now we are on ' + url);
+      deffered.fulfill();
     });
-
-    deferred.fulfill();
   });
 
-  return deferred.promise;
+  return deffered.promise;
 }
+//check functions
+//TODO
 
-// Direct start pause simulation
-function directStartPauseSimulation() {
-
-  var deferred = protractor.promise.defer();
-
-  element(by.css('.glyphicon.glyphicon-play')).click().then(function() {
-    console.log('Simulation started');
-    element(by.css('.glyphicon.glyphicon-pause')).click().then(function () {
-      console.log('Simulation paused')
-      deferred.fulfill();
-    });
-  });
-
-  return deferred.promise;
-}
-
-// Reset simulation
-function resetSimulation() {
-
-  var deferred = protractor.promise.defer();
-
-  element(by.css('.glyphicon.glyphicon-repeat')).click().then(function () {
-    browser.driver.sleep(parameters.timeout.RESPOND);
-    console.log('Simulation resetted (time should restart at 0s)');
-    element(by.id('simTime')).getText().then(function (text) {
-      console.log('Simulation time: ' + text);
-      simulationTimeStart = text;
-    });
-    // Simulation time should not change, simulation is paused before reset
-    browser.driver.sleep(parameters.timeout.RESPOND).then(function () {
-      element(by.id('simTime')).getText().then(function (text) {
-        console.log('Simulation time: ' + text);
-        expect(simulationTimeStart === text).toBe(true);
-
-          browser.driver.sleep(parameters.timeout.SHORT);
-          browser.driver.takeScreenshot().then(function (data) {
-            writeScreenShot(data, 'Testshot8.png');
-            console.log('Testshot8_reset');
-          });
-
-        deferred.fulfill();
-      });
-    });
-  });
-
-  return deferred.promise;
-}
-
-// Stop simulation
-function stopSimulation() {
-
-  element(by.css('.glyphicon.glyphicon-stop')).click().then(function () {
-    browser.driver.sleep(parameters.timeout.RESPOND).then(function () {
-      console.log('Simulation stopped');
-      console.log('Waiting for splash screen to vanish');
-    });
-  });
-  // Simulation should exit after it is stopped
-  browser.driver.wait(element(by.partialButtonText('OK')).click(), parameters.timeout.LONG);
-  console.log('Simulation exitted');
-  return browser.driver.getCurrentUrl().then(function (url) {
-    return url == parameters.url.Esv;
-  });
-
-  browser.driver.sleep(parameters.timeout.SHORT);
-  browser.driver.takeScreenshot().then(function (data) {
-    writeScreenShot(data, 'Testshot9.png');
-    console.log('Testshot9_stop');
-  });
-
-}
-
-//***********************PROTRACTOR TESTING***********************
-
+//protractor tests
 describe('Simulation Test', function () {
 
-  var width = 1391;
-  var height = 736;
-  browser.driver.manage().window().setSize(width,height);
+  //variables
+  var width = 1920;
+  var height = 1080;
 
-  it('should login', function () {
-    console.log('[TC01] Login testcase');
-    login().then(function () {
-      expect(browser.driver.getCurrentUrl()).toEqual(parameters.url.Esv);
+  //browser setup
+  browser.driver.manage().window().setSize(width, height);
+
+  beforeEach(function () {
+    browser.driver.sleep(parameters.timeout.SHORT);
+  });
+
+  afterEach(function () {
+    browser.driver.sleep(parameters.timeout.SHORT);
+  });
+
+  it('Should direct to the home page', function () {
+    connectToHomePage().then(function (){ 
     });
   }, parameters.timeout.LONG);
 
- it('should launch new experiment and test start pause reset buttons', function () {
-    console.log('[TC02] Launching new experiment testcase');
-    console.log('[TC03] Start pause reset testcase');
-    initializeSimulation(experimentName, parameters.button.LAUNCH).then(function () {
-      expect(browser.driver.getCurrentUrl()).toContain('esv-web/gz3d-view');
-      startSimulation().then(function () {
+  for (var i = 0; i < experimentList.length; ++i) {
+    (function (i) {
+      it('Should direct to the esv page', function () {
+        connectToEsvPage().then(function () {
+       
+        });
+      }, parameters.timeout.LONG);
+
+      it('Should be able to click an experiment', function () {
+        clickExperiment(experimentList[i]).then(function () {
+
+        });
+      }, parameters.timeout.LONG)
+      it('Should be able to launch an experiment', function () {
+        launchExperiment().then(function () {
+
+        });
+      }, parameters.timeout.LONG)
+      it('Should be able to start the simulation', function () {
+        startSimulation().then(function () {
+
+        });
+      }, parameters.timeout.LONG)
+      it('should be able to pause the simulation', function () {
         pauseSimulation().then(function () {
-          resetSimulation().then(function () {
-            directStartPauseSimulation().then(function () {
-              expect(browser.driver.getCurrentUrl()).toContain('/view');
-            });
-          });
-        });
-      }); 
-    });
-  }, parameters.timeout.LONG);
 
-  it('should join existing experiment', function () {
-    console.log('[TC04] Joining existing experiment testcase');
-    browser.driver.get(parameters.url.Esv).then(function () {
-      browser.driver.sleep(parameters.timeout.RESPOND);
-      expect(browser.driver.getCurrentUrl()).toEqual(parameters.url.Esv);
-      joinSimulation(experimentName).then(function () {
-        directStartPauseSimulation().then(function () {
-          stopSimulation().then(function () {
-            expect(browser.driver.getCurrentUrl()).toEqual(parameters.url.Esv);
-          });
-        });
-      });
-    });
-  }, parameters.timeout.LONG);
+        })
+      }, parameters.timeout.LONG);
+      it('should be able to stop the simulation', function () {
+        stopSiulation().then(function () {
 
-  it('should enter edit mode', function () {
-    console.log('[TC05] Starting new experiment in edit mode testcase');
-    initializeSimulation(experimentName, parameters.button.EDIT).then(function () {
-      expect(browser.driver.getCurrentUrl()).toContain('esv-web/gz3d-view');
-      startSimulation().then(function () {
-        pauseSimulation().then(function () {
-          stopSimulation().then(function () {
-            expect(browser.driver.getCurrentUrl()).toEqual(parameters.url.Esv);
-          });
-        });
-      });
-    });
-  }, parameters.timeout.LONG);
+        })
+      }, parameters.timeout.LONG)
+    })(i);
+  }
 
 });
+
+
+
+
+
+
+
+
+
