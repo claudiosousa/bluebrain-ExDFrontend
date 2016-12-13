@@ -12,7 +12,7 @@ describe('Services: pythonCodeHelper', function () {
   }));
 
   it('should get the name of a python function properly', function () {
-    expect(pythonCodeHelper.getFunctionName('\n\ndef toto  (a,b,c):\n    print \"toto\"\n')).toEqual('toto');
+    expect(pythonCodeHelper.getFunctionName('\n@nrp.Neuron2Robot()\ndef toto  (a,b,c):\n    print \"toto\"\n')).toEqual('toto');
   });
 
 });

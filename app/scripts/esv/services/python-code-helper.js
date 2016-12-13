@@ -9,10 +9,10 @@
 
       returnValue.getFunctionName = function (code) {
         // Kind of weird, but if we move that up as a service variable, it produces random bugs.
-        var transferFunctionNameRegExp = /^.*def\s+(\w+)\s*\(.*/gm;
+        var transferFunctionNameRegExp = /^(@nrp[^\n]+\s+)+(#[^\n]*\n|\/\*(.|\n)*\*\/|\s)*def (\w+)/m;
         var matches = transferFunctionNameRegExp.exec(code);
         if (matches) {
-          return matches[1];
+          return matches[4];
         }
       };
 
@@ -22,7 +22,7 @@
             this.local = this.dirty = false;
             this.error = {};
       };
-      
+
       return returnValue;
     }
   );

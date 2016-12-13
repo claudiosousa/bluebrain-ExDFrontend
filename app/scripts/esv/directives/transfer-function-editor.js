@@ -260,6 +260,7 @@
         };
 
         scope.delete = function (transferFunction) {
+          if (transferFunction === undefined) return;
           var index = scope.transferFunctions.indexOf(transferFunction);
           if (transferFunction.local) {
             scope.transferFunctions.splice(index, 1);
@@ -299,23 +300,30 @@
           return _.map(transferFunctions, 'code').join('\n');
         };
 
+        var insertIfTransferFunction = function(list, tf_code) {
+          // check whether code contains a tf definition
+          var isTFRegex = /^(@nrp[^\n]+\s+)+(#[^\n]*\n|\/\*(.|\n)*\*\/|\s)*def \w+/m;
+          if (isTFRegex.exec(tf_code) !== null) {
+           list.push(new ScriptObject('', tf_code));
+          }
+        };
+
         var splitCodeFile = function(content) {
-          // matches decorators and function declaration:
-          var regexCode = /((^@.*)\n)*^.*def\s+\w+\s*\(.*/gm;
+          // matches a python unindent
+          var regexCode = /^\s{2}[^\n]*\n+(?:\S)/gm;
 
           // slice the codefile into separate functions
           var match = regexCode.exec(content);
-          var previousMatchIdx = match.index;
-          match = regexCode.exec(content);
-
+          var previousMatchIdx = 0;
           var loadedTransferFunctions = [];
           while (match !== null) {
-            loadedTransferFunctions.push(new ScriptObject('', content.slice(previousMatchIdx, match.index)));
-            previousMatchIdx = match.index;
+            // regular expressions in JavaScript are completely messed up
+            insertIfTransferFunction(loadedTransferFunctions, content.slice(previousMatchIdx, regexCode.lastIndex - 1).trim());
+            previousMatchIdx = regexCode.lastIndex - 1;
             match = regexCode.exec(content);
           }
           // get the last code match
-          loadedTransferFunctions.push(new ScriptObject('', content.slice(previousMatchIdx)));
+          insertIfTransferFunction(loadedTransferFunctions, content.slice(previousMatchIdx).trim());
 
           return loadedTransferFunctions;
         };

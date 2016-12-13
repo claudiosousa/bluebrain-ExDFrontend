@@ -246,7 +246,7 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should save back the tf properly', function () {
-      var newCode = 'def toto(): \nNew code';
+      var newCode = '@nrp.Robot2Neuron()\ndef toto(): \nNew code';
       var tf1 = isolateScope.transferFunctions[0];
       tf1.code = newCode;
       tf1.dirty = true;
@@ -506,8 +506,8 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should update a TF properly when editing it', function() {
-      var tf1Code = '@customdecorator(toto)\ndef tf1(var1, var2):\n\t#put your code here';
-      var tf1CodeNewCode = '@customdecorator(toto)\ndef tf_new_name(var1, var2):\n\t#put your code here';
+      var tf1Code = '@nrp.customdecorator(toto)\ndef tf1(var1, var2):\n\t#put your code here';
+      var tf1CodeNewCode = '@nrp.customdecorator(toto)\ndef tf_new_name(var1, var2):\n\t#put your code here';
       transferFunctions[0] = new ScriptObject('tf1', tf1Code);
       var tf1 = transferFunctions[0];
       tf1.code = tf1CodeNewCode;
@@ -529,14 +529,14 @@ describe('Directive: transferFunctionEditor', function () {
 
       var transferFunctionsCode = _.map(tfNameMock, function(fnName) {
         var code = '@decorate-my-furniture\n' +
-          '@beautiful(decorator)\n' +
+          '@nrp.Robot2Neuron()\n' +
           'def '+fnName+' (someParam1, someParam2):\n' +
-          '\tinsert awesome python code here\n' +
-          '\tand here for multiligne awesomeness\n';
+          '    insert awesome python code here\n' +
+          '    and here for multiligne awesomeness';
         return code;
       });
 
-      var tfFileMock = transferFunctionsCode.join('');
+      var tfFileMock = transferFunctionsCode.join('\n');
       var fileReaderMock = {
         readAsText: readAsTextSpy
       };
