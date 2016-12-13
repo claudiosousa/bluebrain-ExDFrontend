@@ -43,9 +43,7 @@
       BRAIN_VISUALIZER: 16,
       USER_NAVIGATION: 17,
       LOG_CONSOLE: 18
-    })
-    .constant('INITIAL_LIGHT_DIFFUSE', 1)
-    .constant('MINIMAL_LIGHT_DEFUSE', 0.2);
+    });
 
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl',
@@ -57,7 +55,7 @@
       'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
-      'simulationInfo', 'INITIAL_LIGHT_DIFFUSE', 'MINIMAL_LIGHT_DEFUSE', 'hbpDialogFactory',
+      'simulationInfo','hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
       'simulationConfigService',
@@ -69,7 +67,7 @@
         assetLoadingSplash, STATE, nrpBackendVersions,
         nrpFrontendVersion, UI,
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
-        simulationInfo, INITIAL_LIGHT_DIFFUSE, MINIMAL_LIGHT_DEFUSE, hbpDialogFactory,
+        simulationInfo, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
         simulationConfigService) {
@@ -163,8 +161,6 @@
         $scope.EDIT_MODE = EDIT_MODE;
         $scope.contextMenuState = contextMenuState;
         $scope.objectInspectorService = objectInspectorService;
-
-        $scope.lightDiffuse = INITIAL_LIGHT_DIFFUSE;
 
         if (!bbpConfig.get('localmode.forceuser', false)) {
           hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
@@ -367,12 +363,57 @@
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI[button]);
           }
-          $scope.lightDiffuse += MINIMAL_LIGHT_DEFUSE * direction;
-          if ($scope.lightDiffuse < MINIMAL_LIGHT_DEFUSE) {
-            $scope.lightDiffuse = MINIMAL_LIGHT_DEFUSE;
+
+          if (direction < 0 && $scope.isGlobalLightMinReached())
+          {
+            return;
           }
-          gz3d.scene.emitter.emit('lightChanged', $scope.lightDiffuse);
+
+          if (direction > 0 && $scope.isGlobalLightMaxReached())
+          {
+            return;
+          }
+
+          gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
         };
+
+        $scope.isGlobalLightMaxReached = function ()
+        {
+          if (gz3d===undefined || gz3d.scene===undefined)
+          {
+            return false;
+          }
+
+          var linfo = gz3d.scene.findLightIntensityInfo();
+
+          if (linfo.max >= 1.0)
+          {
+            return true;
+          }
+          else
+          {
+            return false;
+          }
+        };
+
+        $scope.isGlobalLightMinReached = function ()
+        {
+          if (gz3d===undefined || gz3d.scene===undefined)
+          {
+            return false;
+          }
+
+          var linfo = gz3d.scene.findLightIntensityInfo();
+          if (linfo.max <= 0.1)
+          {
+            return true;
+          }
+          else
+          {
+            return false;
+          }
+        };
+
 
         $scope.updateSimulation = function (newState) {
           stateService.setCurrentState(newState);
@@ -522,7 +563,6 @@
           gz3d.scene.controls.update();
           gz3d.scene.controls.onMouseUpManipulator('initPosition');
           gz3d.scene.controls.onMouseUpManipulator('initRotation');
-          $scope.lightDiffuse = INITIAL_LIGHT_DIFFUSE;
           gz3d.scene.resetView(); //update the default camera position, if defined
           if (objectInspectorService !== null) {
             gz3d.scene.selectEntity(null);

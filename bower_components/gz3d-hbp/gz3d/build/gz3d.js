@@ -3843,7 +3843,7 @@ GZ3D.GZIface.prototype.onConnected = function()
   Gazebo only knows attenuation factors, not intensity, so we manipulate diffuse color for now.
   Probably replaced / revamped after a dedicated edit tab is introduced to allow manipulation of lights directly.
    */
-  var createEntityModifyMessageWithLight = function(entity, diffuse)
+  var createEntityModifyMessageWithLight = function (entity, diffuse)
   {
     var entityMsg = createEntityModifyMessage(entity);
 
@@ -3853,19 +3853,25 @@ GZ3D.GZIface.prototype.onConnected = function()
       diffuse = lightObj.color;
     }
     entityMsg.diffuse =
-    {
-      r: diffuse.r,
-      g: diffuse.g,
-      b: diffuse.b
-    };
+      {
+        r: diffuse.r,
+        g: diffuse.g,
+        b: diffuse.b
+      };
     entityMsg.specular =
-    {
-      r: entity.serverProperties.specular.r,
-      g: entity.serverProperties.specular.g,
-      b: entity.serverProperties.specular.b
-    };
+      {
+        r: entity.serverProperties.specular.r,
+        g: entity.serverProperties.specular.g,
+        b: entity.serverProperties.specular.b
+      };
+
     entityMsg.direction = entity.direction;
     entityMsg.range = lightObj.distance;
+
+    if (entityMsg.direction === undefined && lightObj.target !== undefined)
+    {
+      entityMsg.direction = {x:lightObj.target.position.x,y:lightObj.target.position.y,z:lightObj.target.position.z};
+    }
 
     entityMsg.attenuation_constant = entity.serverProperties.attenuation_constant;
     entityMsg.attenuation_linear = entity.serverProperties.attenuation_linear;
@@ -3874,7 +3880,7 @@ GZ3D.GZIface.prototype.onConnected = function()
     return entityMsg;
   };
 
-  var publishEntityModify = function(entity)
+  var publishEntityModify = function (entity)
   {
     var lightObj = entity.children[0];
     if (lightObj && lightObj instanceof THREE.Light)
@@ -3889,27 +3895,30 @@ GZ3D.GZIface.prototype.onConnected = function()
 
   this.scene.emitter.on('entityChanged', publishEntityModify);
 
-  var publishLightModify = function(ratio)
+  var publishLightModify = function (vec)
   {
     var lights = [];
-    that.scene.scene.traverse(function(node) {
-      if (node instanceof THREE.Light) {
+    that.scene.scene.traverse(function (node)
+    {
+      if (node instanceof THREE.Light)
+      {
         lights.push(node);
       }
     });
 
     var numberOfLights = lights.length;
-    for (var i = 0; i < numberOfLights; i+=1) {
-      if( lights[i] instanceof THREE.AmbientLight ) { // we don't change ambient lights
+    for (var i = 0; i < numberOfLights; i += 1)
+    {
+      if (lights[i] instanceof THREE.AmbientLight)
+      { // we don't change ambient lights
         continue;
       }
       var entity = that.scene.getByName(lights[i].name);
-      var newDiffuse = new THREE.Color();
-      newDiffuse.r = THREE.Math.clamp(ratio * entity.serverProperties.initial.diffuse.r, 0, 1);
-      newDiffuse.g = THREE.Math.clamp(ratio * entity.serverProperties.initial.diffuse.g, 0, 1);
-      newDiffuse.b = THREE.Math.clamp(ratio * entity.serverProperties.initial.diffuse.b, 0, 1);
+      lights[i].color.r = THREE.Math.clamp(vec + lights[i].color.r, 0, 1);
+      lights[i].color.g = THREE.Math.clamp(vec + lights[i].color.g, 0, 1);
+      lights[i].color.b = THREE.Math.clamp(vec + lights[i].color.b, 0, 1);
 
-      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, newDiffuse));
+      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, lights[i].color));
     }
   };
 
@@ -8540,6 +8549,45 @@ GZ3D.Scene.prototype.createRoads = function(points, width, texture)
   var mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = false;
   return mesh;
+};
+
+
+/**
+ * findLightIntensityInfo
+ * Return min/max/ratio light intensity by combining all lights values
+ */
+
+GZ3D.Scene.prototype.findLightIntensityInfo = function ()
+{
+  var lights = [];
+  this.scene.traverse(function (node)
+  {
+    if (node instanceof THREE.Light && !(node instanceof THREE.AmbientLight))
+    {
+      lights.push(node);
+    }
+  });
+
+  var info = { min: 100.0, max: -100.0 };
+  var numberOfLights = lights.length;
+
+  for (var i = 0; i < numberOfLights; i += 1)
+  {
+    var entity = this.getByName(lights[i].name);
+    var intensity = (lights[i].color.r + lights[i].color.g + lights[i].color.b) / 3.0;
+
+    if (intensity < info.min)
+    {
+      info.min = intensity;
+    }
+
+    if (intensity > info.max)
+    {
+      info.max = intensity;
+    }
+  }
+
+  return info;
 };
 
 /**
