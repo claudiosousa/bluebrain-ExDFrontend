@@ -79,7 +79,8 @@
             var model = this._getModelUnderMouse(event);
             var animatedExt = "_animated";
 
-            if (model && model.name.indexOf(animatedExt)!==model.name.length-animatedExt.length) {
+            if (model && (model.name.indexOf(animatedExt) < 0 || model.name.indexOf(animatedExt) !== model.name.length - animatedExt.length))
+            {
               var needsRefresh = false;
 
               //update visibility info
