@@ -219,8 +219,6 @@ describe('Directive: transferFunctionEditor', function () {
       expect(editorMock.refresh).not.toHaveBeenCalled();
       $timeout.flush();
       expect(editorMock.refresh).toHaveBeenCalled();
-      expect(editorMock.clearHistory).toHaveBeenCalled();
-      expect(editorMock.markClean).toHaveBeenCalled();
     });
 
     it('should call the refresh function', function() {

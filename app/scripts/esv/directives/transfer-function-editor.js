@@ -198,14 +198,18 @@
                 if (found && !tf.dirty)
                 {
                   tf.code = transferFunction.code;
-                } else if (!found) {
-                  scope.transferFunctions.unshift(transferFunction);
-                }
-                // force the TF to refresh (the tf.code might not have changed)
-                $timeout(function() {
+
                   var curEditor = scope.getTransferFunctionEditor(transferFunction);
                   curEditor.clearHistory();
                   curEditor.markClean();
+
+                } else if (!found) {
+                  scope.transferFunctions.unshift(transferFunction);
+                }
+
+                // force the TF to refresh (the tf.code might not have changed)
+                $timeout(function() {
+                  var curEditor = scope.getTransferFunctionEditor(transferFunction);
                   curEditor.refresh();
                 }, 0, false);
              });
