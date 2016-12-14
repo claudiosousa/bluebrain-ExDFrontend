@@ -204,13 +204,27 @@
             document.removeEventListener('mouseup', objectInspectorService.onAxisMoveEnd);
           },
 
-          onUpdateNeeded: function (event) {
-            if (gz3d.scene === null) {
-              return;
-            }
-            update();
+          isLightSelected: checkLightSelected,
+
+          onUpdateNeeded: function(event) {
+              if (gz3d.scene === null) {
+                  return;
+              }
+              update();
           }
         };
+
+        function checkLightSelected() {
+            var result = false;
+            if (objectInspectorService.selectedObject) {
+                objectInspectorService.selectedObject.traverse(function(subnode) {
+                    if (subnode instanceof THREE.Light) {
+                        result = true;
+                    }
+                });
+            }
+            return result;
+        }
 
         var updateStyle = function (idx) {
           var selectedStyle = "background-color:yellow;";
@@ -220,6 +234,7 @@
             objectInspectorService.selectedStyle[idx] = "";
           }
         };
+
         var updateStyles = function () {
           updateStyle('TX');
           updateStyle('TY');
@@ -234,8 +249,12 @@
           // update selected object
           objectInspectorService.selectedObject = gz3d.scene.selectedEntity;
           if (angular.isUndefined(objectInspectorService.selectedObject) ||
-              objectInspectorService.selectedObject === null) {
+            objectInspectorService.selectedObject === null) {
             return;
+          }
+
+          if (checkLightSelected()) {
+              objectInspectorService.setViewMode(OBJECT_VIEW_MODE.WIREFRAME);
           }
 
           updateStyles();
@@ -296,7 +315,7 @@
           });
 
           gz3d.gui.guiEvents.on('delete_entity', function () {
-              $timeout(update, 0);//force scope.$apply
+            $timeout(update, 0);//force scope.$apply
           });
         };
 

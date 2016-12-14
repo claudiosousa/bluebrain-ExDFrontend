@@ -117,12 +117,14 @@
             <ul class="input-list">
               <li class="input-listitem">
                 <input id="oi-viewmode-normal" type="radio" name="viewmode-normal" class="input-radio-checkbox"
-                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.NORMAL)">
+                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.NORMAL)"
+                       ng-class="{'disabled-image' : objectInspectorService.isLightSelected() }">
                 Normal
               </li>
               <li class="input-listitem">
                 <input id="oi-viewmode-transparent" type="radio" name="viewmode-normal" class="input-radio-checkbox"
-                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.TRANSPARENT)">
+                       ng-click="objectInspectorService.setViewMode(OBJECT_VIEW_MODE.TRANSPARENT)"
+                       ng-class="{'disabled-image' : objectInspectorService.isLightSelected() }">
                 Transparent
               </li>
               <li class="input-listitem">
