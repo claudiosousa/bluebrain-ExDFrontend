@@ -3,11 +3,15 @@
 describe('Directive: simulation-timeout-extender', function () {
 
   beforeEach(module('exdFrontendApp'));
-  var $rootScope, $q,
-    hbpDialogFactoryConfirmResponse;
+  var $rootScope, $q, $compile,
+    hbpDialogFactoryConfirmResponse, backendInterfaceServiceExtendResponse;
 
-  var backendInterfaceService = { extendTimeout: jasmine.createSpy('extendTimeout').andCallFake(function () { return $q.when(); }) };
-  var hbpDialogFactory = { confirm: jasmine.createSpy('confirm').andCallFake(function () { return hbpDialogFactoryConfirmResponse; }) };
+  var backendInterfaceService = { extendTimeout: jasmine.createSpy('extendTimeout').andCallFake(function () { return backendInterfaceServiceExtendResponse; }) };
+
+  var hbpDialogFactory = {
+    confirm: jasmine.createSpy('confirm').andCallFake(function () { return hbpDialogFactoryConfirmResponse; }),
+    alert: jasmine.createSpy('extendTimeout')
+  };
 
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceService);
@@ -17,14 +21,21 @@ describe('Directive: simulation-timeout-extender', function () {
     hbpDialogFactory.confirm.reset();
   }));
 
-  beforeEach(inject(function (_$rootScope_, $httpBackend, $compile, _$q_) {
+  beforeEach(inject(function (_$rootScope_, $httpBackend, _$compile_, _$q_) {
     $rootScope = _$rootScope_;
+    $compile = _$compile_;
     $q = _$q_;
     $rootScope.simTimeoutText = 300;
-    hbpDialogFactoryConfirmResponse = $q.when(true);
+    hbpDialogFactoryConfirmResponse = $q.when();
+    backendInterfaceServiceExtendResponse = $q.when();
     $httpBackend.whenGET(new RegExp('.*')).respond(200);
     $compile('<simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}"></simulation-timeout-extender>')($rootScope);
   }));
+
+  it('should an exception if extend-timeout-condition undefined', function () {
+    expect(function () { $compile('<simulation-timeout-extender></simulation-timeout-extender>')($rootScope); })
+      .toThrow();
+  });
 
   it('should not trigger user prompt if timeout condition has not been met', function () {
     $rootScope.$digest();
@@ -33,17 +44,27 @@ describe('Directive: simulation-timeout-extender', function () {
 
   it('should trigger user prompt if timeout condition has been met', function () {
     $rootScope.simTimeoutText = 299;
-    hbpDialogFactoryConfirmResponse = $q.when();//positive response
+    // hbpDialogFactoryConfirmResponse = $q.when();//positive response
     $rootScope.$digest();
     expect(hbpDialogFactory.confirm).toHaveBeenCalled();
   });
 
   it('should call backendInterfaceService.extend when user requests timeout extension', function () {
     $rootScope.simTimeoutText = 299;
-    hbpDialogFactoryConfirmResponse = $q.when();//positive response
+    //  hbpDialogFactoryConfirmResponse = $q.when();//positive response
     $rootScope.$digest();
     expect(hbpDialogFactory.confirm).toHaveBeenCalled();
     expect(backendInterfaceService.extendTimeout).toHaveBeenCalled();
+  });
+
+  it('should show alert if failed to extend timeout', function () {
+    $rootScope.simTimeoutText = 299;
+    //hbpDialogFactoryConfirmResponse = $q.when();//positive response
+    backendInterfaceServiceExtendResponse = $q.reject({ status: 402 });
+    $rootScope.$digest();
+    expect(hbpDialogFactory.confirm).toHaveBeenCalled();
+    expect(backendInterfaceService.extendTimeout).toHaveBeenCalled();
+    expect(hbpDialogFactory.alert).toHaveBeenCalled();
   });
 
   it('should NOT call backendInterfaceService.extend when user refuses timeout extension', function () {
@@ -51,7 +72,7 @@ describe('Directive: simulation-timeout-extender', function () {
     hbpDialogFactoryConfirmResponse = $q.reject();//negative response
     $rootScope.$digest();
     expect(hbpDialogFactory.confirm).toHaveBeenCalled();
-
+    expect(hbpDialogFactory.alert).toHaveBeenCalled();
     expect(backendInterfaceService.extendTimeout).not.toHaveBeenCalled();
   });
 

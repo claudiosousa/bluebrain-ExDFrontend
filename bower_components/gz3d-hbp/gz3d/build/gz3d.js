@@ -4399,7 +4399,8 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
       zIndex: viewManager.mainContainer.style.zIndex + viewIndex + 1,
       width: Math.floor(width) + 'px',
       height: height + 'px',
-      adjustable: true
+      adjustable: true,
+      topic: sensor.topic
     };
 
     var viewName = 'view_' + sensor.name;
@@ -6620,7 +6621,7 @@ GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
             console.error('GZ3D.MultiView.createViewContainer() - no callback for creating view reference container defined');
             return undefined;
         } else {
-            viewContainer = this.createRenderContainerCallback(displayParams.adjustable, name);
+            viewContainer = this.createRenderContainerCallback(displayParams.adjustable, name, displayParams.topic);
         }
     }
     if (!angular.isDefined(viewContainer)) {

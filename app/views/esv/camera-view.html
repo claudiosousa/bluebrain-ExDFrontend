@@ -1,11 +1,14 @@
 <link rel="stylesheet" href="styles/esv/camera-view.css" />
 
-<div id="camera-view-window">
-  <div class="camera-view-label">{{cameraName}}</div>
-  <div for="show-frustum-checkbox">
-  <label class="show-frustum-label">
-    <input id="show-frustum-checkbox" type="checkbox" class="frustum-checkbox" ng-model="showFrustum" ng-change="onShowFrustumChanged()">
-    show frustum
-  </label>
-  </div>
+<div class="camera-server-stream-not-available" ng-show="showServerStream">
+  <span>Start the simulation to start streaming camera image</span>
+</div>
+<img class="camera-server-stream-image" ng-show="showServerStream" ng-src="{{videoUrl}}" alt="Smiley face">
+<div class="camera-view-label">{{cameraName}}</div>
+
+<div class="camera-icons">
+  <span class="glyphicon glyphicon-modal-window camera-frustum" tooltip="Show frustum" tooltip-placement="bottom" enabled="{{showFrustum}}"
+    ng-click="onShowFrustumChanged()" aria-hidden="true"></span>
+  <i class="fa fa-video-camera camera-server-stream" ng-show="videoUrl" enabled="{{showServerStream}}" tooltip="Stream&nbsp;server&nbsp;image"
+    tooltip-placement="bottom" ng-click="toggleServerStream()" aria-hidden="true"></i>
 </div>

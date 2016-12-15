@@ -103,14 +103,15 @@
         GZ3D.webSocketToken = token;
       }
 
-      returnValue.createRenderContainer = function(adjustable, name) {
-        var renderContainer, renderContainerHTML;
+      returnValue.createRenderContainer = function(adjustable, name, topic) {
+        var renderContainer,
+          renderContainerHTML = '<camera-view keep-aspect-ratio class="render-view-container camera-view-window"';
+
         if (adjustable) {
-          renderContainerHTML = '<camera-view movable resizeable keep-aspect-ratio class="render-view-container camera-view-window" camera-name=' + name + '></camera-view>';
+          renderContainerHTML += ' movable resizeable';
         }
-        else {
-          renderContainerHTML = '<camera-view keep-aspect-ratio class="render-view-container camera-view-window" camera-name=' + name + '></camera-view>';
-        }
+        renderContainerHTML += ' topic="' + topic + '"';
+        renderContainerHTML += ' camera-name=' + name + '></camera-view>';
 
         renderContainer = $compile(renderContainerHTML)($rootScope)[0];
 
