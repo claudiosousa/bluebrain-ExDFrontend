@@ -215,8 +215,10 @@
           function loadExperimentDetails(){
             return getExperimentDetailsFromCollab("experiment_configuration.xml")
             .then(function(fileContent){
-              var xml = $($.parseXML(fileContent));
-              return $q.resolve({ name: xml.find("name").text(), desc: xml.find("description").text(), timeout: xml.find("timeout").text()});
+              var xml = $.parseXML(fileContent);
+              return $q.resolve({ name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
+                                  desc: xml.getElementsByTagNameNS("*", "description")[0].textContent,
+                                  timeout: xml.getElementsByTagNameNS("*", "timeout")[0].textContent});
             },
             function(){
               return $q.reject();
