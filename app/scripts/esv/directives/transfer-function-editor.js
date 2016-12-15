@@ -211,7 +211,7 @@
                 $timeout(function() {
                   var curEditor = scope.getTransferFunctionEditor(transferFunction);
                   curEditor.refresh();
-                }, 0, false);
+                }, 100, false); // This timeout has been added to avoid display problems with the CodeMirror container
              });
           });
           refreshPopulations();
