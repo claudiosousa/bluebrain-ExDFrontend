@@ -71,12 +71,12 @@
         url: '/esv-web/gz3d-view/:serverID/:experimentID/:simulationID?ctx',
         templateUrl: 'views/esv/gz3d-view.html',
         controller: 'Gz3dViewCtrl',
-        onEnter: function ($document) {
+        onEnter: ['$document', function ($document) {
           $document.find('body').addClass('gz3d-view-route');
-        },
-        onExit: function ($document) {
+        }],
+        onExit: ['$document', function ($document) {
           $document.find('body').removeClass('gz3d-view-route');
-        },
+        }],
         resolve: {
           siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
             return simulationInfo.initialize(
