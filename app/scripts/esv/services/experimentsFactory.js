@@ -121,6 +121,7 @@
             return loadExperimentDetails().then(function(experimentDetails){
               experiment[experimentId].configuration.name = experimentDetails.name;
               experiment[experimentId].configuration.description = experimentDetails.desc;
+              experiment[experimentId].configuration.thumbnail = experimentDetails.thumbnail;
               experiment[experimentId].configuration.timeout = parseInt(experimentDetails.timeout);
               experiment[experimentId].configuration.experimentConfiguration = "";
               return experiment;
@@ -141,10 +142,9 @@
           }
 
           function updateExperimentImages() {
-            var getCollabImage = loadCollabImage();
             service.experiments.then(function (experiments) {
               if (contextId && experiments.length === 1){
-                getCollabImage.then(function(collabImage){
+                loadCollabImage(experiments[0]).then(function(collabImage){
                   experiments[0].imageData = collabImage;
                 }).catch(function(){
                   getBackendExperimentImages(experiments);
@@ -197,13 +197,14 @@
             return promise.promise;
           }
 
-          function loadCollabImage(){
-            return getExperimentDetailsFromCollab(experimentId + ".png", {"responseType": "blob"})
+          function loadCollabImage(experiment){
+            return getExperimentDetailsFromCollab(experiment.configuration.thumbnail,
+                                                  {"responseType": "blob"})
             .then(function(imageContent){
               var reader = new FileReader();
               var promise = $q.defer();
               reader.addEventListener('loadend', function(e) {
-                promise.resolve(e.target.result.replace("data:image/png;base64,", ""));
+                promise.resolve(e.target.result.replace(/data:image\/(png|gif|jpeg);base64,/g, ""));
               });
               reader.readAsDataURL(imageContent);
               return promise.promise;
@@ -224,6 +225,7 @@
               experimentXML = fileContent;
               return $q.resolve({ name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
                                   desc: xml.getElementsByTagNameNS("*", "description")[0].textContent,
+                                  thumbnail: xml.getElementsByTagNameNS("*", "thumbnail")[0].textContent,
                                   timeout: xml.getElementsByTagNameNS("*", "timeout")[0].textContent});
             },
             function(){
