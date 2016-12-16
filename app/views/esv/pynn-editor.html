@@ -1,5 +1,5 @@
 <!-- build:css(.tmp) styles/esv/pynn-editor.css -->
-<link rel="stylesheet" href="styles/esv/pynn-editor.css"/>
+<link rel="stylesheet" href="styles/esv/pynn-editor.css" />
 <!-- endbuild -->
 
 <div class="pynn-editor-widget">
@@ -20,42 +20,40 @@
     <form name="populationForm">
       <table class="table table-striped">
         <thead>
-        <tr>
-          <th>Name</th>
-          <th colspan="3">Neuron indices</th>
-          <th></th>
-        </tr>
+          <tr>
+            <th>Name</th>
+            <th colspan="3">Neuron indices</th>
+            <th></th>
+          </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="(index, population) in populations">
-          <td>
-             <input type="text" size="25" ng-model="population.name" ng-focus="onFocusChange(index);"  ng-change="onBrainChange()"
-                    ng-change="updateRegexPatterns();" ng-pattern="population.regex" required>
-          </td>
-          <td ng-if-start="isSlice(population)">
-            <div class="fixed-sized">
-              <label>from</label>
-            <input size="5" type="number" class="neuron-index-field" ng-model="population.from" min="0" placeholder="0" required
-                   ng-change="onBrainChange()"/>
-          </td>
-          <td>
-            <input size="5" type="number" class="neuron-index-field" ng-model="population.to" min="1" placeholder="1" required  ng-change="onBrainChange()">
-            </div>
-          </td>
-          <td ng-if-end>
-            <input size="5" type="number" class="neuron-index-field" ng-model="population.step" min="1" placeholder="1" required  ng-change="onBrainChange()">
-            </div>
-          </td>
-          <td ng-if="!isSlice(population)" colspan="3">            
-            <input size="40" type="text" ng-model="population.list"  ng-change="onBrainChange()"
-                   ng-pattern="/^\s*\d+\s*(\,\s*\d+\s*)*$/" required />
-          </td>
-          <td>
-            <button type="button" class="btn btn-default btn-md" ng-click="deletePopulation(index);">
+          <tr ng-repeat="(index, population) in populations">
+            <td>
+              <input type="text" size="25" ng-model="population.name" ng-focus="onFocusChange(index);" ng-change="onBrainChange()" ng-change="updateRegexPatterns();"
+                ng-pattern="population.regex" required>
+            </td>
+            <td ng-if-start="isSlice(population)">
+              <div class="fixed-sized">
+                <label>from</label>
+                <input size="5" type="number" class="neuron-index-field" ng-model="population.from" min="0" placeholder="0" required ng-change="onBrainChange()">
+              </div>
+            </td>
+            <td>
+              <input size="5" type="number" class="neuron-index-field" ng-model="population.to" min="1" placeholder="1" required ng-change="onBrainChange()">
+            </td>
+            <td ng-if-end>
+              <input size="5" type="number" class="neuron-index-field" ng-model="population.step" min="1" placeholder="1" required ng-change="onBrainChange()">
+            </td>
+            <td ng-if="!isSlice(population)" colspan="3">
+              <input size="40" type="text" ng-model="population.list" ng-change="onBrainChange()" ng-pattern="/^\s*\d+\s*(\,\s*\d+\s*)*$/"
+                required>
+            </td>
+            <td>
+              <button type="button" class="btn btn-default btn-md" ng-click="deletePopulation(index);">
               <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
             </button>
-          </td>
-        </tr>
+            </td>
+          </tr>
         </tbody>
       </table>
       <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
