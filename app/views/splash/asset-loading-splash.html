@@ -8,7 +8,9 @@
   <div class="row" ng-repeat="element in progressData.assets | filter:{done: false} | orderBy:'totalSize':true | limitTo:10">
     <div class="col-xs-offset-1 col-xs-10 col-md-offset-2 col-md-8">
       <progressbar ng-class="element.error ? 'splashbar-error' : 'splashbar'" value="element.progress/element.totalSize" max="1.0" animate="true">
-        <span style="color:black; white-space:nowrap; font-weight:bold;">{{element.id}}</span>
+      <div class="splashbar-textbox">
+        <span class="splashbar-text">{{element.id}}</span>
+      </div>
       </progressbar>
     </div>
   </div>

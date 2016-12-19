@@ -34,11 +34,26 @@
 }
 
 .splashbar-error {
-    background-color: #ff4444;
+    background-color: #bb4444;
 }
 
 .splashbar {
-    background-color: #c0c0c0;
+    background-color: #808080;
+}
+
+.splashbar-textbox
+{
+    text-align: left;
+    margin-left:5px;
+}
+
+.splashbar-text
+{
+    text-align: left;
+    color:white;
+    white-space:nowrap;
+    font-weight:bold;
+    font-style: italic;
 }
 
 .splash .splash-content {
