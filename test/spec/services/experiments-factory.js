@@ -126,6 +126,22 @@ describe('Services: experimentsFactory', function () {
     expect(collabFolderAPIService.getFolderFile).toHaveBeenCalledWith('folder_id', 'experiment_configuration.xml');
   });
 
+  it('experiment xml should be stored', function() {
+    spyOn(experimentProxyService, 'getJoinableServers').andReturn($q.when([]));
+    spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
+    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+    spyOn(experimentProxyService, 'getImages');
+    var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout></ns1:ExD>';
+    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(xml));
+    var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
+    exp.initialize();
+    scope.$apply();
+
+    exp.experiments.then(function(){
+      expect(exp.getCollabExperimentXML()).toBe(xml);
+    });
+    scope.$apply();
+  });
   it('refresh should update collab experiments joinable servers', function() {
     var joinableServer = [{server: 'testHost', runningSimulation: {owner:'1', simulationID:5}}];
     var callCount = 0;

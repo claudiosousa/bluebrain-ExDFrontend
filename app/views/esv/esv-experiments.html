@@ -10,9 +10,7 @@
         <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp; <i>{{config.loadingMessage}}</i>
       </div>
     </div>
-
     <hr class="list-separator">
-
     <div ng-repeat="exp in experiments |filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
       class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="selectExperiment(exp);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == pageState.selected) || isHovered}">
@@ -21,10 +19,24 @@
         </div>
         <div class="list-entry-middle list-entry-container up-down">
           <div class="list-entry-container left-right title-line">
-            <div class="h4">{{exp.configuration.name}}</div>
+            <div class="h4" ng-hide="!loadingEdit && editing[nameID] && isCollabExperiment">{{exp.configuration.name}}
+              <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isCollabExperiment && (!editing[nameID] && !editing[descID])" id="edit-button"  v-busy="loadingEdit" ng-click="editExperiment(nameID);"></a>
+            </div>
+            <form ng-show="editing[nameID] && isCollabExperiment && !loadingEdit">
+              <input type="text" id="{{nameID}}" value="{{exp.configuration.name}}" size="{{exp.configuration.name.length}}" ng-model="formInfo.name" ng-blur="saveExperimentDetails(formInfo.name, nameID);" ng-required/>
+              <a style="font-size:15px;" href="javascript:void(0);" ng-show="isSavingToCollab" v-busy="isSavingToCollab"></a>
+              </br/>
+            </form>
             <div ng-if="config.canLaunchExperiments && exp.joinableServers.length > 0" class="list-entry-running">({{exp.joinableServers.length}} simulation{{exp.joinableServers.length>1?'s':''}} running)</div>
           </div>
-          <div ng-if="exp.id == pageState.selected">{{exp.configuration.description}}</div>
+          <div ng-if="exp.id == pageState.selected" ng-show="!isCollabExperiment">{{exp.configuration.description}}</div>
+          <div ng-hide="!isCollabExperiment || (editing[descID] && !loadingEdit)">{{exp.configuration.description}}
+              <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isCollabExperiment && (!editing[nameID] && !editing[descID])" v-busy="loadingEdit" ng-click="editExperiment(descID);"></a>
+            </div>
+            <form ng-show="editing[descID] && isCollabExperiment && !loadingEdit">
+              <textarea rows="4" cols="50" id="{{descID}}" ng-model="formInfo.desc" ng-blur="saveExperimentDetails(formInfo.desc, descID);" />
+              <a style="font-size:15px;" href="javascript:void(0);" ng-show="isSavingToCollab" v-busy="isSavingToCollab"></a>
+            </form>
           <div ng-if="exp.id != pageState.selected">{{exp.configuration.description | limitTo: 200}}...</div>
           <div ng-if="exp.id == pageState.selected && config.canLaunchExperiments">
             <br/>
@@ -61,7 +73,7 @@
           </div>
 
           <div class="list-entry-buttons list-entry-container center" ng-if="exp.id == pageState.selected">
-            <div class="btn-group" role="group">
+            <div class="btn-group" role="group" ng-hide="editing[nameID] || editing[descID] || loadingEdit">
               <!-- Servers are available and the user has edit rights: launch button enabled -->
               <button analytics-on analytics-event="Launch" analytics-category="Experiment" ng-if="config.canLaunchExperiments && userinfo.hasEditRights && exp.availableServers.length > 0"
                 class="btn btn-default" tooltip-trigger="mouseenter"

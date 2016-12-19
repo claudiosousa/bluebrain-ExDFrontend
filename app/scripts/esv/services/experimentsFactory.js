@@ -74,6 +74,7 @@
             startExperiment: startExperiment,
             stopExperiment: stopExperiment,
             getCurrentUserInfo: getCurrentUserInfo,
+            getCollabExperimentXML: getCollabExperimentXML,
             experiments: null,
             clusterAvailability: $q.when({ free: 'N/A', total: 'N/A'}) // Default for local mode
           };
@@ -211,11 +212,16 @@
               return $q.reject();
             });
           }
-
+          function getCollabExperimentXML(){
+            return experimentXML;
+          }
+          var experimentXML;
           function loadExperimentDetails(){
             return getExperimentDetailsFromCollab("experiment_configuration.xml")
             .then(function(fileContent){
               var xml = $.parseXML(fileContent);
+              // save the filecontent so it can be accessed again.
+              experimentXML = fileContent;
               return $q.resolve({ name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
                                   desc: xml.getElementsByTagNameNS("*", "description")[0].textContent,
                                   timeout: xml.getElementsByTagNameNS("*", "timeout")[0].textContent});

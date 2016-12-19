@@ -68,7 +68,8 @@
                 return isLocked()
                   .then(function (lockInfo) {
                     var result = {
-                      success: !lockInfo.locked
+                      success: !lockInfo.locked,
+                      lock: lockInfo
                     };
                     if (!result.success) {
                       result.lock = lockInfo;
