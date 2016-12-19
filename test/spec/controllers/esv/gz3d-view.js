@@ -913,15 +913,28 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should test light change', function() {
-      var initiaLightness = 1.0;
+
+      var initiaLightness = 0.5;
+      gz3d.scene.scene = {};
+      gz3d.scene.emitter = { lightDiffuse: initiaLightness };
+      gz3d.scene.findLightIntensityInfo = function()
+      {
+        return {min:this.emitter.lightDiffuse,max:this.emitter.lightDiffuse};
+      };
+
+      gz3d.scene.emitter.emit = function (msg, direction)
+      {
+        this.lightDiffuse += direction;
+      };
+
       scope.lightDiffuse = initiaLightness;
 
       scope.modifyLightClickHandler(1, 'INCREASE_LIGHT');
-      expect(scope.lightDiffuse).toBeGreaterThan(initiaLightness);
+      expect(gz3d.scene.emitter.lightDiffuse).toBeGreaterThan(initiaLightness);
 
       scope.modifyLightClickHandler(-1, 'DECREASE_LIGHT');
       scope.modifyLightClickHandler(-1, 'DECREASE_LIGHT');
-      expect(scope.lightDiffuse).toBeLessThan(initiaLightness);
+      expect(gz3d.scene.emitter.lightDiffuse).toBeLessThan(initiaLightness);
     });
 
     it('should emit light intensity changes', function() {
