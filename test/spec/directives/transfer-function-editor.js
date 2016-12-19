@@ -176,7 +176,7 @@ describe('Directive: transferFunctionEditor', function () {
     var refreshSpy = jasmine.createSpy(refreshSpy);
     spyOn(isolateScope, 'getTransferFunctionEditor').andReturn({ refresh: refreshSpy });
     isolateScope.control.refresh();
-    $timeout.flush(200);
+    $timeout.flush(100);
     $rootScope.$digest();
     expect(isolateScope.getTransferFunctionEditor.calls.length).toBe(3);
     expect(refreshSpy.calls.length).toBe(3);
@@ -220,6 +220,21 @@ describe('Directive: transferFunctionEditor', function () {
       $timeout.flush();
       expect(editorMock.refresh).toHaveBeenCalled();
     });
+
+    it('should call the refresh function', function() {
+      var callback;
+      var editor = {
+        'refresh': jasmine.createSpy('refresh'),
+        'on': function(name, cb) {callback = cb;},
+        'off': function() {callback = undefined;}
+      };
+      isolateScope.refreshLayout(editor);
+      expect(callback).toBeDefined();
+      callback();
+      expect(editor.refresh).toHaveBeenCalled();
+      expect(callback).not.toBeDefined();
+    });
+
   });
 
   describe('Saving and deleting TransferFunctions', function() {
