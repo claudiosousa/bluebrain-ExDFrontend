@@ -226,20 +226,29 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     }
     this.shiftHold = event.shiftKey;
     switch(event.code) {
+
+       case "KeyW":
+        this.rotateUp = true; break;
+
+      case "KeyS":
+        this.rotateDown = true; break;
+
+      case "KeyA":
+        this.rotateRight = true; break;
+
+      case "KeyD":
+        this.rotateLeft= true; break;
+
       case "ArrowUp":
-      case "KeyW":
         this.moveForward = true; break;
 
       case "ArrowLeft":
-      case "KeyA":
         this.moveLeft = true; break;
 
       case "ArrowDown":
-      case "KeyS":
         this.moveBackward = true; break;
 
       case "ArrowRight":
-      case "KeyD":
         this.moveRight = true; break;
 
       case "PageUp":
@@ -258,20 +267,29 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     }
     this.shiftHold = event.shiftKey;
     switch(event.code) {
-      case "ArrowUp":
+
       case "KeyW":
+        this.rotateUp = false; break;
+
+      case "KeyS":
+        this.rotateDown = false; break;
+
+      case "KeyA":
+        this.rotateRight = false; break;
+
+      case "KeyD":
+        this.rotateLeft= false; break;
+
+      case "ArrowUp":
         this.moveForward = false; break;
 
       case "ArrowLeft":
-      case "KeyA":
         this.moveLeft = false; break;
 
       case "ArrowDown":
-      case "KeyS":
         this.moveBackward = false; break;
 
       case "ArrowRight":
-      case "KeyD":
         this.moveRight = false; break;
 
       case "PageUp":
@@ -345,7 +363,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       }
 
       /* --- rotation by means of a manipulator --- */
-      var ROTATION_SPEED_FACTOR = 0.1;
+      var ROTATION_SPEED_FACTOR = 0.2;
       if (this.rotateUp || this.rotateDown) {
         var sign = this.rotateUp ? 1.0 : -1.0;
         this.fpRotate(0.0, sign * ROTATION_SPEED_FACTOR * speed);
