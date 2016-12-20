@@ -2368,6 +2368,7 @@ GZ3D.Gui.prototype.init = function()
         that.emitter.emit('deleteEntity',that.scene.selectedEntity);
         $('#model-popup').popup('close');
         that.scene.selectEntity(null);
+        that.scene.manipulationMode = 'view';
       }
   );
 
