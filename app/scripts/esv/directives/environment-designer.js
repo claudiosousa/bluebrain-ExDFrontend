@@ -96,7 +96,11 @@
 
             scope.interceptEntityCreationEvent = function(model, type) {
 
-              scope.defaultEntityCreatedCallback(model, type);
+              if (scope.defaultEntityCreatedCallback !== scope.interceptEntityCreationEvent)
+              {
+                scope.defaultEntityCreatedCallback(model, type);
+              }
+
               scope.gz3d.iface.gui.emitter._events.entityCreated = scope.defaultEntityCreatedCallback;
               scope.defaultEntityCreatedCallback = scope.interceptEntityCreationEvent;
               // local variable <model> holds a temporary object;
