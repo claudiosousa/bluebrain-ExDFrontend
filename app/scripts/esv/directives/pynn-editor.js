@@ -24,6 +24,7 @@
           scope.isCollabExperiment = simulationInfo.isCollabExperiment;
           scope.loading = false;
           scope.collabDirty = false;
+          scope.localDirty = false;
           scope.refreshCodemirror = false;
           scope.isSavingToCollab = false;
 
@@ -43,12 +44,12 @@
           };
 
           scope.control.refresh = function () {
-            if (scope.collabDirty){
+            if (scope.collabDirty || scope.localDirty) {
               $timeout(function () { scope.refreshCodemirror = !scope.refreshCodemirror; }, 100);
               return;
             }
 
-            scope.loading = true;
+           scope.loading = true;
             backendInterfaceService.getBrain(function(response) {
               if (response.brain_type === "py") {
                 scope.pynnScript = response.data;
@@ -122,15 +123,15 @@
               var exclude = '^\\b(?!\\b' + populationNames.join('\\b|\\b') + '\\b)';
               return exclude + pattern;
             }
-        }
-
-        scope.updateRegexPatterns = function() {
-          for (var i = 0; i < scope.populations.length; i++) {
-              scope.populations[i].regex = generateRegexPattern(populationNames(), i);
           }
-        };
 
-          scope.stringsToLists = function(neuronPopulations) {
+          scope.updateRegexPatterns = function() {
+            for (var i = 0; i < scope.populations.length; i++) {
+              scope.populations[i].regex = generateRegexPattern(populationNames(), i);
+            }
+          };
+
+         scope.stringsToLists = function(neuronPopulations) {
             var populations = angular.copy(neuronPopulations);
             angular.forEach(populations, function(population, name){
               var isList = !scope.isSlice(population);
@@ -168,6 +169,7 @@
                     scope.loading = false;
                     scope.getDoc().markClean();
                     scope.clearError();
+                    scope.localDirty = false;
                     if (restart) {
                       stateService.setCurrentState(STATE.STARTED);
                     }
@@ -217,7 +219,7 @@
             );
           };
 
-          scope.searchToken = function(name) {
+         scope.searchToken = function(name) {
             var cm = scope.getCM();
             var lines = scope.pynnScript.split('\n');
             var l = 0;
@@ -251,8 +253,9 @@
             scope.updateRegexPatterns();
           };
 
-          scope.onBrainChange = function() {
+          scope.onBrainChange = function () {
             scope.collabDirty = scope.isCollabExperiment;
+            scope.localDirty = true;
             autoSaveService.setDirty(DIRTY_TYPE, [scope.pynnScript, scope.populations]);
           };
 
