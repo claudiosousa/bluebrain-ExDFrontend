@@ -6,7 +6,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
-    hbpDialogFactory, DEFAULT_TF_CODE;
+    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -76,6 +76,7 @@ describe('Directive: transferFunctionEditor', function () {
                               _pythonCodeHelper_,
                               _simulationInfo_,
                               _hbpDialogFactory_,
+                              _downloadFileService_,
                               _DEFAULT_TF_CODE_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
@@ -97,6 +98,7 @@ describe('Directive: transferFunctionEditor', function () {
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
     hbpDialogFactory = _hbpDialogFactory_;
+    downloadFileService = _downloadFileService_;
     DEFAULT_TF_CODE = _DEFAULT_TF_CODE_;
 
     $scope = $rootScope.$new();
@@ -582,14 +584,15 @@ describe('Directive: transferFunctionEditor', function () {
       expect(window.FileReader).not.toHaveBeenCalled();
     });
 
-
-    it('should save transfer functions to file', function() {
-      spyOn(window, 'Blob');
-      spyOn(document, 'querySelector');
-      var button = { attr: jasmine.createSpy('attr')};
-      spyOn(angular, 'element').andReturn(button);
-      isolateScope.download();
-      expect(button.attr).toHaveBeenCalled();
+     it('should save transfer functions to file', function () {
+      spyOn(downloadFileService, 'downloadFile');
+      spyOn(window, 'Blob').andReturn({});
+      var href = 'http://some/url';
+      var URLMock = {createObjectURL: jasmine.createSpy('createObjectURL').andReturn(href)};
+      window.URL = URLMock;
+      isolateScope.download(new ScriptObject('transferFunctionId', 'Some code'));
+      expect(URLMock.createObjectURL).toHaveBeenCalled();
+      expect(downloadFileService.downloadFile).toHaveBeenCalledWith(href, 'transferFunctions.py');
     });
 
     it('should initialize scope variables correctly', function () {

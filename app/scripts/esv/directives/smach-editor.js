@@ -15,6 +15,7 @@
     'simulationInfo',
     'hbpDialogFactory',
     'autoSaveService',
+    'downloadFileService',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
@@ -27,7 +28,9 @@
               $timeout,
               simulationInfo,
               hbpDialogFactory,
-              autoSaveService) {
+              autoSaveService,
+              downloadFileService) {
+
 
       var DIRTY_TYPE = 'SM';
 
@@ -237,16 +240,12 @@
           };
 
           scope.save = function() {
-            var stateMachinesCodeText = _.flatMap(scope.stateMachines,function (stateMachine){
-              return [stateMachine.code];});
-            var file = new Blob(stateMachinesCodeText, {type: "plain/text", endings: 'native'});
-            var link = document.createElement('a');
-                document.body.appendChild(link);
-                link.style.display = 'none';
-                link.download = 'stateMachines.py';
-                link.href = URL.createObjectURL(file);
-                link.click();
-                document.body.removeChild(link);
+            var stateMachinesCodeText = _.flatMap(scope.stateMachines, function (stateMachine) {
+              return [stateMachine.code];
+            });
+            var file = new Blob(stateMachinesCodeText, { type: "plain/text", endings: 'native' });
+            var href = URL.createObjectURL(file);
+            downloadFileService.downloadFile(href, 'stateMachines.py');
           };
 
           scope.loadStateMachine = function(file) {

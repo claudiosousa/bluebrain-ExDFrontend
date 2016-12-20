@@ -38,6 +38,7 @@
       'hbpDialogFactory',
       'autoSaveService',
       'DEFAULT_TF_CODE',
+      'downloadFileService',
     function (
         $log,
         backendInterfaceService,
@@ -53,7 +54,8 @@
         simulationInfo,
         hbpDialogFactory,
         autoSaveService,
-        DEFAULT_TF_CODE
+        DEFAULT_TF_CODE,
+        downloadFileService
     ) {
     var DIRTY_TYPE = 'TF';
 
@@ -333,10 +335,9 @@
         scope.download = function () {
           var file = new Blob([
             scope.buildTransferFunctionFile(scope.transferFunctions)
-          ], {type: "plain/text", endings: 'native'});
-
-          var button = angular.element(document.querySelector('#download-transfer-functions'));
-          button.attr("href", URL.createObjectURL(file));
+          ], { type: "plain/text", endings: 'native' });
+          var href = URL.createObjectURL(file);
+          downloadFileService.downloadFile(href, 'transferFunctions.py');
         };
 
         scope.saveTFIntoCollabStorage = function () {
