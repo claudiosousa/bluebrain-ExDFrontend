@@ -2,7 +2,7 @@
 
 describe('Directive: camera-view', function () {
 
-  var $compile, $rootScope, $q, STREAM_URL;
+  var $compile, $rootScope, $q, $log, STREAM_URL;
   var refTopic = '/icub_model/right_eye_camera/image_raw';
   var videoDirectoryResponse = { data: '<html><head><title>ROS Image Topic List</title></head><body><h1>Available ROS Image Topics:</h1><ul><li>/icub_model/left_eye_camera/<ul><li><a href="/stream_viewer?topic=/icub_model/left_eye_camera/image_raw">image_raw</a> (<a href="/snapshot?topic=/icub_model/left_eye_camera/image_raw">Snapshot</a>)</li></ul></li><li>/icub_model/right_eye_camera/<ul><li><a href="/stream_viewer?topic=/icub_model/right_eye_camera/image_raw">image_raw</a> (<a href="/snapshot?topic=' + refTopic + '">Snapshot</a>)</li></ul></li></ul></body></html>' };
 
@@ -47,19 +47,20 @@ describe('Directive: camera-view', function () {
     $provide.value('gz3d', gz3dMock);
   }));
 
-  beforeEach(inject(function (_$rootScope_, _$compile_, _$q_, _STREAM_URL_) {
+  beforeEach(inject(function (_$rootScope_, _$compile_, _$q_, _$log_, _STREAM_URL_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $q = _$q_;
+    $log = _$log_;
     STREAM_URL = _STREAM_URL_;
   }));
 
   it('should throw an exception if server config misses \'videoStreaming\'', function () {
     simulationInfoMock.serverConfig.gzweb.videoStreaming = null;
-    expect(function () {
-      $compile('<camera-view></camera-view>')($rootScope.$new());
-      $rootScope.$digest();
-    }).toThrow();
+    spyOn($log, 'error');
+    $compile('<camera-view></camera-view>')($rootScope.$new());
+    $rootScope.$digest();
+    expect($log.error).toHaveBeenCalled();
   });
 
   describe('Directive: camera-view', function () {
