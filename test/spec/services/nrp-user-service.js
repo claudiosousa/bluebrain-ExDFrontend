@@ -8,7 +8,8 @@ describe('Services: nrpUser', function () {
     getCurrentUser: jasmine.createSpy('hbpIdentityUserDirectory')
       .andCallFake(function () {
         return $q.when('dir_user');
-      })
+      }),
+    isGroupMember: jasmine.createSpy('isGroupMember')
   };
 
   beforeEach(module('exdFrontendApp'));
@@ -46,6 +47,18 @@ describe('Services: nrpUser', function () {
     });
     $rootScope.$digest();
     expect(hbpIdentityUserDirectory.getCurrentUser).not.toHaveBeenCalled();
+  });
+
+  it('should call hbpIdentityUserDirectory.isGroupMember whith the correct argument', function () {
+    nrpUser.isMemberOfClusterReservationGroup();
+    expect(hbpIdentityUserDirectory.isGroupMember).toHaveBeenCalledWith('hbp-sp10-cluster-reservation');
+  });
+
+  it('should call hbpIdentityUserDirectory.isGroupMember whith the correct argument', function () {
+    var sessionStorageKey = 'clusterReservation';
+    spyOn(window.sessionStorage, 'getItem').andReturn(sessionStorageKey);
+    expect(nrpUser.getReservation()).toBe('clusterReservation');
+    expect(window.sessionStorage.getItem).toHaveBeenCalledWith(sessionStorageKey);
   });
 
 });

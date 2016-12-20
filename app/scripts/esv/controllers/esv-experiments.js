@@ -13,6 +13,7 @@
       'hbpDialogFactory',
       'collabFolderAPIService',
       'collabExperimentLockService',
+      'nrpUser',
       '$timeout',
       function (
         $scope,
@@ -26,6 +27,7 @@
         hbpDialogFactory,
         collabFolderAPIService,
         collabExperimentLockService,
+        nrpUser,
         $timeout
       ) {
         $scope.STATE = STATE;
@@ -209,7 +211,7 @@
 
           $scope.startNewExperiment = function (experiment, launchSingleMode, sdfData) {
             $scope.pageState.startingExperiment = experiment.id;
-            experimentsService.startExperiment(experiment, launchSingleMode, sdfData)
+            experimentsService.startExperiment(experiment, launchSingleMode, sdfData, nrpUser.getReservation())
               .then(function (path) { $location.path(path); },// succeeded
               function () { $scope.pageState.startingExperiment = null; },// failed
               function (msg) { $scope.progressMessage = msg; }); //in progress

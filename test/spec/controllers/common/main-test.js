@@ -22,7 +22,6 @@ describe('Controller: MainCtrl', function () {
     spyOn(_, 'defer');
     $log = _$log_;
     $controller = _$controller_;
-    spyOn($log, 'error');
     controller = $controller('MainCtrl', {
       $scope: scope
     });
@@ -43,10 +42,12 @@ describe('Controller: MainCtrl', function () {
     expect(scope.supportedBrowsers[0]).not.toBe('');
   });
 
-  it('should call window.sessionStorage.getItem to check if the warning about unsupported browser was dismissed', function () {
+  it('should call window.sessionStorage.getItem to check if the warning about unsupported browser and the reservation form were dismissed', function () {
     expect($window.sessionStorage.getItem).toHaveBeenCalledWith('unsupportedBrowserWarning');
-    expect($window.sessionStorage.getItem.callCount).toBe(1);
+    expect($window.sessionStorage.getItem).toHaveBeenCalledWith('reservationForm');
+    expect($window.sessionStorage.getItem.callCount).toBe(2);
     expect(scope.dismissWarning).toBe(false);
+    expect(scope.dismissReservationForm).toBe(false);
   });
 
   it('should call window.sessionStorage.setItem to store the information about the dismissed warning', function () {
@@ -58,6 +59,21 @@ describe('Controller: MainCtrl', function () {
     expect(scope.dismissWarning).toBe(true);
   });
 
+  it('should call window.sessionStorage.setItem to store the information about the dismissed reservation form', function () {
+    scope.dismissClusterReservationForm();
+    _.defer.mostRecentCall.args[0]();
+    scope.$apply.mostRecentCall.args[0]();
+    expect($window.sessionStorage.setItem).toHaveBeenCalledWith('reservationForm', 'dismissed');
+    expect($window.sessionStorage.setItem.callCount).toBe(1);
+    expect(scope.dismissReservationForm).toBe(true);
+  });
+
+  it('should call window.sessionStorage.setItem to store the reservation name', function () {
+    scope.clusterReservationName = 'sp10-user-workshop';
+    scope.setClusterReservation();
+    expect($window.sessionStorage.setItem).toHaveBeenCalledWith('clusterReservation', scope.clusterReservationName);
+  });
+
   it('should retrieve collabItemurl ', function () {
     var testUrl = scope.getCollabItemUrl('test');
     expect(testUrl).toBe('http://localhost/testUrl');
@@ -65,6 +81,7 @@ describe('Controller: MainCtrl', function () {
 
   it('should not fail if "collab" config is missing', function () {
     delete window.bbpConfig.collab;
+    spyOn($log, 'error');
     $controller('MainCtrl', {
       $scope: scope
     });
