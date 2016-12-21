@@ -18,10 +18,12 @@
       template: 'The selected server cannot handle your simulation at the moment. Please try again later'
     })
     .factory('experimentsFactory',
-    ['$q', '$interval', 'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
-      'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory', 'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
+    ['$q', '$interval', '$log',
+      'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
+      'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory',
+      'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
       'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS',
-      function ($q, $interval, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
+      function ($q, $interval, $log, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
         hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService,
         FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
         var localmode = {
@@ -221,11 +223,19 @@
             return getExperimentDetailsFromCollab("experiment_configuration.xml")
             .then(function(fileContent){
               var xml = $.parseXML(fileContent);
+              var thumbnail = xml.getElementsByTagNameNS("*", "thumbnail")[0];
+              var thumbnailContent = "No text content for thumbnail";
+              if (thumbnail) {
+                thumbnailContent = thumbnail.textContent;
+              } else {
+                $log.warn("Experiment details: text content for thumbnail is missing");
+              }
+              
               // save the filecontent so it can be accessed again.
               experimentXML = fileContent;
               return $q.resolve({ name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
                                   desc: xml.getElementsByTagNameNS("*", "description")[0].textContent,
-                                  thumbnail: xml.getElementsByTagNameNS("*", "thumbnail")[0].textContent,
+                                  thumbnail: thumbnailContent,
                                   timeout: xml.getElementsByTagNameNS("*", "timeout")[0].textContent});
             },
             function(){
