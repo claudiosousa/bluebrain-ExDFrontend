@@ -34,7 +34,7 @@
               <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isCollabExperiment && (!editing[nameID] && !editing[descID])" v-busy="loadingEdit" ng-click="editExperiment(descID);"></a>
             </div>
             <form ng-show="editing[descID] && isCollabExperiment && !loadingEdit">
-              <textarea rows="4" cols="50" id="{{descID}}" ng-model="formInfo.desc" ng-blur="saveExperimentDetails(formInfo.desc, descID);" />
+              <textarea rows="4" cols="50" id="{{descID}}" ng-model="formInfo.desc" ng-blur="saveExperimentDetails(formInfo.desc, descID);"></textarea>
               <a style="font-size:15px;" href="javascript:void(0);" ng-show="isSavingToCollab" v-busy="isSavingToCollab"></a>
             </form>
           <div ng-if="exp.id != pageState.selected">{{exp.configuration.description | limitTo: 200}}...</div>

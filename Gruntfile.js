@@ -160,7 +160,8 @@ module.exports = function (grunt) {
             },
             dist: {
                 options: {
-                    open: true,
+                    open: { target: 'http://localhost:<%= connect.options.port %>' },
+                    middleware:null,
                     base: '<%= yeoman.dist %>'
                 }
             }
