@@ -3,6 +3,9 @@ $hbp-common-asset-path:"/bower_components/angular-hbp-common/dist/assets";
 $addObjectIconWidth: 100px;
 $addObjectIconHeight: 100px;
 
+$environmentDesignerMinWidth: 540px;
+$environmentDesignerMinHeight: 380px;
+
 /* panel */
 #ed-left-panel
 {
@@ -10,6 +13,8 @@ $addObjectIconHeight: 100px;
   position: absolute;
   left: 0;
   z-index: 1002;
+  min-width: $environmentDesignerMinWidth;
+  min-height: $environmentDesignerMinHeight;
 }
 
 .ed-panels-group

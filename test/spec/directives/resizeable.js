@@ -2,14 +2,13 @@
 
 describe('Directive: resizeable', function () {
 
-  var scope, compile, element, document, window, resizeDiv;
+  var scope, compile, element, elementDOM, document, window, resizeDiv;
   var mockedMouseDownEventStopPropagation;
   var startHeight, startWidth;
 
   // Note that we set those two values to '0'. This is mainly due to the problem that phantomjs
   // does not eat these values for 'top' and 'left' in the CSS – they are always set to '0'.
   // So in principal this test should also work with non zero values, but due to phantomjs it does not.
-  var elementToResize = {top: 0, left: 0, initialWidth: 100, initialHeight: 45};
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(inject(function ($rootScope, $compile, $document, $window) {
@@ -27,12 +26,22 @@ describe('Directive: resizeable', function () {
 
     beforeEach(function () {
       element = compile('<div resizeable></div>')(scope);
+      element.css({
+        top:    '100px',
+        left:   '100px',
+        width:  '100px',
+        height: '100px'
+      });
+
+      elementDOM = element[0];
+
       resizeDiv = angular.element(element.children()[0]);
+      scope.$digest();
     });
 
     it('should replace the element with the appropriate content', function () {
       // Compile a piece of HTML containing the directive
-      expect(element.prop('outerHTML')).toContain('<div resizeable="" class="ng-scope"><div class="resizeable"></div></div>');
+      expect(element.attr('resizeable')).toBeDefined();
     });
 
     it('should check for the default window height and width', function () {
@@ -42,19 +51,35 @@ describe('Directive: resizeable', function () {
     });
 
     it('should call the onResizeEnd method', function () {
-      resizeElement(elementToResize, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+      resizeElement(resizeDiv, {x: 0, y: 0}, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
       expect(scope.onResizeEnd).toHaveBeenCalled();
     });
 
     it('should stop event propagation on the mousedown event', function () {
-      resizeElement(elementToResize, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+      resizeElement(resizeDiv, {x: 0, y: 0}, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
       expect(mockedMouseDownEventStopPropagation).toHaveBeenCalled();
     });
 
+    it('should trigger onResizeBegin if existing when mousedown event occurs', function () {
+      scope.onResizeBegin = jasmine.createSpy('onResizeBegin');
+      resizeElement(resizeDiv, {x: 0, y: 0}, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+      expect(scope.onResizeBegin).toHaveBeenCalled();
+    });
+
     it('should handle the resize correctly', function () {
-      var resizeAction = resizeElement(elementToResize, {dx: 60, dy: 30});
-      expect(resizeAction.newWidth).toBe(((resizeAction.mouseMoveEvent.pageX - elementToResize.left) / window.innerWidth) * 100);
-      expect(resizeAction.newHeight).toBe(((resizeAction.mouseMoveEvent.pageY - elementToResize.top) / window.innerHeight) * 100);
+      var mouseDownPos = {x: 0, y: 0};
+      var mouseMoveDelta = {x: 50, y: 50};
+
+      var initWidth = parseInt(elementDOM.style.width, 10);
+      var initHeight = parseInt(elementDOM.style.height, 10);
+
+      var expectedWidth = ((initWidth + mouseMoveDelta.x) / window.innerWidth) * 100;
+      var expectedHeight = ((initHeight + mouseMoveDelta.y) / window.innerHeight) * 100;
+
+      resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
+
+      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
     });
   });
 
@@ -62,16 +87,55 @@ describe('Directive: resizeable', function () {
 
     beforeEach(function () {
       element = compile('<div resizeable keep-aspect-ratio></div>')(scope);
+      element.css({
+        top:    '0px',
+        left:   '0px',
+        width:  '100px',
+        height: '100px'
+      });
+
+      elementDOM = element[0];
+
       resizeDiv = angular.element(element.children()[0]);
+      scope.$digest();
     });
 
     it('it should handle the resize correctly', function () {
-      elementToResize.initialWidth = 100;
-      elementToResize.initialHeight = 120;
-      var deltas = {dx: 50, dy: 60};
-      var resizeAction = resizeElement(elementToResize, deltas);
-      expect(resizeAction.newWidth).toBe(((resizeAction.mouseMoveEvent.pageX - elementToResize.left) / window.innerWidth) * 100);
-      expect(resizeAction.newHeight).toBe(((resizeAction.mouseMoveEvent.pageY - elementToResize.top) / window.innerHeight) * 100);
+      var initWidth = parseInt(elementDOM.style.width, 10);
+      var initHeight = parseInt(elementDOM.style.height, 10);
+
+      var mouseDownPos = {x: 0, y: 0};
+      var mouseMoveDelta = {x: Math.ceil(initWidth*0.1), y: Math.ceil(initHeight*0.1)};
+
+      var multiplierWidth = 1.0;
+      var multiplierHeight = 1.0;
+
+      if(window.innerWidth > window.innerHeight) {
+        multiplierWidth = window.innerWidth/window.innerHeight;
+      } else {
+        multiplierHeight = window.innerHeight/window.innerWidth;
+      }
+
+      var expectedWidth = (((initWidth + mouseMoveDelta.x) * multiplierWidth) / window.innerWidth) * 100;
+      var expectedHeight = (((initHeight + mouseMoveDelta.y) * multiplierHeight) / window.innerHeight) * 100;
+
+      resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
+
+      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
+    });
+
+    it('it should respect the maximum height', function () {
+      var mouseDownPos = {x: 0, y: 0};
+      var mouseMoveDelta = {x: 400, y: 0};
+
+      var expectedWidth = 96.7;
+      var expectedHeight = 96.7;
+
+      resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
+
+      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
     });
 
   });
@@ -85,67 +149,28 @@ describe('Directive: resizeable', function () {
   // Pass in an element which you want to resize. It will then "perform" a mousedown event on the lower right corner
   // of the element, where the handle is. Then a mousemove event with the dx, dt specified in the "mouseMove" object
   // and finally it creates a mouseup event at exactly this position.
-  function resizeElement(movedElement, mouseMove) {
-    var mouseDownPageX = elementToResize.initialWidth + elementToResize.left;
-    var mouseDownPageY = elementToResize.initialHeight + elementToResize.top;
-
-    var mouseDownEvent = {
-      pageX: mouseDownPageX,
-      pageY: mouseDownPageY
-    };
-
-    var mouseMoveEvent = {
-      pageX: mouseDownPageX + mouseMove.dx,
-      pageY: mouseDownPageY + mouseMove.dy
-    };
-
-    var mouseUpEvent = {
-      pageX: mouseMoveEvent.pageX,
-      pageY: mouseMoveEvent.pageY
-    };
-
-    element.css({
-      'position': 'absolute',
-      'top': movedElement.top,
-      'left': movedElement.left,
-      'width': movedElement.initialWidth,
-      'height': movedElement.initialHeight
-    });
-
-    // Ensure we have the right width before we do the resizing!
-    expect(element.outerWidth()).toBe(movedElement.initialWidth);
-    expect(element.outerHeight()).toBe(movedElement.initialHeight);
-
+  function resizeElement(resizeHandler, mouseDownPos, mouseUpPos) {
     // Resize by doing mousedown, mousemove and mouseup.
-    resizeDiv.triggerHandler({
+    resizeHandler.triggerHandler({
       type: 'mousedown',
-      pageX: mouseDownEvent.pageX,
-      pageY: mouseDownEvent.pageY,
+      pageX: mouseDownPos.x,
+      pageY: mouseDownPos.y,
       stopPropagation: mockedMouseDownEventStopPropagation
     });
 
     document.triggerHandler({
       type: 'mousemove',
-      pageX: mouseMoveEvent.pageX,
-      pageY: mouseMoveEvent.pageY
+      pageX: mouseUpPos.x,
+      pageY: mouseUpPos.y
     });
 
     document.triggerHandler({
       type: 'mouseup',
-      pageX: mouseUpEvent.pageX,
-      pageY: mouseUpEvent.pageY
+      pageX: mouseUpPos.x,
+      pageY: mouseUpPos.y
     });
 
     scope.$digest();
-
-    return {
-      mouseDownEvent: mouseDownEvent,
-      mouseMoveEvent: mouseMoveEvent,
-      mouseUpEvent: mouseUpEvent,
-      newWidth: element.outerWidth(),
-      newHeight: element.outerHeight()
-    };
-
   }
 
 });

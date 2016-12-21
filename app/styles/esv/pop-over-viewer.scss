@@ -1,5 +1,5 @@
 $popOverViewerMinWidth: 50px;
-$popOverViewerMinHeight: 140px;
+$popOverViewerMinHeight:140px;
 
 @mixin compute-top( $height: $popOverViewerMinHeight, $bottom: 65px) {
   top: calc(100% - #{$bottom + $height});

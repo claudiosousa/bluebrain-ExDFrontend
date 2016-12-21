@@ -1,3 +1,4 @@
+
 (function () {
   'use strict';
 
@@ -15,7 +16,7 @@
         var keepAspectRatio = angular.isDefined(attrs.keepAspectRatio);
 
         // This amount of pixels is used in order to avoid scrollbars to appear on the right / on the bottom.
-        var SAFETY_PAD = 4;
+        var SAFETY_PAD = 10;
         // just to get from e.g. 0.41 to 41 for css percentage values
         var FRACTION_TO_PERCENTAGE = 100;
 
@@ -24,36 +25,24 @@
         var resizeDiv = angular.element('<div class="resizeable"></div>');
         element.append(resizeDiv);
 
-        var currentX, currentY, currentHeight, currentWidth;
+        var mouseDownPosX, mouseDownPosY, mouseDownHeight, mouseDownWidth, aspectRatio = null;
 
         function calculateNewSize(size) {
-          var newWidth = size.currWidth;
-          var newHeight = size.currHeight;
+          var maxWidth = $window.innerWidth - element.offset().left - SAFETY_PAD;
+          var maxHeight = $window.innerHeight - element.offset().top - SAFETY_PAD;
 
-          // We already calculate the new sizes, but we do not yet apply them since in case we have to preserve
-          // the aspect ratio we have to check first if we are still within the viewport. If we are outside the
-          // viewport we will get scrollbars – which we want to avoid.
-          var preliminaryNewWidth = size.currWidth + size.offsetX;
-          var preliminaryNewHeight = size.currHeight + size.offsetY;
-
+          var newWidth, newHeight;
           if (!keepAspectRatio) {
-            newWidth = preliminaryNewWidth;
-            newHeight = preliminaryNewHeight;
+            newWidth = Math.min(size.initWidth + size.mouseOffsetX, maxWidth);
+            newHeight = Math.min(size.initHeight + size.mouseOffsetY, maxHeight);
           } else {
-            // In case we want to keep the aspect ratio, we adapt either the height or the width
-            if (Math.abs(size.offsetX) > Math.abs(size.offsetY)) {
-              preliminaryNewHeight = preliminaryNewWidth * (size.currHeight / size.currWidth);
-            } else {
-              preliminaryNewWidth = preliminaryNewHeight * (size.currWidth / size.currHeight);
-            }
-
-            // Only apply changes if we are inside the viewport after applying the keep-aspect-ratio-scaling
-            var isTooHigh = element.offset().top + preliminaryNewHeight > ($window.innerHeight - SAFETY_PAD);
-            var isTooWide = element.offset().left + preliminaryNewWidth > ($window.innerWidth - SAFETY_PAD);
-
-            if (!isTooHigh && !isTooWide) {
-              newWidth = preliminaryNewWidth;
-              newHeight = preliminaryNewHeight;
+            // don't grow bigger than maxWidth
+            newWidth = Math.min(size.initWidth + size.mouseOffsetX, maxWidth);
+            newHeight = newWidth * (size.initHeight / size.initWidth);
+            // check for maxHeight and adjust if necessary
+            if (newHeight > maxHeight) {
+              newHeight = maxHeight;
+              newWidth = newHeight * (size.initWidth / size.initHeight);
             }
           }
 
@@ -71,18 +60,13 @@
             scope.onResizeBegin();
           }
 
-          currentX = event.pageX;
-          currentY = event.pageY;
+          mouseDownPosX = event.pageX;
+          mouseDownPosY = event.pageY;
 
-          currentHeight = element.height();
-          currentWidth = element.width();
-
-          function mouseup() {
-            if (angular.isFunction(scope.onResizeEnd)) {
-              scope.onResizeEnd();
-            }
-            $document.off('mousemove', mousemove);
-            $document.off('mouseup', mouseup);
+          mouseDownWidth = element.width();
+          mouseDownHeight = element.height();
+          if (aspectRatio === null) {
+            aspectRatio = mouseDownWidth / mouseDownHeight;
           }
 
           $document.on('mousemove', mousemove);
@@ -90,26 +74,37 @@
         }
 
         function mousemove(event) {
-          // Don't let the resizing happen outside the viewport.
-          // We also introduce a small "safety pad" in order to prevent the scrollbars from appearing.
-          var adjustedPageX = (event.pageX >= ($window.innerWidth - SAFETY_PAD)) ? ($window.innerWidth - SAFETY_PAD) : event.pageX;
-          var adjustedPageY = (event.pageY >= ($window.innerHeight - SAFETY_PAD)) ? ($window.innerHeight - SAFETY_PAD) : event.pageY;
-
           var newSize = calculateNewSize({
-            "currHeight": currentHeight,
-            "currWidth": currentWidth,
-            "offsetX": adjustedPageX - currentX,
-            "offsetY": adjustedPageY - currentY
+            initWidth: mouseDownWidth,
+            initHeight: mouseDownHeight,
+            mouseOffsetX: event.pageX - mouseDownPosX,
+            mouseOffsetY: event.pageY - mouseDownPosY
           });
 
           element.css("height", (newSize.height / window.innerHeight) * FRACTION_TO_PERCENTAGE + '%');
           element.css("width", (newSize.width / window.innerWidth) * FRACTION_TO_PERCENTAGE + '%');
 
-          // Adjust all non local variables.
-          currentHeight = newSize.height;
-          currentWidth = newSize.width;
-          currentX = adjustedPageX;
-          currentY = adjustedPageY;
+          // guarantee aspect ratio in case of min-width / -height
+          if (keepAspectRatio) {
+            var currentWidth = element.width();
+            var currentHeight = element.height();
+            if ((currentWidth / currentHeight) < aspectRatio) {
+              var correctedWidth = currentHeight * aspectRatio;
+              element.css("width", correctedWidth + "px");
+            } else if ((currentWidth / currentHeight) > aspectRatio) {
+              var correctedHeight = currentWidth * (1 / aspectRatio);
+              element.css("height", correctedHeight + "px");
+            }
+          }
+        }
+
+        function mouseup() {
+          if (angular.isFunction(scope.onResizeEnd)) {
+            scope.onResizeEnd();
+          }
+
+          $document.off('mousemove', mousemove);
+          $document.off('mouseup', mouseup);
         }
 
         resizeDiv.on('mousedown', mousedown);
