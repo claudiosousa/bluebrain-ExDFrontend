@@ -47,13 +47,22 @@
             return parseFloat(number.toFixed(this.floatPrecision));
           },
 
+          roundToPrecisionVector3: function (vector3) {
+
+            vector3.x = this.roundToPrecision(vector3.x);
+            vector3.y = this.roundToPrecision(vector3.y);
+            vector3.z = this.roundToPrecision(vector3.z);
+
+            return vector3;
+          },
+
           selectMaterial: function (material) {
             colorableObjectService.setEntityMaterial(simulationInfo, this.selectedObject, material);
           },
 
           onObjectChange: function () {
-            this.selectedObject.position.copy(this.translation);
-            this.selectedObject.rotation.copy(this.rotationEuler);
+            this.selectedObject.position.copy(this.roundToPrecisionVector3(this.translation));
+            this.selectedObject.rotation.copy(this.roundToPrecisionVector3(this.rotationEuler));
             this.selectedObject.updateMatrixWorld();
 
             gz3d.scene.emitter.emit('entityChanged', this.selectedObject);
@@ -226,23 +235,49 @@
             return result;
         }
 
-        var updateStyle = function (idx) {
+        var setStyle = function (idx) {
           var selectedStyle = "background-color:yellow;";
-          if (gz3d.scene.modelManipulator.isSelected(idx)) {
-            objectInspectorService.selectedStyle[idx] = selectedStyle;
+          objectInspectorService.selectedStyle[idx] = selectedStyle;
+        };
+
+        var setStyleList = function (idxList)
+        {
+          angular.forEach(
+            idxList,
+            setStyle.bind(null)
+          );
+        };
+
+        var resetStyle = function (idx) {
+          objectInspectorService.selectedStyle[idx] = "";
+        };
+
+        var updateStyle = function (transform, axis) {
+          var idx = transform + axis;
+
+          if (gz3d.scene.modelManipulator.isSelected(transform) &&
+              gz3d.scene.modelManipulator.isSelected(axis)) {
+
+              var fieldsList = (axis === 'E') ? ['RX','RY','RZ']: [idx];
+              setStyleList(fieldsList);
           } else {
-            objectInspectorService.selectedStyle[idx] = "";
+              if(axis !== 'E') {
+                resetStyle(idx);
+              }
           }
         };
 
         var updateStyles = function () {
-          updateStyle('TX');
-          updateStyle('TY');
-          updateStyle('TZ');
-
-          updateStyle('RX');
-          updateStyle('RY');
-          updateStyle('RZ');
+           angular.forEach(
+            ['T','R'],
+            function(transform) {
+              angular.forEach(
+                ['X','Y','Z'],
+                updateStyle.bind(null, transform)
+              );
+            }
+          );
+          updateStyle('R','E');
         };
 
         var update = function () {
@@ -263,12 +298,8 @@
           objectInspectorService.translation.copy(objectInspectorService.selectedObject.position);
           objectInspectorService.rotationEuler.copy(objectInspectorService.selectedObject.rotation);
           // round for readability purposes
-          objectInspectorService.translation.x = objectInspectorService.roundToPrecision(objectInspectorService.translation.x);
-          objectInspectorService.translation.y = objectInspectorService.roundToPrecision(objectInspectorService.translation.y);
-          objectInspectorService.translation.z = objectInspectorService.roundToPrecision(objectInspectorService.translation.z);
-          objectInspectorService.rotationEuler.x = objectInspectorService.roundToPrecision(objectInspectorService.rotationEuler.x);
-          objectInspectorService.rotationEuler.y = objectInspectorService.roundToPrecision(objectInspectorService.rotationEuler.y);
-          objectInspectorService.rotationEuler.z = objectInspectorService.roundToPrecision(objectInspectorService.rotationEuler.z);
+          objectInspectorService.roundToPrecisionVector3(objectInspectorService.translation);
+          objectInspectorService.roundToPrecisionVector3(objectInspectorService.rotationEuler);
 
           objectInspectorService.hasColorableVisual = colorableObjectService.isColorableEntity(objectInspectorService.selectedObject);
 
