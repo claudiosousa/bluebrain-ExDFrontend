@@ -40,7 +40,7 @@
   text-shadow: white 0 0 3px, white 0 0 4px, white 0 0 5px;
   color:rgba(0,0,0,.4);
 
-  &[enabled="true"]{
+  &.camera-icon-enabled{
     color: #000;
   }
 }
