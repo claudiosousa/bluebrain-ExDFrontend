@@ -503,6 +503,6 @@
 
       <div class="ros-reconnecting"></div>
 
-      <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}"></simulation-timeout-extender>
+      <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}" ng-if="viewState.isOwner"></simulation-timeout-extender>
     </div>
     <!-- page -->
