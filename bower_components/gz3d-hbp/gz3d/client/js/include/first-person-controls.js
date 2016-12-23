@@ -228,28 +228,28 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     switch(event.code) {
 
        case "KeyW":
-        this.rotateUp = true; break;
-
-      case "KeyS":
-        this.rotateDown = true; break;
-
-      case "KeyA":
-        this.rotateRight = true; break;
-
-      case "KeyD":
-        this.rotateLeft= true; break;
-
-      case "ArrowUp":
         this.moveForward = true; break;
 
-      case "ArrowLeft":
-        this.moveLeft = true; break;
-
-      case "ArrowDown":
+      case "KeyS":
         this.moveBackward = true; break;
 
-      case "ArrowRight":
+      case "KeyA":
+        this.moveLeft = true; break;
+
+      case "KeyD":
         this.moveRight = true; break;
+
+      case "ArrowUp":
+        this.rotateUp = true; break;
+
+      case "ArrowLeft":
+        this.rotateLeft = true; break;
+
+      case "ArrowDown":
+        this.rotateDown = true; break;
+
+      case "ArrowRight":
+        this.rotateRight = true; break;
 
       case "PageUp":
       case "KeyR":
@@ -269,28 +269,28 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     switch(event.code) {
 
       case "KeyW":
-        this.rotateUp = false; break;
-
-      case "KeyS":
-        this.rotateDown = false; break;
-
-      case "KeyA":
-        this.rotateRight = false; break;
-
-      case "KeyD":
-        this.rotateLeft= false; break;
-
-      case "ArrowUp":
         this.moveForward = false; break;
 
-      case "ArrowLeft":
-        this.moveLeft = false; break;
-
-      case "ArrowDown":
+      case "KeyS":
         this.moveBackward = false; break;
 
-      case "ArrowRight":
+      case "KeyA":
+        this.moveLeft = false; break;
+
+      case "KeyD":
         this.moveRight = false; break;
+
+      case "ArrowUp":
+        this.rotateUp = false; break;
+
+      case "ArrowLeft":
+        this.rotateLeft = false; break;
+
+      case "ArrowDown":
+        this.rotateDown = false; break;
+
+      case "ArrowRight":
+        this.rotateRight = false; break;
 
       case "PageUp":
       case "KeyR":
@@ -310,7 +310,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     // rotation happens around the world up axis so up remains up (no upside-down)
     var camera = this.object;
     var q = new THREE.Quaternion();
-    q.setFromAxisAngle(new THREE.Vector3(0.0, 0.0, 1.0), rightAmount);
+    q.setFromAxisAngle(new THREE.Vector3(0.0, 0.0, 1.0), -rightAmount);
     camera.quaternion.multiplyQuaternions(q, camera.quaternion);
     // rotate up/down
     camera.rotateX(upAmount);

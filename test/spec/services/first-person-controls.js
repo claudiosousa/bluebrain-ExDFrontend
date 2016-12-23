@@ -144,10 +144,10 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyF');
 
     //expect(firstPersonControls.onKeyDown.callCount).toEqual(7);
-    expect(firstPersonControls.rotateLeft).toBe(true);
-    expect(firstPersonControls.rotateRight).toBe(true);
-    expect(firstPersonControls.rotateUp).toBe(true);
-    expect(firstPersonControls.rotateDown).toBe(true);
+    expect(firstPersonControls.moveForward).toBe(true);
+    expect(firstPersonControls.moveLeft).toBe(true);
+    expect(firstPersonControls.moveBackward).toBe(true);
+    expect(firstPersonControls.moveRight).toBe(true);
     expect(firstPersonControls.moveUp).toBe(true);
     expect(firstPersonControls.moveDown).toBe(true);
 
@@ -158,10 +158,10 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyR');
     triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyF');
 
-    expect(firstPersonControls.rotateLeft).toBe(false);
-    expect(firstPersonControls.rotateRight).toBe(false);
-    expect(firstPersonControls.rotateUp).toBe(false);
-    expect(firstPersonControls.rotateDown).toBe(false);
+    expect(firstPersonControls.moveForward).toBe(false);
+    expect(firstPersonControls.moveLeft).toBe(false);
+    expect(firstPersonControls.moveBackward).toBe(false);
+    expect(firstPersonControls.moveRight).toBe(false);
     expect(firstPersonControls.moveUp).toBe(false);
     expect(firstPersonControls.moveDown).toBe(false);
 
@@ -181,10 +181,10 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'PageUp');
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'PageDown');
     expect(firstPersonControls.shiftHold).toEqual(false);
-    expect(firstPersonControls.moveForward).toEqual(true);
-    expect(firstPersonControls.moveLeft).toEqual(true);
-    expect(firstPersonControls.moveBackward).toEqual(true);
-    expect(firstPersonControls.moveRight).toEqual(true);
+    expect(firstPersonControls.rotateUp).toEqual(true);
+    expect(firstPersonControls.rotateLeft).toEqual(true);
+    expect(firstPersonControls.rotateDown).toEqual(true);
+    expect(firstPersonControls.rotateRight).toEqual(true);
     expect(firstPersonControls.moveUp).toEqual(true);
     expect(firstPersonControls.moveDown).toEqual(true);
 
@@ -195,10 +195,10 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageUp');
     triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageDown');
 
-    expect(firstPersonControls.moveForward).toEqual(false);
-    expect(firstPersonControls.moveLeft).toEqual(false);
-    expect(firstPersonControls.moveBackward).toEqual(false);
-    expect(firstPersonControls.moveRight).toEqual(false);
+    expect(firstPersonControls.rotateUp).toEqual(false);
+    expect(firstPersonControls.rotateLeft).toEqual(false);
+    expect(firstPersonControls.rotateDown).toEqual(false);
+    expect(firstPersonControls.rotateRight).toEqual(false);
     expect(firstPersonControls.moveUp).toEqual(false);
     expect(firstPersonControls.moveDown).toEqual(false);
   }));
@@ -214,10 +214,10 @@ describe('FirstPersonControls', function () {
     triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'PageDown');
 
     expect(firstPersonControls.shiftHold).toEqual(true);
-    expect(firstPersonControls.moveForward).toEqual(true);
-    expect(firstPersonControls.moveLeft).toEqual(true);
-    expect(firstPersonControls.moveBackward).toEqual(true);
-    expect(firstPersonControls.moveRight).toEqual(true);
+    expect(firstPersonControls.rotateUp).toEqual(true);
+    expect(firstPersonControls.rotateLeft).toEqual(true);
+    expect(firstPersonControls.rotateDown).toEqual(true);
+    expect(firstPersonControls.rotateRight).toEqual(true);
     expect(firstPersonControls.moveUp).toEqual(true);
     expect(firstPersonControls.moveDown).toEqual(true);
 
@@ -229,10 +229,10 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keyup', 'PageDown');
 
     expect(firstPersonControls.shiftHold).toEqual(false);
-    expect(firstPersonControls.moveForward).toEqual(false);
-    expect(firstPersonControls.moveLeft).toEqual(false);
-    expect(firstPersonControls.moveBackward).toEqual(false);
-    expect(firstPersonControls.moveRight).toEqual(false);
+    expect(firstPersonControls.rotateUp).toEqual(false);
+    expect(firstPersonControls.rotateLeft).toEqual(false);
+    expect(firstPersonControls.rotateDown).toEqual(false);
+    expect(firstPersonControls.rotateRight).toEqual(false);
     expect(firstPersonControls.moveUp).toEqual(false);
     expect(firstPersonControls.moveDown).toEqual(false);
   }));
@@ -337,14 +337,14 @@ describe('FirstPersonControls', function () {
     firstPersonControls.update();
     firstPersonControls.rotateRight = false;
     rotEnd.copy(camera.rotation);
-    expect(rotEnd.z - rotStart.z > 0).toBe(true);
+    expect(rotEnd.z - rotStart.z < 0).toBe(true);
 
     rotStart.copy(camera.rotation);
     firstPersonControls.rotateLeft = true;
     firstPersonControls.update();
     firstPersonControls.rotateLeft = false;
     rotEnd.copy(camera.rotation);
-    expect(rotEnd.z - rotStart.z < 0).toBe(true);
+    expect(rotEnd.z - rotStart.z > 0).toBe(true);
   }));
 
   it('should set direction variables accordingly', inject(function() {
