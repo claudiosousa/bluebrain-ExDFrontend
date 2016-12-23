@@ -143,6 +143,18 @@ describe('experimentSimulationService', function () {
         };
       }
     });
+
+    $provide.value('simulationConfigService',
+        {
+          initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+            {
+              then: jasmine.createSpy('then').andReturn(
+
+                  {catch: jasmine.createSpy('catch') }
+                )
+            })
+        });
+
     $provide.value('nrpAnalytics', { eventTrack: angular.noop, tickDurationEvent: angular.noop });
   }));
   beforeEach(inject(function (_$httpBackend_, _experimentSimulationService_, _$rootScope_, _bbpConfig_) {
@@ -212,6 +224,19 @@ describe('Services: error handling', function () {
   beforeEach(module(function ($provide) {
     $provide.value('serverError', serverErrorMock);
     $provide.value('roslib', roslibMock);
+
+    $provide.value('simulationConfigService',
+        {
+          initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+            {
+              then: jasmine.createSpy('then').andReturn(
+
+                  {catch: jasmine.createSpy('catch') }
+                )
+            })
+        });
+
+
   }));
 
   beforeEach(inject(function($httpBackend,_simulationControl_,
@@ -294,6 +319,17 @@ describe('Services: experimentSimulationService (Stopping the simulation)', func
         })
       }
     );
+
+    $provide.value('simulationConfigService',
+      {
+        initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+          {
+            then: jasmine.createSpy('then').andReturn(
+
+              { catch: jasmine.createSpy('catch') }
+            )
+          })
+      });
 
   }));
 

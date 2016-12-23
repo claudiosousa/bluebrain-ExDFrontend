@@ -7,10 +7,12 @@
       function ($resource, simulationInfo, serverError, $q, collabFolderAPIService, $http)
       {
         return {
+          initConfigFiles: initConfigFiles,
           doesConfigFileExist: doesConfigFileExist,
           loadConfigFile: loadConfigFile,
           saveConfigFile: saveConfigFile,
         };
+
 
         //-------------------------------------------------------
         // Get file from collab if available, if not try to get it directly from backend
@@ -129,18 +131,55 @@
         //-------------------------------------------------------
         // Direct backend access functions
 
-        function getBackendConfigFileNames(configType)
+        var cachedConfigFiles;
+
+        function initConfigFiles(serverBaseUrl,simulationID)
         {
-          return $resource(simulationInfo.serverBaseUrl + '/simulation/:sim_id/resources', {}, {
+          cachedConfigFiles = $resource(serverBaseUrl + '/simulation/:sim_id/resources', {}, {
             get: {
               method: 'GET',
               interceptor: { responseError: serverError.displayHTTPError }
             }
-          }).get({ sim_id: simulationInfo.simulationID }).$promise
+          }).get({ sim_id: simulationID }).$promise
             .then(function (response)
             {
-              return response && response.resources && _.find(response.resources, function (r) { return r.type === configType; });
+              return response && response.resources;
             });
+
+            return cachedConfigFiles;
+        }
+
+        function findConfigFileName(configType, cachedConfigFiles)
+        {
+          for(var i=0;i<cachedConfigFiles.length;i++)
+          {
+            var r = cachedConfigFiles[i];
+
+            if (r.type === configType) return r;
+          }
+
+          return null;
+        }
+
+        function getBackendConfigFileNames(configType)
+        {
+          if (!cachedConfigFiles)
+          {
+            return initConfigFiles(simulationInfo.serverBaseUrl,simulationInfo.simulationID).then(function()
+            {
+              return cachedConfigFiles.then(function (cachedConfigFiles)
+              {
+                return findConfigFileName(configType,cachedConfigFiles);
+              });
+            });
+          }
+          else
+          {
+            return cachedConfigFiles.then(function (cachedConfigFiles)
+            {
+                return findConfigFileName(configType,cachedConfigFiles);
+            });
+          }
         }
 
         function getBackendConfigFile(configFileName)
