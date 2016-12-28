@@ -5,15 +5,13 @@
 /* global THREE: true */
 /* global console: false */
 
-THREE.AvatarControls = function(userNavigationService, gz3d, avatar, camera, domElementPointerBindings, domElementKeyboardBindings)
+THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBindings, domElementKeyboardBindings)
 {
   'use strict';
 
   this.userNavigationService = userNavigationService;
 
   this.gz3d = gz3d;
-  this.avatar = avatar;
-  this.camera = camera;
   this.domElementPointerBindings = angular.isDefined(domElementPointerBindings) ? domElementPointerBindings : document;
   this.domElementKeyboardBindings = angular.isDefined(domElementKeyboardBindings) ? domElementKeyboardBindings : document;
 
@@ -74,21 +72,36 @@ THREE.AvatarControls = function(userNavigationService, gz3d, avatar, camera, dom
   // init ROS velocity topic for avatar movement
   this.rosConnection = this.userNavigationService.roslib.getOrCreateConnectionTo(this.userNavigationService.rosbridgeWebsocketUrl);
 
-  this.linearVelocityTopicName = '/' + this.avatar.name + '/user_avatar_basic/body/cmd_vel';
-  this.linearVelocityTopic = this.userNavigationService.roslib.createTopic(
-    this.rosConnection,
-    this.linearVelocityTopicName,
-    'geometry_msgs/Vector3'
-  );
   this.linearVelocity = new THREE.Vector3();
 
-  this.avatarRotationTopicName = '/' + this.avatar.name + '/cmd_rot';
-  this.avatarRotationTopic = this.userNavigationService.roslib.createTopic(
-    this.rosConnection,
-    this.avatarRotationTopicName,
-    'geometry_msgs/Quaternion'
-  );
   this.avatarRotation = new THREE.Quaternion();
+
+  this.init = function(avatar, camera) {
+    this.avatar = avatar;
+    this.camera = camera;
+
+    // attach camera to avatar object
+    this.avatar.add(this.camera);
+    this.camera.position.set(0, this.avatarRadius, this.avatarEyeHeight);
+    this.camera.quaternion.set(0, 0, 0, 1);
+    this.camera.updateMatrixWorld();
+  };
+
+  this.createAvatarTopics = function(avatarName) {
+    this.linearVelocityTopicName = '/' + avatarName + '/user_avatar_basic/body/cmd_vel';
+    this.linearVelocityTopic = this.userNavigationService.roslib.createTopic(
+      this.rosConnection,
+      this.linearVelocityTopicName,
+      'geometry_msgs/Vector3'
+    );
+
+    this.avatarRotationTopicName = '/' + avatarName + '/cmd_rot';
+    this.avatarRotationTopic = this.userNavigationService.roslib.createTopic(
+      this.rosConnection,
+      this.avatarRotationTopicName,
+      'geometry_msgs/Quaternion'
+    );
+  };
 
   this.onMouseDown = function (event) {
     // HBP-NRP: The next three lines are commented since this leads to problems in chrome with respect
@@ -359,6 +372,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d, avatar, camera, dom
       this.avatar.position.copy(posOnGround);
       this.avatar.updateMatrixWorld();
     }
+    else {
+      this.avatar.position.copy(position);
+      this.avatar.updateMatrixWorld();
+    }
 
     // update orientation
     var camWorldPosition = this.camera.getWorldPosition();
@@ -589,7 +606,6 @@ THREE.AvatarControls = function(userNavigationService, gz3d, avatar, camera, dom
       this.setPose(this.applyPosePosition, this.applyPoseLookAt);
       this.publishPose();
 
-      //gz3d.scene.emitter.emit('entityChanged', this.avatar);
       var vecForward = new THREE.Vector3().subVectors(this.applyPoseLookAt, this.applyPosePosition).normalize();
       this.updateSphericalAnglesFromForwardVector(vecForward);
 
