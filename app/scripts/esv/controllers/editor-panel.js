@@ -79,14 +79,14 @@
     $scope.disableKeyBindings = function() {
       // Only disable the key bindings if the panel is open
       // This prevents disabling the key bindings when the page is loaded
-      if($scope.panelIsOpen === true && angular.isDefined(gz3d.scene)) {
+      if($scope.panelIsOpen === true && angular.isDefined(gz3d.scene) && angular.isDefined(gz3d.scene.controls)) {
         gz3d.scene.controls.keyboardBindingsEnabled = false;
       }
     };
 
     $scope.reenableKeyBindings = function() {
       // Reenable the key bindings when the user leaves a code-editor panel
-      if (angular.isDefined(gz3d.scene)) {
+      if (angular.isDefined(gz3d.scene)&& angular.isDefined(gz3d.scene.controls)) {
         gz3d.scene.controls.keyboardBindingsEnabled = true;
       }
     };
