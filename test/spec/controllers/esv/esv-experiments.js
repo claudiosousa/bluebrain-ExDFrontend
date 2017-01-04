@@ -73,9 +73,26 @@
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
+
     beforeEach(module(function ($provide) {
       $provide.value('serverError', serverErrorMock);
+
+      $provide.value('simulationConfigService',
+        {
+          initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+            {
+              then: function (f)
+              {
+                f();
+                return { catch: jasmine.createSpy('catch') };
+              }
+            }
+          )
+        }
+      );
+
     }));
+
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_,
       _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _hbpDialogFactory_) {
@@ -231,6 +248,7 @@
       var experimentID = Object.keys(defaultPageOptions.experiments)[0];
       var simulationID = defaultPageOptions.startExperiment.simulationID;
       var expectedLocation = ['esv-web/gz3d-view/' + hostName + '/' + experimentID + '/' + simulationID];
+
       expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
     });
 

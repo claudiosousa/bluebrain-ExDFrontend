@@ -130,6 +130,22 @@ describe('Services: simulation-config-service', function ()
     $rootScope.$digest();
   });
 
+  it('should use cache after initConfigFiles has been called', function ()
+  {
+    simulationConfigService.initConfigFiles(simulationInfo.serverBaseUrl,simulationInfo.simulationID);
+
+    var result = simulationConfigService.doesConfigFileExist('mockedFileType');
+    httpBackend.flush();
+    $rootScope.$digest();
+
+    result.then(function (result)
+    {
+      expect(result).toBe(true);
+    });
+
+    $rootScope.$digest();
+  });
+
   it('should load config file from backend', function ()
   {
     httpBackend.expectGET(simulationInfo.serverBaseUrl + 'mockedpath/configfilename').respond('ContentTest');
