@@ -379,7 +379,7 @@
 
         $scope.isGlobalLightMaxReached = function ()
         {
-          if (gz3d===undefined || gz3d.scene===undefined)
+          if (gz3d === undefined || gz3d.scene === undefined)
           {
             return false;
           }
@@ -398,7 +398,7 @@
 
         $scope.isGlobalLightMinReached = function ()
         {
-          if (gz3d===undefined || gz3d.scene===undefined)
+          if (gz3d === undefined || gz3d.scene === undefined)
           {
             return false;
           }

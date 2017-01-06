@@ -912,6 +912,28 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(callbackOnClose).toBe(scope.onSceneLoaded);
     });
 
+
+    it('should return false if gz3d.scene is undefined', function() {
+      gz3d.scene = undefined;
+      expect(scope.isGlobalLightMinReached()).toBe(false);
+      expect(scope.isGlobalLightMaxReached()).toBe(false);
+    });
+
+
+    it('should return true or false depending on light intensity information', function() {
+      var lightInfoReturnValue = { max: 0.1 };
+      gz3d.scene.findLightIntensityInfo = function()
+      {
+        return lightInfoReturnValue;
+      };
+      expect(scope.isGlobalLightMinReached()).toBe(true);
+      expect(scope.isGlobalLightMaxReached()).toBe(false);
+      lightInfoReturnValue.max = 1.0;
+      expect(scope.isGlobalLightMinReached()).toBe(false);
+      expect(scope.isGlobalLightMaxReached()).toBe(true);
+    });
+
+
     it('should test light change', function() {
 
       var initiaLightness = 0.5;
