@@ -1250,6 +1250,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
+    it('should remove lock when destroy is called', function () {
+      scope.$destroy();
+      expect(lockServiceCancelCallback).toHaveBeenCalled();
+      expect(lockServiceMock.releaseLock).toHaveBeenCalled();
+    });
     it('should enable display of the editor panel', function () {
       scope.showEditorPanel = false;
       scope.isCollabExperiment = false;
