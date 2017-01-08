@@ -167,7 +167,7 @@
         });
       };
 
-      var launchExperimentInPossibleServers = function (experiment, launchSingleMode, envSDFData) {
+      var launchExperimentInPossibleServers = function (experiment, launchSingleMode, envSDFData, reservation) {
 
         var fatalErrorOccurred = false,
           serversToTry = experiment.devServer ? [experiment.devServer] : _.clone(experiment.availableServers);
@@ -190,7 +190,7 @@
                   experiment.id,
                   experiment.configuration.experimentConfiguration,
                   environmentConfiguration,
-                  brainProcesses, server, serverConfig
+                  brainProcesses, server, serverConfig, reservation
                 ).catch(oneSimulationFailed);
               }
               if (envSDFData) {
@@ -220,7 +220,8 @@
         environmentConfiguration,
         brainProcesses,
         server,
-        serverConfiguration
+        serverConfiguration,
+        reservation
       ) {
         var deferred = $q.defer();
 
@@ -233,7 +234,8 @@
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
           contextID: $stateParams.ctx,
-          brainProcesses: brainProcesses
+          brainProcesses: brainProcesses,
+          reservation: reservation
         };
 
         if (!!environmentConfiguration) {
@@ -301,11 +303,11 @@
         return deferred.promise;
       };
 
-      var startNewExperiment = function (experiment, launchSingleMode, envSDFData) {
+      var startNewExperiment = function (experiment, launchSingleMode, envSDFData, reservation) {
         nrpAnalytics.eventTrack('Start', { category: 'Experiment' });
         nrpAnalytics.tickDurationEvent('Server-initialization');
 
-        return launchExperimentInPossibleServers(experiment, launchSingleMode, envSDFData);
+        return launchExperimentInPossibleServers(experiment, launchSingleMode, envSDFData, reservation);
       };
 
       // Public methods of the service

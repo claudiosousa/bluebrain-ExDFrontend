@@ -6,15 +6,22 @@
    * @name MainCtrl
    *
    * @description
-   * `MainCtrl` is the main application controller and his associated
+   * `MainCtrl` is the main application controller and is associated
    * to the `home` state.
    */
   angular.module('exdFrontendApp')
-    .controller('MainCtrl', ['$scope', '$window', 'browserSupport', 'bbpConfig', '$log',
-      function ($scope, $window, browserSupport, bbpConfig, $log) {
+    .controller('MainCtrl', ['$scope', '$window', 'browserSupport', 'bbpConfig', '$log', 'nrpUser',
+      function ($scope, $window, browserSupport, bbpConfig, $log, nrpUser) {
+        nrpUser.isMemberOfClusterReservationGroup().then(function(response) {
+          $scope.displayClusterReservationForm = response;
+        });
+        // Unsupported browser warning
         $scope.dismissWarning = $window.sessionStorage.getItem('unsupportedBrowserWarning') === 'dismissed';
         $scope.isSupportedBrowser = browserSupport.isSupported();
         $scope.supportedBrowsers = [''];
+
+        // Cluster reservation form
+        $scope.dismissReservationForm = $window.sessionStorage.getItem('reservationForm') === 'dismissed';
 
         var collabIds;
         try {
@@ -43,5 +50,18 @@
             });
           };
         }
+
+        $scope.setClusterReservation = function() {
+          $window.sessionStorage.setItem('clusterReservation', $scope.clusterReservationName);
+        };
+
+        $scope.dismissClusterReservationForm = function () {
+            _.defer(function () {
+              $scope.$apply(function () {
+                $window.sessionStorage.setItem('reservationForm', 'dismissed');
+                $scope.dismissReservationForm = true;
+              });
+            });
+          };
       }]);
 } ());

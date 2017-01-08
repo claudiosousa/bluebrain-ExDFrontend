@@ -254,8 +254,8 @@
             });
           }
 
-          function startExperiment(experiment, launchSingleMode, envSDFData) {
-            return experimentSimulationService.startNewExperiment(experiment, launchSingleMode, envSDFData)
+          function startExperiment(experiment, launchSingleMode, envSDFData, reservation) {
+            return experimentSimulationService.startNewExperiment(experiment, launchSingleMode, envSDFData, reservation)
               .catch(function (fatalErrorWasShown) {
                 if (!fatalErrorWasShown) {
                   hbpDialogFactory.alert(experiment.devServer ? FAIL_ON_SELECTED_SERVER_ERROR: FAIL_ON_ALL_SERVERS_ERROR);

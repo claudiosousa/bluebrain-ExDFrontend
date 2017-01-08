@@ -3,7 +3,18 @@
   You may continue but only {{ supportedBrowsers | joinWithEndException:', ':' or ' }} will ensure the best experience.
   <button class="btn btn-warning btn-xs pull-right" ng-click="dismissBrowserWarning()">&times;</button>
 </div>
-
+<div class="alert alert-info no-margin" ng-show="displayClusterReservationForm && (!dismissReservationForm)">
+  <button class="btn btn-info btn-xs pull-right" ng-click="dismissClusterReservationForm()">&times;</button>
+  <form>
+    <label>Enter your reservation code:
+      <input type="text" ng-model="clusterReservationName" ng-required/>
+    </label>
+    <button type="button" class="btn btn-primary" type="submit"
+      ng-click="setClusterReservation()" v-pressable>
+      <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
+   </button>
+  </form>
+</div>
 <div class="container-with-navbar-margin container-fluid">
 
   <div id="nrp-section" class="content-section-b">
