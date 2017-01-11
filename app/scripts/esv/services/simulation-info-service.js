@@ -38,17 +38,17 @@
             };
 
             if (thisService.isCollabExperiment) {
-              experimentList(thisService.serverBaseUrl).experiments({context_id: contextID}, function(data) {
+              return experimentList(thisService.serverBaseUrl).experiments({ context_id: contextID }, function(data) {
                 var configuration = data.data.experiment_configuration;
                 setExperimentDetails(configuration);
               });
-            } else {
-              experimentProxyService.getExperiments().then(function (data){
-                var configuration = data[thisService.experimentID].configuration;
-                setExperimentDetails(configuration);
-              });
             }
-            return thisService;
+
+            return experimentProxyService.getExperiments().then(function(data){
+              var configuration = data[thisService.experimentID] && data[thisService.experimentID].configuration;
+              setExperimentDetails(configuration);
+            });
+
           });
       }
     }]);
