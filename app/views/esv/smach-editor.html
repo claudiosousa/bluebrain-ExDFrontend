@@ -15,13 +15,7 @@
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
   <hr>
-  <div ui-codemirror="{
-          onLoad: refreshLayout,
-          lineWrapping : true,
-          lineNumbers: true,
-          readOnly: false,
-          mode: 'text/x-python'
-      }"
+  <div ui-codemirror="editorOptions"
        ng-model="stateMachine.code"
        ui-refresh="stateMachine.code"
        ng-attr-id="state-machine-{{stateMachine.id}}"

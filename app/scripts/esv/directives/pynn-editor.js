@@ -11,7 +11,8 @@
     'stateService',
     'autoSaveService',
     'RESET_TYPE',
-    function ($timeout, backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,RESET_TYPE) {
+    'editorsServices',
+    function ($timeout, backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService, RESET_TYPE, editorsServices) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -26,23 +27,9 @@
           scope.loading = false;
           scope.collabDirty = false;
           scope.localDirty = false;
-          scope.refreshCodemirror = false;
           scope.isSavingToCollab = false;
 
-          scope.getCM = function() {
-            if(!scope.cm) {
-              // (please tell me if there is a nicer way to get that object (Bernd))
-              scope.cm = document.getElementById("codeEditor").children[0].CodeMirror;
-            }
-            return scope.cm;
-          };
-
-          scope.getDoc = function() {
-            if (!scope.doc) {
-              scope.doc = scope.getCM().getDoc();
-            }
-            return scope.doc;
-          };
+          scope.editorOptions = editorsServices.getDefaultEditorOptions();
 
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
@@ -53,27 +40,28 @@
           });
 
           scope.control.refresh = function () {
+            var editor = editorsServices.getEditor("codeEditor");
             if (scope.collabDirty || scope.localDirty) {
-              $timeout(function () { scope.refreshCodemirror = !scope.refreshCodemirror; }, 100);
+              $timeout(function () {
+                editorsServices.refreshEditor(editor);
+                }, 100);
               return;
             }
-
-           scope.loading = true;
+            scope.loading = true;
             backendInterfaceService.getBrain(function(response) {
               if (response.brain_type === "py") {
                 scope.pynnScript = response.data;
                 scope.populations = scope.preprocessPopulations(response.additional_populations);
-                scope.refreshCodemirror = !scope.refreshCodemirror; // just toggle it to refresh
+                editorsServices.refreshEditor(editor);
                 scope.loading = false;
                 setTimeout(function () {
-                  scope.getDoc().clearHistory();
-                  scope.getDoc().markClean();
+                  editorsServices.resetEditor(editor);
                   scope.searchToken("si");
                 }, 100);
               } else {
                 scope.pynnScript = undefined;
                 scope.populations = undefined;
-                scope.refreshCodemirror = !scope.refreshCodemirror;
+                editorsServices.refreshEditor(editor);
               }
             });
           };
@@ -81,7 +69,6 @@
           /** Convert Populations Object into array and create for each population a unique
              * regular expression to avoid duplicate names.
           */
-
           scope.preprocessPopulations = function(neuronPopulations) {
             var populationNames = Object.keys(neuronPopulations);
             var populationsArray = populationNames.map(function (name, index) {
@@ -176,7 +163,7 @@
                   scope.pynnScript, scope.stringsToLists(populations), 'py', 'text', change_population,
                   function () { // Success callback
                     scope.loading = false;
-                    scope.getDoc().markClean();
+                    editorsServices.getEditor("codeEditor").markClean();
                     scope.clearError();
                     scope.localDirty = false;
                     if (restart) {
@@ -228,8 +215,7 @@
             );
           };
 
-         scope.searchToken = function(name) {
-            var cm = scope.getCM();
+          scope.searchToken = function(name) {
             var lines = scope.pynnScript.split('\n');
             var l = 0;
             var ret = {line: 0, ch: 0};
@@ -241,7 +227,7 @@
               while (c !== -1 && !found) {
                 c = line.indexOf(name, c+1);
                 if (c !== -1) {
-                  var token = cm.getTokenAt({line: l, ch: c + 1});
+                  var token = editorsServices.getEditor("codeEditor").getTokenAt({line: l, ch: c + 1});
                   if (token.type !== "string" && token.string === name) {
                     ret = {line: l, ch: c};
                     found = true;
@@ -270,7 +256,6 @@
 
           scope.$watch('pynnScript', function(after, before) { if (before) scope.onBrainChange();});
           scope.$watchCollection('populations', function(after, before) { if (before) scope.onBrainChange();});
-
 
           scope.addList = function() {
             var regex = generateRegexPattern(populationNames(), scope.populations.length);
@@ -305,6 +290,7 @@
           };
 
           scope.markError = function(error_message, line, column) {
+            var editor = editorsServices.getEditor("codeEditor");
             if (isNaN(line) || isNaN(column)) {
               return;
             }
@@ -321,22 +307,20 @@
               if (column < 0) { column = 0; }
             }
 
-            var cm = scope.getCM();
-
             var err = ' '.repeat(column)  + '^\n' +  error_message;
             var htmlNode = document.createElement('pre');
             var text = document.createTextNode(err);
             htmlNode.appendChild(text);
 
-            scope.lineHandle = cm.addLineClass(line, 'background', 'alert-danger');
-            scope.lineWidget = cm.addLineWidget(line, htmlNode, true);
-            cm.scrollIntoView({line: line, ch:1});
+            scope.lineHandle = editor.addLineClass(line, 'background', 'alert-danger');
+            scope.lineWidget = editor.addLineWidget(line, htmlNode, true);
+            editor.scrollIntoView({line: line, ch:1});
           };
 
           scope.clearError = function() {
             if (scope.lineHandle) {
-              scope.getCM().removeLineClass(scope.lineHandle, 'background');
-            }
+              editorsServices.getEditor("codeEditor").removeLineClass(scope.lineHandle, 'background');
+          }
             if (scope.lineWidget) {
               scope.lineWidget.clear();
             }
