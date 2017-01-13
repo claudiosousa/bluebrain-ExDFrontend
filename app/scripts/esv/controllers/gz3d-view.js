@@ -824,7 +824,7 @@
 
           if ($scope.isCollabExperiment) {
             cancelLockSubscription();
-            removeEditLock();
+            removeEditLock(true);
           }
           // Close the splash screens
           if (angular.isDefined($scope.splashScreen)) {
@@ -887,10 +887,12 @@
           $scope.editIsDisabled = state;
         }
 
-        function removeEditLock() {
+        function removeEditLock(skipResponse) {
           return lockService.releaseLock()
             .catch(function () {
-              $window.alert("I could not release the edit lock. Please remove it manually from the Storage area.");
+              if (!skipResponse) {
+                $window.alert("I could not release the edit lock. Please remove it manually from the Storage area.");
+              }
             });
         }
 
