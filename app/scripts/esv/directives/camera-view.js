@@ -9,7 +9,9 @@
             'gz3d',
             'simulationInfo',
             'STREAM_URL',
-            function($http, $log, gz3d, simulationInfo, STREAM_URL) {
+            'STATE',
+            'stateService',
+            function($http, $log, gz3d, simulationInfo, STREAM_URL, STATE, stateService) {
 
                 if (!simulationInfo.serverConfig.gzweb.videoStreaming) {
                     //usefull for 100% local migration only
@@ -45,8 +47,15 @@
                         cameraName: '@'
                     },
                     link: function(scope) {
+                        scope.STATE = STATE;
+                        scope.stateService = stateService;
                         scope.showFrustum = false;
                         scope.showServerStream = false;
+                        var reconnectTrials = 0;
+
+                        scope.getVideoUrlSource = function() {
+                            return scope.showServerStream ? scope.videoUrl + '&t=' + stateService.currentState + reconnectTrials : '';
+                        };
 
                         videoStreamingUrls && videoStreamingUrls.then(function(urls) {
                             scope.videoUrl = urls[scope.topic];
@@ -54,6 +63,7 @@
 
                         scope.toggleServerStream = function() {
                             scope.showServerStream = !scope.showServerStream;
+                            reconnectTrials++;
                         };
 
                         scope.onShowFrustumChanged = function() {

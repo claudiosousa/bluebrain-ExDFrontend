@@ -3,9 +3,10 @@
 <!-- endbuild -->
 
 <div class="camera-server-stream-not-available" ng-show="showServerStream">
-  <span>Start the simulation to start streaming camera image</span>
+  <span ng-hide="stateService.currentState === STATE.STARTED">Start the simulation to start streaming camera image</span>
+  <span ng-show="stateService.currentState === STATE.STARTED">Connecting...</span>
 </div>
-<img class="camera-server-stream-image" ng-show="showServerStream" ng-src="{{videoUrl}}" alt="Smiley face">
+<img class="camera-server-stream-image" ng-show="showServerStream" ng-src="{{getVideoUrlSource()}}" alt="Smiley face">
 <div class="camera-view-label">{{cameraName}}</div>
 
 <div class="camera-icons">
