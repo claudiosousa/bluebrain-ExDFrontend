@@ -39,6 +39,7 @@
       'autoSaveService',
       'DEFAULT_TF_CODE',
       'downloadFileService',
+      'RESET_TYPE',
     function (
         $log,
         backendInterfaceService,
@@ -55,7 +56,8 @@
         hbpDialogFactory,
         autoSaveService,
         DEFAULT_TF_CODE,
-        downloadFileService
+        downloadFileService,
+        RESET_TYPE
     ) {
     var DIRTY_TYPE = 'TF';
 
@@ -169,6 +171,15 @@
             });
           }, 200);
         }
+
+        scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType)
+        {
+          if (resetType === RESET_TYPE.RESET_FULL)
+          {
+            scope.collabDirty = false;
+            scope.transferFunctions = [];
+          }
+        });
 
         scope.control.refresh = function () {
           if (scope.collabDirty){

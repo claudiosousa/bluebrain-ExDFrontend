@@ -462,6 +462,11 @@
 
           stateService.setCurrentState(STATE.PAUSED);
 
+          if ($scope.showEditorPanel)
+          {
+            $scope.toggleEditors();
+          }
+
           $timeout(function(){
 
           $scope.notifyResetToWidgets(resetType);
