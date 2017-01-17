@@ -5,13 +5,13 @@
 <div class="container-with-navbar-margin">
   <div class="list-container">
     <div class="form-group form-inline col-xs-12">
-      <input ng-model="query" type="text" class="top-buttons form-control input-sm" placeholder="Experiment Filter...">
+      <input ng-model="query.configuration.name" type="text" class="top-buttons form-control input-sm" placeholder="Experiment Filter...">
       <div ng-show="!experiments">
         <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp; <i>{{config.loadingMessage}}</i>
       </div>
     </div>
     <hr class="list-separator">
-    <div ng-repeat="exp in experiments |filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
+    <div ng-repeat="exp in experiments | filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
       class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="selectExperiment(exp);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == pageState.selected) || isHovered}">
         <div class="list-entry-left" ng-class="{selected: exp.id == pageState.selected}">
