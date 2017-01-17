@@ -88,8 +88,11 @@ describe('Services: contextMenuState', function (){
   });
 
   it('should get the model under the current mouse position', function () {
+  
     gz3d.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
-    contextMenuState._getModelUnderMouse({clientX: 10, clientY: 10});
+    spyOn(contextMenuState,'axisSelected').andReturn(false);
+    var event = {clientX :10, clientY:10};
+    contextMenuState._getModelUnderMouse(event);
     expect(gz3d.scene.getRayCastModel).toHaveBeenCalled();
   });
 

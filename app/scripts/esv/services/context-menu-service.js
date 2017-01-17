@@ -101,22 +101,29 @@
 
               this.contextMenuTop = event.clientY;
               this.contextMenuLeft = event.clientX;
-
-              gz3d.scene.selectEntity(model);
+              gz3d.scene.selectEntity(model);    
             }
           }
           else {
 
             this.hideMenu();
             this.isShown =
-              gz3d.scene.radialMenu.showing = false;
+            gz3d.scene.radialMenu.showing = false;
           }
+        },
+
+        axisSelected: function (model) {
+          return !model.name || (_.some(['TX', 'TY', 'TZ', 'RX', 'RY', 'RZ', 'plane', 'TXY', 'TXZ', 'TYZ'], function (parameter)
+          { return parameter === model.name; }));
         },
 
         _getModelUnderMouse: function (event) {
           var pos = new THREE.Vector2(event.clientX, event.clientY);
           var intersect = new THREE.Vector3();
           var model = gz3d.scene.getRayCastModel(pos, intersect);
+          if(this.axisSelected(model)){
+            model = gz3d.scene.modelManipulator.object; 
+          }
           return model;
         }
       };

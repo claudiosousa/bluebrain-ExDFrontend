@@ -617,9 +617,8 @@
             this.visible = this.items[0].visible = false;
           },
           show: function (model) {
-            var isInViewMode = (gz3d.scene.manipulationMode === EDIT_MODE.VIEW);
             var isColorableEntity = colorableObjectService.isColorableEntity(model);
-            var show = isInViewMode && isColorableEntity;
+            var show = isColorableEntity;
             return (this.visible = this.items[0].visible = show);
           }
         };
