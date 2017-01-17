@@ -57,6 +57,8 @@
                 // set up controls
                 var domElementForKeyBindings = document.getElementsByTagName('body')[0];
                 that.freeCameraControls = new THREE.FirstPersonControls(that.userCamera, gz3d.scene.container, domElementForKeyBindings);
+                that.avatarControls = new THREE.AvatarControls(that, gz3d, gz3d.scene.container, domElementForKeyBindings);
+                that.avatarControls.createAvatarTopics(that.avatarObjectName);
 
                 // start in free camera mode
                 that.setModeFreeCamera();
@@ -117,6 +119,16 @@
                 modelName = this.avatarModelPathNoCollision;
               }
 
+              this.avatarControls.init(avatar, this.userCamera);
+
+              // set spawning pose
+              if (angular.isDefined(this.currentPosition) && angular.isDefined(this.currentDirection) && angular.isDefined(this.currentLookAt)) {
+                this.avatarControls.setPose(this.currentPosition, this.currentLookAt);
+              } else {
+                // no current position, default
+                this.avatarControls.setPose(this.defaultPosition, this.defaultLookAt);
+              }
+
               gz3d.gui.emitter.emit('entityCreated', avatar, modelName);
             },
 
@@ -128,8 +140,7 @@
 
               // avatar controls
               this.freeCameraControls.enabled = false;
-              var domElementForKeyBindings = document.getElementsByTagName('body')[0];
-              this.avatarControls = new THREE.AvatarControls(this, gz3d, this.avatarObject, this.userCamera, gz3d.scene.container, domElementForKeyBindings);
+              this.avatarControls.init(this.avatarObject, this.userCamera);
 
               switch (this.navigationMode) {
                 case NAVIGATION_MODES.HUMAN_BODY:
@@ -138,13 +149,7 @@
                       break;
               }
 
-              // attach camera to avatar object
-              this.avatarObject.add(this.userCamera);
-              this.userCamera.position.set(0, this.avatarControls.avatarRadius, this.avatarControls.avatarEyeHeight);
-              this.userCamera.quaternion.set(0, 0, 0, 1);
-              this.userCamera.updateMatrixWorld();
-
-              // set pose
+              // apply saved pose
               if (angular.isDefined(this.currentPosition) && angular.isDefined(this.currentDirection) && angular.isDefined(this.currentLookAt)) {
                 this.avatarControls.applyPose(this.currentPosition, this.currentLookAt);
               } else {
