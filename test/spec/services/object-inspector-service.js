@@ -1,10 +1,29 @@
 /* global THREE: false */
+/* global GZ3D: false */
 
 'use strict';
 
+GZ3D.TRANSFORM_TYPE_NAME_PREFIX = { //same as GZ3D.TRANSFORM_TYPE_NAME_PREFIX
+  TRANSLATE:  'T',
+  SCALE:      'S',
+  ROTATE:     'R',
+  ALL:        'A',
+  NONE:       'N'
+};
+
 describe('Services: objectInspectorService', function () {
   var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var gz3d, stateService, EDIT_MODE, STATE, OBJECT_VIEW_MODE;
+  var mockObject;
+
+  var DummyModelManipulator = function() {
+    this.isSelected = jasmine.createSpy('isSelected').andReturn(false);
+    this.onPointerMove = {};
+    this.selected = '';
+    this.handleAxisLockEnd = jasmine.createSpy('handleAxisLockEnd');
+    this.selectPicker = jasmine.createSpy('selectPicker');
+  };
+  DummyModelManipulator.prototype = Object.create(THREE.EventDispatcher.prototype);
 
   var gz3dMock = {
     scene: {
@@ -17,18 +36,13 @@ describe('Services: objectInspectorService', function () {
       setManipulationMode: jasmine.createSpy('setManipulationMode'),
       selectEntity: jasmine.createSpy('selectEntity'),
 
-      modelManipulator: {
-        isSelected: jasmine.createSpy('isSelected').andReturn(false),
-        onPointerMove: {},
-        selected: '',
-        handleAxisLockEnd: jasmine.createSpy('handleAxisLockEnd'),
-        selectPicker: jasmine.createSpy('selectPicker')
-      }
+      modelManipulator: new DummyModelManipulator()
     },
     gui: {
       guiEvents: new window.EventEmitter2({ verbose: true })
     }
   };
+
   var stateServiceMock = {
     ensureStateBeforeExecuting: jasmine.createSpy('ensureStateBeforeExecuting').andCallFake(
       function (state, callback) {
@@ -41,20 +55,33 @@ describe('Services: objectInspectorService', function () {
   htmlMock['oe-viewmode-transparent'] = document.createElement('input');
   htmlMock['oe-viewmode-wireframe'] = document.createElement('input');
 
-  var dummyObject = new THREE.Object3D();
-  dummyObject.position.set(1, 2, 3);
-  dummyObject.rotation.set(4, 5, 6);
-  dummyObject.updateMatrixWorld();
+
   var collisionVisualMock = new THREE.Object3D();
   collisionVisualMock.name = 'test_COLLISION_VISUAL';
-  dummyObject.add(collisionVisualMock);
+
   var meshMock = new THREE.Mesh();
   collisionVisualMock.add(meshMock);
+
+  var prepareDummyObject = function(collisionVisualMock) {
+
+    var dummyObject  = new THREE.Object3D();
+    dummyObject.position.set(1, 2, 3);
+    dummyObject.rotation.set(4, 5, 6);
+    dummyObject.scale.set(2, 2 ,2);
+    dummyObject.updateMatrixWorld();
+    dummyObject.userData = {shapeName: 'complex'};
+    dummyObject.getShapeName = function () { return dummyObject.userData.shapeName || 'complex'; };
+
+    dummyObject.add(collisionVisualMock);
+    return dummyObject;
+
+  };
 
   // provide mock objects
   beforeEach(module(function ($provide) {
     $provide.value('gz3d', gz3dMock);
     $provide.value('stateService', stateServiceMock);
+    $provide.value('mockObject', prepareDummyObject(collisionVisualMock));
   }));
 
   beforeEach(function () {
@@ -67,7 +94,9 @@ describe('Services: objectInspectorService', function () {
     module('exdFrontendApp.Constants');
 
     // inject service for testing.
-    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_,
+      _colorableObjectService_, _mockObject_, _OBJECT_VIEW_MODE_)
+    {
       $timeout = _$timeout_;
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
@@ -75,7 +104,10 @@ describe('Services: objectInspectorService', function () {
       EDIT_MODE = _EDIT_MODE_;
       STATE = _STATE_;
       colorableObjectService = _colorableObjectService_;
+      mockObject = _mockObject_;
+      OBJECT_VIEW_MODE = _OBJECT_VIEW_MODE_;
     });
+
   });
 
   // check to see if it has the expected function
@@ -87,7 +119,7 @@ describe('Services: objectInspectorService', function () {
   it('should allow to toggle/set its display', function () {
     spyOn(objectInspectorService, 'setManipulationMode').andCallThrough();
 
-    gz3d.scene.selectedEntity = dummyObject;
+    gz3d.scene.selectedEntity = mockObject;
     objectInspectorService.toggleView();
     expect(objectInspectorService.selectedObject).toBeDefined();
     expect(objectInspectorService.isShown).toBe(true);
@@ -114,7 +146,7 @@ describe('Services: objectInspectorService', function () {
       return htmlMock[id];
     });
     spyOn(objectInspectorService, 'roundToPrecision').andCallThrough();
-    dummyObject.showCollision = undefined;
+    mockObject.showCollision = undefined;
     objectInspectorService.toggleView();
 
     expect(gz3d.scene.selectedEntity).not.toBeDefined();
@@ -122,33 +154,33 @@ describe('Services: objectInspectorService', function () {
     $timeout.flush();
     expect(objectInspectorService.selectedObject).not.toBeDefined();
 
-    gz3d.scene.selectedEntity = dummyObject;
-    expect(dummyObject.showCollision).not.toBeDefined();
+    gz3d.scene.selectedEntity = mockObject;
+    expect(mockObject.showCollision).not.toBeDefined();
     gz3d.gui.guiEvents.emit('setTreeSelected');
     $timeout.flush();
-    expect(objectInspectorService.selectedObject).toBe(dummyObject);
+    expect(objectInspectorService.selectedObject).toBe(mockObject);
 
-    // translation and rotation are being rounded on update
-    expect(objectInspectorService.roundToPrecision.calls.length).toBe(6);
-    expect(dummyObject.showCollision).toBe(false);
+    // translation, scaling. rotation are being rounded on update
+    expect(objectInspectorService.roundToPrecision.calls.length).toBe(18);
+    expect(mockObject.showCollision).toBe(false);
     expect(objectInspectorService.showCollision).toBe(false);
 
-    dummyObject.viewAs = 'normal';
+    mockObject.viewAs = 'normal';
     gz3d.gui.guiEvents.emit('setTreeSelected');
     $timeout.flush();
     expect(document.getElementById('oi-viewmode-normal').checked).toBe(true);
 
-    dummyObject.viewAs = 'transparent';
+    mockObject.viewAs = 'transparent';
     gz3d.gui.guiEvents.emit('setTreeSelected');
     $timeout.flush();
     expect(document.getElementById('oi-viewmode-transparent').checked).toBe(true);
 
-    dummyObject.viewAs = 'wireframe';
+    mockObject.viewAs = 'wireframe';
     gz3d.gui.guiEvents.emit('setTreeSelected');
     $timeout.flush();
     expect(document.getElementById('oi-viewmode-wireframe').checked).toBe(true);
 
-    dummyObject.showCollision = true;
+    mockObject.showCollision = true;
     gz3d.gui.guiEvents.emit('setTreeSelected');
     $timeout.flush();
     expect(objectInspectorService.showCollision).toBe(true);
@@ -156,7 +188,7 @@ describe('Services: objectInspectorService', function () {
 
   it('should react to \'delete_entity\' event correctly: shown', function () {
 
-    gz3d.scene.selectedEntity = dummyObject;
+    gz3d.scene.selectedEntity = mockObject;
     objectInspectorService.toggleView(true);
     expect(objectInspectorService.isShown).toBe(true);
 
@@ -169,32 +201,210 @@ describe('Services: objectInspectorService', function () {
   });
 
   it('should react correctly to changes to the object', function () {
-    spyOn(dummyObject, 'updateMatrixWorld').andCallThrough();
+    spyOn(mockObject, 'updateMatrixWorld').andCallThrough();
+    spyOn(objectInspectorService, 'updateSelectedObject').andCallThrough();
 
-    objectInspectorService.selectedObject = dummyObject;
+    objectInspectorService.selectedObject = mockObject;
     var position = new THREE.Vector3(1, 2, 3);
-    dummyObject.position.copy(position);
-    objectInspectorService.onObjectChange();
+    mockObject.position.copy(position);
+    objectInspectorService.onObjectChange(GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE);
 
-    expect(dummyObject.updateMatrixWorld).toHaveBeenCalled();
-    expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('entityChanged', dummyObject);
+    expect(mockObject.updateMatrixWorld).toHaveBeenCalled();
+    expect(objectInspectorService.updateSelectedObject).toHaveBeenCalledWith(GZ3D.TRANSFORM_TYPE_NAME_PREFIX.TRANSLATE);
+    expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('entityChanged', mockObject);
   });
 
-  it('should set the view mode correctly', function () {
-    objectInspectorService.selectedObject = dummyObject;
-    dummyObject.viewAs = 'normal';
+  var axes = ['x','y','z'];
+
+  angular.forEach(axes, function(axis) {
+
+    var idx = 'T' + axis.toUpperCase();
+
+    it('should NOT update the selected object while translating, if the new value is undefined', function () {
+     spyOn(objectInspectorService, 'onObjectChange');
+
+     //new value is undefined
+     objectInspectorService.translation[axis] = undefined;
+
+     //trigger onTranslationChange
+     objectInspectorService.onTranslationChange(axis);
+
+     //should not invoke onObjectChange
+     expect(objectInspectorService.onObjectChange).not.toHaveBeenCalled();
+    });
+
+    it('should update the selected object while translating, if the new value is 0', function () {
+     spyOn(objectInspectorService, 'onObjectChange');
+     //new value is 0
+     objectInspectorService.translation[axis] = 0;
+
+     //trigger onTranslationChange
+     objectInspectorService.onTranslationChange(axis);
+
+     //must not invoke onObjectChange
+     expect(objectInspectorService.onObjectChange).toHaveBeenCalled();
+    });
+
+    idx = 'S' + axis.toUpperCase();
+
+    it('should NOT update the selected object while scaling, if the new value is 0', function () {
+     spyOn(objectInspectorService, 'onObjectChange');
+     //new value is 0
+     objectInspectorService.scaling[axis] = 0;
+
+     //trigger onScaleChange
+     objectInspectorService.onScaleChange(axis);
+
+     //must not invoke onObjectChange
+     expect(objectInspectorService.onObjectChange).not.toHaveBeenCalled();
+    });
+
+    it('should NOT update the selected object while scaling, if the new value is undefined', function () {
+     spyOn(objectInspectorService, 'onObjectChange');
+     //new value is undefined
+     objectInspectorService.scaling[axis] = undefined;
+
+     //trigger onScaleChange
+     objectInspectorService.onScaleChange(axis);
+
+     //must not invoke onObjectChange
+     expect(objectInspectorService.onObjectChange).not.toHaveBeenCalled();
+    });
+
+    idx = 'R' + axis.toUpperCase();
+
+    it('should NOT update the selected object while rotating, if the new value is undefined', function () {
+     spyOn(objectInspectorService, 'onObjectChange');
+     //new value is undefined
+     objectInspectorService.rotationEuler[axis] = undefined;
+
+     //trigger onRotationChange
+     objectInspectorService.onRotationChange(axis);
+
+     //must not invoke onObjectChange
+     expect(objectInspectorService.onObjectChange).not.toHaveBeenCalled();
+    });
+
+    it('should update the selected object while rotating, if the new value is 0', function () {
+     spyOn(objectInspectorService, 'onObjectChange');
+     //new value is 0
+     objectInspectorService.rotationEuler[axis] = 0;
+
+     //trigger onRotationChange
+     objectInspectorService.onRotationChange(axis);
+
+     //must not invoke onObjectChange
+     expect(objectInspectorService.onObjectChange).toHaveBeenCalled();
+    });
+  });
+
+  angular.forEach(axes, function(axis) {
+
+      var oldScaling;
+      var newValue = 0.5;
+      var shapeName;
+
+      it('should perform shape preserving scaling: Sphere', function () {
+
+        shapeName= 'sphere';
+        oldScaling = mockObject.scale;
+
+        preserveShapeTestSetup(axis, newValue, shapeName);
+
+        objectInspectorService.onScaleChange(axis);// invoke test target
+
+        shapeConstraintsTest(newValue, axis, oldScaling, shapeName);
+      });
+
+      it('should perform shape preserving scaling: Cylinder', function () {
+
+        shapeName = 'cylinder';
+        oldScaling = mockObject.scale;
+
+        preserveShapeTestSetup(axis, newValue, shapeName);
+
+        objectInspectorService.onScaleChange(axis);// invoke test target
+
+        shapeConstraintsTest(newValue, axis, oldScaling, shapeName);
+
+      });
+
+      it('should perform shape preserving scaling: Box', function () {
+
+        shapeName = 'box';
+        oldScaling = mockObject.scale;
+
+        preserveShapeTestSetup(axis, newValue, shapeName);
+
+        objectInspectorService.onScaleChange(axis);// invoke test target
+
+        shapeConstraintsTest(newValue, axis, oldScaling, shapeName);
+
+      });
+
+   });
+
+  var preserveShapeTestSetup = function (axis, newValue, shapeName) {
+   mockObject.userData.shapeName = shapeName;
+
+   objectInspectorService.selectedObject = mockObject;
+   objectInspectorService.scaling.copy(mockObject.scale);
+
+   objectInspectorService.scaling[axis] = newValue;
+
+  };
+
+  var shapeConstraintsTest = function (newValue, axis, oldScaling, shapeName) {
+    var expectedScaling;
+    switch(shapeName) {
+
+      case 'sphere':
+        // X = Y = Z
+        expect(objectInspectorService.scaling).toEqual(new THREE.Vector3(newValue, newValue, newValue));
+        break;
+      case 'cylinder':
+        expectedScaling = new THREE.Vector3();
+
+        if(axis === 'x' || axis === 'y') {
+          // X = Y, Z
+          expectedScaling.set(newValue, newValue, oldScaling.z);
+        }
+        else {
+          expectedScaling.set(oldScaling.x, oldScaling.y, newValue);
+        }
+        expect(objectInspectorService.scaling).toEqual(expectedScaling);
+        break;
+      case 'box':
+        // X, Y, Z are independent
+        expectedScaling = new THREE.Vector3().copy(oldScaling);
+        expectedScaling[axis] = newValue;
+        expect(objectInspectorService.scaling).toEqual(expectedScaling);
+    }
+
+  };
+
+  it('should disable the inspector scale fields when a complex shape is selected', function() {
+
+     objectInspectorService.selectedObject = mockObject;//complex object
+
+     expect(objectInspectorService.isSelectedObjectSimpleShape()).toBe(false);
+  });
+
+  it('should set the view mode', function () {
+    objectInspectorService.selectedObject = mockObject;
+    mockObject.viewAs = 'normal';
 
     objectInspectorService.setViewMode('normal');
     expect(gz3d.scene.setViewAs).not.toHaveBeenCalled();
 
     objectInspectorService.setViewMode('transparent');
-    expect(gz3d.scene.setViewAs).toHaveBeenCalledWith(dummyObject, 'transparent');
+    expect(gz3d.scene.setViewAs).toHaveBeenCalledWith(mockObject, 'transparent');
   });
 
   it('should set the manipulation mode correctly', function () {
     gz3d.scene.setManipulationMode.reset();
 
-    objectInspectorService.selectedObject = dummyObject;
+    objectInspectorService.selectedObject = mockObject;
 
     // setting same view mode should do nothing
     gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
@@ -213,7 +423,18 @@ describe('Services: objectInspectorService', function () {
     objectInspectorService.setManipulationMode(EDIT_MODE.TRANSLATE);
     expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.TRANSLATE);
-    expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(dummyObject);
+    expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(mockObject);
+
+    gz3d.scene.setManipulationMode.reset();
+    stateService.ensureStateBeforeExecuting.reset();
+    gz3d.scene.selectEntity.reset();
+
+    // set to scale mode
+    gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
+    objectInspectorService.setManipulationMode(EDIT_MODE.SCALE);
+    expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
+    expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.SCALE);
+    expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(mockObject);
 
     gz3d.scene.setManipulationMode.reset();
     stateService.ensureStateBeforeExecuting.reset();
@@ -223,15 +444,17 @@ describe('Services: objectInspectorService', function () {
     objectInspectorService.setManipulationMode(EDIT_MODE.ROTATE);
     expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.ROTATE);
-    expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(dummyObject);
+    expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(mockObject);
   });
 
   it('should highlight the the correct fields when manipulating an object', function () {
 
     objectInspectorService.selectedStyle = {
       'TX': '', 'TY': '', 'TZ': '',
+      'SX': '', 'SY': '', 'SZ': '',
       'RX': '', 'RY': '', 'RZ': ''
     };
+
 
     var containsStr = function(a, b) {return a.search(b) !== -1;};
 
@@ -242,7 +465,6 @@ describe('Services: objectInspectorService', function () {
     };
 
     var test =  function (manipulatorAxisUnderTest) {
-
        //iterate over selectedStyle
        angular.forEach(
         objectInspectorService.selectedStyle,
@@ -271,7 +493,7 @@ describe('Services: objectInspectorService', function () {
 
     gz3d.scene.selectedEntity =
       objectInspectorService.selectedObject =
-        gz3d.scene.modelManipulator.selected = dummyObject;
+        gz3d.scene.modelManipulator.selected = mockObject;
 
     var invokeUpdate = function(manipulatorAxes) {
         //set isSelected function
@@ -282,6 +504,15 @@ describe('Services: objectInspectorService', function () {
     //Translate
     angular.forEach(
       ['TX', 'TY', 'TZ', 'TXY', 'TXZ','TYZ'],
+      function (manipulatorAxes) {
+        invokeUpdate(manipulatorAxes);
+        test(manipulatorAxes);
+      }
+    );
+
+    //Scale
+    angular.forEach(
+      ['SX', 'SY', 'SZ'],
       function (manipulatorAxes) {
         invokeUpdate(manipulatorAxes);
         test(manipulatorAxes);
@@ -300,21 +531,52 @@ describe('Services: objectInspectorService', function () {
   });
 
   it('should change collision geometry visibility', function () {
+  
     spyOn(collisionVisualMock, 'traverse').andCallThrough();
 
-    objectInspectorService.selectedObject = dummyObject;
+    objectInspectorService.selectedObject = mockObject;
     meshMock.visible = false;
     objectInspectorService.showCollision = objectInspectorService.selectedObject.showCollision = false;
 
     objectInspectorService.showCollision = true;
     objectInspectorService.onShowCollisionChange();
-    expect(dummyObject.showCollision).toBe(true);
+    expect(mockObject.showCollision).toBe(true);
     expect(collisionVisualMock.traverse).toHaveBeenCalled();
     expect(meshMock.visible).toBe(true);
   });
 
   it('should trigger change collision geometry visibility', function () {
     spyOn(collisionVisualMock, 'traverse').andCallThrough();
+  });
+
+  it('should correctly detect simple Shapes when selecting', function () {
+
+    objectInspectorService.selectedObject = {
+      isSimpleShape: function() {return true;}
+    };//simple object
+
+    expect(objectInspectorService.isSelectedObjectSimpleShape()).toBe(true);
+
+    objectInspectorService.selectedObject = {
+      isSimpleShape: undefined
+    };//non simple object
+
+    expect(objectInspectorService.isSelectedObjectSimpleShape()).toBe(false);
+
+  });
+
+  it('should set view mode when updating and a light is selected', function () {
+
+      gz3d.scene.selectedEntity = new THREE.Light(); //select a light
+
+      spyOn(objectInspectorService, 'checkLightSelected').andCallThrough();
+      spyOn(objectInspectorService, 'setViewMode').andCallThrough();
+
+      //invoke target
+      objectInspectorService.update();
+
+      expect(objectInspectorService.checkLightSelected).toHaveBeenCalled();
+      expect(objectInspectorService.setViewMode).toHaveBeenCalledWith(OBJECT_VIEW_MODE.WIREFRAME);
   });
 
   it('should register guiEvents only once', function () {
@@ -447,7 +709,7 @@ describe('Services: objectInspectorService3', function () {
   });
 
   it('should test onXYZKeystroke when modelManipulator.selected is \'null\' and X press', function () {
-    var event = {keyCode:88};
+    var event = {code:'KeyX'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
@@ -551,7 +813,7 @@ describe('Services: objectInspectorService5', function () {
   });
 
   it('should test onXYZKeystroke when rotate', function () {
-    var event = {keyCode:89};
+    var event = {code:'KeyY'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
@@ -606,7 +868,7 @@ describe('Services: objectInspectorService6', function () {
   });
 
   it('should test onXYZKeystroke when Z', function () {
-    var event = {keyCode:90};
+    var event = {code:'KeyZ'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
@@ -714,7 +976,7 @@ describe('Services: objectInspectorService8', function () {
   });
 
   it('should test onXYZKeystroke when modelManipulator.selected is \'null\', X press and mouseMove', function () {
-    var event = {keyCode:88};
+    var event = {code:'KeyX'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');

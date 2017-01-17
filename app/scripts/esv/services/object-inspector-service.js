@@ -1,5 +1,7 @@
 /* global THREE: false */
+/* global GZ3D: false */
 /* global console: false */
+
 (function () {
   'use strict';
 
@@ -14,17 +16,41 @@
     .factory('objectInspectorService', [
       '$timeout', 'EDIT_MODE', 'STATE', 'OBJECT_VIEW_MODE', 'gz3d', 'stateService', 'colorableObjectService', 'simulationInfo',
       function ($timeout, EDIT_MODE, STATE, OBJECT_VIEW_MODE, gz3d, stateService, colorableObjectService, simulationInfo) {
-        var objectInspectorService = {
-          //whether the object editor should be displayed
-          isShown: false,
-          selectedObject: undefined,
-          translation: new THREE.Vector3(),
-          rotationEuler: new THREE.Euler(),
-          floatPrecision: 5,
-          showCollision: undefined,
-          selectedStyle: [],
 
-          toggleView: function (show) {
+        //var objectInspectorService = {
+        function ObjectInspectorService() {
+
+          var that = this;
+          var TRANSFORM_TYPES = GZ3D.TRANSFORM_TYPE_NAME_PREFIX;
+
+          //whether the object editor should be displayed
+          this.isShown = false;
+          this.selectedObject =  undefined;
+          this.translation = new THREE.Vector3(0, 0, 0);
+          this.scaling = new THREE.Vector3(1, 1, 1);
+          this.rotationEuler = new THREE.Euler(0, 0, 0);
+          this.floatPrecision = 5;
+          this.showCollision = undefined;
+          this.selectedStyle = [];
+          this.inputErrorStyle = "background-color:red;";
+          this.highlightingStyle = "background-color:yellow;";
+
+          this.getSelectedObjectShape = function () {
+            if(this.selectedObject) {
+             return this.selectedObject.getShapeName();
+            }
+          };
+
+          this.isSelectedObjectSimpleShape = function () {
+            if(!!this.selectedObject && !!this.selectedObject.isSimpleShape) {
+              return this.selectedObject.isSimpleShape();
+            }
+            else {
+              return false;
+            }
+          };
+
+          this.toggleView = function (show) {
             var showing;
             if (angular.isUndefined(show)) {
               showing = !this.isShown;
@@ -33,66 +59,129 @@
             }
 
             if (showing) {
-              registerGuiEvents();
-              update();
+              this.registerGuiEvents();
+              this.update();
             } else {
               // switch back to view mode on close
               this.setManipulationMode(EDIT_MODE.VIEW);
             }
 
             this.isShown = showing;
-          },
+          };
 
-          roundToPrecision: function (number) {
+          this.updateScale = function (newValue, newValueAxis) {
+            switch (this.getSelectedObjectShape()) {
+              case 'cylinder': //X=Y Z
+                if (newValueAxis === 'x' || newValueAxis === 'y') {
+                  this.scaling.y = this.scaling.x = newValue;
+                }
+                break;
+              case 'sphere': //X=Y=Z
+                this.scaling.x = this.scaling.y = this.scaling.z = newValue;
+                break;
+              case undefined: // no selected object --> do nothing
+                break;
+              // box and complex --> do nothing
+            }
+          };
+
+          this.roundToPrecision = function (number) {
             return parseFloat(number.toFixed(this.floatPrecision));
-          },
+          };
 
-          roundToPrecisionVector3: function (vector3) {
-
+          this.roundToPrecisionVector3 = function (vector3) {
             vector3.x = this.roundToPrecision(vector3.x);
             vector3.y = this.roundToPrecision(vector3.y);
             vector3.z = this.roundToPrecision(vector3.z);
-
             return vector3;
-          },
+          };
 
-          selectMaterial: function (material) {
+          this.roundTransformationsValues = function () {
+            this.roundToPrecisionVector3(this.translation);
+            this.roundToPrecisionVector3(this.scaling);
+            this.roundToPrecisionVector3(this.rotationEuler);
+          };
+
+          this.selectMaterial = function (material) {
             colorableObjectService.setEntityMaterial(simulationInfo, this.selectedObject, material);
-          },
+          };
 
-          onObjectChange: function () {
-            this.selectedObject.position.copy(this.roundToPrecisionVector3(this.translation));
-            this.selectedObject.rotation.copy(this.roundToPrecisionVector3(this.rotationEuler));
+          this.onTranslationChange = function (newValueAxis) {
+            var selectedStyle = that.inputErrorStyle;
+            var idx = "T" + newValueAxis.toUpperCase();
+
+            var newValue = this.translation[newValueAxis];
+
+            if (newValue === 0 || !!newValue) {
+              that.resetStyle(idx);
+              this.onObjectChange(TRANSFORM_TYPES.TRANSLATE);
+            } else {
+              that.setStyle(selectedStyle, idx);
+            }
+          };
+
+          this.onScaleChange = function (newValueAxis) {
+            var selectedStyle = that.inputErrorStyle;
+            var idx = "S" + newValueAxis.toUpperCase();
+
+            var newValue = this.scaling[newValueAxis];
+
+            if (!!newValue && newValue !== 0) { // scaling factor must be non-zero
+              that.resetStyle(idx);
+              this.updateScale(newValue, newValueAxis);
+              this.onObjectChange(TRANSFORM_TYPES.SCALE);
+            }
+            else {
+              that.setStyle(selectedStyle, idx);
+            }
+          };
+
+          this.onRotationChange = function (newValueAxis) {
+            var selectedStyle = that.inputErrorStyle;
+            var idx = "R" + newValueAxis.toUpperCase();
+
+            var newValue = this.rotationEuler[newValueAxis];
+
+            if (newValue === 0 || !!newValue) {
+              that.resetStyle(idx);
+              this.onObjectChange(TRANSFORM_TYPES.ROTATE);
+            } else {
+              that.setStyle(selectedStyle, idx);
+            }
+          };
+
+          this.onObjectChange = function (transformType) {
+            this.updateSelectedObject(transformType);
             this.selectedObject.updateMatrixWorld();
-
             gz3d.scene.emitter.emit('entityChanged', this.selectedObject);
-          },
+          };
 
-          setViewMode: function (mode) {
+          this.setViewMode = function (mode) {
             if (this.selectedObject.viewAs === mode) {
               return;
             }
 
             gz3d.scene.setViewAs(this.selectedObject, mode);
-          },
+          };
 
-          removeEventListeners: function () {
-            document.removeEventListener('keydown', objectInspectorService.onXYZKeystroke);
-            document.removeEventListener('mouseup', objectInspectorService.onUpdateNeeded);
+          this.removeEventListeners = function () {
+            document.removeEventListener('keydown', this.onXYZKeystroke);
+            document.removeEventListener('mouseup', this.onUpdateNeeded);
             document.removeEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove);
-            document.removeEventListener('mousemove', objectInspectorService.onMouseMove);
-          },
+            document.removeEventListener('mousemove', this.onMouseMove);
+          };
 
-          setManipulationMode: function (mode) {
+          this.setManipulationMode = function (mode) {
             if (gz3d.scene.manipulationMode === mode) {
               return;
             } else {
               switch (mode) {
                 case EDIT_MODE.VIEW:
-                  objectInspectorService.removeEventListeners();
+                  this.removeEventListeners();
                   gz3d.scene.setManipulationMode(mode);
                   break;
                 case EDIT_MODE.TRANSLATE:
+                case EDIT_MODE.SCALE:
                 case EDIT_MODE.ROTATE:
                   stateService.ensureStateBeforeExecuting(
                     STATE.PAUSED,
@@ -103,17 +192,17 @@
                   // as view mode deselects any selected object, reselect here
                   gz3d.scene.selectEntity(this.selectedObject);
 
-                  document.addEventListener('keydown', objectInspectorService.onXYZKeystroke, false);
-                  document.addEventListener('mouseup', objectInspectorService.onUpdateNeeded, false);
+                  document.addEventListener('keydown', this.onXYZKeystroke, false);
+                  document.addEventListener('mouseup', this.onUpdateNeeded, false);
                   document.addEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove, false);
-                  document.addEventListener('mousemove', objectInspectorService.onMouseMove, false);
+                  document.addEventListener('mousemove', this.onMouseMove, false);
 
                   break;
               }
             }
-          },
+          };
 
-          onShowCollisionChange: function () {
+          this.onShowCollisionChange = function () {
             this.selectedObject.showCollision = this.showCollision;
 
             var that = this;
@@ -127,9 +216,9 @@
                 });
               }
             });
-          },
+          };
 
-          onXYZKeystroke: function (event) {
+          this.onXYZKeystroke = function (event) {
             if (gz3d.scene === null) {
               return;
             }
@@ -137,20 +226,22 @@
             if (gz3d.scene.modelManipulator.selected === 'null') {
               var prefix = '';
               if (gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) {
-                prefix = 'T';
+                prefix = TRANSFORM_TYPES.TRANSLATE;
+              } else if (gz3d.scene.manipulationMode === EDIT_MODE.SCALE) {
+                prefix = TRANSFORM_TYPES.SCALE;
               } else if (gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) {
-                prefix = 'R';
+                prefix = TRANSFORM_TYPES.ROTATE;
               }
 
               var ix = null;
-              switch (event.keyCode) {
-                case 88:
+              switch (event.code) {
+                case 'KeyX':
                   ix = prefix + 'X';
                   break;
-                case 89:
+                case 'KeyY':
                   ix = prefix + 'Y';
                   break;
-                case 90:
+                case 'KeyZ':
                   ix = prefix + 'Z';
                   break;
               }
@@ -159,16 +250,16 @@
                 return;
               }
 
-              var selected = objectInspectorService.getMeshByName(ix);
+              var selected = this.getMeshByName(ix);
               if (selected) {
-                document.addEventListener('mouseup', objectInspectorService.onAxisMoveEnd, false);
+                document.addEventListener('mouseup', this.onAxisMoveEnd, false);
 
                 gz3d.scene.modelManipulator.highlightPicker(selected);
-                if (objectInspectorService.getMouseEvent()) {
-                  gz3d.scene.modelManipulator.selectPicker(objectInspectorService.getMouseEvent());
+                if (this.getMouseEvent()) {
+                  gz3d.scene.modelManipulator.selectPicker(this.getMouseEvent());
                 }
                 else {
-                  objectInspectorService.setSelectPicker(true);
+                  this.setSelectPicker(true);
                 }
               }
             }
@@ -176,182 +267,237 @@
               /// gracefully exit axis lock mode on any key press
               gz3d.scene.modelManipulator.handleAxisLockEnd();
             }
-            update();
-          },
+            this.update();
+          };
 
-          getMouseEvent: function () {
-            return objectInspectorService.mouseEvent;
-          },
+          this.getMouseEvent = function () {
+            return this.mouseEvent;
+          };
 
-          getMeshByName: function (ix) {
+          this.getMeshByName = function (ix) {
             return gz3d.scene.modelManipulator.pickerMeshes[ix];
-          },
+          };
 
-          setSelectPicker: function (value) {
-            objectInspectorService.doSelectPicker = value;
-          },
+          this.setSelectPicker = function (value) {
+            this.doSelectPicker = value;
+          };
 
           /** captures mouse move events for gz3d.scene.modelManipulator.selectPicker invocation */
-          onMouseMove: function (event) {
-            objectInspectorService.mouseEvent = event;
-            if (objectInspectorService.doSelectPicker) {
-              gz3d.scene.modelManipulator.selectPicker(objectInspectorService.mouseEvent);
-              objectInspectorService.setSelectPicker(false);
+          this.onMouseMove = function (event) {
+            that.mouseEvent = event;
+            if (that.doSelectPicker) {
+              gz3d.scene.modelManipulator.selectPicker(that.mouseEvent);
+              that.setSelectPicker(false);
             }
 
             if (gz3d.scene.modelManipulator.selected !== 'null') {
-              update();
+              that.update();
             }
-          },
+          };
 
-          onAxisMoveEnd: function (event) {
+          this.onAxisMoveEnd = function (event) {
             if (gz3d.scene === null) {
               return;
             }
             gz3d.scene.modelManipulator.handleAxisLockEnd();
-            update();
-            document.removeEventListener('mouseup', objectInspectorService.onAxisMoveEnd);
-          },
+            this.update();
+            document.removeEventListener('mouseup', this.onAxisMoveEnd);
+          };
 
-          isLightSelected: checkLightSelected,
-
-          onUpdateNeeded: function(event) {
-              if (gz3d.scene === null) {
-                  return;
+          this.checkLightSelected = function() {
+              var result = false;
+              if (that.selectedObject) {
+                  that.selectedObject.traverse(function(subnode) {
+                      if (subnode instanceof THREE.Light) {
+                          result = true;
+                      }
+                  });
               }
-              update();
-          }
-        };
+              return result;
+          };
 
-        function checkLightSelected() {
-            var result = false;
-            if (objectInspectorService.selectedObject) {
-                objectInspectorService.selectedObject.traverse(function(subnode) {
-                    if (subnode instanceof THREE.Light) {
-                        result = true;
-                    }
-                });
+          this.isLightSelected = this.checkLightSelected;
+
+          this.onUpdateNeeded = function (event) {
+            if (gz3d.scene === null) {
+              return;
             }
-            return result;
+            that.update();
+          };
+
+          this.setStyle = function (style, idx) {
+            that.selectedStyle[idx] = style;
+          };
+
+          this.setStyleList = function (idxList, style)
+          {
+            angular.forEach(
+              idxList,
+              that.setStyle.bind(null, style)
+            );
+          };
+
+          this.resetStyle = function (idx) {
+            that.selectedStyle[idx] = "";
+          };
+
+          this.updateStyle = function (transform, style, axis) {
+            var idx = transform + axis;
+
+            if (gz3d.scene.modelManipulator.isSelected(transform) &&
+                gz3d.scene.modelManipulator.isSelected(axis)) {
+
+                var fieldsList = (axis === 'E') ? ['RX','RY','RZ']: [idx];
+                that.setStyleList(fieldsList, style);
+            } else {
+                if(axis !== 'E') {
+                  that.resetStyle(idx);
+                }
+            }
+          };
+
+          this.updateStyles = function () {
+             var selectedStyle = that.highlightingStyle;
+
+             angular.forEach(
+              ['T','S','R'],
+              function(transform) {
+                angular.forEach(
+                  ['X','Y','Z'],
+                  that.updateStyle.bind(null, transform, selectedStyle)
+                );
+              }
+            );
+            that.updateStyle('R', selectedStyle, 'E');
+          };
+
+          this.update = function () {
+            // update selected object
+            that.selectedObject = gz3d.scene.selectedEntity;
+            if (angular.isUndefined(that.selectedObject) ||
+              that.selectedObject === null) {
+              return;
+            }
+
+            if (that.checkLightSelected()) {
+              that.setViewMode(OBJECT_VIEW_MODE.WIREFRAME);
+            }
+
+            that.updateStyles();
+
+            // update translation, scale, rotation
+            that.updateInspector(TRANSFORM_TYPES.ALL);
+
+            // round for readability purposes
+            that.roundTransformationsValues();
+
+            that.hasColorableVisual = colorableObjectService.isColorableEntity(that.selectedObject);
+
+            // update view mode radio buttons
+            document.getElementById('oi-viewmode-normal').checked = false;
+            document.getElementById('oi-viewmode-transparent').checked = false;
+            document.getElementById('oi-viewmode-wireframe').checked = false;
+            if (angular.isDefined(that.selectedObject.viewAs)) {
+              switch (that.selectedObject.viewAs) {
+                case OBJECT_VIEW_MODE.NORMAL:
+                  document.getElementById('oi-viewmode-normal').checked = true;
+                  break;
+                case OBJECT_VIEW_MODE.TRANSPARENT:
+                  document.getElementById('oi-viewmode-transparent').checked = true;
+                  break;
+                case OBJECT_VIEW_MODE.WIREFRAME:
+                  document.getElementById('oi-viewmode-wireframe').checked = true;
+                  break;
+              }
+            }
+
+            // update show collisions
+            if (angular.isUndefined(that.selectedObject.showCollision)) {
+              that.showCollision = that.selectedObject.showCollision = false;
+            } else {
+              that.showCollision = that.selectedObject.showCollision;
+            }
+          };
+
+          this.guiEventsRegistered = false;
+          this.registerGuiEvents = function () {
+            if (this.guiEventsRegistered) {
+              return;
+            }
+
+            this.guiEventsRegistered = true;
+
+            gz3d.gui.guiEvents.on('setTreeSelected', function () {
+              if (that.isShown) {
+                $timeout(that.update, 0);//force scope.$apply
+              }
+            });
+
+            gz3d.gui.guiEvents.on('delete_entity', function () {
+              $timeout(that.update, 0);//force scope.$apply
+            });
+          };
+
+          // update inspector from object
+          this.updateInspector = function (transformType) {
+            this.updateInspectorFunctions[transformType]();
+          };
+
+          this.updateInspectorFunctions = {};
+          // - none
+          this.updateInspectorFunctions[TRANSFORM_TYPES.NONE] = angular.noop;
+          // - translation
+          this.updateInspectorFunctions[TRANSFORM_TYPES.TRANSLATE] = function () {
+            that.translation.copy(that.selectedObject.position);
+            that.roundToPrecisionVector3(that.translation);
+          };
+          // - scale
+          this.updateInspectorFunctions[TRANSFORM_TYPES.SCALE] = function () {
+            that.scaling.copy(that.selectedObject.scale);
+            that.roundToPrecisionVector3(that.scaling);
+          };
+          // - rotation
+          this.updateInspectorFunctions[TRANSFORM_TYPES.ROTATE] = function () {
+            that.rotationEuler.copy(that.selectedObject.rotation);
+            that.roundToPrecisionVector3(that.rotationEuler);
+          };
+          // - all
+          this.updateInspectorFunctions[TRANSFORM_TYPES.ALL] = function () {
+            that.updateInspectorFunctions[TRANSFORM_TYPES.TRANSLATE]();
+            that.updateInspectorFunctions[TRANSFORM_TYPES.ROTATE]();
+            that.updateInspectorFunctions[TRANSFORM_TYPES.SCALE]();
+          };
+
+          // update inspector from object
+          this.updateSelectedObject = function (transformType) {
+            this.updateSelectedObjectFunctions[transformType]();
+          };
+          // update object from inspector
+          this.updateSelectedObjectFunctions = {};
+          // - none
+          this.updateSelectedObjectFunctions[TRANSFORM_TYPES.NONE] = angular.noop;
+          // - translation
+          this.updateSelectedObjectFunctions[TRANSFORM_TYPES.TRANSLATE] = function () {
+            that.selectedObject.position.copy(that.translation);
+          };
+          // - rotation
+          this.updateSelectedObjectFunctions[TRANSFORM_TYPES.ROTATE] = function () {
+            that.selectedObject.rotation.copy(that.rotationEuler);
+          };
+          // - scale
+          this.updateSelectedObjectFunctions[TRANSFORM_TYPES.SCALE] = function () {
+            that.selectedObject.scale.copy(that.scaling);
+          };
+          // - all
+          this.updateSelectedObjectFunctions[TRANSFORM_TYPES.ALL] = function () {
+            that.updateSelectedObjectFunctions[TRANSFORM_TYPES.TRANSLATE]();
+            that.updateSelectedObjectFunctions[TRANSFORM_TYPES.ROTATE]();
+            that.updateSelectedObjectFunctions[TRANSFORM_TYPES.SCALE]();
+          };
         }
 
-        var setStyle = function (idx) {
-          var selectedStyle = "background-color:yellow;";
-          objectInspectorService.selectedStyle[idx] = selectedStyle;
-        };
-
-        var setStyleList = function (idxList)
-        {
-          angular.forEach(
-            idxList,
-            setStyle.bind(null)
-          );
-        };
-
-        var resetStyle = function (idx) {
-          objectInspectorService.selectedStyle[idx] = "";
-        };
-
-        var updateStyle = function (transform, axis) {
-          var idx = transform + axis;
-
-          if (gz3d.scene.modelManipulator.isSelected(transform) &&
-              gz3d.scene.modelManipulator.isSelected(axis)) {
-
-              var fieldsList = (axis === 'E') ? ['RX','RY','RZ']: [idx];
-              setStyleList(fieldsList);
-          } else {
-              if(axis !== 'E') {
-                resetStyle(idx);
-              }
-          }
-        };
-
-        var updateStyles = function () {
-           angular.forEach(
-            ['T','R'],
-            function(transform) {
-              angular.forEach(
-                ['X','Y','Z'],
-                updateStyle.bind(null, transform)
-              );
-            }
-          );
-          updateStyle('R','E');
-        };
-
-        var update = function () {
-          // update selected object
-          objectInspectorService.selectedObject = gz3d.scene.selectedEntity;
-          if (angular.isUndefined(objectInspectorService.selectedObject) ||
-            objectInspectorService.selectedObject === null) {
-            return;
-          }
-
-          if (checkLightSelected()) {
-              objectInspectorService.setViewMode(OBJECT_VIEW_MODE.WIREFRAME);
-          }
-
-          updateStyles();
-
-          // update translation, rotation
-          objectInspectorService.translation.copy(objectInspectorService.selectedObject.position);
-          objectInspectorService.rotationEuler.copy(objectInspectorService.selectedObject.rotation);
-          // round for readability purposes
-          objectInspectorService.roundToPrecisionVector3(objectInspectorService.translation);
-          objectInspectorService.roundToPrecisionVector3(objectInspectorService.rotationEuler);
-
-          objectInspectorService.hasColorableVisual = colorableObjectService.isColorableEntity(objectInspectorService.selectedObject);
-
-          // update view mode radio buttons
-          document.getElementById('oi-viewmode-normal').checked = false;
-          document.getElementById('oi-viewmode-transparent').checked = false;
-          document.getElementById('oi-viewmode-wireframe').checked = false;
-          if (angular.isDefined(objectInspectorService.selectedObject.viewAs)) {
-            switch (objectInspectorService.selectedObject.viewAs) {
-              case OBJECT_VIEW_MODE.NORMAL:
-                document.getElementById('oi-viewmode-normal').checked = true;
-                break;
-              case OBJECT_VIEW_MODE.TRANSPARENT:
-                document.getElementById('oi-viewmode-transparent').checked = true;
-                break;
-              case OBJECT_VIEW_MODE.WIREFRAME:
-                document.getElementById('oi-viewmode-wireframe').checked = true;
-                break;
-            }
-          }
-
-          // update show collisions
-          if (angular.isUndefined(objectInspectorService.selectedObject.showCollision)) {
-            objectInspectorService.showCollision = objectInspectorService.selectedObject.showCollision = false;
-          } else {
-            objectInspectorService.showCollision = objectInspectorService.selectedObject.showCollision;
-          }
-        };
-        objectInspectorService.update = function () {
-          update();
-        };
-
-        var guiEventsRegistered = false;
-        var registerGuiEvents = function () {
-          if (guiEventsRegistered) {
-            return;
-          }
-          guiEventsRegistered = true;
-
-          gz3d.gui.guiEvents.on('setTreeSelected', function () {
-            if (objectInspectorService.isShown) {
-              $timeout(update, 0);//force scope.$apply
-            }
-          });
-
-          gz3d.gui.guiEvents.on('delete_entity', function () {
-            $timeout(update, 0);//force scope.$apply
-          });
-        };
-
-        return objectInspectorService;
+        return new ObjectInspectorService();
       }
     ]);
-} ());
+}());
 

@@ -6,7 +6,7 @@
     <ol id="window-buttons" class="inline-list">
       <!-- minimize button -->
       <button type="button" class="btn btn-xs" ng-click="minimized = !minimized">
-        <i ng-class="{'fa fa-expand': minimized, 'fa fa-compress': !minimized}" aria-hidden="true"></i>
+        <i ng-class="{'fa fa-plus': minimized, 'fa fa-minus': !minimized}" aria-hidden="true"></i>
       </button>
       <!-- close button -->
       <button type="button" class="btn btn-xs" data-ng-click="objectInspectorService.toggleView(false)">
@@ -40,6 +40,14 @@
                   <i class="fa fa-arrows" aria-hidden="true"></i>
                 </button>
               </li>
+              <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.scale">
+                <button type="button" class="btn btn-xs btn-rounded"
+                        ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.SCALE}"
+                        ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.SCALE) ? EDIT_MODE.VIEW : EDIT_MODE.SCALE)"
+                        ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()">
+                  <i class="fa fa-expand" aria-hidden="true"></i>
+                </button>
+              </li>
               <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.rotation">
                 <button type="button" class="btn btn-xs btn-rounded"
                         ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
@@ -56,20 +64,47 @@
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-x" type="number" name="translate-x" class="vec3-num-input"
                        ng-model="objectInspectorService.translation.x"
-                       ng-change="objectInspectorService.onObjectChange()"
+                       ng-change="objectInspectorService.onTranslationChange('x')"
                        style="{{objectInspectorService.selectedStyle['TX']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-y" type="number" name="translate-y" class="vec3-num-input"
                        ng-model="objectInspectorService.translation.y"
-                       ng-change="objectInspectorService.onObjectChange()"
+                       ng-change="objectInspectorService.onTranslationChange('y')"
                        style="{{objectInspectorService.selectedStyle['TY']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-z" type="number" name="translate-z" class="vec3-num-input"
                        ng-model="objectInspectorService.translation.z"
-                       ng-change="objectInspectorService.onObjectChange()"
+                       ng-change="objectInspectorService.onTranslationChange('z')"
                        style="{{objectInspectorService.selectedStyle['TZ']}}">
+              </li>
+            </ol>
+          </li>
+          <!-- sub-section - numerical scaling, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedTransform">
+            <h6>Scale</h6>
+            <ol class="vec3-num-input-list" ng-show="objectInspectorService.selectedObject.scale">
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-scale-x" type="number" name="scale-x" class="vec3-num-input"
+                       ng-model="objectInspectorService.scaling.x"
+                       ng-change="objectInspectorService.onScaleChange('x')"
+                       ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
+                       style="{{objectInspectorService.selectedStyle['SX']}}">
+              </li>
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-scale-y" type="number" name="scale-y" class="vec3-num-input"
+                       ng-model="objectInspectorService.scaling.y"
+                       ng-change="objectInspectorService.onScaleChange('y')"
+                       ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
+                       style="{{objectInspectorService.selectedStyle['SY']}}">
+              </li>
+              <li class="vec3-num-input-item">
+                <input interactive id="oi-scale-z" type="number" name="scale-z" class="vec3-num-input"
+                       ng-model="objectInspectorService.scaling.z"
+                       ng-change="objectInspectorService.onScaleChange('z')"
+                       ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
+                       style="{{objectInspectorService.selectedStyle['SZ']}}">
               </li>
             </ol>
           </li>
@@ -80,19 +115,22 @@
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
                        ng-model="objectInspectorService.rotationEuler.x"
-                       ng-change="objectInspectorService.onObjectChange()"
+                       
+                       ng-change="objectInspectorService.onRotationChange('x')"
                        style="{{objectInspectorService.selectedStyle['RX']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
                        ng-model="objectInspectorService.rotationEuler.y"
-                       ng-change="objectInspectorService.onObjectChange()"
+                       
+                       ng-change="objectInspectorService.onRotationChange('y')"
                        style="{{objectInspectorService.selectedStyle['RY']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
                        ng-model="objectInspectorService.rotationEuler.z"
-                       ng-change="objectInspectorService.onObjectChange()"
+                       
+                       ng-change="objectInspectorService.onRotationChange('z')"
                        style="{{objectInspectorService.selectedStyle['RZ']}}">
               </li>
             </ol>
@@ -162,6 +200,14 @@
                 ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
                 ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
           <i class="fa fa-lg fa-arrows" aria-hidden="true"></i>
+        </button>
+      </li>
+      <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.scale">
+        <button type="button" class="btn btn-sm btn-rounded"
+                ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.SCALE}"
+                ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.SCALE) ? EDIT_MODE.VIEW : EDIT_MODE.SCALE)"
+                ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()">
+          <i class="fa fa-lg fa-expand" aria-hidden="true"></i>
         </button>
       </li>
       <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.rotation">
