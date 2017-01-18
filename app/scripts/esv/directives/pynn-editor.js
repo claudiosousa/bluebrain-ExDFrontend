@@ -10,7 +10,8 @@
     'STATE',
     'stateService',
     'autoSaveService',
-    function ($timeout, backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService) {
+    'RESET_TYPE',
+    function ($timeout, backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,RESET_TYPE) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -42,6 +43,14 @@
             }
             return scope.doc;
           };
+
+          scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
+            if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
+            {
+              scope.collabDirty = false;
+              scope.localDirty = false;
+            }
+          });
 
           scope.control.refresh = function () {
             if (scope.collabDirty || scope.localDirty) {

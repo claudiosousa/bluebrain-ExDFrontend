@@ -37,6 +37,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       backendInterfaceService,
       RESET_TYPE,
       objectInspectorService,
+      userNavigationService,
       collabExperimentLockService,
       collabExperimentLockServiceMock ={},
       lockServiceMock,
@@ -45,7 +46,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       onLockChangedCallback,
       experimentProxyService,
       experimentList,
-      lockServiceCancelCallback;
+      lockServiceCancelCallback,
+      NAVIGATION_MODES;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -76,7 +78,10 @@ describe('Controller: Gz3dViewCtrl', function () {
     setDefaultPose: jasmine.createSpy('setDefaultPose'),
     isUserAvatar: jasmine.createSpy('isUserAvatar').andCallFake(function(entity) {
       return entity.name === 'user-avatar';
-    })
+    }),
+    setModeFreeCamera: jasmine.createSpy('setModeFreeCamera'),
+    setModeGhost: jasmine.createSpy('setModeGhost'),
+    setModeHumanBody: jasmine.createSpy('setModeHumanBody'),
   };
 
   var simulationConfigServiceMock = {};
@@ -368,10 +373,12 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _backendInterfaceService_,
                               _RESET_TYPE_,
                               _objectInspectorService_,
+                              _userNavigationService_,
                               _collabExperimentLockService_,
                               _experimentProxyService_,
                               _experimentList_,
-                              _$q_) {
+                              _$q_,
+                              _NAVIGATION_MODES_) {
     controller = $controller;
     rootScope = $rootScope;
     log = _$log_;
@@ -395,12 +402,14 @@ describe('Controller: Gz3dViewCtrl', function () {
     STATE = _STATE_;
     UI = _UI_;
     EDIT_MODE = _EDIT_MODE_;
+    NAVIGATION_MODES = _NAVIGATION_MODES_;
     panels = _panels_;
     gz3d = _gz3d_;
     hbpDialogFactory = _hbpDialogFactory_;
     backendInterfaceService = _backendInterfaceService_;
     RESET_TYPE = _RESET_TYPE_;
     objectInspectorService = _objectInspectorService_;
+    userNavigationService = _userNavigationService_;
     collabExperimentLockService = _collabExperimentLockService_;
     experimentProxyService =_experimentProxyService_;
     experimentList = _experimentList_;
@@ -484,6 +493,19 @@ describe('Controller: Gz3dViewCtrl', function () {
       stateService.currentState = STATE.STOPPED;
       stateService.getCurrentState().then.mostRecentCall.args[0]();
       expect(scope.viewState.isJoiningStoppedSimulation).toBe(true);
+    });
+
+    it('should properly update navigation mode', function(){
+
+      userNavigationService.nagitationMode =  NAVIGATION_MODES.FREE_CAMERA;
+      scope.setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);
+      expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
+
+      scope.setNavigationMode(NAVIGATION_MODES.GHOST);
+      expect(userNavigationService.setModeGhost).toHaveBeenCalled();
+
+      scope.setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);
+      expect(userNavigationService.setModeHumanBody).toHaveBeenCalled();
     });
 
     it('should set the assetLoadingSplash progress callback in gz3d', function(){

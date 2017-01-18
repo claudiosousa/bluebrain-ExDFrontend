@@ -16,6 +16,7 @@
     'hbpDialogFactory',
     'autoSaveService',
     'downloadFileService',
+    'RESET_TYPE',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
@@ -29,7 +30,8 @@
               simulationInfo,
               hbpDialogFactory,
               autoSaveService,
-              downloadFileService) {
+              downloadFileService,
+              RESET_TYPE) {
 
 
       var DIRTY_TYPE = 'SM';
@@ -121,6 +123,15 @@
               }
             );
           };
+
+          scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType)
+          {
+            if (resetType === RESET_TYPE.RESET_FULL)
+            {
+              scope.collabDirty = false;
+              scope.stateMachines = [];
+            }
+          });
 
           scope.onStateMachineChange = function (stateMachine) {
             stateMachine.dirty = true;
