@@ -964,7 +964,7 @@
 
           if ($scope.isCollabExperiment) {
             cancelLockSubscription();
-            removeEditLock();
+            removeEditLock(true);
           }
 
           // Close the splash screens
