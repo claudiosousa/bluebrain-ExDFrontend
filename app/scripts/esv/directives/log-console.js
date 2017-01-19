@@ -52,7 +52,7 @@
 
                     var unubscribeReset = scope.$on('RESET', function() {
                         newMessageReceived({
-                            data: 'Reset EVENT occured...'
+                            data: 'Reset EVENT occurred...'
                         });
                     });
 

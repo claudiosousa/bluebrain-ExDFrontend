@@ -234,7 +234,7 @@
               }
 
               var ix = null;
-              switch (event.code) {
+              switch (event.key) {
                 case 'KeyX':
                   ix = prefix + 'X';
                   break;
@@ -250,16 +250,16 @@
                 return;
               }
 
-              var selected = this.getMeshByName(ix);
+              var selected = that.getMeshByName(ix);
               if (selected) {
-                document.addEventListener('mouseup', this.onAxisMoveEnd, false);
+                document.addEventListener('mouseup', that.onAxisMoveEnd, false);
 
                 gz3d.scene.modelManipulator.highlightPicker(selected);
-                if (this.getMouseEvent()) {
-                  gz3d.scene.modelManipulator.selectPicker(this.getMouseEvent());
+                if (that.getMouseEvent()) {
+                  gz3d.scene.modelManipulator.selectPicker(that.getMouseEvent());
                 }
                 else {
-                  this.setSelectPicker(true);
+                  that.setSelectPicker(true);
                 }
               }
             }
@@ -267,7 +267,7 @@
               /// gracefully exit axis lock mode on any key press
               gz3d.scene.modelManipulator.handleAxisLockEnd();
             }
-            this.update();
+            that.update();
           };
 
           this.getMouseEvent = function () {

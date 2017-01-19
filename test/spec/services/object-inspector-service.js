@@ -709,7 +709,7 @@ describe('Services: objectInspectorService3', function () {
   });
 
   it('should test onXYZKeystroke when modelManipulator.selected is \'null\' and X press', function () {
-    var event = {code:'KeyX'};
+    var event = {key:'KeyX'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
@@ -813,7 +813,7 @@ describe('Services: objectInspectorService5', function () {
   });
 
   it('should test onXYZKeystroke when rotate', function () {
-    var event = {code:'KeyY'};
+    var event = {key:'KeyY'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
@@ -868,7 +868,7 @@ describe('Services: objectInspectorService6', function () {
   });
 
   it('should test onXYZKeystroke when Z', function () {
-    var event = {code:'KeyZ'};
+    var event = {key:'KeyZ'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
@@ -976,7 +976,7 @@ describe('Services: objectInspectorService8', function () {
   });
 
   it('should test onXYZKeystroke when modelManipulator.selected is \'null\', X press and mouseMove', function () {
-    var event = {code:'KeyX'};
+    var event = {key:'KeyX'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').andReturn('test');
     spyOn(document, 'addEventListener');
