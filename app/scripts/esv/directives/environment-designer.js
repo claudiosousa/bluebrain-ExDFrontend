@@ -84,7 +84,7 @@
               }
             };
 
-            scope.selectCreatedEntity = function(event) {
+            scope.selectCreatedEntity = function (event) {
 
               scope.gz3d.gui.guiEvents._events.notification_popup = scope.default_notification_popup_handle;
 
@@ -97,10 +97,9 @@
               }
             };
 
-            scope.interceptEntityCreationEvent = function(model, type) {
+            scope.interceptEntityCreationEvent = function (model, type) {
 
-              if (scope.defaultEntityCreatedCallback !== scope.interceptEntityCreationEvent)
-              {
+              if (scope.defaultEntityCreatedCallback !== scope.interceptEntityCreationEvent) {
                 scope.defaultEntityCreatedCallback(model, type);
               }
 
@@ -121,14 +120,17 @@
 
                 window.guiEvents.emit('spawn_entity_start', modelName);
 
-                scope.defaultEntityCreatedCallback = scope.gz3d.iface.gui.emitter._events.entityCreated;
-                scope.gz3d.iface.gui.emitter._events.entityCreated = scope.interceptEntityCreationEvent;
+                if (scope.gz3d.iface.gui.emitter._events.entityCreated !== scope.interceptEntityCreationEvent) {
+                  scope.defaultEntityCreatedCallback = scope.gz3d.iface.gui.emitter._events.entityCreated;
+                  scope.gz3d.iface.gui.emitter._events.entityCreated = scope.interceptEntityCreationEvent;
+                }
+
               }
             };
 
             scope.deleteModel = function () {
-                gz3d.gui.guiEvents.emit('delete_entity');
-                contextMenuState.toggleContextMenu(false);
+              gz3d.gui.guiEvents.emit('delete_entity');
+              contextMenuState.toggleContextMenu(false);
             };
 
             // Edit and Delete object context Menu item
