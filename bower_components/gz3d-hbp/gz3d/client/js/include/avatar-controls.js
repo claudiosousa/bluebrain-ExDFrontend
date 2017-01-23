@@ -31,7 +31,8 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   this.lockVerticalMovement = false;
 
   this.movementSpeed = 2.0;
-  this.lookSpeed = 0.01;
+  this.MOUSE_ROTATION_SPEED = 0.01;
+  this.KEYBOARD_ROTATION_SPEED = 0.05;
   this.touchSensitivity = 0.01;
 
   this.lookVertical = true;
@@ -53,10 +54,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   this.moveUp = false;
   this.moveDown = false;
 
-  this.rotateLeft = false;
-  this.rotateRight = false;
-  this.rotateUp = false;
-  this.rotateDown = false;
+  this.keyboardRotateLeft = false;
+  this.keyboardRotateRight = false;
+  this.keyboardRotateUp = false;
+  this.keyboardRotateDown = false;
 
   this.freeze = false;
 
@@ -262,18 +263,22 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     this.shiftHold = event.shiftKey;
     switch(event.code) {
       case "ArrowUp":
+        this.keyboardRotateUp = true; break;
       case "KeyW":
         this.moveForward = true; break;
 
       case "ArrowLeft":
+        this.keyboardRotateLeft = true; break;
       case "KeyA":
         this.moveLeft = true; break;
 
       case "ArrowDown":
+        this.keyboardRotateDown = true; break;
       case "KeyS":
         this.moveBackward = true; break;
 
       case "ArrowRight":
+        this.keyboardRotateRight = true; break;
       case "KeyD":
         this.moveRight = true; break;
 
@@ -294,18 +299,22 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     this.shiftHold = event.shiftKey;
     switch(event.code) {
       case "ArrowUp":
+        this.keyboardRotateUp = false; break;
       case "KeyW":
         this.moveForward = false; break;
 
       case "ArrowLeft":
+        this.keyboardRotateLeft = false; break;
       case "KeyA":
         this.moveLeft = false; break;
 
       case "ArrowDown":
+        this.keyboardRotateDown = false; break;
       case "KeyS":
         this.moveBackward = false; break;
 
       case "ArrowRight":
+        this.keyboardRotateRight = false; break;
       case "KeyD":
         this.moveRight = false; break;
 
@@ -334,14 +343,11 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     }
   };
 
-  this.fpRotate = function(rightAmount, upAmount) {
+  this.keyboardRotate = function(rightAmount, upAmount) {
     // rotate left/right
     // rotation happens around the world up axis so up remains up (no upside-down)
-    var q = new THREE.Quaternion();
-    q.setFromAxisAngle(new THREE.Vector3(0.0, 0.0, 1.0), rightAmount);
-    this.avatar.quaternion.multiplyQuaternions(q, this.avatar.quaternion);
-    // rotate up/down
-    this.camera.rotateX(upAmount);
+    this.azimuth += rightAmount;
+    this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith - upAmount));
   };
 
   /**
@@ -440,21 +446,22 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 
   this.updateSphericalAnglesFromUserInput = function(timeDelta) {
     /* --- rotation by means of a manipulator --- */
-    var ROTATION_SPEED_FACTOR = 0.1;
-    if (this.rotateUp || this.rotateDown) {
-      var sign = this.rotateUp ? 1.0 : -1.0;
-      this.fpRotate(0.0, sign * ROTATION_SPEED_FACTOR * timeDelta);
+    var speedup = this.shiftHold ? 2 : 1;
+    var keyboardRotationSpeed = speedup * this.KEYBOARD_ROTATION_SPEED;
+    if (this.keyboardRotateUp || this.keyboardRotateDown) {
+      var sign = this.keyboardRotateUp ? 1.0 : -1.0;
+      this.keyboardRotate(0.0, sign * keyboardRotationSpeed * timeDelta);
     }
-    if (this.rotateRight) {
-      this.fpRotate(ROTATION_SPEED_FACTOR * timeDelta, 0.0);
+    if (this.keyboardRotateRight) {
+      this.keyboardRotate(-keyboardRotationSpeed * timeDelta, 0.0);
     }
-    if (this.rotateLeft) {
-      this.fpRotate(-ROTATION_SPEED_FACTOR * timeDelta, 0.0);
+    if (this.keyboardRotateLeft) {
+      this.keyboardRotate(keyboardRotationSpeed * timeDelta, 0.0);
     }
 
     /* --- rotation by means of a mouse drag --- */
     if (this.mouseDragOn) {
-      var actualLookSpeed = timeDelta * this.lookSpeed;
+      var actualLookSpeed = timeDelta * this.MOUSE_ROTATION_SPEED;
       if (!this.mouseBindingsEnabled) {
         actualLookSpeed = 0;
       }

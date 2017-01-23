@@ -1234,18 +1234,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.helpDescription).toBe(scope.helpText[UI.EXIT_BUTTON]);
     });
 
-    it('should set the visibility state of the keyboard info panel properly', function() {
-      expect(scope.showKeyboardControlInfoDiv).toBe(false);
-      scope.cameraTranslationButtonClickHandler();
-      expect(scope.showKeyboardControlInfoDiv).toBe(true);
-      timeout.flush();
-      expect(scope.showKeyboardControlInfoDiv).toBe(false);
-
-      // After a second call, the div should not be displayed again
-      scope.cameraTranslationButtonClickHandler();
-      expect(scope.showKeyboardControlInfoDiv).toBe(false);
-    });
-
     it('should go back to the esv-web page when no "ctx" parameter was in the url', function() {
       scope.isCollabExperiment = false;
       scope.exit();

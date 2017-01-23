@@ -661,21 +661,12 @@
         };
 
         // Camera manipulation
-        var hasNavigationAlreadyBeenClicked = false;
-        $scope.showKeyboardControlInfoDiv = false;
 
         // This should be integrated to the tutorial story when
         // it will be implemented !
         $scope.cameraTranslationButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.CAMERA_TRANSLATION);
-          }
-          if (!hasNavigationAlreadyBeenClicked) {
-            hasNavigationAlreadyBeenClicked = true;
-            $scope.showKeyboardControlInfoDiv = true;
-            $timeout(function () {
-              $scope.showKeyboardControlInfoDiv = false;
-            }, 20000);
           }
         };
 
