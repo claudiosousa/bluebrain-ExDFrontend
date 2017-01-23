@@ -474,37 +474,6 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     }
   };
 
-  this.publishPose = function()
-  {
-    var matrix = this.avatar.matrixWorld;
-    var translation = new THREE.Vector3();
-    var quaternion = new THREE.Quaternion();
-    var scale = new THREE.Vector3();
-    matrix.decompose(translation, quaternion, scale);
-
-    var objectMsg =
-    {
-      name : this.avatar.name,
-      id : this.avatar.userData,
-      createEntity : 0,
-      position :
-      {
-        x: translation.x,
-        y: translation.y,
-        z: translation.z
-      },
-      orientation :
-      {
-        w: quaternion.w,
-        x: quaternion.x,
-        y: quaternion.y,
-        z: quaternion.z
-      }
-    };
-
-    this.gz3d.iface.modelModifyTopic.publish(objectMsg);
-  };
-
   /**
    * Update avatar quaternion from current azimuth
    */
@@ -604,7 +573,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 
     if (this.applyPoseDuringUpdate) {
       this.setPose(this.applyPosePosition, this.applyPoseLookAt);
-      this.publishPose();
+      gz3d.scene.emitter.emit('entityChanged', this.avatar);
 
       var vecForward = new THREE.Vector3().subVectors(this.applyPoseLookAt, this.applyPosePosition).normalize();
       this.updateSphericalAnglesFromForwardVector(vecForward);
