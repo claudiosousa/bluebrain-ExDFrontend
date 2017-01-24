@@ -1,7 +1,7 @@
 // Parameters needed for test_e2e/spec.js
 
-var urlStartPage = 'http://' + browser.params.ipAddress + ':9000';
-var urlEsvPage = urlStartPage + '/#/esv-web';
+var urlStartPage = 'http://' + browser.params.ipAddress + ':9000/#/';
+var urlEsvPage = urlStartPage + 'esv-web';
 
 module.exports = {
 
@@ -16,19 +16,18 @@ module.exports = {
 
     // Timeouts
     timeout: {
-        RESPOND: 1000, //a small delay for webpages to react 
+        RESPOND: 1000, //a small delay for webpages to react
         SHORT: 5000,
         LONG: 300000,
     },
-
+    spikePeriod: 0.025, //s
     // Experiments
-    // Should be added for each new experiments present 
+    // Should be added for each new experiments present
     // Or automatically detected a list of available experiments
-    EXPERIMENT:
-
-        ['Husky Braitenberg experiment',
-         'Husky Braitenberg experiment with automatically switching screens'
-        ]
+    EXPERIMENT: [
+        'Husky Braitenberg experiment',
+        'Husky Braitenberg experiment with automatically switching screens'
+    ]
     ,
     // Url
     url: {
