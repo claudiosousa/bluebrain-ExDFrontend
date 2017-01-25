@@ -189,8 +189,17 @@ describe('Services: userNavigationService', function () {
     userNavigationService.setUserData(userProfile);
 
     expect(userNavigationService.userID).toBe(userProfile.id);
+    expect(userNavigationService.userReferenceROSCompliant).toBe(userProfile.id);
     expect(userNavigationService.userDisplayName).toBe(userProfile.displayName);
     expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + userProfile.id);
+
+    // check with userID not fit for ROS topics
+    userProfile.id = 'test-problematic*user?ID+01';
+    var validROSString = 'test_problematic_user_ID_01';
+    userNavigationService.setUserData(userProfile);
+    expect(userNavigationService.userID.match(/([^a-zA-Z0-9]+)/gi).length).toBeGreaterThan(0);
+    expect(userNavigationService.userReferenceROSCompliant).toBe(validROSString);
+    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + userNavigationService.userReferenceROSCompliant);
   });
 
   it(' - onModelInfo()', function () {
@@ -406,4 +415,6 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.freeCameraControls.enabled).toBe(true);
     expect(gz3d.scene.controls).toBe(firstPersonControls);
   });
+
+
 });
