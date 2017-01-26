@@ -17,6 +17,7 @@
     'autoSaveService',
     'downloadFileService',
     'RESET_TYPE',
+    'editorsServices',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
@@ -31,8 +32,8 @@
               hbpDialogFactory,
               autoSaveService,
               downloadFileService,
-              RESET_TYPE) {
-
+              RESET_TYPE,
+              editorsServices) {
 
       var DIRTY_TYPE = 'SM';
 
@@ -47,6 +48,8 @@
           scope.isSavingToCollab = false;
           scope.collabDirty = false;
 
+          scope.editorOptions = editorsServices.getDefaultEditorOptions();
+
           scope.STATE = STATE;
           scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
           scope.SOURCE_TYPE = SOURCE_TYPE;
@@ -58,27 +61,11 @@
           scope.backendDocumentationURL = docs.backendDocumentationURL;
           scope.platformDocumentationURL = docs.platformDocumentationURL;
 
-          scope.refreshLayout = function(editor) {
-            // This updates the layout of the editor also onLoad
-            // Just a editor.refresh() does not work here, so we set a callback on the first "change" event
-            // and remove the listener afterwards
-            var r = function() {
-              editor.refresh();
-              editor.off("change", r);
-            };
-            editor.on("change", r);
-          };
-
           scope.control.refresh = function () {
-            if (scope.collabDirty){
-              $timeout(function(){
-                _.forEach(scope.stateMachines, function(tf){
-                  scope.getStateMachineEditor(tf).refresh();
-                });
-              }, 100);
+            if (scope.collabDirty) {
+              editorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
               return;
             }
-
             backendInterfaceService.getStateMachines(
               function (response) {
                 _.forEach(response.data, function(code, id) {
@@ -94,6 +81,7 @@
                     scope.stateMachines.unshift(stateMachine);
                   }
                 });
+                editorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
               });
           };
 
@@ -269,7 +257,6 @@
                   scope.update(sm);
                 });
               };
-
               textReader.readAsText(file);
             }
           };
@@ -293,12 +280,6 @@
             );
           };
 
-          scope.getStateMachineEditor = function(stateMachine) {
-            var id = 'state-machine-' + stateMachine.id;
-            var codeMirrorDiv = document.getElementById(id).firstChild;
-            return codeMirrorDiv.CodeMirror;
-          };
-
           scope.onNewErrorMessageReceived = function(msg) {
             if (msg.severity < 2 && msg.sourceType === scope.SOURCE_TYPE.STATE_MACHINE) {
               // Error message is not critical and can be fixed
@@ -314,7 +295,7 @@
               flawedStateMachine.error[msg.errorType] = msg;
               if (msg.lineNumber >= 0) { // Python Syntax Error
                 // Error line highlighting
-                var editor = scope.getStateMachineEditor(flawedStateMachine);
+                var editor = editorsServices.getEditor('state-machine-' + flawedStateMachine.id);
                 var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
                 msg.lineHandle = editor.getLineHandle(codeMirrorLineNumber);
                 editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
@@ -326,7 +307,7 @@
             var compileError = stateMachine.error[scope.ERROR.COMPILE];
             var lineHandle = compileError ? compileError.lineHandle : undefined;
             if (angular.isDefined(lineHandle)) {
-              var editor = scope.getStateMachineEditor(stateMachine);
+              var editor = editorsServices.getEditor('state-machine-' + stateMachine.id);
               editor.removeLineClass(lineHandle, 'background', 'alert-danger');
             }
             delete stateMachine.error[scope.ERROR.COMPILE];
@@ -336,11 +317,10 @@
           scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
           scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
 
-          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved){
+          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved) {
             scope.collabDirty = true;
             scope.stateMachines = autoSaved;
           });
-
         }
       };
     }

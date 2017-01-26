@@ -19,7 +19,8 @@ describe('Directive: smachEditor', function () {
     roslib,
     STATE,
     SIMULATION_FACTORY_CLE_ERROR,
-    SOURCE_TYPE;
+    SOURCE_TYPE,
+    editorsServices;
 
   var backendInterfaceServiceMock = {
     getStateMachines: jasmine.createSpy('getStateMachines'),
@@ -72,7 +73,8 @@ describe('Directive: smachEditor', function () {
                               _roslib_,
                               _STATE_,
                               _SIMULATION_FACTORY_CLE_ERROR_,
-                              _SOURCE_TYPE_) {
+                              _SOURCE_TYPE_,
+                              _editorsServices_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -85,6 +87,7 @@ describe('Directive: smachEditor', function () {
     SOURCE_TYPE = _SOURCE_TYPE_;
     $timeout = _$timeout_;
     simulationInfo = _simulationInfo_;
+    editorsServices = _editorsServices_;
     editorMock.getLineHandle = jasmine.createSpy('getLineHandle').andReturn(0);
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
@@ -140,21 +143,12 @@ describe('Directive: smachEditor', function () {
     });
 
     it('should call the refresh function', function () {
-      var callback;
       var editor = {
-        'refresh': jasmine.createSpy('refresh'),
-        'on': function (name, cb) {
-          callback = cb;
-        },
-        'off': function () {
-          callback = undefined;
-        }
+        'refresh': jasmine.createSpy('refresh')
       };
-      isolateScope.refreshLayout(editor);
-      expect(callback).toBeDefined();
-      callback();
+      editorsServices.refreshEditor(editor);
+      $timeout.flush(100);
       expect(editor.refresh).toHaveBeenCalled();
-      expect(callback).not.toBeDefined();
     });
 
     it('should test the update function', function () {
@@ -256,7 +250,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(stateMachines[0].error[errorType]).toEqual(msg);
       expect(editorMock.getLineHandle).toHaveBeenCalled();
@@ -273,7 +267,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       isolateScope.onNewErrorMessageReceived(msg);
       expect(isolateScope.cleanCompileError).toHaveBeenCalled();
@@ -295,7 +289,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andReturn(sm1);
       isolateScope.onNewErrorMessageReceived(msg);
@@ -315,7 +309,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(isolateScope, 'getStateMachineEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andCallFake(function (arg1, arg2) {
         if (Object.keys(arg2)[0] === 'id') {

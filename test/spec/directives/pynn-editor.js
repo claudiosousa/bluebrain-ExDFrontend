@@ -3,15 +3,11 @@
  */
 'use strict';
 
-
-
 describe('Directive: pynnEditor', function () {
 
   String.prototype.repeat = function(num) {
     return new Array( num + 1 ).join( this );
   };
-
-  var VIEW = 'views/esv/pynn-editor.html';
 
   var $rootScope,
     $compile,
@@ -23,7 +19,8 @@ describe('Directive: pynnEditor', function () {
     pythonCodeHelper,
     ScriptObject,
     $timeout,
-    hbpDialogFactory;
+    hbpDialogFactory,
+    editorsServices;
 
   var backendInterfaceServiceMock = {
     getBrain:  jasmine.createSpy('getBrain'),
@@ -51,11 +48,6 @@ describe('Directive: pynnEditor', function () {
     }
   };
 
-  var docMock = {
-    clearHistory: function () {},
-    markClean: function () {}
-  };
-
   var tokenMock = {
     type: 'variable',
     string: 'token'
@@ -64,12 +56,13 @@ describe('Directive: pynnEditor', function () {
   var lineMock = {};
 
   var cmMock = {
-    getDoc: function() { return docMock; },
     getTokenAt: function() {return tokenMock; },
     addLineClass: function(/*line, str, str2*/) { return lineMock; },
     addLineWidget: function(/*line, node, boolean*/) {},
     scrollIntoView: function(/*line*/) {},
-    removeLineClass: jasmine.createSpy('removeLineClass')
+    removeLineClass: jasmine.createSpy('removeLineClass'),
+    clearHistory: jasmine.createSpy('clearHistory'),
+    markClean: jasmine.createSpy('markClean')
   };
 
   // @jshint: no i can't make that CamelCase without breaking it
@@ -90,7 +83,6 @@ describe('Directive: pynnEditor', function () {
     }
   };
 
-
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module(function ($provide) {
@@ -106,7 +98,8 @@ describe('Directive: pynnEditor', function () {
                               $templateCache,
                               _pythonCodeHelper_,
                               _$timeout_,
-                              _hbpDialogFactory_) {
+                              _hbpDialogFactory_,
+                              _editorsServices_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -115,40 +108,15 @@ describe('Directive: pynnEditor', function () {
     ScriptObject = pythonCodeHelper.ScriptObject;
     $timeout = _$timeout_;
     hbpDialogFactory = _hbpDialogFactory_;
+    editorsServices = _editorsServices_;
 
     $scope = $rootScope.$new();
-    $templateCache.put(VIEW, '');
+    $templateCache.put('views/esv/pynn-editor.html', '');
     $scope.control = {};
     element = $compile('<pynn-editor control="control"/>')($scope);
     $scope.$digest();
-
     isolateScope = element.isolateScope();
   }));
-
-  it('should set the pynnScript and the populations variables to undefined by default', function () {
-    $scope.control.refresh();
-    expect(isolateScope.pynnScript).toBeUndefined();
-    expect(isolateScope.populations).toBeUndefined();
-    expect(backendInterfaceService.getBrain).toHaveBeenCalled();
-  });
-
-  it('should return codemirror instance when already set', function() {
-    isolateScope.cm = 'CM';
-    var cm = isolateScope.getCM();
-    expect(cm).toEqual(isolateScope.cm);
-  });
-
-  it('should check getCM setting scope.cm', function () {
-
-    var elem = document.getElementById;
-    document.getElementById =  jasmine.createSpy('getElementById').andReturn({children:[{CodeMirror: cmMock}]});
-
-    isolateScope.cm = null;
-    var cm = isolateScope.getCM();
-    expect(cm).toBe(cmMock);
-
-    document.getElementById = elem;
-  });
 
   describe('Get/Set brain, PyNN script', function () {
     var data = {
@@ -174,7 +142,7 @@ describe('Directive: pynnEditor', function () {
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
-      isolateScope.getCM = jasmine.createSpy('getCM').andReturn(cmMock);
+      editorsServices.getEditor = jasmine.createSpy('getEditor').andReturn(cmMock);
       backendInterfaceService.getBrain.reset();
       backendInterfaceService.setBrain.reset();
       expected_populations = data.additional_populations;
@@ -296,15 +264,13 @@ describe('Directive: pynnEditor', function () {
       isolateScope.$parent.$destroy();
       expect(isolateScope.control.refresh).toBeUndefined();
     });
-
   });
-
 
   describe('Testing pynn-editor functions', function () {
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
-      isolateScope.getCM = jasmine.createSpy('getCM').andReturn(cmMock);
+      editorsServices.getEditor = jasmine.createSpy('getEditor').andReturn(cmMock);
     });
 
     it('should parse a token correctly', function() {
@@ -345,7 +311,6 @@ describe('Directive: pynnEditor', function () {
       isolateScope.markError('', 0, 0);
       expect(isolateScope.lineHandle).toBeUndefined();
     });
-
   });
 
   describe('Testing GUI operations on brain populations', function () {

@@ -40,6 +40,7 @@
       'DEFAULT_TF_CODE',
       'downloadFileService',
       'RESET_TYPE',
+      'editorsServices',
     function (
         $log,
         backendInterfaceService,
@@ -57,8 +58,9 @@
         autoSaveService,
         DEFAULT_TF_CODE,
         downloadFileService,
-        RESET_TYPE
-    ) {
+        RESET_TYPE,
+        editorsServices) {
+
     var DIRTY_TYPE = 'TF';
 
     return {
@@ -73,13 +75,7 @@
         scope.isSavingToCollab = false;
         scope.collabDirty = false;
 
-        scope.editorOptions = {
-          lineWrapping : true,
-          lineNumbers: true,
-          readOnly: false,
-          indentUnit: 4,
-          mode: 'text/x-python'
-        };
+        scope.editorOptions = editorsServices.getDefaultEditorOptions();
 
         scope.stateService = stateService;
         scope.STATE = STATE;
@@ -122,12 +118,6 @@
         scope.cleDocumentationURL = docs.cleDocumentationURL;
         scope.platformDocumentationURL = docs.platformDocumentationURL;
 
-        scope.getTransferFunctionEditor = function(transferFunction) {
-          var id = 'transfer-function-' + transferFunction.id;
-          var codeMirrorDiv = document.getElementById(id).firstChild;
-          return codeMirrorDiv.CodeMirror;
-        };
-
         scope.onNewErrorMessageReceived = function(msg) {
           if (msg.severity < 2 && msg.sourceType === scope.SOURCE_TYPE.TRANSFER_FUNCTION) {
             // Error message is not critical and can be fixed
@@ -143,7 +133,7 @@
             flawedTransferFunction.error[msg.errorType] = msg;
             if (msg.lineNumber >= 0) { // Python Syntax Error
               // Error line highlighting
-              var editor = scope.getTransferFunctionEditor(flawedTransferFunction);
+              var editor = editorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
               var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
               flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = editor.getLineHandle(codeMirrorLineNumber);
               editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
@@ -164,16 +154,7 @@
         scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
         scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived, true);
 
-        function refreshAllEditors() {
-          $timeout(function() {
-            _.forEach(scope.transferFunctions, function(tf) {
-              scope.getTransferFunctionEditor(tf).refresh();
-            });
-          }, 200);
-        }
-
-        scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType)
-        {
+        scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
           if (resetType === RESET_TYPE.RESET_FULL)
           {
             scope.collabDirty = false;
@@ -182,8 +163,8 @@
         });
 
         scope.control.refresh = function () {
-          if (scope.collabDirty){
-            refreshAllEditors();
+          if (scope.collabDirty) {
+            editorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
             return;
           }
           backendInterfaceService.getTransferFunctions(
@@ -195,16 +176,14 @@
                 var found = angular.isDefined(tf);
                 if (found && !tf.dirty) {
                   tf.code = transferFunction.code;
-                  var curEditor = scope.getTransferFunctionEditor(transferFunction);
-                  curEditor.clearHistory();
-                  curEditor.markClean();
+                  editorsServices.resetEditor(editorsServices.getEditor('transfer-function-' + transferFunction.id));
                 } else if (!found) {
                   scope.transferFunctions.unshift(transferFunction);
                 }
-             });
-             refreshAllEditors();
-          });
-          refreshPopulations();
+              });
+              editorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
+            });
+            refreshPopulations();
         };
 
         // initialize transfer functions
@@ -214,7 +193,7 @@
           var compileError = transferFunction.error[scope.ERROR.COMPILE];
           var lineHandle = compileError ? compileError.lineHandle : undefined;
           if (angular.isDefined(lineHandle)) {
-            var editor = scope.getTransferFunctionEditor(transferFunction);
+            var editor = editorsServices.getEditor('transfer-function-' + transferFunction.id);
             editor.removeLineClass(lineHandle, 'background', 'alert-danger');
           }
           delete transferFunction.error[scope.ERROR.COMPILE];

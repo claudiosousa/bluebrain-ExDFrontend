@@ -6,7 +6,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
-    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE;
+    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE, editorsServices;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -18,18 +18,17 @@ describe('Directive: transferFunctionEditor', function () {
     saveCSVRecordersFiles: jasmine.createSpy('backendInterfaceServiceMock')
   };
 
-  var autoSaveServiceMock ={
+  var autoSaveServiceMock = {
     registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
     setDirty: jasmine.createSpy('setDirty'),
     clearDirty: jasmine.createSpy('clearDirty')
   };
 
-  var documentationURLsMock =
-  {
+  var documentationURLsMock = {
     getDocumentationURLs: function() {
       return {
-          cleDocumentationURL: 'cleDocumentationURL',
-          backendDocumentationURL: 'backendDocumentationURL'
+        cleDocumentationURL: 'cleDocumentationURL',
+        backendDocumentationURL: 'backendDocumentationURL'
       };
     }
   };
@@ -77,7 +76,8 @@ describe('Directive: transferFunctionEditor', function () {
                               _simulationInfo_,
                               _hbpDialogFactory_,
                               _downloadFileService_,
-                              _DEFAULT_TF_CODE_) {
+                              _DEFAULT_TF_CODE_,
+                              _editorsServices_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -100,6 +100,7 @@ describe('Directive: transferFunctionEditor', function () {
     hbpDialogFactory = _hbpDialogFactory_;
     downloadFileService = _downloadFileService_;
     DEFAULT_TF_CODE = _DEFAULT_TF_CODE_;
+    editorsServices = _editorsServices_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
@@ -175,14 +176,10 @@ describe('Directive: transferFunctionEditor', function () {
    it('should refresh code editors on refresh if dirty', function() {
     isolateScope.collabDirty = true;
     isolateScope.transferFunctions = [1, 2, 3];
-    var refreshSpy = jasmine.createSpy(refreshSpy);
-    spyOn(isolateScope, 'getTransferFunctionEditor').andReturn({ refresh: refreshSpy });
+    spyOn(editorsServices, 'refreshAllEditors');
     isolateScope.control.refresh();
-    $timeout.flush(200);
     $rootScope.$digest();
-    expect(isolateScope.getTransferFunctionEditor.calls.length).toBe(3);
-    expect(refreshSpy.calls.length).toBe(3);
-
+    expect(editorsServices.refreshAllEditors.calls.length).toBe(1);
   });
 
   it('should add new populations correctly', function() {
@@ -207,9 +204,8 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should handle the retrieved transferFunctions properly', function () {
       // call the callback given to getTransferFunctions with a response mock
-      var editorMock = { refresh: jasmine.createSpy('refresh'),  clearHistory: jasmine.createSpy('clearHistory'),markClean: jasmine.createSpy('markClean') };
       spyOn(document, 'getElementById').andReturn({ firstChild: { CodeMirror: editorMock}});
-
+      spyOn(editorsServices, 'refreshAllEditors');
       backendInterfaceService.getTransferFunctions.mostRecentCall.args[0](response);
       expect(_.findIndex(isolateScope.transferFunctions, expectedTf1)).not.toBe(-1);
       expect(isolateScope.transferFunctions.length).toBe(1);
@@ -218,9 +214,7 @@ describe('Directive: transferFunctionEditor', function () {
       expect(isolateScope.transferFunctions).toEqual(expected);
 
       // The tfs should be refreshed on initialization
-      expect(editorMock.refresh).not.toHaveBeenCalled();
-      $timeout.flush();
-      expect(editorMock.refresh).toHaveBeenCalled();
+      expect(editorsServices.refreshAllEditors).toHaveBeenCalled();
     });
   });
 
@@ -369,7 +363,7 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should retrieve tf editor', function () {
       spyOn(document, 'getElementById').andReturn({ firstChild: { CodeMirror: editorMock}});
-      var editor = isolateScope.getTransferFunctionEditor(transferFunctions[0]);
+      var editor = editorsServices.getEditor(transferFunctions[0]);
       expect(editor).toBe(editorMock);
     });
 
@@ -377,7 +371,7 @@ describe('Directive: transferFunctionEditor', function () {
       var firstTFName = transferFunctions[0].name;
       var errorType = isolateScope.ERROR.COMPILE;
       var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3, errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
       expect(editorMock.getLineHandle).toHaveBeenCalled();
@@ -400,16 +394,16 @@ describe('Directive: transferFunctionEditor', function () {
       var compile = isolateScope.ERROR.COMPILE;
       var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       var tf1 = transferFunctions[0];
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
-      expect(isolateScope.getTransferFunctionEditor).toHaveBeenCalledWith(tf1);
+      expect(editorsServices.getEditor).toHaveBeenCalledWith('transfer-function-' + tf1.id);
       expect(tf1.error[compile].lineHandle).toBe(0);
     });
 
     it('should call the compile error clean-up callback if a new compile error is received', function () {
       var compile = isolateScope.ERROR.COMPILE;
       var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       isolateScope.onNewErrorMessageReceived(msg);
       expect(isolateScope.cleanCompileError).toHaveBeenCalled();
@@ -424,8 +418,6 @@ describe('Directive: transferFunctionEditor', function () {
       var tf1 = transferFunctions[0];
       tf1.name = '';
       var msg = { functionName: 'tf1', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
-      spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andReturn(tf1);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(_.find).toHaveBeenCalledWith(isolateScope.transferFunctions, { 'id': msg.functionName });
@@ -437,8 +429,6 @@ describe('Directive: transferFunctionEditor', function () {
       tf1.name = 'NewFunctionName';
       tf1.id = 'OldFunctionName';
       var msg = { functionName: 'NewFunctionName', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
-      spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').andCallFake(function(arg1, arg2){
         if (Object.keys(arg2)[0] === 'id'){
           return undefined;
@@ -450,7 +440,7 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should remove error highlighting in the editor of the previously flawed transfer function', function () {
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       var tf1 = transferFunctions[0];
       tf1.error[isolateScope.ERROR.COMPILE] = { lineHandle: {} };
       isolateScope.cleanCompileError(tf1);
@@ -462,7 +452,6 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should remove the Compile or NoOrMultipleNames errors if the TF update is successfull', function () {
-      spyOn(isolateScope, 'getTransferFunctionEditor').andReturn(editorMock);
       var tf1 = transferFunctions[0];
       tf1.error[isolateScope.ERROR.COMPILE] = tf1.error[isolateScope.ERROR.NO_OR_MULTIPLE_NAMES] = {};
       isolateScope.cleanCompileError(tf1);

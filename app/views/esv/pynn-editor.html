@@ -59,15 +59,8 @@
       <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
     </form>
     <hr>
-    <div id="codeEditor" ui-codemirror ui-codemirror-opts="{
-          lineWrapping: true,
-          lineNumbers: true,
-          readOnly: false,
-          indentUnit: 4,
-          mode: 'text/x-python'
-      }"
-         ng-model="pynnScript"
-         ui-refresh='refreshCodemirror'>
+    <div id="codeEditor" ui-codemirror ui-codemirror-opts="editorOptions"
+         ng-model="pynnScript">
     </div>
     <hr>
     <div>
