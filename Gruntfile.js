@@ -8,7 +8,7 @@
 // use this if you want to recursively match all subfolders:
 // 'test/spec/**/*.js'
 
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
     // Load grunt tasks automatically
     require('load-grunt-tasks')(grunt);
@@ -28,17 +28,17 @@ module.exports = function (grunt) {
     var secret = grunt.file.readJSON((grunt.file.exists('test_e2e/secret.json') ?
         'test_e2e/secret.json' : 'test_e2e/secret.json.sample'));
 
-    var os=require('os');
-    var ifaces=os.networkInterfaces();
+    var os = require('os');
+    var ifaces = os.networkInterfaces();
     var lookupIpAddress = null;
     var ipAddress = null;
     for (var dev in ifaces) {
-        if(dev === "eth0") {
+        if (dev === "eth0") {
             lookupIpAddress = ifaces[dev];
         }
     }
     for (var details in lookupIpAddress) {
-        if (lookupIpAddress[details].family==='IPv4') {
+        if (lookupIpAddress[details].family === 'IPv4') {
             ipAddress = lookupIpAddress[details].address;
         }
     }
@@ -64,7 +64,7 @@ module.exports = function (grunt) {
                 options: {
                     args: {
                         seleniumAddress: 'http://bbplxviz02.epfl.ch:4444/wd/hub',
-                        params:{
+                        params: {
                             ipAddress: ipAddress,
                             login: {
                                 user: '<%= secret.username %>',
@@ -118,7 +118,7 @@ module.exports = function (grunt) {
                 port: 9000,
                 hostname: '*',
                 livereload: 35729,
-                middleware: function (connect) {
+                middleware: function(connect) {
                     return [
                         connect.static('.tmp'),
                         connect().use('/bower_components', connect.static('./bower_components')),
@@ -161,7 +161,7 @@ module.exports = function (grunt) {
             dist: {
                 options: {
                     open: { target: 'http://localhost:<%= connect.options.port %>' },
-                    middleware:null,
+                    middleware: null,
                     base: '<%= yeoman.dist %>'
                 }
             }
@@ -235,7 +235,7 @@ module.exports = function (grunt) {
             },
             test: {
                 src: 'test/karma.conf.js',
-                exclude: [ 'bootstrap-sass-official', 'angular-scenario' ],
+                exclude: ['bootstrap-sass-official', 'angular-scenario'],
                 devDependencies: true,
                 // We have to use a small hack here: We match also for the first 'b' in the ignorePath. This pattern will
                 // then be removed in the {{filePath}} below on replace and we add it again there. This is necessary due
@@ -269,7 +269,7 @@ module.exports = function (grunt) {
                 imagesDir: '<%= yeoman.app %>/img',
                 javascriptsDir: '<%= yeoman.app %>/scripts',
                 fontsDir: '<%= yeoman.app %>/styles/fonts',
-                importPath: ['<%= yeoman.app %>/../bower_components','<%= yeoman.app %>/../bower_components/hbp-collaboratory-theme/dist/sass'],
+                importPath: ['<%= yeoman.app %>/../bower_components', '<%= yeoman.app %>/../bower_components/hbp-collaboratory-theme/dist/sass'],
                 httpImagesPath: '/img',
                 httpGeneratedImagesPath: '/img/generated',
                 httpFontsPath: '/styles/fonts',
@@ -446,56 +446,56 @@ module.exports = function (grunt) {
                         'data/**/*'
                     ]
                 }, {
-                        expand: true,
-                        cwd: '.tmp/img',
-                        dest: '<%= yeoman.dist %>/img',
-                        src: ['generated/*']
-                    }, {
-                        expand: true,
-                        cwd: 'bower_components/bootstrap-sass-official/assets/',
-                        src: 'fonts/bootstrap/*',
-                        dest: '<%= yeoman.dist %>'
-                    }, {
-                        expand: true,
-                        cwd: 'bower_components/font-awesome/',
-                        src: 'fonts/*',
-                        dest: '<%= yeoman.dist %>'
-                    }, { // copy hbpcommon assets to dist
-                        expand: true,
-                        cwd: '.',
-                        src: 'bower_components/angular-hbp-common/dist/assets/**/*.*',
-                        dest: '<%= yeoman.dist %>'
-                    }, { // copy hbp-collaboratory-theme assets to dist
-                        expand: true,
-                        cwd: '.',
-                        src: 'bower_components/hbp-collaboratory-theme/dist/fonts/**/*.*',
-                        dest: '<%= yeoman.dist %>'
-                    }, {
-                        expand: true,
-                        cwd: '.',
-                        src: [
-                            'bower_components/bbp-oidc-client/js/bbp-oidc-client.js',
-                            'bower_components/jquery/dist/jquery.min.js'
-                        ],
-                        dest: '<%= yeoman.dist %>'
-                    }, {
-                        expand: true,
-                        cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
-                        src: [ // the following files are needed by gz3d [NRRPLT-3145]
-                            'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
-                        ],
-                        dest: '<%= yeoman.dist %>/style/images'
-                    }, {
-                        expand: true,
-                        cwd: 'node_modules/n3-charts/build',
-                        src: [ 'LineChart.min.css', 'LineChart.min.js'],
-                        dest: '<%= yeoman.dist %>/node_modules/n3-charts/build'
-                    }, {
-                        expand: true,
-                        cwd: 'node_modules/d3',
-                        src: [ 'd3.min.js'],
-                        dest: '<%= yeoman.dist %>/node_modules/d3'
-                    }]
+                    expand: true,
+                    cwd: '.tmp/img',
+                    dest: '<%= yeoman.dist %>/img',
+                    src: ['generated/*']
+                }, {
+                    expand: true,
+                    cwd: 'bower_components/bootstrap-sass-official/assets/',
+                    src: 'fonts/bootstrap/*',
+                    dest: '<%= yeoman.dist %>'
+                }, {
+                    expand: true,
+                    cwd: 'bower_components/font-awesome/',
+                    src: 'fonts/*',
+                    dest: '<%= yeoman.dist %>'
+                }, { // copy hbpcommon assets to dist
+                    expand: true,
+                    cwd: '.',
+                    src: 'bower_components/angular-hbp-common/dist/assets/**/*.*',
+                    dest: '<%= yeoman.dist %>'
+                }, { // copy hbp-collaboratory-theme assets to dist
+                    expand: true,
+                    cwd: '.',
+                    src: 'bower_components/hbp-collaboratory-theme/dist/fonts/**/*.*',
+                    dest: '<%= yeoman.dist %>'
+                }, {
+                    expand: true,
+                    cwd: '.',
+                    src: [
+                        'bower_components/bbp-oidc-client/js/bbp-oidc-client.js',
+                        'bower_components/jquery/dist/jquery.min.js'
+                    ],
+                    dest: '<%= yeoman.dist %>'
+                }, {
+                    expand: true,
+                    cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
+                    src: [ // the following files are needed by gz3d [NRRPLT-3145]
+                        'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
+                    ],
+                    dest: '<%= yeoman.dist %>/style/images'
+                }, {
+                    expand: true,
+                    cwd: 'node_modules/n3-charts/build',
+                    src: ['LineChart.min.css', 'LineChart.min.js'],
+                    dest: '<%= yeoman.dist %>/node_modules/n3-charts/build'
+                }, {
+                    expand: true,
+                    cwd: 'node_modules/d3',
+                    src: ['d3.min.js'],
+                    dest: '<%= yeoman.dist %>/node_modules/d3'
+                }]
             },
             styles: {
                 expand: true,
@@ -652,7 +652,12 @@ module.exports = function (grunt) {
                     '<%= yeoman.app %>/scripts/**/*.js'
                 ],
                 options: {
-                    destination: 'doc'
+                    destination: 'doc',
+                    template: "node_modules/ink-docstrap/template",
+                    configure: "node_modules/ink-docstrap/template/jsdoc.conf.json",
+                    recurse: true,
+                    access: "all",
+                    readme: "README.md"
                 }
             }
         },
@@ -732,7 +737,7 @@ module.exports = function (grunt) {
         ]);
     });
 
-    grunt.registerMultiTask('version', 'Retrieve the version of the application and put it in version.json', function(){
+    grunt.registerMultiTask('version', 'Retrieve the version of the application and put it in version.json', function() {
         grunt.file.write(this.data.file, '{ \"hbp_nrp_esv\" : \"' + this.options().version + '\" }');
     });
 
@@ -762,15 +767,13 @@ module.exports = function (grunt) {
             'useminPrepare'
         ];
         grunt.log.writeln("Option to avoid using imagemin is " + this.options().noImagemin);
-        if (this.options().noImagemin === true)
-        {
+        if (this.options().noImagemin === true) {
             tasks.push('copy:images');
         }
-        else
-        {
+        else {
             tasks.push('imagemin');
         }
-        var followingTasks = [ 'svgmin',
+        var followingTasks = ['svgmin',
             'autoprefixer',
             'concat',
             'ngAnnotate',
