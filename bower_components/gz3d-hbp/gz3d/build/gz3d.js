@@ -7577,6 +7577,9 @@ GZ3D.Scene.prototype.init = function()
   // only support one heightmap for now.
   this.heightmap = null;
 
+  this.frameTime = 0;
+  this.dropCycles = 0;
+
   this.selectedEntity = null;
 
   this.manipulationMode = 'view';
@@ -7876,18 +7879,6 @@ GZ3D.Scene.prototype.init = function()
   this.jointAxis['ballVisual'] = ballVisual;
 };
 
-GZ3D.Scene.prototype.initScene = function()
-{
-  guiEvents.emit('show_grid', 'show');
-
-  // create a sun light
-  var obj = this.createLight(3, new THREE.Color(0.8, 0.8, 0.8), 0.9,
-       {position: {x:0, y:0, z:10}, orientation: {x:0, y:0, z:0, w:1}},
-       null, true, 'sun', {x: 0.5, y: 0.1, z: -0.9});
-
-  this.add(obj);
-};
-
 GZ3D.Scene.prototype.setSDFParser = function(sdfParser)
 {
   this.spawnModel.sdfParser = sdfParser;
@@ -8185,13 +8176,98 @@ GZ3D.Scene.prototype.getDomElement = function()
 /**
  * Render scene
  */
+
 GZ3D.Scene.prototype.render = function()
+{
+   // Check page visibily
+
+    var isPageVisible = true;
+
+    if (typeof document.hidden !== 'undefined')
+    {
+        isPageVisible = !document['hidden'];
+    }
+    else if (typeof document.msHidden !== 'undefined')
+    {
+        isPageVisible = !document['msHidden'];
+    }
+    else if (typeof document.webkitHidden !== 'undefined')
+    {
+        isPageVisible = !document['webkitHidden'];
+    }
+
+    if (isPageVisible)  // Update only when frame visible
+    {
+        var frameDuration = 1000.0 / 20.0;  // Cap to 20 fps by default
+
+        var newWorldDir,newWorldPos;
+
+        this.camera.updateMatrixWorld();
+        newWorldPos = this.camera.getWorldPosition();
+        newWorldDir = this.camera.getWorldDirection();
+
+        if (this.worldDir)
+        {
+          if (!newWorldDir.equals(this.worldDir) || !newWorldPos.equals(this.worldPos))
+          {
+            frameDuration = 1000.0 / 30.0;   // Boost to 30 fps when camera is moving
+          }
+        }
+
+        this.worldDir = newWorldDir;
+        this.worldPos = newWorldPos;
+
+        if (this.dropCycles>0)
+        {
+          // Drop cycles when the animation loop
+          // gets too slow to lower CPU usage
+
+          this.dropCycles--;
+          return;
+        }
+
+        var currentTime = Date.now();
+        var elapsed = (this.lastTime === undefined) ? 0 : currentTime - this.lastTime;
+        this.lastTime = currentTime;
+
+        if (elapsed >= 100.0)
+        {
+            elapsed = 100.0;    // Cap elapsed to 1/10 secs.
+            this.dropCycles = 3;
+        }
+        else if (elapsed>=40.0)
+        {
+            this.dropCycles = 2;
+        }
+        else  if (elapsed>=25.0)
+        {
+            this.dropCycles = 1;
+        }
+
+        this.frameTime += elapsed;
+
+        if (this.frameTime >= frameDuration)
+        {
+            this.frameTime -= frameDuration;
+            this.viewManager.renderViews();
+            this.updateUI();
+        }
+    }
+};
+
+/**
+ * updateUI
+ */
+
+GZ3D.Scene.prototype.updateUI = function()
 {
   // Kill camera control when:
   // -manipulating
   // -using radial menu
   // -pointer over menus
   // -spawning
+
+
   if (this.controls) {
     if (this.modelManipulator.hovered ||
       this.radialMenu.showing ||
@@ -8210,8 +8286,6 @@ GZ3D.Scene.prototype.render = function()
 
   this.modelManipulator.update();
   this.radialMenu.update();
-
-  this.viewManager.renderViews();
 };
 
 /**
@@ -10121,8 +10195,6 @@ GZ3D.SdfParser.prototype.init = function()
  */
 GZ3D.SdfParser.prototype.onConnectionError = function()
 {
-  this.scene.initScene();
-
   var that = this;
   var entityCreated = function(model, type)
   {
