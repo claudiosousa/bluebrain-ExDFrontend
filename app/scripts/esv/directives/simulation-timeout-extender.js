@@ -13,12 +13,14 @@
                         if (!attrs.extentTimeoutCondition)
                             throw 'Directive \'simulation-timeout-extender\' requires \'extentTimeoutCondition\' attribute to be defined';
 
-                        var timeoutExtendRefused = false;
+                        var timeoutExtendRefused = false,
+                            popupIsOpen = false;
+
                         scope.$watch(function() {
                             return scope.$eval(attrs.extentTimeoutCondition);
                         }, function(extend) {
-
-                            if (extend && !timeoutExtendRefused) {
+                            if (extend && !timeoutExtendRefused && !popupIsOpen) {
+                                popupIsOpen = true;
                                 return hbpDialogFactory.confirm({
                                     title: 'Your simulation will soon reach it\'s timeout.',
                                     confirmLabel: 'Yes',
@@ -39,7 +41,8 @@
                                                 });
                                             }
                                         });
-                                }).catch(function() { timeoutExtendRefused = true; });
+                                }).catch(function() { timeoutExtendRefused = true; })
+                                    .finally(function(){ popupIsOpen = false;} );
                             }
                         });
                     }
