@@ -344,6 +344,8 @@
         });
 
         $scope.onSceneLoaded = function () {
+          delete $scope.assetLoadingSplashScreen;
+
           nrpAnalytics.durationEventTrack('Browser-initialization', {
             category: 'Simulation'
           });
