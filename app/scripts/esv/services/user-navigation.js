@@ -31,6 +31,7 @@
             defaultLookAt: undefined,
             userID: undefined,
             userDisplayName: undefined,
+            userReferenceROSCompliant: undefined,
 
             rosbridgeWebsocketUrl: undefined,
             roslib: undefined,
@@ -72,7 +73,12 @@
             setUserData: function(profile) {
               this.userID = profile.id;
               this.userDisplayName = profile.displayName;
-              this.avatarObjectName = this.avatarNameBase + '_' + this.userID;
+
+              // create a user reference string that works with ROS topics
+              this.userReferenceROSCompliant = this.userID.replace(/([^a-zA-Z0-9]+)/gi, '_');
+
+              this.avatarObjectName = this.avatarNameBase + '_' + this.userReferenceROSCompliant;
+
               this.userDataInitialized = true;
             },
 
