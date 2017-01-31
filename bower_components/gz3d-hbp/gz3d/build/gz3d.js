@@ -1171,11 +1171,15 @@ GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
  *
  */
 
-GZ3D.Composer.prototype.render = function (view)
+GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewportHeight)
 {
     if (view.composer === undefined)    // No ThreeJS composer for this view, we need to initialize it.
     {
         this.initView(view);
+    }
+    else if (firstView)
+    {
+        this.webglRenderer.clear();
     }
 
     if (this.pbrMaterial)
@@ -1189,8 +1193,8 @@ GZ3D.Composer.prototype.render = function (view)
     }
 
     var camera = view.camera;
-    var width = view.container.canvas.width;
-    var height = view.container.canvas.height;
+    var width = viewportWidth;
+    var height = viewportHeight;
     var cs = this.gz3dScene.composerSettings;
     var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
 
@@ -6993,7 +6997,6 @@ GZ3D.MultiView.prototype.getViewport = function(view)
 
 GZ3D.MultiView.prototype.setWindowSize = function(width, height)
 {
-
 };
 
 GZ3D.MultiView.prototype.renderViews = function()
@@ -7007,12 +7010,12 @@ GZ3D.MultiView.prototype.renderViews = function()
         var view = this.views[i];
 
         if (view.active) {
-            this.renderToViewport(view);
+            this.renderToViewport(view,i===0);
         }
     }
 };
 
-GZ3D.MultiView.prototype.renderToViewport = function(view)
+GZ3D.MultiView.prototype.renderToViewport = function(view, firstView)
 {
     this.updateCamera(view);  //TODO: better solution with resize callback, also adjust camera helper
 
@@ -7024,7 +7027,7 @@ GZ3D.MultiView.prototype.renderToViewport = function(view)
     webglRenderer.setViewport( viewport.x, viewport.y, viewport.w, viewport.h );
     webglRenderer.setScissor( viewport.x, viewport.y, viewport.w, viewport.h );
 
-    this.gz3dScene.composer.render(view);
+    this.gz3dScene.composer.render(view, firstView, viewport.w, viewport.h);
 };
 
 GZ3D.MultiView.prototype.showCameras = function(show)
@@ -8196,7 +8199,7 @@ GZ3D.Scene.prototype.render = function()
         isPageVisible = !document['webkitHidden'];
     }
 
-    if (isPageVisible)  // Update only when frame visible
+    if (isPageVisible || this.needsImmediateUpdate)  // Update only when frame visible
     {
         var frameDuration = 1000.0 / 20.0;  // Cap to 20 fps by default
 
@@ -8217,7 +8220,7 @@ GZ3D.Scene.prototype.render = function()
         this.worldDir = newWorldDir;
         this.worldPos = newWorldPos;
 
-        if (this.dropCycles>0)
+        if (this.dropCycles>0 && !this.needsImmediateUpdate)
         {
           // Drop cycles when the animation loop
           // gets too slow to lower CPU usage
@@ -8246,11 +8249,12 @@ GZ3D.Scene.prototype.render = function()
 
         this.frameTime += elapsed;
 
-        if (this.frameTime >= frameDuration)
+        if (this.frameTime >= frameDuration || this.needsImmediateUpdate)
         {
             this.frameTime -= frameDuration;
             this.viewManager.renderViews();
             this.updateUI();
+            this.needsImmediateUpdate = false;
         }
     }
 };
@@ -8304,6 +8308,7 @@ GZ3D.Scene.prototype.setWindowSize = function(width, height)
 
   this.viewManager.setWindowSize(width, height);
 
+  this.needsImmediateUpdate = true;
   this.render();
 
   this.container.focus();
