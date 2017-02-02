@@ -184,7 +184,6 @@
           );
           sceneInitialized.promise.then(function(){
             $scope.initComposerSettings();
-            $scope.initBrainvisualizerData();
           });
         };
         simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, function (data) {
@@ -978,32 +977,6 @@
 
         }
 
-        // Brain visualizer
-        $scope.brainvisualizerIsDisabled = true;
-
-        // Init brainvisualizer data
-        $scope.initBrainvisualizerData = function ()
-        {
-          var brainVisualizationDataExists = simulationConfigService.doesConfigFileExist('brainvisualizer');
-          brainVisualizationDataExists.then(function (exists)
-          {
-            if (exists) {
-              $scope.brainvisualizerIsDisabled = false;
-              $scope.loadingBrainvisualizerPanel = true;
-              simulationConfigService.loadConfigFile('brainvisualizer')
-                .then(function (file) {
-                  $scope.loadingBrainvisualizerPanel = false;
-                  $scope.brainVisualizerData = JSON.parse(file);
-                  $scope.brainvisualizerIsDisabled = ($scope.brainVisualizerData === undefined);
-                })
-                .catch(function () {
-                  $scope.loadingBrainvisualizerPanel = false;
-                  $scope.brainvisualizerIsDisabled = true;
-                });
-            }
-          });
-        };
-
         $scope.showBrainvisualizerPanel = false;
         $scope.toggleBrainvisualizer = function () {
           $scope.showBrainvisualizerPanel = !$scope.showBrainvisualizerPanel;
@@ -1016,8 +989,6 @@
         $scope.brainVisualizerButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.BRAIN_VISUALIZER);
-          } else if ($scope.brainvisualizerIsDisabled || $scope.loadingBrainvisualizerPanel) {
-            return;
           } else {
             return $scope.toggleBrainvisualizer();
           }

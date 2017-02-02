@@ -1,10 +1,35 @@
 <!-- build:css(.tmp) styles/esv/brainvisualizer.css -->
-<link rel="stylesheet" href="styles/esv/brainvisualizer.css"/>
+<link rel="stylesheet" href="styles/esv/brainvisualizer.css" />
 <!-- endbuild -->
 
 <div class="esv-brainvisualizer-wrapper">
 
-<div class="esv-brainvisualizer-main"> </div>
-<div class="esv-brainvisualizer-ui"> UI place holder </div>
+    <div class="esv-brainvisualizer-main"> <span ng-show="initializing" class="esv-brainvisualizer-initializing">Initializing<br> <i class="fa fa-spinner fa-spin"></i></span>        </div>
+    <div class="esv-brainvisualizer-ui">
+
+        <div class="esv-brainvisualizer-box">
+
+            <div class="esv-brainvisualizer-box-title">
+                Populations
+            </div>
+
+            <div ng-repeat="pop in populations" style="padding-bottom:1px">
+
+                <button type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-pop-button':!pop.visible,
+                                                'esv-brainvisualizer-pop-button-down':pop.visible}"
+                                        ng-click='togglePopulationVisibility(pop);'>
+
+                <div style="position: absolute; background-color: {{pop.visible?pop.color:'#eeeeee'}};  border: 1px solid black; width:26px; height:20px "></div>
+
+                    <div style="padding-left:32px">
+                    {{pop.name}}
+                    </div>
+
+            </button>
+            </div>
+
+        </div>
+
+    </div>
 
 </div>

@@ -15,9 +15,18 @@ BRAIN3D.SPHERE_TYPE_SIMPLE = 'Color';
 
 // Color map
 
-BRAIN3D.COLOR_MAP_CORTEXLAYERS = 'Cortex Layers';
-BRAIN3D.COLOR_MAP_AREAS = 'Areas';
+BRAIN3D.COLOR_MAP_POLULATIONS = 'Populations';
 BRAIN3D.COLOR_MAP_NONE = 'None';
+
+// Camera zoom min/max
+
+BRAIN3D.CAMERA_MIN_ZOOM = 10;
+BRAIN3D.CAMERA_MAX_ZOOM = 750.0;
+
+// neuronesDones
+
+BRAIN3D.OVERLAPPING_NEURONES_RESIZE_FACTOR = 0.3;
+
 
 
 //------------------------------
@@ -25,7 +34,8 @@ BRAIN3D.COLOR_MAP_NONE = 'None';
 
 BRAIN3D.MainView = function (container, data, ballImagePath, ballAuraImagePath)
 {
-    this.data = data;
+    this.populations = data.populations;
+    this.userXYZ = data.xyz;
     this.container = container;
     this.ballImagePath = ballImagePath;
     this.ballAuraImagePath = ballAuraImagePath;
@@ -34,15 +44,14 @@ BRAIN3D.MainView = function (container, data, ballImagePath, ballAuraImagePath)
 
 BRAIN3D.MainView.prototype.init = function ()
 {
+    this.needsAnimationPass = false;
     this.paused = false;
-    this.area = [];
-    this.layer = [];
-    this.vertices = [];
+    this.particles = [];
 
     this.ptsize = 6.0;
     this.ptsizeInViewOld = 0;
-    this.spheretype = BRAIN3D.SPHERE_TYPE_BLENDED;
-    this.colormap = BRAIN3D.COLOR_MAP_AREAS;
+    this.spheretype = BRAIN3D.SPHERE_TYPE_POINT;
+    this.colormap = BRAIN3D.COLOR_MAP_POLULATIONS;
     this.min_render_dist = 1.0;             // Clipping planes
     this.max_render_dist = 1000.0;
 
@@ -62,6 +71,7 @@ BRAIN3D.MainView.prototype.init = function ()
 
     this.time = 0;
 
+    this.initPopulations();
     this.init3D();
     this.initImages();
     this.init3DBrain();
@@ -69,8 +79,6 @@ BRAIN3D.MainView.prototype.init = function ()
 
     this.startPeriodicalUpdate();
 };
-
-
 
 BRAIN3D.MainView.prototype.init3D = function ()     // Init Three JS
 {
@@ -95,20 +103,44 @@ BRAIN3D.MainView.prototype.init3D = function ()     // Init Three JS
         return;
     }
 
-    this.renderer = new THREE.WebGLRenderer({ alpha: true, preserveDrawingBuffer: true });
+    this.renderer = new THREE.WebGLRenderer({ alpha: true, preserveDrawingBuffer: true, antialias: true });
     this.renderer.setSize(this.width(), this.height());
     this.renderer.setClearColor(new THREE.Color().setRGB(0.0, 0.0, 0.0), 0);
     this.renderer.sortObjects = false;
     this.container.appendChild(this.renderer.domElement);
 };
 
+BRAIN3D.MainView.prototype.initPopulations = function ()     // Init population
+{
+    for (var popname in this.populations)
+    {
+        var popValues = this.populations[popname];
+
+        popValues.name = popname;
+        popValues.color3D = new THREE.Color(popValues.color);
+    }
+};
+
+BRAIN3D.MainView.prototype.newParticle = function (pop, posx,posy,posz, psize)     // Init a new particle
+{
+    return {x:posx,     // Current pos
+            y:posy,
+            z:posz,
+            tx:posx,    // Target pos
+            ty:posy,
+            tz:posz,
+            xyzInterpolant:1.0,
+            size:psize,
+            tsize:psize,
+            sizeInterpolant:1.0,
+            population: pop };
+};
 
 BRAIN3D.MainView.prototype.init3DBrain = function ()     // Init brain 3D object
 {
     // Shader Attributes / Uniforms
-    this.uniforms = { amplitude: { type: "f", value: 1.0 }, color: { type: "c", value: new THREE.Color(0xffffff) }, texture: { type: "t", value: this.ballimage }, texture_aura: { type: "t", value: this.auraimage } };
+    this.uniforms = { amplitude: { type: "f", value: 1.0 }, color: { type: "c", value: new THREE.Color(0xffffff) }, texture: { type: "t", value: this.auraimage } };
     this.uniforms.texture.value.wrapS = this.uniforms.texture.value.wrapT = THREE.RepeatWrapping;
-    this.uniforms.texture_aura.value.wrapS = this.uniforms.texture_aura.value.wrapT = THREE.RepeatWrapping;
 
     var shaderMaterial = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -119,75 +151,90 @@ BRAIN3D.MainView.prototype.init3DBrain = function ()     // Init brain 3D object
         transparent: true,
     });
 
-    this.layer = [];
-    this.area = [];
+    this.cameraZoom = BRAIN3D.CAMERA_MIN_ZOOM;  // By Default min zoom for now
 
-    // Vertices
+    // Particles
+
+    this.particles = [];
 
     var sc = 0.025;
-    var poses = this.data["poses"];
 
-    for (var i_pose = 0; i_pose < poses.length; i_pose++)
+    var xyz = this.userXYZ;  // For now use only XYZ predefined coordinates
+
+    var neuronesVisible = {};
+
+    for(var popname in this.populations)
     {
-        var pose = poses[i_pose];
+        var popValues = this.populations[popname];
+        var start = popValues.from;
+        var end = popValues.to;
+        var step = popValues.hasOwnProperty('step') ? popValues.step : 1;
+        if (step <= 0) step = 1;
 
-        for (var i = 0; i < pose.length / 5; i++)
+        for (var i = start; i < end; i += step)
         {
-            var vertex = new THREE.Vector3(sc * pose[i * 5 + 0], sc * pose[i * 5 + 1], sc * pose[i * 5 + 2]);
+            var nsize = 1.0;
 
-            this.layer.push(pose[i * 5 + 3]);
-            this.area.push(pose[i * 5 + 4]);
-            this.vertices.push(vertex);
+            if (popValues.visible)
+            {
+                if (!neuronesVisible.hasOwnProperty(i))
+                {
+                    neuronesVisible[i] = 1;
+                }
+                else
+                {
+                    neuronesVisible[i] += 1;
+                }
+
+                nsize = 1.0-((neuronesVisible[i]-1.0)*BRAIN3D.OVERLAPPING_NEURONES_RESIZE_FACTOR);
+            }
+
+            if (i >= 0 && i < xyz.length / 3)
+            {
+                this.particles.push(this.newParticle( popValues,
+                                            sc * xyz[i * 3 + 0],
+                                            sc * xyz[i * 3 + 1],
+                                            sc * xyz[i * 3 + 2],
+                                            nsize) );
+            }
         }
     }
 
-    var sc = 0.025;
-    var poses = this.data["poses"];
-
-
-    var positions = new Float32Array(this.vertices.length * 3);
-    var colors = new Float32Array(this.vertices.length * 3);
-    var ex = new Float32Array(this.vertices.length);
-    var sizes = new Float32Array(this.vertices.length);
-    var textured = new Float32Array(this.vertices.length);
-    var vall = new Float32Array(this.vertices.length);
+    var positions = new Float32Array(this.particles.length * 3);
+    var colors = new Float32Array(this.particles.length * 3);
+    var sizes = new Float32Array(this.particles.length);
 
     var ptSize = this.ptsizeInView();
 
-    for (var i = 0, i3 = 0; i < this.vertices.length; i++ , i3 += 3)
+    for (var i = 0, i3 = 0; i < this.particles.length; i++ , i3 += 3)
     {
-        positions[i3] = this.vertices[i].x;
-        positions[i3 + 1] = this.vertices[i].y;
-        positions[i3 + 2] = this.vertices[i].z;
+        var p = this.particles[i];
 
-        colors[i3] = 1.0;
-        colors[i3 + 1] = 1.0;
-        colors[i3 + 2] = 1.0;
+        positions[i3] = p.x;
+        positions[i3 + 1] = p.y;
+        positions[i3 + 2] = p.z;
 
-        textured[i] = 1.0;
-        ex[i] = 1.0;
-        sizes[i] = ptSize;
-        vall[i] = 1.0;
+        var c = p.population.color3D;
+
+        colors[i3] = c.r;
+        colors[i3 + 1] = c.g;
+        colors[i3 + 2] = c.b;
+
+        sizes[i] = ptSize * p.size;
     }
 
     // Use new ThreeJS model
-
 
     this.geometry = new THREE.BufferGeometry();
     this.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
     this.geometry.addAttribute('vcolor', new THREE.BufferAttribute(colors, 3));
     this.geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    this.geometry.addAttribute('textured', new THREE.BufferAttribute(textured, 1));
-    this.geometry.addAttribute('vall', new THREE.BufferAttribute(vall, 1));
-    this.geometry.addAttribute('ex', new THREE.BufferAttribute(ex, 1));
-
 
     this.object = new THREE.Points(this.geometry, shaderMaterial);
     this.object.dynamic = true;
     this.scene.add(this.object);
 
     this.applySphereType();
-    this.applyColors();
 };
 
 
@@ -254,12 +301,7 @@ BRAIN3D.MainView.prototype.updateSize = function ()
     this.currentWidth = this.width();
     this.currentHeight = this.height();
 
-    var ptSize = this.ptsizeInView();
-
-    for (var i = 0; i < this.vertices.length; i++) { this.geometry.attributes.size.array[i] = ptSize; }
-
-    this.geometry.attributes.size.needsUpdate = true;
-    this.ptsizeInViewOld = ptSize;
+    this.updateParticleSize(false);
 };
 
 BRAIN3D.MainView.prototype.ptsizeInView = function ()    // Size of a point adapted to the viewport size
@@ -355,6 +397,9 @@ BRAIN3D.MainView.prototype.periodicalUpdate = function ()
     this.camera.lookAt(new THREE.Vector3(this.camera_translation[0], this.camera_translation[1], this.camera_translation[2]));
     this.camera.updateProjectionMatrix();
 
+    // Animation
+
+    this.processAnimation();
 
     // Render
 
@@ -388,86 +433,172 @@ BRAIN3D.MainView.prototype.setSphereType = function (st)
 };
 
 //------------------------------
+// Animation
+
+BRAIN3D.MainView.prototype.accDecCurve = function (pos)
+{
+    if (pos <= 0.5)
+    {
+        pos *= 2;
+        pos = 1.0 -Math.sin((1.0 - pos) * 0.5 * Math.PI);
+        pos *= 0.5;
+    }
+    else
+    {
+        pos = (pos - 0.5) * 2;
+        pos = Math.sin(pos * 0.5 * Math.PI);
+        pos = 0.5 + (pos * 0.5);
+    }
+
+    return pos;
+}
+
+BRAIN3D.MainView.prototype.processAnimation = function (perParticleUpdate)
+{
+    var elapsed = 0;
+    var t = Date.now();
+    if (this.lastAnimTime!==undefined)
+    {
+        elapsed = t-this.lastAnimTime;
+    }
+    this.lastAnimTime = t;
+    if (elapsed>0.1)
+    {
+        elapsed = 0.1;
+    }
+
+    if (this.needsAnimationPass)
+    {
+        this.needsAnimationPass = false;
+
+        var ptSize = this.ptsizeInView();
+        var needsSizeUpdate = false;
+
+        for (var i = 0; i < this.particles.length; i++)
+        {
+            var p = this.particles[i];
+
+            if (p.sizeInterpolant<1.0)
+            {
+                var currentSize;
+
+                p.sizeInterpolant += elapsed;
+                if (p.sizeInterpolant>=1.0)
+                {
+                    p.sizeInterpolant = 1.0;
+                    currentSize = p.size = p.tsize;
+                }
+                else
+                {
+                    this.needsAnimationPass = true;
+                    currentSize = this.accDecCurve(p.size + (p.tsize - p.size) * p.sizeInterpolant);
+                }
+
+                needsSizeUpdate = true;
+
+                this.geometry.attributes.size.array[i] = ptSize * currentSize;
+            }
+        }
+
+        if (needsSizeUpdate)
+        {
+            this.geometry.attributes.size.needsUpdate = true;
+            this.ptsizeInViewOld = ptSize;
+        }
+
+    }
+
+};
+
+//------------------------------
 // Buffer updates
 
-BRAIN3D.MainView.prototype.applyColors = function ()
+BRAIN3D.MainView.prototype.updateParticleSize = function (perParticleUpdate)
 {
-    if (this.colormap == BRAIN3D.COLOR_MAP_AREAS)
+    if (perParticleUpdate)
     {
-        for (var i = 0, i3 = 0; i < this.vertices.length; i++ , i3 += 3)
-        {
-            var clr = this.data["allancolors"][this.area[i]];
+        this.needsAnimationPass = true;
 
-            this.geometry.attributes.vcolor.array[i3] = clr[0];
-            this.geometry.attributes.vcolor.array[i3 + 1] = clr[1];
-            this.geometry.attributes.vcolor.array[i3 + 2] = clr[2];
-        }
-    }
-    else if (this.colormap == BRAIN3D.COLOR_MAP_CORTEXLAYERS)
-    {
-        for (var i = 0, i3 = 0; i < this.vertices.length; i++ , i3 += 3)
-        {
-            var r, g, b;
+        var neuronesVisible = {};
+        var particlei = 0;
 
-            if (this.layer[i] == 1)
-            {
-                r = 0.8;
-                g = 0.0;
-                b = 1.0;
-            }
-            else if (this.layer[i] == 2 || this.layer[i] == 3)
-            {
-                r = 0.0;
-                g = 1.0;
-                b = 0.0;
-            }
-            else if (this.layer[i] == 4)
-            {
-                r = 0.0;
-                g = 0.2;
-                b = 1.0;
-            }
-            else if (this.layer[i] == 5)
-            {
-                r = 0.0;
-                g = 1.0;
-                b = 1.0;
-            }
-            else if (this.layer[i] == 6)
-            {
-                r = 1.0;
-                g = 1.0;
-                b = 0.0;
-            }
-            else
-            {
-                r = 0.0;
-                g = 0.5;
-                b = 1.0;
-            }
+        var xyz = this.userXYZ;  // For now use only XYZ predefined coordinates
 
-            this.geometry.attributes.vcolor.array[i3] = r;
-            this.geometry.attributes.vcolor.array[i3 + 1] = g;
-            this.geometry.attributes.vcolor.array[i3 + 2] = b;
-        }
-    }
-    else if (this.colormap == BRAIN3D.COLOR_MAP_NONE)
-    {
-        for (var i = 0, i3 = 0; i < this.vertices.length; i++ , i3 += 3)
+        for (var popname in this.populations)
         {
-            this.geometry.attributes.vcolor.array[i3] = 1.0;
-            this.geometry.attributes.vcolor.array[i3 + 1] = 0.5;
-            this.geometry.attributes.vcolor.array[i3 + 2] = 0.9;
+            var popValues = this.populations[popname];
+            var start = popValues.from;
+            var end = popValues.to;
+            var step = popValues.hasOwnProperty('step') ? popValues.step : 1;
+            if (step <= 0) step = 1;
+
+            for (var i = start; i < end; i += step)
+            {
+                var nsize = 1.0;
+
+                if (popValues.visible)
+                {
+                    if (!neuronesVisible.hasOwnProperty(i))
+                    {
+                        neuronesVisible[i] = 1;
+                    }
+                    else
+                    {
+                        neuronesVisible[i] += 1;
+                    }
+
+                    nsize = 1.0 - ((neuronesVisible[i] - 1.0) * BRAIN3D.OVERLAPPING_NEURONES_RESIZE_FACTOR);
+                }
+                else
+                {
+                    nsize = 0;
+                }
+
+                if (i >= 0 && i < xyz.length / 3)
+                {
+                    if (this.particles[particlei].tsize!=nsize)
+                    {
+                        this.particles[particlei].sizeInterpolant = 0.0;
+                        this.particles[particlei].tsize = nsize;
+                    }
+                    particlei++;
+                }
+            }
         }
     }
 
-    this.geometry.attributes.vcolor.needsUpdate = true;
+    var ptSize = this.ptsizeInView();
+
+    for (var i = 0; i < this.particles.length; i++)
+    {
+        var p = this.particles[i];
+
+        var currentSize;
+
+        if (p.sizeInterpolant<1.0)
+        {
+            currentSize = this.accDecCurve(p.size + (p.tsize - p.size) * p.sizeInterpolant);
+        }
+        else
+        {
+            currentSize = p.size;
+        }
+
+        this.geometry.attributes.size.array[i] = ptSize * currentSize;
+
+    }
+
+    this.geometry.attributes.size.needsUpdate = true;
+    this.ptsizeInViewOld = ptSize;
+};
+
+BRAIN3D.MainView.prototype.updatePopulationVisibility = function()
+{
+    this.updateParticleSize(true);
 };
 
 BRAIN3D.MainView.prototype.applySphereType = function ()
 {
-    var texturedValue = 1.0;
-
     if (this.spheretype == BRAIN3D.SPHERE_TYPE_SPHERE)
     {
         this.object.material.blending = 0;
@@ -476,7 +607,6 @@ BRAIN3D.MainView.prototype.applySphereType = function ()
     }
     else if (this.spheretype == BRAIN3D.SPHERE_TYPE_BLENDED)
     {
-        texturedValue = 0.5;
 
         this.object.material.blending = THREE.AdditiveBlending;
         this.object.material.depthTest = false;
@@ -484,7 +614,6 @@ BRAIN3D.MainView.prototype.applySphereType = function ()
     }
     else if (this.spheretype == BRAIN3D.SPHERE_TYPE_POINT)
     {
-        texturedValue = 0.5;
 
         this.object.material.blending = 0;
         this.object.material.depthTest = true;
@@ -492,19 +621,10 @@ BRAIN3D.MainView.prototype.applySphereType = function ()
     }
     else if (this.spheretype == BRAIN3D.SPHERE_TYPE_SIMPLE)
     {
-        texturedValue = 0.0;
-
         this.object.material.blending = 0;
         this.object.material.depthTest = true;
         this.object.material.transparent = false;
     }
-
-    for (var i = 0; i < this.vertices.length; i++)
-    {
-        this.geometry.attributes.textured.array[i] = texturedValue;
-    }
-
-    this.geometry.attributes.textured.needsUpdate = true;
 };
 
 //------------------------------
@@ -542,8 +662,8 @@ BRAIN3D.MainView.prototype.mouseWheel = function (e)
     var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
     var move = delta * 20.0;
     this.cameraZoom = this.cameraZoom - move;
-    if (this.cameraZoom < 10.0) { this.cameraZoom = 10; }
-    else if (this.cameraZoom > 750.0) { this.cameraZoom = 750.0; }
+    if (this.cameraZoom < BRAIN3D.CAMERA_MIN_ZOOM) { this.cameraZoom = BRAIN3D.CAMERA_MIN_ZOOM; }
+    else if (this.cameraZoom > BRAIN3D.CAMERA_MAX_ZOOM) { this.cameraZoom = BRAIN3D.CAMERA_MAX_ZOOM; }
 
 };
 

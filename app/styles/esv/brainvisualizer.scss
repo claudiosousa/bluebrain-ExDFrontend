@@ -15,23 +15,82 @@
   margin-right: -5px;
 }
 
+.esv-brainvisualizer-pop-button
+{
+    width:100%;
+    background-color: #dddddd;
+}
+
+.esv-brainvisualizer-pop-button-down
+{
+    width:100%;
+    text-decoration: none;
+    background-color: #ffffff;
+    border-color: #000000;
+    outline:0;
+    border-radius: 4px;
+}
+
+.esv-brainvisualizer-pop-button-down:focus
+{
+    text-decoration: none;
+    background-color: #ffffff;
+    border-color: #000000;
+    outline:0;
+    border-radius: 4px;
+}
+
+.esv-brainvisualizer-pop-button:focus
+{
+    text-decoration: none;
+    background-color: #dddddd;
+    border-color: #adadad;
+    outline:0;
+    border-radius: 4px;
+}
+
+.esv-brainvisualizer-initializing
+{
+    text-align: center;
+    color: white;
+    white-space: nowrap;
+    display: block;
+    top: calc(50% - 10px);
+    position: absolute;
+    font-size: 20px;
+    width: 100%;
+}
+
+.esv-brainvisualizer-box-title
+{
+    text-align: center;
+    padding: 3px;
+}
+
+.esv-brainvisualizer-box
+{
+    background-color: #eeeeee;
+    border-radius: 4px;
+    padding-top: 4px;
+}
+
 .esv-brainvisualizer-main
 {
     float: left;
     width: calc(100% - 180px);
     height: 100%;
     border: 1px solid black;
-
+    position: relative;
     background-color: #1A8FCF;
     margin: 0px;
     overflow: hidden;
-    background-image: -webkit-gradient(#002244,#000000);
+    background-image: -webkit-gradient(#002255,#000000);
     /* Safari 5.1, iOS 5.0-6.1, Chrome 10-25, Android 4.0-4.3 */
-    background-image: -webkit-linear-gradient(#002244,#000000);
+    background-image: -webkit-linear-gradient(#002255,#000000);
     /* Firefox 3.6 - 15 */
-    background-image: -moz-linear-gradient(#002244,#000000);
+    background-image: -moz-linear-gradient(#002255,#000000);
     /* Opera 11.1 - 12 */
-    background-image: -o-linear-gradient(#002244,#000000);
+    background-image: -o-linear-gradient(#002255,#000000);
     /* Opera 15+, Chrome 25+, IE 10+, Firefox 16+, Safari 6.1+, iOS 7+, Android 4.4+ */
-    background-image: linear-gradient(#002244,#000000);
+    background-image: linear-gradient(#002255,#000000);
 }
