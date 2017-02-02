@@ -12,7 +12,7 @@
     scope.selectedJoints = {};
     scope.properties = ["position", "velocity", "effort"];
     scope.jointColors = [];
-    scope.selectedProperty = { name: scope.properties[0] };
+    scope.selectedProperty = {name: scope.properties[0]};
     scope.timeWindow = 10;
     var colorScale = d3.scale.category10();
 
@@ -26,10 +26,10 @@
     scope.startJointDisplay = function () {
       var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
       scope.jointTopicSubscriber = scope.jointTopicSubscriber || roslib.createTopic(rosConnection,
-        scope.topic,
-        'sensor_msgs/JointState', {
-          throttle_rate: 1.0 / pointFrequency * 1000.0
-        });
+          scope.jointTopic,
+          'sensor_msgs/JointState', {
+            throttle_rate: 1.0 / pointFrequency * 1000.0
+          });
       topicSubCb = scope.jointTopicSubscriber.subscribe(scope.onNewJointMessageReceived, true);
     };
 
@@ -94,93 +94,95 @@
     };
   }
 
-  angular.module('exdFrontendApp').directive('jointPlot', ['$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', '$timeout', 'RESET_TYPE', function ($log, $window, $filter, roslib, stateService, STATE, $timeout, RESET_TYPE) {
-    return {
-      templateUrl: 'views/esv/joint-plot.html',
-      restrict: 'E',
-      replace: true,
-      scope: {
-        server: '@',
-        topic: '@',
-        // see https://github.com/angular/angular.js/issues/2500
-        ngShow: '=',
-        closeWidget: '&'
-      },
-      link: function (scope, element, attrs) {
-        ['server', 'topic']
-          .forEach(function (mandatoryProp) {
-            if (angular.isUndefined(scope[mandatoryProp])) {
-              $log.error('The ' + mandatoryProp + ' property was not specified!');
-            }
-          });
+  angular.module('exdFrontendApp').directive('jointPlot',
+    [
+      '$log', '$window', '$filter', 'roslib', 'stateService', 'STATE', '$timeout', 'RESET_TYPE', 'simulationInfo', 'bbpConfig',
+      function ($log, $window, $filter, roslib, stateService, STATE, $timeout, RESET_TYPE, simulationInfo, bbpConfig) {
+        return {
+          templateUrl: 'views/esv/joint-plot.html',
+          restrict: 'E',
+          scope: true,
+          link: function (scope, element, attrs) {
+            scope.server = simulationInfo.serverConfig.rosbridge.websocket;
+            scope.jointTopic = bbpConfig.get('ros-topics').joint;
 
-        configureJointPlot(scope, roslib);
+            ['server', 'jointTopic']
+            .forEach(function (mandatoryProp) {
+              if (angular.isUndefined(scope[mandatoryProp]) || scope[mandatoryProp].length === 0) {
+                $log.error('The ' + mandatoryProp + ' property was not specified!');
+              }
+            });
 
-        scope.onResizeBegin = function () {
-          element.addClass('resizing');
-        };
-        scope.onResizeEnd = function () {
-          // the chart needs a bit of time to adjust its size
-          $timeout(function () { element.removeClass('resizing'); }, 200);
-        };
+            configureJointPlot(scope, roslib);
 
-        scope.plotOptions = {
-          drawDots: true,
-          drawLegend: false,
-          tooltipHook: function () { return false; },
-          tooltip: {
-            mode: 'none'
-          },
-          axes: {
-            x: {
-              key: 'time',
-              ticks: 10,
-              min: 0,
-              max: scope.timeWindow
-            },
-            y: {
-              padding: { min: 5, max: 5 }
-            }
-          },
-          series: []
-        };
+            scope.onResizeBegin = function () {
+              element.addClass('resizing');
+            };
+            scope.onResizeEnd = function () {
+              // the chart needs a bit of time to adjust its size
+              $timeout(function () {
+                element.removeClass('resizing');
+              }, 200);
+            };
 
-        // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
-        // ROS topic.
-        if (attrs.hasOwnProperty('ngShow')) {
-          scope.$watch("ngShow", function (visible) {
-            if (visible) {
-              element.show();
-              scope.startJointDisplay();
-            }
-            else {
-              element.hide();
-              scope.stopJointDisplay();
-            }
-          });
-        }
+            scope.plotOptions = {
+              drawDots: true,
+              drawLegend: false,
+              tooltipHook: function () {
+                return false;
+              },
+              tooltip: {
+                mode: 'none'
+              },
+              axes: {
+                x: {
+                  key: 'time',
+                  ticks: 10,
+                  min: 0,
+                  max: scope.timeWindow
+                },
+                y: {
+                  padding: {min: 5, max: 5}
+                }
+              },
+              series: []
+            };
 
-        scope.clearPlot = function () {
-          _.forOwn(scope.curves, function (values) {
-            values.length = 0;
-          });
-          scope.plotOptions.axes.x.min = 0;
-          scope.plotOptions.axes.x.max = scope.timeWindow;
-        };
+            // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
+            // ROS topic.
+            scope.$watch("showJointPlot", function (visible) {
+              if (visible) {
+                element.show();
+                scope.startJointDisplay();
+              }
+              else {
+                element.hide();
+                scope.stopJointDisplay();
+              }
+            });
 
-        //clear plot when resetting the simulation
-        scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
-          if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
-            scope.clearPlot();
+            scope.clearPlot = function () {
+              _.forOwn(scope.curves, function (values) {
+                values.length = 0;
+              });
+              scope.plotOptions.axes.x.min = 0;
+              scope.plotOptions.axes.x.max = scope.timeWindow;
+            };
+
+            //clear plot when resetting the simulation
+            scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
+              if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
+                scope.clearPlot();
+              }
+            });
+
+            // clean up on leaving
+            scope.$on("$destroy", function () {
+              // unbind resetListener callback
+              scope.resetListenerUnbindHandler();
+            });
           }
-        });
-
-        // clean up on leaving
-        scope.$on("$destroy", function () {
-          // unbind resetListener callback
-          scope.resetListenerUnbindHandler();
-        });
+        };
       }
-    };
-  }]);
-} ());
+    ]);
+}());

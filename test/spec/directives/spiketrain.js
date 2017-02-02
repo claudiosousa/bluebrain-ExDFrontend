@@ -5,9 +5,9 @@ describe('Directive: spiketrain', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
 
-  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout, RESET_TYPE, SPIKE_TIMELABEL_SPACE;
+  var parentscope, $scope, element, roslib, stateService, STATE, window, timeout, RESET_TYPE, SPIKE_TIMELABEL_SPACE, simulationInfo;
   var SERVER_URL = 'ws://localhost:1234';
-  var SPIKE_TOPIC = '/cle_sim/spike';
+  var SPIKE_TOPIC = '/monitor/spike_recorder';
 
   function setShow(showBool) {
     parentscope.showSpikeTrain = showBool;
@@ -34,16 +34,25 @@ describe('Directive: spiketrain', function () {
       removeStateCallback: jasmine.createSpy('removeStateCallback')
     });
 
+    var simulationInfoMock = {
+      serverConfig: {
+        rosbridge: {
+          websocket: SERVER_URL
+        }
+      }
+    };
+    $provide.value('simulationInfo', simulationInfoMock);
+
   }));
 
   beforeEach(inject(function (
     $rootScope, $compile, $window,
-    _roslib_, _stateService_, _STATE_, $timeout, _RESET_TYPE_, _SPIKE_TIMELABEL_SPACE_) {
+    _roslib_, _stateService_, _STATE_, $timeout, _RESET_TYPE_, _SPIKE_TIMELABEL_SPACE_, _simulationInfo_) {
     parentscope = $rootScope.$new();
     parentscope.showSpikeTrain = false;
-    element = $compile('<spiketrain server="' + SERVER_URL + '" topic="' + SPIKE_TOPIC + '" ng-show="showSpikeTrain"></spiketrain>')(parentscope);
+    element = $compile('<spiketrain></spiketrain>')(parentscope);
     parentscope.$digest();
-    $scope = element.isolateScope();
+    $scope = element.scope();
     roslib = _roslib_;
     window = $window;
     timeout = $timeout;
@@ -51,6 +60,7 @@ describe('Directive: spiketrain', function () {
     STATE = _STATE_;
     RESET_TYPE = _RESET_TYPE_;
     SPIKE_TIMELABEL_SPACE = _SPIKE_TIMELABEL_SPACE_;
+    simulationInfo = _simulationInfo_;
   }));
 
   it('should draw separator if not first time run', function () {
@@ -69,9 +79,8 @@ describe('Directive: spiketrain', function () {
     // Compile a piece of HTML containing the directive
     expect(element.prop('outerHTML')).toContain('resizeable');
     expect(element.prop('outerHTML')).toContain('spikegraph');
-    expect(element.prop('outerHTML')).toContain('ng-isolate-scope');
-    expect(element.prop('outerHTML')).toContain('server="' + SERVER_URL + '"');
-    expect(element.prop('outerHTML')).toContain('topic="' + SPIKE_TOPIC + '"');
+    expect($scope.server).toBe(SERVER_URL);
+    expect($scope.spikeTopic).toBe(SPIKE_TOPIC);
     expect(element.prop('outerHTML')).toContain('ng-show="showSpikeTrain"');
     expect(element.prop('outerHTML')).toContain('leftaxis');
     expect(element.prop('outerHTML')).toContain('spiketrain');
@@ -300,13 +309,27 @@ describe('Directive: spiketrain (missing necessary attributes)', function () {
   var element;
   var $log;
   var $scope;
+  var simulationInfo, bbpConfig;
 
   beforeEach(module(function ($provide) {
     $provide.value('$log', {error: jasmine.createSpy('error')});
+
+    var simulationInfoMock = {
+      serverConfig: {
+        rosbridge: {
+          websocket: ''
+        }
+      }
+    };
+    $provide.value('simulationInfo', simulationInfoMock);
+
   }));
 
-  beforeEach(inject(function ($rootScope, $compile, _$log_) {
+  beforeEach(inject(function ($rootScope, $compile, _$log_, _simulationInfo_, _bbpConfig_) {
     $scope = $rootScope.$new();
+    simulationInfo = _simulationInfo_;
+    bbpConfig = _bbpConfig_;
+    bbpConfig.get('ros-topics').spikes = '';
     element = $compile('<spiketrain></spiketrain>')($scope);
     $scope.$digest();
     $log = _$log_;

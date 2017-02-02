@@ -66,16 +66,15 @@
         controller: 'MainCtrl'
       };
 
-      var gz3dViewState = {
-        name: 'gz3d-view',
-        url: '/esv-web/gz3d-view/:serverID/:experimentID/:simulationID?ctx',
-        templateUrl: 'views/esv/gz3d-view.html',
-        controller: 'Gz3dViewCtrl',
+      var experimentViewState = {
+        name: 'experiment-view',
+        url: '/esv-web/experiment-view/:serverID/:experimentID/:simulationID?ctx',
+        templateUrl: 'views/esv/experiment-view.html',
         onEnter: ['$document', function ($document) {
-          $document.find('body').addClass('gz3d-view-route');
+          $document.find('body').addClass('experiment-view-route');
         }],
         onExit: ['$document', function ($document) {
-          $document.find('body').removeClass('gz3d-view-route');
+          $document.find('body').removeClass('experiment-view-route');
         }],
         resolve: {
           siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
@@ -111,7 +110,7 @@
 
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
-      home.state(gz3dViewState);
+      home.state(experimentViewState);
       home.state(supportState);
       home.state(newCollabOverviewState);
       // Provide a default route.

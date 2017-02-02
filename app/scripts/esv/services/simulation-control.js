@@ -259,7 +259,7 @@
                 simulationConfigService.initConfigFiles(serverURL, createData.simulationID).then(function ()
                 {
                   deferred.resolve(
-                    'esv-web/gz3d-view/' + server + '/' + experimentID + '/' + createData.simulationID);
+                    'esv-web/experiment-view/' + server + '/' + experimentID + '/' + createData.simulationID);
                 }).catch(function (err)
                 {
                   deferred.reject(err);

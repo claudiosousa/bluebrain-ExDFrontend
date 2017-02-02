@@ -1,8 +1,5 @@
 <!-- build:css(.tmp) styles/esv/gz3d-view.css -->
 <link rel="stylesheet" href="styles/esv/gz3d-view.css" />
-<link rel="stylesheet" href="styles/esv/spiketrain.css" />
-<link rel="stylesheet" href="styles/esv/joint-plot.css" />
-<link rel="stylesheet" href="styles/esv/object-inspector.css" />
 <link rel="stylesheet" href="styles/esv/ros-reconnecting.css"/>
 <!-- endbuild -->
 
@@ -104,8 +101,8 @@
         <div show-on-top class="human-navigation-info ng-hide" ng-show="showHumanNavInfoDiv">
           <span>When paused, avatar navigation is not possible</span>
         </div>
-        <spiketrain show-on-top server="{{rosbridgeWebsocketUrl}}" class="ng-hide" topic="{{rosTopics.spikes}}" movable ng-show="showSpikeTrain"></spiketrain>
-        <joint-plot show-on-top server="{{rosbridgeWebsocketUrl}}" class="ng-hide" topic="{{rosTopics.joint}}" movable ng-show="showJointPlot"></joint-plot>
+        <spiketrain></spiketrain>
+        <joint-plot></joint-plot>
         <!-- HelpText -->
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PLAY_BUTTON]='Here you can start the simulation on the server. The simulation will then run until either you stop it or the simulation times out. The timeout is shown in the toolbar, named \'Timeout\'.'">
         <input type="hidden" ng-model="helpText" ng-init="helpText[UI.PAUSE_BUTTON]='Here you can pause the simulation on the server.'">
@@ -198,8 +195,8 @@
                 <div class="hbp-toolbar-light-divbar"></div>
                 <i ng-class="{'disabled-image':isGlobalLightMaxReached(), 'highlighted': currentSelectedUIElement === UI.INCREASE_LIGHT}" class="hbp-toolbar-light-max fa fa-lightbulb-o fa-2x vertcenter"></i>
 
-                <div class="hbp-toolbar-light-left-click" ng-click="modifyLightClickHandler(-1, 'DECREASE_LIGHT')"></div>
-                <div class="hbp-toolbar-light-right-click" ng-click="modifyLightClickHandler(1, 'INCREASE_LIGHT')"></div>
+                <div class="hbp-toolbar-light-left-click" ng-click="modifyLightClickHandler(-1, UI.DECREASE_LIGHT)"></div>
+                <div class="hbp-toolbar-light-right-click" ng-click="modifyLightClickHandler(1, UI.INCREASE_LIGHT)"></div>
 
               </div>
               <!-- global lights -->

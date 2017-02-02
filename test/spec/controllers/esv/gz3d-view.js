@@ -4,50 +4,50 @@
 
 describe('Controller: Gz3dViewCtrl', function () {
   var Gz3dViewCtrl,
-      controller,
-      scope,
-      rootScope,
-      log,
-      timeout,
-      window,
-      document,
-      location,
-      cameraManipulation,
-      splash,
-      simulationState,
-      simulationControl,
-      stateService,
-      simulationInfo,
-      contextMenuState,
-      colorableObjectService,
-      splashInstance,
-      exampleProgressData,
-      assetLoadingSplash,
-      simulations,
-      hbpIdentityUserDirectory,
-      fakeSimulationData,
-      nrpBackendVersions,
-      nrpFrontendVersion,
-      STATE,
-      UI,
-      EDIT_MODE,
-      panels,
-      gz3d,
-      hbpDialogFactory,
-      backendInterfaceService,
-      RESET_TYPE,
-      objectInspectorService,
-      userNavigationService,
-      collabExperimentLockService,
-      collabExperimentLockServiceMock ={},
-      lockServiceMock,
-      q,
-      callback,
-      onLockChangedCallback,
-      experimentProxyService,
-      experimentList,
-      lockServiceCancelCallback,
-      NAVIGATION_MODES;
+    controller,
+    scope,
+    rootScope,
+    log,
+    timeout,
+    window,
+    document,
+    location,
+    cameraManipulation,
+    splash,
+    simulationState,
+    simulationControl,
+    stateService,
+    simulationInfo,
+    contextMenuState,
+    colorableObjectService,
+    splashInstance,
+    exampleProgressData,
+    assetLoadingSplash,
+    simulations,
+    hbpIdentityUserDirectory,
+    fakeSimulationData,
+    nrpBackendVersions,
+    nrpFrontendVersion,
+    STATE,
+    UI,
+    EDIT_MODE,
+    panels,
+    gz3d,
+    hbpDialogFactory,
+    backendInterfaceService,
+    RESET_TYPE,
+    objectInspectorService,
+    userNavigationService,
+    collabExperimentLockService,
+    collabExperimentLockServiceMock ={},
+    lockServiceMock,
+    q,
+    callback,
+    onLockChangedCallback,
+    experimentProxyService,
+    experimentList,
+    lockServiceCancelCallback,
+    NAVIGATION_MODES;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -107,7 +107,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       localCurrentState = s;
       return {
         then: setThenSpy.andCallFake(function (f) { f(); }).
-          andReturn({ catch: function (f) { f(); } }),
+        andReturn({ catch: function (f) { f(); } }),
         catch: setCatchSpy.andCallFake(function (f) { f(); })
       };
     });
@@ -638,7 +638,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       successCallback();
       timeout.flush(100);
       expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, false);
-     });
+    });
 
     it('should notify the widgets when resetting', function() {
       spyOn(scope, 'notifyResetToWidgets').andCallThrough();
@@ -965,59 +965,59 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       scope.lightDiffuse = initiaLightness;
 
-      scope.modifyLightClickHandler(1, 'INCREASE_LIGHT');
+      scope.modifyLightClickHandler(1, UI.INCREASE_LIGHT);
       expect(gz3d.scene.emitter.lightDiffuse).toBeGreaterThan(initiaLightness);
 
-      scope.modifyLightClickHandler(-1, 'DECREASE_LIGHT');
-      scope.modifyLightClickHandler(-1, 'DECREASE_LIGHT');
+      scope.modifyLightClickHandler(-1, UI.DECREASE_LIGHT);
+      scope.modifyLightClickHandler(-1, UI.DECREASE_LIGHT);
       expect(gz3d.scene.emitter.lightDiffuse).toBeLessThan(initiaLightness);
     });
 
     it('should emit light intensity changes', function() {
-        gz3d.scene.scene = {};
+      gz3d.scene.scene = {};
 
-        // three is loaded externally, jshint does not know that
-        var light0 = new THREE.AmbientLight(); // jshint ignore:line
-        var light1 = new THREE.PointLight(); // jshint ignore:line
-        light1.name = 'left_spot';
-        light1.initialIntensity = 0.5;
-        var light2 = new THREE.PointLight();// jshint ignore:line
-        light2.name = 'right_spot';
-        light2.initialIntensity = 0.5;
+      // three is loaded externally, jshint does not know that
+      var light0 = new THREE.AmbientLight(); // jshint ignore:line
+      var light1 = new THREE.PointLight(); // jshint ignore:line
+      light1.name = 'left_spot';
+      light1.initialIntensity = 0.5;
+      var light2 = new THREE.PointLight();// jshint ignore:line
+      light2.name = 'right_spot';
+      light2.initialIntensity = 0.5;
 
-        gz3d.scene.scene.__lights = [light1, light2];
+      gz3d.scene.scene.__lights = [light1, light2];
 
-        // helper is defined as 'undefined' for semantical reasons
-        var helper = undefined; // jshint ignore:line
-        var entity0 = {
-            children: [light0, helper]
-        };
-        var entity1 = {
-            children: [light1, helper]
-        };
-        var entity2 = {
-            children: [light2, helper]
-        };
-        gz3d.scene.getByName = function(name) {
-            if (name === 'ambient') {
-                return entity0;
-            }
+      // helper is defined as 'undefined' for semantical reasons
+      var helper = undefined; // jshint ignore:line
+      var entity0 = {
+        children: [light0, helper]
+      };
+      var entity1 = {
+        children: [light1, helper]
+      };
+      var entity2 = {
+        children: [light2, helper]
+      };
+      gz3d.scene.getByName = function(name) {
+        if (name === 'ambient') {
+          return entity0;
+        }
 
-            if (name === 'left_spot') {
-                return entity1;
-            }
+        if (name === 'left_spot') {
+          return entity1;
+        }
 
-            if (name === 'right_spot') {
-                return entity2;
-            }
+        if (name === 'right_spot') {
+          return entity2;
+        }
 
-            return undefined;
-        };
+        return undefined;
+      };
 
-        //TODO: complete test implementation
-        //gz3d.scene.getLightType = GZ3D.Scene.prototype.getLightType;
-        //gz3d.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
-        //scope.incrementLightIntensities(-0.5);
+      //TODO: complete test implementation
+      //gz3d.scene.getLightType = GZ3D.Scene.prototype.getLightType;
+      //gz3d.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
+      //scope.incrementLightIntensities(-0.5);
     });
 
     it('should call or skip camera controls according to mouse events and help mode status', function() {
@@ -1177,11 +1177,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.currentSelectedUIElement).toBe(UI.TIME_DISPLAY);
       expect(scope.helpDescription).toBe(scope.helpText[UI.TIME_DISPLAY]);
 
-      scope.modifyLightClickHandler(1, 'INCREASE_LIGHT');
+      scope.modifyLightClickHandler(1, UI.INCREASE_LIGHT);
       expect(scope.currentSelectedUIElement).toBe(UI.INCREASE_LIGHT);
       expect(scope.helpDescription).toBe(scope.helpText[UI.INCREASE_LIGHT]);
 
-      scope.modifyLightClickHandler(1, 'DECREASE_LIGHT');
+      scope.modifyLightClickHandler(1, UI.DECREASE_LIGHT);
       expect(scope.currentSelectedUIElement).toBe(UI.DECREASE_LIGHT);
       expect(scope.helpDescription).toBe(scope.helpText[UI.DECREASE_LIGHT]);
 
@@ -1479,7 +1479,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   });
 
 
- describe('(EnvironmentSettings)', function ()
+  describe('(EnvironmentSettings)', function ()
   {
     beforeEach(function ()
     {
@@ -1491,8 +1491,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should init default environment settings', function ()
     {
-        scope.initComposerSettings();
-        expect(scope.loadingEnvironmentSettingsPanel).toBe(false);
+      scope.initComposerSettings();
+      expect(scope.loadingEnvironmentSettingsPanel).toBe(false);
     });
 
     it('should enable display of the environment settings panel', function ()
@@ -1523,12 +1523,12 @@ describe('Controller: Gz3dViewCtrl', function () {
 
 describe('Controller: Gz3dViewCtrl - mocked window', function () {
   var Gz3dViewCtrl,
-      controller,
-      scope,
-      rootScope,
-      stateService,
-      window,
-      document;
+    controller,
+    scope,
+    rootScope,
+    stateService,
+    window,
+    document;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));

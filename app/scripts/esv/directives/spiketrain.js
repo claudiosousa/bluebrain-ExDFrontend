@@ -4,8 +4,8 @@
   angular.module('exdFrontendApp')
     .constant('SPIKE_TIMELABEL_SPACE', 15)// Vertical space in the canvas reserved for the time label
     .directive('spiketrain',
-    ['$timeout', '$log', '$window', '$filter', '$document', 'roslib', 'stateService', 'STATE', 'RESET_TYPE', 'SPIKE_TIMELABEL_SPACE',
-      function ($timeout, $log, $window, $filter, $document, roslib, stateService, STATE, RESET_TYPE, SPIKE_TIMELABEL_SPACE) {
+    ['$timeout', '$log', '$window', '$filter', '$document', 'roslib', 'stateService', 'STATE', 'RESET_TYPE', 'SPIKE_TIMELABEL_SPACE', 'simulationInfo', 'bbpConfig',
+      function ($timeout, $log, $window, $filter, $document, roslib, stateService, STATE, RESET_TYPE, SPIKE_TIMELABEL_SPACE, simulationInfo, bbpConfig) {
         function configureSpiketrain(scope, canvas1, canvas2, directiveDiv, splikeContainer) {
           scope.canvas = [canvas1, canvas2];
           scope.directiveDiv = directiveDiv;
@@ -210,7 +210,7 @@
           // Subscribe to the ROS topic
           scope.startSpikeDisplay = function (firstTimeRun) {
             var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
-            scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.topic, 'cle_ros_msgs/SpikeEvent');
+            scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.spikeTopic, 'cle_ros_msgs/SpikeEvent');
             scope.spikeTopicSubscriber.subscribe(scope.onNewSpikesMessageReceived);
             if (firstTimeRun === false) {
               scope.drawSeparator();
@@ -254,20 +254,15 @@
         return {
           templateUrl: 'views/esv/spiketrain.html',
           restrict: 'E',
-          replace: true,
-          scope: {
-            server: '@',
-            topic: '@',
-            // see https://github.com/angular/angular.js/issues/2500
-            ngShow: '=',
-            closeWidget: '&'
-          },
+          scope: true,
           link: function (scope, element, attrs) {
-            if (angular.isUndefined(scope.server)) {
+            scope.server = simulationInfo.serverConfig.rosbridge.websocket;
+            if (angular.isUndefined(scope.server) || scope.server.length === 0) {
               $log.error('The server URL was not specified!');
             }
 
-            if (angular.isUndefined(scope.topic)) {
+            scope.spikeTopic = bbpConfig.get('ros-topics').spikes;
+            if (angular.isUndefined(scope.spikeTopic) || scope.spikeTopic.length === 0) {
               $log.error('The topic for the spikes was not specified!');
             }
 
@@ -288,24 +283,25 @@
               }
             });
             angular.element($window).on('resize', scope.onScreenSizeChanged);
+            scope.onResizeEnd = function () {
+              scope.onScreenSizeChanged();
+            };
 
             // When starting to display (or hide) the canvas, we need to subscribe (or unsubscribe) to the
             // ROS topic.
-            if (attrs.hasOwnProperty('ngShow')) {
-              scope.$watch("ngShow", function (visible) {
-                if (visible) {
-                  element.show();
-                  scope.startSpikeDisplay(firstTimeRun);
-                  firstTimeRun = false;
-                  // asynchronous recomputation of the size
-                  $timeout(scope.onScreenSizeChanged, 0);
-                }
-                else {
-                  element.hide();
-                  scope.stopSpikeDisplay();
-                }
-              });
-            }
+            scope.$watch("showSpikeTrain", function (visible) {
+              if (visible) {
+                element.show();
+                scope.startSpikeDisplay(firstTimeRun);
+                firstTimeRun = false;
+                // asynchronous recomputation of the size
+                $timeout(scope.onScreenSizeChanged, 0);
+              }
+              else {
+                element.hide();
+                scope.stopSpikeDisplay();
+              }
+            });
 
             scope.$on('$destroy', function () {
               angular.element($window).off('resize.spiketrain');
