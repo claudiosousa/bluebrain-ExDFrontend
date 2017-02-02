@@ -50,6 +50,10 @@ $logConsolePanelHeadingHeightTotal: $logConsolePanelHeadingHeight+2 * $logConsol
         margin: $logConsolePanelHeadingHeightTotal 0 0 0;
         overflow: auto;
         font-family: Inconsolata;
+
+        b{
+            display: inline-block;
+        }
     }
     .button-close {
         position: absolute;

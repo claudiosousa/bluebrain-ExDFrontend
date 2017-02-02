@@ -1,8 +1,8 @@
 (function() {
     'use strict';
 
-    angular.module('exdFrontendApp').directive('logConsole', ['$log', '$filter', 'roslib', '$timeout', 'RESET_TYPE',
-        function($log, $filter, roslib, $timeout, RESET_TYPE) {
+    angular.module('exdFrontendApp').directive('logConsole', ['$log', '$filter', 'roslib', '$timeout', 'RESET_TYPE', 'stateService', 'STATE',
+        function($log, $filter, roslib, $timeout, RESET_TYPE, stateService, STATE) {
             //auto scroll when the distance from bottom of the scrollable area <= than AUTO_SCROLL_MAX_DISTANCE
             var AUTO_SCROLL_MAX_DISTANCE = 10;
             var MAX_VISIBLE_LOGS = 100; //number of last received logs kept visible
@@ -26,6 +26,8 @@
                     });
 
                     scope.logs = [];
+                    scope.STATE = STATE;
+                    scope.stateService = stateService;
 
                     var logList = element.find('.log-list')[0];
 

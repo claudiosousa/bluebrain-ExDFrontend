@@ -161,11 +161,12 @@
                           (stateService.currentState !== STATE.FAILED)">
               <i class="glyphicon glyphicon glyphicon-repeat"></i>
             </div>
-            <div ng-class="{'disabled': (stateService.currentState === STATE.HALTED) ||
-                                        (stateService.currentState === STATE.STOPPED) ||
-                                        (stateService.currentState === STATE.FAILED)}">
+            <div>
               <div class="hbp-toolbar-large-tool hbp-time-display default-cursor"
-                   ng-class="{'highlighted': currentSelectedUIElement === UI.TIME_DISPLAY}"
+                   ng-class="{'highlighted': currentSelectedUIElement === UI.TIME_DISPLAY,
+                              'disabled': (stateService.currentState === STATE.HALTED) ||
+                                          (stateService.currentState === STATE.STOPPED) ||
+                                          (stateService.currentState === STATE.FAILED)}"
                    ng-click="timeDisplayClickHandler()">
                 <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)">
                   <div>
@@ -189,7 +190,10 @@
 
 
               <!-- global lights -->
-              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item" ng-disabled="helpModeActivated">
+              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item" ng-disabled="helpModeActivated"
+                   ng-class="{'disabled': (stateService.currentState === STATE.HALTED) ||
+                                          (stateService.currentState === STATE.STOPPED) ||
+                                          (stateService.currentState === STATE.FAILED)}">
 
                 <i ng-class="{'disabled-image': gz3d.isGlobalLightMinReached(), 'highlighted': currentSelectedUIElement === UI.DECREASE_LIGHT}" class="hbp-toolbar-light-min fa fa-lightbulb-o fa-1x vertcenter"></i>
                 <div class="hbp-toolbar-light-divbar"></div>
@@ -338,7 +342,11 @@
               <!-- code editor icon -->
               <div ng-if="userContextService.isOwner()"
                    class="hbp-toolbar-action hide-overflow"
-                   ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel, disabled: !helpModeActivated && editIsDisabled || loadingEditPanel}"
+                   ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel,
+                              'disabled': !helpModeActivated && editIsDisabled || loadingEditPanel ||
+                                          (stateService.currentState === STATE.HALTED) ||
+                                          (stateService.currentState === STATE.STOPPED) ||
+                                          (stateService.currentState === STATE.FAILED)}"
                    ng-click="codeEditorButtonClickHandler()"
                    tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}."
                    tooltip-trigger="mouseenter"
@@ -351,7 +359,11 @@
 
               <!-- brain visualizer icon -->
               <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
-                   ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showBrainvisualizerPanel}"
+                   ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showBrainvisualizerPanel,
+                              'disabled': !helpModeActivated && brainvisualizerIsDisabled || loadingBrainvisualizerPanel ||
+                                          (stateService.currentState === STATE.HALTED) ||
+                                          (stateService.currentState === STATE.STOPPED) ||
+                                          (stateService.currentState === STATE.FAILED)}"
                    ng-click="brainVisualizerButtonClickHandler()"
                    tooltip-trigger="mouseenter"
                   >

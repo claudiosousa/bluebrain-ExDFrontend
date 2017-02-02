@@ -10,5 +10,6 @@
     <div class="log-console-panel-content log-list">
         <span ng-if="logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
         <div class="log" ng-repeat="log in logs">[{{log.time}}] {{log.msg}}</div>
+        <b ng-if="stateService.currentState == STATE.HALTED">The simulation detected an error situation and cannot be recovered. Any further interaction with the simulation is disabled. Please save any data and shut down the simulation.</b>
     </div>
 </div>
