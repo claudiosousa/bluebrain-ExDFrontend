@@ -351,13 +351,9 @@
 
               <!-- brain visualizer icon -->
               <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow"
-                   ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showBrainvisualizerPanel, disabled: !helpModeActivated && brainvisualizerIsDisabled || loadingBrainvisualizerPanel}"
+                   ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showBrainvisualizerPanel}"
                    ng-click="brainVisualizerButtonClickHandler()"
-                   v-busy="loadingBrainvisualizerPanel"
-                   v-busy-label="Loading the brain visualizer"
                    tooltip-trigger="mouseenter"
-                   tooltip-enable="brainvisualizerIsDisabled"
-                   tooltip="Sorry, there is no brainvisualizer data for this experiment"
                   >
                 <i class="fa fa-asterisk fa-2x vertcenter"></i>
               </div>

@@ -1412,22 +1412,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
-    it('should init brain visualizer data', function ()
-    {
-      simulationConfigServiceMock.simulateCatch = false;
-      scope.initBrainvisualizerData();
-      scope.$digest();
-      expect(scope.loadingBrainvisualizerPanel).toBe(false);
-    });
-
-    it('should disable brain visualizer when no data', function ()
-    {
-      simulationConfigServiceMock.simulateCatch = true;
-      scope.initBrainvisualizerData();
-      scope.$digest();
-      expect(scope.brainvisualizerIsDisabled).toBe(true);
-    });
-
     it('should enable display of the brainvisualizer panel', function ()
     {
       scope.showBrainvisualizerPanel = false;
@@ -1451,15 +1435,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.brainVisualizerButtonClickHandler();
       expect(scope.showBrainvisualizerPanel).toBe(false);
       scope.helpModeActivated = false;
-    });
-
-    it('should not display brainvisualizer panel when disabled', function ()
-    {
-      scope.showBrainvisualizerPanel = false;
-      scope.brainvisualizerIsDisabled = true;
-      scope.brainVisualizerButtonClickHandler();
-      expect(scope.showBrainvisualizerPanel).toBe(false);
-      scope.brainvisualizerIsDisabled = false;
     });
 
     it('should open the log-console panel', function ()
