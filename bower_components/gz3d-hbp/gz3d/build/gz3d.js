@@ -9707,7 +9707,6 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
     if (materials.indexOf(material.id) === -1)
     {
       materials.push(material.id);
-      material.transparent = true;
 
       if (viewAs === 'transparent')
       {
@@ -9717,6 +9716,8 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
       {
         material.opacity = material.originalOpacity ? material.originalOpacity : 1.0;
       }
+      material.transparent = material.opacity<1.0;
+
     }
   }
 
