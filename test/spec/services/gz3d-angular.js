@@ -1,6 +1,7 @@
 'use strict';
 
 /* global GZ3D: true */
+/* global THREE: true */
 /* global Detector: true */
 /* global document: true */
 
@@ -22,14 +23,16 @@ describe('testing the gz3d service', function () {
   Detector = {};
   Detector.webgl = true;
   var cameraHelper = { visible: false };
-  var SceneObject = {};
-  SceneObject.render = jasmine.createSpy('render');
-  SceneObject.viewManager = {};
-  SceneObject.viewManager.setCallbackCreateRenderContainer = jasmine.createSpy('setCallbackCreateRenderContainer');
-  SceneObject.viewManager.getViewByName = function () { return { camera: { cameraHelper: cameraHelper } }; };
-  var DomElement = {};
-  SceneObject.getDomElement = jasmine.createSpy('getDomElement').andReturn(DomElement);
-  SceneObject.setWindowSize = jasmine.createSpy('setWindowSize');
+  var SceneObject = {
+    scene: new THREE.Scene(),
+    render: jasmine.createSpy('render'),
+    viewManager: {
+      setCallbackCreateRenderContainer: jasmine.createSpy('setCallbackCreateRenderContainer'),
+      getViewByName: function () { return { camera: { cameraHelper: cameraHelper } }; }
+    },
+    getDomElement: jasmine.createSpy('getDomElement').andReturn({}),
+    setWindowSize: jasmine.createSpy('setWindowSize')
+  };
   var GuiObject = {};
   var GZIfaceObject = { addCanDeletePredicate: angular.noop };
   var SdfParserObject = {};
@@ -120,5 +123,41 @@ describe('testing the gz3d service', function () {
     expect(rootScope.stats).not.toBeDefined();
     expect(rootScope.animate).not.toBeDefined();
     expect(rootScope.renderer).not.toBeDefined();
+  });
+
+  it('isGlobalLightMin/MaxReached should return false if gz3d.scene is undefined', function() {
+    gz3d.scene = undefined;
+    expect(gz3d.isGlobalLightMinReached()).toBe(false);
+    expect(gz3d.isGlobalLightMaxReached()).toBe(false);
+  });
+
+  it('isGlobalLightMin/MaxReached should return true or false depending on light intensity information', function() {
+    var lightInfoReturnValue = { max: 0.1 };
+    gz3d.scene.findLightIntensityInfo = function()
+    {
+      return lightInfoReturnValue;
+    };
+    expect(gz3d.isGlobalLightMinReached()).toBe(true);
+    expect(gz3d.isGlobalLightMaxReached()).toBe(false);
+    lightInfoReturnValue.max = 1.0;
+    expect(gz3d.isGlobalLightMinReached()).toBe(false);
+    expect(gz3d.isGlobalLightMaxReached()).toBe(true);
+  });
+
+  it(' - setLightHelperVisibility() should work', function() {
+    // set up test lightHelper object
+    var testLightHelper = new THREE.Object3D();
+    testLightHelper.name = 'test_lightHelper';
+    testLightHelper.visible = false;
+    gz3d.scene.scene.showLightHelpers = true;
+    gz3d.scene.scene.add(testLightHelper);
+
+    expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
+
+    gz3d.scene.showLightHelpers = true;
+
+    gz3d.setLightHelperVisibility();
+
+    expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
   });
 });

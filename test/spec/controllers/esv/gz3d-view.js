@@ -192,6 +192,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     var gz3dMock = {
       Initialize : jasmine.createSpy('Initialize'),
       deInitialize : jasmine.createSpy('deInitialize'),
+      setLightHelperVisibility: jasmine.createSpy('setLightHelperVisibility'),
+      isGlobalLightMinReached: jasmine.createSpy('isGlobalLightMinReached'),
+      isGlobalLightMaxReached: jasmine.createSpy('isGlobalLightMaxReached'),
       scene : {
         resetView: jasmine.createSpy('resetView'),
         setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
@@ -239,12 +242,6 @@ describe('Controller: Gz3dViewCtrl', function () {
         }
       }
     };
-    // set up test lightHelper object
-    var testLightHelper = new THREE.Object3D();
-    testLightHelper.name = 'test_lightHelper';
-    testLightHelper.visible = false;
-    gz3dMock.scene.scene.showLightHelpers = true;
-    gz3dMock.scene.scene.add(testLightHelper);
     //provide gz3dMock
     $provide.value('gz3d', gz3dMock);
 
@@ -926,28 +923,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(callbackOnClose).toBe(scope.onSceneLoaded);
     });
 
-
-    it('should return false if gz3d.scene is undefined', function() {
-      gz3d.scene = undefined;
-      expect(scope.isGlobalLightMinReached()).toBe(false);
-      expect(scope.isGlobalLightMaxReached()).toBe(false);
-    });
-
-
-    it('should return true or false depending on light intensity information', function() {
-      var lightInfoReturnValue = { max: 0.1 };
-      gz3d.scene.findLightIntensityInfo = function()
-      {
-        return lightInfoReturnValue;
-      };
-      expect(scope.isGlobalLightMinReached()).toBe(true);
-      expect(scope.isGlobalLightMaxReached()).toBe(false);
-      lightInfoReturnValue.max = 1.0;
-      expect(scope.isGlobalLightMinReached()).toBe(false);
-      expect(scope.isGlobalLightMaxReached()).toBe(true);
-    });
-
-
     it('should test light change', function() {
 
       var initiaLightness = 0.5;
@@ -1358,26 +1333,11 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function () {
-      spyOn(scope, 'setLightHelperVisibility').andCallThrough();
-      spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
 
       scope.onSceneLoaded();
 
-      expect(scope.setLightHelperVisibility).toHaveBeenCalled();
-      expect(gz3d.scene.scene.traverse).toHaveBeenCalled();
-      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
-    });
-
-    it(' - setLightHelperVisibility() should work', function() {
-      spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
-
-      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
-
-      gz3d.scene.showLightHelpers = true;
-
-      scope.setLightHelperVisibility();
-
-      expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
+      expect(gz3d.scene.showLightHelpers).toBe(true);
+      expect(gz3d.setLightHelperVisibility).toHaveBeenCalled();
     });
 
     it(' - onContainerMouseDown() should make the right calls', function() {
@@ -1532,6 +1492,9 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     var gz3dMock = {
       Initialize : jasmine.createSpy('Initialize'),
       deInitialize : jasmine.createSpy('deInitialize'),
+      setLightHelperVisibility: jasmine.createSpy('setLightHelperVisibility'),
+      isGlobalLightMinReached: jasmine.createSpy('isGlobalLightMinReached'),
+      isGlobalLightMaxReached: jasmine.createSpy('isGlobalLightMaxReached'),
       scene : {
         container : {
           addEventListener : jasmine.createSpy('addEventListener')
