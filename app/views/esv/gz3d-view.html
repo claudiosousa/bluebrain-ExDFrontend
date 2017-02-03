@@ -296,7 +296,7 @@
 
               <!-- toggle robot camera view -->
               <div class="hbp-toolbar-action hide-overflow ng-hide"
-                   ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW, 'active': showRobotView}"
+                   ng-class="{'highlighted': currentSelectedUIElement === UI.ROBOT_VIEW, 'active': showRobotView, 'disabled': !hasCameraView}"
                    ng-click="robotViewButtonClickHandler()"
                    ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <!--<img src="img/esv/robot_view_icon.png" width=32 height=32>-->

@@ -1093,6 +1093,8 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.viewManager.views[1].type).toBe('camera');
       expect(gz3d.scene.viewManager.views[1].active).toBe(false);
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
+      scope.onSceneLoaded();
+      scope.$digest();
       scope.robotViewButtonClickHandler();
       expect(scope.showRobotView).toBe(true);
       expect(gz3d.scene.viewManager.views[0].active).toBe(false);

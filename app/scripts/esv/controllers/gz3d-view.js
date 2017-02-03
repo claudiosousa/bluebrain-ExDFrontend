@@ -723,10 +723,16 @@
         };
 
         // robot view
+        sceneInitialized.promise.then(function(){
+            $scope.hasCameraView = gz3d.scene && gz3d.scene.viewManager && gz3d.scene.viewManager.views.some(function(v){return v.type && v.type === 'camera';});
+        });
+
         $scope.robotViewButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.ROBOT_VIEW);
           }
+          if (!$scope.hasCameraView)
+            return;
           $scope.showRobotView = !$scope.showRobotView;
           nrpAnalytics.eventTrack('Toggle-robot-view', {
             category: 'Simulation-GUI',
