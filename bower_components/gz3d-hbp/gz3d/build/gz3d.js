@@ -9796,26 +9796,30 @@ GZ3D.Scene.prototype.selectEntity = function(object)
 {
   if (object)
   {
-    if (object !== this.selectedEntity)
-    {
-      this.showBoundingBox(object);
-      this.selectedEntity = object;
-    }
+    var animatedExt = '_animated';
 
-    //when scaling and object is not a simple shape, remove manipulator and switch to view mode
-    if(this.manipulationMode === 'scale' && !object.isSimpleShape())
+    if ((object.name.indexOf(animatedExt) < 0 || object.name.indexOf(animatedExt) !== object.name.length - animatedExt.length))
     {
-      this.modelManipulator.detach();
-      this.scene.remove(this.modelManipulator.gizmo);
-      this.manipulationMode = 'view';
-    }
-    else
-    {
-      this.attachManipulator(object, this.manipulationMode);
-    }
+      if (object !== this.selectedEntity)
+      {
+        this.showBoundingBox(object);
+        this.selectedEntity = object;
+      }
 
-    guiEvents.emit('setTreeSelected', object.name);
+      //when scaling and object is not a simple shape, remove manipulator and switch to view mode
+      if(this.manipulationMode === 'scale' && !object.isSimpleShape())
+      {
+        this.modelManipulator.detach();
+        this.scene.remove(this.modelManipulator.gizmo);
+        this.manipulationMode = 'view';
+      }
+      else
+      {
+        this.attachManipulator(object, this.manipulationMode);
+      }
 
+      guiEvents.emit('setTreeSelected', object.name);
+    }
   }
   else
   {
