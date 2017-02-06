@@ -101,7 +101,7 @@
 
               this.contextMenuTop = event.clientY;
               this.contextMenuLeft = event.clientX;
-              gz3d.scene.selectEntity(model);    
+              gz3d.scene.selectEntity(model);
             }
           }
           else {
@@ -121,8 +121,11 @@
           var pos = new THREE.Vector2(event.clientX, event.clientY);
           var intersect = new THREE.Vector3();
           var model = gz3d.scene.getRayCastModel(pos, intersect);
-          if(this.axisSelected(model)){
-            model = gz3d.scene.modelManipulator.object; 
+          if (model)
+          {
+            if(this.axisSelected(model)){
+              model = gz3d.scene.modelManipulator.object;
+            }
           }
           return model;
         }
