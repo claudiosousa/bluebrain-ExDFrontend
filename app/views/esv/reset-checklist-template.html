@@ -5,21 +5,28 @@
 <div class="reset-checklist-template">
     <fieldset>
         <ul style="list-style: none">
-            <b>Simulation</b>
+            <span ng-show="simulationInfo.experimentDetails.brainProcesses > 1">
+                <strong style="color: red;">Brain Reset Functionality Is Currently Disabled for Multi-process Brains</strong>
+                <br/><br/>
+            </span>
 
-            <li>
+            <span ng-show="simulationInfo.experimentDetails.brainProcesses === 1">
+                <b>Simulation</b>
 
-                <label>
+                <li>
 
-                <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}" tooltip="Reset also the simulation timeout."
-                    tooltip-trigger="mouseenter" tooltip-placement="top">
-                </input>
+                    <label>
 
-                Reset Simulation
-                </label>
+                    <input type="radio" ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_FULL}}" tooltip="Reset also the simulation timeout."
+                        tooltip-trigger="mouseenter" tooltip-placement="top">
+                    </input>
 
-            </li>
-            <br/>
+                    Reset Simulation
+                    </label>
+
+                </li>
+                <br/>
+            </span>
 
             <b>Camera</b>
             <li>
@@ -34,21 +41,21 @@
             </li>
             <br/>
 
-            <span>
-            <b>Brain</b>
-            <li>
-                <label>
+            <span ng-show="simulationInfo.experimentDetails.brainProcesses === 1">
+                <b>Brain</b>
+                <li>
+                    <label>
 
-                <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
-                        tooltip="{{isCollabExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
-                        tooltip-trigger="mouseenter" tooltip-placement="top">
-                </input>
-                    Reset the Neural Network
-                </label>
+                    <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
+                            tooltip="{{isCollabExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
+                            tooltip-trigger="mouseenter" tooltip-placement="top">
+                    </input>
+                        Reset the Neural Network
+                    </label>
 
-            </li>
-            <br/>
-        </span>
+                </li>
+                <br/>
+            </span>
 
             <span>
             <b>Environment</b>
