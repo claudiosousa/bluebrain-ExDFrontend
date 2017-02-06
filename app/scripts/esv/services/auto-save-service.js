@@ -1,7 +1,14 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp')
+  /**
+   * @ngdoc service
+   * @namespace exdFrontendApp.services
+   * @module exdFrontendApp
+   * @name exdFrontendApp.autoSaveService
+   * @description Service responsible by auto saving the work in progress
+   */
+    angular.module('exdFrontendApp')
     .constant('AUTO_SAVE_INTERVAL', 20 * 1000)
     .constant('AUTO_SAVE_FILE', 'env_editor.autosaved')
     .service('autoSaveService', ['$stateParams', '$q', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
@@ -42,6 +49,13 @@
             });
         }
 
+        /**
+         * Sets a type of data as dirty
+         * @method setDirty
+         * @instance
+         * @param {} dirtyType
+         * @param {} dirtyData
+         */
         function setDirty(dirtyType, dirtyData) {
           if (!$stateParams.ctx)
             return;
@@ -50,6 +64,12 @@
           dataTimestamp = Date.now();
         }
 
+        /**
+         * Clear the dirty data set for a dirty type
+         * @instance
+         * @method clearDirty
+         * @param {} dirtyType
+         */
         function clearDirty(dirtyType) {
           if (!$stateParams.ctx)
             return;
@@ -68,6 +88,12 @@
             });
         }
 
+        /**
+         * Checks if there is auto saved work
+         * @instance
+         * @method checkAutoSavedWork
+         * @return CallExpression
+         */
         function checkAutoSavedWork() {
           if (!$stateParams.ctx)
             return $q.reject();
@@ -86,9 +112,17 @@
             });
         }
 
+        /**
+         * Resgisters a callback to be called when dirty data of the specified type is called
+         * @method registerFoundAutoSavedCallback
+         * @instance
+         * @param {} dirtyType
+         * @param {} cb The callback function to be called
+         */
         function registerFoundAutoSavedCallback(dirtyType, cb) {
           foundAutoSavedCallbacks[dirtyType] = cb;
         }
+
 
         function retrieveAutoSavedWork() {
           if (retrieving)
