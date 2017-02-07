@@ -82,6 +82,7 @@ module.exports = function(config) {
       'bower_components/angulartics-google-analytics/lib/angulartics-ga.js',
       'bower_components/brainvisualizer/src/brain3D.js',
       'bower_components/brainvisualizer/src/brain3Dmainview.js',
+      'bower_components/brainvisualizer/src/brain3Dneuronrepresentation.js',
       'bower_components/brainvisualizer/shaders/brain3Dshaders.js',
       'bower_components/moment/moment.js',
       'bower_components/angular-uuid4/angular-uuid4.js',
@@ -109,14 +110,7 @@ module.exports = function(config) {
       'app/scripts/esv/services/*.js',
       'app/views/esv/*.html',
       'app/views/common/*.html',
-      'app/data/brainvisualizer/brain3Dallannotation.js',
-      'app/data/brainvisualizer/brain3Dposes_1.js',
-      'app/data/brainvisualizer/brain3Dposes_2.js',
-      'app/data/brainvisualizer/brain3Dposes_3.js',
-      'app/data/brainvisualizer/brain3Dposes_4.js',
-      'app/data/brainvisualizer/brain3Dposes_5.js',
-      'app/data/brainvisualizer/brain3Dposes_6.js',
-      'app/data/brainvisualizer/brain3Dembeddeddata.js',
+
       {pattern: 'app/views/*.*', included: true, served: true}
     ],
 

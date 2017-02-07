@@ -4,8 +4,53 @@
 
 <div class="esv-brainvisualizer-wrapper">
 
-    <div class="esv-brainvisualizer-main"> <span ng-show="initializing" class="esv-brainvisualizer-initializing">Initializing<br> <i class="fa fa-spinner fa-spin"></i></span>        </div>
+    <div class="esv-brainvisualizer-main">
+        <span ng-show="initializing" class="esv-brainvisualizer-initializing">Initializing<br>
+            <i class="fa fa-spinner fa-spin"></i>
+        </span>
+    </div>
+
     <div class="esv-brainvisualizer-ui">
+
+        <div class="esv-brainvisualizer-box">
+
+            <div class="esv-brainvisualizer-box-title">
+                Shape
+            </div>
+
+            <div ng-repeat="shape in shapes" style="padding-bottom:1px">
+
+                <div type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-radio-button':shape===currentShape,
+                                                'esv-brainvisualizer-radio-button-down':shape!==currentShape}" ng-click='setShape(shape);'>
+
+                    <div class="esv-brainvisualizer-button-label">
+                        {{shape}}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="esv-brainvisualizer-box">
+
+            <div class="esv-brainvisualizer-box-title">
+                Distribution
+            </div>
+
+            <div ng-repeat="dist in distributions" style="padding-bottom:1px">
+
+                <div type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-radio-button':dist===currentDistribution,
+                                                'esv-brainvisualizer-radio-button-down':dist!==currentDistribution}" ng-click='setDistribution(dist);'>
+
+                    <div class="esv-brainvisualizer-button-label">
+                        {{dist}}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
 
         <div class="esv-brainvisualizer-box">
 
@@ -15,17 +60,16 @@
 
             <div ng-repeat="pop in populations" style="padding-bottom:1px">
 
-                <button type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-pop-button':!pop.visible,
-                                                'esv-brainvisualizer-pop-button-down':pop.visible}"
-                                        ng-click='togglePopulationVisibility(pop);'>
+                <div type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-pop-button':!pop.visible,
+                                                'esv-brainvisualizer-pop-button-down':pop.visible}" ng-click='togglePopulationVisibility(pop);'>
 
-                <div style="position: absolute; background-color: {{pop.visible?pop.color:'#eeeeee'}};  border: 1px solid black; width:26px; height:20px "></div>
+                    <div class="esv-brainvisualizer-button-colorsquare" style="background-color: {{pop.visible?pop.color:'#eeeeee'}};"/>
 
-                    <div style="padding-left:32px">
-                    {{pop.name}}
+                    <div class="esv-brainvisualizer-button-label">
+                        {{pop.name}}
                     </div>
 
-            </button>
+                </div>
             </div>
 
         </div>
