@@ -39,6 +39,7 @@
       'contextMenuStateService',
       'objectInspectorModule',
       'userNavigationModule',
+      'userContextModule',
       'pythonCodeHelperServices',
       'simulationInfoService',
       'slurminfoService',

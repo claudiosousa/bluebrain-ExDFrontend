@@ -86,7 +86,7 @@
     <!-- page is display:none until the page spicific css were loaded --->
     <div data-role="page" data-theme="b" data-content-theme="c" style="display:none" class="gz3d-body ng-cloak" oncontextmenu="return false;">
       <!-- Alert popup --->
-      <div class="alert alert-warning ng-hide" ng-show="viewState.isJoiningStoppedSimulation">
+      <div class="alert alert-warning ng-hide" ng-show="userContextService.isJoiningStoppedSimulation">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
         Sorry, the simulation you just wanted to join is already stopped.
 
@@ -127,14 +127,14 @@
         <!-- overlay -->
         <div id="overlay" class="esv-overlay noselect">
           <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
-            <div ng-if="viewState.isOwner && stateService.currentState === STATE.PAUSED"
+            <div ng-if="userContextService.isOwner() && stateService.currentState === STATE.PAUSED"
                  class="hbp-toolbar-action"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PLAY_BUTTON}"
                  ng-click="simControlButtonHandler(STATE.STARTED, 'PLAY_BUTTON')">
               <i class="glyphicon glyphicon-play"></i>
             </div>
-            <div ng-if="viewState.isOwner"
+            <div ng-if="userContextService.isOwner()"
                  class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.PAUSE_BUTTON}"
@@ -142,7 +142,7 @@
                  ng-show="(stateService.currentState === STATE.STARTED)">
               <i class="glyphicon glyphicon-pause"></i>
             </div>
-            <div ng-if="viewState.isOwner"
+            <div ng-if="userContextService.isOwner()"
                  class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.STOP_BUTTON}"
@@ -151,7 +151,7 @@
                           (stateService.currentState !== STATE.FAILED)">
               <i class="glyphicon glyphicon-stop"></i>
             </div>
-            <div ng-if="viewState.isOwner"
+            <div ng-if="userContextService.isOwner()"
                  class="hbp-toolbar-action ng-hide"
                  ng-disabled="stateService.statePending"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.RESET_BUTTON}"
@@ -189,7 +189,7 @@
 
 
               <!-- global lights -->
-              <div ng-if="viewState.isOwner" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item" ng-disabled="helpModeActivated">
+              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item" ng-disabled="helpModeActivated">
 
                 <i ng-class="{'disabled-image': gz3d.isGlobalLightMinReached(), 'highlighted': currentSelectedUIElement === UI.DECREASE_LIGHT}" class="hbp-toolbar-light-min fa fa-lightbulb-o fa-1x vertcenter"></i>
                 <div class="hbp-toolbar-light-divbar"></div>
@@ -305,7 +305,7 @@
               <!-- toggle robot camera view -->
 
               <!-- environment settings panel -->
-              <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow"
+              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
                   ng-class="{'highlighted': currentSelectedUIElement === UI.ENVIRONMENT_SETTINGS, 'active': showEnvironmentSettingsPanel, disabled: !helpModeActivated && environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
                   ng-click="environmentSettingsClickHandler()"
                   v-busy="loadingEnvironmentSettingsPanel"
@@ -336,7 +336,7 @@
               <!-- navigation mode -->
 
               <!-- code editor icon -->
-              <div ng-if="viewState.isOwner"
+              <div ng-if="userContextService.isOwner()"
                    class="hbp-toolbar-action hide-overflow"
                    ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel, disabled: !helpModeActivated && editIsDisabled || loadingEditPanel}"
                    ng-click="codeEditorButtonClickHandler()"
@@ -350,7 +350,7 @@
               <!-- code editor icon -->
 
               <!-- brain visualizer icon -->
-              <div ng-if="viewState.isOwner" class="hbp-toolbar-action hide-overflow"
+              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
                    ng-class="{'highlighted': currentSelectedUIElement === UI.BRAIN_VISUALIZER, 'active': showBrainvisualizerPanel}"
                    ng-click="brainVisualizerButtonClickHandler()"
                    tooltip-trigger="mouseenter"
@@ -360,7 +360,7 @@
               <!-- brain visualizer icon-->
 
               <!-- log console icon -->
-              <div ng-if="viewState.isOwner"
+              <div ng-if="userContextService.isOwner()"
                    class="hbp-toolbar-action hide-overflow"
                    ng-class="{'highlighted': currentSelectedUIElement === UI.LOG_CONSOLE,'active': showLogConsole}"
                    ng-click="logConsoleButtonClickHandler()">
@@ -374,7 +374,7 @@
             </div>
 
             <!-- owner information -->
-            <div ng-if="viewState.isOwner === false"
+            <div ng-if="userContextService.isOwner() === false"
                  class="hbp-toolbar-large-tool-two-lines default-cursor"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.OWNER_DISPLAY}"
                  ng-click="ownerInformationClickHandler()">View-Only Mode<br/>Owner: {{owner}}</div>
@@ -495,6 +495,6 @@
 
       <div class="ros-reconnecting" on-reconnect-timeout="exit()"></div>
 
-      <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}" ng-if="viewState.isOwner"></simulation-timeout-extender>
+      <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}" ng-if="userContextService.isOwner()"></simulation-timeout-extender>
     </div>
     <!-- page -->

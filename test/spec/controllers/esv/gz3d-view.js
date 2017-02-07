@@ -48,7 +48,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     experimentList,
     lockServiceCancelCallback,
     NAVIGATION_MODES,
-    environmentService;
+    environmentService,
+    userContextService;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -329,6 +330,31 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     $provide.value('userNavigationService', userNavigationServiceMock);
 
+    var userContextServiceMock = {
+      isInitialized: false,
+      isJoiningStoppedSimulation: false,
+      userEditingID: '',
+      userEditing : '',
+      timeEditStarted: '',
+      editIsDisabled: false,
+      init: jasmine.createSpy('init'),
+      deinit: jasmine.createSpy('deinit'),
+      isOwner: jasmine.createSpy('isOwner'),
+      removeEditLock: jasmine.createSpy('removeEditLock').and.returnValue({
+        then: jasmine.createSpy('then').and.callFake(function (f) { f(); })
+      }),
+      hasEditRights: jasmine.createSpy('hasEditRights').and.callFake(function(entity) {
+        return (userContextServiceMock.isOwner || userNavigationServiceMock.isUserAvatar(entity));
+      }),
+      setEditDisabled: jasmine.createSpy('setEditDisabled'),
+      setLockDateAndUser: jasmine.createSpy('setLockDateAndUser').and.callFake(function(lockInfo) {
+        userContextServiceMock.userEditing = lockInfo.user.displayName;
+        userContextServiceMock.userEditingID = lockInfo.user.id;
+        userContextServiceMock.timeEditStarted = moment(new Date(lockInfo.date)).fromNow();
+      })
+    };
+    $provide.value('userContextService', userContextServiceMock);
+
     simulationStateObject.update.calls.reset();
     simulationStateObject.state.calls.reset();
     simulationControlObject.simulation.calls.reset();
@@ -338,6 +364,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     hbpDialogFactoryMock.confirm().then.calls.reset();
     backendInterfaceServiceMock.reset.calls.reset();
     backendInterfaceServiceMock.resetCollab.calls.reset();
+
   }));
 
 
@@ -377,7 +404,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _experimentList_,
                               _$q_,
                               _NAVIGATION_MODES_,
-                              _environmentService_) {
+                              _environmentService_,
+                              _userContextService_) {
     controller = $controller;
     rootScope = $rootScope;
     log = _$log_;
@@ -414,6 +442,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     experimentList = _experimentList_;
     q = _$q_;
     environmentService = _environmentService_;
+    userContextService = _userContextService_;
 
     callback = q.defer();
     lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
@@ -426,7 +455,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       return lockServiceMock;
     };
 
-    scope.viewState = {};
     simulations = [
       { simulationID: 0, experimentConfiguration: 'fakeExperiment0', state: STATE.CREATED },
       { simulationID: 1, experimentConfiguration: 'fakeExperiment1', state: STATE.INITIALIZED },
@@ -490,10 +518,10 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should set isJoiningStoppedSimulation to true when already stopped', function(){
-      expect(scope.viewState.isJoiningStoppedSimulation).toBe(false);
+      expect(userContextService.isJoiningStoppedSimulation).toBe(false);
       stateService.currentState = STATE.STOPPED;
       stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      expect(scope.viewState.isJoiningStoppedSimulation).toBe(true);
+      expect(userContextService.isJoiningStoppedSimulation).toBe(true);
     });
 
     it('should properly update navigation mode', function(){
@@ -518,59 +546,25 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
     });
 
-    it('should condition editability', function () {
-      window.bbpConfig.localmode.forceuser = true;
-
-      environmentService.setPrivateExperiment(true);
-      controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope
-      });
-
-      expect(onLockChangedCallback).toBeDefined();
-      onLockChangedCallback({ locked: true, lockInfo: { user: { id: scope.viewState.userID } } });
-      expect(scope.editIsDisabled).toBe(false);
-      onLockChangedCallback({ locked: true, lockInfo: { user: {} } });
-      expect(scope.editIsDisabled).toBe(true);
-
-      scope.showEditorPanel = true;
-      scope.userEditingID = scope.viewState.userID;
-      onLockChangedCallback({ locked: false });
-      expect(scope.showEditorPanel).toBe(false);
-    });
-
     it('should toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function () {
       scope.showEditorPanel = true;
+      userContextService.editIsDisabled = false;
       scope.codeEditorButtonClickHandler();
       expect(scope.showEditorPanel).toBe(false);
     });
 
     it('should have editRights when owner', function () {
-      scope.viewState.isOwner = false;
-      expect(scope.viewState.hasEditRights({name: 'not-user-avatar'})).toBe(false);
-      scope.viewState.isOwner = true;
-      expect(scope.viewState.hasEditRights({name: 'not-user-avatar'})).toBe(true);
+      userContextService.isOwner = false;
+      expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(false);
+      userContextService.isOwner = true;
+      expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(true);
       expect(userNavigationServiceMock.isUserAvatar).toHaveBeenCalled();
     });
 
     it('should have editRights for user avatar', function () {
-      scope.viewState.isOwner = false;
-      expect(scope.viewState.hasEditRights({name: 'user-avatar'})).toBe(true);
+      userContextService.isOwner = false;
+      expect(userContextService.hasEditRights({name: 'user-avatar'})).toBe(true);
       expect(userNavigationServiceMock.isUserAvatar).toHaveBeenCalled();
-    });
-
-    it('should set the forced user id in full local mode' , function () {
-      window.bbpConfig.localmode.forceuser = true;
-      controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope
-      });
-      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
-      expect(scope.viewState.userID).toEqual('vonarnim');
-      expect(scope.viewState.ownerID).toEqual(fakeSimulationData.owner);
-      expect(scope.owner).toEqual('vonarnim');
-      expect(scope.viewState.isOwner).toBe(true);
-      window.bbpConfig.localmode.forceuser = false;
     });
 
     it('should initialize experimentDetails', function() {
@@ -840,14 +834,14 @@ describe('Controller: Gz3dViewCtrl', function () {
       var event = {button : 2};
 
       //false case
-      scope.viewState.isOwner = false;
+      userContextService.isOwner.and.returnValue(false);
 
       scope.onContainerMouseDown(event); //call the function under test
 
       expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
 
       //true case
-      scope.viewState.isOwner = true;
+      userContextService.isOwner.and.returnValue(true);
 
       scope.onContainerMouseDown(event);//call the function under test
 
@@ -1247,14 +1241,16 @@ describe('Controller: Gz3dViewCtrl', function () {
         expect(location.path()).toEqual('/esv-web');
         expect(lockServiceCancelCallback).toHaveBeenCalled();
         expect(lockServiceMock.releaseLock).toHaveBeenCalled();
+        expect(userContextService.deinit).toHaveBeenCalled();
       });
     });
 
-    it('should remove lock when destroy is called', function () {
+    it('should clean up when destroy is called', function () {
+      spyOn(scope, 'cleanUp').and.callThrough();
       scope.$destroy();
-      expect(lockServiceCancelCallback).toHaveBeenCalled();
-      expect(lockServiceMock.releaseLock).toHaveBeenCalled();
+      expect(scope.cleanUp).toHaveBeenCalled();
     });
+
     it('should enable display of the editor panel', function () {
       scope.showEditorPanel = false;
       environmentService.setPrivateExperiment(false);
@@ -1265,7 +1261,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should enable display of the editor panel in collab mode when there is no lock', function () {
       scope.showEditorPanel = false;
-      scope.viewState.userID = 'test-user-id';
+      userContextService.userID = 'test-user-id';
       scope.userEditingID ='';
 
       scope.toggleEditors();
@@ -1280,7 +1276,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should enable display of the editor panel in collab mode when there is a lock but the current user is the owner of the lock', function () {
       scope.showEditorPanel = false;
       var ownerId = 'my-id';
-      scope.viewState.userID = ownerId;
+      userContextService.userID = ownerId;
 
       scope.toggleEditors();
       callback.resolve({ 'success': false, 'lock': { 'lockInfo': { 'user': { 'id': ownerId, 'displayName': 'test' }, 'date': 'thedate' } } });
@@ -1293,7 +1289,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should NOT enable display of the editor panel in collab mode when there is a lock', function () {
       scope.showEditorPanel = false;
-      scope.viewState.userID = 'current_user_id';
+      userContextService.userID = 'current_user_id';
       var userName = 'testName';
       var theDate = '2016-05-17T17:21:05';
       var notCurrentUser = 'not_current_user';
@@ -1303,17 +1299,17 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.$apply();
 
       expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
-      expect(scope.editIsDisabled).toBe(true);
+      expect(userContextService.setEditDisabled).toHaveBeenCalledWith(true);
       expect(scope.showEditorPanel).toBe(false);
-      expect(scope.userEditingID).toBe(notCurrentUser);
-      expect(scope.userEditing).toBe(userName);
-      expect(scope.timeEditStarted).toBe(moment(new Date(theDate)).fromNow());
+      expect(userContextService.userEditingID).toBe(notCurrentUser);
+      expect(userContextService.userEditing).toBe(userName);
+      expect(userContextService.timeEditStarted).toBe(moment(new Date(theDate)).fromNow());
 
     });
 
     it('should NOT enable display of the editor panel in collab mode when an exception is thrown trying to get the lock', function () {
       scope.showEditorPanel = false;
-      scope.viewState.userID = 'current_user_id';
+      userContextService.userID = 'current_user_id';
 
       scope.toggleEditors();
       callback.reject('something went wrong');
@@ -1321,9 +1317,9 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
       expect(scope.showEditorPanel).toBe(false);
-      expect(scope.userEditingID).toBe('');
-      expect(scope.userEditing).toBe('');
-      expect(scope.timeEditStarted).toBe('');
+      expect(userContextService.userEditingID).toBe('');
+      expect(userContextService.userEditing).toBe('');
+      expect(userContextService.timeEditStarted).toBe('');
     });
 
     it('should remove display of the editor panel and remove lock', function () {
@@ -1332,8 +1328,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       callback.resolve();
       scope.$apply();
 
-      expect(lockServiceMock.releaseLock).toHaveBeenCalled();
-      expect(lockServiceMock.releaseLock.calls.count()).toBe(1);
+      expect(userContextService.removeEditLock).toHaveBeenCalled();
     });
 
     it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function () {
@@ -1350,7 +1345,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.onContainerMouseDown(eventMock);
       expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
 
-      scope.viewState.isOwner = true;
+      userContextService.isOwner.and.returnValue(true);
 
       eventMock.button = 0;  // left mouse
       scope.onContainerMouseDown(eventMock);
@@ -1540,7 +1535,6 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     stateService = _stateService_;
     window = _$window_;
     document = _$document_;
-    scope.viewState = {};
 
     spyOn(window, 'stop').and.returnValue(null);
   }));
