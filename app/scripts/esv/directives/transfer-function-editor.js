@@ -41,6 +41,7 @@
       'downloadFileService',
       'RESET_TYPE',
       'editorsServices',
+      '$q',
     function (
         $log,
         backendInterfaceService,
@@ -59,7 +60,8 @@
         DEFAULT_TF_CODE,
         downloadFileService,
         RESET_TYPE,
-        editorsServices) {
+        editorsServices,
+        $q) {
 
     var DIRTY_TYPE = 'TF';
 
@@ -189,6 +191,23 @@
         // initialize transfer functions
         scope.control.refresh();
 
+        function ensurePauseStateAndExecute(fn){
+          var deferred = $q.defer();
+
+          var restart = stateService.currentState === STATE.STARTED;
+          stateService.ensureStateBeforeExecuting(STATE.PAUSED,
+            function(){
+              fn(function(){
+                if (restart) {
+                  return stateService.setCurrentState(STATE.STARTED);
+                }
+                deferred.resolve();
+              });
+            });
+
+          return deferred.promise;
+        }
+
         scope.cleanCompileError = function(transferFunction) {
           var compileError = transferFunction.error[scope.ERROR.COMPILE];
           var lineHandle = compileError ? compileError.lineHandle : undefined;
@@ -201,31 +220,23 @@
         };
 
         scope.update = function(transferFunction) {
-          var restart = stateService.currentState === STATE.STARTED;
-          stateService.ensureStateBeforeExecuting(
-            STATE.PAUSED,
-            function() {
-              delete transferFunction.error[scope.ERROR.RUNTIME];
-              delete transferFunction.error[scope.ERROR.LOADING];
-              backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code,
-                function(){
-                  transferFunction.dirty = false;
-                  transferFunction.local = false;
-                  transferFunction.id = pythonCodeHelper.getFunctionName(transferFunction.code);
-                  scope.cleanCompileError(transferFunction);
-                  if (restart) {
-                    stateService.setCurrentState(STATE.STARTED);
-                  }
-                },
-                function(data) {
-                  serverError.displayHTTPError(data);
-                  if (restart) {
-                    stateService.setCurrentState(STATE.STARTED);
-                  }
-                }
-              );
-            }
-          );
+          return ensurePauseStateAndExecute(function(cb) {
+            delete transferFunction.error[scope.ERROR.RUNTIME];
+            delete transferFunction.error[scope.ERROR.LOADING];
+            backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code,
+              function(){
+                transferFunction.dirty = false;
+                transferFunction.local = false;
+                transferFunction.id = pythonCodeHelper.getFunctionName(transferFunction.code);
+                scope.cleanCompileError(transferFunction);
+                cb();
+              },
+              function(data) {
+                serverError.displayHTTPError(data);
+                cb();
+              }
+            );
+          });
         };
 
         scope.onTransferFunctionChange = function (transferFunction) {
@@ -242,16 +253,11 @@
           if (transferFunction === undefined) return;
           var index = scope.transferFunctions.indexOf(transferFunction);
           if (transferFunction.local) {
-            scope.transferFunctions.splice(index, 1);
+            return scope.transferFunctions.splice(index, 1);
           } else {
-            var restart = stateService.currentState === STATE.STARTED;
-            stateService.ensureStateBeforeExecuting(
-              STATE.PAUSED,
-              function () {
+            return ensurePauseStateAndExecute(function(cb) {
                 backendInterfaceService.deleteTransferFunction(transferFunction.id, function() {
-                  if (restart) {
-                    stateService.setCurrentState(STATE.STARTED);
-                  }
+                  cb();
                 });
                 scope.transferFunctions.splice(index, 1);
               }
@@ -356,24 +362,30 @@
 
         scope.loadTransferFunctions = function(file) {
           if (file && !file.$error) {
+            var deferred = $q.defer();
             var textReader = new FileReader();
             textReader.onload = function(e) {
-              $timeout(function() {
-                var content = e.target.result;
-                var loadedTransferFunctions = splitCodeFile(content);
-                // Removes all TFs
-                _.forEach(scope.transferFunctions, scope.delete);
-                // Upload new TFs to back-end
-                scope.transferFunctions = loadedTransferFunctions;
-                scope.transferFunctions.forEach(function(tf) {
-                  scope.onTransferFunctionChange(tf);
-                  tf.id = tf.name;
-                  tf.local = true;
-                  scope.update(tf);
-                });
-              });
+              ensurePauseStateAndExecute(function(cb) {
+                  var content = e.target.result;
+                  var loadedTransferFunctions = splitCodeFile(content);
+                  // Removes all TFs
+                  return $q.all(_.map(scope.transferFunctions, scope.delete))
+                    .then(function(){
+                      // Upload new TFs to back-end
+                      scope.transferFunctions = loadedTransferFunctions;
+                      return $q.all(scope.transferFunctions.map(function(tf) {
+                        scope.onTransferFunctionChange(tf);
+                        tf.id = tf.name;
+                        tf.local = true;
+                        return scope.update(tf);
+                      }));
+                    })
+                  .then(cb);
+                  })
+                .then(deferred.resolve);
             };
             textReader.readAsText(file);
+            return deferred.promise;
           }
         };
 

@@ -533,18 +533,21 @@ describe('Directive: transferFunctionEditor', function () {
         target : { result: tfFileMock }
       };
       spyOn(window, 'FileReader').andReturn(fileReaderMock);
-
-      isolateScope.loadTransferFunctions('someFile');
+      backendInterfaceServiceMock.setTransferFunction.andCallFake(function(a, b, cb){ cb();});
+      isolateScope.loadTransferFunctions('someFile')
+      .then(function(){
+        transferFunctions = isolateScope.transferFunctions;
+        expect(transferFunctions[0].name).toEqual(tfNameMock[0]);
+        expect(transferFunctions[0].code).toEqual(transferFunctionsCode[0]);
+        expect(transferFunctions[1].name).toEqual(tfNameMock[1]);
+        expect(transferFunctions[1].code).toEqual(transferFunctionsCode[1]);
+      });
       expect(window.FileReader).toHaveBeenCalled();
       expect(readAsTextSpy).toHaveBeenCalled();
       fileReaderMock.onload(eventMock);
+      isolateScope.$digest();
       isolateScope.transferFunctions = [new ScriptObject('tf', 'some unimportant code')];
       $timeout.flush();
-      transferFunctions = isolateScope.transferFunctions;
-      expect(transferFunctions[0].name).toEqual(tfNameMock[0]);
-      expect(transferFunctions[0].code).toEqual(transferFunctionsCode[0]);
-      expect(transferFunctions[1].name).toEqual(tfNameMock[1]);
-      expect(transferFunctions[1].code).toEqual(transferFunctionsCode[1]);
     });
 
     it('should not try to load an invalid file', function() {
