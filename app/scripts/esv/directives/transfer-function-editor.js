@@ -42,6 +42,7 @@
       'RESET_TYPE',
       'editorsServices',
       '$q',
+      'saveErrorsService',
     function (
         $log,
         backendInterfaceService,
@@ -61,8 +62,8 @@
         downloadFileService,
         RESET_TYPE,
         editorsServices,
-        $q) {
-
+        $q,
+        saveErrorsService) {
     var DIRTY_TYPE = 'TF';
 
     return {
@@ -115,7 +116,6 @@
 
         scope.transferFunctions = [];
         var addedTransferFunctionCount = 0;
-
         var docs = documentationURLs.getDocumentationURLs();
         scope.cleDocumentationURL = docs.cleDocumentationURL;
         scope.platformDocumentationURL = docs.platformDocumentationURL;
@@ -137,7 +137,7 @@
               // Error line highlighting
               var editor = editorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
               var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
-              flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = editor.getLineHandle(codeMirrorLineNumber);
+              flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = codeMirrorLineNumber;
               editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
             }
             if (_.isNull(element[0].offsetParent)) {
@@ -323,6 +323,30 @@
 
         scope.saveTFIntoCollabStorage = function () {
           scope.isSavingToCollab = true;
+          var errors = false;
+          scope.transferFunctions.forEach(function(tf) {
+            if (Object.keys(tf.error).length !== 0){
+              errors = true;
+            }
+          });
+          if (errors){
+            hbpDialogFactory.confirm({
+                  title: "Transfer Function errors.",
+                  template: "There are errors inside your Transfer Functions. Are you sure you want to save?",
+                  confirmLabel: "Yes",
+                  cancelLabel: 'No',
+                  closable: false
+                }).then(function(){
+                  return saveErrorsService.saveDirtyData(DIRTY_TYPE, scope.transferFunctions)
+                  .then(function(){
+                    return autoSaveService.clearDirty(DIRTY_TYPE);
+                  });
+                })
+                .finally(function(){
+                  scope.isSavingToCollab = false;
+                });
+              return;
+          }
           backendInterfaceService.saveTransferFunctions(
             simulationInfo.contextID,
             _.map(scope.transferFunctions, 'code'),
@@ -330,6 +354,7 @@
               scope.isSavingToCollab = false;
               scope.collabDirty = false;
               autoSaveService.clearDirty(DIRTY_TYPE);
+              saveErrorsService.clearDirty(DIRTY_TYPE);
               if (stateService.currentState !== STATE.STOPPED) {
                 // update all transfer functions
                 _.forEach(scope.transferFunctions, scope.update);
@@ -388,6 +413,10 @@
             return deferred.promise;
           }
         };
+
+        saveErrorsService.registerCallback(DIRTY_TYPE, function(newTFs){
+          scope.transferFunctions = newTFs;
+        });
 
         autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved){
           scope.collabDirty = true;

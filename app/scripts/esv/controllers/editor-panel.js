@@ -4,8 +4,8 @@
   /* global console: false */
 
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler,autoSaveService) {
+    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService','saveErrorsService',
+    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler,autoSaveService, saveErrorsService) {
 
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
@@ -29,7 +29,12 @@
 
     $scope.openCallback = function() {
       // The Panel is opened
-      autoSaveService.checkAutoSavedWork();
+
+      autoSaveService.checkAutoSavedWork()
+      .catch(function(){
+        // auto saved data will always be the freshest data, so only load the error data if there is no autosave data or it was discarded.
+        saveErrorsService.getErrorSavedWork();
+    });
 
       $scope.panelIsOpen = true;
       if($scope.activeTab.transferfunction === true ||

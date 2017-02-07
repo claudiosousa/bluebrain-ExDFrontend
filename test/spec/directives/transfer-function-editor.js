@@ -6,7 +6,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
-    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE, editorsServices;
+    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE, editorsServices, $q;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -24,6 +24,11 @@ describe('Directive: transferFunctionEditor', function () {
     clearDirty: jasmine.createSpy('clearDirty')
   };
 
+  var saveErrorsServiceMock = {
+    registerCallback: jasmine.createSpy('registerCallback'),
+    saveDirtyData: jasmine.createSpy('saveDirtyData').andCallFake(function(){return $q.when();}),
+    clearDirty: jasmine.createSpy('clearDirty')
+  };
   var documentationURLsMock = {
     getDocumentationURLs: function() {
       return {
@@ -55,6 +60,7 @@ describe('Directive: transferFunctionEditor', function () {
     $provide.value('roslib', roslibMock);
     $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('autoSaveService', autoSaveServiceMock);
+    $provide.value('saveErrorsService', saveErrorsServiceMock);
   }));
 
   var editorMock = {};
@@ -77,7 +83,8 @@ describe('Directive: transferFunctionEditor', function () {
                               _hbpDialogFactory_,
                               _downloadFileService_,
                               _DEFAULT_TF_CODE_,
-                              _editorsServices_) {
+                              _editorsServices_,
+                              _$q_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -92,7 +99,6 @@ describe('Directive: transferFunctionEditor', function () {
     stateService = _stateService_;
     backendInterfaceService = _backendInterfaceService_;
     currentStateMock = _currentStateMockFactory_.get().stateService;
-    editorMock.getLineHandle = jasmine.createSpy('getLineHandle').andReturn(0);
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
     pythonCodeHelper = _pythonCodeHelper_;
@@ -101,6 +107,7 @@ describe('Directive: transferFunctionEditor', function () {
     downloadFileService = _downloadFileService_;
     DEFAULT_TF_CODE = _DEFAULT_TF_CODE_;
     editorsServices = _editorsServices_;
+    $q = _$q_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
@@ -171,6 +178,13 @@ describe('Directive: transferFunctionEditor', function () {
     autoSaveServiceMock.registerFoundAutoSavedCallback.mostRecentCall.args[1](tfs);
     expect(isolateScope.transferFunctions).toBe(tfs);
     expect(isolateScope.collabDirty).toBe(true);
+  });
+
+  it('should overwrite TFs with new error data', function() {
+    var tfs = 'tfs';
+    expect(saveErrorsServiceMock.registerCallback).toHaveBeenCalled();
+    saveErrorsServiceMock.registerCallback.mostRecentCall.args[1](tfs);
+    expect(isolateScope.transferFunctions).toBe(tfs);
   });
 
    it('should refresh code editors on refresh if dirty', function() {
@@ -374,7 +388,6 @@ describe('Directive: transferFunctionEditor', function () {
       spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
-      expect(editorMock.getLineHandle).toHaveBeenCalled();
       expect(editorMock.addLineClass).toHaveBeenCalled();
     });
 
@@ -592,6 +605,35 @@ describe('Directive: transferFunctionEditor', function () {
       hbpDialogFactory.alert.reset();
     });
 
+    it('should correctly saveTFIntoCollabStorage when TFs contain errors', function () {
+      var userResponse = $q.when();
+      spyOn(hbpDialogFactory,'confirm').andCallFake(function(){ return userResponse;});
+      backendInterfaceService.saveTransferFunctions.reset();
+      expect(backendInterfaceServiceMock.saveTransferFunctions).not.toHaveBeenCalled();
+      isolateScope.transferFunctions = [{error: {errorMsg:'an error message'}}];
+      expect(isolateScope.isSavingToCollab).toEqual(false);
+
+      isolateScope.saveTFIntoCollabStorage();
+      $rootScope.$digest();
+      expect(backendInterfaceServiceMock.saveTransferFunctions).not.toHaveBeenCalled();
+      expect(isolateScope.isSavingToCollab).toEqual(false);
+      expect(saveErrorsServiceMock.saveDirtyData).toHaveBeenCalled();
+      expect(autoSaveServiceMock.clearDirty).toHaveBeenCalled();
+      isolateScope.isSavingToCollab = true;
+
+      saveErrorsServiceMock.saveDirtyData.reset();
+      autoSaveServiceMock.clearDirty.reset();
+      backendInterfaceServiceMock.saveTransferFunctions.reset();
+      userResponse = $q.reject(); // no
+
+      isolateScope.saveTFIntoCollabStorage();
+      $rootScope.$digest();
+      expect(backendInterfaceServiceMock.saveTransferFunctions).not.toHaveBeenCalled();
+      expect(saveErrorsServiceMock.saveDirtyData).not.toHaveBeenCalled();
+      expect(autoSaveServiceMock.clearDirty).not.toHaveBeenCalled();
+      expect(isolateScope.isSavingToCollab).toEqual(false);
+
+    });
   });
 });
 

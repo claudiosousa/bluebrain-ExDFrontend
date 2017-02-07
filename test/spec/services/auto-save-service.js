@@ -5,10 +5,9 @@ describe('Services: AutoSaveService', function () {
   var DIRTY_TYPE = 'dirtyType';
   var DIRTY_DATA = 'dirtyData';
 
-  var collabFolderAPIService, hbpIdentityUserDirectory, hbpDialogFactory, stateParams,
-    previouslySavedFile,
-    createFileResponse,
-    confirmRestoreTempWorkUserReponse;
+  var tempFileService, stateParams,
+    saveResponse,
+    checkResponse;
   var $rootScope, $q, autoSaveService, AUTO_SAVE_INTERVAL;
 
   var lodash, lodashWindowMock;
@@ -37,25 +36,14 @@ describe('Services: AutoSaveService', function () {
   beforeEach(module('exdFrontendApp'));
 
   beforeEach(module(function ($provide) {
-    collabFolderAPIService = {
-      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').andCallFake(function () { return $q.when(CONTEXT_ID); }),
-      getFolderFile: jasmine.createSpy('getFolderFile').andCallFake(function () {
-        return $q.when(previouslySavedFile !== undefined ? { _createdBy: 'userid' } : null);
-      }),
-      createFolderFile: jasmine.createSpy('createFolderFile').andCallFake(function () { return createFileResponse; }),
-      uploadEntity: jasmine.createSpy('uploadEntity'),
-      deleteFile: jasmine.createSpy('deleteFile'),
-      downloadFile: jasmine.createSpy('downloadFile').andCallFake(function () { return $q.when(previouslySavedFile); })
-    };
-    hbpIdentityUserDirectory = { get: jasmine.createSpy('get').andCallFake(function () { return $q.when({ userid: {} }); }) };
-    hbpDialogFactory = {
-      confirm: jasmine.createSpy('confirm').andCallFake(function () { return confirmRestoreTempWorkUserReponse; })
+    tempFileService = {
+      saveDirtyData: jasmine.createSpy('saveDirtyData').andCallFake(function () { return saveResponse; }),
+      checkSavedWork: jasmine.createSpy('checkSavedWork').andCallFake(function(){return checkResponse; }),
+      removeSavedWork: jasmine.createSpy('removeSavedWork'),
     };
     stateParams = { ctx: CONTEXT_ID };
 
-    $provide.value('collabFolderAPIService', collabFolderAPIService);
-    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectory);
-    $provide.value('hbpDialogFactory', hbpDialogFactory);
+    $provide.value('tempFileService', tempFileService);
     $provide.value('$stateParams', stateParams);
   }));
 
@@ -70,9 +58,8 @@ describe('Services: AutoSaveService', function () {
 
   beforeEach(function () { //default behavior
     lodashWindowMock.now = Date.now(); //ref time for lodash
-    previouslySavedFile = undefined; //by default, there is now previously auto saved file
-    createFileResponse = $q.when();//succeeds by default
-    confirmRestoreTempWorkUserReponse = $q.when();//user says 'yes' by default
+    saveResponse = $q.when();//succeeds by default
+    checkResponse = $q.when();//user says 'yes' by default
   });
 
   function moveLodashTimeForward(timetoMoveForward) {
@@ -83,61 +70,38 @@ describe('Services: AutoSaveService', function () {
   it('should wait before saving the temporary work', function () {
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
 
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
     moveLodashTimeForward(AUTO_SAVE_INTERVAL - 1);
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
   });
 
   it('should create a autosaved file for temporary work when dirty', function () {
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
-
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
-    expect(collabFolderAPIService.getExperimentFolderId).toHaveBeenCalled();
-
-    $rootScope.$digest();
-    expect(collabFolderAPIService.getFolderFile).toHaveBeenCalled();
-    expect(collabFolderAPIService.createFolderFile).toHaveBeenCalled();
-    expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
-  });
-
-  it('should update autosaved file when auto save file exists', function () {
-    previouslySavedFile = 'some previously saved data';
-    autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
-
-    moveLodashTimeForward(AUTO_SAVE_INTERVAL);
-    expect(collabFolderAPIService.getExperimentFolderId).toHaveBeenCalled();
-
-    $rootScope.$digest();
-    expect(collabFolderAPIService.getFolderFile).toHaveBeenCalled();
-    expect(collabFolderAPIService.createFolderFile).not.toHaveBeenCalled();
-    expect(collabFolderAPIService.uploadEntity).toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).toHaveBeenCalled();
   });
 
   it('should retrigger saving work if previous saving attempt failed', function () {
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
-
-    createFileResponse = $q.reject();
-    moveLodashTimeForward(AUTO_SAVE_INTERVAL);
-    expect(collabFolderAPIService.getExperimentFolderId).toHaveBeenCalled();
-    $rootScope.$digest();
-
-    expect(collabFolderAPIService.createFolderFile).toHaveBeenCalled();
-
-    collabFolderAPIService.getFolderFile.reset();
-    expect(collabFolderAPIService.getFolderFile).not.toHaveBeenCalled();
+    saveResponse = $q.reject();
 
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
+    expect(tempFileService.saveDirtyData).toHaveBeenCalled();
     $rootScope.$digest();
-    expect(collabFolderAPIService.getFolderFile).toHaveBeenCalled();
+
+    tempFileService.saveDirtyData.reset();
+    moveLodashTimeForward(AUTO_SAVE_INTERVAL);
+    $rootScope.$digest();
+    expect(tempFileService.saveDirtyData).toHaveBeenCalled();
   });
 
   it('should not save temporary work if not a collab experiement', function () {
     stateParams.ctx = null;
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
 
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
   });
 
   it('should delete saved temporary work if the dirty data was cleared', function () {
@@ -146,8 +110,8 @@ describe('Services: AutoSaveService', function () {
 
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
     $rootScope.$digest();
-    expect(collabFolderAPIService.createFolderFile).not.toHaveBeenCalled();
-    expect(collabFolderAPIService.deleteFile).toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
+    expect(tempFileService.removeSavedWork).toHaveBeenCalled();
   });
 
   it('should do nothing when clearDirty outside of collab experiment', function () {
@@ -157,7 +121,7 @@ describe('Services: AutoSaveService', function () {
 
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
     $rootScope.$digest();
-    expect(collabFolderAPIService.deleteFile).not.toHaveBeenCalled();
+    expect(tempFileService.removeSavedWork).not.toHaveBeenCalled();
   });
 
   it('should save temporary work if NOT ALL the dirty data was cleared', function () {
@@ -166,59 +130,25 @@ describe('Services: AutoSaveService', function () {
     autoSaveService.setDirty(DIRTY_TYPE + '2', DIRTY_DATA);
     autoSaveService.clearDirty(DIRTY_TYPE);
 
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
-    expect(collabFolderAPIService.getExperimentFolderId).toHaveBeenCalled();
+    expect(tempFileService.saveDirtyData).toHaveBeenCalled();
   });
 
-  it('should notify registered callbacks when saved data is found', function () {
-    previouslySavedFile = {};
-    previouslySavedFile[DIRTY_TYPE] = DIRTY_DATA;
+  it('should not remove previously saved work if user wants to restore it', function () {
 
-    var dirtyCallback = jasmine.createSpy('dirtyCallback');
-
-    autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, dirtyCallback);
     autoSaveService.checkAutoSavedWork();
 
     $rootScope.$digest();
-    expect(collabFolderAPIService.getExperimentFolderId).toHaveBeenCalled();
-    expect(dirtyCallback).toHaveBeenCalled();
-  });
-
-  it('should not prompt if not file was found', function () {
-    autoSaveService.checkAutoSavedWork();
-    $rootScope.$digest();
-    expect(collabFolderAPIService.getFolderFile).toHaveBeenCalled();
-    expect(collabFolderAPIService.downloadFile).not.toHaveBeenCalled();
-
-  });
-
-  it('should not notify registered callbacks if no saved data is found', function () {
-    previouslySavedFile = false;
-
-    var dirtyCallback = jasmine.createSpy('dirtyCallback');
-
-    autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, dirtyCallback);
-    autoSaveService.checkAutoSavedWork();
-
-    $rootScope.$digest();
-    expect(dirtyCallback).not.toHaveBeenCalled();
-  });
-
-  it('should not retrived saved data if not in a collab experiment', function () {
-    stateParams.ctx = null;
-    autoSaveService.checkAutoSavedWork();
-    $rootScope.$digest();
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(tempFileService.removeSavedWork).not.toHaveBeenCalled();
   });
 
   it('should removed previously saved work if user does not want to restore it', function () {
-    previouslySavedFile = {};
-    confirmRestoreTempWorkUserReponse = $q.reject();
+    checkResponse = $q.reject();
 
     autoSaveService.checkAutoSavedWork();
 
     $rootScope.$digest();
-    expect(collabFolderAPIService.deleteFile).toHaveBeenCalled();
+    expect(tempFileService.removeSavedWork).toHaveBeenCalled();
   });
 });

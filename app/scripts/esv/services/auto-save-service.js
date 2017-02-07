@@ -6,46 +6,37 @@
    * @namespace exdFrontendApp.services
    * @module exdFrontendApp
    * @name exdFrontendApp.autoSaveService
-   * @description Service responsible by auto saving the work in progress
+   * @description Service responsible for auto saving the work in progress
    */
     angular.module('exdFrontendApp')
     .constant('AUTO_SAVE_INTERVAL', 20 * 1000)
     .constant('AUTO_SAVE_FILE', 'env_editor.autosaved')
-    .service('autoSaveService', ['$stateParams', '$q', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
-      'hbpDialogFactory', 'AUTO_SAVE_INTERVAL', 'AUTO_SAVE_FILE',
-      function ($stateParams, $q, collabFolderAPIService, hbpIdentityUserDirectory,
-        hbpDialogFactory, AUTO_SAVE_INTERVAL, AUTO_SAVE_FILE) {
+    .service('autoSaveService', ['$stateParams', '$q', 'AUTO_SAVE_INTERVAL', 'AUTO_SAVE_FILE', 'tempFileService',
+      function ($stateParams, $q, AUTO_SAVE_INTERVAL, AUTO_SAVE_FILE, tempFileService) {
 
         var dirtyDataCol = {},
-          dataTimestamp,
+          loaded = false,
           retrieving = false,
           foundAutoSavedCallbacks = {},
-          getFolderId = _.memoize(collabFolderAPIService.getExperimentFolderId),
           scheduleDirtyDataSaving = _.throttle(saveDirtyData, AUTO_SAVE_INTERVAL, { leading: false });
 
         return {
+          saveDirtyData: saveDirtyData,
           setDirty: setDirty,
           clearDirty: clearDirty,
           checkAutoSavedWork: checkAutoSavedWork,
           registerFoundAutoSavedCallback: registerFoundAutoSavedCallback
         };
 
-        function saveDirtyData() {
-          return getFolderId($stateParams.ctx)
-            .then(function (folderId) {
-              return collabFolderAPIService.getFolderFile(folderId, AUTO_SAVE_FILE)
-                .then(function (file) {
-                  if (file)
-                    return collabFolderAPIService.uploadEntity(angular.toJson(dirtyDataCol), file);
-                  else
-                    return collabFolderAPIService.createFolderFile(folderId, AUTO_SAVE_FILE, angular.toJson(dirtyDataCol));
-                })
-                .then(function(){
-                  dataTimestamp = Date.now() + 1000;
-                })
-                .catch(function () {
-                  scheduleDirtyDataSaving();
-                });
+        /**
+         * Save the data which is marked as dirty
+         * @method saveDirtyData
+         * @instance
+         */
+        function saveDirtyData(){
+          return tempFileService.saveDirtyData(AUTO_SAVE_FILE, true, dirtyDataCol)
+            .catch(function(){
+              scheduleDirtyDataSaving();
             });
         }
 
@@ -61,7 +52,6 @@
             return;
           dirtyDataCol[dirtyType] = dirtyData;
           scheduleDirtyDataSaving();
-          dataTimestamp = Date.now();
         }
 
         /**
@@ -71,21 +61,23 @@
          * @param {} dirtyType
          */
         function clearDirty(dirtyType) {
-          if (!$stateParams.ctx)
+          if(!$stateParams.ctx)
             return;
           delete dirtyDataCol[dirtyType];
-          if (_.isEmpty(dirtyDataCol))
+          if(_.isEmpty(dirtyDataCol))
             removeAutoSavedWork();
           else
             scheduleDirtyDataSaving();
         }
-
+        /**
+         * Clear the dirty data set for a dirty type
+         * @instance
+         * @method clearDirty
+         * @param {} dirtyType
+         */
         function removeAutoSavedWork() {
           scheduleDirtyDataSaving.cancel();
-          return getFolderId($stateParams.ctx)
-            .then(function (folderId) {
-              return collabFolderAPIService.deleteFile(folderId, AUTO_SAVE_FILE);
-            });
+          return tempFileService.removeSavedWork(AUTO_SAVE_FILE);
         }
 
         /**
@@ -94,24 +86,24 @@
          * @method checkAutoSavedWork
          * @return CallExpression
          */
-        function checkAutoSavedWork() {
-          if (!$stateParams.ctx)
+        function checkAutoSavedWork(){
+          if(retrieving || loaded){
             return $q.reject();
-
-          return retrieveAutoSavedWork()
-            .then(function (savedWork) {
-              if (!savedWork)
-                return $q.reject();
-
+          }
+          retrieving = true;
+          return tempFileService.checkSavedWork(AUTO_SAVE_FILE, foundAutoSavedCallbacks, true)
+            .then(function(savedWork){
               dirtyDataCol = savedWork;
-
-              _.forEach(savedWork, function (value, key) {
-                foundAutoSavedCallbacks[key] && foundAutoSavedCallbacks[key](value);
-              });
-              return savedWork;
+            })
+            .catch(function(){
+              removeAutoSavedWork();
+              return $q.reject();
+            })
+            .finally(function(){
+              retrieving = false;
+              loaded = true;
             });
         }
-
         /**
          * Resgisters a callback to be called when dirty data of the specified type is called
          * @method registerFoundAutoSavedCallback
@@ -121,51 +113,6 @@
          */
         function registerFoundAutoSavedCallback(dirtyType, cb) {
           foundAutoSavedCallbacks[dirtyType] = cb;
-        }
-
-
-        function retrieveAutoSavedWork() {
-          if (retrieving)
-            return $q.reject();
-
-          retrieving = true;
-
-          return getFolderId($stateParams.ctx)
-            .then(function (folderId) {
-              return collabFolderAPIService.getFolderFile(folderId, AUTO_SAVE_FILE);
-            })
-            .then(function (file) {
-              if (!file)
-                return $q.reject();
-
-              if (dataTimestamp && new Date(file._modifiedOn).getTime() <= dataTimestamp)
-                return $q.reject();
-
-              dataTimestamp = new Date(file._modifiedOn).getTime();
-
-              return $q.all([
-                file,
-                collabFolderAPIService.downloadFile(file._uuid).then(angular.fromJson),
-                hbpIdentityUserDirectory.get([file._createdBy])
-              ]);
-            })
-            .then(_.spread(function (file, foundFile, userInfo) {
-              var username = userInfo[file._createdBy].displayName;
-              return hbpDialogFactory.confirm({
-                title: 'Auto-saved data',
-                confirmLabel: 'Restore',
-                cancelLabel: 'Discard',
-                template: 'There is unsaved work from a previous session by user ' + username + '. Would you like to restore it or discard it?',
-                closable: false
-              }).then(function () {
-                return foundFile;
-              }).catch(function () {
-                removeAutoSavedWork();
-              });
-            }))
-            .finally(function () {
-              retrieving = false;
-            });
         }
       }]
     );

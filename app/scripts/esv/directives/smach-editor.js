@@ -18,6 +18,7 @@
     'downloadFileService',
     'RESET_TYPE',
     'editorsServices',
+    'saveErrorsService',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
@@ -33,7 +34,8 @@
               autoSaveService,
               downloadFileService,
               RESET_TYPE,
-              editorsServices) {
+              editorsServices,
+              saveErrorsService) {
 
       var DIRTY_TYPE = 'SM';
 
@@ -263,10 +265,32 @@
 
           scope.saveSMIntoCollabStorage = function () {
             scope.isSavingToCollab = true;
+            var errors = false;
             var stateMachines = {};
             _.forEach(scope.stateMachines, function(stateMachine){
               stateMachines[stateMachine.id] = stateMachine.code;
+              if(Object.keys(stateMachine.error).length !== 0){
+                errors = true;
+              }
             });
+            if(errors){
+              hbpDialogFactory.confirm({
+                  title: "State Machine  errors.",
+                  template: "There are errors inside your State Machines. Are you sure you want to save?",
+                  confirmLabel: "Yes",
+                  cancelLabel: 'No',
+                  closable: false
+                }).then(function(){
+                  return saveErrorsService.saveDirtyData(DIRTY_TYPE, scope.stateMachines)
+                  .then(function(){
+                    return autoSaveService.clearDirty(DIRTY_TYPE);
+                  });
+                })
+                .finally(function(){
+                  scope.isSavingToCollab = false;
+                });
+              return;
+            }
             backendInterfaceService.saveStateMachines(
               simulationInfo.contextID,
               stateMachines,
@@ -274,6 +298,7 @@
                 scope.isSavingToCollab = false;
                 scope.collabDirty = false;
                 autoSaveService.clearDirty(DIRTY_TYPE);
+                saveErrorsService.clearDirty(DIRTY_TYPE);
               },function() { // Failure callback
                 scope.isSavingToCollab = false;
               }
@@ -297,7 +322,7 @@
                 // Error line highlighting
                 var editor = editorsServices.getEditor('state-machine-' + flawedStateMachine.id);
                 var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
-                msg.lineHandle = editor.getLineHandle(codeMirrorLineNumber);
+                msg.lineHandle = codeMirrorLineNumber;
                 editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
               }
             }
@@ -317,6 +342,9 @@
           scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
           scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
 
+        saveErrorsService.registerCallback(DIRTY_TYPE, function(newSMs){
+          scope.stateMachines = newSMs;
+        });
           autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved) {
             scope.collabDirty = true;
             scope.stateMachines = autoSaved;

@@ -20,7 +20,9 @@ describe('Directive: smachEditor', function () {
     STATE,
     SIMULATION_FACTORY_CLE_ERROR,
     SOURCE_TYPE,
-    editorsServices;
+    editorsServices,
+    hbpDialogFactory,
+    $q;
 
   var backendInterfaceServiceMock = {
     getStateMachines: jasmine.createSpy('getStateMachines'),
@@ -30,6 +32,17 @@ describe('Directive: smachEditor', function () {
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl')
   };
 
+  var autoSaveServiceMock = {
+    registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
+    setDirty: jasmine.createSpy('setDirty'),
+    clearDirty: jasmine.createSpy('clearDirty')
+  };
+
+  var saveErrorsServiceMock = {
+    registerCallback: jasmine.createSpy('registerCallback'),
+    saveDirtyData: jasmine.createSpy('saveDirtyData').andCallFake(function(){return $q.when();}),
+    clearDirty: jasmine.createSpy('clearDirty')
+  };
   var documentationURLsMock =
   {
     getDocumentationURLs: function () {
@@ -59,6 +72,8 @@ describe('Directive: smachEditor', function () {
     $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('roslib', roslibMock);
+    $provide.value('autoSaveService', autoSaveServiceMock);
+    $provide.value('saveErrorsService', saveErrorsServiceMock);
   }));
 
   var editorMock = {};
@@ -74,7 +89,9 @@ describe('Directive: smachEditor', function () {
                               _STATE_,
                               _SIMULATION_FACTORY_CLE_ERROR_,
                               _SOURCE_TYPE_,
-                              _editorsServices_) {
+                              _editorsServices_,
+                              _hbpDialogFactory_,
+                              _$q_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -88,7 +105,8 @@ describe('Directive: smachEditor', function () {
     $timeout = _$timeout_;
     simulationInfo = _simulationInfo_;
     editorsServices = _editorsServices_;
-    editorMock.getLineHandle = jasmine.createSpy('getLineHandle').andReturn(0);
+    hbpDialogFactory = _hbpDialogFactory_;
+    $q = _$q_;
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
 
@@ -209,6 +227,43 @@ describe('Directive: smachEditor', function () {
       expect(isolateScope.isSavingToCollab).toBe(false);
     });
 
+    it('should save error file when SMs contain errors', function () {
+      var userResponse = $q.when();
+      spyOn(hbpDialogFactory,'confirm').andCallFake(function(){ return userResponse;});
+      backendInterfaceService.saveStateMachines.reset();
+      expect(backendInterfaceServiceMock.saveStateMachines).not.toHaveBeenCalled();
+      isolateScope.stateMachines = [{id: '1', code: 'code', error: {errorMsg:'an error message'}}];
+      expect(isolateScope.isSavingToCollab).toEqual(false);
+
+      isolateScope.saveSMIntoCollabStorage();
+      $rootScope.$digest();
+      expect(backendInterfaceServiceMock.saveStateMachines).not.toHaveBeenCalled();
+      expect(isolateScope.isSavingToCollab).toEqual(false);
+      expect(saveErrorsServiceMock.saveDirtyData).toHaveBeenCalled();
+      expect(autoSaveServiceMock.clearDirty).toHaveBeenCalled();
+      isolateScope.isSavingToCollab = true;
+
+      saveErrorsServiceMock.saveDirtyData.reset();
+      autoSaveServiceMock.clearDirty.reset();
+      backendInterfaceServiceMock.saveStateMachines.reset();
+      userResponse = $q.reject(); // no
+
+      isolateScope.saveSMIntoCollabStorage();
+      $rootScope.$digest();
+      expect(backendInterfaceServiceMock.saveStateMachines).not.toHaveBeenCalled();
+      expect(saveErrorsServiceMock.saveDirtyData).not.toHaveBeenCalled();
+      expect(autoSaveServiceMock.clearDirty).not.toHaveBeenCalled();
+      expect(isolateScope.isSavingToCollab).toEqual(false);
+
+    });
+
+  it('should overwrite SMs with new error data', function() {
+    var sms = 'sms';
+    expect(saveErrorsServiceMock.registerCallback).toHaveBeenCalled();
+    saveErrorsServiceMock.registerCallback.mostRecentCall.args[1](sms);
+    expect(isolateScope.stateMachines).toBe(sms);
+  });
+
     it('should fill the error field of the flawed state machine', function () {
       var errorType = isolateScope.ERROR.RUNTIME;
       var msg = {
@@ -253,7 +308,6 @@ describe('Directive: smachEditor', function () {
       spyOn(editorsServices, 'getEditor').andReturn(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(stateMachines[0].error[errorType]).toEqual(msg);
-      expect(editorMock.getLineHandle).toHaveBeenCalled();
       expect(editorMock.addLineClass).toHaveBeenCalled();
     });
 
