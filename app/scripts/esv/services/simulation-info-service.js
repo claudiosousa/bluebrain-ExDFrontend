@@ -46,6 +46,20 @@
 
             return experimentProxyService.getExperiments().then(function(data){
               var configuration = data[thisService.experimentID] && data[thisService.experimentID].configuration;
+
+              // update simulation specific data that user can override from the default configuration
+              if (data[thisService.experimentID] && data[thisService.experimentID].joinableServers) {
+
+                  // find the currently running experiment on the server with same simulation id (unique)
+                  for(var i = 0; i < data[thisService.experimentID].joinableServers.length; i++) {
+                      var joinable = data[thisService.experimentID].joinableServers[i];
+                      if (joinable.server === thisService.serverID && String(joinable.runningSimulation.simulationID) === thisService.simulationID) {
+                          configuration.brainProcesses = joinable.runningSimulation.brainProcesses;
+                          break;
+                     }
+                  }
+              }
+
               setExperimentDetails(configuration);
             });
 

@@ -94,7 +94,8 @@
               </button>
 
               <!-- Option to Launch in Single Process Mode -->
-              <button ng-if="config.canLaunchExperiments && exp.configuration.brainProcesses > 1 && userinfo.hasEditRights" class="btn btn-default" ng-click="startNewExperiment(exp, true)">
+              <button ng-if="config.canLaunchExperiments && exp.configuration.brainProcesses > 1 && userinfo.hasEditRights && exp.availableServers.length > 0" class="btn btn-default"
+                ng-click="pageState.startingExperiment == exp.id || startNewExperiment(exp, true);" ng-disabled="pageState.startingExperiment == exp.id">
                 <i class="fa fa-plus"></i> Launch in Single Process Mode
               </button>
 
