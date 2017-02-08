@@ -221,7 +221,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.onKeyDown = function (event) {
-    if(this.keyBindingsEnabled === false) {
+    if(this.keyBindingsEnabled === false || event.metaKey || event.ctrlKey) {
       return;
     }
     this.shiftHold = event.shiftKey;

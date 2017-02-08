@@ -257,7 +257,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   };
 
   this.onKeyDown = function (event) {
-    if(this.keyboardBindingsEnabled === false) {
+    if(this.keyboardBindingsEnabled === false || event.metaKey || event.ctrlKey) {
       return;
     }
     this.shiftHold = event.shiftKey;
