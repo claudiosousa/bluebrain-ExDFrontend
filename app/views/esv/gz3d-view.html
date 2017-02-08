@@ -191,9 +191,9 @@
               <!-- global lights -->
               <div ng-if="viewState.isOwner" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item" ng-disabled="helpModeActivated">
 
-                <i ng-class="{'disabled-image':isGlobalLightMinReached(), 'highlighted': currentSelectedUIElement === UI.DECREASE_LIGHT}" class="hbp-toolbar-light-min fa fa-lightbulb-o fa-1x vertcenter"></i>
+                <i ng-class="{'disabled-image': gz3d.isGlobalLightMinReached(), 'highlighted': currentSelectedUIElement === UI.DECREASE_LIGHT}" class="hbp-toolbar-light-min fa fa-lightbulb-o fa-1x vertcenter"></i>
                 <div class="hbp-toolbar-light-divbar"></div>
-                <i ng-class="{'disabled-image':isGlobalLightMaxReached(), 'highlighted': currentSelectedUIElement === UI.INCREASE_LIGHT}" class="hbp-toolbar-light-max fa fa-lightbulb-o fa-2x vertcenter"></i>
+                <i ng-class="{'disabled-image': gz3d.isGlobalLightMaxReached(), 'highlighted': currentSelectedUIElement === UI.INCREASE_LIGHT}" class="hbp-toolbar-light-max fa fa-lightbulb-o fa-2x vertcenter"></i>
 
                 <div class="hbp-toolbar-light-left-click" ng-click="modifyLightClickHandler(-1, UI.DECREASE_LIGHT)"></div>
                 <div class="hbp-toolbar-light-right-click" ng-click="modifyLightClickHandler(1, UI.INCREASE_LIGHT)"></div>

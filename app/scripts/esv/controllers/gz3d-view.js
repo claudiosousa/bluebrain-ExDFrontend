@@ -353,7 +353,7 @@
           // make light's helper geometry visible
           gz3d.scene.showLightHelpers = true;
           sceneInitialized.resolve();
-          $scope.setLightHelperVisibility();
+          gz3d.setLightHelperVisibility();
           userNavigationService.init();
           $scope.sceneLoading = false;
         };
@@ -364,54 +364,12 @@
             return $scope.help(button);
           }
 
-          if (direction < 0 && $scope.isGlobalLightMinReached())
-          {
-            return;
-          }
-
-          if (direction > 0 && $scope.isGlobalLightMaxReached())
+          if ((direction < 0 && gz3d.isGlobalLightMinReached()) || (direction > 0 && gz3d.isGlobalLightMaxReached()))
           {
             return;
           }
 
           gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
-        };
-
-        $scope.isGlobalLightMaxReached = function ()
-        {
-          if (gz3d === undefined || gz3d.scene === undefined)
-          {
-            return false;
-          }
-
-          var linfo = gz3d.scene.findLightIntensityInfo();
-
-          if (linfo.max >= 1.0)
-          {
-            return true;
-          }
-          else
-          {
-            return false;
-          }
-        };
-
-        $scope.isGlobalLightMinReached = function ()
-        {
-          if (gz3d === undefined || gz3d.scene === undefined)
-          {
-            return false;
-          }
-
-          var linfo = gz3d.scene.findLightIntensityInfo();
-          if (linfo.max <= 0.1)
-          {
-            return true;
-          }
-          else
-          {
-            return false;
-          }
         };
 
 
@@ -584,14 +542,6 @@
           if (gz3d.scene.manipulationMode !== newMode) {
             gz3d.scene.setManipulationMode(newMode);
           }
-        };
-
-        $scope.setLightHelperVisibility = function () {
-          gz3d.scene.scene.traverse(function (node) {
-            if (node.name.indexOf('_lightHelper') > -1) {
-              node.visible = gz3d.scene.showLightHelpers;
-            }
-          });
         };
 
         // We restrict material changes to simple objects and screen glasses found in screen models of the 3D scene,

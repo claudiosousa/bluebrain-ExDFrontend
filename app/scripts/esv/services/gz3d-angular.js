@@ -59,122 +59,171 @@
 
   var gz3dServices = angular.module('gz3dServices', []);
 
-  gz3dServices.factory('gz3d', ['$rootScope', '$window', '$compile', 'simulationInfo', 'bbpConfig',
+  gz3dServices.factory('gz3d', [
+    '$rootScope', '$window', '$compile', 'simulationInfo', 'bbpConfig',
     function ($rootScope, $window, $compile, simulationInfo, bbpConfig) {
-    /* moved from the gz3d-view.html*/
-    if (!Detector.webgl) {
-      Detector.addGetWebGLMessage();
-    }
 
-    var requestId;
-    var isInitialized = false;
-    var offsetHeightListenerUnregister;
-    var returnValue = {};
-
-    var resizeGZ3D = function() {
-      returnValue.scene.setWindowSize(returnValue.container.offsetWidth, returnValue.container.offsetHeight);
-    };
-
-    returnValue.Initialize = function() {
-      if(isInitialized) {
-        return;
+      /* moved from the gz3d-view.html*/
+      if (!Detector.webgl) {
+        Detector.addGetWebGLMessage();
       }
-      isInitialized = true;
 
-      GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
-      GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
-      GZ3D.animatedModel = simulationInfo.animatedModel;
+      function GZ3DService() {
 
-      if (!bbpConfig.get('localmode.forceuser', false)) {
-        var token;
-        var clientID = bbpConfig.get('auth.clientId', '');
-        var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
-        if (localStorage.getItem(localStorageTokenKey)) {
-          try {
-            token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0].access_token;
-          } catch(e) {
-            // this token will be rejected by the server and the client will get a proper auth error
-            token = 'malformed-token';
+        var that = this;
+
+        this.requestId = null;
+        this.isInitialized = false;
+        this.offsetHeightListenerUnregister = null;
+
+        this.resizeGZ3D = function() {
+          this.scene.setWindowSize(this.container.offsetWidth, this.container.offsetHeight);
+        };
+
+        this.createRenderContainer = function(adjustable, name, topic) {
+          var renderContainer,
+            renderContainerHTML = '<camera-view keep-aspect-ratio class="render-view-container camera-view-window"';
+
+          if (adjustable) {
+            renderContainerHTML += ' movable resizeable';
           }
-        } else {
-          // this token will be rejected by the server and the client will get a proper auth error
-          token = 'no-token';
-        }
-        GZ3D.webSocketToken = token;
+          renderContainerHTML += ' topic="' + topic + '"';
+          renderContainerHTML += ' camera-name=' + name + '></camera-view>';
+
+          renderContainer = $compile(renderContainerHTML)($rootScope)[0];
+
+          return renderContainer;
+        };
+
+        this.animate = function() {
+          that.requestId = requestAnimationFrame(that.animate);
+          that.render();
+        };
+
+        this.render = function() {
+          if (!angular.isDefined(this.scene)) {
+            return;
+          }
+
+          this.scene.render();
+        };
+
+        this.isGlobalLightMaxReached = function () {
+          if (this.scene === undefined) {
+            return false;
+          }
+
+          var linfo = this.scene.findLightIntensityInfo();
+
+          if (linfo.max >= 1.0) {
+            return true;
+          }
+          else {
+            return false;
+          }
+        };
+
+        this.isGlobalLightMinReached = function () {
+          if (this.scene === undefined) {
+            return false;
+          }
+
+          var linfo = this.scene.findLightIntensityInfo();
+          if (linfo.max <= 0.1) {
+            return true;
+          }
+          else {
+            return false;
+          }
+        };
+
+        this.setLightHelperVisibility = function () {
+          this.scene.scene.traverse(function (node) {
+            if (node.name.indexOf('_lightHelper') > -1) {
+              node.visible = that.scene.showLightHelpers;  //TODO: showLightHelpers should be part of this service?
+            }
+          });
+        };
+
+        this.Initialize = function() {
+          if(this.isInitialized) {
+            return;
+          }
+
+          GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
+          GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
+          GZ3D.animatedModel = simulationInfo.animatedModel;
+
+          if (!bbpConfig.get('localmode.forceuser', false)) {
+            var token;
+            var clientID = bbpConfig.get('auth.clientId', '');
+            var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
+            if (localStorage.getItem(localStorageTokenKey)) {
+              try {
+                token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0].access_token;
+              } catch(e) {
+                // this token will be rejected by the server and the client will get a proper auth error
+                token = 'malformed-token';
+              }
+            } else {
+              // this token will be rejected by the server and the client will get a proper auth error
+              token = 'no-token';
+            }
+            GZ3D.webSocketToken = token;
+          }
+
+          this.container = document.getElementById('container');
+
+          this.scene = new GZ3D.Scene();
+          this.scene.viewManager.setCallbackCreateRenderContainer(this.createRenderContainer);
+
+          this.gui = new GZ3D.Gui(this.scene);
+          this.iface = new GZ3D.GZIface(this.scene, this.gui);
+          this.sdfParser = new GZ3D.SdfParser(this.scene, this.gui, this.iface);
+
+          // FPS indicator
+          this.stats = new Stats();
+          this.stats.domElement.style.position = 'absolute';
+          this.stats.domElement.style.top = '0px';
+          this.stats.domElement.style.zIndex = 100;
+
+          this.animate();
+          $window.addEventListener('resize', this.resizeGZ3D, false);
+
+          //TODO: is this necessary?
+          this.offsetHeightListenerUnregister = $rootScope.$watch(function() {
+            return that.container.offsetHeight;
+          }, function(newValue, oldValue) {
+            if ((newValue !== oldValue) && angular.isDefined(that.scene)) {
+              that.resizeGZ3D();
+            }
+          }, true);
+
+          this.isInitialized = true;
+        };
+
+        this.deInitialize = function() {
+          if (angular.isFunction(this.offsetHeightListenerUnregister)) {
+            this.offsetHeightListenerUnregister();
+          }
+          $window.removeEventListener('resize', this.resizeGZ3D);
+          $window.cancelAnimationFrame(this.requestId);
+
+          delete this.sdfParser;
+          delete this.iface;
+          delete this.gui;
+          delete this.scene;
+
+          delete this.container;
+          delete this.stats;
+          delete this.animate;
+          delete this.render;
+          delete this.createRenderContainer;
+
+          this.isInitialized = false;
+        };
       }
 
-      returnValue.createRenderContainer = function(adjustable, name, topic) {
-        var renderContainer,
-          renderContainerHTML = '<camera-view keep-aspect-ratio class="render-view-container camera-view-window"';
-
-        if (adjustable) {
-          renderContainerHTML += ' movable resizeable';
-        }
-        renderContainerHTML += ' topic="' + topic + '"';
-        renderContainerHTML += ' camera-name=' + name + '></camera-view>';
-
-        renderContainer = $compile(renderContainerHTML)($rootScope)[0];
-
-        return renderContainer;
-      };
-
-      returnValue.container = document.getElementById('container');
-
-      returnValue.scene = new GZ3D.Scene();
-      returnValue.scene.viewManager.setCallbackCreateRenderContainer(returnValue.createRenderContainer);
-
-      returnValue.gui = new GZ3D.Gui(returnValue.scene);
-      returnValue.iface = new GZ3D.GZIface(returnValue.scene, returnValue.gui);
-      returnValue.sdfParser = new GZ3D.SdfParser(returnValue.scene, returnValue.gui, returnValue.iface);
-
-      // FPS indicator
-      returnValue.stats = new Stats();
-      returnValue.stats.domElement.style.position = 'absolute';
-      returnValue.stats.domElement.style.top = '0px';
-      returnValue.stats.domElement.style.zIndex = 100;
-
-      returnValue.animate = function() {
-        requestId = requestAnimationFrame(returnValue.animate);
-        returnValue.render();
-      };
-
-      returnValue.render = function() {
-        returnValue.scene.render();
-      };
-
-      returnValue.animate();
-      $window.addEventListener('resize', resizeGZ3D, false);
-
-      offsetHeightListenerUnregister = $rootScope.$watch(function() {
-        return returnValue.container.offsetHeight;
-      }, function(newValue, oldValue) {
-        if ((newValue !== oldValue) && angular.isDefined(returnValue.scene)) {
-          resizeGZ3D();
-        }
-      }, true);
-    };
-
-    returnValue.deInitialize = function() {
-      if (angular.isFunction(offsetHeightListenerUnregister)) {
-        offsetHeightListenerUnregister();
-      }
-      $window.removeEventListener('resize', resizeGZ3D);
-      $window.cancelAnimationFrame(requestId);
-
-      isInitialized = false;
-
-      delete returnValue.sdfParser;
-      delete returnValue.iface;
-      delete returnValue.gui;
-      delete returnValue.scene;
-
-      delete returnValue.container;
-      delete returnValue.stats;
-      delete returnValue.animate;
-      delete returnValue.render;
-      delete returnValue.createRenderContainer;
-    };
-
-    return returnValue;
+      return new GZ3DService();
   }]);
 }());
