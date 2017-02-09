@@ -1,0 +1,252 @@
+<link rel="stylesheet" href="styles/esv/graphical-editor.css"/>
+<div>
+  Transfer Functions
+  <div>
+    <div style="position:relative;float:left;margin-right:25px;margin-top:3px;">
+      <select id="transferFunctionsDataList" ng-model="originalTF"
+              ng-change="selectTransferFunction(originalTF)"
+              style="position:absolute; width:260px; height:23px;">
+        <option ng-repeat="tf in transferFunctions" value="{{tf.name}}">{{tf.name}}</option>
+      </select>
+      <input style="position: relative; width: 242px;height:23px;" type="text" name="TF" id="TF"
+             list="transferFunctionsDataList" ng-change="selectTransferFunction(selectedTF)"
+             ng-model="selectedTF"/>
+    </div>
+    <button type="button" class="btn btn-default btn-md"
+            ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+            ng-click="refreshTFs();">
+      <i class="glyphicon glyphicon-refresh"></i><span> Refresh</span>
+    </button>
+    <button type="button" class="btn btn-default btn-md"
+            ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+            ng-click="createNewTF();">
+      <i class="glyphicon glyphicon-plus"></i><span> Create New</span>
+    </button>
+    <button type="button" class="btn btn-default btn-md"
+            ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending || !selectedPopulation || !isNeuronsSelected"
+            ng-click="createNewMonitor();">
+      <i class="glyphicon glyphicon-plus"></i><span> Create Monitor</span>
+    </button>
+  </div>
+</div>
+<div class="container">
+  <div class="left-panel well">
+    Populations
+    <ul>
+      <li ng-repeat="population in populations">
+        <a ng-click="$parent.selectedPopulation = population">{{population.name}}</a><br/>
+        <ul collapse="population !== $parent.selectedPopulation">
+          <li ng-class="{'selected' : neuron.selected, 'notSelected' : !neuron.selected}"
+              ng-repeat="neuron in population.gids"
+              ng-click="toggleNeuron(neuron, true)">
+            <input type="checkbox" ng-model="neuron.selected" ng-click="toggleNeuron(neuron, false); $event.stopPropagation()">
+            {{population.neuron_model}} {{neuron.id}}
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <button href ng-click='createDevice()' type="button" class="btn btn-default"
+            ng-class="{'disabled': !selectedTF || !isNeuronsSelected || !selectedPopulation}">Create Device
+    </button>
+  </div>
+  <div class="center-panel well">
+    <div>
+      <div ng-show="transferFunction.devices.length > 0">Neuron input/output</div>
+      <div class="well well-sm normal" style="width:100%; list-style-type: none;"
+           ng-show="transferFunction.devices.length > 0">
+        <div style="width:100%; overflow:hidden" ng-click="dev.showDetails = !dev.showDetails"
+             ng-repeat="dev in transferFunction.devices">
+          <div>
+            <!--
+                          &#9658; is used to create the triangle, because the  glyphicon glyphicon-triangle-right is somehow not working. Resolve it later!
+                          -->
+            <span class="glyphicon glyphicon-plus" ng-show="!dev.showDetails"></span>
+            <span class="glyphicon glyphicon-minus" ng-show="dev.showDetails"></span>
+            <a style="width:100%">{{dev.name}} ({{dev.type}} for
+              {{getFriendlyPopulationName(dev.neurons)}})</a>
+          </div>
+
+          <div ng-show="dev.showDetails" ng-click="$event.stopPropagation()">
+            <table style="...">
+              <tr>
+                <td>Name:</td>
+                <td><input class="normal" type="text" name="input" ng-model="dev.name" ng-change="setDirty(transferFunction)"
+                           style="width:90%" ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || dev.name !== 'device'">
+                <span ng-if="transferFunction.type === TRANSFER_FUNCTION_TYPE.NEURONMONITOR && dev.name ==='device'">Monitored neurons</span></td>
+              </tr>
+              <tr>
+                <td>Type:</td>
+                <td><select class="normal" ng-model="dev.type" data-value="{{dev.type}}" ng-click="setDirty(transferFunction)"
+                            style="width:90%">
+                  <optgroup label="Neural Network Outputs">
+                    <option value="LeakyIntegratorAlpha">Alpha-shaped Leaky Integrator</option>
+                    <option value="LeakyIntegratorExp">Exponential-shaped Leaky Integrator</option>
+                    <option value="SpikeRecorder">Spike Recorder</option>
+                  </optgroup>
+                  <optgroup label="Neural Network Inputs">
+                    <option value="ACGenerator">AC Current Generator</option>
+                    <option value="DCGenerator">DC Current Generator</option>
+                    <option value="Poisson">Poisson Generator</option>
+                    <option value="FixedFrequency">Fixed Frequency Generator</option>
+                  </optgroup>
+                </select></td>
+              </tr>
+              <tr>
+                <td>Parameters:</td>
+                <td><input class="normal" id="parameter1" type="text" ng-model="dev.parameters"
+                           style="width:90%"></td>
+              </tr>
+            </table>
+            <button type="button" class="btn btn-default" ng-click="deleteDevice(dev)" ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || dev.name !== 'device'">
+              <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div ng-show="transferFunction.topics.length > 0">Connections to robot topics</div>
+      <div class="well well-sm normal" ng-show="transferFunction.topics.length > 0">
+        <div ng-click="top.showDetails = !top.showDetails" ng-repeat="top in transferFunction.topics">
+          <span class="glyphicon glyphicon-plus" ng-show="!top.showDetails"></span>
+          <span class="glyphicon glyphicon-minus" ng-show="top.showDetails"></span>
+          <a>{{top.name}} ({{getFriendlyTopicName(top)}})</a>
+          <div ng-show="top.showDetails" ng-click="$event.stopPropagation()">
+            <table style="...">
+              <tr>
+                <td>Name:</td>
+                <td>
+                  <div ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || top.name !== 'publisher'">
+                    <input class="normal" type="text" name="input" ng-model="top.name" ng-change="setDirty(transferFunction)"
+                           ng-class="{'disabled': top.isDefault}" style="width:90%">
+                    <div ng-if="top.publishing">or <input type="checkbox" ng-model="top.isDefault" ng-change="setTopicName(top)"/> use as default</div>
+                  </div>
+                  <span ng-if="transferFunction.type === TRANSFER_FUNCTION_TYPE.NEURONMONITOR && top.name === 'publisher'">Monitor channel</span>
+                </td>
+              </tr>
+              <tr ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || top.name !== 'publisher'">
+                <td>Topic:</td>
+                <td><input class="normal" type="text" name="input" ng-model="top.topic" ng-change="setDirty(transferFunction)"
+                           style="width:90%"></td>
+              </tr>
+              <tr ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || top.name !== 'publisher'">
+                <td>Type:</td>
+                <td><input class="normal" type="text" ng-model="top.type" ng-change="setDirty(transferFunction)" style="..."/></td>
+              </tr>
+              <tr ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || top.name !== 'publisher'">
+                <td>Is Publishing:</td>
+                <td><input class="normal" type="checkbox" ng-model="top.publishing" ng-change="setDirty(transferFunction)"></td>
+              </tr>
+            </table>
+            <button type="button" class="btn btn-default" ng-click="deleteTopic(top)" ng-if="transferFunction.type !== TRANSFER_FUNCTION_TYPE.NEURONMONITOR || top.name !== 'publisher'">
+              <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div>Variables</div>
+      <div class="well well-sm normal" style="width:100%; list-style-type: none;">
+        <div style="..." ng-click="var.showDetails = !var.showDetails"
+             ng-repeat="var in transferFunction.variables">
+          <div>
+            <span class="glyphicon glyphicon-plus" ng-show="!dev.showDetails"></span>
+            <span class="glyphicon glyphicon-minus" ng-show="dev.showDetails"></span>
+            <a style="width:100%">{{var.name}} ({{var.initial_value}})</a>
+          </div>
+          <div ng-show="var.showDetails" ng-click="$event.stopPropagation()">
+            <table style="...">
+              <tr>
+                <td>Name:</td>
+                <td><input class="normal" type="text" ng-model="var.name" ng-change="setDirty(transferFunction)"/></td>
+              </tr>
+              <tr>
+                <td>Type:</td>
+                <td>
+                  <input type="radio" ng-model="var.type" value="int" ng-change="setDirty(transferFunction)"/> Integer <br/>
+                  <input type="radio" ng-model="var.type" value="string" ng-change="setDirty(transferFunction)"/> String <br/>
+                  <input type="radio" ng-model="var.type" value="csv" ng-change="parseFilenameAndHeaders(var)"/> CSV Recorder <br />
+                  <input type="radio" ng-model="var.type" value="retina" ng-change="setDirty(transferFunction)"/> Retina configuration
+                </td>
+              </tr>
+              <tr ng-if="var.type !== 'csv' && var.type !== 'retina'">
+                <td>Initial Value:</td>
+                <td><input class="normal" type="text" ng-model="var.initial_value" ng-change="setDirty(transferFunction)"></td>
+              </tr>
+              <tr ng-if="var.type === 'csv'">
+                <td>File name:</td>
+                <td><input class="normal" type="text" ng-model="var.filename" ng-change="updateCSV(var)"/></td>
+              </tr>
+              <tr ng-if="var.type === 'csv'">
+                <td>Header</td>
+                <td>
+                  <button ng-repeat="head in var.headers" type="button" class="btn btn-default" ng-click="deleteHeader(var, head)">
+                   <span>{{head}} </span><i class="glyphicon glyphicon-remove"></i>
+                  </button>
+                  <div>
+                    <input type="text" class="normal" ng-model="tmpHeader"/>
+                    <button type="button" class="btn btn-default" ng-click="addHeader(var, tmpHeader); tmpHeader = null">
+                      <i class="glyphicon glyphicon-plus"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr ng-if="var.type === 'retina'">
+                <td>Configuration:</td>
+                <td><input class="normal" type="text" ng-model="var.initial_value" ng-change="setDirty(transferFunction)"/></td>
+              </tr>
+            </table>
+            <button type="button" class="btn btn-default" ng-click="deleteVariable(var)">
+              <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+            </button>
+          </div>
+        </div>
+        <p ng-show="variables.length == 0">This transfer function contains no variables</p>
+        <button type="button" class="btn btn-default btn-md"
+                ng-disabled="selectedTF == null"
+                ng-click="addNewVariable()">
+          <i class="glyphicon glyphicon-plus"></i><span> Create New</span>
+        </button>
+      </div>
+    </div>
+    <div>
+          <textarea id="codeArea" ng-attr-id="transfer-function-{{transferFunction.id}}"
+                    ui-codemirror
+                    ui-codemirror-opts="editorOptions"
+                    ng-change="setDirty(transferFunction)"
+                    ng-model="transferFunction.code">
+          </textarea>
+      <div ng-repeat="(type, error) in transferFunction.error">
+        <div class="alert alert-danger" role="alert">
+          {{error.message}} <b>({{type}})</b>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn btn-default btn-md" ng-click="apply()"
+                ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+                v-busy="transferFunction.dirty && stateService.statePending"
+                v-busy-label="Applying changes"
+                v-pressable>
+          <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
+        </button>
+        <button type="button" class="btn btn-default" ng-click="delete()"
+                ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending">
+          <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="right-panel well">
+    <ul>
+      Topics
+      <li ng-repeat="topic in topics"
+          ng-class="{'selected' : topic == $parent.selectedTopic, 'notSelected' : topic !== $parent.selectedTopic}"
+          ng-click="$parent.selectedTopic = topic;">
+        {{topic.topic}}
+      </li>
+    </ul>
+    <button type="button" class="btn btn-default" href ng-click='createTopicChannel(true)'
+            ng-class="{'disabled': selectedTF == null}">Create Publisher
+    </button>
+    <button type="button" class="btn btn-default" href ng-click='createTopicChannel(false)'
+            ng-class="{'disabled': selectedTF == null}">Create Subscriber
+    </button>
+  </div>
+</div>

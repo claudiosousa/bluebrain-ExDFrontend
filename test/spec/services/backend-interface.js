@@ -93,6 +93,22 @@ describe('Services: backendInterfaceService', function () {
     expect(callback).toHaveBeenCalled();
   });
 
+  it('should call the success callback when the setStructuredTransferFunction PUT request succeeds', function () {
+    $httpBackend.whenPUT(urlRegex).respond(200);
+    var callback = jasmine.createSpy('callback');
+    backendInterfaceService.setStructuredTransferFunction({}, callback);
+    $httpBackend.flush();
+    expect(callback).toHaveBeenCalled();
+  });
+
+  it('should call the failure callback when the setStructuredTransferFunction PUT request fails', function () {
+    $httpBackend.whenPUT(urlRegex).respond(500);
+    var callback = jasmine.createSpy('callback');
+    backendInterfaceService.setStructuredTransferFunction({}, function(){}, callback);
+    $httpBackend.flush();
+    expect(callback).toHaveBeenCalled();
+  });
+
   it('should call the success callback when the getTransferFunctions GET request succeeds', function () {
     $httpBackend.whenGET(urlRegex).respond(200);
     var callback = jasmine.createSpy('callback');
@@ -101,10 +117,26 @@ describe('Services: backendInterfaceService', function () {
     expect(callback).toHaveBeenCalled();
   });
 
+  it('should call the success callback when the getStructuredTransferFunctions GET request succeeds', function () {
+    $httpBackend.whenGET(urlRegex).respond(200);
+    var callback = jasmine.createSpy('callback');
+    backendInterfaceService.getStructuredTransferFunctions(callback);
+    $httpBackend.flush();
+    expect(callback).toHaveBeenCalled();
+  });
+
   it('should call the success callback when the getPopulations GET request succeeds', function () {
     $httpBackend.whenGET(urlRegex).respond(200);
     var callback = jasmine.createSpy('callback');
     backendInterfaceService.getPopulations(callback);
+    $httpBackend.flush();
+    expect(callback).toHaveBeenCalled();
+  });
+
+  it('should call the success callback when the getTopics GET request succeeds', function() {
+    $httpBackend.whenGET(urlRegex).respond(200);
+    var callback = jasmine.createSpy('callback');
+    backendInterfaceService.getTopics(callback);
     $httpBackend.flush();
     expect(callback).toHaveBeenCalled();
   });

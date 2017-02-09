@@ -76,6 +76,7 @@ describe('Controller: editorPanelCtrl', function () {
     scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
     scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
     scope.controls.pynneditor.refresh = jasmine.createSpy('refresh');
+    scope.controls.graphicalEditor.refresh = jasmine.createSpy('refresh');
 
     $httpBackend.whenGET(/\/me/).respond(200);
   }));
@@ -96,15 +97,23 @@ describe('Controller: editorPanelCtrl', function () {
     scope.openCallback();
     expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
     expect(scope.controls.statemachine.refresh).not.toHaveBeenCalled();
+    expect(scope.controls.graphicalEditor.refresh).not.toHaveBeenCalled();
     scope.activeTab.transferfunction = false;
     scope.activeTab.statemachine = true;
     scope.closeCallback();
     scope.openCallback();
     expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
+    expect(scope.controls.graphicalEditor.refresh).not.toHaveBeenCalled();
     scope.activeTab.statemachine = false;
     scope.activeTab.pynneditor = true;
+    scope.closeCallback();
     scope.openCallback();
     expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
+    scope.activeTab.pynneditor = false;
+    scope.activeTab.graphicalEditor = true;
+    scope.closeCallback();
+    scope.openCallback();
+    expect(scope.controls.graphicalEditor.refresh).toHaveBeenCalled();
   });
 
   it('should disable the key bindings when an code editor tab is active and the panel is opened', function () {
@@ -133,6 +142,17 @@ describe('Controller: editorPanelCtrl', function () {
     scope.activeTab.pynneditor = true;
     scope.openCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
+    scope.closeCallback();
+    expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
+    scope.activeTab.pynneditor = false;
+
+    //Test the graphical-editor tab
+    scope.activeTab.graphicalEditor = true;
+    scope.openCallback();
+    expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
+    scope.closeCallback();
+    expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
+    scope.activeTab.graphicalEditor = false;
   });
 
   it('should disable the key bindings when the panel is open and the disableKeyBindings function is called', function () {
