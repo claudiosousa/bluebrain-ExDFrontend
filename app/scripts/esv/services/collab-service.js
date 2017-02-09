@@ -18,8 +18,9 @@
     });
   }]);
 
-  module.service('collabFolderAPIService', ['$http', '$q', '$interpolate', 'collabConfigService', 'hbpFileStore','bbpConfig', function ($http, $q, $interpolate, collabConfigService, hbpFileStore, bbpConfig) {
+  module.service('collabFolderAPIService', ['$http', '$q', '$interpolate', 'collabConfigService', 'hbpFileStore','bbpConfig','$stateParams', 'clbStorage', function ($http, $q, $interpolate, collabConfigService, hbpFileStore, bbpConfig,$stateParams, clbStorage) {
     var baseUrl = bbpConfig.get('api.document.v0');
+    var collabBaseUrl = bbpConfig.get('api.collab.v0');
 
     //creates a file within a folder, using the name and content past in the parameters
     this.createFolderFile = function (folderId, fileName, fileContent, blobType) {
@@ -95,6 +96,98 @@
         }
       })).$promise;
     };
- }]);
 
-}());
+    /**
+     *  Fetches all the files under a folder in the storage of the current collab
+     *  First we get the current experiment context, then using that context we get the 
+     *  list of navigational entities. These entities are objects that are appearing in 
+     *  the list on the left column of the collab. Then we 
+     *  get the files under a specific folder in the navigational entity
+     *  
+     *  Example usage : 
+     *  var robotsList = collabFolderAPIService.getFilesFromNavEntityFolder('Storage','robots');
+     *  which will fetch all the files under the robots folder in the storage
+     *
+     * @param  navEntityName the name of the navigational entity                
+     * @param  folderName the name of the folder under the navigational entity 
+     * @return a promise that contains the files under the storage folder 
+     **/
+    this.getFilesFromNavEntityFolder = function (navEntityName, folderName) {
+      return getCurrentCollab(this.getContextId())
+        .then(function successCallback(response) {
+          return getCollabNavEntities(response.data);
+        }, function () {
+          return $q.reject('Could not retrieve the collab');
+        }).then(function (response) {
+          var navEntity = _.find(response.data, function (folder) {
+            return folder.name === navEntityName;
+          });
+          if (!navEntity) {
+            return $q.reject(navEntityName + " folder was not found on this collab");
+          }
+          return clbStorage.getEntity({ ctx: navEntity.context });
+        })
+        .then(clbStorage.getChildren)
+        .then(function (result) {
+          var folder = _.find(result.results, function (folder) {
+            return folder._name === folderName;
+          });
+          if (!folder) {
+            return $q.reject(folderName + " folder was not found on this collab");
+          }
+          return clbStorage.getChildren(folder);
+        });
+    };
+
+    /**
+     *  Returns the current collab (i.e. the collab on which the experiment belongs to),
+     *  based on the input context id
+     *  
+     *  Example usage : 
+     *  var collabDataPromise = getCurrentCollab($stateParams.ctx);
+     *  which will return the promise containing the current collab data 
+     *
+     * @param  contextId the context id provided                
+     * @return a promise that contains the collab data 
+     **/
+    var getCurrentCollab = function (contextId) {
+      return $http({
+        method: 'GET',
+        url: collabBaseUrl + '/collab/context/' + contextId + '/'
+      });
+    };
+
+    /**
+     *  Returns the navigational entities under the current collab (i.e. the collab on which the experiment belongs to),
+     *  based on the input collab data
+     *  
+     *  Example usage : 
+     *  var currentCollabPromise =  getCurrentCollab($stateParams.ctx);
+     *  var collabNavigationalEntitiesPromise = currentCollabPromise.then(function (response){
+     *  return getCollabNavEntities(response.data)};
+     *  which will return the promise containing the current collab data 
+     *
+     * @param  contextId the context id provided                
+     * @return a promise that contains the collab data 
+     **/
+    var getCollabNavEntities = function (currentCollab) {
+      return $http({
+        method: 'GET',
+        url: collabBaseUrl + '/collab/' + currentCollab.collab.id + '/nav/all/'
+      });
+    };
+
+    /**
+     *  Returns the current collab contextId
+     *  
+     *  Example usage : 
+     *  var contextId =  collabFolderAPIService.getContextId;
+     *              
+     * @return the current contextId uuid
+     **/
+    this.getContextId = function () {
+      return $stateParams.ctx;
+    };
+  }
+  ]);
+} ());

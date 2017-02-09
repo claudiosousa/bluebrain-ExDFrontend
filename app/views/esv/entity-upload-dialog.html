@@ -1,0 +1,39 @@
+<div class="container-with-navbar-margin">
+    <div class="list-container">
+        <button type="button" class="close" ng-click="destroyDialog()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        <div class="list-entry-container left-right title-line">
+            <div class="h3">Choose {{entityName}}
+            </div>
+        </div>
+        <hr>
+        <!-- button group div -->
+        <!-- Public env library button -->
+        <button class="btn btn-block" tooltip-trigger="mouseenter" ng-click="uploadEntity('PublicEnv')" ng-disabled="pageState.startingExperiment == true">
+                  From the Public Environment Library
+            </button>
+        <br>
+        <!--Private Library button -->
+        <button class="btn btn-block" tooltip-trigger="mouseenter" ng-click="uploadEntity('PrivateCollab')" ng-disabled="pageState.startingExperiment == true">
+                  From this collab's private library
+            </button>
+        <br>
+        <!-- Other collab libraries button -->
+        <button class="btn btn-block" tooltip-trigger="mouseenter" ng-click="uploadEntity('CollabLibraries')" ng-disabled="pageState.startingExperiment == true">
+                  From other collab's libraries
+            </button>
+        <br>
+        <!-- Local environment , i.e. file system button -->
+        <button class="btn btn-block" tooltip-trigger="mouseenter" ng-click="uploadEntity('LocalEnv')" ng-disabled="pageState.startingExperiment == true">
+                  From your local environment
+            </button>
+        <br>
+        <br>
+        <!-- close button -->
+        <div align="right">
+            <button class="btn btn-default enable-tooltip" tooltip-trigger="mouseenter" tooltip-placement="top" ng-click="destroyDialog()">Cancel</button>
+        </div>
+        <br>
+    </div>
+</div>

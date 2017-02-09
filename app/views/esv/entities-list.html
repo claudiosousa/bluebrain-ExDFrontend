@@ -1,0 +1,39 @@
+<!-- build:css(.tmp) styles/esv/esv-web.css -->
+<link rel="stylesheet" href="styles/esv/esv-web.css" />
+<!-- endbuild -->
+<div class="container-with-navbar-margin">
+    <div class="list-container">
+        <button type="button" class="close" ng-click="destroyDialog()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        <div class="form-group form-inline col-xs-12">
+            <input ng-model="query" type="text" class="top-buttons form-control input-sm" placeholder="{{entityName}} Filter...">
+            <div ng-show="!entities">
+                <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp; <i>Loading {{entityName}} list...</i>
+            </div>
+        </div>
+        <hr class="list-separator">
+        <div ng-repeat="entity in entities | filter:query" class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="selectEntity(entity)">
+            <div class="list-entry-container left-right" ng-show="entity.imageData!==''" ng-class="{selected: (entity.id == entityPageState.selected) || isHovered}">
+                <div class="list-entry-left" ng-class="{selected: entity.id == entityPageState.selected}">
+                    <img ng-src="{{entity.imageData}}" ng-if="!brain" />
+                    <img ng-src="img/esv/brain-example.png" ng-if="brain" />
+                </div>
+                <div class="list-entry-middle list-entry-container up-down">
+                    <div class="list-entry-container left-right title-line">
+                        <div class="h4" ng-hide="!loadingEdit && editing[nameID] && isCollabExperiment">{{entity.name}}
+                        </div>
+                    </div>
+                    <div ng-if="entity.id == entityPageState.selected" ng-show="!isCollabExperiment || config.canCloneExperiments">{{entity.description}}</div>
+                    <div ng-if="entity.id != entityPageState.selected">{{entity.description | limitTo: 200}}...</div>
+                </div>
+            </div>
+            <hr class="list-separator">
+        </div>
+    </div>
+    <div align="right">
+        <button class="btn btn-default enable-tooltip" tooltip-trigger="mouseenter" tooltip-placement="top" ng-click="completeUploadEntity()">OK</button>
+        <button class="btn btn-default enable-tooltip" tooltip-trigger="mouseenter" tooltip-placement="top" ng-click="destroyDialog()" style="margin-right:20px;">Cancel</button>
+    </div>
+    <br>
+</div>

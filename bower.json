@@ -32,9 +32,39 @@
     "xml2json": "1.1.1",
     "angulartics-google-analytics": "^0.1.4",
     "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer",
-    "moment": "2.10.6"
+    "moment": "2.10.6",
+    "angular-hbp-collaboratory":"latest",
+    "angular-uuid4":"latest",
+    "angular-deferred-bootstrap":"latest",
+    "angular-moment":"latest",
+    "hello":"latest"
   },
   "overrides": {
+    "angular-hbp-collaboratory": {
+      "main": [
+        "angular-hbp-collaboratory.js"
+      ]
+    },
+    "angular-uuid4": {
+      "main": [
+        "angular-uuid4.js"
+      ]
+    },
+    "angular-deferred-bootstrap": {
+      "main": [
+        "angular-deferred-bootstrap.js"
+      ]
+    },
+    "angular-moment": {
+      "main": [
+        "angular-moment.js"
+      ]
+    },
+    "hello": {
+      "main": [
+        "dist/hello.all.js"
+      ]
+    },
     "codemirror": {
       "main": [
         "lib/codemirror.js",

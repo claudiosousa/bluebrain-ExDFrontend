@@ -1,0 +1,30 @@
+<div class="container-with-navbar-margin">
+    <div class="list-container">
+        <button type="button" class="close" ng-click="destroyDialog()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        <div class="list-entry-container left-right title-line">
+            <div class="h3">Select {{entityName}} </div>   
+        </div>
+        <hr class="list-separator">
+         <hbp-file-upload-area on-drop="handleFileUpload(files)" on-error="handleError(error)">
+         </hbp-file-upload-area>
+        <button type="button" class="btn btn-success btn-s" ng-click="completeUploadEntity()">
+          <span class="glyphicon glyphicon-upload"></span> Upload all
+        </button>
+        <button type="button" class="btn btn-warning btn-s" ng-click="">
+          <span class="glyphicon glyphicon-ban-circle"></span> Cancel all
+        </button>
+        <button type="button" class="btn btn-danger btn-s" ng-click="">
+          <span class="glyphicon glyphicon-trash"></span> Remove all
+        </button>
+        <br>
+        <br>
+        <div align="right">
+            <button class="btn btn-default enable-tooltip" tooltip-trigger="mouseenter" tooltip-placement="top" ng-click="destroyDialog()"
+                style="margin-right:20px;">Cancel
+            </button>
+        </div>
+       <br>
+    </div>
+</div>

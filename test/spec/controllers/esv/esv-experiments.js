@@ -212,6 +212,13 @@
       checkButtonVisibility(page, 'Clone', options.clone);
     }
 
+    function checkNewExperimentButtonsVisibility(page, options) {
+      checkButtonVisibility(page, 'uploadEnvironment', options.environment);
+      checkButtonVisibility(page, 'uploadRobot', options.robot);
+      checkButtonVisibility(page, 'uploadBrain', options.brain);
+      checkButtonVisibility(page, 'CloneNewExperiment', options.cloneNew);
+    }
+
     it('should allow launching when available servers', function () {
       var page = renderEsvWebPage({ dev: true });
       page.find('.experiment-box').last().click();
@@ -371,17 +378,22 @@
 
         it('should only show the clone button', function () {
           var page = renderEsvWebPage({collab:true});
-          page.find('.experiment-box').first().click();
+          page.find('.experiment-box').last().click();
           checkButtonsVisibility(page, { launch: 0, upload: 0, clone: 1 });
         });
 
-        it('should trigger PUT request on clone click', function () {
-          var page = renderEsvWebPage({collab:true});
+        it('should only show the correct new experiment buttons', function () {
+          var page = renderEsvWebPage({collab:true,dev:true});
           page.find('.experiment-box').first().click();
+          checkNewExperimentButtonsVisibility(page, { environment: 1, robot: 1, brain: 1,cloneNew:1 });
+        });
+
+        it('should trigger PUT request on clone click', function () {
+          var page = renderEsvWebPage();
+          page.find('.experiment-box').last().click();
           spyOn($window.location, 'reload');
           $httpBackend.whenPUT(collabContextlessUrl).respond(200, {});
           page.find('[analytics-event="Clone"]').click();
-          $httpBackend.flush();
         });
       });
 

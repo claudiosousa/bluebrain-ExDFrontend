@@ -48,6 +48,7 @@ describe('Services: collab-folder-api-service', function () {
   // load the service to test and mock the necessary service
   beforeEach(module('collabServices'));
   beforeEach(module('hbpDocumentClient.core'));
+  beforeEach(module('hbpCollaboratoryCore'));
 
   beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _collabConfigService_, _collabFolderAPIService_, _hbpFileStore_, _$q_, _$rootScope_) {
     httpBackend = _$httpBackend_;
@@ -160,5 +161,97 @@ describe('Services: collab-folder-api-service', function () {
     expect(collabConfigService.get).toHaveBeenCalledWith({contextID: 'FakeContextId'}, jasmine.any(Function), jasmine.any(Function));
   });
 });
+
+describe('Services: collab-folder-api-service', function () {
+  var httpBackend, bbpConfig, collabConfigService, collabFolderAPIService, hbpFileStore, $q, scope, clbStorage;
+
+  beforeEach(module('collabServices'));
+  beforeEach(module('hbpDocumentClient.core'));
+  beforeEach(module('hbpCollaboratoryCore'));
+
+  beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _collabConfigService_,
+    _collabFolderAPIService_, _hbpFileStore_, _$q_, _$rootScope_, _clbStorage_) {
+    httpBackend = _$httpBackend_;
+    bbpConfig = _bbpConfig_;
+    collabConfigService = _collabConfigService_;
+    collabFolderAPIService = _collabFolderAPIService_;
+    hbpFileStore = _hbpFileStore_;
+    $q = _$q_;
+    scope = _$rootScope_.$new();
+    clbStorage = _clbStorage_;
+
+    var collabBaseUrl = bbpConfig.get('api.collab.v0');
+    var fakeCollabUrl = collabBaseUrl + '/collab/context/' + 'fakeContextId' + '/';
+    spyOn(collabFolderAPIService, 'getContextId').and.callFake(function () {
+      return 'fakeContextId';
+    });
+    var fakeNavEntitiesUrl = collabBaseUrl + '/collab/' + 1716 + '/nav/all/';
+    httpBackend.whenGET(fakeCollabUrl).respond(
+      {
+        id: 17508,
+        context: 'a107967f-4466-48b7-a16a-49f86c74c689',
+        name: 'EpxerimentExample',
+        collab:
+        {
+          id: 1716,
+          title: 'Dev servers test',
+          content: 'Dev servers test'
+        }
+
+      });
+    httpBackend.whenGET(fakeNavEntitiesUrl).respond(
+      [
+        { id: 15359, name: 'Overview' },
+        { id: 15360, name: 'Team' },
+        { id: 15361, name: 'Storage' },
+        { id: 15362, name: 'Settings' },
+        { id: 15364, name: 'Documentation' },
+        { id: 15365, name: 'Support' },
+        { id: 17501, name: 'My Dev Experiment' },
+        { id: 17508, name: 'EpxerimentExample' }
+      ]
+    );
+    spyOn(clbStorage, 'getEntity').and.callFake(function () {
+      return {
+        _uuid: '04bc38c7-f30b-4c1c-976d-830ffa4b7d27',
+        _entityType: 'project',
+        _name: 'Dev servers test'
+      };
+    });
+    spyOn(clbStorage, 'getChildren').and.callFake(function () {
+      return {
+        results:
+        [
+          { _name: 'robots' },
+          { _name: 'Environments' }
+        ]
+      };
+    });
+    spyOn($q, 'reject').and.callFake(function () {
+      return;
+    });
+  }));
+
+  it('should test getFilesFromNavEntityFolder successfuly retrieves the files', function () {
+
+    collabFolderAPIService.getFilesFromNavEntityFolder('Storage', 'robots');
+    httpBackend.flush();
+    expect(collabFolderAPIService.getContextId).toHaveBeenCalled();
+    expect($q.reject).not.toHaveBeenCalled();
+  });
+
+  it('should test getFilesFromNavEntityFolder with wrong nav envtity name calls the reject function', function () {
+    collabFolderAPIService.getFilesFromNavEntityFolder('fakeNavName', 'robots');
+    httpBackend.flush();
+    expect($q.reject).toHaveBeenCalledWith('fakeNavName' + ' folder was not found on this collab');
+  });
+
+  it('should test getFilesFromNavEntityFolder with wrong folder name calls the reject function', function () {
+    collabFolderAPIService.getFilesFromNavEntityFolder('Storage', 'FakeRbots');
+    httpBackend.flush();
+    expect($q.reject).toHaveBeenCalledWith('FakeRbots' + ' folder was not found on this collab');
+  });
+});
+
 
 

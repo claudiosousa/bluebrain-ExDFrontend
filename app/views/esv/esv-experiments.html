@@ -11,6 +11,7 @@
       </div>
     </div>
     <hr class="list-separator">
+    <new-experiment-wizard ng-show="experiments.length > 1 && isCollabExperiment && devMode"></new-experiment-wizard>
     <div ng-repeat="exp in experiments | filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
       class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="selectExperiment(exp);">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == pageState.selected) || isHovered}">

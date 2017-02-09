@@ -84,12 +84,16 @@ module.exports = function(config) {
       'bower_components/brainvisualizer/src/brain3Dmainview.js',
       'bower_components/brainvisualizer/shaders/brain3Dshaders.js',
       'bower_components/moment/moment.js',
+      'bower_components/angular-uuid4/angular-uuid4.js',
+      'bower_components/angular-deferred-bootstrap/angular-deferred-bootstrap.js',
+      'bower_components/angular-moment/angular-moment.js',
+      'bower_components/hello/dist/hello.all.js',
+      'bower_components/angular-hbp-collaboratory/angular-hbp-collaboratory.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
 
       'node_modules/d3/d3.min.js',
-      'node_modules/n3-charts/build/LineChart.js',
-
+      'node_modules/n3-charts/build/LineChart.js',   
       'test/support/**/*.js',
       './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used

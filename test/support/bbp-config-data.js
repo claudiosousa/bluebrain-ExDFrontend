@@ -32,6 +32,9 @@ window.bbpConfig = {
     },
     "slurmmonitor": {
       "url": "http://bbpsrvc44.cscs.ch:8080"
+    },        
+    "collab": {     
+       "v0": "https://services.humanbrainproject.eu/collab/v0"    
     }
   },
   'auth': {
