@@ -5,7 +5,7 @@ describe('Directive: environment-designer', function () {
 
   var $scope, element, stateService,
     panels, currentStateMock, gz3dMock, contextMenuState, objectInspectorService, simulationSDFWorld,
-    simulationInfo, backendInterfaceService, hbpDialogFactory;
+    simulationInfo, backendInterfaceService, hbpDialogFactory, environmentService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -25,7 +25,7 @@ describe('Directive: environment-designer', function () {
           }
         }
       },
-      isCollabExperiment: true
+      isPrivateExperiment: true
     };
     $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('gz3d', gz3dMock);
@@ -67,7 +67,8 @@ describe('Directive: environment-designer', function () {
                               _simulationSDFWorld_,
                               _simulationInfo_,
                               _backendInterfaceService_,
-                              _hbpDialogFactory_) {
+                              _hbpDialogFactory_,
+                              _environmentService_) {
 
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
@@ -81,6 +82,7 @@ describe('Directive: environment-designer', function () {
     simulationSDFWorld = _simulationSDFWorld_;
     backendInterfaceService = _backendInterfaceService_;
     hbpDialogFactory = _hbpDialogFactory_;
+    environmentService = _environmentService_;
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
 
@@ -114,8 +116,6 @@ describe('Directive: environment-designer', function () {
   }));
 
   it('should initialize scope variables correctly', function () {
-    expect($scope.isCollabExperiment).toBeDefined();
-    expect($scope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
     expect($scope.assetsPath).toBeDefined();
   });
 

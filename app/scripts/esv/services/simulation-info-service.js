@@ -4,7 +4,8 @@
   'use strict';
 
   angular.module('simulationInfoService', [])
-    .factory('simulationInfo', ['experimentProxyService', 'experimentList', function (experimentProxyService, experimentList) {
+    .factory('simulationInfo', ['experimentProxyService', 'experimentList', 'environmentService',
+    function (experimentProxyService, experimentList, environmentService) {
       var thisService = {
         initialize: initialize
       };
@@ -19,7 +20,6 @@
         thisService.serverID = serverID;
         thisService.simulationID = simulationID;
         thisService.contextID = contextID;
-        thisService.isCollabExperiment = angular.isDefined(thisService.contextID);
         thisService.experimentID = experimentID;
         thisService.experimentDetails = null;
 
@@ -37,7 +37,7 @@
               thisService.experimentDetails = configuration;
             };
 
-            if (thisService.isCollabExperiment) {
+            if (environmentService.isPrivateExperiment()) {
               return experimentList(thisService.serverBaseUrl).experiments({ context_id: contextID }, function(data) {
                 var configuration = data.data.experiment_configuration;
                 setExperimentDetails(configuration);

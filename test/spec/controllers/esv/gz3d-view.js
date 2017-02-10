@@ -47,7 +47,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     experimentProxyService,
     experimentList,
     lockServiceCancelCallback,
-    NAVIGATION_MODES;
+    NAVIGATION_MODES,
+    environmentService;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -375,7 +376,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _experimentProxyService_,
                               _experimentList_,
                               _$q_,
-                              _NAVIGATION_MODES_) {
+                              _NAVIGATION_MODES_,
+                              _environmentService_) {
     controller = $controller;
     rootScope = $rootScope;
     log = _$log_;
@@ -411,6 +413,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     experimentProxyService =_experimentProxyService_;
     experimentList = _experimentList_;
     q = _$q_;
+    environmentService = _environmentService_;
 
     callback = q.defer();
     lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
@@ -518,7 +521,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should condition editability', function () {
       window.bbpConfig.localmode.forceuser = true;
 
-      simulationInfo.isCollabExperiment = true;
+      environmentService.setPrivateExperiment(true);
       controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
         $scope: scope
@@ -594,7 +597,7 @@ describe('Controller: Gz3dViewCtrl', function () {
         $rootScope: rootScope,
         $scope: scope
       });
-      scope.isCollabExperiment = true;
+      environmentService.setPrivateExperiment(true);
       spyOn(scope, 'updateInitialCameraPose');
       simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
@@ -624,7 +627,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.__resetButtonClickHandler();
       timeout.flush(100);
 
-      scope.isCollabExperiment = false; //Collab IS NOT available
+      environmentService.setPrivateExperiment(false); //Collab IS NOT available
 
       expect(backendInterfaceService.reset).toHaveBeenCalledWith(
         scope.request,
@@ -669,7 +672,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
         scope.resetButtonClickHandler();
         scope.request = { resetType: testCases[i].type };
-        scope.isCollabExperiment = true; //Collab IS available
+        environmentService.setPrivateExperiment(true); //Collab IS available
         scope.splashScreen = undefined;
 
         hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
@@ -1212,7 +1215,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should go back to the esv-web page when no "ctx" parameter was in the url', function() {
-      scope.isCollabExperiment = false;
+      environmentService.setPrivateExperiment(false);
       scope.exit();
       expect(location.path()).toEqual('/esv-web');
     });
@@ -1228,7 +1231,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
   describe('(EditMode)', function() {
     beforeEach(function () {
-      simulationInfo.isCollabExperiment = true;
+      environmentService.setPrivateExperiment(true);
       lockServiceMock.tryAddLock.reset();
       lockServiceMock.releaseLock.reset();
 
@@ -1254,7 +1257,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
     it('should enable display of the editor panel', function () {
       scope.showEditorPanel = false;
-      scope.isCollabExperiment = false;
+      environmentService.setPrivateExperiment(false);
+
       scope.toggleEditors();
       expect(scope.showEditorPanel).toBe(true);
     });

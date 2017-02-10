@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Services: server-info-service', function () {
-  var simulationInfo, httpBackend, simulationData, serverConfig;
+  var simulationInfo, httpBackend, simulationData, serverConfig, environmentService;
 
 
   beforeEach(module('exdFrontendApp'));
@@ -30,9 +30,11 @@ describe('Services: server-info-service', function () {
 
   beforeEach(inject(function (
     _simulationInfo_,
-    _$httpBackend_) {
+    _$httpBackend_,
+    _environmentService_) {
     simulationInfo = _simulationInfo_;
     httpBackend = _$httpBackend_;
+    environmentService = _environmentService_;
   }));
 
   it('should set simulationInfo properties using $stateParams properties', function () {
@@ -40,6 +42,7 @@ describe('Services: server-info-service', function () {
     httpBackend.whenGET('views/common/home.html').respond(200);
 
     // Collab mode
+    environmentService.setPrivateExperiment(true);
     var experimentResponse = { data: { 'experiment_configuration': { visualModel: 'mouse.dae'} } };
     httpBackend.whenGET(serverConfig.gzweb['nrp-services'] + '/experiment/' + simulationData.ctx).respond(200, experimentResponse);
     simulationInfo.initialize(simulationData.serverID, simulationData.experimentID, simulationData.simulationID, simulationData.ctx);
@@ -50,13 +53,14 @@ describe('Services: server-info-service', function () {
     expect(simulationInfo.serverConfig).toBeDefined();
     expect(simulationInfo.serverBaseUrl).toBeDefined();
     expect(simulationInfo.contextID).toBe(simulationData.ctx);
-    expect(simulationInfo.isCollabExperiment).toBe(true);
+    expect(environmentService.isPrivateExperiment()).toBe(true);
     expect(simulationInfo.experimentID).toBe(simulationData.experimentID);
     /*jshint camelcase: false */
     var visualUrl = experimentResponse.data.experiment_configuration.visualModel;
     expect(simulationInfo.animatedModel.assetsPath).toBe(serverConfig.gzweb.assets + '/' + visualUrl);
 
     // Non-Collab mode
+    environmentService.setPrivateExperiment(false);
     experimentResponse = { 'AnimatedMouse': { configuration: { visualModel: 'mouse.dae'} } };
     httpBackend.whenGET('http://proxy/experiments').respond(200, experimentResponse);
     simulationInfo.initialize(simulationData.serverID, simulationData.experimentID, simulationData.simulationID, undefined);
@@ -67,7 +71,7 @@ describe('Services: server-info-service', function () {
     expect(simulationInfo.serverConfig).toBeDefined();
     expect(simulationInfo.serverBaseUrl).toBeDefined();
     expect(simulationInfo.contextID).not.toBeDefined();
-    expect(simulationInfo.isCollabExperiment).toBe(false);
+    expect(environmentService.isPrivateExperiment()).toBe(false);
     expect(simulationInfo.experimentID).toBe(simulationData.experimentID);
     visualUrl = experimentResponse[simulationData.experimentID].configuration.visualModel;
     expect(simulationInfo.animatedModel.assetsPath).toBe(serverConfig.gzweb.assets + '/' + visualUrl);

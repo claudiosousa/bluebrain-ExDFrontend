@@ -22,10 +22,10 @@
       'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
       'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory',
       'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
-      'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS',
+      'environmentService', 'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS',
       function ($q, $interval, $log, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
         hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService,
-        FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
+        environmentService, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
         var localmode = {
           forceuser: bbpConfig.get('localmode.forceuser', false),
           ownerID: bbpConfig.get('localmode.ownerID', null)
@@ -84,7 +84,7 @@
           return service;
 
           function initialize() {
-            if (contextId && experimentId) {
+            if (environmentService.isPrivateExperiment() && contextId && experimentId) {
               var exp = {};
               exp[experimentId] = {configuration:{"maturity": "production"}};
               service.experiments = experimentProxyService.getJoinableServers(contextId)
@@ -145,7 +145,7 @@
 
           function updateExperimentImages() {
             service.experiments.then(function (experiments) {
-              if (contextId && experiments.length === 1){
+              if (environmentService.isPrivateExperiment() && contextId && experiments.length === 1){
                 loadCollabImage(experiments[0]).then(function(collabImage){
                   experiments[0].imageData = collabImage;
                 }).catch(function(){
@@ -174,7 +174,7 @@
           */
           function getExperimentDetailsFromCollab(fileName, downloadHeaders) {
             var promise = $q.defer();
-            if (contextId && experimentId && experimentFolderUUID){
+            if (environmentService.isPrivateExperiment() && contextId && experimentId && experimentFolderUUID){
               collabFolderAPIService.getFolderFile(experimentFolderUUID, fileName)
               .then(function(fileData){
                 if (!fileData || !fileData._uuid){
@@ -230,7 +230,7 @@
               } else {
                 $log.warn("Experiment details: text content for thumbnail is missing");
               }
-              
+
               // save the filecontent so it can be accessed again.
               experimentXML = fileContent;
               return $q.resolve({ name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
@@ -274,7 +274,7 @@
           }
 
           function refreshExperimentsAndCluster() {
-            if (contextId && experimentId){
+            if (environmentService.isPrivateExperiment() && contextId && experimentId){
               experimentProxyService.getJoinableServers(contextId)
                 .then(function(joinableServers){
                   experimentsDict[experimentId].joinableServers = joinableServers;

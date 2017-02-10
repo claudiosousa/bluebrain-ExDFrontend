@@ -6,7 +6,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
-    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE, editorsServices, $q;
+    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE, editorsServices, $q, environmentService;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -41,7 +41,7 @@ describe('Directive: transferFunctionEditor', function () {
   var simulationInfoMock = {
     contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
     simulationID : 'mocked_simulation_id',
-    isCollabExperiment: true
+    isPrivateExperiment: true
   };
 
   var roslibMock = {};
@@ -84,7 +84,8 @@ describe('Directive: transferFunctionEditor', function () {
                               _downloadFileService_,
                               _DEFAULT_TF_CODE_,
                               _editorsServices_,
-                              _$q_) {
+                              _$q_,
+                              _environmentService_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -108,6 +109,7 @@ describe('Directive: transferFunctionEditor', function () {
     DEFAULT_TF_CODE = _DEFAULT_TF_CODE_;
     editorsServices = _editorsServices_;
     $q = _$q_;
+    environmentService = _environmentService_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
@@ -586,7 +588,7 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should initialize scope variables correctly', function () {
-      expect(isolateScope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
+      expect(isolateScope.isPrivateExperiment).toEqual(environmentService.isPrivateExperiment());
     });
 
     it('should correctly saveTFIntoCollabStorage', function () {

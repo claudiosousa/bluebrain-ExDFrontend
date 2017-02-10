@@ -59,7 +59,7 @@
       'simulationInfo','hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
-      'simulationConfigService',
+      'simulationConfigService','environmentService',
       function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -71,7 +71,7 @@
         simulationInfo, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
-        simulationConfigService) {
+        simulationConfigService, environmentService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -84,10 +84,9 @@
         $scope.userEditingID = "";
         $scope.userEditing = "";
         $scope.timeEditStarted = "";
-        //Collab info used by reset
-        $scope.isCollabExperiment = simulationInfo.isCollabExperiment;
 
-        if ($scope.isCollabExperiment) {
+
+        if (environmentService.isPrivateExperiment()) {
           // only use locks if we are in a collab
           var lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
           var cancelLockSubscription = lockService.onLockChanged(
@@ -435,7 +434,7 @@
               gz3d.scene.resetView();
             }
           } else { // Backend-bound reset
-            if ($scope.isCollabExperiment && simulationInfo.contextID) { //reset from collab
+            if (environmentService.isPrivateExperiment() && simulationInfo.contextID) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
               $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
 
@@ -831,7 +830,7 @@
 
         $scope.showEditorPanel = false;
         $scope.toggleEditors = function () {
-          if (!$scope.isCollabExperiment) {
+          if (!environmentService.isPrivateExperiment()) {
             showEditPanel();
           } else {
             // only use locks if we are in a collab i.e. ctx is set
@@ -881,7 +880,7 @@
         };
 
         $scope.exit = function () {
-          if ($scope.isCollabExperiment) {
+          if (environmentService.isPrivateExperiment()) {
             cancelLockSubscription();
             return removeEditLock().then(function(){
               exitSimulation();
@@ -897,7 +896,10 @@
           cleanUp();
 
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
-          $location.path('esv-web');
+          if (environmentService.isPrivateExperiment())
+            $location.path('esv-private');
+          else
+            $location.path('esv-web');
           $timeout(function ()
           {
             $window.location.reload();
@@ -915,7 +917,7 @@
             category: 'Simulation'
           });
 
-          if ($scope.isCollabExperiment) {
+          if (environmentService.isPrivateExperiment()) {
             cancelLockSubscription();
             removeEditLock(true);
           }

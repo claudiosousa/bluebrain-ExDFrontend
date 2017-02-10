@@ -15,7 +15,7 @@
     assets).
   <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
   <hr>
-  <button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+  <button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
           ng-click="saveSDFIntoCollabStorage()"
           ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
           v-busy="isSavingToCollab"

@@ -2,12 +2,12 @@
 
 describe('Services: experimentsFactory', function () {
   var $q, experimentProxyService, collabFolderAPIService, experimentsFactory, scope, $interval,
-    hbpDialogFactory, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, slurminfoService;
+    hbpDialogFactory, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, slurminfoService, environmentService;
 
   beforeEach(module('experimentServices'));
   beforeEach(module('exdFrontendApp'));
   beforeEach(inject(function (_$q_, _experimentProxyService_, _collabFolderAPIService_, _experimentsFactory_, _$rootScope_, _$httpBackend_, _$interval_,
-    _hbpDialogFactory_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_, _slurminfoService_) {
+    _hbpDialogFactory_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_, _slurminfoService_, _environmentService_) {
     $q = _$q_;
     experimentProxyService = _experimentProxyService_;
     collabFolderAPIService = _collabFolderAPIService_;
@@ -18,6 +18,7 @@ describe('Services: experimentsFactory', function () {
     FAIL_ON_SELECTED_SERVER_ERROR = _FAIL_ON_SELECTED_SERVER_ERROR_;
     FAIL_ON_ALL_SERVERS_ERROR = _FAIL_ON_ALL_SERVERS_ERROR_;
     slurminfoService =_slurminfoService_;
+    environmentService = _environmentService_;
 
     _$httpBackend_.whenGET(new RegExp('.*')).respond({});
     spyOn(console, 'error');
@@ -69,6 +70,7 @@ describe('Services: experimentsFactory', function () {
 
     spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when(null));
 
+    environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
     scope.$apply();
@@ -88,6 +90,7 @@ describe('Services: experimentsFactory', function () {
     spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
     spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(null));
 
+    environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
     scope.$apply();
@@ -106,6 +109,7 @@ describe('Services: experimentsFactory', function () {
     spyOn(experimentProxyService, 'getImages');
     var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout><thumbnail>fake.png</thumbnail></ns1:ExD>';
     spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(xml));
+    environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
     scope.$apply();
@@ -126,6 +130,7 @@ describe('Services: experimentsFactory', function () {
     spyOn(experimentProxyService, 'getImages');
     var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout><thumbnail>fake.png</thumbnail></ns1:ExD>';
     spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(xml));
+    environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
     scope.$apply();
@@ -151,6 +156,7 @@ describe('Services: experimentsFactory', function () {
     spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
     spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
     spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(''));
+    environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
     scope.$apply();

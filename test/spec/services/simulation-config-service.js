@@ -7,7 +7,7 @@ describe('Services: simulation-config-service', function ()
   var simulationInfo;
   var collabFolderAPIServiceMock;
   var httpBackend;
-  var $rootScope;
+  var $rootScope, environmentService;
 
   simulationInfo = {
     serverBaseUrl: 'localhost:',
@@ -105,11 +105,12 @@ describe('Services: simulation-config-service', function ()
     $provide.value('collabFolderAPIService', collabFolderAPIServiceMock);
   }));
 
-  beforeEach(inject(function (_$httpBackend_, _simulationConfigService_, _$rootScope_)
+  beforeEach(inject(function (_$httpBackend_, _simulationConfigService_, _$rootScope_, _environmentService_)
   {
     simulationConfigService = _simulationConfigService_;
     httpBackend = _$httpBackend_;
     $rootScope = _$rootScope_;
+    environmentService = _environmentService_;
 
     var fileresult = { resources: [{ type: 'mockedFileType', file: 'mockedpath/configfilename' }] };
     httpBackend.expectGET(simulationInfo.serverBaseUrl + '/simulation/mocked_simulation_id/resources').respond(JSON.stringify(fileresult));
@@ -167,7 +168,7 @@ describe('Services: simulation-config-service', function ()
   {
     spyOn(collabFolderAPIServiceMock, 'downloadFile').andCallThrough();
 
-    simulationInfo.isCollabExperiment = true;
+    environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
     simulationConfigService.loadConfigFile('mockedFileType');
     httpBackend.flush();
@@ -180,7 +181,7 @@ describe('Services: simulation-config-service', function ()
   it('should save config file to collabs', function ()
   {
     collabFolderAPIServiceMock.fileDoesNotExist = true;
-    simulationInfo.isCollabExperiment = true;
+    environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
 
     spyOn(collabFolderAPIServiceMock, 'createFolderFile').andCallThrough();
@@ -194,7 +195,7 @@ describe('Services: simulation-config-service', function ()
   it('should overwrite config file to collabs', function ()
   {
     collabFolderAPIServiceMock.fileDoesNotExist = false;
-    simulationInfo.isCollabExperiment = true;
+    environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
 
     spyOn(collabFolderAPIServiceMock, 'createFolderFile').andCallThrough();

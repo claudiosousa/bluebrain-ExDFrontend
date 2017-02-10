@@ -19,6 +19,7 @@
     'RESET_TYPE',
     'editorsServices',
     'saveErrorsService',
+    'environmentService',
     function (backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
@@ -35,7 +36,8 @@
               downloadFileService,
               RESET_TYPE,
               editorsServices,
-              saveErrorsService) {
+              saveErrorsService,
+              environmentService) {
 
       var DIRTY_TYPE = 'SM';
 
@@ -46,7 +48,7 @@
           control: '='
         },
         link: function (scope, element, attrs) {
-          scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+          scope.isPrivateExperiment = environmentService.isPrivateExperiment();
           scope.isSavingToCollab = false;
           scope.collabDirty = false;
 
@@ -125,7 +127,7 @@
 
           scope.onStateMachineChange = function (stateMachine) {
             stateMachine.dirty = true;
-            scope.collabDirty = scope.isCollabExperiment;
+            scope.collabDirty = environmentService.isPrivateExperiment();
             autoSaveService.setDirty(DIRTY_TYPE, scope.stateMachines);
           };
 
@@ -204,7 +206,7 @@
             stateMachine.name = scope.getStateMachineName(id);
             scope.stateMachines.unshift(stateMachine);
             addedStateMachineCount = addedStateMachineCount + 1;
-            scope.collabDirty = scope.isCollabExperiment;
+            scope.collabDirty = environmentService.isPrivateExperiment();
             autoSaveService.setDirty(DIRTY_TYPE, scope.stateMachines);
 
             return stateMachine;

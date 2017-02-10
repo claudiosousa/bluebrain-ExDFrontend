@@ -47,7 +47,7 @@
                     <label>
 
                     <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_BRAIN}}" type="radio"
-                            tooltip="{{isCollabExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
+                            tooltip="{{isPrivateExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
                             tooltip-trigger="mouseenter" tooltip-placement="top">
                     </input>
                         Reset the Neural Network
@@ -63,7 +63,7 @@
                 <label>
 
                 <input ng-model="request.resetType" ng-value="{{RESET_TYPE.RESET_WORLD}}" type="radio"
-                        tooltip="{{isCollabExperiment?'Reset Environment Poses to the last saved state':'Reset the poses of models to the original state'}}" tooltip-trigger="mouseenter" tooltip-placement="top">
+                        tooltip="{{isPrivateExperiment?'Reset Environment Poses to the last saved state':'Reset the poses of models to the original state'}}" tooltip-trigger="mouseenter" tooltip-placement="top">
                 </input>
                 Reset Environment Poses
                 </label>

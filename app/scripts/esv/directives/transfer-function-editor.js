@@ -43,6 +43,7 @@
       'editorsServices',
       '$q',
       'saveErrorsService',
+      'environmentService',
     function (
         $log,
         backendInterfaceService,
@@ -63,7 +64,8 @@
         RESET_TYPE,
         editorsServices,
         $q,
-        saveErrorsService) {
+        saveErrorsService,
+        environmentService) {
     var DIRTY_TYPE = 'TF';
 
     return {
@@ -74,7 +76,7 @@
       },
       link: function (scope, element, attrs) {
 
-        scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+        scope.isPrivateExperiment = environmentService.isPrivateExperiment();
         scope.isSavingToCollab = false;
         scope.collabDirty = false;
 
@@ -242,7 +244,7 @@
         scope.onTransferFunctionChange = function (transferFunction) {
           transferFunction.name = pythonCodeHelper.getFunctionName(transferFunction.code);
           transferFunction.dirty = true;
-          scope.collabDirty = scope.isCollabExperiment;
+          scope.collabDirty = environmentService.isPrivateExperiment();
           autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
           if (transferFunction.local) {
             transferFunction.id = transferFunction.name;
@@ -277,7 +279,7 @@
             scope.transferFunctions.unshift(transferFunction);
           }
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
-          scope.collabDirty = scope.isCollabExperiment;
+          scope.collabDirty = environmentService.isPrivateExperiment();
           autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
         };
 

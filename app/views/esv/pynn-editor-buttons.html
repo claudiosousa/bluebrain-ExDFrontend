@@ -13,7 +13,7 @@
   <i class="glyphicon glyphicon-ok-circle" aria-hidden="true"></i>
   <span> Apply</span>
 </button>
-<button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+<button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
         ng-click="saveIntoCollabStorage()"
         ng-disabled="loading || stateService.statePending || !populationForm.$valid || !collabDirty"
         v-busy="isSavingToCollab"

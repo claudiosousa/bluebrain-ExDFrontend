@@ -3,8 +3,8 @@
   'use strict';
 
   angular.module('exdFrontendApp').service('simulationConfigService',
-    ['$resource', 'simulationInfo', 'serverError', '$q', 'collabFolderAPIService', '$http',
-      function ($resource, simulationInfo, serverError, $q, collabFolderAPIService, $http)
+    ['$resource', 'simulationInfo', 'serverError', '$q', 'collabFolderAPIService', '$http', 'environmentService',
+      function ($resource, simulationInfo, serverError, $q, collabFolderAPIService, $http, environmentService)
       {
         return {
           initConfigFiles: initConfigFiles,
@@ -77,7 +77,7 @@
 
         function saveConfigFile(configType, data)
         {
-          if (simulationInfo.isCollabExperiment && simulationInfo.contextID)  // A config file can be saved only in collab mode
+          if (environmentService.isPrivateExperiment() && simulationInfo.contextID)  // A config file can be saved only in collab mode
           {
 
             collabFolderAPIService.getExperimentFolderId(simulationInfo.contextID).then(function (folderId)

@@ -133,10 +133,10 @@
   module.factory('experimentSimulationService', [
     '$q', '$http','$log', '$timeout', '$stateParams', 'nrpAnalytics',
     'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'simulationSDFWorld', 'experimentProxyService', 'bbpConfig',
-    'simulationConfigService',
+    'simulationConfigService', 'environmentService',
     function ($q, $http, $log, $timeout, $stateParams, nrpAnalytics, simulationState,
       simulationGenerator, roslib, STATE, simulationSDFWorld, experimentProxyService, bbpConfig,
-      simulationConfigService) {
+      simulationConfigService, environmentService) {
       var rosConnection, statusListener;
 
       var registerForStatusInformation = function (rosbridgeConfiguration, setProgressMessage) {
@@ -233,7 +233,7 @@
         var simInitData = {
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
-          contextID: $stateParams.ctx,
+          contextID: environmentService.isPrivateExperiment() ? $stateParams.ctx : null,
           brainProcesses: brainProcesses,
           reservation: reservation
         };
@@ -259,7 +259,7 @@
                 simulationConfigService.initConfigFiles(serverURL, createData.simulationID).then(function ()
                 {
                   deferred.resolve(
-                    'esv-web/experiment-view/' + server + '/' + experimentID + '/' + createData.simulationID);
+                    'esv-web/experiment-view/' + server + '/' + experimentID + '/' + environmentService.isPrivateExperiment() + "/" + createData.simulationID);
                 }).catch(function (err)
                 {
                   deferred.reject(err);

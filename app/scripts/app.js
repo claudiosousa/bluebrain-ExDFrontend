@@ -68,7 +68,7 @@
 
       var experimentViewState = {
         name: 'experiment-view',
-        url: '/esv-web/experiment-view/:serverID/:experimentID/:simulationID?ctx',
+        url: '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
         templateUrl: 'views/esv/experiment-view.html',
         onEnter: ['$document', function ($document) {
           $document.find('body').addClass('experiment-view-route');
@@ -77,6 +77,9 @@
           $document.find('body').removeClass('experiment-view-route');
         }],
         resolve: {
+          setCollabState: ['environmentService', '$stateParams', function(environmentService, $stateParams){
+            return environmentService.setPrivateExperiment($stateParams.privateExperiment === 'true');
+          }],
           siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
             return simulationInfo.initialize(
               $stateParams.serverID, $stateParams.experimentID, $stateParams.simulationID, $stateParams.ctx);
@@ -92,7 +95,21 @@
         resolve: {
           oidcToken: ['oidcClientService', function (oidcClientService) {
             return oidcClientService.ensureSession();
-          }]
+          }],
+          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
+        },
+      };
+
+      var esvPrivateState = {
+        name: 'esv-private',
+        url: '/esv-private?ctx',
+        templateUrl: 'views/esv/esv-experiments.html',
+        controller: 'esvExperimentsCtrl',
+        resolve: {
+          oidcToken: ['oidcClientService', function (oidcClientService) {
+            return oidcClientService.ensureSession();
+          }],
+          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(true); }]
         }
       };
 
@@ -110,6 +127,7 @@
 
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
+      home.state(esvPrivateState);
       home.state(experimentViewState);
       home.state(supportState);
       home.state(newCollabOverviewState);
@@ -129,6 +147,29 @@
       };
     }).config(['$httpProvider', function ($httpProvider) {
       $httpProvider.interceptors.push('timeoutHttpInterceptor');
+    }])
+    .run(['$rootScope', '$location', function($rootScope, $location) {
+
+      $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+        var currentPath = $location.path();
+        window.parent.postMessage({
+          eventName: 'workspace.context',
+          data: {
+            state: JSON.stringify({
+              path: currentPath
+            })
+          }
+        }, "*");
+      });
+
+      var ctxstate = $location.search().ctxstate;
+      if (ctxstate) {
+        ctxstate = JSON.parse(ctxstate);
+        var currentPath = $location.path();
+        if (ctxstate.path !== currentPath) {
+          $location.path(ctxstate.path);
+        }
+      }
     }]);
 
   // load the configuration used by bbpConfig

@@ -15,6 +15,7 @@
       'collabExperimentLockService',
       'nrpUser',
       '$timeout',
+      'environmentService',
       function (
         $scope,
         $location,
@@ -28,12 +29,13 @@
         collabFolderAPIService,
         collabExperimentLockService,
         nrpUser,
-        $timeout
+        $timeout,
+        environmentService
       ) {
         $scope.STATE = STATE;
         $scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
         $scope.pageState = {};
-        $scope.isCollabExperiment = $stateParams.ctx ? true : false;
+        $scope.isCollabExperiment = environmentService.isPrivateExperiment();
         $scope.isSavingToCollab = false;
         $scope.formInfo ={};
         $scope.descID = "descID";
@@ -41,7 +43,7 @@
         $scope.editing = {};
         $scope.editing[$scope.descID]= false;
         $scope.editing[$scope.nameID]= false;
-        if ($scope.isCollabExperiment){
+        if (environmentService.isPrivateExperiment()){
           var lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
         }
         $scope.config = {
@@ -102,7 +104,7 @@
           };
 
           $scope.editExperiment = function(elementID) {
-            if ($scope.isCollabExperiment) {
+            if (environmentService.isPrivateExperiment()) {
               $scope.loadingEdit = true;
               lockService.tryAddLock()
                 .then(function(result) {
@@ -223,7 +225,7 @@
           };
 
           $scope.joinExperiment = function (simul, exp) {
-            var path = 'esv-web/experiment-view/' + simul.server + '/' + exp.id + '/' + simul.runningSimulation.simulationID;
+            var path = 'esv-web/experiment-view/' + simul.server + '/' + exp.id + '/' + environmentService.isPrivateExperiment() + "/" + simul.runningSimulation.simulationID;
             $location.path(path);
           };
 
@@ -257,7 +259,7 @@
             });
         }
 
-        if (!$scope.isCollabExperiment) {
+        if (!environmentService.isPrivateExperiment()) {
           loadExperiments();
         } else {
           loadCollabExperiments();

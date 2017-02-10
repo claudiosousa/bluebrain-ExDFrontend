@@ -22,6 +22,7 @@ describe('Directive: smachEditor', function () {
     SOURCE_TYPE,
     editorsServices,
     hbpDialogFactory,
+    environmentService,
     $q;
 
   var backendInterfaceServiceMock = {
@@ -56,7 +57,7 @@ describe('Directive: smachEditor', function () {
   var simulationInfoMock = {
     contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
     simulationID: 'mocked_simulation_id',
-    isCollabExperiment: true
+    isPrivateExperiment: true
   };
 
   var roslibMock = {};
@@ -91,7 +92,8 @@ describe('Directive: smachEditor', function () {
                               _SOURCE_TYPE_,
                               _editorsServices_,
                               _hbpDialogFactory_,
-                              _$q_) {
+                              _$q_,
+                              _environmentService_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -107,6 +109,8 @@ describe('Directive: smachEditor', function () {
     editorsServices = _editorsServices_;
     hbpDialogFactory = _hbpDialogFactory_;
     $q = _$q_;
+    environmentService = _environmentService_;
+
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
 
@@ -125,7 +129,7 @@ describe('Directive: smachEditor', function () {
     expect(isolateScope.stateMachines).toEqual([]);
     expect(backendInterfaceService.getStateMachines).toHaveBeenCalled();
     expect(isolateScope.backendDocumentationURL).toEqual('backendDocumentationURL');
-    expect(isolateScope.isCollabExperiment).toEqual(simulationInfo.isCollabExperiment);
+    expect(isolateScope.isPrivateExperiment).toEqual(environmentService.isPrivateExperiment());
   });
 
   describe('Retrieving, saving and deleting stateMachines', function () {

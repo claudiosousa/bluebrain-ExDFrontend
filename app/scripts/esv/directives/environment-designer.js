@@ -27,6 +27,7 @@
       'hbpDialogFactory',
       'isNotARobotPredicate',
       'downloadFileService',
+      'environmentService',
       function ($document,
         STATE,
         EDIT_MODE,
@@ -41,7 +42,8 @@
         backendInterfaceService,
         hbpDialogFactory,
         isNotARobotPredicate,
-        downloadFileService) {
+        downloadFileService,
+        environmentService) {
         return {
           templateUrl: 'views/esv/environment-designer.html',
           restrict: 'E',
@@ -54,7 +56,7 @@
             scope.assetsPath = serverConfig.gzweb.assets;
             scope.EDIT_MODE = EDIT_MODE;
             scope.gz3d = gz3d;
-            scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+            scope.isPrivateExperiment = environmentService.isPrivateExperiment();
             scope.isSavingToCollab = false;
 
             scope.setEditMode = function (mode) {

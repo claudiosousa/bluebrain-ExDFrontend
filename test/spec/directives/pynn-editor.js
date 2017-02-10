@@ -31,7 +31,7 @@ describe('Directive: pynnEditor', function () {
   var simulationInfoMock = {
     contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
     simulationID : 'mocked_simulation_id',
-    isCollabExperiment: true
+    isPrivateExperiment: true
   };
 
   var documentationURLsMock =

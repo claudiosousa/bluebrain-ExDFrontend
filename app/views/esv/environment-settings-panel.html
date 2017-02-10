@@ -22,7 +22,7 @@
 
       <button type="button" class="btn btn-default"
             ng-click="saveSettings()"
-            ng-disabled="!simulationInfo.isCollabExperiment || !simulationInfo.contextID"
+            ng-disabled="!isPrivateExperiment || !simulationInfo.contextID"
             ng-mouseup="$event.stopPropagation(); focus('container');">
 
             <i class="glyphicon glyphicon-download"></i>

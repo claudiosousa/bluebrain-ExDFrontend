@@ -12,7 +12,10 @@
     'autoSaveService',
     'RESET_TYPE',
     'editorsServices',
-    function ($timeout, backendInterfaceService, documentationURLs, hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService, RESET_TYPE, editorsServices) {
+    'environmentService',
+    function ($timeout, backendInterfaceService, documentationURLs,
+    hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,
+    RESET_TYPE, editorsServices, environmentService) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -23,7 +26,7 @@
         },
         link: function (scope, element, attrs) {
 
-          scope.isCollabExperiment = simulationInfo.isCollabExperiment;
+          scope.isPrivateExperiment = environmentService.isPrivateExperiment();
           scope.loading = false;
           scope.collabDirty = false;
           scope.localDirty = false;
@@ -249,7 +252,7 @@
           };
 
           scope.onBrainChange = function () {
-            scope.collabDirty = scope.isCollabExperiment;
+            scope.collabDirty = environmentService.isPrivateExperiment();
             scope.localDirty = true;
             autoSaveService.setDirty(DIRTY_TYPE, [scope.pynnScript, scope.populations]);
           };

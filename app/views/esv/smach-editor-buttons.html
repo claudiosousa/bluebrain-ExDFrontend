@@ -1,7 +1,7 @@
 <button type="button" class="btn btn-default btn-md" ng-click="create()">
   <i class="glyphicon glyphicon-star"></i><span> New</span>
 </button>
-<button ng-show="isCollabExperiment" type="button" class="btn btn-default"
+<button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
         ng-click="saveSMIntoCollabStorage()"
         ng-disabled="stateService.currentState === STATE.INITIALIZED || !collabDirty"
         v-busy="isSavingToCollab"
