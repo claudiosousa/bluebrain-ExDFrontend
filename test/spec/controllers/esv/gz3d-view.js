@@ -1080,15 +1080,12 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(nrpBackendVersions.calls.mostRecent().args[0].indexOf(simulationInfo.serverID) > -1).toBe(true);
       expect(nrpBackendVersionsObject.get.calls.mostRecent().args[0]).toEqual(jasmine.any(Function));
       expect(nrpBackendVersionsObject.get.calls.count()).toBe(1);
-      //Ignore this warning because of hbp_nrp_cle and hbp_nrp_backend
-      /*jshint camelcase: false */
 
-      var backendData = {hbp_nrp_cle: '0.0.5.dev0', hbp_nrp_backend: '0.0.4'};
-      var frontendData = { hbp_nrp_esv: '0.0.1' };
-      var dataResult = angular.extend(frontendData, backendData);
+      var backendData = {toString: 'Backend:0.5.dev0'};
+      var frontendData = { toString: 'Frontend: 0.0.1' };
       nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
       nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendData);
-      expect(scope.versions).toEqual(dataResult);
+      expect(scope.versionString).toEqual(frontendData.toString + backendData.toString);
     });
 
     it('should set the focus on the supplied html element', function() {

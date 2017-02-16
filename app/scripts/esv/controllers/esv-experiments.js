@@ -16,6 +16,9 @@
       'nrpUser',
       '$timeout',
       'environmentService',
+      'experimentProxyService',
+      'nrpBackendVersions',
+      'nrpFrontendVersion',
       function (
         $scope,
         $location,
@@ -30,8 +33,14 @@
         collabExperimentLockService,
         nrpUser,
         $timeout,
-        environmentService
+        environmentService,
+        experimentProxyService,
+        nrpBackendVersions,
+        nrpFrontendVersion
       ) {
+        $scope.isCollapsed = true;
+        $scope.versionString = "Show versions";
+        $scope.softwareVersions = "";
         $scope.STATE = STATE;
         $scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
         $scope.pageState = {};
@@ -98,6 +107,7 @@
               return;
             }
             if (experiment.id !== $scope.pageState.selected) {
+              $scope.setCollapsed(true);
               $scope.pageState.selected = experiment.id;
               $scope.pageState.showJoin = false;
             }
@@ -233,7 +243,25 @@
             experimentsService.destroy();
           });
         };
+        $scope.setCollapsed = function(newState){
+          $scope.isCollapsed = newState;
+          $scope.versionString = newState ? "Show versions" : "Hide versions";
+        };
 
+        $scope.getSoftwareVersions = function(server){
+          if(!$scope.isCollapsed) {
+             $scope.softwareVersions = "";
+             nrpFrontendVersion.get(function (data) {
+               $scope.softwareVersions += data.toString;
+             });
+            experimentProxyService.getServerConfig(server)
+            .then(function (serverConfig) {
+              nrpBackendVersions(serverConfig.gzweb['nrp-services']).get(function (result) {
+                $scope.softwareVersions += result.toString;
+              });
+            });
+          }
+        };
         function loadCollabExperiments() {
           var ctx = $stateParams.ctx;
           collabConfigService.get({ contextID: ctx },

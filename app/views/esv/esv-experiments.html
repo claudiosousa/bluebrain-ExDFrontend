@@ -52,10 +52,14 @@
               </i>
               <br/>
               <i>Use server:</i>
-              <select ng-model="exp.devServer">
+              <select ng-model="exp.devServer" ng-change="getSoftwareVersions(exp.devServer)">
                 <option value="">All servers</option>
                 <option ng-repeat="server in exp.availableServers" value="{{server}}">{{server}}</option>
               </select>
+              <a name="versionLink" href="" ng-click="setCollapsed(!isCollapsed); getSoftwareVersions(exp.devServer)">{{versionString}}</a>
+              <div collapse="isCollapsed" name="versionDiv">
+                <div class="well well-lg pre" >{{softwareVersions}}</div>
+              </div>
             <br>
             <i>Cluster availability: </i>
             <i class="label-availability" tooltip="A cluster node is required to run the robot simulation" ng-class="clusterAvailability.free < CLUSTER_THRESHOLDS.AVAILABLE ? (clusterAvailability.free < CLUSTER_THRESHOLDS.UNAVAILABLE ? 'label-danger' : 'label-warning') : 'label-success' ">

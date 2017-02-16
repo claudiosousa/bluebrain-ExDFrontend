@@ -148,12 +148,12 @@
           }
         });
 
-        $scope.versions = {};
+        $scope.versionString = "";
         nrpFrontendVersion.get(function (data) {
-          $scope.versions.hbp_nrp_esv = data.hbp_nrp_esv;
+          $scope.versionString += data.toString;
         });
         nrpBackendVersions(simulationInfo.serverBaseUrl).get(function (data) {
-          $scope.versions = angular.extend($scope.versions, data);
+          $scope.versionString += data.toString;
         });
 
         // prevent this analytics event from sent multiple time
