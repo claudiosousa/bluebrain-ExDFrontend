@@ -30,7 +30,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 
   this.lockVerticalMovement = false;
 
-  this.movementSpeed = 2.0;
+  this.movementSpeed = 2.5;
   this.MOUSE_ROTATION_SPEED = 0.01;
   this.KEYBOARD_ROTATION_SPEED = 0.05;
   this.touchSensitivity = 0.01;
@@ -450,18 +450,18 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     var keyboardRotationSpeed = speedup * this.KEYBOARD_ROTATION_SPEED;
     if (this.keyboardRotateUp || this.keyboardRotateDown) {
       var sign = this.keyboardRotateUp ? 1.0 : -1.0;
-      this.keyboardRotate(0.0, sign * keyboardRotationSpeed * timeDelta);
+      this.keyboardRotate(0.0, sign * keyboardRotationSpeed);
     }
     if (this.keyboardRotateRight) {
-      this.keyboardRotate(-keyboardRotationSpeed * timeDelta, 0.0);
+      this.keyboardRotate(-keyboardRotationSpeed, 0.0);
     }
     if (this.keyboardRotateLeft) {
-      this.keyboardRotate(keyboardRotationSpeed * timeDelta, 0.0);
+      this.keyboardRotate(keyboardRotationSpeed, 0.0);
     }
 
     /* --- rotation by means of a mouse drag --- */
     if (this.mouseDragOn) {
-      var actualLookSpeed = timeDelta * this.MOUSE_ROTATION_SPEED;
+      var actualLookSpeed = this.MOUSE_ROTATION_SPEED;
       if (!this.mouseBindingsEnabled) {
         actualLookSpeed = 0;
       }
@@ -520,8 +520,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   };
 
   this.updateLinearVelocity = function(delta) {
-    var speed = 0;
-    speed = delta * this.movementSpeed;
+    var speed = this.movementSpeed;
     if (this.shiftHold) {
       speed = speed * this.speedUpFactor;
     }

@@ -40,6 +40,7 @@
       'objectInspectorModule',
       'userNavigationModule',
       'userContextModule',
+      'environmentRenderingModule',
       'pythonCodeHelperServices',
       'simulationInfoService',
       'slurminfoService',

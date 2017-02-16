@@ -50,7 +50,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     NAVIGATION_MODES,
     environmentService,
     userContextService,
-    editorsPanelService;
+    editorsPanelService,
+    environmentRenderingService;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -85,6 +86,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     setModeFreeCamera: jasmine.createSpy('setModeFreeCamera'),
     setModeGhost: jasmine.createSpy('setModeGhost'),
     setModeHumanBody: jasmine.createSpy('setModeHumanBody'),
+    update: jasmine.createSpy('update')
   };
 
   var simulationConfigServiceMock = {};
@@ -363,6 +365,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     };
     $provide.value('editorsPanelService', editorsPanelServiceMock);
 
+    var environmentRenderingServiceMock = {
+      init: jasmine.createSpy('init'),
+      deinit: jasmine.createSpy('deinit'),
+      hasCameraView: jasmine.createSpy('hasCameraView')
+    };
+    $provide.value('environmentRenderingService', environmentRenderingServiceMock);
+
     simulationStateObject.update.calls.reset();
     simulationStateObject.state.calls.reset();
     simulationControlObject.simulation.calls.reset();
@@ -414,7 +423,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _NAVIGATION_MODES_,
                               _environmentService_,
                               _userContextService_,
-                              _editorsPanelService_) {
+                              _editorsPanelService_,
+                              _environmentRenderingService_) {
     controller = $controller;
     rootScope = $rootScope;
     log = _$log_;
@@ -453,6 +463,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     environmentService = _environmentService_;
     userContextService = _userContextService_;
     editorsPanelService = _editorsPanelService_;
+    environmentRenderingService = _environmentRenderingService_;
 
     callback = q.defer();
     lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
@@ -546,16 +557,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(userNavigationService.setModeHumanBody).toHaveBeenCalled();
     });
 
-    it('should set the assetLoadingSplash progress callback in gz3d', function(){
-      stateService.currentState = STATE.STARTED;
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      expect(scope.assetLoadingSplashScreen).toEqual(assetLoadingSplashInstance);
-      expect(assetLoadingSplash.open).toHaveBeenCalled();
-      expect(gz3d.iface.setAssetProgressCallback).toHaveBeenCalled();
-      gz3d.iface.setAssetProgressCallback.calls.mostRecent().args[0](exampleProgressData);
-      expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
-    });
-
     it('should toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function () {
       userContextService.editIsDisabled = false;
       scope.codeEditorButtonClickHandler();
@@ -583,13 +584,11 @@ describe('Controller: Gz3dViewCtrl', function () {
         $scope: scope
       });
       scope.experimentConfiguration = 'test_config';
-      spyOn(scope, 'updateInitialCameraPose');
       simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
       var configuration = simulationInfo.experimentDetails;
       expect(scope.ExperimentDescription).toBe(configuration.description);
       expect(scope.ExperimentName).toBe(configuration.name);
-      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(configuration.cameraPose);
 
       window.bbpConfig.localmode.forceuser = false;
     });
@@ -601,13 +600,11 @@ describe('Controller: Gz3dViewCtrl', function () {
         $scope: scope
       });
       environmentService.setPrivateExperiment(true);
-      spyOn(scope, 'updateInitialCameraPose');
       simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
       var configuration = simulationInfo.experimentDetails;
       expect(scope.ExperimentDescription).toBe(configuration.description);
       expect(scope.ExperimentName).toBe(configuration.name);
-      expect(scope.updateInitialCameraPose).toHaveBeenCalledWith(configuration.cameraPose);
       window.bbpConfig.localmode.forceuser = false;
     });
     it('should ensure that the state is PAUSED when resetting', function() {
@@ -851,6 +848,10 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, event);
     });
 
+    // These test correspond to touch event context menu handling. However, the handling of these touch event
+    // is misplaced in gz3d-controller.js and is commented there until moved to a more sensible location.
+    // Therefore these tests are commented as well and should be moved together with the functionality.
+    /*
     it('should register touch events for the context menu', function() {
       gz3d.scene.container.addEventListener.calls.reset();
       stateService.getCurrentState().then.calls.mostRecent().args[0]();
@@ -912,16 +913,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
     });
-
-    it('should call asset loading callback and turn slider position into light intensities', function() {
-      scope.assetLoadingSplashScreen = undefined;
-      stateService.currentState = STATE.INITIALIZED;
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      expect(assetLoadingSplash.open).toHaveBeenCalled();
-      var callbackOnClose = assetLoadingSplash.open.calls.mostRecent().args[0];
-      expect(callbackOnClose).toBeDefined();
-      expect(callbackOnClose).toBe(scope.onSceneLoaded);
-    });
+    */
 
     it('should test light change', function() {
 
@@ -1068,8 +1060,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(gz3d.scene.viewManager.views[1].type).toBe('camera');
       expect(gz3d.scene.viewManager.views[1].active).toBe(false);
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
-      scope.onSceneLoaded();
-      scope.$digest();
+      environmentRenderingService.hasCameraView.and.returnValue(true);
       scope.robotViewButtonClickHandler();
       expect(scope.showRobotView).toBe(true);
       expect(gz3d.scene.viewManager.views[0].active).toBe(false);
@@ -1104,12 +1095,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should close gzbridge on $destroy', function() {
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      spyOn(scope, 'cleanUp').and.callThrough();
 
       // call the method under test
       scope.$destroy();
 
-      expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
-      expect(gz3d.deInitialize).toHaveBeenCalled();
+      expect(scope.cleanUp).toHaveBeenCalled();
     });
 
     it('should do nothing on $destroy when all is undefined', function() {
@@ -1213,14 +1204,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.exit();
       expect(location.path()).toEqual('/esv-web');
     });
-
-    it('should update simulation\'s initial camera pose', function(){
-      scope.updateInitialCameraPose(null);
-      expect(gz3d.scene.setDefaultCameraPose).not.toHaveBeenCalled();
-      var camPose =  [1.0, 2.0, 3.0, -1.0, -2.0, -3.0];
-      scope.updateInitialCameraPose(camPose);
-      expect(gz3d.scene.setDefaultCameraPose).toHaveBeenCalled();
-    });
   });
 
   describe('(EditMode)', function() {
@@ -1249,14 +1232,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       spyOn(scope, 'cleanUp').and.callThrough();
       scope.$destroy();
       expect(scope.cleanUp).toHaveBeenCalled();
-    });
-
-    it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function () {
-
-      scope.onSceneLoaded();
-
-      expect(gz3d.scene.showLightHelpers).toBe(true);
-      expect(gz3d.setLightHelperVisibility).toHaveBeenCalled();
     });
 
     it(' - onContainerMouseDown() should make the right calls', function() {
@@ -1345,12 +1320,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
-    it('should init default environment settings', function ()
-    {
-      scope.initComposerSettings();
-      expect(scope.loadingEnvironmentSettingsPanel).toBe(false);
-    });
-
     it('should enable display of the environment settings panel', function ()
     {
       scope.showEnvironmentSettingsPanel = false;
@@ -1384,7 +1353,8 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     rootScope,
     stateService,
     window,
-    document;
+    document,
+    environmentRenderingService;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -1437,10 +1407,19 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     });
 
     var simulationInfo = {
-      serverConfig: { rosbridge: { topics: {} } }
+      serverConfig: { rosbridge: { topics: {} } },
+      experimentDetails: {
+        cameraPose: { x: 1.0, y: 2.0, z: 3.0 }
+      }
     };
-
     $provide.value('simulationInfo', simulationInfo);
+
+    var environmentRenderingServiceMock = {
+      init: jasmine.createSpy('init'),
+      deinit: jasmine.createSpy('deinit'),
+      hasCameraView: jasmine.createSpy('hasCameraView')
+    };
+    $provide.value('environmentRenderingService', environmentRenderingServiceMock);
   }));
 
   // Initialize the controller and a mock scope
@@ -1448,13 +1427,15 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
                               $rootScope,
                               _stateService_,
                               _$window_,
-                              _$document_) {
+                              _$document_,
+                              _environmentRenderingService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
     stateService = _stateService_;
     window = _$window_;
     document = _$document_;
+    environmentRenderingService = _environmentRenderingService_;
 
     spyOn(window, 'stop').and.returnValue(null);
   }));

@@ -25,7 +25,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.enabled = true;
   this.keyBindingsEnabled = true;
 
-  this.movementSpeed = 0.05;
+  this.movementSpeed = 0.002;
   this.lookSpeed = 0.01;
   this.touchSensitivity = 0.01;
   this.mouseWheelSensitivity = 0.25;
@@ -380,7 +380,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
       /* --- rotation by means of a mouse drag --- */
       if (this.mouseDragOn) {
-        var actualLookSpeed = delta * this.lookSpeed;
+        var actualLookSpeed = this.lookSpeed;
         if (!this.activeLook) {
           actualLookSpeed = 0;
         }

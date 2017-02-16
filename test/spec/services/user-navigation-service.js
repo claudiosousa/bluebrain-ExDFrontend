@@ -5,10 +5,10 @@
 describe('Services: userNavigationService', function () {
 
   var userNavigationService;
-  var NAVIGATION_MODES;
+  var NAVIGATION_MODES, STATE;
 
   var gz3d, camera, avatar, avatarControls, firstPersonControls;
-  var hbpIdentityUserDirectory, userProfile, hbpIdentityUserDirectoryPromise, simulationInfo, roslib;
+  var hbpIdentityUserDirectory, userProfile, hbpIdentityUserDirectoryPromise, simulationInfo, roslib, stateService;
 
   // provide mock objects
   beforeEach(module(function ($provide) {
@@ -17,6 +17,9 @@ describe('Services: userNavigationService', function () {
       iface: {
         modelInfoTopic: {
           subscribe: jasmine.createSpy('subscribe')
+        },
+        emitter: {
+          on: jasmine.createSpy('on').and.callFake(function (event, fn) {fn();})
         }
       },
       scene: {
@@ -78,7 +81,6 @@ describe('Services: userNavigationService', function () {
     var hbpIdentityUserDirectoryPromiseMock = {
       //then: jasmine.createSpy('then').and.returnValue({ then: jasmine.createSpy('then')})};
       then: jasmine.createSpy('then').and.callFake(function (callback) {
-        //userNavigationService.setUserData(hbpIdentityUserDirectoryPromiseObject.userProfileMock);
         callback(userProfileMock);
       })
     };
@@ -100,16 +102,25 @@ describe('Services: userNavigationService', function () {
 
     var roslibMock = {};
     $provide.value('roslib', roslibMock);
+
+    var stateServiceMock = {
+      getCurrentState: jasmine.createSpy('getCurrentState').and.returnValue({
+        then: jasmine.createSpy('then').and.callFake(function (fn) { fn(); })})
+    };
+    $provide.value('stateService', stateServiceMock);
   }));
 
   beforeEach(function () {
     module('userNavigationModule');
+    module('exdFrontendApp.Constants');
 
     // inject service for testing.
-    inject(function (_userNavigationService_, _NAVIGATION_MODES_, _gz3d_, _camera_, _avatar_, _avatarControls_, _firstPersonControls_,
-                     _userProfile_, _hbpIdentityUserDirectory_, _hbpIdentityUserDirectoryPromise_, _simulationInfo_, _roslib_) {
+    inject(function (_userNavigationService_, _NAVIGATION_MODES_, _STATE_, _gz3d_, _camera_, _avatar_, _avatarControls_,
+                     _firstPersonControls_, _userProfile_, _hbpIdentityUserDirectory_,
+                     _hbpIdentityUserDirectoryPromise_, _simulationInfo_, _roslib_, _stateService_) {
       userNavigationService = _userNavigationService_;
       NAVIGATION_MODES = _NAVIGATION_MODES_;
+      STATE = _STATE_;
       gz3d = _gz3d_;
       hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
 
@@ -121,6 +132,7 @@ describe('Services: userNavigationService', function () {
       hbpIdentityUserDirectoryPromise = _hbpIdentityUserDirectoryPromise_;
       simulationInfo = _simulationInfo_;
       roslib = _roslib_;
+      stateService = _stateService_;
     });
 
     spyOn(THREE, 'FirstPersonControls').and.returnValue(firstPersonControls);
@@ -149,6 +161,8 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.avatarInitialized).toBe(false);
     expect(userNavigationService.avatarModelPathWithCollision).toBe('user_avatar_basic');
     expect(userNavigationService.avatarModelPathNoCollision).toBe('user_avatar_basic_no-collision');
+    stateService.currentSate = STATE.STARTED;
+    console.info(stateService.currentSate);
 
     userNavigationService.init();
 
