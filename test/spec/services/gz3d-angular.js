@@ -30,17 +30,17 @@ describe('testing the gz3d service', function () {
       setCallbackCreateRenderContainer: jasmine.createSpy('setCallbackCreateRenderContainer'),
       getViewByName: function () { return { camera: { cameraHelper: cameraHelper } }; }
     },
-    getDomElement: jasmine.createSpy('getDomElement').andReturn({}),
+    getDomElement: jasmine.createSpy('getDomElement').and.returnValue({}),
     setWindowSize: jasmine.createSpy('setWindowSize')
   };
   var GuiObject = {};
   var GZIfaceObject = { addCanDeletePredicate: angular.noop };
   var SdfParserObject = {};
   GZ3D = {};
-  GZ3D.Scene = jasmine.createSpy('Scene').andReturn(SceneObject);
-  GZ3D.Gui = jasmine.createSpy('Gui').andReturn(GuiObject);
-  GZ3D.GZIface = jasmine.createSpy('GZIface').andReturn(GZIfaceObject);
-  GZ3D.SdfParser = jasmine.createSpy('SdfParser').andReturn(SdfParserObject);
+  GZ3D.Scene = jasmine.createSpy('Scene').and.returnValue(SceneObject);
+  GZ3D.Gui = jasmine.createSpy('Gui').and.returnValue(GuiObject);
+  GZ3D.GZIface = jasmine.createSpy('GZIface').and.returnValue(GZIfaceObject);
+  GZ3D.SdfParser = jasmine.createSpy('SdfParser').and.returnValue(SdfParserObject);
 
   var simulationInfo = {
     serverID: 'bbpce016',
@@ -50,7 +50,7 @@ describe('testing the gz3d service', function () {
   };
 
   var bbpConfig = {};
-  bbpConfig.get = jasmine.createSpy('get').andReturn('toto');
+  bbpConfig.get = jasmine.createSpy('get').and.returnValue('toto');
 
   beforeEach(module('gz3dServices'));
   beforeEach(module(function ($provide) {

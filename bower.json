@@ -43,6 +43,38 @@
         "mode/shell/shell.js"
       ]
     },
+    "gz3d-hbp":{
+      "main":[
+        "gz3d/build/gz3d.js",
+        "gz3d/client/js/include/ColladaLoader.js",
+        "gz3d/client/js/include/first-person-controls.js",
+        "gz3d/client/js/include/avatar-controls.js",
+        "gz3d/client/js/include/ThreeBackwardsCompatibility.js"
+      ]
+    },
+    "angular":{
+      "dependencies":{
+        "jquery":"^1"
+      }
+    },
+    "three.js":{
+      "main":[
+        "build/three.js",
+        "examples/js/controls/OrbitControls.js",
+        "examples/js/Detector.js",
+        "examples/js/shaders/CopyShader.js",
+        "examples/js/shaders/ConvolutionShader.js",
+        "examples/js/shaders/SSAOShader.js",
+        "examples/js/shaders/FXAAShader.js",
+        "examples/js/shaders/LuminosityShader.js",
+        "examples/js/postprocessing/EffectComposer.js",
+        "examples/js/postprocessing/RenderPass.js",
+        "examples/js/postprocessing/MaskPass.js",
+        "examples/js/postprocessing/ShaderPass.js",
+        "examples/js/postprocessing/ManualMSAARenderPass.js",
+        "examples/js/postprocessing/BloomPass.js"
+      ]
+    },
     "hbp-collaboratory-theme": {
       "dependencies": {
         "bootstrap-sass-official": "0.12.1"

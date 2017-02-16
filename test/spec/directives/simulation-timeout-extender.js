@@ -6,10 +6,10 @@ describe('Directive: simulation-timeout-extender', function () {
   var $rootScope, $q, $compile,
     hbpDialogFactoryConfirmResponse, backendInterfaceServiceExtendResponse;
 
-  var backendInterfaceService = { extendTimeout: jasmine.createSpy('extendTimeout').andCallFake(function () { return backendInterfaceServiceExtendResponse; }) };
+  var backendInterfaceService = { extendTimeout: jasmine.createSpy('extendTimeout').and.callFake(function () { return backendInterfaceServiceExtendResponse; }) };
 
   var hbpDialogFactory = {
-    confirm: jasmine.createSpy('confirm').andCallFake(function () { return hbpDialogFactoryConfirmResponse; }),
+    confirm: jasmine.createSpy('confirm').and.callFake(function () { return hbpDialogFactoryConfirmResponse; }),
     alert: jasmine.createSpy('extendTimeout')
   };
 
@@ -17,8 +17,8 @@ describe('Directive: simulation-timeout-extender', function () {
     $provide.value('backendInterfaceService', backendInterfaceService);
     $provide.value('hbpDialogFactory', hbpDialogFactory);
 
-    backendInterfaceService.extendTimeout.reset();
-    hbpDialogFactory.confirm.reset();
+    backendInterfaceService.extendTimeout.calls.reset();
+    hbpDialogFactory.confirm.calls.reset();
   }));
 
   beforeEach(inject(function (_$rootScope_, $httpBackend, _$compile_, _$q_) {
@@ -82,7 +82,7 @@ describe('Directive: simulation-timeout-extender', function () {
     $rootScope.$digest();
     expect(hbpDialogFactory.confirm).toHaveBeenCalled();
     expect(backendInterfaceService.extendTimeout).not.toHaveBeenCalled();
-    hbpDialogFactory.confirm.reset();
+    hbpDialogFactory.confirm.calls.reset();
     $rootScope.simTimeoutText = 300;
     $rootScope.$digest();
     $rootScope.simTimeoutText = 299;

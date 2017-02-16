@@ -15,18 +15,18 @@ describe('Services: tempFileService', function () {
 
   beforeEach(module(function ($provide) {
     collabFolderAPIService = {
-      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').andCallFake(function () { return $q.when(CONTEXT_ID); }),
-      getFolderFile: jasmine.createSpy('getFolderFile').andCallFake(function () {
+      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').and.callFake(function () { return $q.when(CONTEXT_ID); }),
+      getFolderFile: jasmine.createSpy('getFolderFile').and.callFake(function () {
         return $q.when(previouslySavedFile !== undefined ? { _createdBy: 'userid' } : null);
       }),
-      createFolderFile: jasmine.createSpy('createFolderFile').andCallFake(function () { return createFileResponse; }),
+      createFolderFile: jasmine.createSpy('createFolderFile').and.callFake(function () { return createFileResponse; }),
       uploadEntity: jasmine.createSpy('uploadEntity'),
       deleteFile: jasmine.createSpy('deleteFile'),
-      downloadFile: jasmine.createSpy('downloadFile').andCallFake(function () { return $q.when(previouslySavedFile); })
+      downloadFile: jasmine.createSpy('downloadFile').and.callFake(function () { return $q.when(previouslySavedFile); })
     };
-    hbpIdentityUserDirectory = { get: jasmine.createSpy('get').andCallFake(function () { return $q.when({ userid: {} }); }) };
+    hbpIdentityUserDirectory = { get: jasmine.createSpy('get').and.callFake(function () { return $q.when({ userid: {} }); }) };
     hbpDialogFactory = {
-      confirm: jasmine.createSpy('confirm').andCallFake(function () { return confirmRestoreTempWorkUserReponse; })
+      confirm: jasmine.createSpy('confirm').and.callFake(function () { return confirmRestoreTempWorkUserReponse; })
     };
     stateParams = { ctx: CONTEXT_ID };
 

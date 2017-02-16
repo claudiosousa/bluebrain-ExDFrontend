@@ -166,7 +166,7 @@ describe('Services: simulation-config-service', function ()
 
   it('should load config file from the collab', function ()
   {
-    spyOn(collabFolderAPIServiceMock, 'downloadFile').andCallThrough();
+    spyOn(collabFolderAPIServiceMock, 'downloadFile').and.callThrough();
 
     environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
@@ -184,7 +184,7 @@ describe('Services: simulation-config-service', function ()
     environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
 
-    spyOn(collabFolderAPIServiceMock, 'createFolderFile').andCallThrough();
+    spyOn(collabFolderAPIServiceMock, 'createFolderFile').and.callThrough();
     simulationConfigService.saveConfigFile('mockedFileType','mockedData');
     httpBackend.flush();
     $rootScope.$digest();
@@ -198,7 +198,7 @@ describe('Services: simulation-config-service', function ()
     environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
 
-    spyOn(collabFolderAPIServiceMock, 'createFolderFile').andCallThrough();
+    spyOn(collabFolderAPIServiceMock, 'createFolderFile').and.callThrough();
     simulationConfigService.saveConfigFile('mockedFileType','mockedData');
     httpBackend.flush();
     $rootScope.$digest();

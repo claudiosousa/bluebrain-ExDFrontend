@@ -54,7 +54,7 @@ describe('Services: slurminfo', function () {
       slurminfoService.get(function(data) { result = data; });
       httpBackend.expectGET(restServiceUrl);
       httpBackend.flush();
-      var response = serverError.displayHTTPError.mostRecentCall.args[0];
+      var response = serverError.displayHTTPError.calls.mostRecent().args[0];
       expect(response.status).toBe(-1);
       expect(response.data).not.toBe('');
     });

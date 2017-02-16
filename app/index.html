@@ -53,7 +53,6 @@
 
   <!-- build:js(.) scripts/vendor.js -->
   <!-- bower:js -->
-  <script src="bower_components/es5-shim/es5-shim.js"></script>
   <script src="bower_components/jquery/dist/jquery.js"></script>
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-animate/angular-animate.js"></script>
@@ -77,10 +76,29 @@
   <script src="bower_components/codemirror/mode/shell/shell.js"></script>
   <script src="bower_components/angular-ui-codemirror/ui-codemirror.js"></script>
   <script src="bower_components/angular.panels/dist/angular.panels.min.js"></script>
+  <script src="bower_components/es5-shim/es5-shim.js"></script>
   <script src="bower_components/three.js/build/three.js"></script>
+  <script src="bower_components/three.js/examples/js/controls/OrbitControls.js"></script>
+  <script src="bower_components/three.js/examples/js/Detector.js"></script>
+  <script src="bower_components/three.js/examples/js/shaders/CopyShader.js"></script>
+  <script src="bower_components/three.js/examples/js/shaders/ConvolutionShader.js"></script>
+  <script src="bower_components/three.js/examples/js/shaders/SSAOShader.js"></script>
+  <script src="bower_components/three.js/examples/js/shaders/FXAAShader.js"></script>
+  <script src="bower_components/three.js/examples/js/shaders/LuminosityShader.js"></script>
+  <script src="bower_components/three.js/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="bower_components/three.js/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="bower_components/three.js/examples/js/postprocessing/MaskPass.js"></script>
+  <script src="bower_components/three.js/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="bower_components/three.js/examples/js/postprocessing/ManualMSAARenderPass.js"></script>
+  <script src="bower_components/three.js/examples/js/postprocessing/BloomPass.js"></script>
   <script src="bower_components/eventemitter2/lib/eventemitter2.js"></script>
   <script src="bower_components/xml2json/xml2json.js"></script>
   <script src="bower_components/roslibjs/build/roslib.js"></script>
+  <script src="bower_components/gz3d-hbp/gz3d/build/gz3d.js"></script>
+  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/ColladaLoader.js"></script>
+  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/first-person-controls.js"></script>
+  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/avatar-controls.js"></script>
+  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/ThreeBackwardsCompatibility.js"></script>
   <script src="bower_components/json3/lib/json3.js"></script>
   <script src="bower_components/ng-file-upload/ng-file-upload.js"></script>
   <script src="bower_components/stats.js/build/stats.min.js"></script>
@@ -108,28 +126,6 @@
   <script src="data/brainvisualizer/brain3Dembeddeddata.js"></script>
 
 
-  <!-- build:js({app,.tmp,.}) scripts/gz3d.js -->
-  <script src="bower_components/three.js/examples/js/controls/OrbitControls.js"></script>
-  <script src="bower_components/three.js/examples/js/Detector.js"></script>
-  <script src="bower_components/three.js/examples/js/shaders/CopyShader.js"></script>
-  <script src="bower_components/three.js/examples/js/shaders/ConvolutionShader.js"></script>
-  <script src="bower_components/three.js/examples/js/shaders/SSAOShader.js"></script>
-  <script src="bower_components/three.js/examples/js/shaders/FXAAShader.js"></script>
-  <script src="bower_components/three.js/examples/js/shaders/LuminosityShader.js"></script>
-
-  <script src="bower_components/three.js/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="bower_components/three.js/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="bower_components/three.js/examples/js/postprocessing/MaskPass.js"></script>
-  <script src="bower_components/three.js/examples/js/postprocessing/ShaderPass.js"></script>
-  <script src="bower_components/three.js/examples/js/postprocessing/ManualMSAARenderPass.js"></script>
-  <script src="bower_components/three.js/examples/js/postprocessing/BloomPass.js"></script>
-
-  <script src="bower_components/gz3d-hbp/gz3d/build/gz3d.js"></script>
-  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/ColladaLoader.js"></script>
-  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/first-person-controls.js"></script>
-  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/avatar-controls.js"></script>
-  <script src="bower_components/gz3d-hbp/gz3d/client/js/include/ThreeBackwardsCompatibility.js"></script>
-  <!-- endbuild -->
 
   <!-- build:js({app,.tmp,.}) scripts/app.js -->
   <script src="scripts/app.js"></script>

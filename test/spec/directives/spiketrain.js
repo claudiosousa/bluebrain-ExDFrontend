@@ -25,8 +25,8 @@ describe('Directive: spiketrain', function () {
       unsubscribe: jasmine.createSpy('unsubscribe')
     };
     var roslibMock = {
-      getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo').andReturn({}),
-      createTopic: jasmine.createSpy('createTopic').andReturn(returnedConnectionObject)
+      getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({}),
+      createTopic: jasmine.createSpy('createTopic').and.returnValue(returnedConnectionObject)
     };
     $provide.value('roslib', roslibMock);
     $provide.value('stateService', {
@@ -90,7 +90,7 @@ describe('Directive: spiketrain', function () {
   });
 
   it('should clear the plot on RESET event', function () {
-      spyOn($scope, 'clearPlot').andCallThrough();
+      spyOn($scope, 'clearPlot').and.callThrough();
 
       $scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
       $scope.$digest();
@@ -99,7 +99,7 @@ describe('Directive: spiketrain', function () {
   });
 
     it('should NOT clear the plot on RESET event: RESET_CAMERA_VIEW', function () {
-      spyOn($scope, 'clearPlot').andCallThrough();
+      spyOn($scope, 'clearPlot').and.callThrough();
 
       $scope.$broadcast('RESET', RESET_TYPE.RESET_CAMERA_VIEW);
       $scope.$digest();
@@ -108,7 +108,7 @@ describe('Directive: spiketrain', function () {
   });
 
   it('should remove the RESET event callback on $destroy event', function () {
-    spyOn($scope, 'resetListenerUnbindHandler').andCallThrough();
+    spyOn($scope, 'resetListenerUnbindHandler').and.callThrough();
     $scope.$broadcast('$destroy');
     $scope.$digest();
     expect($scope.resetListenerUnbindHandler).toHaveBeenCalled();
@@ -190,8 +190,8 @@ describe('Directive: spiketrain', function () {
   });
 
   it('should display black separation bar on re-showing the monitor (not the first one)', function () {
-    spyOn($scope, 'startSpikeDisplay').andCallThrough();
-    spyOn($scope, 'drawSeparator').andCallThrough();
+    spyOn($scope, 'startSpikeDisplay').and.callThrough();
+    spyOn($scope, 'drawSeparator').and.callThrough();
     setShow(true);
     expect($scope.startSpikeDisplay).toHaveBeenCalledWith(true);
     expect($scope.drawSeparator).not.toHaveBeenCalled();
@@ -204,8 +204,8 @@ describe('Directive: spiketrain', function () {
     }
 
     setShow(false);
-    $scope.startSpikeDisplay.reset();
-    $scope.drawSeparator.reset();
+    $scope.startSpikeDisplay.calls.reset();
+    $scope.drawSeparator.calls.reset();
     $scope.xPosition = 10;
 
     setShow(true);

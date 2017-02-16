@@ -27,8 +27,8 @@ describe('Services: experimentsFactory', function () {
   it('image should come from proxy', function() {
     var experiments = [{joinableServers:[]}];
     var image = {'0' : 'fakeImage'};
-    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
-    spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
+    spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
+    spyOn(experimentProxyService, 'getImages').and.returnValue($q.when(image));
     spyOn(collabFolderAPIService, 'getFolderFile');
     var exp = experimentsFactory.createExperimentsService();
     exp.initialize();
@@ -41,15 +41,15 @@ describe('Services: experimentsFactory', function () {
 
   it('image should come from collab storage', function() {
     var experiments = [{joinableServers:[], configuration: {thumbnail: 'fake.png'}}];
-    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
-    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+    spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
 
     var imageData = 'data:image/png;base64,fakeContent';
     var blob = new Blob([imageData],{type : 'image/png'});
-    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(blob));
+    spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(blob));
     var readAsDataURL = jasmine.createSpy();
     var eventListener = jasmine.createSpy();
-    spyOn(window, 'FileReader').andReturn({
+    spyOn(window, 'FileReader').and.returnValue({
       addEventListener: eventListener,
       readAsDataURL: readAsDataURL
     });
@@ -64,11 +64,11 @@ describe('Services: experimentsFactory', function () {
 
   it('image should come from proxy if collab storage fails', function() {
     var image = {'experimentid' : 'fakeImage'};
-    spyOn(experimentProxyService, 'getJoinableServers').andReturn($q.when([]));
-    spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
-    spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
+    spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
+    spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
+    spyOn(experimentProxyService, 'getImages').and.returnValue($q.when(image));
 
-    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when(null));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when(null));
 
     environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
@@ -84,11 +84,11 @@ describe('Services: experimentsFactory', function () {
 
   it('image should come from proxy if downloading image from collab storage failed', function() {
     var image = {'experimentid' : 'fakeImage'};
-    spyOn(experimentProxyService, 'getJoinableServers').andReturn($q.when([]));
-    spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
-    spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
-    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(null));
+    spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
+    spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(experimentProxyService, 'getImages').and.returnValue($q.when(image));
+    spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(null));
 
     environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
@@ -103,12 +103,12 @@ describe('Services: experimentsFactory', function () {
   });
 
   it('experiment name and description should come from collab storage', function() {
-    spyOn(experimentProxyService, 'getJoinableServers').andReturn($q.when([]));
-    spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+    spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
+    spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
     spyOn(experimentProxyService, 'getImages');
     var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout><thumbnail>fake.png</thumbnail></ns1:ExD>';
-    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(xml));
+    spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(xml));
     environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
@@ -124,12 +124,12 @@ describe('Services: experimentsFactory', function () {
   });
 
   it('experiment xml should be stored', function() {
-    spyOn(experimentProxyService, 'getJoinableServers').andReturn($q.when([]));
-    spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
+    spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
+    spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
     spyOn(experimentProxyService, 'getImages');
     var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout><thumbnail>fake.png</thumbnail></ns1:ExD>';
-    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(xml));
+    spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(xml));
     environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
@@ -143,7 +143,7 @@ describe('Services: experimentsFactory', function () {
   it('refresh should update collab experiments joinable servers', function() {
     var joinableServer = [{server: 'testHost', runningSimulation: {owner:'1', simulationID:5}}];
     var callCount = 0;
-    spyOn(experimentProxyService, 'getJoinableServers').andCallFake(function(){
+    spyOn(experimentProxyService, 'getJoinableServers').and.callFake(function(){
       if (callCount === 0){
         callCount ++;
         return $q.when([]);
@@ -153,9 +153,9 @@ describe('Services: experimentsFactory', function () {
         return $q.when(joinableServer);
       }
     });
-    spyOn(experimentProxyService, 'getAvailableServers').andReturn($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
-    spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(''));
+    spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(''));
     environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
     exp.initialize();
@@ -168,9 +168,9 @@ describe('Services: experimentsFactory', function () {
   });
 
   function startExperimentWithDataShouldTriggerError(experiments, expectedError){
-    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
-    spyOn(experimentProxyService, 'getImages').andReturn($q.when({ '0': 'fakeImage' }));
-    spyOn(experimentProxyService, 'getServerConfig').andReturn($q.reject());
+    spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
+    spyOn(experimentProxyService, 'getImages').and.returnValue($q.when({ '0': 'fakeImage' }));
+    spyOn(experimentProxyService, 'getServerConfig').and.returnValue($q.reject());
     spyOn(collabFolderAPIService, 'getFolderFile');
     var exp = experimentsFactory.createExperimentsService();
     exp.initialize();
@@ -203,9 +203,9 @@ describe('Services: experimentsFactory', function () {
   it('cluster availability should be set correctly', function() {
     var experiments = [{availableServers:[], joinableServers:[]}];
     var image = {'0' : 'fakeImage'};
-    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
-    spyOn(experimentProxyService, 'getImages').andReturn($q.when(image));
-    spyOn(slurminfoService, 'get').andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,0,100]})});
+    spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
+    spyOn(experimentProxyService, 'getImages').and.returnValue($q.when(image));
+    spyOn(slurminfoService, 'get').and.returnValue({'$promise':$q.when({'free':50, 'nodes': [0,0,0,100]})});
     var exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
@@ -216,8 +216,8 @@ describe('Services: experimentsFactory', function () {
     scope.$apply();
 
     experiments = [{availableServers:['one_server'], joinableServers:[]}];
-    experimentProxyService.getExperiments.andReturn($q.when(experiments));
-    slurminfoService.get.andReturn({'$promise':$q.when({'free':50, 'nodes': [0,0,0,100]})});
+    experimentProxyService.getExperiments.and.returnValue($q.when(experiments));
+    slurminfoService.get.and.returnValue({'$promise':$q.when({'free':50, 'nodes': [0,0,0,100]})});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
@@ -227,7 +227,7 @@ describe('Services: experimentsFactory', function () {
     });
     scope.$apply();
 
-    slurminfoService.get.andReturn({'$promise':$q.when({'free':2, 'nodes': [0,0,0,100]})});
+    slurminfoService.get.and.returnValue({'$promise':$q.when({'free':2, 'nodes': [0,0,0,100]})});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
@@ -237,7 +237,7 @@ describe('Services: experimentsFactory', function () {
     });
     scope.$apply();
 
-    slurminfoService.get.andReturn({'$promise':$q.when({'free':0, 'nodes': [0,0,0,100]})});
+    slurminfoService.get.and.returnValue({'$promise':$q.when({'free':0, 'nodes': [0,0,0,100]})});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
@@ -248,8 +248,8 @@ describe('Services: experimentsFactory', function () {
     scope.$apply();
 
     experiments = [{joinableServers:[]}];
-    experimentProxyService.getExperiments.andReturn($q.when(experiments));
-    slurminfoService.get.andReturn({'$promise':$q.when('')});
+    experimentProxyService.getExperiments.and.returnValue($q.when(experiments));
+    slurminfoService.get.and.returnValue({'$promise':$q.when('')});
     exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
@@ -279,7 +279,7 @@ describe('Services: experimentsFactory forceuser=true', function () {
 
   it('cluster availability should be set correctly when forceuser is true', function() {
     var experiments = [{availableServers:[], joinableServers:[]}];
-    spyOn(experimentProxyService, 'getExperiments').andReturn($q.when(experiments));
+    spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
     var exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();

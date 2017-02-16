@@ -142,15 +142,15 @@ describe('Directive: pynnEditor', function () {
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
-      editorsServices.getEditor = jasmine.createSpy('getEditor').andReturn(cmMock);
-      backendInterfaceService.getBrain.reset();
-      backendInterfaceService.setBrain.reset();
+      editorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
+      backendInterfaceService.getBrain.calls.reset();
+      backendInterfaceService.setBrain.calls.reset();
       expected_populations = data.additional_populations;
     });
 
     it('should handle the retrieved populations and pynn script properly', function () {
       // Mock getBrain Callback with data as return value
-      backendInterfaceService.getBrain.andCallFake(function(f) { f(data); });
+      backendInterfaceService.getBrain.and.callFake(function(f) { f(data); });
       $scope.control.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toEqual(expected_script);
@@ -159,7 +159,7 @@ describe('Directive: pynnEditor', function () {
 
     it('should not load a h5 brain', function () {
       // Mock getBrain Callback with data2 as return value
-      backendInterfaceService.getBrain.andCallFake(function(f) { f(data2); });
+      backendInterfaceService.getBrain.and.callFake(function(f) { f(data2); });
       $scope.control.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toBeUndefined();
@@ -179,7 +179,7 @@ describe('Directive: pynnEditor', function () {
         jasmine.any(Function)
       );
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][5](); // success callback
+      backendInterfaceService.setBrain.calls.argsFor(0)[5](); // success callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -197,7 +197,7 @@ describe('Directive: pynnEditor', function () {
         jasmine.any(Function)
       );
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][5](); // success callback
+      backendInterfaceService.setBrain.calls.argsFor(0)[5](); // success callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -226,11 +226,11 @@ describe('Directive: pynnEditor', function () {
         jasmine.any(Function)
       );
       expect(isolateScope.isSavingToCollab).toBe(true);
-      backendInterfaceService.saveBrain.argsForCall[0][3]();
+      backendInterfaceService.saveBrain.calls.argsFor(0)[3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
       spyOn(hbpDialogFactory, 'alert');
-      backendInterfaceService.saveBrain.argsForCall[0][4]();
+      backendInterfaceService.saveBrain.calls.argsFor(0)[4]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       expect(hbpDialogFactory.alert).toHaveBeenCalled();
     });
@@ -239,7 +239,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply();
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][5](); // success callback
+      backendInterfaceService.setBrain.calls.argsFor(0)[5](); // success callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -247,7 +247,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply();
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
-      backendInterfaceService.setBrain.argsForCall[0][6](errorMock1); // error callback
+      backendInterfaceService.setBrain.calls.argsFor(0)[6](errorMock1); // error callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -256,7 +256,7 @@ describe('Directive: pynnEditor', function () {
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
       isolateScope.pynnScript = 'some pynn script';
-      backendInterfaceService.setBrain.argsForCall[0][6](errorMock2); // error callback
+      backendInterfaceService.setBrain.calls.argsFor(0)[6](errorMock2); // error callback
       expect(isolateScope.loading).toBe(false);
     });
 
@@ -270,7 +270,7 @@ describe('Directive: pynnEditor', function () {
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
-      editorsServices.getEditor = jasmine.createSpy('getEditor').andReturn(cmMock);
+      editorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
     });
 
     it('should parse a token correctly', function() {

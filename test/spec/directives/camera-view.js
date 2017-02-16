@@ -25,7 +25,7 @@ describe('Directive: camera-view', function () {
     gz3dMock = {
       scene: {
         viewManager: {
-          getViewByName: jasmine.createSpy('getViewByName').andReturn(viewMock)
+          getViewByName: jasmine.createSpy('getViewByName').and.returnValue(viewMock)
         }
       }
     };

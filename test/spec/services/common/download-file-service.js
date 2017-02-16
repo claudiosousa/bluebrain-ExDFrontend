@@ -15,7 +15,7 @@
                 style: {},
                 click: jasmine.createSpy('click')
             };
-            spyOn(document, 'createElement').andCallFake(function () {
+            spyOn(document, 'createElement').and.callFake(function () {
                 return dummyAnchorElement;
             });
             spyOn(document.body, 'appendChild');

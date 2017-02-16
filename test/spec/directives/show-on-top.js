@@ -88,13 +88,13 @@ describe('Directive: show-on-top', function () {
     });
 
     it('should not re-apply z-index if panel is already on top', function () {
-        spyOn(panels[0], 'css').andCallThrough();
+        spyOn(panels[0], 'css').and.callThrough();
         panels[0].trigger('click');
         $rootScope.$digest();
         expect(getZINdex(panels[0])).toBe(MAX_PANEL_ZINDEX);
         expect(panels[0].css).toHaveBeenCalled();
 
-        panels[0].css.reset();
+        panels[0].css.calls.reset();
         panels[0].trigger('click');
         $rootScope.$digest();
         expect(panels[0].css).not.toHaveBeenCalled();

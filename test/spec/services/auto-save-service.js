@@ -37,8 +37,8 @@ describe('Services: AutoSaveService', function () {
 
   beforeEach(module(function ($provide) {
     tempFileService = {
-      saveDirtyData: jasmine.createSpy('saveDirtyData').andCallFake(function () { return saveResponse; }),
-      checkSavedWork: jasmine.createSpy('checkSavedWork').andCallFake(function(){return checkResponse; }),
+      saveDirtyData: jasmine.createSpy('saveDirtyData').and.callFake(function () { return saveResponse; }),
+      checkSavedWork: jasmine.createSpy('checkSavedWork').and.callFake(function(){return checkResponse; }),
       removeSavedWork: jasmine.createSpy('removeSavedWork'),
     };
     stateParams = { ctx: CONTEXT_ID };
@@ -89,7 +89,7 @@ describe('Services: AutoSaveService', function () {
     expect(tempFileService.saveDirtyData).toHaveBeenCalled();
     $rootScope.$digest();
 
-    tempFileService.saveDirtyData.reset();
+    tempFileService.saveDirtyData.calls.reset();
     moveLodashTimeForward(AUTO_SAVE_INTERVAL);
     $rootScope.$digest();
     expect(tempFileService.saveDirtyData).toHaveBeenCalled();

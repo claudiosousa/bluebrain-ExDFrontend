@@ -11,10 +11,10 @@ describe('Controller: MainCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function (_browserSupport_, _$controller_, $rootScope, _$window_, _$log_) {
     browserSupport = _browserSupport_;
-    spyOn(browserSupport, 'isSupported').andReturn(false);
-    spyOn(browserSupport, 'getBrowserVersion').andReturn('unknown');
+    spyOn(browserSupport, 'isSupported').and.returnValue(false);
+    spyOn(browserSupport, 'getBrowserVersion').and.returnValue('unknown');
     $window = _$window_;
-    spyOn($window.sessionStorage, 'getItem').andReturn(null);
+    spyOn($window.sessionStorage, 'getItem').and.returnValue(null);
     spyOn($window.sessionStorage, 'setItem');
     scope = $rootScope.$new();
     spyOn(scope, '$apply');
@@ -28,11 +28,11 @@ describe('Controller: MainCtrl', function () {
   }));
 
   it('should call browserSupport.isSupported()', function () {
-    expect(browserSupport.isSupported.callCount).toBe(1);
+    expect(browserSupport.isSupported.calls.count()).toBe(1);
   });
 
   it('should append the browser version in use to the scope', function () {
-    expect(browserSupport.getBrowserVersion.callCount).toBe(1);
+    expect(browserSupport.getBrowserVersion.calls.count()).toBe(1);
     expect(scope.browser).toBe('your browser');
   });
 
@@ -45,26 +45,26 @@ describe('Controller: MainCtrl', function () {
   it('should call window.sessionStorage.getItem to check if the warning about unsupported browser and the reservation form were dismissed', function () {
     expect($window.sessionStorage.getItem).toHaveBeenCalledWith('unsupportedBrowserWarning');
     expect($window.sessionStorage.getItem).toHaveBeenCalledWith('reservationForm');
-    expect($window.sessionStorage.getItem.callCount).toBe(2);
+    expect($window.sessionStorage.getItem.calls.count()).toBe(2);
     expect(scope.dismissWarning).toBe(false);
     expect(scope.dismissReservationForm).toBe(false);
   });
 
   it('should call window.sessionStorage.setItem to store the information about the dismissed warning', function () {
     scope.dismissBrowserWarning();
-    _.defer.mostRecentCall.args[0]();
-    scope.$apply.mostRecentCall.args[0]();
+    _.defer.calls.argsFor(_.defer.calls.count()-1)[0]();
+    scope.$apply.calls.argsFor(scope.$apply.calls.count()-1)[0]();
     expect($window.sessionStorage.setItem).toHaveBeenCalledWith('unsupportedBrowserWarning', 'dismissed');
-    expect($window.sessionStorage.setItem.callCount).toBe(1);
+    expect($window.sessionStorage.setItem.calls.count()).toBe(1);
     expect(scope.dismissWarning).toBe(true);
   });
 
   it('should call window.sessionStorage.setItem to store the information about the dismissed reservation form', function () {
     scope.dismissClusterReservationForm();
-    _.defer.mostRecentCall.args[0]();
-    scope.$apply.mostRecentCall.args[0]();
+    _.defer.calls.mostRecent().args[0]();
+    scope.$apply.calls.mostRecent().args[0]();
     expect($window.sessionStorage.setItem).toHaveBeenCalledWith('reservationForm', 'dismissed');
-    expect($window.sessionStorage.setItem.callCount).toBe(1);
+    expect($window.sessionStorage.setItem.calls.count()).toBe(1);
     expect(scope.dismissReservationForm).toBe(true);
   });
 

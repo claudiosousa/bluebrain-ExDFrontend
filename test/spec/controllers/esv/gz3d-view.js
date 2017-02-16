@@ -77,7 +77,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     init: jasmine.createSpy('init'),
     deinit: jasmine.createSpy('deinit'),
     setDefaultPose: jasmine.createSpy('setDefaultPose'),
-    isUserAvatar: jasmine.createSpy('isUserAvatar').andCallFake(function(entity) {
+    isUserAvatar: jasmine.createSpy('isUserAvatar').and.callFake(function(entity) {
       return entity.name === 'user-avatar';
     }),
     setModeFreeCamera: jasmine.createSpy('setModeFreeCamera'),
@@ -100,16 +100,16 @@ describe('Controller: Gz3dViewCtrl', function () {
     var localCurrentState;
     var localStatePending = false;
 
-    getCurrentStateSpy.andCallFake(function () {
-      return { then: getThenSpy.andCallFake(function (f) { f(); }) };
+    getCurrentStateSpy.and.callFake(function () {
+      return { then: getThenSpy.and.callFake(function (f) { f(); }) };
     });
 
-    setCurrentStateSpy.andCallFake(function (s) {
+    setCurrentStateSpy.and.callFake(function (s) {
       localCurrentState = s;
       return {
-        then: setThenSpy.andCallFake(function (f) { f(); }).
-        andReturn({ catch: function (f) { f(); } }),
-        catch: setCatchSpy.andCallFake(function (f) { f(); })
+        then: setThenSpy.and.callFake(function (f) { f(); }).
+        and.returnValue({ catch: function (f) { f(); } }),
+        catch: setCatchSpy.and.callFake(function (f) { f(); })
       };
     });
 
@@ -261,17 +261,17 @@ describe('Controller: Gz3dViewCtrl', function () {
     };
     var splashServiceMock = {
       close: jasmine.createSpy('close'),
-      open: jasmine.createSpy('open').andReturn(splashInstance),
+      open: jasmine.createSpy('open').and.returnValue(splashInstance),
       setMessage: jasmine.createSpy('setMessage')
     };
     $provide.value('splash', splashServiceMock);
     var assetLoadingSplashMock = {
-      open: jasmine.createSpy('open').andReturn(assetLoadingSplashInstance),
+      open: jasmine.createSpy('open').and.returnValue(assetLoadingSplashInstance),
       close: jasmine.createSpy('close')
     };
     $provide.value('assetLoadingSplash', assetLoadingSplashMock);
-    $provide.value('simulationState', jasmine.createSpy('simulationState').andReturn(simulationStateObject));
-    $provide.value('simulationControl',  jasmine.createSpy('simulationControl').andReturn(simulationControlObject));
+    $provide.value('simulationState', jasmine.createSpy('simulationState').and.returnValue(simulationStateObject));
+    $provide.value('simulationControl',  jasmine.createSpy('simulationControl').and.returnValue(simulationControlObject));
 
     var colorableObjectServiceMock = {
       setEntityMaterial: jasmine.createSpy('setEntityMaterial')
@@ -280,22 +280,22 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('colorableObjectService', colorableObjectServiceMock);
 
     var hbpIdentityUserDirectoryMock = {
-      getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn({then: jasmine.createSpy('then')}),
-      get: jasmine.createSpy('get').andReturn({then: jasmine.createSpy('then')})
+      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue({then: jasmine.createSpy('then')}),
+      get: jasmine.createSpy('get').and.returnValue({then: jasmine.createSpy('then')})
     };
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
-    $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').andReturn(nrpBackendVersionsObject));
+    $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
     $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
     $provide.value('serverError', jasmine.createSpy('serverError'));
     $provide.value('panels', { open: jasmine.createSpy('open') });
     var proxyMock = {
-      getExperiments: jasmine.createSpy('getExperiments').andReturn({ then: jasmine.createSpy('then') }),
+      getExperiments: jasmine.createSpy('getExperiments').and.returnValue({ then: jasmine.createSpy('then') }),
     };
     $provide.value('experimentProxyService', proxyMock);
     var experimentListMock = {
       experiments: jasmine.createSpy('experiments'),
     };
-    $provide.value('experimentList',jasmine.createSpy('experimentList').andReturn(experimentListMock));
+    $provide.value('experimentList',jasmine.createSpy('experimentList').and.returnValue(experimentListMock));
     var configuration = { description: 'The Husky robot plays chess with Icub', name: 'TrueBlue', cameraPose: { x: 1.0, y: 2.0, z: 3.0 } };
     simulationInfo = {
       serverConfig: { rosbridge: {topics: {} }},
@@ -311,7 +311,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     $provide.value('simulationInfo', simulationInfo);
 
     var hbpDialogFactoryMock = {
-      confirm: jasmine.createSpy('confirm').andReturn({
+      confirm: jasmine.createSpy('confirm').and.returnValue({
         then: jasmine.createSpy('then')
       }),
       alert: jasmine.createSpy('alert')
@@ -329,15 +329,15 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     $provide.value('userNavigationService', userNavigationServiceMock);
 
-    simulationStateObject.update.reset();
-    simulationStateObject.state.reset();
-    simulationControlObject.simulation.reset();
-    assetLoadingSplashInstance.close.reset();
-    nrpBackendVersionsObject.get.reset();
-    hbpDialogFactoryMock.confirm.reset();
-    hbpDialogFactoryMock.confirm().then.reset();
-    backendInterfaceServiceMock.reset.reset();
-    backendInterfaceServiceMock.resetCollab.reset();
+    simulationStateObject.update.calls.reset();
+    simulationStateObject.state.calls.reset();
+    simulationControlObject.simulation.calls.reset();
+    assetLoadingSplashInstance.close.calls.reset();
+    nrpBackendVersionsObject.get.calls.reset();
+    hbpDialogFactoryMock.confirm.calls.reset();
+    hbpDialogFactoryMock.confirm().then.calls.reset();
+    backendInterfaceServiceMock.reset.calls.reset();
+    backendInterfaceServiceMock.resetCollab.calls.reset();
   }));
 
 
@@ -418,9 +418,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     callback = q.defer();
     lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
     lockServiceMock = {
-      tryAddLock : jasmine.createSpy('tryAddLock').andReturn(callback.promise),
-      onLockChanged: jasmine.createSpy('onLockChanged').andCallFake(function (fn) {onLockChangedCallback = fn; return lockServiceCancelCallback;}),
-      releaseLock: jasmine.createSpy('releaseLock').andReturn(callback.promise)
+      tryAddLock : jasmine.createSpy('tryAddLock').and.returnValue(callback.promise),
+      onLockChanged: jasmine.createSpy('onLockChanged').and.callFake(function (fn) {onLockChangedCallback = fn; return lockServiceCancelCallback;}),
+      releaseLock: jasmine.createSpy('releaseLock').and.returnValue(callback.promise)
     };
     collabExperimentLockServiceMock.createLockServiceForContext = function(){
       return lockServiceMock;
@@ -455,6 +455,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     // create mock for $log
     spyOn(log, 'error');
+
   }));
 
   describe('(ViewMode)', function () {
@@ -485,18 +486,17 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should call and stateService.Initialize()', function(){
-      expect(stateService.Initialize.callCount).toBe(1);
+      expect(stateService.Initialize.calls.count()).toBe(1);
     });
 
     it('should set isJoiningStoppedSimulation to true when already stopped', function(){
       expect(scope.viewState.isJoiningStoppedSimulation).toBe(false);
       stateService.currentState = STATE.STOPPED;
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
       expect(scope.viewState.isJoiningStoppedSimulation).toBe(true);
     });
 
     it('should properly update navigation mode', function(){
-
       userNavigationService.nagitationMode =  NAVIGATION_MODES.FREE_CAMERA;
       scope.setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);
       expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
@@ -510,11 +510,11 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should set the assetLoadingSplash progress callback in gz3d', function(){
       stateService.currentState = STATE.STARTED;
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
       expect(scope.assetLoadingSplashScreen).toEqual(assetLoadingSplashInstance);
       expect(assetLoadingSplash.open).toHaveBeenCalled();
       expect(gz3d.iface.setAssetProgressCallback).toHaveBeenCalled();
-      gz3d.iface.setAssetProgressCallback.mostRecentCall.args[0](exampleProgressData);
+      gz3d.iface.setAssetProgressCallback.calls.mostRecent().args[0](exampleProgressData);
       expect(assetLoadingSplash.setProgress).toHaveBeenCalledWith(exampleProgressData);
     });
 
@@ -565,7 +565,7 @@ describe('Controller: Gz3dViewCtrl', function () {
         $rootScope: rootScope,
         $scope: scope
       });
-      simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
       expect(scope.viewState.userID).toEqual('vonarnim');
       expect(scope.viewState.ownerID).toEqual(fakeSimulationData.owner);
       expect(scope.owner).toEqual('vonarnim');
@@ -581,7 +581,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
       scope.experimentConfiguration = 'test_config';
       spyOn(scope, 'updateInitialCameraPose');
-      simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
       var configuration = simulationInfo.experimentDetails;
       expect(scope.ExperimentDescription).toBe(configuration.description);
@@ -599,7 +599,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
       environmentService.setPrivateExperiment(true);
       spyOn(scope, 'updateInitialCameraPose');
-      simulationControlObject.simulation.mostRecentCall.args[1](fakeSimulationData);
+      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
       scope.$digest(); // force the $watch to be evaluated in experimentDetails
       var configuration = simulationInfo.experimentDetails;
       expect(scope.ExperimentDescription).toBe(configuration.description);
@@ -610,7 +610,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should ensure that the state is PAUSED when resetting', function() {
       scope.resetButtonClickHandler();
 
-      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+      hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
 
       expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     });
@@ -634,14 +634,14 @@ describe('Controller: Gz3dViewCtrl', function () {
         jasmine.any(Function),
         jasmine.any(Function));
 
-      var successCallback = backendInterfaceService.reset.mostRecentCall.args[1];
+      var successCallback = backendInterfaceService.reset.calls.mostRecent().args[1];
       successCallback();
       timeout.flush(100);
       expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, false);
     });
 
     it('should notify the widgets when resetting', function() {
-      spyOn(scope, 'notifyResetToWidgets').andCallThrough();
+      spyOn(scope, 'notifyResetToWidgets').and.callThrough();
 
       scope.request = { resetType: RESET_TYPE.RESET_WORLD };
 
@@ -675,13 +675,13 @@ describe('Controller: Gz3dViewCtrl', function () {
         environmentService.setPrivateExperiment(true); //Collab IS available
         scope.splashScreen = undefined;
 
-        hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
+        hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
 
         timeout.flush(100);
         expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
 
         //ensureStateBeforeExecuting's first parameter is a state, second is a callback
-        var resetFunction = stateService.ensureStateBeforeExecuting.mostRecentCall.args[1];
+        var resetFunction = stateService.ensureStateBeforeExecuting.calls.mostRecent().args[1];
 
         resetFunction(); // call the callback
         timeout.flush(100);
@@ -691,7 +691,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
         //defer call
         expect(_.defer).toHaveBeenCalled();
-        _.defer.mostRecentCall.args[0](); // call deferred function
+        _.defer.calls.mostRecent().args[0](); // call deferred function
 
         expect(splash.spin).toBe(true);
         expect(splash.setMessage).toHaveBeenCalledWith(
@@ -707,16 +707,16 @@ describe('Controller: Gz3dViewCtrl', function () {
           jasmine.any(Function)
         );
 
-        backendInterfaceService.resetCollab.mostRecentCall.args[2](); //2 is the success callback
+        backendInterfaceService.resetCollab.calls.mostRecent().args[2](); //2 is the success callback
 
         expect(splash.close).toHaveBeenCalled();
         expect(scope.splashScreen).not.toBeDefined();
 
         //reset spies
-        splash.close.reset();
+        splash.close.calls.reset();
         scope.splashScreen = 'isDefined';
 
-        backendInterfaceService.resetCollab.mostRecentCall.args[3](); //3 is the failure callback
+        backendInterfaceService.resetCollab.calls.mostRecent().args[3](); //3 is the failure callback
         timeout.flush(100);
 
         expect(hbpDialogFactory.alert).toHaveBeenCalledWith(
@@ -733,12 +733,12 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('shouldn\'t do anything if no radio button is set', function() {
       scope.resetButtonClickHandler();
       scope.request = { resetType: RESET_TYPE.NO_RESET };
-      hbpDialogFactory.confirm().then.mostRecentCall.args[0]();
-      expect(backendInterfaceService.reset.calls.length).toBe(0);
+      hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
+      expect(backendInterfaceService.reset.calls.count()).toBe(0);
     });
 
     it('should reset GUI when reset type is RESET.RESET_ALL', function () {
-      spyOn(scope, 'resetGUI').andCallThrough();
+      spyOn(scope, 'resetGUI').and.callThrough();
 
       scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
       scope.$digest();
@@ -760,32 +760,32 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should register for status information', function() {
       scope.state = STATE.UNDEFINED;
       stateService.currentState = STATE.STARTED;
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
       expect(stateService.startListeningForStatusInformation).toHaveBeenCalled();
       expect(stateService.addMessageCallback).toHaveBeenCalled();
     });
 
     it('should open splash screen with callbackOnClose', function () {
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
       stateService.currentState = STATE.STOPPED;
       scope.sceneLoading = false;
       //Test the messageCallback
       scope.splashScreen = undefined;
-      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
+      stateService.addMessageCallback.calls.mostRecent().args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
       expect(splash.open).toHaveBeenCalled();
-      var callbackOnClose = splash.open.mostRecentCall.args[1];
+      var callbackOnClose = splash.open.calls.mostRecent().args[1];
       expect(callbackOnClose).toBeDefined();
       expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Task1', subHeadline: 'Subtask1' });
       // test open splash screen without callbackOnClose
       scope.splashScreen = undefined;
       stateService.currentState = STATE.INITIALIZED;
-      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
-      callbackOnClose = splash.open.mostRecentCall.args[1];
+      stateService.addMessageCallback.calls.mostRecent().args[0]({progress: { 'block_ui': 'False', task: 'Task1', subtask: 'Subtask1'}});
+      callbackOnClose = splash.open.calls.mostRecent().args[1];
       expect(callbackOnClose).not.toBeDefined();
       // test "done" (without close, with onSimulationDone)
       splash.showButton = true;
       splash.spin = true;
-      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'False', done: 'True'}});
+      stateService.addMessageCallback.calls.mostRecent().args[0]({progress: { 'block_ui': 'False', done: 'True'}});
       expect(splash.spin).toBe(false);
       expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Finished' });
       expect(splash.close).not.toHaveBeenCalled();
@@ -795,15 +795,15 @@ describe('Controller: Gz3dViewCtrl', function () {
       // test "done" in IF path (with close, without onSimulationDone)
       stateService.currentState = STATE.STOPPED;
       scope.splashScreen = undefined;
-      splash.close.reset();
-      stateService.removeMessageCallback.reset();
+      splash.close.calls.reset();
+      stateService.removeMessageCallback.calls.reset();
       splash.showButton = false;
-      stateService.addMessageCallback.mostRecentCall.args[0]({progress: { 'block_ui': 'True', done: 'True'}});
+      stateService.addMessageCallback.calls.mostRecent().args[0]({progress: { 'block_ui': 'True', done: 'True'}});
       expect(splash.close).toHaveBeenCalled();
       // onSimulationDone() should NOT have been called
       expect(stateService.removeMessageCallback).not.toHaveBeenCalled();
       // test "timeout"
-      stateService.addMessageCallback.mostRecentCall.args[0]({timeout: 264, simulationTime: 1, realTime: 2});
+      stateService.addMessageCallback.calls.mostRecent().args[0]({timeout: 264, simulationTime: 1, realTime: 2});
       expect(scope.simTimeoutText).toBe(264);
       // test "simulationTime"
       expect(scope.simulationTimeText).toBe(1);
@@ -818,13 +818,13 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       // prepare the test: create mockups
       var entityToChange = { 'children' : [ { 'material' : {} } ] };
-      gz3d.scene.getByName = jasmine.createSpy('getByName').andReturn(entityToChange);
+      gz3d.scene.getByName = jasmine.createSpy('getByName').and.returnValue(entityToChange);
       // actual test
       // currently no element is selected, hence we want a console.error message
       gz3d.scene.selectedEntity = undefined;
       scope.setMaterialOnEntity('value_does_not_matter_here');
       expect(log.error).toHaveBeenCalled();
-      expect(log.error.callCount).toEqual(1);
+      expect(log.error.calls.count()).toEqual(1);
 
       gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
       scope.setMaterialOnEntity('Gazebo/Red');
@@ -855,18 +855,18 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should register touch events for the context menu', function() {
-      gz3d.scene.container.addEventListener.reset();
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
-      expect(gz3d.scene.container.addEventListener.calls[0].args[0]).toBe('touchstart');
-      expect(gz3d.scene.container.addEventListener.calls[1].args[0]).toBe('touchmove');
-      expect(gz3d.scene.container.addEventListener.calls[2].args[0]).toBe('touchend');
+      gz3d.scene.container.addEventListener.calls.reset();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      expect(gz3d.scene.container.addEventListener.calls.argsFor(0)[0]).toBe('touchstart');
+      expect(gz3d.scene.container.addEventListener.calls.argsFor(1)[0]).toBe('touchmove');
+      expect(gz3d.scene.container.addEventListener.calls.argsFor(2)[0]).toBe('touchend');
     });
 
     it('should toggle the context menu on touch tap', function() {
-      gz3d.scene.container.addEventListener.reset();
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
-      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+      gz3d.scene.container.addEventListener.calls.reset();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
+      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
 
       touchstart({touches: [{clientX: 10, clientY: 20}]});
       touchend({});
@@ -875,11 +875,11 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should toggle the context menu on touch with a bit move', function() {
-      gz3d.scene.container.addEventListener.reset();
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
-      var touchmove = gz3d.scene.container.addEventListener.calls[1].args[1];
-      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+      gz3d.scene.container.addEventListener.calls.reset();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
+      var touchmove = gz3d.scene.container.addEventListener.calls.argsFor(1)[1];
+      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
 
       touchstart({touches: [{clientX: 10, clientY: 20}]});
       touchmove({touches: [{clientX: 15, clientY: 25}]});
@@ -889,11 +889,11 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should not toggle the context menu on touch with a large movement', function() {
-      gz3d.scene.container.addEventListener.reset();
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
-      var touchmove = gz3d.scene.container.addEventListener.calls[1].args[1];
-      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+      gz3d.scene.container.addEventListener.calls.reset();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
+      var touchmove = gz3d.scene.container.addEventListener.calls.argsFor(1)[1];
+      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
 
       touchstart({touches: [{clientX: 10, clientY: 20}]});
       touchmove({touches: [{clientX: 100, clientY: 200}]});
@@ -903,11 +903,11 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should not toggle the context menu on touches with clientX and clientY = 0', function() {
-      gz3d.scene.container.addEventListener.reset();
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls[0].args[1];
-      var touchmove = gz3d.scene.container.addEventListener.calls[1].args[1];
-      var touchend = gz3d.scene.container.addEventListener.calls[2].args[1];
+      gz3d.scene.container.addEventListener.calls.reset();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
+      var touchmove = gz3d.scene.container.addEventListener.calls.argsFor(1)[1];
+      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
 
       touchstart({touches: [{clientX: 0, clientY: 0}]});
       touchmove({touches: [{clientX: 0, clientY: 0}]});
@@ -919,9 +919,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should call asset loading callback and turn slider position into light intensities', function() {
       scope.assetLoadingSplashScreen = undefined;
       stateService.currentState = STATE.INITIALIZED;
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
       expect(assetLoadingSplash.open).toHaveBeenCalled();
-      var callbackOnClose = assetLoadingSplash.open.mostRecentCall.args[0];
+      var callbackOnClose = assetLoadingSplash.open.calls.mostRecent().args[0];
       expect(callbackOnClose).toBeDefined();
       expect(callbackOnClose).toBe(scope.onSceneLoaded);
     });
@@ -1008,8 +1008,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       e.which = 2; // 2 for right mouse button
       scope.helpModeActivated = false;
-      gz3d.scene.controls.onMouseDownManipulator.reset();
-      gz3d.scene.controls.onMouseUpManipulator.reset();
+      gz3d.scene.controls.onMouseDownManipulator.calls.reset();
+      gz3d.scene.controls.onMouseUpManipulator.calls.reset();
       scope.requestMove(e, 'moveBackward');
       expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
       scope.releaseMove(e, 'moveBackward');
@@ -1017,8 +1017,8 @@ describe('Controller: Gz3dViewCtrl', function () {
 
       e.which = 1;
       scope.helpModeActivated = true;
-      gz3d.scene.controls.onMouseDownManipulator.reset();
-      gz3d.scene.controls.onMouseUpManipulator.reset();
+      gz3d.scene.controls.onMouseDownManipulator.calls.reset();
+      gz3d.scene.controls.onMouseUpManipulator.calls.reset();
       scope.requestMove(e, 'rotateRight');
       expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
       scope.releaseMove(e, 'rotateRight');
@@ -1082,25 +1082,25 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should call nrpBackendVersions.get and set scope.versions with retrieved back-end versions', function() {
-      expect(nrpBackendVersions.callCount).toBe(1);
-      expect(nrpBackendVersions.mostRecentCall.args[0].indexOf(simulationInfo.serverID) > -1).toBe(true);
-      expect(nrpBackendVersionsObject.get.mostRecentCall.args[0]).toEqual(jasmine.any(Function));
-      expect(nrpBackendVersionsObject.get.callCount).toBe(1);
+      expect(nrpBackendVersions.calls.count()).toBe(1);
+      expect(nrpBackendVersions.calls.mostRecent().args[0].indexOf(simulationInfo.serverID) > -1).toBe(true);
+      expect(nrpBackendVersionsObject.get.calls.mostRecent().args[0]).toEqual(jasmine.any(Function));
+      expect(nrpBackendVersionsObject.get.calls.count()).toBe(1);
       //Ignore this warning because of hbp_nrp_cle and hbp_nrp_backend
       /*jshint camelcase: false */
 
       var backendData = {hbp_nrp_cle: '0.0.5.dev0', hbp_nrp_backend: '0.0.4'};
       var frontendData = { hbp_nrp_esv: '0.0.1' };
       var dataResult = angular.extend(frontendData, backendData);
-      nrpFrontendVersion.get.mostRecentCall.args[0](frontendData);
-      nrpBackendVersionsObject.get.mostRecentCall.args[0](backendData);
+      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
+      nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendData);
       expect(scope.versions).toEqual(dataResult);
     });
 
     it('should set the focus on the supplied html element', function() {
       var element = {'focus': jasmine.createSpy('focus')};
       var backup = window.document.getElementById;
-      window.document.getElementById = jasmine.createSpy('getElementById').andReturn(element);
+      window.document.getElementById = jasmine.createSpy('getElementById').and.returnValue(element);
       scope.focus('dummyelement');
       timeout.flush();
       expect(element.focus).toHaveBeenCalled();
@@ -1109,7 +1109,7 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     it('should close gzbridge on $destroy', function() {
       stateService.currentState = STATE.STARTED;
-      stateService.getCurrentState().then.mostRecentCall.args[0]();
+      stateService.getCurrentState().then.calls.mostRecent().args[0]();
 
       // call the method under test
       scope.$destroy();
@@ -1232,8 +1232,8 @@ describe('Controller: Gz3dViewCtrl', function () {
   describe('(EditMode)', function() {
     beforeEach(function () {
       environmentService.setPrivateExperiment(true);
-      lockServiceMock.tryAddLock.reset();
-      lockServiceMock.releaseLock.reset();
+      lockServiceMock.tryAddLock.calls.reset();
+      lockServiceMock.releaseLock.calls.reset();
 
       Gz3dViewCtrl = controller('Gz3dViewCtrl', {
         $rootScope: rootScope,
@@ -1333,7 +1333,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       scope.$apply();
 
       expect(lockServiceMock.releaseLock).toHaveBeenCalled();
-      expect(lockServiceMock.releaseLock.callCount).toBe(1);
+      expect(lockServiceMock.releaseLock.calls.count()).toBe(1);
     });
 
     it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function () {
@@ -1479,8 +1479,8 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
     var getThenSpy = jasmine.createSpy('then');
 
-    getCurrentStateSpy.andCallFake(function () {
-      return { then: getThenSpy.andCallFake(function (f) { f(); }) };
+    getCurrentStateSpy.and.callFake(function () {
+      return { then: getThenSpy.and.callFake(function (f) { f(); }) };
     });
 
     $provide.value('stateService', {
@@ -1542,7 +1542,7 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     document = _$document_;
     scope.viewState = {};
 
-    spyOn(window, 'stop').andReturn(null);
+    spyOn(window, 'stop').and.returnValue(null);
   }));
 
   describe('(Clean up code tested with a mocked window object)', function () {
@@ -1555,8 +1555,8 @@ describe('Controller: Gz3dViewCtrl - mocked window', function () {
     });
 
     it('should close rosbridge connections on onSimulationDone', function() {
-      stateService.stopListeningForStatusInformation.reset();
-      stateService.removeMessageCallback.reset();
+      stateService.stopListeningForStatusInformation.calls.reset();
+      stateService.removeMessageCallback.calls.reset();
 
       // call the method under test
       scope.onSimulationDone();

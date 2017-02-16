@@ -17,7 +17,7 @@ angular.module('currentStateMockFactory', [])
         var ensureStateBeforeExecutingSpy = jasmine.createSpy('ensureStateBeforeExecuting');
         var localCurrentState;
 
-        getCurrentStateSpy.andCallFake(function () {
+        getCurrentStateSpy.and.callFake(function () {
           return {
             then: function (f) {
               f();
@@ -25,7 +25,7 @@ angular.module('currentStateMockFactory', [])
           };
         });
 
-        setCurrentStateSpy.andCallFake(function (s) {
+        setCurrentStateSpy.and.callFake(function (s) {
           localCurrentState = s;
           return {
             then: function (f) {
@@ -37,7 +37,7 @@ angular.module('currentStateMockFactory', [])
           };
         });
 
-        ensureStateBeforeExecutingSpy.andCallFake(function (s, f) {
+        ensureStateBeforeExecutingSpy.and.callFake(function (s, f) {
           localCurrentState = s;
           f();
         });

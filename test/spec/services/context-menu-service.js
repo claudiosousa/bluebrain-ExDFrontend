@@ -11,8 +11,8 @@ describe('Services: contextMenuState', function (){
   beforeEach(module(function ($provide) {
     $provide.value('gz3d', gzInitializationMock);
 
-    gzInitializationMock.Initialize.reset();
-    gzInitializationMock.deInitialize.reset();
+    gzInitializationMock.Initialize.calls.reset();
+    gzInitializationMock.deInitialize.calls.reset();
   }));
 
   // excuted before each "it" is run.
@@ -40,7 +40,7 @@ describe('Services: contextMenuState', function (){
 
   it('should hide menu when calling toggleContextMenu(false)', function(){
 
-    spyOn(contextMenuState, 'hideMenu').andCallThrough();
+    spyOn(contextMenuState, 'hideMenu').and.callThrough();
 
     contextMenuState.toggleContextMenu(false);
 
@@ -71,7 +71,7 @@ describe('Services: contextMenuState', function (){
 
     var dummyEvent = {clientX: 0, clientY: 0};
 
-    spyOn(contextMenuState, '_getModelUnderMouse').andReturn(dummyModel);
+    spyOn(contextMenuState, '_getModelUnderMouse').and.returnValue(dummyModel);
 
     gz3d.scene.selectEntity = jasmine.createSpy('selectEntity');
 
@@ -88,9 +88,9 @@ describe('Services: contextMenuState', function (){
   });
 
   it('should get the model under the current mouse position', function () {
-  
+
     gz3d.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
-    spyOn(contextMenuState,'axisSelected').andReturn(false);
+    spyOn(contextMenuState,'axisSelected').and.returnValue(false);
     var event = {clientX :10, clientY:10};
     contextMenuState._getModelUnderMouse(event);
     expect(gz3d.scene.getRayCastModel).toHaveBeenCalled();

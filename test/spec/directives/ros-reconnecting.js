@@ -10,7 +10,7 @@ describe('Directive: rosReconnecting', function() {
     beforeEach(inject(function(_$rootScope_, $httpBackend, $compile) {
         $rootScope = _$rootScope_;
         window.ROSLIB.PhoenixRos.onReconnecting = jasmine.createSpy('onReconnecting')
-            .andCallFake(function(fn) {
+            .and.callFake(function(fn) {
                 onReconnectingCallback = fn;
                 return unsubscribeRos;
             });

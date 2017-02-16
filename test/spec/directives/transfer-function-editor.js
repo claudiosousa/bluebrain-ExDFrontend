@@ -26,7 +26,7 @@ describe('Directive: transferFunctionEditor', function () {
 
   var saveErrorsServiceMock = {
     registerCallback: jasmine.createSpy('registerCallback'),
-    saveDirtyData: jasmine.createSpy('saveDirtyData').andCallFake(function(){return $q.when();}),
+    saveDirtyData: jasmine.createSpy('saveDirtyData').and.callFake(function(){return $q.when();}),
     clearDirty: jasmine.createSpy('clearDirty')
   };
   var documentationURLsMock = {
@@ -47,8 +47,8 @@ describe('Directive: transferFunctionEditor', function () {
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
-  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({});
+  roslibMock.createTopic = jasmine.createSpy('createTopic').and.returnValue(returnedConnectionObject);
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
@@ -161,7 +161,7 @@ describe('Directive: transferFunctionEditor', function () {
     isolateScope.saveCSVIntoCollabStorage();
     expect(backendInterfaceServiceMock.saveCSVRecordersFiles).toHaveBeenCalled();
     expect(isolateScope.isSavingCSVToCollab).toBe(true);
-    backendInterfaceServiceMock.saveCSVRecordersFiles.mostRecentCall.args[1]();
+    backendInterfaceServiceMock.saveCSVRecordersFiles.calls.mostRecent().args[1]();
     expect(isolateScope.isSavingCSVToCollab).toBe(false);
   });
 
@@ -170,14 +170,14 @@ describe('Directive: transferFunctionEditor', function () {
     isolateScope.saveCSVIntoCollabStorage();
     expect(backendInterfaceServiceMock.saveCSVRecordersFiles).toHaveBeenCalled();
     expect(isolateScope.isSavingCSVToCollab).toBe(true);
-    backendInterfaceServiceMock.saveCSVRecordersFiles.mostRecentCall.args[2]();
+    backendInterfaceServiceMock.saveCSVRecordersFiles.calls.mostRecent().args[2]();
     expect(isolateScope.isSavingCSVToCollab).toBe(false);
   });
 
   it('should set dirty status of autosaved stuff found', function() {
     var tfs = 'tfs';
     expect(autoSaveServiceMock.registerFoundAutoSavedCallback).toHaveBeenCalled();
-    autoSaveServiceMock.registerFoundAutoSavedCallback.mostRecentCall.args[1](tfs);
+    autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](tfs);
     expect(isolateScope.transferFunctions).toBe(tfs);
     expect(isolateScope.collabDirty).toBe(true);
   });
@@ -185,7 +185,7 @@ describe('Directive: transferFunctionEditor', function () {
   it('should overwrite TFs with new error data', function() {
     var tfs = 'tfs';
     expect(saveErrorsServiceMock.registerCallback).toHaveBeenCalled();
-    saveErrorsServiceMock.registerCallback.mostRecentCall.args[1](tfs);
+    saveErrorsServiceMock.registerCallback.calls.mostRecent().args[1](tfs);
     expect(isolateScope.transferFunctions).toBe(tfs);
   });
 
@@ -195,7 +195,7 @@ describe('Directive: transferFunctionEditor', function () {
     spyOn(editorsServices, 'refreshAllEditors');
     isolateScope.control.refresh();
     $rootScope.$digest();
-    expect(editorsServices.refreshAllEditors.calls.length).toBe(1);
+    expect(editorsServices.refreshAllEditors.calls.count()).toBe(1);
   });
 
   it('should add new populations correctly', function() {
@@ -220,9 +220,9 @@ describe('Directive: transferFunctionEditor', function () {
 
     it('should handle the retrieved transferFunctions properly', function () {
       // call the callback given to getTransferFunctions with a response mock
-      spyOn(document, 'getElementById').andReturn({ firstChild: { CodeMirror: editorMock}});
+      spyOn(document, 'getElementById').and.returnValue({ firstChild: { CodeMirror: editorMock}});
       spyOn(editorsServices, 'refreshAllEditors');
-      backendInterfaceService.getTransferFunctions.mostRecentCall.args[0](response);
+      backendInterfaceService.getTransferFunctions.calls.mostRecent().args[0](response);
       expect(_.findIndex(isolateScope.transferFunctions, expectedTf1)).not.toBe(-1);
       expect(isolateScope.transferFunctions.length).toBe(1);
       // This order is not guaranteed. Still, keys are printed in insertion order on all major browsers
@@ -265,7 +265,7 @@ describe('Directive: transferFunctionEditor', function () {
       expect(backendInterfaceService.setTransferFunction).toHaveBeenCalledWith(
         'tf1', newCode, jasmine.any(Function), jasmine.any(Function)
       );
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[2]();
       expect(tf1.dirty).toEqual(false);
       expect(tf1.local).toEqual(false);
       expect(tf1.id).toEqual('toto');
@@ -276,24 +276,24 @@ describe('Directive: transferFunctionEditor', function () {
       var tf1 = isolateScope.transferFunctions[0];
       stateService.currentState = STATE.STARTED;
       isolateScope.update(tf1);
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
-      expect(stateService.setCurrentState.callCount).toBe(1);
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[2]();
+      expect(stateService.setCurrentState.calls.count()).toBe(1);
       stateService.currentState = STATE.PAUSED;
       isolateScope.update(tf1);
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
-      expect(stateService.setCurrentState.callCount).toBe(1);
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[2]();
+      expect(stateService.setCurrentState.calls.count()).toBe(1);
     });
 
     it('should restart the simulation if it was paused for update and the update failed', function () {
       var tf1 = isolateScope.transferFunctions[0];
       stateService.currentState = STATE.STARTED;
       isolateScope.update(tf1);
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[3]();
-      expect(stateService.setCurrentState.callCount).toBe(1);
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[3]();
+      expect(stateService.setCurrentState.calls.count()).toBe(1);
       stateService.currentState = STATE.PAUSED;
       isolateScope.update(tf1);
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[3]();
-      expect(stateService.setCurrentState.callCount).toBe(1);
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[3]();
+      expect(stateService.setCurrentState.calls.count()).toBe(1);
     });
 
     it('should delete a tf properly', function() {
@@ -314,13 +314,13 @@ describe('Directive: transferFunctionEditor', function () {
       var tf1 = transferFunctions[0];
       stateService.currentState = STATE.STARTED;
       isolateScope.delete(tf1);
-      backendInterfaceService.deleteTransferFunction.mostRecentCall.args[1]();
-      expect(stateService.setCurrentState.callCount).toBe(1);
+      backendInterfaceService.deleteTransferFunction.calls.mostRecent().args[1]();
+      expect(stateService.setCurrentState.calls.count()).toBe(1);
       stateService.currentState = STATE.PAUSED;
       var tf2 = transferFunctions[1];
       isolateScope.delete(tf2);
-      backendInterfaceService.deleteTransferFunction.mostRecentCall.args[1]();
-      expect(stateService.setCurrentState.callCount).toBe(1);
+      backendInterfaceService.deleteTransferFunction.calls.mostRecent().args[1]();
+      expect(stateService.setCurrentState.calls.count()).toBe(1);
     });
 
     it('should remove tf from array for a local delete operation', function () {
@@ -358,7 +358,7 @@ describe('Directive: transferFunctionEditor', function () {
       isolateScope.onNewErrorMessageReceived(msg);
       expect(hbpDialogFactory.alert).toHaveBeenCalled();
 
-      hbpDialogFactory.alert.reset();
+      hbpDialogFactory.alert.calls.reset();
     });
 
     it('should ignore state machine errors', function () {
@@ -378,7 +378,7 @@ describe('Directive: transferFunctionEditor', function () {
     });
 
     it('should retrieve tf editor', function () {
-      spyOn(document, 'getElementById').andReturn({ firstChild: { CodeMirror: editorMock}});
+      spyOn(document, 'getElementById').and.returnValue({ firstChild: { CodeMirror: editorMock}});
       var editor = editorsServices.getEditor(transferFunctions[0]);
       expect(editor).toBe(editorMock);
     });
@@ -387,7 +387,7 @@ describe('Directive: transferFunctionEditor', function () {
       var firstTFName = transferFunctions[0].name;
       var errorType = isolateScope.ERROR.COMPILE;
       var msg = { functionName: firstTFName, message: 'Minor syntax error', lineNumber: 3, errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toEqual(msg);
       expect(editorMock.addLineClass).toHaveBeenCalled();
@@ -397,11 +397,11 @@ describe('Directive: transferFunctionEditor', function () {
       var tf1 = isolateScope.transferFunctions[1];
       tf1.error[isolateScope.ERROR.COMPILE] = {};
       isolateScope.update(tf1);
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[2]();
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[2]();
       expect(tf1.error[isolateScope.ERROR.COMPILE]).not.toBeDefined();
       tf1.error[isolateScope.ERROR.COMPILE] = {};
       isolateScope.update(tf1);
-      backendInterfaceService.setTransferFunction.mostRecentCall.args[3]();
+      backendInterfaceService.setTransferFunction.calls.mostRecent().args[3]();
       expect(tf1.error[isolateScope.ERROR.COMPILE]).toEqual({});
     });
 
@@ -409,7 +409,7 @@ describe('Directive: transferFunctionEditor', function () {
       var compile = isolateScope.ERROR.COMPILE;
       var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
       var tf1 = transferFunctions[0];
-      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(editorsServices.getEditor).toHaveBeenCalledWith('transfer-function-' + tf1.id);
       expect(tf1.error[compile].lineHandle).toBe(0);
@@ -418,12 +418,12 @@ describe('Directive: transferFunctionEditor', function () {
     it('should call the compile error clean-up callback if a new compile error is received', function () {
       var compile = isolateScope.ERROR.COMPILE;
       var msg = { functionName: 'tf1', message: 'You are in trouble!', lineNumber: 1,  errorType: compile, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       isolateScope.onNewErrorMessageReceived(msg);
       expect(isolateScope.cleanCompileError).toHaveBeenCalled();
       msg.errorType = isolateScope.ERROR.RUNTIME;
-      isolateScope.cleanCompileError.reset();
+      isolateScope.cleanCompileError.calls.reset();
       isolateScope.onNewErrorMessageReceived(msg);
       expect(isolateScope.cleanCompileError).not.toHaveBeenCalled();
     });
@@ -433,7 +433,7 @@ describe('Directive: transferFunctionEditor', function () {
       var tf1 = transferFunctions[0];
       tf1.name = '';
       var msg = { functionName: 'tf1', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(_, 'find').andReturn(tf1);
+      spyOn(_, 'find').and.returnValue(tf1);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(_.find).toHaveBeenCalledWith(isolateScope.transferFunctions, { 'id': msg.functionName });
     });
@@ -444,23 +444,23 @@ describe('Directive: transferFunctionEditor', function () {
       tf1.name = 'NewFunctionName';
       tf1.id = 'OldFunctionName';
       var msg = { functionName: 'NewFunctionName', message: 'Invalid def name', lineNumber: -1,  errorType: namingError, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
-      spyOn(_, 'find').andCallFake(function(arg1, arg2){
+      spyOn(_, 'find').and.callFake(function(arg1, arg2){
         if (Object.keys(arg2)[0] === 'id'){
           return undefined;
         }
         return tf1;
       });
       isolateScope.onNewErrorMessageReceived(msg);
-      expect(Object.keys(_.find.mostRecentCall.args[1])[0]).toBe('name');
+      expect(Object.keys(_.find.calls.mostRecent().args[1])[0]).toBe('name');
     });
 
     it('should remove error highlighting in the editor of the previously flawed transfer function', function () {
-      spyOn(editorsServices, 'getEditor').andReturn(editorMock);
+      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
       var tf1 = transferFunctions[0];
       tf1.error[isolateScope.ERROR.COMPILE] = { lineHandle: {} };
       isolateScope.cleanCompileError(tf1);
       expect(editorMock.removeLineClass).toHaveBeenCalled();
-      editorMock.removeLineClass.reset();
+      editorMock.removeLineClass.calls.reset();
       tf1.error = { lineHandle: undefined };
       isolateScope.cleanCompileError(tf1);
       expect(editorMock.removeLineClass).not.toHaveBeenCalled();
@@ -484,12 +484,12 @@ describe('Directive: transferFunctionEditor', function () {
       }
       var n = numberOfNewFunctions - 1;
       var tfNewName = 'transferfunction_' + n;
-      var expectedTF = {
+      var expectedTF = jasmine.objectContaining({
            id: tfNewName,
            code: DEFAULT_TF_CODE.replace('{0}', tfNewName),
            dirty: true, local: true, name: tfNewName,
            error: {}
-      };
+      });
       expect(transferFunctions[0]).toEqual(expectedTF);
     });
 
@@ -500,12 +500,12 @@ describe('Directive: transferFunctionEditor', function () {
       }
       var n = numberOfNewFunctions - 1;
       var tfNewName = 'transferfunction_' + n;
-      var expectedTF = {
+      var expectedTF = jasmine.objectContaining({
         id: tfNewName,
         code: DEFAULT_TF_CODE.replace('{0}', tfNewName),
         dirty: true, local: true, name: tfNewName,
         error: {}
-      };
+      });
       expect(transferFunctions[transferFunctions.length-1]).toEqual(expectedTF);
     });
 
@@ -518,7 +518,7 @@ describe('Directive: transferFunctionEditor', function () {
       isolateScope.onTransferFunctionChange(tf1);
       expect(transferFunctions).toEqual(
         [
-          { code: tf1CodeNewCode, dirty: true, local: false, name: 'tf_new_name', id: 'tf1', error: {} }
+         jasmine.objectContaining( { code: tf1CodeNewCode, dirty: true, local: false, name: 'tf_new_name', id: 'tf1', error: {} })
         ]);
       // When updating the code of a newly created TF, we also update its ID using the computed TF name
       tf1.local = true;
@@ -547,8 +547,8 @@ describe('Directive: transferFunctionEditor', function () {
       var eventMock = {
         target : { result: tfFileMock }
       };
-      spyOn(window, 'FileReader').andReturn(fileReaderMock);
-      backendInterfaceServiceMock.setTransferFunction.andCallFake(function(a, b, cb){ cb();});
+      spyOn(window, 'FileReader').and.returnValue(fileReaderMock);
+      backendInterfaceServiceMock.setTransferFunction.and.callFake(function(a, b, cb){ cb();});
       isolateScope.loadTransferFunctions('someFile')
       .then(function(){
         transferFunctions = isolateScope.transferFunctions;
@@ -570,7 +570,7 @@ describe('Directive: transferFunctionEditor', function () {
       var fileReaderMock = {
         readAsText: readAsTextSpy
       };
-      spyOn(window, 'FileReader').andReturn(fileReaderMock);
+      spyOn(window, 'FileReader').and.returnValue(fileReaderMock);
 
       isolateScope.loadTransferFunctions({$error:'some error'});
       expect(window.FileReader).not.toHaveBeenCalled();
@@ -578,9 +578,9 @@ describe('Directive: transferFunctionEditor', function () {
 
      it('should save transfer functions to file', function () {
       spyOn(downloadFileService, 'downloadFile');
-      spyOn(window, 'Blob').andReturn({});
+      spyOn(window, 'Blob').and.returnValue({});
       var href = 'http://some/url';
-      var URLMock = {createObjectURL: jasmine.createSpy('createObjectURL').andReturn(href)};
+      var URLMock = {createObjectURL: jasmine.createSpy('createObjectURL').and.returnValue(href)};
       window.URL = URLMock;
       isolateScope.download(new ScriptObject('transferFunctionId', 'Some code'));
       expect(URLMock.createObjectURL).toHaveBeenCalled();
@@ -596,21 +596,21 @@ describe('Directive: transferFunctionEditor', function () {
       isolateScope.saveTFIntoCollabStorage();
       expect(backendInterfaceService.saveTransferFunctions).toHaveBeenCalledWith(simulationInfo.contextID, _.map(isolateScope.transferFunctions, 'code'), jasmine.any(Function), jasmine.any(Function));
       expect(isolateScope.isSavingToCollab).toEqual(true);
-      backendInterfaceService.saveTransferFunctions.argsForCall[0][2]();
+      backendInterfaceService.saveTransferFunctions.calls.argsFor(0)[2]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
 
       spyOn(hbpDialogFactory, 'alert');
-      backendInterfaceService.saveTransferFunctions.argsForCall[0][3]();
+      backendInterfaceService.saveTransferFunctions.calls.argsFor(0)[3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       expect(hbpDialogFactory.alert).toHaveBeenCalled();
-      hbpDialogFactory.alert.reset();
+      hbpDialogFactory.alert.calls.reset();
     });
 
     it('should correctly saveTFIntoCollabStorage when TFs contain errors', function () {
       var userResponse = $q.when();
-      spyOn(hbpDialogFactory,'confirm').andCallFake(function(){ return userResponse;});
-      backendInterfaceService.saveTransferFunctions.reset();
+      spyOn(hbpDialogFactory,'confirm').and.callFake(function(){ return userResponse;});
+      backendInterfaceService.saveTransferFunctions.calls.reset();
       expect(backendInterfaceServiceMock.saveTransferFunctions).not.toHaveBeenCalled();
       isolateScope.transferFunctions = [{error: {errorMsg:'an error message'}}];
       expect(isolateScope.isSavingToCollab).toEqual(false);
@@ -623,9 +623,9 @@ describe('Directive: transferFunctionEditor', function () {
       expect(autoSaveServiceMock.clearDirty).toHaveBeenCalled();
       isolateScope.isSavingToCollab = true;
 
-      saveErrorsServiceMock.saveDirtyData.reset();
-      autoSaveServiceMock.clearDirty.reset();
-      backendInterfaceServiceMock.saveTransferFunctions.reset();
+      saveErrorsServiceMock.saveDirtyData.calls.reset();
+      autoSaveServiceMock.clearDirty.calls.reset();
+      backendInterfaceServiceMock.saveTransferFunctions.calls.reset();
       userResponse = $q.reject(); // no
 
       isolateScope.saveTFIntoCollabStorage();
@@ -667,8 +667,8 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
   var roslibMock = {};
   var returnedConnectionObject = {};
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
-  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({});
+  roslibMock.createTopic = jasmine.createSpy('createTopic').and.returnValue(returnedConnectionObject);
 
   var shownPopulation = { name: 'test2', showDetails : false};
 

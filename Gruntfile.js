@@ -12,6 +12,7 @@ module.exports = function(grunt) {
 
     // Load grunt tasks automatically
     require('load-grunt-tasks')(grunt);
+    var serveStatic = require('serve-static');
 
     // Time how long tasks take. Can help when optimizing build times
     require('time-grunt')(grunt);
@@ -119,11 +120,12 @@ module.exports = function(grunt) {
                 hostname: '*',
                 livereload: 35729,
                 middleware: function(connect) {
+
                     return [
-                        connect.static('.tmp'),
-                        connect().use('/bower_components', connect.static('./bower_components')),
-                        connect().use('/node_modules', connect.static('./node_modules')),
-                        connect.static(appConfig.app)
+                        serveStatic('.tmp'),
+                        connect().use('/bower_components', serveStatic('./bower_components')),
+                        connect().use('/node_modules', serveStatic('./node_modules')),
+                        serveStatic(appConfig.app)
                     ];
                 }
             },
@@ -149,11 +151,11 @@ module.exports = function(grunt) {
                     port: 9001,
                     middleware: function(connect) {
                         return [
-                            connect.static('.tmp'),
-                            connect.static('test'),
-                            connect().use('/bower_components', connect.static('./bower_components')),
-                            connect().use('/node_modules', connect.static('./node_modules')),
-                            connect.static(appConfig.app)
+                            serveStatic('.tmp'),
+                            serveStatic('test'),
+                            connect().use('/bower_components', serveStatic('./bower_components')),
+                            connect().use('/node_modules', serveStatic('./node_modules')),
+                            serveStatic(appConfig.app)
                         ];
                     }
                 }

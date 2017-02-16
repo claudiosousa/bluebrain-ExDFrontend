@@ -29,8 +29,8 @@ describe('Directive: joint-plot', function () {
 
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
   returnedConnectionObject.unsubscribe = jasmine.createSpy('unsubscribe');
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
-  roslibMock.createTopic = jasmine.createSpy('createTopic').andReturn(returnedConnectionObject);
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({});
+  roslibMock.createTopic = jasmine.createSpy('createTopic').and.returnValue(returnedConnectionObject);
 
   var simulationInfoMock = {
     serverConfig: {
@@ -72,7 +72,7 @@ describe('Directive: joint-plot', function () {
   });
 
   it('should clear the plot on RESET event', function () {
-      spyOn($scope, 'clearPlot').andCallThrough();
+      spyOn($scope, 'clearPlot').and.callThrough();
 
       $scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
       $scope.$digest();
@@ -81,7 +81,7 @@ describe('Directive: joint-plot', function () {
   });
 
     it('should NOT clear the plot on RESET event: RESET_CAMERA_VIEW', function () {
-      spyOn($scope, 'clearPlot').andCallThrough();
+      spyOn($scope, 'clearPlot').and.callThrough();
 
       $scope.$broadcast('RESET', RESET_TYPE.RESET_CAMERA_VIEW);
       $scope.$digest();
@@ -90,7 +90,7 @@ describe('Directive: joint-plot', function () {
   });
 
   it('should remove the RESET event callback on $destroy event', function () {
-    spyOn($scope, 'resetListenerUnbindHandler').andCallThrough();
+    spyOn($scope, 'resetListenerUnbindHandler').and.callThrough();
     $scope.$broadcast('$destroy');
     $scope.$digest();
     expect($scope.resetListenerUnbindHandler).toHaveBeenCalled();
@@ -125,9 +125,9 @@ describe('Directive: joint-plot', function () {
   });
 
   it('should connect to roslib when calling startJointDisplay', function () {
-    roslibMock.getOrCreateConnectionTo.reset();
-    roslibMock.createTopic.reset();
-    returnedConnectionObject.subscribe.reset();
+    roslibMock.getOrCreateConnectionTo.calls.reset();
+    roslibMock.createTopic.calls.reset();
+    returnedConnectionObject.subscribe.calls.reset();
 
     $scope.jointTopicSubscriber = undefined;
     $scope.startJointDisplay();

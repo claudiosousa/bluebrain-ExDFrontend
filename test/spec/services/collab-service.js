@@ -85,7 +85,7 @@ describe('Services: collab-folder-api-service', function () {
   });
 
   it('test deleteFile works when everything goes normally', function() {
-    spyOn(collabFolderAPIService, 'getFolderFile').andCallFake(function(){
+    spyOn(collabFolderAPIService, 'getFolderFile').and.callFake(function(){
       var deferred = $q.defer();
       deferred.resolve({'_uuid':'123'});
       return deferred.promise;
@@ -101,7 +101,7 @@ describe('Services: collab-folder-api-service', function () {
   });
 
   it('test deleteFile handles when a file cannont be deleted', function() {
-    spyOn(collabFolderAPIService, 'getFolderFile').andCallFake(function(){
+    spyOn(collabFolderAPIService, 'getFolderFile').and.callFake(function(){
       var deferred = $q.defer();
       deferred.resolve(null);
       return deferred.promise;
@@ -138,7 +138,7 @@ describe('Services: collab-folder-api-service', function () {
     spyOn(hbpFileStore, 'getContent');
     collabFolderAPIService.downloadFile('FakeFolderId');
     expect(hbpFileStore.getContent).toHaveBeenCalledWith('FakeFolderId', undefined);
-    hbpFileStore.getContent.reset();
+    hbpFileStore.getContent.calls.reset();
     // test with some custom config
     collabFolderAPIService.downloadFile('FakeFolderId', {responseType: 'blob'});
     expect(hbpFileStore.getContent).toHaveBeenCalledWith('FakeFolderId', {responseType: 'blob'});

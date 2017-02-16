@@ -9,7 +9,7 @@ describe('Directive: logConsole', function() {
 
     var topicSubscriberMock = {
         subscribe: jasmine.createSpy('subscribe')
-            .andCallFake(function(fn) {
+            .and.callFake(function(fn) {
                 susbscribeCallback = fn;
             }),
         unsubscribe: jasmine.createSpy('unsubscribeTopic')
@@ -17,7 +17,7 @@ describe('Directive: logConsole', function() {
 
     var roslibMock = {
         getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo'),
-        createStringTopic: jasmine.createSpy('getOrCreateConnectionTo').andReturn(topicSubscriberMock)
+        createStringTopic: jasmine.createSpy('getOrCreateConnectionTo').and.returnValue(topicSubscriberMock)
     };
 
     beforeEach(module(function($provide) {

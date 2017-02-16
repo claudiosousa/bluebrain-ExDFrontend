@@ -142,7 +142,7 @@ describe('Services: nrp-error-handlers', function () {
     nrpErrorService = _nrpErrorService_;
     NO_CLUSTER_AVAILABLE_ERR_MSG = _NO_CLUSTER_AVAILABLE_ERR_MSG_;
     spyOn(hbpDialogFactory, 'alert');
-    spyOn(nrpErrorService, 'httpError').andReturn({'template': 'error template'});
+    spyOn(nrpErrorService, 'httpError').and.returnValue({'template': 'error template'});
   }));
 
   it('should filter in errors without response', function() {
@@ -169,9 +169,9 @@ describe('Services: nrp-error-handlers', function () {
   it('should call once nrpErrorService.httpError and hbpDialogFactory.alert', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response);
-    expect(hbpDialogFactory.alert.callCount).toBe(1);
+    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
-    expect(nrpErrorService.httpError.callCount).toBe(1);
+    expect(nrpErrorService.httpError.calls.count()).toBe(1);
   });
 
   it('should call neither nrpErrorService.httpError nor hbpDialogFactory.alert', function() {
@@ -183,25 +183,25 @@ describe('Services: nrp-error-handlers', function () {
   it('should show a user friendly error message to the user', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response);
-    expect(hbpDialogFactory.alert.callCount).toBe(1);
-    expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toNotBe('error template');
+    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
+    expect(hbpDialogFactory.alert.calls.mostRecent().args[0].template).not.toEqual('error template');
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
-    expect(nrpErrorService.httpError.callCount).toBe(1);
+    expect(nrpErrorService.httpError.calls.count()).toBe(1);
   });
 
   it('should show the actual error message to the user', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response, true);
-    expect(hbpDialogFactory.alert.callCount).toBe(1);
-    expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toBe('error template');
+    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
+    expect(hbpDialogFactory.alert.calls.mostRecent().args[0].template).toBe('error template');
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
-    expect(nrpErrorService.httpError.callCount).toBe(1);
+    expect(nrpErrorService.httpError.calls.count()).toBe(1);
   });
 
   it('should show a specific error when cluster resources aren\'t available', function() {
     var response = { data: {message:'Internal server error: service [/ros_cle_simulation/create_new_simulation] responded with an error: error processing request: No resources available on the cluster. Try again later.',type:'General error'} };
     serverError.displayHTTPError(response, true);
-    expect(hbpDialogFactory.alert.callCount).toBe(1);
-    expect(hbpDialogFactory.alert.mostRecentCall.args[0].template).toBe(NO_CLUSTER_AVAILABLE_ERR_MSG);
+    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
+    expect(hbpDialogFactory.alert.calls.mostRecent().args[0].template).toBe(NO_CLUSTER_AVAILABLE_ERR_MSG);
   });
 });

@@ -28,18 +28,18 @@
 
       modalInstance = {};
       modalInstance.close = jasmine.createSpy('close');
-      modal.open = jasmine.createSpy('open').andReturn(modalInstance);
+      modal.open = jasmine.createSpy('open').and.returnValue(modalInstance);
     }));
 
     it('should call modal open', function () {
-      modal.open.reset();
-      modalInstance.close.reset();
+      modal.open.calls.reset();
+      modalInstance.close.calls.reset();
       assetLoadingSplash.open();
       expect(modal.open).toHaveBeenCalled();
       expect(modalInstance.close).not.toHaveBeenCalled();
 
-      modal.open.reset();
-      modalInstance.close.reset();
+      modal.open.calls.reset();
+      modalInstance.close.calls.reset();
       assetLoadingSplash.open();
       expect(modal.open).toHaveBeenCalled();
       expect(modalInstance.close).toHaveBeenCalled();
@@ -114,11 +114,11 @@
     });
 
     it('should calculate the correct progress', function () {
-      assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
+      assetLoadingSplash.setProgressObserver.calls.mostRecent().args[0](exampleData);
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
 
-      var ncalls = timeout.calls.length;
-      timeout.calls[ncalls-1].args[0]();
+      var ncalls = timeout.calls.count();
+      timeout.calls.argsFor(ncalls-1)[0]();
 
       expect(scope.progressData).toBe(exampleData);
       expect(scope.loadedAssets).toEqual(1);
@@ -135,11 +135,11 @@
       exampleData.assets[0].done = true;
       exampleData.assets[1].progress = 1000;
       exampleData.assets[1].done = true;
-      assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
+      assetLoadingSplash.setProgressObserver.calls.mostRecent().args[0](exampleData);
       expect(assetLoadingSplash.close).toHaveBeenCalled();
 
-      var ncalls = timeout.calls.length;
-      timeout.calls[ncalls-1].args[0]();
+      var ncalls = timeout.calls.count();
+      timeout.calls.argsFor(ncalls-1)[0]();
 
       expect(scope.loadedAssets).toEqual(3);
       expect(scope.totalAssets).toEqual(3);
@@ -151,7 +151,7 @@
       exampleData.assets[0].error = true;
       exampleData.assets[1].progress = 1000;
       exampleData.assets[1].done = true;
-      assetLoadingSplash.setProgressObserver.mostRecentCall.args[0](exampleData);
+      assetLoadingSplash.setProgressObserver.calls.mostRecent().args[0](exampleData);
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
 
       expect(scope.isError).toBeTruthy();
@@ -160,7 +160,7 @@
    it('should not close the splash and set isError when loading assets timeout occurs', function () {
       scope.isError = false;
       scope.totalAssets = 0;
-      timeout.mostRecentCall.args[0]();
+      timeout.calls.mostRecent().args[0]();
       expect(assetLoadingSplash.close).not.toHaveBeenCalled();
       expect(scope.isError).toBeTruthy();
     });
@@ -168,7 +168,7 @@
    it('should do nothing if timeout occurs but assets loading is in progress', function () {
       scope.isError = false;
       scope.totalAssets = 1;
-      timeout.mostRecentCall.args[0]();
+      timeout.calls.mostRecent().args[0]();
       expect(scope.isError).toBeFalsy();
     });
   });

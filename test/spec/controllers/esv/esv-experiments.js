@@ -80,7 +80,7 @@
 
       $provide.value('simulationConfigService',
         {
-          initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+          initConfigFiles: jasmine.createSpy('initConfigFiles').and.returnValue(
             {
               then: function (f)
               {
@@ -132,7 +132,7 @@
       //var experimentIds = _.map(pageOptions.experiments, function (val, key) { return key; });
 
       if (pageOptions.dev) {
-        spyOn($location, 'search').andReturn({ dev: true });
+        spyOn($location, 'search').and.returnValue({ dev: true });
       }
 
       $httpBackend.whenGET(oidcUrl + '/user?filter=id=' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
@@ -199,7 +199,7 @@
       });
 
       var sortedExperimentNames = _.map(defaultPageOptions.experiments, function (val) { return val.configuration.name; }).sort();
-      expect(experimentTitles).toMatch(sortedExperimentNames);
+      expect(experimentTitles).toEqual(sortedExperimentNames);
     });
 
     function checkButtonVisibility(page, analyticsEvent, expected) {
@@ -234,7 +234,7 @@
       var startUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation';
       $httpBackend.whenPOST(startUrl).respond(200, defaultPageOptions.startExperiment);
       //mock roslib
-      spyOn(roslib, 'createStringTopic').andReturn({ subscribe: angular.noop });
+      spyOn(roslib, 'createStringTopic').and.returnValue({ subscribe: angular.noop });
       //start experiment
       $httpBackend.whenPOST(startUrl).respond(200, defaultPageOptions.startExperiment);
       //update experiement state
@@ -252,7 +252,7 @@
       var simulationID = defaultPageOptions.startExperiment.simulationID;
       var expectedLocation = ['esv-web/experiment-view/' + hostName + '/' + experimentID + '/false/' + simulationID];
 
-      expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
+      expect($location.path.calls.mostRecent().args).toEqual(expectedLocation);
     });
 
     it('should reset startingExperiment when failing to launch an experiment', function () {
@@ -295,7 +295,7 @@
       var experimentID = Object.keys(defaultPageOptions.experiments)[0];
       var simulationID = defaultPageOptions.startExperiment.simulationID;
       var expectedLocation = ['esv-web/experiment-view/' + hostName + '/' + experimentID + '/false/' + simulationID];
-      expect($location.path.mostRecentCall.args).toMatch(expectedLocation);
+      expect($location.path.calls.mostRecent().args).toEqual(expectedLocation);
     });
 
     it('should requery experiements after SERVER_POLL_INTERVAL', function () {
@@ -309,12 +309,12 @@
     it('should destroy the experimentsService on scope destroy', function () {
       var experimentsService;
       var createExperimentsService = experimentsFactory.createExperimentsService;
-      spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+      spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
         experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
         return experimentsService;
       });
       renderEsvWebPage();
-      spyOn(experimentsService, 'destroy').andCallThrough();
+      spyOn(experimentsService, 'destroy').and.callThrough();
 
       $rootScope.$broadcast('$destroy');
       $rootScope.$digest();
@@ -335,7 +335,7 @@
         page.find('.experiment-box').first().click();
         var angularElement = angular.element;
         var uploadElement;
-        spyOn(angular, 'element').andCallFake(function (e) {
+        spyOn(angular, 'element').and.callFake(function (e) {
           uploadElement = angularElement(e);
           return uploadElement;
         });
@@ -359,7 +359,7 @@
       it('should set experiments to error when collab fails', function () {
         $httpBackend.whenGET(collabContextUrl).respond(502, {});
         renderEsvWebPage({collab:true});
-        expect($rootScope.experiments).toMatch([{ error: { name: 'Internal Error', description: 'Database unavailable' } }]);
+        expect($rootScope.experiments).toEqual([{ error: { name: 'Internal Error', description: 'Database unavailable' } }]);
         expect(serverErrorMock.displayHTTPError).toHaveBeenCalled();
       });
 
@@ -391,8 +391,8 @@
         beforeEach(function () {
           $httpBackend.whenGET(new RegExp(proxyUrl + '/joinableServers/')).respond(200, []);
           $httpBackend.whenGET(new RegExp(proxyUrl + '/availableServers/')).respond(200, matureExperiment.availableServers);
-          spyOn(collabFolderAPIService, 'getFolderFile').andReturn($q.when({_uuid: 'fakeUUID'}));
-          spyOn(collabFolderAPIService, 'downloadFile').andReturn($q.when(''));
+          spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+          spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(''));
         });
 
         it('should select first experiment if only one experiment is shown', function () {
@@ -425,8 +425,8 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var testUser = 'testUserID';
           var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
-          lockMock.tryAddLock.andCallFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.tryAddLock.and.callFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage();
           environmentService.setPrivateExperiment(false);
           $rootScope.editing.nameID = false;
@@ -440,8 +440,8 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var testUser = 'testUserID';
           var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
-          lockMock.tryAddLock.andCallFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.tryAddLock.and.callFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
           $rootScope.userinfo.userID = testUser;
           environmentService.setPrivateExperiment(true);
@@ -459,8 +459,8 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var testUser = 'testUserID';
           var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
-          lockMock.tryAddLock.andCallFake(function(){return $q.when({success: false, lock: {lockInfo:{user:{id: testUser}}}});});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.tryAddLock.and.callFake(function(){return $q.when({success: false, lock: {lockInfo:{user:{id: testUser}}}});});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
           environmentService.setPrivateExperiment(true);
           spyOn(hbpDialogFactory, 'alert');
@@ -476,8 +476,8 @@
         it('test editExperiment when an error came from the lock service', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
-          lockMock.tryAddLock.andCallFake(function(){return $q.reject(new Error());});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.tryAddLock.and.callFake(function(){return $q.reject(new Error());});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
           $rootScope.isPrivateExperiment = true;
           $rootScope.editing.nameID = false;
@@ -493,8 +493,8 @@
         it('test stopEditingExperimentDetails', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var lockMock = jasmine.createSpyObj('lockMock', ['releaseLock']);
-          lockMock.releaseLock.andCallFake(function(){return $q.when('');});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.releaseLock.and.callFake(function(){return $q.when('');});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
           $rootScope.editing.nameID = true;
           spyOn(hbpDialogFactory, 'alert');
@@ -508,8 +508,8 @@
         it('test stopEditingExperimentDetails deal with lock exceptions', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var lockMock = jasmine.createSpyObj('lockMock', ['releaseLock']);
-          lockMock.releaseLock.andCallFake(function(){ return $q.reject(new Error());});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.releaseLock.and.callFake(function(){ return $q.reject(new Error());});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
           $rootScope.editing.nameID = true;
           spyOn(hbpDialogFactory, 'alert');
@@ -523,8 +523,8 @@
         it('test saveExperimentDetails when description is empty', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var lockMock = jasmine.createSpyObj('lockMock', ['releaseLock']);
-          lockMock.releaseLock.andCallFake(function(){ return $q.reject(new Error());});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').andReturn(lockMock);
+          lockMock.releaseLock.and.callFake(function(){ return $q.reject(new Error());});
+          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
           spyOn(collabFolderAPIService, 'deleteFile');
           spyOn(collabFolderAPIService, 'createFolderFile');
@@ -550,12 +550,12 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var experimentsService;
           var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
             experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
             return experimentsService;
           });
           renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentXML').andReturn('');
+          spyOn(experimentsService, 'getCollabExperimentXML').and.returnValue('');
           spyOn(hbpDialogFactory, 'alert');
           $rootScope.formInfo = {name:'NewName', desc:'newDesc'};
 
@@ -568,15 +568,15 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var experimentsService;
           var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
             experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
             return experimentsService;
           });
           renderEsvWebPage({collab:true});
           $rootScope.experiments=[{'configuration':{'name':'newName'}}];
-          spyOn(experimentsService, 'getCollabExperimentXML').andReturn('some xml');
-          spyOn(collabFolderAPIService, 'deleteFile').andReturn($q.when(''));
-          spyOn(collabFolderAPIService, 'createFolderFile').andReturn($q.when(''));
+          spyOn(experimentsService, 'getCollabExperimentXML').and.returnValue('some xml');
+          spyOn(collabFolderAPIService, 'deleteFile').and.returnValue($q.when(''));
+          spyOn(collabFolderAPIService, 'createFolderFile').and.returnValue($q.when(''));
           spyOn($rootScope, 'stopEditingExperimentDetails');
           spyOn(hbpDialogFactory, 'alert');
           $rootScope.formInfo = {name:'newName', desc:'newDesc'};
@@ -592,15 +592,15 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var experimentsService;
           var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
             experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
             return experimentsService;
           });
           renderEsvWebPage({collab:true});
           $rootScope.experiments=[{'configuration':{'description':'newDesc'}}];
-          spyOn(experimentsService, 'getCollabExperimentXML').andReturn('some xml');
-          spyOn(collabFolderAPIService, 'deleteFile').andReturn($q.when(''));
-          spyOn(collabFolderAPIService, 'createFolderFile').andReturn($q.when(''));
+          spyOn(experimentsService, 'getCollabExperimentXML').and.returnValue('some xml');
+          spyOn(collabFolderAPIService, 'deleteFile').and.returnValue($q.when(''));
+          spyOn(collabFolderAPIService, 'createFolderFile').and.returnValue($q.when(''));
           spyOn($rootScope, 'stopEditingExperimentDetails');
           spyOn(hbpDialogFactory, 'alert');
           $rootScope.formInfo = {name:'newName', desc:'newDesc'};
@@ -616,14 +616,14 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var experimentsService;
           var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
             experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
             return experimentsService;
           });
           renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentXML').andReturn('some xml');
-          spyOn(collabFolderAPIService, 'deleteFile').andReturn($q.when(''));
-          spyOn(collabFolderAPIService, 'createFolderFile').andReturn($q.when(''));
+          spyOn(experimentsService, 'getCollabExperimentXML').and.returnValue('some xml');
+          spyOn(collabFolderAPIService, 'deleteFile').and.returnValue($q.when(''));
+          spyOn(collabFolderAPIService, 'createFolderFile').and.returnValue($q.when(''));
           spyOn($rootScope, 'stopEditingExperimentDetails');
           $rootScope.editing.nameID = true;
           spyOn(hbpDialogFactory, 'alert');
@@ -641,14 +641,14 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var experimentsService;
           var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
             experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
             return experimentsService;
           });
           renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentXML').andReturn('some xml');
-          spyOn(collabFolderAPIService, 'deleteFile').andReturn($q.when(''));
-          spyOn(collabFolderAPIService, 'createFolderFile').andReturn($q.when(''));
+          spyOn(experimentsService, 'getCollabExperimentXML').and.returnValue('some xml');
+          spyOn(collabFolderAPIService, 'deleteFile').and.returnValue($q.when(''));
+          spyOn(collabFolderAPIService, 'createFolderFile').and.returnValue($q.when(''));
           spyOn($rootScope, 'stopEditingExperimentDetails');
           spyOn(hbpDialogFactory, 'alert');
           $rootScope.formInfo = {desc:'newDesc'};
@@ -664,14 +664,14 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var experimentsService;
           var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').andCallFake(function () {
+          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
             experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
             return experimentsService;
           });
           renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentXML').andReturn('some xml');
-          spyOn(collabFolderAPIService, 'deleteFile').andReturn($q.when(''));
-          spyOn(collabFolderAPIService, 'createFolderFile').andReturn($q.reject(''));
+          spyOn(experimentsService, 'getCollabExperimentXML').and.returnValue('some xml');
+          spyOn(collabFolderAPIService, 'deleteFile').and.returnValue($q.when(''));
+          spyOn(collabFolderAPIService, 'createFolderFile').and.returnValue($q.reject(''));
           spyOn($rootScope, 'stopEditingExperimentDetails');
           $rootScope.editing.nameID = true;
           spyOn(hbpDialogFactory, 'alert');

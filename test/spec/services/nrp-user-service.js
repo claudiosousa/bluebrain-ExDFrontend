@@ -6,7 +6,7 @@ describe('Services: nrpUser', function () {
 
   var hbpIdentityUserDirectory = {
     getCurrentUser: jasmine.createSpy('hbpIdentityUserDirectory')
-      .andCallFake(function () {
+      .and.callFake(function () {
         return $q.when('dir_user');
       }),
     isGroupMember: jasmine.createSpy('isGroupMember')
@@ -28,7 +28,7 @@ describe('Services: nrpUser', function () {
     $q = _$q_;
     nrpUser = _nrpUser_;
 
-    hbpIdentityUserDirectory.getCurrentUser.reset();
+    hbpIdentityUserDirectory.getCurrentUser.calls.reset();
     $httpBackend.whenGET(/.*/).respond(200);
   }));
 
@@ -56,7 +56,7 @@ describe('Services: nrpUser', function () {
 
   it('should call hbpIdentityUserDirectory.isGroupMember whith the correct argument', function () {
     var sessionStorageKey = 'clusterReservation';
-    spyOn(window.sessionStorage, 'getItem').andReturn(sessionStorageKey);
+    spyOn(window.sessionStorage, 'getItem').and.returnValue(sessionStorageKey);
     expect(nrpUser.getReservation()).toBe('clusterReservation');
     expect(window.sessionStorage.getItem).toHaveBeenCalledWith(sessionStorageKey);
   });

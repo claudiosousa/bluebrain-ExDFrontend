@@ -29,7 +29,7 @@ describe('Directive: environment-designer', function () {
     };
     $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('gz3d', gz3dMock);
-    $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').andCallThrough());
+    $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').and.callThrough());
     $provide.value('contextMenuState', {
       toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
       pushItemGroup: jasmine.createSpy('pushItemGroup')
@@ -38,7 +38,7 @@ describe('Directive: environment-designer', function () {
       toggleView: jasmine.createSpy('toggleView')
     });
     $provide.value('bbpConfig', {
-      get: jasmine.createSpy('get').andReturn(
+      get: jasmine.createSpy('get').and.returnValue(
         {
           'bbpce016': {
             gzweb: {
@@ -88,17 +88,17 @@ describe('Directive: environment-designer', function () {
 
     var sceneMock = {
       setManipulationMode: jasmine.createSpy('setManipulationMode').
-      andCallFake(function (m) {
+      and.callFake(function (m) {
         this.manipulationMode = m;
       }),
       manipulationMode: undefined,
       selectedEntity:{},
       selectEntity: jasmine.createSpy('selectEntity').
-      andCallFake(function (obj) {
+      and.callFake(function (obj) {
         this.selectedEntity = obj;
       }),
       getByName: jasmine.createSpy('getByName').
-      andCallFake(function (name) {
+      and.callFake(function (name) {
 
         var obj = {};
         obj.name = name;
@@ -140,7 +140,7 @@ describe('Directive: environment-designer', function () {
 
   it('should call correctly contextMenuState.pushItemGroup', function () {
     stateService.currentState = $scope.STATE.PAUSED;
-    var itemGroup = contextMenuState.pushItemGroup.mostRecentCall.args[0];
+    var itemGroup = contextMenuState.pushItemGroup.calls.mostRecent().args[0];
 
     // initial structure
     expect(itemGroup.visible).toBe(false);
@@ -187,31 +187,31 @@ describe('Directive: environment-designer', function () {
   it('should pause the simulation when needed', function () {
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect(stateService.ensureStateBeforeExecuting.mostRecentCall.args[0]).toBe($scope.STATE.PAUSED);
+    expect(stateService.ensureStateBeforeExecuting.calls.mostRecent().args[0]).toBe($scope.STATE.PAUSED);
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.ROTATE);
-    expect(stateService.ensureStateBeforeExecuting.mostRecentCall.args[0]).toBe($scope.STATE.PAUSED);
+    expect(stateService.ensureStateBeforeExecuting.calls.mostRecent().args[0]).toBe($scope.STATE.PAUSED);
   });
 
   it('should not update the state if already in the correct state', function () {
-    expect(stateService.setCurrentState.callCount).toBe(0);
+    expect(stateService.setCurrentState.calls.count()).toBe(0);
     stateService.currentState = $scope.STATE.STARTED;
     $scope.setEditMode($scope.EDIT_MODE.VIEW);
-    expect(stateService.setCurrentState.callCount).toBe(0);
+    expect(stateService.setCurrentState.calls.count()).toBe(0);
     stateService.currentState = $scope.STATE.PAUSED;
     $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
-    expect(stateService.setCurrentState.callCount).toBe(0);
+    expect(stateService.setCurrentState.calls.count()).toBe(0);
     stateService.currentState = $scope.STATE.PAUSED;
     $scope.setEditMode($scope.EDIT_MODE.ROTATE);
-    expect(stateService.setCurrentState.callCount).toBe(0);
+    expect(stateService.setCurrentState.calls.count()).toBe(0);
   });
 
   it('should call the right REST API for the SDF export process', function () {
     var exportSpy = jasmine.createSpy('export');
-    simulationSDFWorld.andCallFake(
+    simulationSDFWorld.and.callFake(
       function () {
         return {
-          export: exportSpy.andCallFake(function () {
+          export: exportSpy.and.callFake(function () {
           })
         };
       });
@@ -290,9 +290,9 @@ describe('Directive: environment-designer', function () {
 
   it('should create a new dummy anchor and click it when exporting the environment', function () {
     var exportSpy = jasmine.createSpy('export');
-    simulationSDFWorld.andCallFake(function () {
+    simulationSDFWorld.and.callFake(function () {
       return {
-        export: exportSpy.andCallFake(function (args, cb) {
+        export: exportSpy.and.callFake(function (args, cb) {
           cb({'sdf': 'dummysdf'});
         })
       };
@@ -303,7 +303,7 @@ describe('Directive: environment-designer', function () {
       click: jasmine.createSpy('click')
     };
 
-    spyOn(document, 'createElement').andCallFake(function () {
+    spyOn(document, 'createElement').and.callFake(function () {
       return dummyAnchorElement;
     });
 
@@ -335,11 +335,11 @@ describe('Directive: environment-designer', function () {
       jasmine.any(Function)
     );
     expect($scope.isSavingToCollab).toEqual(true);
-    backendInterfaceService.saveSDF.argsForCall[0][1]();
+    backendInterfaceService.saveSDF.calls.argsFor(0)[1]();
     expect($scope.isSavingToCollab).toBe(false);
     $scope.isSavingToCollab = true;
     spyOn(hbpDialogFactory, 'alert');
-    backendInterfaceService.saveSDF.argsForCall[0][2]();
+    backendInterfaceService.saveSDF.calls.argsFor(0)[2]();
     expect($scope.isSavingToCollab).toBe(false);
     expect(hbpDialogFactory.alert).toHaveBeenCalled();
   });

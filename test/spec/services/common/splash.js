@@ -28,7 +28,7 @@
       modal = _$modal_;
 
       modalInstance.close = jasmine.createSpy('close');
-      modal.open = jasmine.createSpy('open').andReturn(modalInstance);
+      modal.open = jasmine.createSpy('open').and.returnValue(modalInstance);
     }));
 
     it('should set spin to true', function () {
@@ -40,8 +40,8 @@
       expect(modal.open).toHaveBeenCalled();
       expect(modalInstance.close).not.toHaveBeenCalled();
 
-      modal.open.reset();
-      modalInstance.close.reset();
+      modal.open.calls.reset();
+      modalInstance.close.calls.reset();
 
       splash.open();
       expect(modal.open).toHaveBeenCalled();
@@ -70,7 +70,7 @@
 
       splash.open(true, callbackOnClose);
       splash.close();
-      expect(callbackOnClose.calls.length).toBe(2);
+      expect(callbackOnClose.calls.count()).toBe(2);
 
       splash.open(true, undefined);
       splash.close();
@@ -116,7 +116,7 @@
 
     it('should log if the message format in the callback is wrong', function () {
       // call the registered callback function
-      splash.setObserver.mostRecentCall.args[0]('wrong format');
+      splash.setObserver.calls.mostRecent().args[0]('wrong format');
       expect(log.error).toHaveBeenCalled();
     });
 
@@ -125,16 +125,16 @@
       scope.$apply = jasmine.createSpy('scope.$apply');
 
       var prepareSpiesAndSetUpTest = function(messageToTestWith) {
-        _.defer.reset();
-        scope.$apply.reset();
+        _.defer.calls.reset();
+        scope.$apply.calls.reset();
 
         // call the registered callback function
-        splash.setObserver.mostRecentCall.args[0](messageToTestWith);
+        splash.setObserver.calls.mostRecent().args[0](messageToTestWith);
         expect(_.defer).toHaveBeenCalled();
-        _.defer.mostRecentCall.args[0]();
+        _.defer.calls.mostRecent().args[0]();
 
         expect(scope.$apply).toHaveBeenCalled();
-        scope.$apply.mostRecentCall.args[0]();
+        scope.$apply.calls.mostRecent().args[0]();
       };
 
       prepareSpiesAndSetUpTest(exampleMessage);

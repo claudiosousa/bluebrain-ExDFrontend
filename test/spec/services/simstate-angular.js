@@ -25,7 +25,7 @@ describe('Services: simulation state', function () {
   beforeEach(module('simulationControlServices', function ($provide) {
     $provide.decorator('simulationState', function () {
       simulationStateSpy = jasmine.createSpy('simulationState');
-      return simulationStateSpy.andCallFake(function (s) {
+      return simulationStateSpy.and.callFake(function (s) {
         /* jshint unused:false */
         return {
           state: stateSpy,
@@ -39,15 +39,15 @@ describe('Services: simulation state', function () {
   beforeEach(module(function ($provide) {
     // Mock RosLib
     var roslibMock = {
-      getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo').andReturn(rosConnectionObject),
-      createStringTopic: jasmine.createSpy('createStringTopic').andReturn(returnedRosConnectionObject),
-      createTopic: jasmine.createSpy('createTopic').andReturn(returnedRosConnectionObject)
+      getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo').and.returnValue(rosConnectionObject),
+      createStringTopic: jasmine.createSpy('createStringTopic').and.returnValue(returnedRosConnectionObject),
+      createTopic: jasmine.createSpy('createTopic').and.returnValue(returnedRosConnectionObject)
     };
     $provide.value('roslib', roslibMock);
-    returnedRosConnectionObject.unsubscribe.reset();
-    returnedRosConnectionObject.removeAllListeners.reset();
-    returnedRosConnectionObject.subscribe.reset();
-    rosConnectionObject.close.reset();
+    returnedRosConnectionObject.unsubscribe.calls.reset();
+    returnedRosConnectionObject.removeAllListeners.calls.reset();
+    returnedRosConnectionObject.subscribe.calls.reset();
+    rosConnectionObject.close.calls.reset();
     var rosbridge = {
       topics: {
         spikes: '/mock_spike_topic',
@@ -63,7 +63,7 @@ describe('Services: simulation state', function () {
     };
     $provide.value('simulationInfo', simulationInfo);
     $provide.value('bbpConfig', {
-      get: jasmine.createSpy('get').andReturn(
+      get: jasmine.createSpy('get').and.returnValue(
         {
           'bbpce016': {
             gzweb: {
@@ -115,9 +115,9 @@ describe('Services: simulation state', function () {
   it('should unregister on stopListeningForStatusInformation', function () {
     stateService.Initialize();
     stateService.startListeningForStatusInformation();
-    returnedRosConnectionObject.unsubscribe.reset();
-    returnedRosConnectionObject.removeAllListeners.reset();
-    rosConnectionObject.close.reset();
+    returnedRosConnectionObject.unsubscribe.calls.reset();
+    returnedRosConnectionObject.removeAllListeners.calls.reset();
+    rosConnectionObject.close.calls.reset();
 
     stateService.stopListeningForStatusInformation();
     expect(returnedRosConnectionObject.unsubscribe).toHaveBeenCalled();
@@ -125,9 +125,9 @@ describe('Services: simulation state', function () {
     expect(rosConnectionObject.close).toHaveBeenCalled();
 
     // nothing is called a second time
-    returnedRosConnectionObject.unsubscribe.reset();
-    returnedRosConnectionObject.removeAllListeners.reset();
-    rosConnectionObject.close.reset();
+    returnedRosConnectionObject.unsubscribe.calls.reset();
+    returnedRosConnectionObject.removeAllListeners.calls.reset();
+    rosConnectionObject.close.calls.reset();
     stateService.stopListeningForStatusInformation();
     expect(returnedRosConnectionObject.unsubscribe).not.toHaveBeenCalled();
     expect(returnedRosConnectionObject.removeAllListeners).not.toHaveBeenCalled();
@@ -139,7 +139,7 @@ describe('Services: simulation state', function () {
     var messageCallback = jasmine.createSpy('messageCallback');
     stateService.Initialize();
     stateService.startListeningForStatusInformation();
-    var messageReceivedFunction = returnedRosConnectionObject.subscribe.mostRecentCall.args[0];
+    var messageReceivedFunction = returnedRosConnectionObject.subscribe.calls.mostRecent().args[0];
     stateService.addStateCallback(stateCallback);
     stateService.addMessageCallback(messageCallback);
 
@@ -150,8 +150,8 @@ describe('Services: simulation state', function () {
     expect(stateCallback).toHaveBeenCalledWith(STATE.STOPPED);
     expect(messageCallback).toHaveBeenCalledWith({state: STATE.STOPPED});
 
-    stateCallback.reset();
-    messageCallback.reset();
+    stateCallback.calls.reset();
+    messageCallback.calls.reset();
 
     //nothing is called when the state is the same
     stateService.currentState = STATE.STARTED;
@@ -159,8 +159,8 @@ describe('Services: simulation state', function () {
     expect(stateService.currentState).toBe(STATE.STARTED);
     expect(stateCallback).not.toHaveBeenCalled();
 
-    stateCallback.reset();
-    messageCallback.reset();
+    stateCallback.calls.reset();
+    messageCallback.calls.reset();
 
     //stateCallback is not called when there is no state
     stateService.currentState = STATE.STARTED;
@@ -169,15 +169,15 @@ describe('Services: simulation state', function () {
     expect(stateCallback).not.toHaveBeenCalled();
     expect(messageCallback).toHaveBeenCalled();
 
-    stateCallback.reset();
-    messageCallback.reset();
+    stateCallback.calls.reset();
+    messageCallback.calls.reset();
 
     //an error is logged when there is no valid JSON message
     messageReceivedFunction({ data: ''});
     expect(console.error).toHaveBeenCalled();
 
-    stateCallback.reset();
-    messageCallback.reset();
+    stateCallback.calls.reset();
+    messageCallback.calls.reset();
 
     //after unregister, nothing is called
     stateService.removeStateCallback(stateCallback);
@@ -187,14 +187,14 @@ describe('Services: simulation state', function () {
     expect(stateCallback).not.toHaveBeenCalled();
     expect(messageCallback).not.toHaveBeenCalled();
 
-    stateCallback.reset();
-    messageCallback.reset();
+    stateCallback.calls.reset();
+    messageCallback.calls.reset();
 
     //don't call undefined callbacks
     stateService.addStateCallback(undefined);
     stateService.addMessageCallback(undefined);
     stateService.currentState = STATE.STARTED;
-    console.error.reset();
+    console.error.calls.reset();
     messageReceivedFunction({ data: '{"state": "'+STATE.PAUSED+'"}'});
     expect(stateService.currentState).toBe(STATE.PAUSED);
     expect(console.error).not.toHaveBeenCalled();
@@ -211,19 +211,19 @@ describe('Services: simulation state', function () {
   });
 
   it('should avoid duplicate update requests', function () {
-    simulationStateSpy.reset();
+    simulationStateSpy.calls.reset();
     stateService.statePending = true;
     stateService.currentState = STATE.INITIALIZED;
     stateService.setCurrentState(STATE.PAUSED);
     expect(simulationStateSpy).not.toHaveBeenCalled();
 
-    simulationStateSpy.reset();
+    simulationStateSpy.calls.reset();
     stateService.statePending = true;
     stateService.currentState = STATE.INITIALIZED;
     stateService.setCurrentState(STATE.PAUSED);
     expect(simulationStateSpy).not.toHaveBeenCalled();
 
-    simulationStateSpy.reset();
+    simulationStateSpy.calls.reset();
     stateService.statePending = false;
     stateService.currentState = STATE.PAUSED;
     stateService.setCurrentState(STATE.PAUSED);
@@ -233,12 +233,12 @@ describe('Services: simulation state', function () {
   it('should ensure the state when calling ensureStateBeforeExecuting', function () {
     var myOwnFunction = jasmine.createSpy('myOwnFunction');
     //Create mock for the already tested function
-    stateService.setCurrentState = jasmine.createSpy('setCurrentState').andReturn({then: function(f){return f();}});
+    stateService.setCurrentState = jasmine.createSpy('setCurrentState').and.returnValue({then: function(f){return f();}});
     stateService.currentState = STATE.STARTED;
     stateService.ensureStateBeforeExecuting(STATE.STARTED, myOwnFunction);
     expect(myOwnFunction).toHaveBeenCalled();
 
-    myOwnFunction.reset();
+    myOwnFunction.calls.reset();
     stateService.currentState = STATE.STARTED;
     stateService.ensureStateBeforeExecuting(STATE.STOPPED, myOwnFunction);
     expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STOPPED);
@@ -250,7 +250,7 @@ describe('Services: simulation state', function () {
       success({'state':'FAKE_STATE_123'});
     };
 
-    simulationStateSpy.andCallFake(function (s) {
+    simulationStateSpy.and.callFake(function (s) {
       /* jshint unused:false */
       return {
         state: stateTestSpy,
@@ -266,7 +266,7 @@ describe('Services: simulation state', function () {
       error({'state':'FAKE_STATE_123'});
     };
 
-    simulationStateSpy.andCallFake(function (s) {
+    simulationStateSpy.and.callFake(function (s) {
       /* jshint unused:false */
       return {
         state: stateTestSpy,
@@ -281,7 +281,7 @@ describe('Services: simulation state', function () {
     var updateTestSpy = function (parameters, nextParameters,  success) {
       success({'state':nextParameters.state});
     };
-    simulationStateSpy.andCallFake(function (s) {
+    simulationStateSpy.and.callFake(function (s) {
       /* jshint unused:false */
       return {
         state: stateSpy,
@@ -296,7 +296,7 @@ describe('Services: simulation state', function () {
     var updateTestSpy = function (parameters, nextParameters,  success, error) {
       error({'state':nextParameters.state});
     };
-    simulationStateSpy.andCallFake(function (s) {
+    simulationStateSpy.and.callFake(function (s) {
       /* jshint unused:false */
       return {
         state: stateSpy,

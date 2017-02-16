@@ -94,19 +94,19 @@ describe('FirstPersonControls', function () {
 
     domElement = document.createElement('dummyElement');
     domElementForKeyBindings = document.createElement('keyBindingDummyElement');
-    spyOn(domElement, 'addEventListener').andCallThrough();
-    spyOn(domElement, 'setAttribute').andCallThrough();
-    spyOn(domElementForKeyBindings, 'addEventListener').andCallThrough();
+    spyOn(domElement, 'addEventListener').and.callThrough();
+    spyOn(domElement, 'setAttribute').and.callThrough();
+    spyOn(domElementForKeyBindings, 'addEventListener').and.callThrough();
 
     firstPersonControls = new THREE.FirstPersonControls(camera, domElement, domElementForKeyBindings);
-    spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
-    spyOn(firstPersonControls, 'onKeyUp').andCallThrough();
-    spyOn(firstPersonControls, 'onMouseDown').andCallThrough();
-    spyOn(firstPersonControls, 'onMouseUp').andCallThrough();
-    spyOn(firstPersonControls, 'onMouseMove').andCallThrough();
-    spyOn(firstPersonControls, 'onTouchStart').andCallThrough();
-    spyOn(firstPersonControls, 'onTouchMove').andCallThrough();
-    spyOn(firstPersonControls, 'onTouchEnd').andCallThrough();
+    spyOn(firstPersonControls, 'onKeyDown').and.callThrough();
+    spyOn(firstPersonControls, 'onKeyUp').and.callThrough();
+    spyOn(firstPersonControls, 'onMouseDown').and.callThrough();
+    spyOn(firstPersonControls, 'onMouseUp').and.callThrough();
+    spyOn(firstPersonControls, 'onMouseMove').and.callThrough();
+    spyOn(firstPersonControls, 'onTouchStart').and.callThrough();
+    spyOn(firstPersonControls, 'onTouchMove').and.callThrough();
+    spyOn(firstPersonControls, 'onTouchEnd').and.callThrough();
   });
 
   it('should get initialized', inject(function () {
@@ -124,15 +124,15 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should register all relevant event listeners', inject(function () {
-    expect(domElement.addEventListener.argsForCall[0][0]).toMatch(/contextmenu/);
-    expect(domElement.addEventListener.argsForCall[1][0]).toMatch(/mousemove/);
-    expect(domElement.addEventListener.argsForCall[2][0]).toMatch(/mousedown/);
-    expect(domElement.addEventListener.argsForCall[3][0]).toMatch(/mouseup/);
-    expect(domElement.addEventListener.argsForCall[4][0]).toMatch(/touchstart/);
-    expect(domElement.addEventListener.argsForCall[5][0]).toMatch(/touchmove/);
-    expect(domElement.addEventListener.argsForCall[6][0]).toMatch(/touchend/);
-    expect(domElementForKeyBindings.addEventListener.argsForCall[0][0]).toMatch(/keydown/);
-    expect(domElementForKeyBindings.addEventListener.argsForCall[1][0]).toMatch(/keyup/);
+    expect(domElement.addEventListener.calls.argsFor(0)[0]).toMatch(/contextmenu/);
+    expect(domElement.addEventListener.calls.argsFor(1)[0]).toMatch(/mousemove/);
+    expect(domElement.addEventListener.calls.argsFor(2)[0]).toMatch(/mousedown/);
+    expect(domElement.addEventListener.calls.argsFor(3)[0]).toMatch(/mouseup/);
+    expect(domElement.addEventListener.calls.argsFor(4)[0]).toMatch(/touchstart/);
+    expect(domElement.addEventListener.calls.argsFor(5)[0]).toMatch(/touchmove/);
+    expect(domElement.addEventListener.calls.argsFor(6)[0]).toMatch(/touchend/);
+    expect(domElementForKeyBindings.addEventListener.calls.argsFor(0)[0]).toMatch(/keydown/);
+    expect(domElementForKeyBindings.addEventListener.calls.argsFor(1)[0]).toMatch(/keyup/);
   }));
 
   it('s for W/A/S/D/R/F/Q', inject(function() {
@@ -143,7 +143,7 @@ describe('FirstPersonControls', function () {
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyR');
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyF');
 
-    //expect(firstPersonControls.onKeyDown.callCount).toEqual(7);
+    //expect(firstPersonControls.onKeyDown.calls.count()).toEqual(7);
     expect(firstPersonControls.moveForward).toBe(true);
     expect(firstPersonControls.moveLeft).toBe(true);
     expect(firstPersonControls.moveBackward).toBe(true);
@@ -172,7 +172,7 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle key events for up/left/down/right/pageup/pagedown', inject(function() {
-    //spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
+    //spyOn(firstPersonControls, 'onKeyDown').and.callThrough();
 
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'ArrowUp');
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'ArrowLeft');
@@ -204,7 +204,7 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle key events for up/left/down/right/pageup/pagedown with Shift modifier', inject(function() {
-    //spyOn(firstPersonControls, 'onKeyDown').andCallThrough();
+    //spyOn(firstPersonControls, 'onKeyDown').and.callThrough();
 
     triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'ArrowUp');
     triggerKeyEventWithShift(domElementForKeyBindings, 'keydown', 'ArrowLeft');
@@ -356,7 +356,7 @@ describe('FirstPersonControls', function () {
   }));
 
   it('should handle mousedown events', inject(function() {
-    spyOn(firstPersonControls, 'updateSphericalAngles').andCallThrough();
+    spyOn(firstPersonControls, 'updateSphericalAngles').and.callThrough();
 
     camera.position.copy(new THREE.Vector3(0,0,0));
     camera.lookAt(new THREE.Vector3(1,0,0));
@@ -430,7 +430,7 @@ describe('FirstPersonControls', function () {
   // Touch with one finger
   //#######################
   it('should handle touchstart events', inject(function() {
-    spyOn(firstPersonControls, 'updateSphericalAngles').andCallThrough();
+    spyOn(firstPersonControls, 'updateSphericalAngles').and.callThrough();
 
     camera.position.copy(new THREE.Vector3(0,0,0));
     camera.lookAt(new THREE.Vector3(1,0,0));
@@ -489,7 +489,7 @@ describe('FirstPersonControls', function () {
   // Touch with two fingers
   //#######################
   it('should handle touchstart events 2 touches', inject(function() {
-    spyOn(firstPersonControls, 'updateSphericalAngles').andCallThrough();
+    spyOn(firstPersonControls, 'updateSphericalAngles').and.callThrough();
 
     camera.position.copy(new THREE.Vector3(0,0,0));
     camera.lookAt(new THREE.Vector3(1,0,0));

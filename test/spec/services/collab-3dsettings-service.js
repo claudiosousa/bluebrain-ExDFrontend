@@ -49,7 +49,7 @@ describe('Services: collab-3dsettings-service', function ()
 
   it('should load 3D settings', function ()
   {
-    spyOn(simulationConfigServiceMock, 'loadConfigFile').andCallThrough();
+    spyOn(simulationConfigServiceMock, 'loadConfigFile').and.callThrough();
     collab3DSettingsService.loadSettings();
     expect(simulationConfigServiceMock.loadConfigFile).toHaveBeenCalled();
   });
@@ -57,7 +57,7 @@ describe('Services: collab-3dsettings-service', function ()
   it('should save to collab 3D settings', function ()
   {
 
-    spyOn(simulationConfigServiceMock, 'saveConfigFile').andCallThrough();
+    spyOn(simulationConfigServiceMock, 'saveConfigFile').and.callThrough();
     collab3DSettingsService.saveSettings();
     expect(simulationConfigServiceMock.saveConfigFile).toHaveBeenCalled();
   });

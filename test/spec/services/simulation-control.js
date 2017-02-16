@@ -69,7 +69,7 @@ describe('Services: server-info-service', function () {
     var userInfo4321 = {
       displayName: 'John Dont'
     };
-    spyOn(hbpIdentityUserDirectory, 'get').andCallFake(function(ownerID) {
+    spyOn(hbpIdentityUserDirectory, 'get').and.callFake(function(ownerID) {
       var returnedPromise;
       switch(ownerID[0]) {
         case 'default-owner':
@@ -146,9 +146,9 @@ describe('experimentSimulationService', function () {
 
     $provide.value('simulationConfigService',
         {
-          initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+          initConfigFiles: jasmine.createSpy('initConfigFiles').and.returnValue(
             {
-              then: jasmine.createSpy('then').andReturn(
+              then: jasmine.createSpy('then').and.returnValue(
 
                   {catch: jasmine.createSpy('catch') }
                 )
@@ -193,7 +193,7 @@ describe('experimentSimulationService', function () {
     statusListenerSubscribe({ data: JSON.stringify({ progress: { done: true } }) });
 
     $httpBackend.flush();
-    expect(progressNotification.mostRecentCall.args).toMatch([{ main: 'Simulation initialized.' }]);
+    expect(progressNotification.calls.mostRecent().args).toEqual([{ main: 'Simulation initialized.' }]);
 
     expect(unsubscribeFn).toHaveBeenCalled();
     expect(removeAllListenersFn).toHaveBeenCalled();
@@ -216,8 +216,8 @@ describe('Services: error handling', function () {
   beforeEach(module('experimentServices'));
 
   var roslibMock = {};
-  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').andReturn({ subscribe: function(){} });
-  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').andReturn({});
+  roslibMock.createStringTopic = jasmine.createSpy('createStringTopic').and.returnValue({ subscribe: function(){} });
+  roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({});
 
   var serverErrorMock = jasmine.createSpy('serverError');
   serverErrorMock.displayHTTPError = jasmine.createSpy('displayHTTPError');
@@ -227,9 +227,9 @@ describe('Services: error handling', function () {
 
     $provide.value('simulationConfigService',
         {
-          initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+          initConfigFiles: jasmine.createSpy('initConfigFiles').and.returnValue(
             {
-              then: jasmine.createSpy('then').andReturn(
+              then: jasmine.createSpy('then').and.returnValue(
 
                   {catch: jasmine.createSpy('catch') }
                 )
@@ -244,7 +244,7 @@ describe('Services: error handling', function () {
 
     httpBackend = $httpBackend;
     serverError = _serverError_;
-    serverError.displayHTTPError.reset();
+    serverError.displayHTTPError.calls.reset();
     simulationControl = _simulationControl_;
     simulationGenerator = _simulationGenerator_;
     simulationState = _simulationState_;
@@ -267,24 +267,24 @@ describe('Services: error handling', function () {
     simulationControl(serverURL).simulation(simulationID);
     httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id);
     httpBackend.flush();
-    expect(serverError.displayHTTPError.callCount).toBe(1);
-    response = serverError.displayHTTPError.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.calls.count()).toBe(1);
+    response = serverError.displayHTTPError.calls.mostRecent().args[0];
     expect(response.status).toBe(400);
-    serverError.displayHTTPError.reset();
+    serverError.displayHTTPError.calls.reset();
 
     simulationState(serverURL).state(simulationID);
     httpBackend.expectGET(serverURL + '/simulation/' + simulationID.sim_id + '/state');
     httpBackend.flush();
-    expect(serverError.displayHTTPError.callCount).toBe(1);
-    response = serverError.displayHTTPError.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.calls.count()).toBe(1);
+    response = serverError.displayHTTPError.calls.mostRecent().args[0];
     expect(response.status).toBe(400);
-    serverError.displayHTTPError.reset();
+    serverError.displayHTTPError.calls.reset();
 
     objectControl(serverURL).updateMaterial(simulationID, {});
     httpBackend.expectPUT(serverURL + '/simulation/' + simulationID.sim_id + '/interaction/material_change', {});
     httpBackend.flush();
-    expect(serverError.displayHTTPError.callCount).toBe(1);
-    response = serverError.displayHTTPError.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.calls.count()).toBe(1);
+    response = serverError.displayHTTPError.calls.mostRecent().args[0];
     expect(response.status).toBe(500);
   });
 });
@@ -303,17 +303,17 @@ describe('Services: experimentSimulationService (Stopping the simulation)', func
 
   beforeEach(module(function ($provide) {
     $provide.value('roslib', {});
-    var simulationStateMock = jasmine.createSpy('simulationState').andReturn(
+    var simulationStateMock = jasmine.createSpy('simulationState').and.returnValue(
       {
-        state: jasmine.createSpy('state').andReturn({ $promise: { then: jasmine.createSpy('then') } }),
-        update: jasmine.createSpy('update').andReturn({ $promise: { then: jasmine.createSpy('then') } })
+        state: jasmine.createSpy('state').and.returnValue({ $promise: { then: jasmine.createSpy('then') } }),
+        update: jasmine.createSpy('update').and.returnValue({ $promise: { then: jasmine.createSpy('then') } })
       }
     );
     $provide.value('simulationState', simulationStateMock);
     $provide.value('experimentProxyService',
-      { getServerConfig: jasmine.createSpy('getServerConfig').andReturn(
-        { then: jasmine.createSpy('then').andReturn(
-          { then: jasmine.createSpy('then').andReturn(
+      { getServerConfig: jasmine.createSpy('getServerConfig').and.returnValue(
+        { then: jasmine.createSpy('then').and.returnValue(
+          { then: jasmine.createSpy('then').and.returnValue(
             { catch: jasmine.createSpy('catch') })
           })
         })
@@ -322,9 +322,9 @@ describe('Services: experimentSimulationService (Stopping the simulation)', func
 
     $provide.value('simulationConfigService',
       {
-        initConfigFiles: jasmine.createSpy('initConfigFiles').andReturn(
+        initConfigFiles: jasmine.createSpy('initConfigFiles').and.returnValue(
           {
-            then: jasmine.createSpy('then').andReturn(
+            then: jasmine.createSpy('then').and.returnValue(
 
               { catch: jasmine.createSpy('catch') }
             )
@@ -355,33 +355,33 @@ describe('Services: experimentSimulationService (Stopping the simulation)', func
     };
     experimentSimulationService.stopExperimentOnServer(simulation);
     var serverConfig = { gzweb: { 'nrp-services': {} } };
-    experimentProxyService.getServerConfig(serverConfig).then.mostRecentCall.args[0](serverConfig);
-    var callback = simulationState().state().$promise.then.mostRecentCall.args[0];
+    experimentProxyService.getServerConfig(serverConfig).then.calls.mostRecent().args[0](serverConfig);
+    var callback = simulationState().state().$promise.then.calls.mostRecent().args[0];
 
     // Should call $q.reject if the callback argument is not an object of the form { state: someObject }
     spyOn(q, 'reject');
     callback();
-    expect(q.reject.callCount).toBe(1);
+    expect(q.reject.calls.count()).toBe(1);
     callback({ state: undefined });
-    expect(q.reject.callCount).toBe(2);
+    expect(q.reject.calls.count()).toBe(2);
     callback({ state:  STATE.CREATED });
-    expect(q.reject.callCount).toBe(2);
+    expect(q.reject.calls.count()).toBe(2);
 
    // Should pause and stop the simulation if the state is CREATED
    var updateCallback = simulationState().update;
-   expect(updateCallback.mostRecentCall.args[1].state).toBe(STATE.INITIALIZED);
-   expect(updateCallback().$promise.then.mostRecentCall.args[0]).toBeDefined();
-   var cascadingUpdateCallback = updateCallback().$promise.then.mostRecentCall.args[0];
+   expect(updateCallback.calls.mostRecent().args[1].state).toBe(STATE.INITIALIZED);
+   expect(updateCallback().$promise.then.calls.mostRecent().args[0]).toBeDefined();
+   var cascadingUpdateCallback = updateCallback().$promise.then.calls.mostRecent().args[0];
    cascadingUpdateCallback();
-   expect(updateCallback.mostRecentCall.args[1].state).toBe(STATE.STOPPED);
-   updateCallback.reset();
+   expect(updateCallback.calls.mostRecent().args[1].state).toBe(STATE.STOPPED);
+   updateCallback.calls.reset();
 
    // Should stop the simulation if the state is STARTED, PAUSED or HALTED
    var states = [STATE.STARTED, STATE.PAUSED, STATE.HALTED];
    for (var i = 0; i < states.length; i++) {
-     updateCallback.reset();
+     updateCallback.calls.reset();
      callback({ state:  states[i] });
-     expect(updateCallback.mostRecentCall.args[1].state).toBe(STATE.STOPPED);
+     expect(updateCallback.calls.mostRecent().args[1].state).toBe(STATE.STOPPED);
    }
   });
 });
@@ -406,7 +406,7 @@ describe('Factory: simulationCreationInterceptor', function () {
       'oops': true
     };
 
-    spyOn(serverError, 'displayHTTPError').andReturn();
+    spyOn(serverError, 'displayHTTPError').and.returnValue();
     _.forEach(errorMessagesAndFatality, function (fatal, msg) {
       simulationCreationInterceptor({ data: msg })
         .catch(function (err) {

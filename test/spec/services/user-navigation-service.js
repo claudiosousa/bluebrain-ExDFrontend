@@ -76,8 +76,8 @@ describe('Services: userNavigationService', function () {
     $provide.value('userProfile', userProfileMock);
 
     var hbpIdentityUserDirectoryPromiseMock = {
-      //then: jasmine.createSpy('then').andReturn({ then: jasmine.createSpy('then')})};
-      then: jasmine.createSpy('then').andCallFake(function (callback) {
+      //then: jasmine.createSpy('then').and.returnValue({ then: jasmine.createSpy('then')})};
+      then: jasmine.createSpy('then').and.callFake(function (callback) {
         //userNavigationService.setUserData(hbpIdentityUserDirectoryPromiseObject.userProfileMock);
         callback(userProfileMock);
       })
@@ -85,7 +85,7 @@ describe('Services: userNavigationService', function () {
     $provide.value('hbpIdentityUserDirectoryPromise', hbpIdentityUserDirectoryPromiseMock);
 
     var hbpIdentityUserDirectoryMock = {
-      getCurrentUser: jasmine.createSpy('getCurrentUser').andReturn(hbpIdentityUserDirectoryPromiseMock)
+      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(hbpIdentityUserDirectoryPromiseMock)
     };
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
 
@@ -123,23 +123,23 @@ describe('Services: userNavigationService', function () {
       roslib = _roslib_;
     });
 
-    spyOn(THREE, 'FirstPersonControls').andReturn(firstPersonControls);
-    spyOn(THREE, 'AvatarControls').andReturn(avatarControls);
+    spyOn(THREE, 'FirstPersonControls').and.returnValue(firstPersonControls);
+    spyOn(THREE, 'AvatarControls').and.returnValue(avatarControls);
 
-    spyOn(gz3d.scene.scene, 'add').andCallThrough();
+    spyOn(gz3d.scene.scene, 'add').and.callThrough();
 
-    spyOn(camera.position, 'set').andCallThrough();
-    spyOn(camera.position, 'copy').andCallThrough();
-    spyOn(camera, 'lookAt').andCallThrough();
-    spyOn(camera, 'updateMatrixWorld').andCallThrough();
-    spyOn(camera, 'getWorldPosition').andCallThrough();
-    spyOn(camera, 'getWorldDirection').andCallThrough();
+    spyOn(camera.position, 'set').and.callThrough();
+    spyOn(camera.position, 'copy').and.callThrough();
+    spyOn(camera, 'lookAt').and.callThrough();
+    spyOn(camera, 'updateMatrixWorld').and.callThrough();
+    spyOn(camera, 'getWorldPosition').and.callThrough();
+    spyOn(camera, 'getWorldDirection').and.callThrough();
 
-    spyOn(userNavigationService, 'removeAvatar').andCallThrough();
-    spyOn(userNavigationService, 'createAvatar').andCallThrough();
-    spyOn(userNavigationService, 'setModeFreeCamera').andCallThrough();
-    spyOn(userNavigationService, 'setUserData').andCallThrough();
-    spyOn(userNavigationService, 'saveCurrentPose').andCallThrough();
+    spyOn(userNavigationService, 'removeAvatar').and.callThrough();
+    spyOn(userNavigationService, 'createAvatar').and.callThrough();
+    spyOn(userNavigationService, 'setModeFreeCamera').and.callThrough();
+    spyOn(userNavigationService, 'setUserData').and.callThrough();
+    spyOn(userNavigationService, 'saveCurrentPose').and.callThrough();
   });
 
 
@@ -224,7 +224,7 @@ describe('Services: userNavigationService', function () {
   });
 
   it(' - getUserAvatar()', function () {
-    spyOn(gz3d.scene.scene, 'traverse').andCallThrough();
+    spyOn(gz3d.scene.scene, 'traverse').and.callThrough();
 
     // test for existing avatar
     var avatarName = 'avatarMock';
@@ -255,7 +255,7 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.avatarControls.setPose).toHaveBeenCalledWith(userNavigationService.defaultPosition, userNavigationService.defaultLookAt);
     expect(gz3d.gui.emitter.emit).toHaveBeenCalledWith('entityCreated', jasmine.any(Object), userNavigationService.avatarModelPathNoCollision);
 
-    THREE.AvatarControls.reset();
+    THREE.AvatarControls.calls.reset();
     userNavigationService.currentPosition = new THREE.Vector3();
     userNavigationService.currentDirection = new THREE.Vector3();
     userNavigationService.currentLookAt = new THREE.Vector3();
@@ -270,7 +270,7 @@ describe('Services: userNavigationService', function () {
   });
 
   it(' - initAvatar()', function () {
-    spyOn(userNavigationService, 'getUserAvatar').andCallThrough();
+    spyOn(userNavigationService, 'getUserAvatar').and.callThrough();
     userNavigationService.freeCameraControls = firstPersonControls;
     userNavigationService.avatarControls = avatarControls;
     userNavigationService.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
@@ -299,7 +299,7 @@ describe('Services: userNavigationService', function () {
   });
 
   it(' - removeAvatar()', function () {
-    spyOn(userNavigationService, 'getUserAvatar').andCallThrough();
+    spyOn(userNavigationService, 'getUserAvatar').and.callThrough();
     // add avatar
     var avatarName = 'avatarMock';
     userNavigationService.avatarObjectName = avatar.name = avatarName;
@@ -339,9 +339,9 @@ describe('Services: userNavigationService', function () {
     camera.updateMatrixWorld();
     var cameraWorldPosition = camera.getWorldPosition();
     var cameraWorldDirection = camera.getWorldDirection();
-    camera.updateMatrixWorld.reset();
-    camera.getWorldPosition.reset();
-    camera.getWorldDirection.reset();
+    camera.updateMatrixWorld.calls.reset();
+    camera.getWorldPosition.calls.reset();
+    camera.getWorldDirection.calls.reset();
 
     userNavigationService.userCamera = camera;
     userNavigationService.saveCurrentPose();

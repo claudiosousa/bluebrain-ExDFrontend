@@ -50,13 +50,13 @@
         category: 'widget'
       });
       expect(promiseMock).toHaveBeenCalled();
-      expect(promiseMock.callCount).toBe(1);
+      expect(promiseMock.calls.count()).toBe(1);
 
-      var callback = promiseMock.mostRecentCall.args[0];
+      var callback = promiseMock.calls.mostRecent().args[0];
       callback(userMock);
       expect(analyticsMock.eventTrack).toHaveBeenCalled();
-      expect(analyticsMock.eventTrack.callCount).toBe(1);
-      var eventTrackArgs = analyticsMock.eventTrack.argsForCall[0];
+      expect(analyticsMock.eventTrack.calls.count()).toBe(1);
+      var eventTrackArgs = analyticsMock.eventTrack.calls.argsFor(0);
       expect(eventTrackArgs[0]).toBe('open-tab');
       expect(eventTrackArgs[1].category).toBe('widget');
       expect(eventTrackArgs[1].label).toBe('elvis-presse-les');
@@ -68,9 +68,9 @@
         category: 'widget',
         value: false
       });
-      var callback = promiseMock.mostRecentCall.args[0];
+      var callback = promiseMock.calls.mostRecent().args[0];
       callback(userMock);
-      var eventTrackArgs = analyticsMock.eventTrack.argsForCall[0];
+      var eventTrackArgs = analyticsMock.eventTrack.calls.argsFor(0);
       expect(eventTrackArgs[1].value).toBe(0);
     });
 
@@ -79,28 +79,28 @@
         category: 'widget',
         value: true
       });
-      var callback = promiseMock.mostRecentCall.args[0];
+      var callback = promiseMock.calls.mostRecent().args[0];
       callback(userMock);
-      var eventTrackArgs = analyticsMock.eventTrack.argsForCall[0];
+      var eventTrackArgs = analyticsMock.eventTrack.calls.argsFor(0);
       expect(eventTrackArgs[1].value).toBe(1);
     });
 
     it('Should track duration of an event', function() {
-      moment = jasmine.createSpy('moment').andReturn(10 * 1000);
+      moment = jasmine.createSpy('moment').and.returnValue(10 * 1000);
       nrpAnalytics.tickDurationEvent('widget-is-loading');
       expect(moment).toHaveBeenCalled();
-      expect(moment.callCount).toBe(1);
+      expect(moment.calls.count()).toBe(1);
 
-      moment = jasmine.createSpy('moment').andReturn(52 * 1000);
+      moment = jasmine.createSpy('moment').and.returnValue(52 * 1000);
       nrpAnalytics.durationEventTrack('widget-is-loading', {
         category: 'UI'
       });
       expect(moment).toHaveBeenCalled();
-      expect(moment.callCount).toBe(1);
+      expect(moment.calls.count()).toBe(1);
 
-      var callback = promiseMock.mostRecentCall.args[0];
+      var callback = promiseMock.calls.mostRecent().args[0];
       callback(userMock);
-      var eventTrackArgs = analyticsMock.eventTrack.argsForCall[0];
+      var eventTrackArgs = analyticsMock.eventTrack.calls.argsFor(0);
 
       expect(eventTrackArgs[0]).toBe('widget-is-loading');
       expect(eventTrackArgs[1].category).toBe('UI');

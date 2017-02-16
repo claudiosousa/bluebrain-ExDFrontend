@@ -19,7 +19,7 @@ describe('Services: nrp-versions', function () {
     serverError = _serverError_;
     nrpBackendVersions = _nrpBackendVersions_;
     nrpFrontendVersion = _nrpFrontendVersion_;
-    serverError.displayHTTPError.reset();
+    serverError.displayHTTPError.calls.reset();
   }));
 
   afterEach(function() {
@@ -31,7 +31,7 @@ describe('Services: nrp-versions', function () {
     nrpBackendVersions(serverURL).get();
     httpBackend.expectGET(serverURL + '/version').respond(200);
     httpBackend.flush();
-    expect(serverError.displayHTTPError.callCount).toBe(0);
+    expect(serverError.displayHTTPError.calls.count()).toBe(0);
   });
 
   it('should parse properly the versions', function() {
@@ -48,7 +48,7 @@ describe('Services: nrp-versions', function () {
     expect(response.software_b).toEqual(softwareBVersion); // jshint ignore:line
     expect(response.software_c).toEqual(softwareCVersion); // jshint ignore:line
     expect(response.software_b_components).toEqual({ major : '1', minor : '3', patch : '4', dev : 'dev4'}); // jshint ignore:line
-    expect(response.software_a_components).toEqual({ major : '1', minor : '2', patch : '3'}); // jshint ignore:line
+    expect(response.software_a_components).toEqual(jasmine.objectContaining({ major : '1', minor : '2', patch : '3'})); // jshint ignore:line
     expect(response.software_c_components).not.toBeDefined(); // jshint ignore:line
 
   });
@@ -57,8 +57,8 @@ describe('Services: nrp-versions', function () {
     var response = nrpBackendVersions(serverURL).get();
     httpBackend.expectGET(serverURL + '/version').respond(400);
     httpBackend.flush();
-    expect(serverError.displayHTTPError.callCount).toBe(1);
-    response = serverError.displayHTTPError.mostRecentCall.args[0];
+    expect(serverError.displayHTTPError.calls.count()).toBe(1);
+    response = serverError.displayHTTPError.calls.mostRecent().args[0];
     expect(response.status).toBe(400);
    });
 });

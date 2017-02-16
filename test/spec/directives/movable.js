@@ -19,7 +19,7 @@ describe('Directive: Movable', function () {
       height: '100px'
     });
     elementDOM = element[0];
-    elementDOM.getBoundingClientRect = jasmine.createSpy('getBoundingClientRect').andReturn({
+    elementDOM.getBoundingClientRect = jasmine.createSpy('getBoundingClientRect').and.returnValue({
       left: parseInt(elementDOM.style.left, 10),
       top: parseInt(elementDOM.style.top, 10)
     });

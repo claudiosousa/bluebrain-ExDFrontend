@@ -19,7 +19,7 @@ describe('Directive: transferFunctionEditorButtons', function () {
     $rootScope.$digest();
     renderContainer.find('button').first().click();
     expect($rootScope.create).toHaveBeenCalled();
-    expect($rootScope.create.mostRecentCall.args[0]).toBeFalsy();
+    expect($rootScope.create.calls.mostRecent().args[0]).toBeFalsy();
   });
 
   it('should be able to create TFs at the end', function () {
@@ -27,6 +27,6 @@ describe('Directive: transferFunctionEditorButtons', function () {
     $rootScope.$digest();
     renderContainer.find('button').first().click();
     expect($rootScope.create).toHaveBeenCalled();
-    expect($rootScope.create.mostRecentCall.args[0]).toBeTruthy();
+    expect($rootScope.create.calls.mostRecent().args[0]).toBeTruthy();
   });
 });

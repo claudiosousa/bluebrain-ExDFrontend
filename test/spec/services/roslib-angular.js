@@ -9,20 +9,20 @@ describe('Services: roslib-angular', function () {
   // Unfortunately we have to mock a global variable here.
   var mockedOn = jasmine.createSpy('on');
   window.ROSLIB = {
-    Ros: jasmine.createSpy('Ros').andReturn({ on: mockedOn }),
-    PhoenixRos: jasmine.createSpy('PhoenixRos').andReturn({ on: mockedOn }),
+    Ros: jasmine.createSpy('Ros').and.returnValue({ on: mockedOn }),
+    PhoenixRos: jasmine.createSpy('PhoenixRos').and.returnValue({ on: mockedOn }),
     Topic: jasmine.createSpy('Topic')
   };
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(inject(function(_roslib_){
     roslib = _roslib_;
-    mockedOn.reset();
+    mockedOn.calls.reset();
     spyOn(console, 'log');
     spyOn(console, 'error');
     var mockToken = '[{"access_token":"mockaccesstoken","token_type":"Bearer","state":"mockstate","expires_in":"172799","id_token":"mockidtoken","expires":1432803024,"scopes":["openid"]}]';
     window.localStorage = {};
-    window.localStorage.getItem = jasmine.createSpy('getItem').andReturn(mockToken);
+    window.localStorage.getItem = jasmine.createSpy('getItem').and.returnValue(mockToken);
   }));
 
   it('should create a connection if there is none for this URL currently', function() {
@@ -32,22 +32,22 @@ describe('Services: roslib-angular', function () {
   });
 
   it('should create a dummy token if localStorage token is malformed or absent', function() {
-    window.localStorage.getItem.reset();
-    window.ROSLIB.PhoenixRos.reset();
-    window.localStorage.getItem = jasmine.createSpy('getItem').andReturn(undefined);
+    window.localStorage.getItem.calls.reset();
+    window.ROSLIB.PhoenixRos.calls.reset();
+    window.localStorage.getItem = jasmine.createSpy('getItem').and.returnValue(undefined);
     roslib.getOrCreateConnectionTo(testURL);
     expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
     expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=no-token'});
-    window.localStorage.getItem.reset();
-    window.localStorage.getItem = jasmine.createSpy('getItem').andReturn([{}]);
+    window.localStorage.getItem.calls.reset();
+    window.localStorage.getItem = jasmine.createSpy('getItem').and.returnValue([{}]);
     roslib.getOrCreateConnectionTo(testURL);
     expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
     expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=malformed-token'});
   });
 
   it('should not use token if in full local mode (user forced)', function() {
-    window.localStorage.getItem.reset();
-    window.ROSLIB.PhoenixRos.reset();
+    window.localStorage.getItem.calls.reset();
+    window.ROSLIB.PhoenixRos.calls.reset();
     window.bbpConfig.localmode.forceuser = true;
     roslib.getOrCreateConnectionTo(testURL);
     expect(localStorage.getItem).not.toHaveBeenCalled();

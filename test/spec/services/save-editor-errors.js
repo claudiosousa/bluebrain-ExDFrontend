@@ -14,18 +14,18 @@ describe('Services: saveErrorsService', function () {
   beforeEach(module(function ($provide) {
 
     tempFileService = {
-      saveDirtyData: jasmine.createSpy('saveDirtyData').andCallFake(function () { return $q.when(); }),
-      checkSavedWork: jasmine.createSpy('checkSavedWork').andCallFake(function(){return $q.when(); }),
+      saveDirtyData: jasmine.createSpy('saveDirtyData').and.callFake(function () { return $q.when(); }),
+      checkSavedWork: jasmine.createSpy('checkSavedWork').and.callFake(function(){return $q.when(); }),
       removeSavedWork: jasmine.createSpy('removeSavedWork'),
     };
 
     collabFolderAPIService = {
-      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').andCallFake(function () { return $q.when(CONTEXT_ID); }),
-      getFolderFile: jasmine.createSpy('getFolderFile').andCallFake(function () {
+      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').and.callFake(function () { return $q.when(CONTEXT_ID); }),
+      getFolderFile: jasmine.createSpy('getFolderFile').and.callFake(function () {
         return $q.when(previouslySavedFile !== undefined ? { _createdBy: 'userid' , _uuid: 'uuid'} : null);
       }),
       uploadEntity: jasmine.createSpy('uploadEntity'),
-      downloadFile: jasmine.createSpy('downloadFile').andCallFake(function () { return $q.when(previouslySavedFile); })
+      downloadFile: jasmine.createSpy('downloadFile').and.callFake(function () { return $q.when(previouslySavedFile); })
     };
     stateParams = { ctx: CONTEXT_ID };
 
@@ -92,7 +92,7 @@ describe('Services: saveErrorsService', function () {
     expect(tempFileService.checkSavedWork).toHaveBeenCalledWith(SAVE_FILE, obj);
     $rootScope.$digest();
 
-    tempFileService.checkSavedWork.reset();
+    tempFileService.checkSavedWork.calls.reset();
     saveErrorsService.getErrorSavedWork();
     expect(tempFileService.checkSavedWork).not.toHaveBeenCalled();
     $rootScope.$digest();

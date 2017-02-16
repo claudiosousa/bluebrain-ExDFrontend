@@ -82,7 +82,7 @@ describe('Directive: brainvisualizer', function ()
     $compile)
   {
     window.BRAIN3D = {
-      MainView: jasmine.createSpy('MainView').andReturn({setPaused: function(p){_$rootScope_.pausedState = p;},updatePopulationVisibility:angular.noop  })
+      MainView: jasmine.createSpy('MainView').and.returnValue({setPaused: function(p){_$rootScope_.pausedState = p;},updatePopulationVisibility:angular.noop  })
     };
     $rootScope = _$rootScope_;
     element = $compile('<brainvisualizer></brainvisualizer>')($rootScope);
