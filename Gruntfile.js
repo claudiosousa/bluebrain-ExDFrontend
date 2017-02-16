@@ -304,6 +304,7 @@ module.exports = function(grunt) {
                     '!<%= yeoman.dist %>/img/common/intro-get-started.png',
                     '!<%= yeoman.dist %>/img/common/intro-bg.jpg',
                     '!<%= yeoman.dist %>/img/3denv/**/*.{png,jpg,jpeg,gif,webp,svg}',
+                    '!<%= yeoman.dist %>/img/brainvisualizer/**/*.{png,jpg,jpeg,gif,webp,svg}',
                 ]
             }
         },
