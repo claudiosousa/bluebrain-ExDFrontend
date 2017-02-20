@@ -142,7 +142,8 @@
       var registerForStatusInformation = function (rosbridgeConfiguration, setProgressMessage) {
         function destroyCurrentConnection() {
           if (statusListener) {
-            statusListener.unsubscribe();
+            // remove the progress bar callback only, unsubscribe terminates the rosbridge
+            // connection for any other subscribers on the status topic
             statusListener.removeAllListeners();
             statusListener = undefined;
           }

@@ -81,19 +81,24 @@
       };
 
       thisStateService.startListeningForStatusInformation = function() {
+        // prevent multiple registrations of onMessageReceived callback, do not call
+        // unsubscribe here as it brings down the rosbridge connection
+        if (angular.isDefined(statusListener)) {
+          statusListener.removeAllListeners();
+          statusListener = undefined;
+        }
+
         var rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
         var statusTopic = bbpConfig.get('ros-topics').status;
         rosConnection = roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
         statusListener = roslib.createStringTopic(rosConnection, statusTopic);
-
-        statusListener.unsubscribe(); // clear old subscriptions
         statusListener.subscribe(onMessageReceived, true);
       };
 
       thisStateService.stopListeningForStatusInformation = function() {
         // unregister to the statustopic
         if (angular.isDefined(statusListener)) {
-          statusListener.unsubscribe();
+          statusListener.unsubscribe(); // fully disconnects rosbridge
           statusListener.removeAllListeners();
           statusListener = undefined;
         }

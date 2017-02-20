@@ -126,19 +126,17 @@ describe('Services: server-info-service', function () {
 
 describe('experimentSimulationService', function () {
   var $httpBackend, $rootScope, experimentSimulationService, bbpConfig, statusListenerSubscribe,
-    unsubscribeFn, removeAllListenersFn;
+    removeAllListenersFn;
 
   beforeEach(module('simulationControlServices'));
   beforeEach(module('experimentServices'));
   beforeEach(module(function ($provide) {
-    unsubscribeFn = jasmine.createSpy('createStringTopic.unsubscribe');
     removeAllListenersFn = jasmine.createSpy('createStringTopic.removeAllListeners');
     $provide.value('roslib', {
       getOrCreateConnectionTo: function () { return { close: angular.noop }; },
       createStringTopic: function () {
         return {
           subscribe: function (fn) { statusListenerSubscribe = fn; },
-          unsubscribe: unsubscribeFn,
           removeAllListeners: removeAllListenersFn
         };
       }
@@ -195,7 +193,6 @@ describe('experimentSimulationService', function () {
     $httpBackend.flush();
     expect(progressNotification.calls.mostRecent().args).toEqual([{ main: 'Simulation initialized.' }]);
 
-    expect(unsubscribeFn).toHaveBeenCalled();
     expect(removeAllListenersFn).toHaveBeenCalled();
   });
 
