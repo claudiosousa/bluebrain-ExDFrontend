@@ -39,9 +39,11 @@
               </div>
             </td>
             <td>
+              <label>to</label>
               <input size="5" type="number" class="neuron-index-field" ng-model="population.to" min="1" placeholder="1" required ng-change="onBrainChange()">
             </td>
             <td ng-if-end>
+              <label>step</label>
               <input size="5" type="number" class="neuron-index-field" ng-model="population.step" min="1" placeholder="1" required ng-change="onBrainChange()">
             </td>
             <td ng-if="!isSlice(population)" colspan="3">
