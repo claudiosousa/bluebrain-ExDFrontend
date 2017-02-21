@@ -20,7 +20,7 @@ describe('Directive: environment settings quality', function ()
     $compile)
   {
     $rootScope = _$rootScope_;
-    element = $compile('<environmentsettingsquality></environmentsettingsquality>')($rootScope);
+    element = $compile('<environment-settings-quality></environment-settings-quality>')($rootScope);
     $rootScope.$digest();
   }));
 

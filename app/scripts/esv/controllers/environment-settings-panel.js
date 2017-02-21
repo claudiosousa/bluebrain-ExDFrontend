@@ -7,6 +7,7 @@
 
     $scope.panelIsOpen = false;
     $scope.activeTab = {};
+    $scope.activeTab.master = false;
     $scope.activeTab.quality = false;
     $scope.activeTab.color = false;
     $scope.activeTab.environment = false;

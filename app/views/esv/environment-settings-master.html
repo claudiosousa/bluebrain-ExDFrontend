@@ -1,0 +1,33 @@
+<!-- build:css(.tmp) styles/esv/environment-master.css -->
+<link rel="stylesheet" href="styles/esv/environment-settings-master.css" />
+<!-- endbuild -->
+
+<h3>Master Settings</h3>
+<p>The master settings allow you to override the 3D settings to balance between quality and performance.</p>
+
+<hr class="environment-settings-hr" >
+
+<div style="display:flex">
+
+
+
+<div ng-repeat="master in masterSettings" class="environment-settings-master-block">
+
+    <div type="button" ng-class="{btn:true,'btn-default':true, 'esv-master-settings-radio-button':master===currentMasterSettings,
+                                    'esv-master-settings-radio-button-down':master!==currentMasterSettings}"
+                            ng-click='setMasterSettings(master);'>
+
+
+            <img width=100% height=100% ng-src="{{masterSettingsImage[master]}}"
+                ng-class="{'environment-settings-master-imageon':master===currentMasterSettings,
+                           'environment-settings-master-imageoff':master!==currentMasterSettings}">
+
+
+        <div class="environment-settings-master-button-label">
+        {{master}}
+        </div>
+
+    </div>
+</div>
+
+</div>

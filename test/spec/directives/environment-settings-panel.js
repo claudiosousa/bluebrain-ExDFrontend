@@ -1,6 +1,7 @@
+/* global GZ3D: true */
 'use strict';
 
-describe('Directive: context-menu', function () {
+describe('Directive: 3d settings', function () {
 
   var scope, gz3d, collab3DSettingsService;
 
@@ -18,6 +19,11 @@ describe('Directive: context-menu', function () {
     collab3DSettingsService = {
       saveSettings: jasmine.createSpy('saveSettings')
     };
+
+    GZ3D.MASTER_QUALITY_BEST = 'Best';
+    GZ3D.MASTER_QUALITY_MIDDLE = 'Middle';
+    GZ3D.MASTER_QUALITY_LOW = 'Low';
+    GZ3D.MASTER_QUALITY_MINIMAL = 'Minimal';
 
     $provide.value('gz3d', gz3d);
     $provide.value('collab3DSettingsService', collab3DSettingsService);
