@@ -59,7 +59,7 @@
       'simulationInfo','hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
-      'simulationConfigService','environmentService',
+      'simulationConfigService','environmentService', 'userContextService',
       function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -71,7 +71,7 @@
         simulationInfo, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
-        simulationConfigService, environmentService) {
+        simulationConfigService, environmentService, userContextService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -81,31 +81,18 @@
         $scope.helpText = {};
         $scope.currentSelectedUIElement = UI.UNDEFINED;
 
-        $scope.userEditingID = "";
-        $scope.userEditing = "";
-        $scope.timeEditStarted = "";
-
-
         if (environmentService.isPrivateExperiment()) {
           // only use locks if we are in a collab
           var lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
           var cancelLockSubscription = lockService.onLockChanged(
             function (result) {
-              if (result.locked && result.lockInfo.user.id === $scope.viewState.userID) {
-                // don't lock edit button if the current user is the owner of the lock.
-                setEditDisabled(false);
-              } else if (!result.locked && $scope.userEditingID === $scope.viewState.userID) {
+              if (!result.locked && userContextService.userEditingID === userContextService.userID) {
                 if ($scope.showEditorPanel) {
                   // we are the current user editing, but our lock has been released...
                   // (this can happen if two users want to edit at the same time)
                   $window.alert("You no longer have the lock to edit anymore. Please try again.");
                   $scope.toggleEditors();
                 }
-              } else {
-                if (result.locked) {
-                  setLockDateAndUser(result.lockInfo);
-                }
-                setEditDisabled(result.locked);
               }
             }
           );
@@ -119,55 +106,13 @@
         $scope.RESET_TYPE = RESET_TYPE;
         $scope.sceneLoading = true;
 
-
-        function ViewState() {
-          this.isInitialized = false;
-          this.isJoiningStoppedSimulation = false;
-          this.isOwner = false;
-          var _userID, _ownerID;
-          var viewState = this;
-          this.hasEditRights = function (entity) {
-            return viewState.isOwner || userNavigationService.isUserAvatar(entity);
-          };
-
-          Object.defineProperty(this, 'userID',
-            {
-              get: function () {
-                return _userID;
-              },
-              set: function (val) {
-                _userID = val;
-                this.isOwner = (_ownerID === _userID);
-              },
-              enumerable: true
-            });
-          Object.defineProperty(this, 'ownerID',
-            {
-              get: function () {
-                return _ownerID;
-              },
-              set: function (val) {
-                _ownerID = val;
-                this.isOwner = (_ownerID === _userID);
-              },
-              enumerable: true
-            });
-        }
-
-        $scope.viewState = new ViewState();
         $scope.gz3d = gz3d;
         $scope.stateService = stateService;
         $scope.EDIT_MODE = EDIT_MODE;
         $scope.contextMenuState = contextMenuState;
         $scope.objectInspectorService = objectInspectorService;
+        $scope.userContextService = userContextService;
 
-        if (!bbpConfig.get('localmode.forceuser', false)) {
-          hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
-            $scope.viewState.userID = profile.id;
-          });
-        } else {
-          $scope.viewState.userID = bbpConfig.get('localmode.ownerID');
-        }
         var setExperimentDetails = function(){
           $scope.ExperimentDescription = simulationInfo.experimentDetails.description;
           $scope.ExperimentName = simulationInfo.experimentDetails.name;
@@ -185,8 +130,9 @@
             $scope.initComposerSettings();
           });
         };
+
         simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, function (data) {
-          $scope.viewState.ownerID = data.owner;
+          userContextService.ownerID = data.owner;
           $scope.experimentConfiguration = data.experimentConfiguration;
           $scope.environmentConfiguration = data.environmentConfiguration;
           $scope.creationDate = data.creationDate;
@@ -198,7 +144,7 @@
             });
           } else {
             $scope.owner = bbpConfig.get('localmode.ownerID');
-            $scope.viewState.isOwner = true;
+            userContextService.ownerID = $scope.owner;
           }
         });
 
@@ -277,7 +223,7 @@
         stateService.getCurrentState().then(function () {
           if (stateService.currentState === STATE.STOPPED) {
             // The Simulation is already Stopped, so do nothing more but show the alert popup
-            $scope.viewState.isJoiningStoppedSimulation = true;
+            userContextService.isJoiningStoppedSimulation = true;
             nrpAnalytics.eventTrack('Join-stopped', {
               category: 'Simulation'
             });
@@ -290,7 +236,7 @@
 
             gz3d.Initialize();
             gz3d.iface.addCanDeletePredicate(isNotARobotPredicate);
-            gz3d.iface.addCanDeletePredicate($scope.viewState.hasEditRights);
+            gz3d.iface.addCanDeletePredicate(userContextService.hasEditRights);
 
             // Handle touch clicks to toggle the context menu
             // This is used to save the position of a touch start event used for content menu toggling
@@ -581,7 +527,7 @@
 
         //main context menu handler
         $scope.onContainerMouseDown = function (event) {
-          if ($scope.viewState.isOwner) {
+          if (userContextService.isOwner()) {
             switch (event.button) {
               case 2:
                 //right click -> show menu
@@ -767,7 +713,7 @@
           /* NOT CALLED AUTOMATICALLY ON EXITING AN EXPERIMENT */
           /* possible cause of memory leaks */
 
-          cleanUp();
+          $scope.cleanUp();
         });
 
         function closeSimulationConnections() {
@@ -808,26 +754,6 @@
           }
         };
 
-        // set edit mode
-        function setEditDisabled(state) {
-          $scope.editIsDisabled = state;
-        }
-
-        function removeEditLock(skipResponse) {
-          return lockService.releaseLock()
-            .catch(function () {
-              if (!skipResponse) {
-                $window.alert("I could not release the edit lock. Please remove it manually from the Storage area.");
-              }
-            });
-        }
-
-        function setLockDateAndUser(lockInfo) {
-          $scope.userEditing = lockInfo.user.displayName;
-          $scope.userEditingID = lockInfo.user.id;
-          $scope.timeEditStarted = moment(new Date(lockInfo.date)).fromNow();
-        }
-
         $scope.showEditorPanel = false;
         $scope.toggleEditors = function () {
           if (!environmentService.isPrivateExperiment()) {
@@ -839,12 +765,14 @@
               // try and add a lock for editing
               lockService.tryAddLock()
                 .then(function (result) {
-                  if (!result.success && result.lock && result.lock.lockInfo.user.id !== $scope.viewState.userID) {
-                    setLockDateAndUser(result.lock.lockInfo);
-                    $window.alert("Sorry you cannot edit at this time. Only one user can edit at a time and " + $scope.userEditing + " started editing " + $scope.timeEditStarted + ". Please try again later.");
-                    setEditDisabled(true);
+                  if (!result.success && result.lock && result.lock.lockInfo.user.id !== userContextService.userID) {
+                    userContextService.setLockDateAndUser(result.lock.lockInfo);
+                    $window.alert("Sorry you cannot edit at this time. Only one user can edit at a time and " +
+                      userContextService.userEditing + " started editing " + userContextService.timeEditStarted +
+                      ". Please try again later.");
+                    userContextService.setEditDisabled(true);
                   } else {
-                    $scope.userEditingID = $scope.viewState.userID;
+                    $scope.userEditingID = userContextService.userID;
                     showEditPanel();
                   }
                 })
@@ -856,7 +784,7 @@
                 });
             } else {
               showEditPanel();
-              removeEditLock();
+              userContextService.removeEditLock();
             }
           }
         };
@@ -872,7 +800,7 @@
         $scope.codeEditorButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.CODE_EDITOR);
-          } else if ($scope.editIsDisabled || $scope.loadingEditPanel) {
+          } else if (userContextService.editIsDisabled || $scope.loadingEditPanel) {
             return;
           } else {
             return $scope.toggleEditors();
@@ -880,20 +808,12 @@
         };
 
         $scope.exit = function () {
-          if (environmentService.isPrivateExperiment()) {
-            cancelLockSubscription();
-            return removeEditLock().then(function(){
-              exitSimulation();
-            });
-          }
-          else {
-            exitSimulation();
-            return $q.when();
-          }
+          exitSimulation();
+          return $q.when();
         };
 
         function exitSimulation() {
-          cleanUp();
+          $scope.cleanUp();
 
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           if (environmentService.isPrivateExperiment())
@@ -906,7 +826,7 @@
           });
         }
 
-        function cleanUp() {
+        $scope.cleanUp = function() {
           userNavigationService.deinit();
 
           document.removeEventListener('keydown', $scope.displayHumanNavInfo);
@@ -919,7 +839,7 @@
 
           if (environmentService.isPrivateExperiment()) {
             cancelLockSubscription();
-            removeEditLock(true);
+            userContextService.deinit();
           }
 
           // Close the splash screens
@@ -933,7 +853,7 @@
           closeSimulationConnections();
           gz3d.deInitialize();
 
-        }
+        };
 
         $scope.showBrainvisualizerPanel = false;
         $scope.toggleBrainvisualizer = function () {
