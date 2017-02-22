@@ -31,7 +31,6 @@
       if (angular.isDefined(myModal)){ myModal.close(); }
       myModal = $modal.open( {
         backdrop: false,
-        animation: true,
         controller: 'AssetLoadingSplashCtrl',
         templateUrl: 'views/splash/asset-loading-splash.html',
         windowTemplateUrl: 'views/splash/index.html'

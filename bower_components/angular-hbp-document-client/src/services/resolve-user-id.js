@@ -8,8 +8,8 @@ angular.module('hbpDocumentClient.core')
   'use strict';
 
   return function(entites) {
-     // Get the list of user's ids and try to find thier name
-    var userIds = _.map(entites, '_createdBy');
+    // Get the list of user's ids and try to find thier name
+    var userIds = _.pick(_.map(entites, '_createdBy'), _.identity);
 
     hbpIdentityUserDirectory.get(userIds).then(function (users) {
       for (var i = 0; i < entites.length; i++) {

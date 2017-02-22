@@ -79,7 +79,7 @@ module.exports = function(config) {
       'bower_components/v-button/dist/v-button.js',
       'bower_components/SHA-1/sha1.js',
       'bower_components/angulartics/src/angulartics.js',
-      'bower_components/angulartics-google-analytics/lib/angulartics-google-analytics.js',
+      'bower_components/angulartics-google-analytics/lib/angulartics-ga.js',
       'bower_components/brainvisualizer/src/brain3D.js',
       'bower_components/brainvisualizer/src/brain3Dmainview.js',
       'bower_components/brainvisualizer/shaders/brain3Dshaders.js',

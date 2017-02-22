@@ -1597,7 +1597,7 @@ angular.module('hbpIdentity', ['hbpUtil', 'bbpConfig']);
                 if (hbpIdentityUtil.userApiVersion() === 0) {
                     return $q.when(true);
                 }
-                return this.isGroupMember(bbpConfig.get('collab.groups.hbpMember', 'hbp-member'));
+                return this.isGroupMember(['hbp-accred-sga1']);
             },
             adminGroups: adminGroups,
             memberGroups: groups
@@ -1752,7 +1752,7 @@ angular.module('hbpCommon', [
   'hbpIdentity',
   'hbpCommonUI'
 ]);
-window.hbpCommonVersion = '2.2.11';
+window.hbpCommonVersion = '2.3.0';
 
 angular.module('hbpCommon')
 /**
@@ -2262,7 +2262,7 @@ angular.module('hbpCommon')
                 $scope.idsToExclude = [];
                 $scope.$watch('exclude', function(newValue) {
                     if(newValue && newValue.length > 0 && newValue[0].id) {
-                        $scope.idsToExclude = _.pluck($scope.exclude, 'id');
+                        $scope.idsToExclude = _.map($scope.exclude, 'id');
                     } else if(newValue) {
                         $scope.idsToExclude = newValue;
                     }
@@ -2321,8 +2321,8 @@ angular.module('hbpCommon')
             pre: function(scope) {
                 scope.$watch('user', function(newValue) {
                     scope.institution = newValue && _.find(newValue.institutions, 'primary');
-                    scope.email = newValue && _(newValue.emails).filter('primary').pluck('value').first();
-                    scope.phone = newValue && _(newValue.phones).filter('primary').pluck('value').first();
+                    scope.email = newValue && _(newValue.emails).filter('primary').map('value').first();
+                    scope.phone = newValue && _(newValue.phones).filter('primary').map('value').first();
                     scope.ims = newValue && newValue.ims;
                 });
             }

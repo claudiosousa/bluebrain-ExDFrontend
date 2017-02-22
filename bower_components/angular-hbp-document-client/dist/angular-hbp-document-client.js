@@ -1752,7 +1752,8 @@ angular.module('hbpDocumentClient.core')
         until: options.until,
         filter: options.filter,
         access: options.access,
-        limit: options.pageSize > 0 ? options.pageSize : null
+        limit: options.pageSize > 0 ? options.pageSize : null,
+        hpc: options.hpc
       }
     }).then(function(res) {
       retVal.push.apply(retVal, res.data.result);
@@ -1817,8 +1818,8 @@ angular.module('hbpDocumentClient.core')
   'use strict';
 
   return function(entites) {
-     // Get the list of user's ids and try to find thier name
-    var userIds = _.map(entites, '_createdBy');
+    // Get the list of user's ids and try to find thier name
+    var userIds = _.pick(_.map(entites, '_createdBy'), _.identity);
 
     hbpIdentityUserDirectory.get(userIds).then(function (users) {
       for (var i = 0; i < entites.length; i++) {

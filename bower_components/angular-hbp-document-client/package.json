@@ -1,6 +1,6 @@
 {
   "name": "angular-hbp-document-client",
-  "version": "0.5.5",
+  "version": "0.5.7",
   "description": "AngularJS client library to access the HBP Collaboratory Storage",
   "devDependencies": {
     "eslint": "^1.2.1",

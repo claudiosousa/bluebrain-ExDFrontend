@@ -14,7 +14,7 @@
     $scope.panelIsOpen = false;
     $scope.activeTab = {};
     $scope.activeTab.transferfunction = false;
-    $scope.activeTab.environment = false;
+    $scope.activeTab.environment = true;
     $scope.activeTab.statemachine = false;
     $scope.activeTab.pynneditor = false;
     $scope.activeTab.events = false;

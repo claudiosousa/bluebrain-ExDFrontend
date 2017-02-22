@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  /* global _: false */
-
   // Define test data which we want to share across the tests
   var exampleMessage = {
     headline: 'fake_headline',
@@ -88,17 +86,19 @@
 
   describe('Controller: ModalInstanceCtrl', function () {
 
-    var scope,
+    var $timeout,
+      scope,
       log,
       splash,
       Ctrl;
 
+    beforeEach(module('exd.templates'));
     beforeEach(module('exdFrontendApp'));
-    beforeEach(inject(function ($rootScope, _$log_, _splash_, $controller) {
+    beforeEach(inject(function ($rootScope, _$log_, _splash_, $controller, _$timeout_) {
       scope = $rootScope.$new();
       log = _$log_;
       splash = _splash_;
-
+      $timeout = _$timeout_;
       spyOn(splash, 'setObserver');
       spyOn(log, 'error');
       spyOn(scope, '$apply');
@@ -121,20 +121,11 @@
     });
 
     it('should update the scope when receiving a well-defined message', function () {
-      spyOn(_, 'defer');
-      scope.$apply = jasmine.createSpy('scope.$apply');
 
       var prepareSpiesAndSetUpTest = function(messageToTestWith) {
-        _.defer.calls.reset();
-        scope.$apply.calls.reset();
-
         // call the registered callback function
         splash.setObserver.calls.mostRecent().args[0](messageToTestWith);
-        expect(_.defer).toHaveBeenCalled();
-        _.defer.calls.mostRecent().args[0]();
-
-        expect(scope.$apply).toHaveBeenCalled();
-        scope.$apply.calls.mostRecent().args[0]();
+        $timeout.flush();
       };
 
       prepareSpiesAndSetUpTest(exampleMessage);

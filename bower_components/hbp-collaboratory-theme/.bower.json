@@ -1,6 +1,6 @@
 {
   "name": "hbp-collaboratory-theme",
-  "version": "0.0.18",
+  "version": "0.1.0",
   "authors": [
     "Olivier Amblet <olivier.amblet@epfl.ch>"
   ],
@@ -42,13 +42,13 @@
   "devDependencies": {
     "bootstrap-sass": "~3.3.3"
   },
-  "_release": "0.0.18",
+  "_release": "0.1.0",
   "_resolution": {
     "type": "version",
-    "tag": "0.0.18",
-    "commit": "8215d0d9872c1ccf38673fe36d5b42c70d4fc286"
+    "tag": "v0.1.0",
+    "commit": "2962f07e06c2e9b22f3e7ace61db21b0a286b021"
   },
-  "_source": "git://github.com/HumanBrainProject/hbp-collaboratory-theme.git",
-  "_target": "0.0.18",
+  "_source": "https://github.com/HumanBrainProject/hbp-collaboratory-theme.git",
+  "_target": "0.1.0",
   "_originalSource": "hbp-collaboratory-theme"
 }
