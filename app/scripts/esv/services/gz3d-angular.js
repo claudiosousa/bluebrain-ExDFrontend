@@ -72,12 +72,12 @@
 
         var that = this;
 
-        this.requestId = null;
-        this.isInitialized = false;
-        this.offsetHeightListenerUnregister = null;
+        var requestId = null;
+        var isInitialized = false;
+        var offsetHeightListenerUnregister = null;
 
-        this.resizeGZ3D = function() {
-          this.scene.setWindowSize(this.container.offsetWidth, this.container.offsetHeight);
+        var resizeGZ3D = function() {
+          that.scene.setWindowSize(that.container.offsetWidth, that.container.offsetHeight);
         };
 
         this.createRenderContainer = function(adjustable, name, topic) {
@@ -95,21 +95,21 @@
           return renderContainer;
         };
 
-        this.animate = function() {
-          that.requestId = requestAnimationFrame(that.animate);
-          that.render();
+        var animate = function() {
+          requestId = requestAnimationFrame(animate);
+          render();
         };
 
-        this.render = function() {
-          if (!angular.isDefined(this.scene)) {
+        var render = function() {
+          if (!angular.isDefined(that.scene)) {
             return;
           }
 
-          this.scene.render();
+          that.scene.render();
         };
 
         this.isGlobalLightMaxReached = function () {
-          if (this.scene === undefined) {
+          if (that.scene === undefined) {
             return false;
           }
 
@@ -124,7 +124,7 @@
         };
 
         this.isGlobalLightMinReached = function () {
-          if (this.scene === undefined) {
+          if (that.scene === undefined) {
             return false;
           }
 
@@ -138,7 +138,7 @@
         };
 
         this.setLightHelperVisibility = function () {
-          this.scene.scene.traverse(function (node) {
+          that.scene.scene.traverse(function (node) {
             if (node.name.indexOf('_lightHelper') > -1) {
               node.visible = that.scene.showLightHelpers;  //TODO: showLightHelpers should be part of this service?
             }
@@ -146,7 +146,7 @@
         };
 
         this.Initialize = function() {
-          if(this.isInitialized) {
+          if (isInitialized) {
             return;
           }
 
@@ -187,40 +187,36 @@
           this.stats.domElement.style.top = '0px';
           this.stats.domElement.style.zIndex = 100;
 
-          this.animate();
-          $window.addEventListener('resize', this.resizeGZ3D, false);
+          animate();
+          $($window).on('resize', resizeGZ3D, false);
 
           //TODO: is this necessary?
           this.offsetHeightListenerUnregister = $rootScope.$watch(function() {
             return that.container.offsetHeight;
           }, function(newValue, oldValue) {
-            if ((newValue !== oldValue) && angular.isDefined(that.scene)) {
-              that.resizeGZ3D();
-            }
+            if ((newValue !== oldValue) && angular.isDefined(that.scene)) { resizeGZ3D(); }
           }, true);
 
-          this.isInitialized = true;
+          isInitialized = true;
         };
 
         this.deInitialize = function() {
-          if (angular.isFunction(this.offsetHeightListenerUnregister)) {
-            this.offsetHeightListenerUnregister();
+          if (angular.isFunction(offsetHeightListenerUnregister)) {
+            offsetHeightListenerUnregister();
           }
-          $window.removeEventListener('resize', this.resizeGZ3D);
-          $window.cancelAnimationFrame(this.requestId);
+          $($window).off('resize', resizeGZ3D, false);
+          $window.cancelAnimationFrame(that.requestId);
 
-          delete this.sdfParser;
-          delete this.iface;
-          delete this.gui;
-          delete this.scene;
+          delete that.sdfParser;
+          delete that.iface;
+          delete that.gui;
+          delete that.scene;
 
-          delete this.container;
-          delete this.stats;
-          delete this.animate;
-          delete this.render;
-          delete this.createRenderContainer;
+          delete that.container;
+          delete that.stats;
+          delete that.createRenderContainer;
 
-          this.isInitialized = false;
+          isInitialized = false;
         };
       }
 

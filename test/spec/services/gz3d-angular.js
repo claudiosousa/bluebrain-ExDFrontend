@@ -90,7 +90,6 @@ describe('testing the gz3d service', function () {
   });
 
   it('checks if render container elements are correctly generated', function() {
-
     gz3d.Initialize();
     var testRenderContainerAdjustable = gz3d.createRenderContainer(true, 'test_rendercontainer_adjustable');
     var testRenderContainerNotAdjustable = gz3d.createRenderContainer(false, 'test_rendercontainer_unadjustable');
@@ -106,6 +105,15 @@ describe('testing the gz3d service', function () {
     expect(testRenderContainerNotAdjustable.className).toEqual('render-view-container camera-view-window ng-scope');
   });
 
+  it('should Initialize', function() {
+    expect(gz3d.sdfParser).toBeDefined();
+    expect(gz3d.iface).toBeDefined();
+    expect(gz3d.gui).toBeDefined();
+    expect(gz3d.scene).toBeDefined();
+    expect(gz3d.container).toBeDefined();
+    expect(gz3d.stats).toBeDefined();
+  });
+
   it('should not initialize when already initialized', function() {
     gz3d.sdfParser = undefined;
     // initialize a second time
@@ -115,14 +123,12 @@ describe('testing the gz3d service', function () {
 
   it('should deinitialize', function() {
     gz3d.deInitialize();
-    expect(rootScope.sdfParser).not.toBeDefined();
-    expect(rootScope.iface).not.toBeDefined();
-    expect(rootScope.gui).not.toBeDefined();
-    expect(rootScope.scene).not.toBeDefined();
-    expect(rootScope.container).not.toBeDefined();
-    expect(rootScope.stats).not.toBeDefined();
-    expect(rootScope.animate).not.toBeDefined();
-    expect(rootScope.renderer).not.toBeDefined();
+    expect(gz3d.sdfParser).not.toBeDefined();
+    expect(gz3d.iface).not.toBeDefined();
+    expect(gz3d.gui).not.toBeDefined();
+    expect(gz3d.scene).not.toBeDefined();
+    expect(gz3d.container).not.toBeDefined();
+    expect(gz3d.stats).not.toBeDefined();
   });
 
   it('isGlobalLightMin/MaxReached should return false if gz3d.scene is undefined', function() {
