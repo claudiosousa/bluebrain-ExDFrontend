@@ -3709,7 +3709,7 @@ THREE.ColladaLoader = function () {
 
 			for (var surface in this.effect.surface)
 			{
-				if (surface.indexOf("PBR_") >= 0)
+				if (surface.indexOf("PBR_") >= 0 || surface.indexOf("PBRFULL_") >= 0)
 				{
 					for (var k in pbrKeyToThreeJSMap)
 					{
@@ -3725,6 +3725,32 @@ THREE.ColladaLoader = function () {
 								}
 
 								pbrMaterial[pbrKeyToThreeJSMap[k]] = baseUrl + image.init_from;
+
+								if (surface.indexOf("PBRFULL_") >= 0 && k==='Base_Color')
+								{
+									// If the prefix is PBRFULL it means that all the PBR textures are present
+									// but that only the basic color map have been linked to the dae.
+
+									var allpbrkeywords = ['Metallic','Mixed_AO','Roughness','Normal','Roughness'];
+
+									for(var pbri in allpbrkeywords)
+									{
+										var pbrk = allpbrkeywords[pbri];
+										var path = baseUrl + image.init_from;
+
+										path = path.replace('Base_Color', pbrk);
+										if (pbrk==='Normal')
+										{
+											// Normal map must be png. In case the Base_Color is a jpg,
+											// change extension to png
+
+											path = path.replace('.jpg', '.png');
+											path = path.replace('.jpeg', '.png');
+										}
+
+										pbrMaterial[pbrKeyToThreeJSMap[pbrk]] = path;
+									}
+								}
 							}
 						}
 					}
