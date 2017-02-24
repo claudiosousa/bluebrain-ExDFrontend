@@ -8,7 +8,7 @@
     <h5 class="environment-settings-panel-title">3D Environment Settings</h5>
   </div>
 
-  <div class="environment-settings-panel-bottom">
+  <div class="environment-settings-panel-bottom" ng-hide="activeTab.master">
 
   <div class="environment-settings-panel-bottom_buttons">
 
@@ -26,7 +26,7 @@
             ng-mouseup="$event.stopPropagation(); focus('container');">
 
             <i class="glyphicon glyphicon-download"></i>
-            <span> Save Settings</span>
+            <span>Save Settings</span>
       </button>
 
     </div>
@@ -35,8 +35,12 @@
   <div class="environment-settings-panel-content">
 
     <tabset>
+      <tab heading="Master" active="activeTab.master">
+        <environment-settings-master></environment-settings-master>
+      </tab>
+
       <tab heading="Quality" active="activeTab.quality">
-        <environmentsettingsquality></environmentsettingsquality>
+        <environment-settings-quality></environment-settings-quality>
       </tab>
 
       <tab heading="Environment" active="activeTab.environment">

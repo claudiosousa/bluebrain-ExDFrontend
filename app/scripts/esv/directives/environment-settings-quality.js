@@ -2,7 +2,7 @@
 {
   'use strict';
   angular.module('exdFrontendApp')
-    .directive('environmentsettingsquality', ['gz3d', 'nrpAnalytics',
+    .directive('environmentSettingsQuality', ['gz3d', 'nrpAnalytics',
       function (gz3d, nrpAnalytics)
       {
         return {

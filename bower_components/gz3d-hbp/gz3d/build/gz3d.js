@@ -700,6 +700,14 @@ GZ3D.Composer = function (gz3dScene)
     this.currentSkyBoxID = '';
     this.pbrMaterial = false;
     this.pbrTotalLoadingTextures = 0;
+    this.currentMasterSettings = localStorage.getItem('GZ3DMaster3DSettings');
+
+    if (!this.currentMasterSettings)
+    {
+        this.currentMasterSettings = GZ3D.MASTER_QUALITY_BEST;
+    }
+    this.normalizedMasterSettings = null;
+
 
     //-----------------------------------
     // Sun, lens flare
@@ -977,12 +985,15 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 
 GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,forcePBRUpdate)
 {
+    this.normalizedMasterSetting = null;
+    this.updateComposerWithMasterSettings();
+
     // Updates the composer internal data with the latest settings.
 
     // Pass true to updateColorCurve it the color curve has been changed. This will
     // force the composer to update its ramp texture for the color curves.
 
-    var cs = this.gz3dScene.composerSettings;
+    var cs = this.gz3dScene.normalizedComposerSettings;
 
     if (cs.pbrMaterial === undefined)
     {
@@ -1141,6 +1152,8 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
 
 GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
 {
+    this.updateComposerWithMasterSettings();
+
     var that = this;
 
     function updatePBRForModel(node)
@@ -1195,10 +1208,10 @@ GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewp
     var camera = view.camera;
     var width = viewportWidth;
     var height = viewportHeight;
-    var cs = this.gz3dScene.composerSettings;
+    var cs = this.gz3dScene.normalizedComposerSettings;
     var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
 
-    if (this.minimalRender || nopostProcessing) // No post processing is required, directly render to the screen.
+    if (this.minimalRender || nopostProcessing || this.currentMasterSettings===GZ3D.MASTER_QUALITY_MINIMAL) // No post processing is required, directly render to the screen.
     {
         this.lensFlare.visible = false;
         this.scene.background = null;
@@ -1288,6 +1301,68 @@ GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewp
     }
 };
 
+/**
+ * Apply master settings to composer settings
+ *
+ */
+
+GZ3D.Composer.prototype.updateComposerWithMasterSettings = function()
+{
+    if (this.normalizedMasterSetting !== this.currentMasterSettings)
+    {
+        this.normalizedMasterSetting = this.currentMasterSettings;
+
+        this.gz3dScene.normalizedComposerSettings = JSON.parse(JSON.stringify(this.gz3dScene.composerSettings));
+
+        switch (this.currentMasterSettings)
+        {
+            case GZ3D.MASTER_QUALITY_BEST: break;    // Keep the settings as they are by default
+
+            case GZ3D.MASTER_QUALITY_MINIMAL:
+                this.gz3dScene.normalizedComposerSettings.antiAliasing = false;
+                this.gz3dScene.normalizedComposerSettings.rgbCurve = { 'red': [], 'green': [], 'blue': [] };
+                this.gz3dScene.normalizedComposerSettings.levelsInBlack = 0.0;
+                this.gz3dScene.normalizedComposerSettings.levelsInGamma = 1.0;
+                this.gz3dScene.normalizedComposerSettings.levelsInWhite = 1.0;
+                this.gz3dScene.normalizedComposerSettings.levelsOutBlack = 0.0;
+                this.gz3dScene.normalizedComposerSettings.levelsOutWhite = 1.0;
+            /* falls through */
+
+            case GZ3D.MASTER_QUALITY_LOW:
+                this.gz3dScene.normalizedComposerSettings.shadows = false;
+                this.gz3dScene.normalizedComposerSettings.skyBox = '';
+                this.gz3dScene.normalizedComposerSettings.pbrMaterial = false;
+            /* falls through */
+
+            case GZ3D.MASTER_QUALITY_MIDDLE:
+                this.gz3dScene.normalizedComposerSettings.ssaoDisplay = false;
+                this.gz3dScene.normalizedComposerSettings.ssao = false;
+                this.gz3dScene.normalizedComposerSettings.bloom = false;
+                this.gz3dScene.normalizedComposerSettings.fog = false;
+                this.gz3dScene.normalizedComposerSettings.sun = '';
+            /* falls through */
+        }
+    }
+};
+
+/**
+ * Set master settings
+ *
+ */
+
+GZ3D.Composer.prototype.setMasterSettings = function (masterSettings)
+{
+    if (masterSettings !== this.currentMasterSettings)
+    {
+        this.currentMasterSettings = masterSettings;
+        this.applyComposerSettings(true, true);
+        this.normalizedMasterSetting = null;
+        localStorage.setItem('GZ3DMaster3DSettings', this.currentMasterSettings);
+    }
+};
+
+
+
 
 
 /**
@@ -1298,6 +1373,15 @@ GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewp
  * Once modified you need to call scene.applyComposerSettings to reflect the changes
  * in the 3D scene.
  */
+
+// Master settings
+
+GZ3D.MASTER_QUALITY_BEST = 'Best';
+GZ3D.MASTER_QUALITY_MIDDLE = 'Middle';
+GZ3D.MASTER_QUALITY_LOW = 'Low';
+GZ3D.MASTER_QUALITY_MINIMAL = 'Minimal';
+
+// Composer Settings
 
 GZ3D.ComposerSettings = function ()
 {
@@ -7615,6 +7699,7 @@ GZ3D.Scene.prototype.init = function()
   // create post-processing composer
   this.composer = new GZ3D.Composer(this);
   this.composerSettings = new GZ3D.ComposerSettings();
+  this.normalizedComposerSettings = new GZ3D.ComposerSettings();
 
   // Grid
   this.grid = new THREE.GridHelper(10, 1,new THREE.Color( 0xCCCCCC ),new THREE.Color( 0x4D4D4D ));
@@ -8198,6 +8283,13 @@ GZ3D.Scene.prototype.render = function()
     {
         isPageVisible = !document['webkitHidden'];
     }
+
+    if (isPageVisible && !this.wasPageVisible)
+    {
+      this.needsImmediateUpdate = true;
+    }
+
+    this.wasPageVisible = isPageVisible;
 
     if (isPageVisible || this.needsImmediateUpdate)  // Update only when frame visible
     {
@@ -10115,6 +10207,7 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
   });
 };
 
+
 /**
  * Apply composer settings
  * Reflect the post-processing composer settings in the 3D scene.
@@ -10124,6 +10217,7 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
   GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate)
   {
     this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate);
+    this.needsImmediateUpdate = true;
   };
 
 /**
@@ -10137,6 +10231,18 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
     this.composer.applyComposerSettingsToModel(model);
   };
 
+/**
+ * Set master settings
+ * Master settings can be used to changed the global quality of the scene.
+ * It overrides the composer settings.
+ * @param master settings
+*/
+
+GZ3D.Scene.prototype.setMasterSettings = function (masterSettings)
+{
+    this.composer.setMasterSettings(masterSettings);
+    this.needsImmediateUpdate = true;
+};
 
 /**
  * SDF parser constructor initializes SDF parser with the given parameters
