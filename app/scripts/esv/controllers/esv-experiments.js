@@ -193,14 +193,14 @@
             if (!xml){
               hbpDialogFactory.alert({
                 title: "Error",
-                template: "Something went wrong when retrieving the experiment_configuration.xml file from the collab storage. Please check the file exists and is not empty."
+                template: "Something went wrong when retrieving the experiment_configuration.exc file from the collab storage. Please check the file exists and is not empty."
               });
               $scope.isSavingToCollab = false;
               return;
             }
             xml = xml.replace(originalValue, newDetails);
-            collabFolderAPIService.deleteFile(experimentFolderUUID, "experiment_configuration.xml").then(function(){
-             collabFolderAPIService.createFolderFile(experimentFolderUUID, "experiment_configuration.xml", xml, {type: 'application/hbp-neurorobotics+xml'}).then(function(){
+            collabFolderAPIService.deleteFile(experimentFolderUUID, "experiment_configuration.exc").then(function(){
+             collabFolderAPIService.createFolderFile(experimentFolderUUID, "experiment_configuration.exc", xml, {type: 'application/hbp-neurorobotics+xml'}).then(function(){
                $scope.isSavingToCollab = false;
                if (editingKey === $scope.nameID){
                  experiment.configuration.name = newDetails;

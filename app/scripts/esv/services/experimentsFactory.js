@@ -220,7 +220,7 @@
           }
           var experimentXML;
           function loadExperimentDetails(){
-            return getExperimentDetailsFromCollab("experiment_configuration.xml")
+            return getExperimentDetailsFromCollab("experiment_configuration.exc")
             .then(function(fileContent){
               var xml = $.parseXML(fileContent);
               var thumbnail = xml.getElementsByTagNameNS("*", "thumbnail")[0];
