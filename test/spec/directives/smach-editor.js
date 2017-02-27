@@ -20,7 +20,7 @@ describe('Directive: smachEditor', function () {
     STATE,
     SIMULATION_FACTORY_CLE_ERROR,
     SOURCE_TYPE,
-    editorsServices,
+    codeEditorsServices,
     hbpDialogFactory,
     environmentService,
     $q;
@@ -90,7 +90,7 @@ describe('Directive: smachEditor', function () {
                               _STATE_,
                               _SIMULATION_FACTORY_CLE_ERROR_,
                               _SOURCE_TYPE_,
-                              _editorsServices_,
+                              _codeEditorsServices_,
                               _hbpDialogFactory_,
                               _$q_,
                               _environmentService_) {
@@ -106,7 +106,7 @@ describe('Directive: smachEditor', function () {
     SOURCE_TYPE = _SOURCE_TYPE_;
     $timeout = _$timeout_;
     simulationInfo = _simulationInfo_;
-    editorsServices = _editorsServices_;
+    codeEditorsServices = _codeEditorsServices_;
     hbpDialogFactory = _hbpDialogFactory_;
     $q = _$q_;
     environmentService = _environmentService_;
@@ -168,7 +168,7 @@ describe('Directive: smachEditor', function () {
       var editor = {
         'refresh': jasmine.createSpy('refresh')
       };
-      editorsServices.refreshEditor(editor);
+      codeEditorsServices.refreshEditor(editor);
       $timeout.flush(100);
       expect(editor.refresh).toHaveBeenCalled();
     });
@@ -309,7 +309,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
+      spyOn(codeEditorsServices, 'getEditor').and.returnValue(editorMock);
       isolateScope.onNewErrorMessageReceived(msg);
       expect(stateMachines[0].error[errorType]).toEqual(msg);
       expect(editorMock.addLineClass).toHaveBeenCalled();
@@ -325,7 +325,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
+      spyOn(codeEditorsServices, 'getEditor').and.returnValue(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       isolateScope.onNewErrorMessageReceived(msg);
       expect(isolateScope.cleanCompileError).toHaveBeenCalled();
@@ -347,7 +347,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
+      spyOn(codeEditorsServices, 'getEditor').and.returnValue(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').and.returnValue(sm1);
       isolateScope.onNewErrorMessageReceived(msg);
@@ -367,7 +367,7 @@ describe('Directive: smachEditor', function () {
         severity: 1,
         sourceType: SOURCE_TYPE.STATE_MACHINE
       };
-      spyOn(editorsServices, 'getEditor').and.returnValue(editorMock);
+      spyOn(codeEditorsServices, 'getEditor').and.returnValue(editorMock);
       spyOn(isolateScope, 'cleanCompileError');
       spyOn(_, 'find').and.callFake(function (arg1, arg2) {
         if (Object.keys(arg2)[0] === 'id') {

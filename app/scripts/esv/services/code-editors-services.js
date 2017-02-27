@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('editorsServices', [
+    .service('codeEditorsServices', [
       '$timeout',
       function ($timeout) {
 

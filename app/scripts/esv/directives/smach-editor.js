@@ -17,7 +17,7 @@
     'autoSaveService',
     'downloadFileService',
     'RESET_TYPE',
-    'editorsServices',
+    'codeEditorsServices',
     'saveErrorsService',
     'environmentService',
     function (backendInterfaceService,
@@ -35,7 +35,7 @@
               autoSaveService,
               downloadFileService,
               RESET_TYPE,
-              editorsServices,
+              codeEditorsServices,
               saveErrorsService,
               environmentService) {
 
@@ -52,7 +52,7 @@
           scope.isSavingToCollab = false;
           scope.collabDirty = false;
 
-          scope.editorOptions = editorsServices.getDefaultEditorOptions();
+          scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
 
           scope.STATE = STATE;
           scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
@@ -67,7 +67,7 @@
 
           scope.control.refresh = function () {
             if (scope.collabDirty) {
-              editorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
+              codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
               return;
             }
             backendInterfaceService.getStateMachines(
@@ -85,7 +85,7 @@
                     scope.stateMachines.unshift(stateMachine);
                   }
                 });
-                editorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
+                codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
               });
           };
 
@@ -322,7 +322,7 @@
               flawedStateMachine.error[msg.errorType] = msg;
               if (msg.lineNumber >= 0) { // Python Syntax Error
                 // Error line highlighting
-                var editor = editorsServices.getEditor('state-machine-' + flawedStateMachine.id);
+                var editor = codeEditorsServices.getEditor('state-machine-' + flawedStateMachine.id);
                 var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
                 msg.lineHandle = codeMirrorLineNumber;
                 editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
@@ -334,7 +334,7 @@
             var compileError = stateMachine.error[scope.ERROR.COMPILE];
             var lineHandle = compileError ? compileError.lineHandle : undefined;
             if (angular.isDefined(lineHandle)) {
-              var editor = editorsServices.getEditor('state-machine-' + stateMachine.id);
+              var editor = codeEditorsServices.getEditor('state-machine-' + stateMachine.id);
               editor.removeLineClass(lineHandle, 'background', 'alert-danger');
             }
             delete stateMachine.error[scope.ERROR.COMPILE];

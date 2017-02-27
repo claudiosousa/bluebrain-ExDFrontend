@@ -12,11 +12,11 @@
     'stateService',
     'autoSaveService',
     'RESET_TYPE',
-    'editorsServices',
+    'codeEditorsServices',
     'environmentService',
     function ($timeout, $rootScope,backendInterfaceService, documentationURLs,
     hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,
-    RESET_TYPE, editorsServices, environmentService) {
+    RESET_TYPE, codeEditorsServices, environmentService) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -33,7 +33,7 @@
           scope.localDirty = false;
           scope.isSavingToCollab = false;
 
-          scope.editorOptions = editorsServices.getDefaultEditorOptions();
+          scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
 
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
@@ -44,10 +44,10 @@
           });
 
           scope.control.refresh = function () {
-            var editor = editorsServices.getEditor("codeEditor");
+            var editor = codeEditorsServices.getEditor("codeEditor");
             if (scope.collabDirty || scope.localDirty) {
               $timeout(function () {
-                editorsServices.refreshEditor(editor);
+                codeEditorsServices.refreshEditor(editor);
                 }, 100);
               return;
             }
@@ -56,16 +56,16 @@
               if (response.brain_type === "py") {
                 scope.pynnScript = response.data;
                 scope.populations = scope.preprocessPopulations(response.additional_populations);
-                editorsServices.refreshEditor(editor);
+                codeEditorsServices.refreshEditor(editor);
                 scope.loading = false;
                 setTimeout(function () {
-                  editorsServices.resetEditor(editor);
+                  codeEditorsServices.resetEditor(editor);
                   scope.searchToken("si");
                 }, 100);
               } else {
                 scope.pynnScript = undefined;
                 scope.populations = undefined;
-                editorsServices.refreshEditor(editor);
+                codeEditorsServices.refreshEditor(editor);
               }
             });
           };
@@ -167,7 +167,7 @@
                   scope.pynnScript, scope.stringsToLists(populations), 'py', 'text', change_population,
                   function () { // Success callback
                     scope.loading = false;
-                    editorsServices.getEditor("codeEditor").markClean();
+                    codeEditorsServices.getEditor("codeEditor").markClean();
                     scope.clearError();
                     scope.localDirty = false;
                     if (restart) {
@@ -233,7 +233,7 @@
               while (c !== -1 && !found) {
                 c = line.indexOf(name, c+1);
                 if (c !== -1) {
-                  var token = editorsServices.getEditor("codeEditor").getTokenAt({line: l, ch: c + 1});
+                  var token = codeEditorsServices.getEditor("codeEditor").getTokenAt({line: l, ch: c + 1});
                   if (token.type !== "string" && token.string === name) {
                     ret = {line: l, ch: c};
                     found = true;
@@ -296,7 +296,7 @@
           };
 
           scope.markError = function(error_message, line, column) {
-            var editor = editorsServices.getEditor("codeEditor");
+            var editor = codeEditorsServices.getEditor("codeEditor");
             if (isNaN(line) || isNaN(column)) {
               return;
             }
@@ -325,7 +325,7 @@
 
           scope.clearError = function() {
             if (scope.lineHandle) {
-              editorsServices.getEditor("codeEditor").removeLineClass(scope.lineHandle, 'background');
+              codeEditorsServices.getEditor("codeEditor").removeLineClass(scope.lineHandle, 'background');
           }
             if (scope.lineWidget) {
               scope.lineWidget.clear();

@@ -6,10 +6,12 @@
 
   .factory('userContextService', [
     '$window',
-    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'hbpIdentityUserDirectory', 'environmentService',
+    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'hbpIdentityUserDirectory',
+    'environmentService',
     function (
       $window,
-      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory, environmentService) {
+      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory,
+      environmentService) {
 
       function UserContextService() {
 

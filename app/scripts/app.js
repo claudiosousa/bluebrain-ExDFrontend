@@ -55,7 +55,8 @@
       'nrpBrowserDetection',
       'vButton',
       'nrpUser',
-      'hbpCollaboratoryCore'])
+      'hbpCollaboratoryCore',
+      'editorsPanelModule'])
     // Routes
     .config(function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
       // Configuring routes using `angular-ui-router` states.
