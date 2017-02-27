@@ -66,7 +66,7 @@
 
   describe('Controller: esvExperimentsCtrl', function () {
     var $controller, $httpBackend, $rootScope, $templateCache, $compile, $stateParams, $interval, environmentService,
-      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory, nrpBackendVersions, nrpFrontendVersion;
+      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory, nrpBackendVersions, nrpFrontendVersion,collabConfigService;
 
     var serverErrorMock = {
       displayHTTPError: jasmine.createSpy('displayHTTPError')
@@ -101,7 +101,7 @@
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
       _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _hbpDialogFactory_,
-       _nrpBackendVersions_, _nrpFrontendVersion_){
+       _nrpBackendVersions_, _nrpFrontendVersion_, _collabConfigService_){
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
@@ -124,6 +124,7 @@
       environmentService = _environmentService_;
       nrpBackendVersions = _nrpBackendVersions_;
       nrpFrontendVersion = _nrpFrontendVersion_;
+      collabConfigService = _collabConfigService_;
     }));
 
     afterEach(function () {
@@ -460,6 +461,17 @@
           spyOn($window.location, 'reload');
           $httpBackend.whenPUT(collabContextlessUrl).respond(200, {});
           page.find('[analytics-event="Clone"]').click();
+        });
+
+        it('should trigger reload after clone', function () {
+          renderEsvWebPage();
+          spyOn($window.location, 'reload');
+          spyOn($window.parent, 'postMessage');
+          spyOn(collabConfigService, 'clone');
+          $rootScope.cloneExperiment('experiment_id');
+          collabConfigService.clone.calls.mostRecent().args[2]();
+          expect($window.parent.postMessage).toHaveBeenCalled();
+          expect($window.location.reload).toHaveBeenCalled();
         });
       });
 

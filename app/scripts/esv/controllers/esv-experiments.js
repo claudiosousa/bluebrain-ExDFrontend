@@ -79,6 +79,9 @@
           $scope.isCloneRequested = true;
           collabConfigService.clone({ contextID: $stateParams.ctx }, { experimentID: experimentID }, function () {
             $window.location.reload();
+            $window.parent.postMessage({
+              eventName: 'navigation.reload'
+            }, '*');
           });
         };
 
