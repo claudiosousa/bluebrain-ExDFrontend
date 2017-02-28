@@ -1,7 +1,7 @@
 {
   "name": "brainvisualizer",
   "authors": [
-    "BBP / HBP, Epfl"
+    "HBP, Epfl"
   ],
   "repository": {
     "url": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer",

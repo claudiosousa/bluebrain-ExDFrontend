@@ -685,7 +685,7 @@ GZ3D.BloomShader.BlurDirectionX = new THREE.Vector2(1.0, 0.0);
 GZ3D.BloomShader.BlurDirectionY = new THREE.Vector2(0.0, 1.0);
 
 /**
- * BBP /HBP
+ * HBP
  *
  * The composer is called by each view to render the final scene and apply all post-processing effects.
  * Since each view can have a different OpenGL context, the composer duplicates its shaders and buffers
@@ -1370,7 +1370,7 @@ GZ3D.Composer.prototype.setMasterSettings = function (masterSettings)
 
 
 /**
- * BBP / HBP
+ * HBP
  *
  * Composer settings. This is where you specify global post-processing settings
  * such as ssao, etc. Composer settings can be accessed in scene.composerSettings.
