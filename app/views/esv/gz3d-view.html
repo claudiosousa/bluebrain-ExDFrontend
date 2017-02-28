@@ -377,7 +377,7 @@
                    ng-class="{'highlighted': currentSelectedUIElement === UI.LOG_CONSOLE,'active': showLogConsole}"
                    ng-click="logConsoleButtonClickHandler()">
                   <i class="fa fa-terminal fa-2x vertcenter"></i>
-                  <div ng-if="missedConsoleLogs" class="missed-console-badge missed-console-number-{{missedConsoleLogs<=9}}" ng-class="'missed-console-badge-count-'+missedConsoleLogs">
+                  <div ng-if="missedConsoleLogs" class="missed-console-badge missed-console-number-{{missedConsoleLogs<=9}}" ng-class="'missed-console-badge-count-'+(missedConsoleLogs%2)">
                     <div ng-if="missedConsoleLogs<=9">{{missedConsoleLogs}}</div>
                     <div ng-if="missedConsoleLogs>9">...</div>
                   </div>

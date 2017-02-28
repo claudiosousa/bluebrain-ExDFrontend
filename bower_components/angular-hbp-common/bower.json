@@ -1,7 +1,7 @@
 {
   "name": "angular-hbp-common",
   "description": "Common components for HBP websites.",
-  "version": "2.2.11",
+  "version": "2.3.0",
   "private": true,
   "repository": {
     "url": "ssh://bbpcode.epfl.ch/platform/JSLibAngularHbpCommon"

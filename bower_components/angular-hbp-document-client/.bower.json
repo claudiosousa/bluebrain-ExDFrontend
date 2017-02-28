@@ -1,6 +1,6 @@
 {
   "name": "angular-hbp-document-client",
-  "version": "0.5.5",
+  "version": "0.5.7",
   "authors": [
     "BBP/EPFL"
   ],
@@ -46,14 +46,13 @@
   "resolutions": {
     "angular": "~1.4.7"
   },
-  "_release": "0.5.5",
+  "_release": "0.5.7",
   "_resolution": {
     "type": "version",
-    "tag": "0.5.5",
-    "commit": "241971ec8ede65ec1e91f72d1d1d3d285beb7d6b"
+    "tag": "0.5.7",
+    "commit": "23f3c6c469997964cdadf59ace097b1872c1d0b7"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularDocumentClient",
-  "_target": "0.5.5",
-  "_originalSource": "angular-hbp-document-client",
-  "_direct": true
+  "_target": "0.5.7",
+  "_originalSource": "angular-hbp-document-client"
 }

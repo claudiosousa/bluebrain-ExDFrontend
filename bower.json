@@ -3,41 +3,41 @@
   "version": "1.2.22",
   "repository": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend",
   "dependencies": {
-    "angular": "1.4.8",
-    "angular-animate": "1.4.8",
+    "angular": "1.4.14",
+    "angular-animate": "1.4.14",
     "angular-bbp-config": "0.3.0",
-    "angular-cookies": "1.4.8",
-    "angular-hbp-common": "2.2.11",
-    "angular-hbp-document-client": "0.5.5",
-    "angular-resource": "1.4.8",
-    "angular-sanitize": "1.4.8",
+    "angular-cookies": "1.4.14",
+    "angular-hbp-common": "2.3.0",
+    "angular-hbp-document-client": "0.5.7",
+    "angular-resource": "1.4.14",
+    "angular-sanitize": "1.4.14",
     "angular-toArrayFilter": "*",
-    "angular-touch": "1.4.8",
+    "angular-touch": "1.4.14",
     "angular-ui-bootstrap-bower": "0.12.1",
     "angular-ui-codemirror": "0.3.0",
-    "angular-ui-router": "0.2.13",
+    "angular-ui-router": "0.4.2",
     "angular.panels": "*",
-    "bbp-oidc-client": "0.8.4",
-    "bootstrap-sass-official": "3.3.6",
-    "es5-shim": "~4.3.1",
+    "bbp-oidc-client": "0.9.3",
+    "bootstrap-sass-official": "3.3.7",
+    "es5-shim": "4.5.9",
     "font-awesome": "~4.7.0",
     "gz3d-hbp": "latest",
-    "hbp-collaboratory-theme": "0.0.18",
+    "hbp-collaboratory-theme": "0.1.0",
     "json3": "~3.3.2",
-    "lodash": "4.17.2",
-    "ng-file-upload": "~7.0.17",
-    "roslibjs": "~0.17.0",
+    "lodash": "4.17.4",
+    "ng-file-upload": "12.2.13",
+    "roslibjs": "~0.18.0",
     "stats.js": "latest",
     "v-button": "~1.1.1",
     "xml2json": "1.1.1",
-    "angulartics-google-analytics": "^0.1.4",
+    "angulartics-google-analytics": "0.4.0",
     "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer",
-    "moment": "2.10.6",
-    "angular-hbp-collaboratory":"latest",
-    "angular-uuid4":"latest",
-    "angular-deferred-bootstrap":"latest",
-    "angular-moment":"latest",
-    "hello":"latest"
+    "moment": "2.17.1",
+    "angular-hbp-collaboratory":"0.5.0",
+    "angular-uuid4":"0.3.1",
+    "angular-deferred-bootstrap":"0.1.9",
+    "angular-moment":"1.4.14",
+    "hello":"1.14.0"
   },
   "overrides": {
     "angular-hbp-collaboratory": {
@@ -73,8 +73,8 @@
         "mode/shell/shell.js"
       ]
     },
-    "gz3d-hbp":{
-      "main":[
+    "gz3d-hbp": {
+      "main": [
         "gz3d/build/gz3d.js",
         "gz3d/client/js/include/ColladaLoader.js",
         "gz3d/client/js/include/first-person-controls.js",
@@ -82,13 +82,13 @@
         "gz3d/client/js/include/ThreeBackwardsCompatibility.js"
       ]
     },
-    "angular":{
-      "dependencies":{
-        "jquery":"^1"
+    "angular": {
+      "dependencies": {
+        "jquery": "^1"
       }
     },
-    "three.js":{
-      "main":[
+    "three.js": {
+      "main": [
         "build/three.js",
         "examples/js/controls/OrbitControls.js",
         "examples/js/Detector.js",
@@ -112,21 +112,20 @@
     }
   },
   "devDependencies": {
-    "angular-mocks": "1.4.8",
-    "angular-scenario": "1.4.8"
+    "angular-mocks": "1.4.14",
+    "angular-scenario": "1.4.14"
   },
   "appPath": "app",
   "private": false,
   "resolutions": {
-    "angular": "1.4.8",
+    "angular": "1.4.14",
     "angular-bbp-config": "0.3.0",
-    "angular-hbp-common": "2.0.1-dev.0",
     "es5-shim": "~4.3.1",
     "json3": "~3.3.1",
-    "bbp-oidc-client": "0.8.4",
-    "lodash": "4.17.2",
     "angular-ui-bootstrap-bower": "0.12.1",
     "bootstrap-sass-official": "3.3.6",
-    "angular-resource": "1.4.8"
+    "lodash": "4.17.4",
+    "angulartics": "^1.2.1",
+    "hbp-collaboratory-theme": "0.1.0"
   }
 }

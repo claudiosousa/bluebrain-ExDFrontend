@@ -33,6 +33,7 @@
       if (angular.isDefined(this.modal)) { this.modal.close(); }
       this.modal = $modal.open({
         backdrop: false,
+        animation:true,
         controller: 'ModalInstanceCtrl',
         templateUrl: 'views/splash/content.html',
         windowTemplateUrl: 'views/splash/index.html'
@@ -54,12 +55,14 @@
 
   }]);
 
-  module.controller('ModalInstanceCtrl', function ($scope, $log, splash) {
+  module.controller('ModalInstanceCtrl', function ($scope, $log, splash, $timeout) {
     $scope.headline = '';
     $scope.subHeadline = '';
     $scope.progressInformation = '';
     $scope.showButton = splash.showButton;
+    $scope.animate = false;
 
+    $timeout(function () {$scope.animate = true;}, 100);
 
     splash.setObserver(function (message) {
       if (!message.headline && !message.subHeadline) {
@@ -67,18 +70,13 @@
         return;
       }
 
-      // Unfortunately we have to use _.defer and $apply here, but otherwise the contents in
-      // the HTML do not get updated correctly. (We get a "digest already in progress" error.)
-      _.defer(function() { // jshint ignore:line
-        $scope.$apply(function () {
+      $timeout(function () {
           $scope.headline = message.headline ? message.headline : '';
           $scope.subHeadline = message.subHeadline ? message.subHeadline : '';
           $scope.progressInformation = message.progressInformation ? message.progressInformation : '';
           $scope.spin = splash.spin;
         });
       });
-
-    });
 
     $scope.close = function() {
       splash.close();

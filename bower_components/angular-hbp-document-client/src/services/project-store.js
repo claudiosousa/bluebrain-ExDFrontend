@@ -21,7 +21,8 @@ angular.module('hbpDocumentClient.core')
         until: options.until,
         filter: options.filter,
         access: options.access,
-        limit: options.pageSize > 0 ? options.pageSize : null
+        limit: options.pageSize > 0 ? options.pageSize : null,
+        hpc: options.hpc
       }
     }).then(function(res) {
       retVal.push.apply(retVal, res.data.result);
