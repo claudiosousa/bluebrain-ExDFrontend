@@ -90,12 +90,12 @@ describe('Brainvisualizer', function ()
 
   it('min clip plane wrong value', function ()
   {
-    expect(brainvisualizer.min_render_dist).toBe(10);
+    expect(brainvisualizer.minRenderDist).toBe(10);
   });
 
   it('max clip plane wrong value', function ()
   {
-    expect(brainvisualizer.max_render_dist).toBe(20);
+    expect(brainvisualizer.maxRenderDist).toBe(20);
   });
 
   it('point size wrong value', function ()

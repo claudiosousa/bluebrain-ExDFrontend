@@ -15,6 +15,7 @@
   "main": [
     "src/brain3D.js",
     "src/brain3Dmainview.js",
+    "src/brain3Dneuronrepresentation.js",
     "shaders/brain3Dshaders.js"
   ],
   "license": "MIT",

@@ -11,15 +11,8 @@
   "main": [
     "bower_components/brainvisualizer/src/brain3D.js",
     "bower_components/brainvisualizer/src/brain3Dmainview.js",
+    "bower_components/brainvisualizer/src/brain3Dneuronrepresentation.js",
     "bower_components/brainvisualizer/shaders/brain3Dshaders.js",
-    "bower_components/brainvisualizer/data/brain3Dallannotation.js",
-    "bower_components/brainvisualizer/data/brain3Dposes_1.js",
-    "bower_components/brainvisualizer/data/brain3Dposes_2.js",
-    "bower_components/brainvisualizer/data/brain3Dposes_3.js",
-    "bower_components/brainvisualizer/data/brain3Dposes_4.js",
-    "bower_components/brainvisualizer/data/brain3Dposes_5.js",
-    "bower_components/brainvisualizer/data/brain3Dposes_6.js",
-    "bower_components/brainvisualizer/data/brain3Dembeddeddata.js"
   ],
   "license": "MIT",
   "homepage": "",

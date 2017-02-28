@@ -3,6 +3,7 @@
 
   angular.module('exdFrontendApp').directive('pynnEditor', [
     '$timeout',
+    '$rootScope',
     'backendInterfaceService',
     'documentationURLs',
     'hbpDialogFactory',
@@ -13,7 +14,7 @@
     'RESET_TYPE',
     'editorsServices',
     'environmentService',
-    function ($timeout, backendInterfaceService, documentationURLs,
+    function ($timeout, $rootScope,backendInterfaceService, documentationURLs,
     hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,
     RESET_TYPE, editorsServices, environmentService) {
       var DIRTY_TYPE = 'BRAIN';
@@ -172,6 +173,8 @@
                     if (restart) {
                       stateService.setCurrentState(STATE.STARTED);
                     }
+
+                    $rootScope.$broadcast('pynn.populationsChanged');
                   },
                   function (result) { // Failure callback
                     scope.loading = false;
