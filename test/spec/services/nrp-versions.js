@@ -44,13 +44,7 @@ describe('Services: nrp-versions', function () {
     var serverResponse = {software_a: softwareAVersion, software_b: softwareBVersion, software_c: softwareCVersion}; // jshint ignore:line
     httpBackend.expectGET(serverURL + '/version').respond(200, serverResponse); // jshint ignore:line
     httpBackend.flush();
-    expect(response.software_a).toEqual(softwareAVersion); // jshint ignore:line
-    expect(response.software_b).toEqual(softwareBVersion); // jshint ignore:line
-    expect(response.software_c).toEqual(softwareCVersion); // jshint ignore:line
-    expect(response.software_b_components).toEqual({ major : '1', minor : '3', patch : '4', dev : 'dev4'}); // jshint ignore:line
-    expect(response.software_a_components).toEqual(jasmine.objectContaining({ major : '1', minor : '2', patch : '3'})); // jshint ignore:line
-    expect(response.software_c_components).not.toBeDefined(); // jshint ignore:line
-
+    expect(response.toString).toEqual('Backend:\n\tsoftware_a: 1.2.3\n\tsoftware_b: 1.3.4.dev4\n\tsoftware_c: Not_a_standard_version\n');
   });
 
   it('should call once serverError when the service call fails', function() {
@@ -61,4 +55,5 @@ describe('Services: nrp-versions', function () {
     response = serverError.displayHTTPError.calls.mostRecent().args[0];
     expect(response.status).toBe(400);
    });
+
 });

@@ -66,16 +66,20 @@
 
   describe('Controller: esvExperimentsCtrl', function () {
     var $controller, $httpBackend, $rootScope, $templateCache, $compile, $stateParams, $interval, environmentService,
-      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory;
+      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory, nrpBackendVersions, nrpFrontendVersion;
 
     var serverErrorMock = {
       displayHTTPError: jasmine.createSpy('displayHTTPError')
     };
-
+   var nrpBackendVersionsObject = {
+     get: jasmine.createSpy('get')
+   };
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
 
     beforeEach(module(function ($provide) {
+      $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
+      $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
       $provide.value('serverError', serverErrorMock);
 
       $provide.value('simulationConfigService',
@@ -96,7 +100,8 @@
 
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
-      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _hbpDialogFactory_) {
+      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _hbpDialogFactory_,
+       _nrpBackendVersions_, _nrpFrontendVersion_){
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
@@ -117,6 +122,8 @@
       collabExperimentLockService = _collabExperimentLockService_;
       hbpDialogFactory = _hbpDialogFactory_;
       environmentService = _environmentService_;
+      nrpBackendVersions = _nrpBackendVersions_;
+      nrpFrontendVersion = _nrpFrontendVersion_;
     }));
 
     afterEach(function () {
@@ -190,6 +197,65 @@
 
       var selectServer = page.find('select[ng-model="exp.devServer"]');
       expect(selectServer.length).toBe(1);
+    });
+
+   it('should show version numbers in dev mode', function () {
+      var page = renderEsvWebPage({ dev: true });
+      //select first experiment
+      page.find('.experiment-box').first().click();
+
+      var versionLink = page.find('a[name="versionLink"]');
+      expect(versionLink.length).toBe(1);
+    });
+
+    it('should not show version numbers in dev mode', function () {
+      var page = renderEsvWebPage();
+      //select first experiment
+      page.find('.experiment-box').first().click();
+
+      var versionLink = page.find('a[name="versionLink"]');
+      expect(versionLink.length).toBe(0);
+    });
+    it('setCollapsed should set the new state correctly', function() {
+      renderEsvWebPage();
+      //by default isCollapsed should be set to true
+      expect($rootScope.isCollapsed).toBe(true);
+      expect($rootScope.versionString).toBe('Show versions');
+
+      $rootScope.setCollapsed(false);
+      expect($rootScope.isCollapsed).toBe(false);
+      expect($rootScope.versionString).toBe('Hide versions');
+
+      $rootScope.setCollapsed(true);
+      expect($rootScope.isCollapsed).toBe(true);
+      expect($rootScope.versionString).toBe('Show versions');
+
+    });
+
+   it('should set scope.softwareVersions with Frontend version when backend returns error ', function() {
+      renderEsvWebPage();
+      $rootScope.setCollapsed(false);
+      $httpBackend.whenGET(proxyUrl + '/server/normalServer').respond(500, 'Error');
+      $rootScope.getSoftwareVersions('normalServer');
+      $httpBackend.flush();
+      var frontendData = {'toString': 'Frontend: 0.0.1\n' };
+      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
+      expect($rootScope.softwareVersions).toBe(frontendData.toString);
+    });
+
+    it('should set scope.softwareVersions when backend returns normally', function() {
+      renderEsvWebPage();
+      $rootScope.setCollapsed(false);
+      $httpBackend.whenGET(proxyUrl + '/server/normalServer').respond(200, defaultPageOptions.server);
+      $rootScope.getSoftwareVersions('normalServer');
+      $httpBackend.flush();
+      var frontendData = {'toString': 'Frontend: 0.0.1\n' };
+      var backendObj = {};
+      backendObj.toJSON = function(){return backendObj.data;};
+      backendObj.toString = 'Backend:\nhbp_nrp_cle: 0.0.5.dev0\nhbp_nrp_backend: 0.0.4\n';
+      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
+      nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendObj);
+      expect($rootScope.softwareVersions).toBe(frontendData.toString+backendObj.toString);
     });
 
     it('should show experiments sorted by name', function () {

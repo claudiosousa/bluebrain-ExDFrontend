@@ -1,43 +1,29 @@
 (function () {
   'use strict';
 
-  var getLatestReleasedVersion = function (version) {
-    var versionComponents = {};
-    var versionRegex = /^(\d+)\.(\d+)\.(\d+)(\.(\w+))?$/g;
-    var match = versionRegex.exec(version);
-    if (match && match.length >= 4) {
-      versionComponents.major = match[1];
-      versionComponents.minor = match[2];
-      versionComponents.patch = match[3];
-      if (match.length === 6) {
-        versionComponents.dev = match[5];
-      }
-      return versionComponents;
-    }
-  };
-
-  var parseResponseComponentVersions = function (data) {
+  var parseBackendVersion = function(data){
     var result = {};
-
+    var versionString = "Backend:\n";
     angular.forEach(angular.fromJson(data), function (value, key) {
-      result[key] = value;
-      var components = getLatestReleasedVersion(value);
-      if (components) {
-        result[key + '_components'] = components;
-      }
+      versionString += "\t" + key + ": " + value + "\n";
     });
+    result.toString = versionString;
     return result;
   };
-
+  var parseFrontendVersion = function(data){
+    var result = {};
+    result.toString = "Frontend: "+ angular.fromJson(data).hbp_nrp_esv + "\n";
+    return result;
+  };
   angular.module('nrpBackendAbout', ['ngResource', 'nrpErrorHandlers'])
-    // This service provides the versions of the Closed Loop Engine and the Experiment Designer back-ends
+    // This service provides the versions of the Frontend and backend as a string
     .factory('nrpBackendVersions', ['$resource', 'serverError', function ($resource, serverError) {
       return function (baseUrl) {
         return $resource(baseUrl + '/version', {}, {
           get: {
             method: 'GET',
             interceptor: { responseError: serverError.displayHTTPError },
-            transformResponse: parseResponseComponentVersions
+            transformResponse: parseBackendVersion
           }
         });
       };
@@ -48,7 +34,7 @@
         get: {
           method: 'GET',
           interceptor: { responseError: serverError.displayHTTPError },
-          transformResponse: parseResponseComponentVersions
+          transformResponse: parseFrontendVersion
         }
       });
     }]);
