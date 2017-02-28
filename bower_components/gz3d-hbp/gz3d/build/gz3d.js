@@ -210,6 +210,10 @@ GZ3D.AnimatedModel.prototype.loadAnimatedModel = function(modelName) {
             applyDefaultMaterial = false;
           }
         }
+        else if (child.material instanceof THREE.MeshPhongMaterial)
+        {
+            applyDefaultMaterial = false;
+        }
 
         if (applyDefaultMaterial)
         {
