@@ -191,7 +191,7 @@
           $($window).on('resize', resizeGZ3D, false);
 
           //TODO: is this necessary?
-          this.offsetHeightListenerUnregister = $rootScope.$watch(function() {
+          offsetHeightListenerUnregister = $rootScope.$watch(function() {
             return that.container.offsetHeight;
           }, function(newValue, oldValue) {
             if ((newValue !== oldValue) && angular.isDefined(that.scene)) { resizeGZ3D(); }
