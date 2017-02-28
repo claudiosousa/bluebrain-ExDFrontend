@@ -520,28 +520,24 @@
     });
 
     it('should test the createEntitiesListFromBrainFiles success', function () {
-      var firstBrain, secondBrain;
+      spyOn(collabFolderAPIService, 'downloadFile')
+        .and.callFake(function () {
+          var deferred = $q.defer();
+          deferred.resolve('"""test"""');
+          return deferred.promise;
+        });
       var files = {
         results: [
           {
-            _description: 'FakeDescription1',
-            _name: 'tranferFunction1.py'
-          },
-          {
-            _description: 'FakeDescription2',
-            _name: 'tranferFunction2.py'
-          },
-          {
-            _description: 'FakeDescription3.py',
-            _name: 'tranferFunction3.py'
+            _name: 'fakeName',
+            _uuid: 'fakeuuid'
           }]
       };
       var result = scope.createEntitiesListFromBrainFiles(files);
       result.then(function (brainFiles) {
-        firstBrain = brainFiles[0];
-        secondBrain = brainFiles[1];
-        expect(firstBrain.name).toEqual('tranferFunction1');
-        expect(secondBrain.description).toEqual('FakeDescription2');
+        expect(collabFolderAPIService.downloadFile).toHaveBeenCalledWith('fakeuuid');
+        expect(brainFiles[0].name).toEqual('fakeName');
+        expect(brainFiles[0].description).toEqual('test');
       });
     });
 

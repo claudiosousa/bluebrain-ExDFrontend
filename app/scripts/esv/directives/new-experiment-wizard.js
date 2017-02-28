@@ -220,21 +220,15 @@
                         };
 
                         $scope.createEntitiesListFromBrainFiles = function (brainFiles) {
-                            var deffered = $q.defer();
-                            var brainsList = [];
-                            var counter = 0;
-                            brainFiles.results.forEach(function (brain) {
-                                var brainInstance = {
-                                    name: brain._name.split(".")[0],
-                                    id: counter,
-                                    description: brain._description || 'Brain description'
-                                };
-                                brainsList.push(brainInstance);
-                                counter++;
-                            });
-                            if (brainsList) {
-                                return $q.resolve(brainsList);
-                            }
+                           return $q.all(brainFiles.results.map(function (brain) {
+                                return collabFolderAPIService.downloadFile(brain._uuid).then(function(resp) {
+                                   return {
+                                        name: brain._name.split(".")[0],
+                                        id: brain._name.split(".")[0],
+                                        description: resp.match(/^"""([^\"]*)"""/m)[1].trim() || 'Brain description'
+                                    };
+                                });
+                            }));
                         };
 
                         $scope.createEntitiesListFromEntityFiles = function (files) {
