@@ -40,7 +40,7 @@
           var fontSize = Number(scope.ctx[0].font.split('px')[0]);
 
           // Keeps messages to redraw spikes when spike monitor is resized
-          var messages = [];
+          var messages = scope.messages = [];
 
           // Called each time a spike message is received
           scope.onNewSpikesMessageReceived = function (message) {

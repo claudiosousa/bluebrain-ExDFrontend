@@ -17,7 +17,7 @@
 
 # Generated Files/Folders #
 ###########################
-/node_modules
+**/node_modules
 /*unit.xml
 /coverage
 /npm-debug.log
