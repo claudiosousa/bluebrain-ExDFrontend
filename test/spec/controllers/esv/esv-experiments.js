@@ -69,7 +69,7 @@
       $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory, nrpBackendVersions, nrpFrontendVersion,collabConfigService;
 
     var serverErrorMock = {
-      displayHTTPError: jasmine.createSpy('displayHTTPError')
+      displayHTTPError: jasmine.createSpy('displayHTTPError').and.callFake(function() { return $q.reject(); })
     };
    var nrpBackendVersionsObject = {
      get: jasmine.createSpy('get')

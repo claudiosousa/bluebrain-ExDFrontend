@@ -3,8 +3,8 @@
 
   angular.module('experimentServices', ['environmentServiceModule'])
     .service('experimentProxyService',
-    ['$http', '$q', 'bbpConfig',
-      function ($http, $q, bbpConfig) {
+    ['$http', '$q', 'bbpConfig', 'serverError',
+      function ($http, $q, bbpConfig, serverError) {
 
         var getProxyUrl = function () {
           return bbpConfig.get('api.proxy.url');
@@ -20,12 +20,14 @@
 
         function getServerConfig(serverId) {
           return $http.get(getProxyUrl() + '/server/' + serverId)
-            .then(function (response) { return response.data; });
+            .then(function (response) { return response.data; })
+            .catch(serverError.displayHTTPError);
         }
 
         function getImages(experimentIds) {
           return $http.get(getProxyUrl()  + '/experimentImage/' + experimentIds.join(','))
-            .then(function (response) { return response.data; });
+            .then(function (response) { return response.data; })
+            .catch(serverError.displayHTTPError);
         }
 
         function getExperiments() {
@@ -36,12 +38,14 @@
 
         function getJoinableServers(contextId) {
           return $http.get(getProxyUrl() + '/joinableServers/' + contextId)
-            .then(function (response) { return response.data; });
+            .then(function (response) { return response.data; })
+            .catch(serverError.displayHTTPError);
         }
 
         function getAvailableServers(experimentId) {
           return $http.get(getProxyUrl() + '/availableServers/' + experimentId)
-            .then(function (response) { return response.data; });
+            .then(function (response) { return response.data; })
+            .catch(serverError.displayHTTPError);
         }
       }
     ]);

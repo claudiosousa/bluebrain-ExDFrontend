@@ -3,14 +3,26 @@
 
   var module = angular.module('nrpErrorHandlers', ['hbpCommon', 'nrpAngulartics', 'ui.bootstrap.modal']);
 
-  module.service('nrpErrorService', function () {
-    var NrpError = function () {
+  module.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.interceptors.push(['$q', function($q) {
+      return {
+        'responseError': function(error, a, b) {
+          var server = error.config.url.match(/\/\/([^:/]*)/);
+          error.server = server && server[1];
+          return $q.reject(error);
+        }
+      };
+    }]);
+  }]);
+
+  module.service('nrpErrorService', function() {
+    var NrpError = function() {
       this.title = 'Error';
       this.label = 'OK';
       this.template = 'An error occured. Please try again later.';
     };
     return {
-      getBasicError: function(){
+      getBasicError: function() {
         return new NrpError();
       },
       getHtmlTitle: function(errorMessage) {
@@ -34,7 +46,7 @@
         }
         return null;
       },
-      httpError: function (response) {
+      httpError: function(response) {
         var error = new NrpError();
         if (response) {
           error.code = response.status;
@@ -45,7 +57,7 @@
             // (e.g., 'Bad Gateway Error')
             error.template = errorSource; // default value of the displayed error message
             var message;
-            if (typeof(errorSource) === 'string') {
+            if (typeof (errorSource) === 'string') {
               // It could be an nginx 'Bad Gateway Error'
               message = errorSource;
             } else {
@@ -58,7 +70,7 @@
               // it may contain HTML code with useful information
               var nginxString = this.getNginxString(message);
               if (!_.isNull(nginxString)) {
-                 error.template = error.template + ' (' + nginxString + ').';
+                error.template = error.template + ' (' + nginxString + ').';
               }
             }
             if (errorSource.type && errorSource.message) {
@@ -85,12 +97,14 @@
     'hbpDialogFactory',
     'nrpAnalytics',
     '$log',
+    '$q',
     'NO_CLUSTER_AVAILABLE_ERR_MSG',
     function(
       nrpErrorService,
       hbpDialogFactory,
       nrpAnalytics,
       $log,
+      $q,
       NO_CLUSTER_AVAILABLE_ERR_MSG
     ) {
       var filter = function(response) {
@@ -125,8 +139,8 @@
 
       var displayHTTPError = function(response, keepErrorMessage) {
         response = angular.extend({
-            human_readable: nrpErrorService.httpError(response).template
-          },
+          human_readable: nrpErrorService.httpError(response).template
+        },
           response
         );
         if (filter(response)) {
@@ -134,7 +148,7 @@
           var nrpError = nrpErrorService.getBasicError();
 
           var errorSource = response.data;
-          if(keepErrorMessage){
+          if (keepErrorMessage) {
             nrpError.template = response.human_readable;
           }
           if (errorSource && errorSource.message) {
@@ -148,12 +162,15 @@
             }
           }
 
+          response.server && (nrpError.template += ' (host: ' + response.server + ')');
+
           // display the parsed http error
           displayError(nrpError);
         }
         else {
           $log.debug(response);
         }
+        return $q.reject(response);
       };
 
       return {
