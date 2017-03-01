@@ -3,7 +3,7 @@
   "version": "0.0.0",
 
   "authors": [
-    "BBP / HBP, Epfl"
+    "HBP, Epfl"
   ],
 
   "repository": {
@@ -18,7 +18,7 @@
     "src/brain3Dneuronrepresentation.js",
     "shaders/brain3Dshaders.js"
   ],
-  "license": "MIT",
+  "license": "GPL2",
   "homepage": "",
   "private": true
 }

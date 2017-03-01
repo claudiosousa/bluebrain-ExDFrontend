@@ -32,6 +32,6 @@
     "type": "git",
     "url": "ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer"
   },
-  "author": "BBP/EPFL",
-  "license": "© 2016, BBP/EPFL, all rights reserved"
+  "author": "HBP",
+  "license": "GPL2"
 }
