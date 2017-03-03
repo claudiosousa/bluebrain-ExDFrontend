@@ -206,6 +206,7 @@
             stateMachine.name = scope.getStateMachineName(id);
             scope.stateMachines.unshift(stateMachine);
             addedStateMachineCount = addedStateMachineCount + 1;
+            scope.update(stateMachine);
             scope.collabDirty = environmentService.isPrivateExperiment();
             autoSaveService.setDirty(DIRTY_TYPE, scope.stateMachines);
 
@@ -258,7 +259,6 @@
                 $timeout(function() {
                   var code = e.target.result;
                   var sm = scope.create(code);
-                  scope.update(sm);
                 });
               };
               textReader.readAsText(file);
