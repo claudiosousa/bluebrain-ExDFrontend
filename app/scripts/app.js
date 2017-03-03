@@ -58,7 +58,8 @@
       'hbpCollaboratoryCore',
       'editorsPanelModule'])
     // Routes
-    .config(function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
+    .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
+      function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
       // Configuring routes using `angular-ui-router` states.
       // (See https://github.com/angular-ui/ui-router/wiki)
 
@@ -139,7 +140,19 @@
       $urlRouterProvider.otherwise('/');
 
       environmentServiceProvider.$get().initialize();
-    })
+    }])
+    .config(['$compileProvider', '$logProvider', 'environmentServiceProvider',
+      function($compileProvider, $logProvider, environmentServiceProvider) {
+        if (environmentServiceProvider.$get().isDevMode())
+          return;
+        $compileProvider.debugInfoEnabled(false);
+        $logProvider.debugEnabled(false);
+      }
+    ]).run(['$log', 'environmentService', function($log, environmentService) {
+      if (environmentService.isDevMode())
+        return;
+      window.console.debug = $log.debug;
+    }])
     .factory('timeoutHttpInterceptor', function () {
       // Here we specify a global http request timeout value for all requests, for all browsers
       return {
@@ -198,7 +211,7 @@
       }
 
       angular.element(document).ready(function () {
-        angular.bootstrap(document, ['exdFrontendApp']);
+        angular.bootstrap(document, ['exdFrontendApp'], { strictDi: true });
       });
     };
 

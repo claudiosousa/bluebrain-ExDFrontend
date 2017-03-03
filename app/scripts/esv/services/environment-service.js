@@ -13,12 +13,12 @@
 
       function initialize() {
         $rootScope.$on('$locationChangeStart', function() {
-          $rootScope.devMode = !!$location.search().dev;
+          $rootScope.devMode = isDevMode();
         });
       }
 
       function isDevMode() {
-        return $rootScope.devMode;
+        return !!$location.search().dev;
       }
 
       function isPrivateExperiment() {
@@ -30,4 +30,4 @@
       }
     }]);
 
-} ());
+}());
