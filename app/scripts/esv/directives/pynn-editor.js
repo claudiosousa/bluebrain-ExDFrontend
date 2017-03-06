@@ -14,9 +14,10 @@
     'RESET_TYPE',
     'codeEditorsServices',
     'environmentService',
+    'downloadFileService',
     function ($timeout, $rootScope,backendInterfaceService, documentationURLs,
     hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,
-    RESET_TYPE, codeEditorsServices, environmentService) {
+    RESET_TYPE, codeEditorsServices, environmentService, downloadFileService) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -349,6 +350,23 @@
             scope.pynnScript = autoSaved[0];
             scope.populations = autoSaved[1];
           });
+
+          scope.download = function(){
+            var href = URL.createObjectURL(new Blob([scope.pynnScript], { type: "plain/text", endings: 'native' }));
+            downloadFileService.downloadFile(href, 'pynnBrain.py');
+          };
+
+          scope.uploadFile = function(file) {
+            if (!file  || file.$error)
+              return;
+
+            var textReader = new FileReader();
+            textReader.onload = function(e) {
+              scope.pynnScript = e.target.result;
+              scope.apply(0);
+            };
+            textReader.readAsText(file);
+          };
         }
       };
     }]);

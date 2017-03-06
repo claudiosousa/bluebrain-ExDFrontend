@@ -83,12 +83,17 @@ describe('Directive: pynnEditor', function () {
     }
   };
 
+  var downloadFileServiceMock = {
+    downloadFile : jasmine.createSpy('downloadFile')
+  };
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('simulationInfo' , simulationInfoMock);
+    $provide.value('downloadFileService' , downloadFileServiceMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,
@@ -399,6 +404,29 @@ describe('Directive: pynnEditor', function () {
       populations = isolateScope.preprocessPopulations(populations);
       angular.forEach(populations, function(population){
         expect(typeof(population.list)).toBe('string');
+      });
+    });
+  });
+
+  describe('Pynn-editor Upload & download', function () {
+
+    beforeEach(function () {
+      // Mock functions that access elements that are not available in test environment
+      //editorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
+    });
+
+    it('should call downloadFileService.downloadFile with the right parameters when downloading a file', function() {
+      isolateScope.download();
+      expect(downloadFileServiceMock.downloadFile.calls.mostRecent().args[0]).toMatch(/^blob:/);
+      expect(downloadFileServiceMock.downloadFile.calls.mostRecent().args[1]).toEqual('pynnBrain.py');
+    });
+
+    it('should set the pynnScript when one uploads a file', function(done) {
+      var new_pynn_script = 'new_pynn_script';
+      isolateScope.uploadFile(new Blob([new_pynn_script]));
+      setTimeout(function(){
+        expect(isolateScope.pynnScript).toBe(new_pynn_script);
+        done();
       });
     });
   });
