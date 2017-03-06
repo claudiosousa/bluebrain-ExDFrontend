@@ -11,8 +11,8 @@
     angular.module('exdFrontendApp')
     .constant('AUTO_SAVE_INTERVAL', 20 * 1000)
     .constant('AUTO_SAVE_FILE', 'env_editor.autosaved')
-    .service('autoSaveService', ['$stateParams', '$q', 'AUTO_SAVE_INTERVAL', 'AUTO_SAVE_FILE', 'tempFileService',
-      function ($stateParams, $q, AUTO_SAVE_INTERVAL, AUTO_SAVE_FILE, tempFileService) {
+    .service('autoSaveService', ['$stateParams', '$q', 'AUTO_SAVE_INTERVAL', 'AUTO_SAVE_FILE', 'tempFileService', 'environmentService',
+      function ($stateParams, $q, AUTO_SAVE_INTERVAL, AUTO_SAVE_FILE, tempFileService, environmentService) {
 
         var dirtyDataCol = {},
           loaded = false,
@@ -48,7 +48,7 @@
          * @param {} dirtyData
          */
         function setDirty(dirtyType, dirtyData) {
-          if (!$stateParams.ctx)
+          if (!environmentService.isPrivateExperiment())
             return;
           dirtyDataCol[dirtyType] = dirtyData;
           scheduleDirtyDataSaving();
@@ -61,7 +61,7 @@
          * @param {} dirtyType
          */
         function clearDirty(dirtyType) {
-          if(!$stateParams.ctx)
+          if(!environmentService.isPrivateExperiment())
             return;
           delete dirtyDataCol[dirtyType];
           if(_.isEmpty(dirtyDataCol))

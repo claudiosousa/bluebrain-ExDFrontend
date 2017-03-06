@@ -84,7 +84,7 @@
           return service;
 
           function initialize() {
-            if (environmentService.isPrivateExperiment() && contextId && experimentId) {
+            if (environmentService.isPrivateExperiment() && experimentId) {
               var exp = {};
               exp[experimentId] = {configuration:{"maturity": "production"}};
               service.experiments = experimentProxyService.getJoinableServers(contextId)
@@ -145,7 +145,7 @@
 
           function updateExperimentImages() {
             service.experiments.then(function (experiments) {
-              if (environmentService.isPrivateExperiment() && contextId && experiments.length === 1){
+              if (environmentService.isPrivateExperiment() && experiments.length === 1){
                 loadCollabImage(experiments[0]).then(function(collabImage){
                   experiments[0].imageData = collabImage;
                 }).catch(function(){
@@ -174,7 +174,7 @@
           */
           function getExperimentDetailsFromCollab(fileName, downloadHeaders) {
             var promise = $q.defer();
-            if (environmentService.isPrivateExperiment() && contextId && experimentId && experimentFolderUUID){
+            if (environmentService.isPrivateExperiment() && experimentId && experimentFolderUUID){
               collabFolderAPIService.getFolderFile(experimentFolderUUID, fileName)
               .then(function(fileData){
                 if (!fileData || !fileData._uuid){
@@ -274,7 +274,7 @@
           }
 
           function refreshExperimentsAndCluster() {
-            if (environmentService.isPrivateExperiment() && contextId && experimentId){
+            if (environmentService.isPrivateExperiment() && experimentId){
               experimentProxyService.getJoinableServers(contextId)
                 .then(function(joinableServers){
                   experimentsDict[experimentId].joinableServers = joinableServers;

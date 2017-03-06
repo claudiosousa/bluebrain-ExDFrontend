@@ -8,7 +8,7 @@ describe('Services: AutoSaveService', function () {
   var tempFileService, stateParams,
     saveResponse,
     checkResponse;
-  var $rootScope, $q, autoSaveService, AUTO_SAVE_INTERVAL;
+  var $rootScope, $q, autoSaveService, AUTO_SAVE_INTERVAL, environmentService;
 
   var lodash, lodashWindowMock;
 
@@ -47,12 +47,13 @@ describe('Services: AutoSaveService', function () {
     $provide.value('$stateParams', stateParams);
   }));
 
-  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _autoSaveService_, _AUTO_SAVE_INTERVAL_) {
+  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _autoSaveService_, _AUTO_SAVE_INTERVAL_, _environmentService_) {
     $rootScope = _$rootScope_;
     $q = _$q_;
     autoSaveService = _autoSaveService_;
     AUTO_SAVE_INTERVAL = _AUTO_SAVE_INTERVAL_;
-
+    environmentService = _environmentService_;
+    environmentService.setPrivateExperiment(true);
     $httpBackend.whenGET(new RegExp('.*')).respond(200);
   }));
 
@@ -96,7 +97,8 @@ describe('Services: AutoSaveService', function () {
   });
 
   it('should not save temporary work if not a collab experiement', function () {
-    stateParams.ctx = null;
+    environmentService.setPrivateExperiment(false);
+
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
 
     expect(tempFileService.saveDirtyData).not.toHaveBeenCalled();
@@ -115,7 +117,8 @@ describe('Services: AutoSaveService', function () {
   });
 
   it('should do nothing when clearDirty outside of collab experiment', function () {
-    stateParams.ctx = null;
+    environmentService.setPrivateExperiment(false);
+
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
     autoSaveService.clearDirty(DIRTY_TYPE);
 

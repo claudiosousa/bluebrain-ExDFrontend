@@ -7,7 +7,7 @@ describe('Services: saveErrorsService', function () {
 
   var collabFolderAPIService, tempFileService, stateParams,
     previouslySavedFile;
-  var $rootScope, $q, saveErrorsService, SAVE_FILE;
+  var $rootScope, $q, saveErrorsService, SAVE_FILE, environmentService;
 
   beforeEach(module('exdFrontendApp'));
 
@@ -34,11 +34,13 @@ describe('Services: saveErrorsService', function () {
     $provide.value('$stateParams', stateParams);
   }));
 
-  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _saveErrorsService_, _SAVE_FILE_) {
+  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _saveErrorsService_, _SAVE_FILE_, _environmentService_) {
     $rootScope = _$rootScope_;
     $q = _$q_;
     saveErrorsService = _saveErrorsService_;
     SAVE_FILE = _SAVE_FILE_;
+    environmentService = _environmentService_;
+    environmentService.setPrivateExperiment(true);
 
     $httpBackend.whenGET(new RegExp('.*')).respond(200);
   }));
@@ -99,7 +101,7 @@ describe('Services: saveErrorsService', function () {
   });
 
   it('should not delete work if not a collab experiement', function () {
-    stateParams.ctx = null;
+    environmentService.setPrivateExperiment(false);
     saveErrorsService.clearDirty(DIRTY_TYPE);
 
     expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();

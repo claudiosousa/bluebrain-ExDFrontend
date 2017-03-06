@@ -4,9 +4,9 @@
   angular.module('exdFrontendApp')
     .constant('SAVE_FILE', 'editor_errors.saved')
     .service('saveErrorsService', ['$stateParams', '$q', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
-      'hbpDialogFactory', 'SAVE_FILE','tempFileService',
+      'hbpDialogFactory', 'SAVE_FILE','tempFileService', 'environmentService',
       function ($stateParams, $q, collabFolderAPIService, hbpIdentityUserDirectory,
-        hbpDialogFactory, SAVE_FILE, tempFileService) {
+        hbpDialogFactory, SAVE_FILE, tempFileService, environmentService) {
         /*
         This service can be used to save data (which contains Python errors) to an error file. e.g. TFs, SMs, Brain Editor.
         It's needed as if they are saved to the normal file, further simulations are not possible.
@@ -27,7 +27,7 @@
           return tempFileService.saveDirtyData(SAVE_FILE, false, dataObj, dirtyType);
         }
         function clearDirty(dirtyType){
-          if(!$stateParams.ctx)
+          if(!environmentService.isPrivateExperiment())
             return $q.reject();
           return collabFolderAPIService.getExperimentFolderId($stateParams.ctx)
             .then(function(folderId){
