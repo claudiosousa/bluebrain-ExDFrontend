@@ -31,7 +31,7 @@
           {
             if (response)
             {
-              if (simulationInfo.contextID)
+              if (environmentService.isPrivateExperiment() && simulationInfo.contextID)
               {
                 return collabFolderAPIService.getExperimentFolderId(simulationInfo.contextID)
                   .then(function (folderId)
