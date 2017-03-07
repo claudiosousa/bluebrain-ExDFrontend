@@ -380,7 +380,7 @@
               gz3d.scene.resetView();
             }
           } else { // Backend-bound reset
-            if (environmentService.isPrivateExperiment() && simulationInfo.contextID) { //reset from collab
+            if (environmentService.isPrivateExperiment()) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
               $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
 

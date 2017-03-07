@@ -8,7 +8,8 @@ describe('Services: tempFileService', function () {
   var collabFolderAPIService, hbpIdentityUserDirectory, hbpDialogFactory, stateParams,
     previouslySavedFile,
     createFileResponse,
-    confirmRestoreTempWorkUserReponse;
+    confirmRestoreTempWorkUserReponse,
+    environmentService;
   var $rootScope, $q, tempFileService;
 
   beforeEach(module('exdFrontendApp'));
@@ -36,10 +37,12 @@ describe('Services: tempFileService', function () {
     $provide.value('$stateParams', stateParams);
   }));
 
-  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _tempFileService_) {
+  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _tempFileService_, _environmentService_) {
     $rootScope = _$rootScope_;
     $q = _$q_;
     tempFileService = _tempFileService_;
+    environmentService = _environmentService_;
+    environmentService.setPrivateExperiment(true);
 
     $httpBackend.whenGET(new RegExp('.*')).respond(200);
   }));
@@ -86,7 +89,7 @@ describe('Services: tempFileService', function () {
   });
 
   it('should not save temporary work if not a collab experiement', function () {
-    stateParams.ctx = null;
+    environmentService.setPrivateExperiment(false);
     tempFileService.saveDirtyData('filename', true, DIRTY_TYPE, DIRTY_DATA);
 
     expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
@@ -101,7 +104,7 @@ describe('Services: tempFileService', function () {
   });
 
   it('should do nothing when removeSavedWork outside of collab experiment', function () {
-    stateParams.ctx = null;
+    environmentService.setPrivateExperiment(false);
     tempFileService.removeSavedWork('filename');
     expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
     $rootScope.$digest();
@@ -143,7 +146,7 @@ describe('Services: tempFileService', function () {
   });
 
   it('should not retrived saved data if not in a collab experiment', function () {
-    stateParams.ctx = null;
+    environmentService.setPrivateExperiment(false);
     tempFileService.checkSavedWork();
     $rootScope.$digest();
     expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();

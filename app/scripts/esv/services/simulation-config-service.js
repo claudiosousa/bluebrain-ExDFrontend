@@ -31,7 +31,7 @@
           {
             if (response)
             {
-              if (environmentService.isPrivateExperiment() && simulationInfo.contextID)
+              if (environmentService.isPrivateExperiment())
               {
                 return collabFolderAPIService.getExperimentFolderId(simulationInfo.contextID)
                   .then(function (folderId)
@@ -77,7 +77,7 @@
 
         function saveConfigFile(configType, data)
         {
-          if (environmentService.isPrivateExperiment() && simulationInfo.contextID)  // A config file can be saved only in collab mode
+          if (environmentService.isPrivateExperiment())  // A config file can be saved only in collab mode
           {
 
             collabFolderAPIService.getExperimentFolderId(simulationInfo.contextID).then(function (folderId)

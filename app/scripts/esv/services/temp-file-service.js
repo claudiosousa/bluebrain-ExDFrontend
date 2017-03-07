@@ -3,9 +3,9 @@
 
   angular.module('exdFrontendApp')
     .service('tempFileService', ['$stateParams', '$q', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
-      'hbpDialogFactory',
+      'hbpDialogFactory', 'environmentService',
       function ($stateParams, $q, collabFolderAPIService, hbpIdentityUserDirectory,
-        hbpDialogFactory) {
+        hbpDialogFactory, environmentService) {
 
         var dirtyDataCol = {},
           getFolderId = _.memoize(collabFolderAPIService.getExperimentFolderId);
@@ -19,7 +19,7 @@
 
         function saveDirtyData(filename, overwrite, data, dirtyType) {
           /* Save dirty data to a file. If overwrite is false, only this type of data will be changed in the file. */
-          if (!$stateParams.ctx)
+          if (!environmentService.isPrivateExperiment())
             return $q.reject();
           var defer = $q.defer();
           getFolderId($stateParams.ctx)
@@ -50,7 +50,7 @@
         }
 
         function removeSavedWork(filename) {
-          if (!$stateParams.ctx)
+          if (!environmentService.isPrivateExperiment())
             return $q.reject();
           return getFolderId($stateParams.ctx)
             .then(function (folderId) {
@@ -59,7 +59,7 @@
         }
 
         function checkSavedWork(filename, callbacks, confirmBox) {
-          if (!$stateParams.ctx)
+          if (!environmentService.isPrivateExperiment())
             return $q.reject();
           return retrieveSavedWork(filename, confirmBox)
             .then(function (savedWork) {
