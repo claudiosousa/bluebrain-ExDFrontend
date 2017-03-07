@@ -1,6 +1,6 @@
 {
   "name": "exdfrontend",
-  "version": "1.2.23",
+  "version": "1.2.24",
   "description": "Neurorobotics experiment designer",
   "dependencies": {
     "n3-charts": "2.0.28",
