@@ -6,7 +6,7 @@ describe('Services: userContextService', function () {
   var userContextService;
 
   var $rootScope, $scope, $window, $q;
-  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory;
+  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory, environmentService;
 
   var remoteProfileMock, lockServiceMock, cancelLockServiceMock;
 
@@ -71,7 +71,8 @@ describe('Services: userContextService', function () {
   // inject dependencies
   beforeEach(function () {
     inject(function (_$rootScope_, _$window_, _$q_, _userContextService_, _userNavigationService_,
-                     _collabExperimentLockService_, _simulationInfo_, _bbpConfig_, _hbpIdentityUserDirectory_)
+                     _collabExperimentLockService_, _simulationInfo_, _bbpConfig_, _hbpIdentityUserDirectory_,
+                     _environmentService_)
     {
       userContextService = _userContextService_;
 
@@ -84,6 +85,7 @@ describe('Services: userContextService', function () {
       simulationInfo = _simulationInfo_;
       bbpConfig = _bbpConfig_;
       hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
+      environmentService = _environmentService_;
     });
   });
 
@@ -179,7 +181,7 @@ describe('Services: userContextService', function () {
     beforeEach(function() {
       window.bbpConfig.localmode.forceuser = false;
       simulationInfo.isCollabExperiment = true;
-
+      environmentService.setPrivateExperiment(true);
       userContextService.init();
     });
 

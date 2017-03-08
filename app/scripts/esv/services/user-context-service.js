@@ -6,10 +6,10 @@
 
   .factory('userContextService', [
     '$window',
-    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'hbpIdentityUserDirectory',
+    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'hbpIdentityUserDirectory', 'environmentService',
     function (
       $window,
-      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory) {
+      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory, environmentService) {
 
       function UserContextService() {
 
@@ -35,7 +35,7 @@
             that.userID = that.ownerID = bbpConfig.get('localmode.ownerID');
           }
 
-          if (simulationInfo.isCollabExperiment) {
+          if (environmentService.isPrivateExperiment()) {
             // only use locks if we are in a collab
             this.lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
             this.cancelLockSubscription = this.lockService.onLockChanged(that.onLockChangedCallback);
@@ -45,6 +45,8 @@
         };
 
         this.deinit = function() {
+          if (!environmentService.isPrivateExperiment())
+            return;
           this.cancelLockSubscription();
           this.removeEditLock(true);
         };
