@@ -895,6 +895,8 @@ GZ3D.Composer.prototype.initView = function (view)
 
 GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 {
+    var cs = this.gz3dScene.normalizedComposerSettings;
+
     if (this.pbrMaterial)
     {
         if (node.material.pbrMaterialDescription !== undefined)
@@ -960,7 +962,9 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                 node.pbrMeshMaterial.roughness = 1.0;
                 node.pbrMeshMaterial.metalness = 1.0;
                 node.pbrMeshMaterial.skinning = node.stdMeshMaterial.skinning;
-                node.pbrMeshMaterial.aoMapIntensity = 3.0;
+                node.pbrMeshMaterial.aoMapIntensity = cs.pbrAOMapIntensity?cs.pbrAOMapIntensity:1.0;
+
+
             }
 
             node.pbrMeshMaterial.envMap = this.currenSkyBoxTexture; // Update skybox
@@ -979,6 +983,64 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
             node.material = node.stdMeshMaterial;
             node.material.needsUpdate = true;
         }
+    }
+};
+
+/**
+ * Apply shadow settings
+ *
+ */
+
+GZ3D.Composer.prototype.applyShadowSettings = function ()
+{
+    var cs = this.gz3dScene.normalizedComposerSettings;
+
+    if (cs.shadowSettings)
+    {
+        this.scene.traverse(function (node)
+        {
+            for (var i = 0; i < cs.shadowSettings.length; i = i + 1)
+            {
+                var settings = cs.shadowSettings[i];
+
+                if (node.name===settings.lightName && node instanceof THREE.Light)
+                {
+                    if (settings.cameraNear)
+                    {
+                         node.shadow.camera.near = settings.cameraNear;
+                    }
+
+                    if (settings.cameraFar)
+                    {
+                        node.shadow.camera.far = settings.cameraFar;
+                    }
+
+                    if (settings.mapSize)
+                    {
+                        node.shadow.mapSize.width = settings.mapSize;
+                        node.shadow.mapSize.height = settings.mapSize;
+                    }
+
+                    if (settings.cameraBottom)
+                    {
+                        node.shadow.camera.bottom = settings.cameraBottom;
+                        node.shadow.camera.left = settings.cameraLeft;
+                        node.shadow.camera.right = settings.cameraRight;
+                        node.shadow.camera.top = settings.cameraTop;
+                    }
+
+                    if (settings.bias)
+                    {
+                        node.shadow.bias = settings.bias;
+                    }
+
+                    if (settings.radius)
+                    {
+                        node.shadow.radius = settings.radius;
+                    }
+                }
+            }
+        });
     }
 };
 
@@ -1004,7 +1066,10 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
         cs.pbrMaterial = true;
     }
 
-    this.gz3dScene.setShadowMaps(cs.shadows);   // Update shadow state
+    // Shadows
+
+    this.applyShadowSettings();
+    this.gz3dScene.setShadowMaps(cs.shadows);
 
     // Fog
 
@@ -1344,6 +1409,21 @@ GZ3D.Composer.prototype.updateComposerWithMasterSettings = function()
                 this.gz3dScene.normalizedComposerSettings.bloom = false;
                 this.gz3dScene.normalizedComposerSettings.fog = false;
                 this.gz3dScene.normalizedComposerSettings.sun = '';
+
+                if (this.gz3dScene.normalizedComposerSettings.shadowSettings)
+                {
+                    for (var i = 0; i < this.gz3dScene.normalizedComposerSettings.shadowSettings.length; i = i + 1)
+                    {
+                        var settings = this.gz3dScene.normalizedComposerSettings.shadowSettings[i];
+
+                        if (settings.mapSize >= 1024)
+                        {
+                            settings.mapSize = 1024;
+                        }
+                    }
+                }
+
+
             /* falls through */
         }
     }
