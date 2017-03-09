@@ -308,15 +308,6 @@
               </div>
               <!-- toggle robot camera view -->
 
-              <!-- environment settings panel -->
-              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
-                  ng-class="{'highlighted': currentSelectedUIElement === UI.ENVIRONMENT_SETTINGS, 'active': showEnvironmentSettingsPanel, disabled: !helpModeActivated && environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
-                  ng-click="environmentSettingsClickHandler()"
-                  v-busy="loadingEnvironmentSettingsPanel"
-                  v-busy-label="Loading the environment settings panel">
-                <i class="fa fa-tachometer fa-2x vertcenter"></i>
-              </div>
-              <!-- environment settings panel -->
 
               <!-- navigation mode -->
               <div class="hbp-toolbar-action ng-hide"
@@ -367,7 +358,7 @@
                    ng-click="brainVisualizerButtonClickHandler()"
                    tooltip-trigger="mouseenter"
                   >
-                <i class="fa fa-asterisk fa-2x vertcenter"></i>
+                <img src="img/esv/brainvisualizer.png" width=32 height=32>
               </div>
               <!-- brain visualizer icon-->
 
@@ -383,6 +374,7 @@
                   </div>
               </div>
               <!-- log console icon -->
+
             </div>
 
             <!-- owner information -->
@@ -393,13 +385,6 @@
             <!-- owner information -->
 
             <!-- #### The following will be aligned on the right side (in reverse order) #### -->
-
-            <!-- toolbar help icon -->
-            <div class="hbp-toolbar-action right-align hide-overflow" ng-click="toggleHelpMode()">
-              <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}"></i>
-            </div>
-            <!-- toolbar help icon -->
-
             <!-- exit button -->
             <div class="hbp-toolbar-action right-align hide-overflow"
                  ng-class="{'highlighted': currentSelectedUIElement === UI.EXIT_BUTTON}"
@@ -407,6 +392,22 @@
               <i class="fa fa-sign-out fa-2x vertcenter"></i>
             </div>
             <!-- exit button -->
+            <!-- toolbar help icon -->
+            <div class="hbp-toolbar-action right-align hide-overflow" ng-click="toggleHelpMode()">
+              <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpModeActivated}"></i>
+            </div>
+            <!-- toolbar help icon -->
+
+          <!-- environment settings panel -->
+              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
+                  ng-class="{'highlighted': currentSelectedUIElement === UI.ENVIRONMENT_SETTINGS, 'active': showEnvironmentSettingsPanel, disabled: !helpModeActivated && environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
+                  ng-click="environmentSettingsClickHandler()"
+                  v-busy="loadingEnvironmentSettingsPanel"
+                  v-busy-label="Loading the environment settings panel">
+                <img src="img/esv/settings.png" width=28 height=28>
+              </div>
+              <!-- environment settings panel -->
+
 
           </div>
         </div>
