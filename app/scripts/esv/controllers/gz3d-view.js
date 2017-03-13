@@ -43,7 +43,8 @@
       ENVIRONMENT_SETTINGS: 15,
       BRAIN_VISUALIZER: 16,
       USER_NAVIGATION: 17,
-      LOG_CONSOLE: 18
+      LOG_CONSOLE: 18,
+      SERVER_VIDEO_STREAM: 19
     });
 
   angular.module('exdFrontendApp')
@@ -59,7 +60,7 @@
       'simulationInfo','hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
-      'simulationConfigService','environmentService', 'userContextService', 'editorsPanelService',
+      'simulationConfigService','environmentService', 'userContextService', 'editorsPanelService', 'videoStreamService',
       function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -71,7 +72,7 @@
         simulationInfo, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
-        simulationConfigService, environmentService, userContextService, editorsPanelService) {
+        simulationConfigService, environmentService, userContextService, editorsPanelService, videoStreamService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -826,6 +827,40 @@
             category: 'Simulation-GUI',
             value: $scope.showLogConsole
           });
+        };
+
+
+        $scope.videoStreamsAvailable = false;
+
+        function checkIfVideoStreamsAvailable() {
+          videoStreamService.getStreamUrls()
+            .then(function(videoStreams) {
+              $scope.videoStreamsAvailable = videoStreams && !!videoStreams.length;
+            });
+        }
+
+        checkIfVideoStreamsAvailable();
+
+        $scope.$watch('stateService.currentState', function() {
+          //starting the experiment might publish new video streams, so we check again
+          if (!$scope.videoStreamsAvailable && stateService.currentState === STATE.STARTED)
+            $timeout(checkIfVideoStreamsAvailable, 500);
+        });
+
+        $scope.showVideoStreams = false;
+        // refresh in a moment if the simulation has started with the directive visible
+        // in case new topics are published by the TFs
+        /**
+         * Toogle the video stream widget visibility
+         */
+        $scope.videoStreamsToggle = function() {
+          if ($scope.helpModeActivated)
+            return $scope.help($scope.UI.SERVER_VIDEO_STREAM);
+
+          if (!$scope.videoStreamsAvailable)
+            return;
+
+          $scope.showVideoStreams = !$scope.showVideoStreams;
         };
 
         $scope.missedConsoleLogs = 0;

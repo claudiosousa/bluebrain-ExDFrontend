@@ -1,15 +1,15 @@
-<div id="log-console-panel" movable movable-anchor=".log-console-panel-header" class="log-console-panel-widget" resizeable>
+<div movable movable-anchor=".widget-popup-header" class="widget-popup log-console-popup" resizeable>
     <!-- build:css(.tmp) styles/esv/log-console.css -->
     <link rel="stylesheet" href="styles/esv/log-console.css" />
     <!-- endbuild -->
 
-    <div class="log-console-panel-header">
-        <h5 class="log-console-panel-title">Log console</h5>
+    <div class="widget-popup-header">
+        <h5 class="widget-popup-title">Log console</h5>
     </div>
-    <button type="button" class="button-close" ng-click="toggleVisibility()">×</button>
-    <div class="log-console-panel-content log-list">
+    <button type="button" class="widget-popup-close" ng-click="toggleVisibility()">×</button>
+    <div class="widget-popup-content log-list">
         <span ng-if="logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
-        <div class="log" ng-repeat="log in logs">[{{log.time}}] {{log.msg}}</div>
+        <div ng-repeat="log in logs">[{{log.time}}] {{log.msg}}</div>
         <b ng-if="stateService.currentState == STATE.HALTED">The simulation detected an error situation and cannot be recovered. Any further interaction with the simulation is disabled. Please save any data and shut down the simulation.</b>
     </div>
 </div>

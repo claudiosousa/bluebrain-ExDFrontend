@@ -827,7 +827,7 @@ describe('Controller: Gz3dViewCtrl', function () {
       gz3d.scene.selectedEntity = undefined;
       scope.setMaterialOnEntity('value_does_not_matter_here');
       expect(log.error).toHaveBeenCalled();
-      expect(log.error.calls.count()).toEqual(1);
+      expect(log.error.calls.count()).toEqual(2);
 
       gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
       scope.setMaterialOnEntity('Gazebo/Red');
