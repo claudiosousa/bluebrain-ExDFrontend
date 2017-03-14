@@ -20,19 +20,15 @@
 
             <div ng-repeat="shape in shapes" style="padding-bottom:1px">
 
-                <div type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-radio-button':shape===currentShape,
-                                                'esv-brainvisualizer-radio-button-down':shape!==currentShape}" ng-click='setShape(shape);'>
+            <label class="esv-brainvisualizer-radio-label" >
+                <input class="esv-brainvisualizer-radio" type="radio"
+                    ng-model="currentValues.currentShape" ng-value="shape" ng-change="setShape(shape)">{{shape}}</label>
 
-                    <div class="esv-brainvisualizer-button-label">
-                        {{shape}}
-                    </div>
-
-                </div>
             </div>
 
         </div>
 
-        <div class="esv-brainvisualizer-box">
+       <div class="esv-brainvisualizer-box">
 
             <div class="esv-brainvisualizer-box-title">
                 Distribution
@@ -40,14 +36,41 @@
 
             <div ng-repeat="dist in distributions" style="padding-bottom:1px">
 
-                <div type="button" ng-class="{btn:true,'btn-default':true, 'esv-brainvisualizer-radio-button':dist===currentDistribution,
-                                                'esv-brainvisualizer-radio-button-down':dist!==currentDistribution}" ng-click='setDistribution(dist);'>
+            <label class="esv-brainvisualizer-radio-label" >
+                <input class="esv-brainvisualizer-radio" type="radio"
+                    ng-model="currentValues.currentDistribution" ng-value="dist" ng-change="setDistribution(dist)">{{dist}}</label>
 
-                    <div class="esv-brainvisualizer-button-label">
-                        {{dist}}
-                    </div>
+            </div>
 
-                </div>
+        </div>
+
+     <div class="esv-brainvisualizer-box">
+
+            <div class="esv-brainvisualizer-box-title">
+                Display
+            </div>
+
+            <div ng-repeat="display in displays" style="padding-bottom:1px">
+
+            <label class="esv-brainvisualizer-radio-label" >
+                <input class="esv-brainvisualizer-radio" type="radio"
+                    ng-model="currentValues.currentDisplay" ng-value="display" ng-change="setDisplay(display)">{{display}}</label>
+
+            </div>
+
+        </div>
+
+        <div class="esv-brainvisualizer-box">
+
+            <div class="esv-brainvisualizer-box-title">
+                Spikes
+            </div>
+
+            <div>
+
+                <input  type="range" ng-change="updateSpikeScaler()" ng-model="spikeScaler"
+                    step="0.01" min="0" max="1.0" ng-mouseup="$event.stopPropagation(); focus('container');" class="esv-brainvisualizer-slider"/>
+
             </div>
 
         </div>

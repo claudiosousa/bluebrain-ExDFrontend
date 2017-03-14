@@ -4,6 +4,7 @@ describe('Directive: brainvisualizer', function ()
 {
   var $rootScope, element,RESET_TYPE;
 
+  var spikeListenerServiceMock = {};
   var simulationConfigServiceMock = {};
   var backendInterfaceServiceMock = {};
 
@@ -82,6 +83,12 @@ describe('Directive: brainvisualizer', function ()
     };
 
     $provide.value('simulationConfigService', simulationConfigServiceMock);
+
+    spikeListenerServiceMock.startListening = function () { };
+    spikeListenerServiceMock.stopListening = function () { };
+
+    $provide.value('spikeListenerService', spikeListenerServiceMock);
+
   }));
 
   beforeEach(inject(function (
@@ -94,9 +101,13 @@ describe('Directive: brainvisualizer', function ()
     window.BRAIN3D = {
       MainView: jasmine.createSpy('MainView').and.returnValue(
         {updateData:function(){},
+        flushPendingSpikes:function(){},
+        setSpikeScaleFactor:function(spikefactor){_$rootScope_.spikefactor=spikefactor;},
         setPaused: function(p){_$rootScope_.pausedState = p;},
         setDistribution: function(p){_$rootScope_.distribution = p;},
+        setDisplayType: function(p){_$rootScope_.display = p;},
         setShape: function(p){_$rootScope_.shape = p;},
+        displaySpikes:jasmine.createSpy('displaySpikes'),
         updatePopulationVisibility:angular.noop  })
     };
 
@@ -108,6 +119,8 @@ describe('Directive: brainvisualizer', function ()
     window.BRAIN3D.REP_DISTRIBUTION_OVERLAP = 'Overlap';
     window.BRAIN3D.REP_DISTRIBUTION_DISTRIBUTE = 'Distribute';
     window.BRAIN3D.REP_DISTRIBUTION_SPLIT = 'Split';
+    window.BRAIN3D.DISPLAY_TYPE_POINT = 'Big Solid';
+    window.BRAIN3D.DISPLAY_TYPE_BLENDED ='Small Blended';
 
     $rootScope = _$rootScope_;
     element = $compile('<brainvisualizer></brainvisualizer>')($rootScope);
@@ -185,6 +198,24 @@ describe('Directive: brainvisualizer', function ()
   });
 
 
+  it('should handle spike scaler', function ()
+  {
+    $rootScope.showBrainvisualizerPanel = true;
+    $rootScope.$$childTail.spikeScaler = 1.0;
+    $rootScope.$digest();
+    $rootScope.$$childTail.updateSpikeScaler();
+
+    expect($rootScope.spikefactor).toBe(1.0);
+
+
+    $rootScope.$$childTail.spikeScaler = 0.0;
+    $rootScope.$digest();
+    $rootScope.$$childTail.updateSpikeScaler();
+    expect($rootScope.spikefactor).toBe(0.0);
+
+  });
+
+
   it('should set shape', function ()
   {
     $rootScope.showBrainvisualizerPanel = true;
@@ -204,6 +235,17 @@ describe('Directive: brainvisualizer', function ()
     expect($rootScope.distribution).toBe(true);
 
   });
+
+ it('should set display', function ()
+  {
+    $rootScope.showBrainvisualizerPanel = true;
+    $rootScope.$digest();
+
+    $rootScope.$$childTail.setDisplay(true);
+    expect($rootScope.display).toBe(true);
+
+  });
+
 
  it('should be able to update data', function ()
   {
