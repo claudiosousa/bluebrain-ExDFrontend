@@ -1233,13 +1233,14 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
-    it('should go back to the esv-web page when a "ctx" parameter was in the url', function() {
-      scope.exit().then(function(){
-        expect(location.path()).toEqual('/esv-web');
+    it('should go back to the esv-web page when a "ctx" parameter was in the url', function (done) {
+      scope.exit().then(function () {
+        expect(location.path()).toEqual('/esv-private');
         expect(lockServiceCancelCallback).toHaveBeenCalled();
-        expect(lockServiceMock.releaseLock).toHaveBeenCalled();
         expect(userContextService.deinit).toHaveBeenCalled();
+        done();
       });
+      scope.$digest();
     });
 
     it('should clean up when destroy is called', function () {
