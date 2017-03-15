@@ -342,7 +342,7 @@
 
           var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
           scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
-          scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived);
+          scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived, true);
 
         saveErrorsService.registerCallback(DIRTY_TYPE, function(newSMs){
           scope.stateMachines = newSMs;
