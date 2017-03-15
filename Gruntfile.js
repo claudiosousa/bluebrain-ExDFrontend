@@ -540,17 +540,15 @@ module.exports = function(grunt) {
         // Test settings
         karma: {
             options: {
+                browsers: ['PhantomJS'],
                 configFile: 'test/karma.conf.js',
                 singleRun: true
             },
             unit: {
-                browsers: ['PhantomJS'],
-                logLevel: 'DEBUG'
+                logLevel: 'ERROR'
             },
-            dev: {
-                browsers: ['PhantomJS'],
-                logLevel: 'ERROR',
-                client: { captureConsole: false }
+            debug: {
+                logLevel: 'DEBUG',
             },
             chrome: {
                 browsers: ['Chrome'],
@@ -750,16 +748,18 @@ module.exports = function(grunt) {
         grunt.task.run(['serve:' + target]);
     });
 
-    grunt.registerTask('test', [
-        'version:test',
-        'clean:server',
-        'wiredep:test',
-        'concurrent:test',
-        'autoprefixer',
-        'connect:test',
-        'karma:unit',
-        'jshint'
-    ]);
+    grunt.registerTask('test', function(debug) {
+        var tasks =  [
+            'wiredep:test',
+            'concurrent:test',
+            'autoprefixer'
+        ];
+
+        tasks.push(debug === 'debug' ? 'karma:debug' : 'karma:unit');
+        tasks.push('jshint');
+
+        grunt.task.run(tasks);
+    });
 
     grunt.registerTask('build', function() {
         var tasks = [
