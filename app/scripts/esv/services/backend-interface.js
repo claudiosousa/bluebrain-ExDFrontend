@@ -124,7 +124,7 @@
        return $resource(backendBaseUrl + '/simulation/:sim_id/reset', {}, {
          reset: {
            method: 'PUT',
-           interceptor: {responseError: serverError.displayHTTPError}
+           interceptor: {responseError: _.curry(serverError.displayHTTPError)(_, true)}
          }
        });
      };
@@ -142,7 +142,7 @@
        return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/reset', {}, {
          reset: {
            method: 'PUT',
-           interceptor: {responseError: serverError.displayHTTPError}
+           interceptor: {responseError: _.curry(serverError.displayHTTPError)(_, true)}
          }
        });
      };

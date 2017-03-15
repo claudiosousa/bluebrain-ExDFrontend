@@ -399,11 +399,6 @@
                   }
                 },
                 function () { // Failure callback
-                  hbpDialogFactory.alert(
-                    {
-                      title: 'Error.',
-                      template: 'Error while resetting from Collab storage.'
-                    });
                   //close the splash
                   if (angular.isDefined($scope.splashScreen)) {
                     splash.close();
@@ -427,11 +422,6 @@
                   }
                 },
                 function () { // Failure callback
-                  hbpDialogFactory.alert(
-                    {
-                      title: 'Error.',
-                      template: 'Error while resetting.'
-                    });
                   if (angular.isDefined($scope.splashScreen)) {
                     splash.close();
                     delete $scope.splashScreen;
