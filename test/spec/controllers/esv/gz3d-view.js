@@ -49,7 +49,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     lockServiceCancelCallback,
     NAVIGATION_MODES,
     environmentService,
-    userContextService;
+    userContextService,
+    editorsPanelService;
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -355,6 +356,13 @@ describe('Controller: Gz3dViewCtrl', function () {
     };
     $provide.value('userContextService', userContextServiceMock);
 
+    var editorsPanelServiceMock = {
+      init: jasmine.createSpy('init'),
+      deinit: jasmine.createSpy('deinit'),
+      toggleEditors: jasmine.createSpy('toggleEditors')
+    };
+    $provide.value('editorsPanelService', editorsPanelServiceMock);
+
     simulationStateObject.update.calls.reset();
     simulationStateObject.state.calls.reset();
     simulationControlObject.simulation.calls.reset();
@@ -405,7 +413,8 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _$q_,
                               _NAVIGATION_MODES_,
                               _environmentService_,
-                              _userContextService_) {
+                              _userContextService_,
+                              _editorsPanelService_) {
     controller = $controller;
     rootScope = $rootScope;
     log = _$log_;
@@ -443,6 +452,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     q = _$q_;
     environmentService = _environmentService_;
     userContextService = _userContextService_;
+    editorsPanelService = _editorsPanelService_;
 
     callback = q.defer();
     lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
@@ -547,10 +557,9 @@ describe('Controller: Gz3dViewCtrl', function () {
     });
 
     it('should toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function () {
-      scope.showEditorPanel = true;
       userContextService.editIsDisabled = false;
       scope.codeEditorButtonClickHandler();
-      expect(scope.showEditorPanel).toBe(false);
+      expect(editorsPanelService.toggleEditors).toHaveBeenCalled();
     });
 
     it('should have editRights when owner', function () {
@@ -1236,7 +1245,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should go back to the esv-web page when a "ctx" parameter was in the url', function (done) {
       scope.exit().then(function () {
         expect(location.path()).toEqual('/esv-private');
-        expect(lockServiceCancelCallback).toHaveBeenCalled();
         expect(userContextService.deinit).toHaveBeenCalled();
         done();
       });
@@ -1247,86 +1255,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       spyOn(scope, 'cleanUp').and.callThrough();
       scope.$destroy();
       expect(scope.cleanUp).toHaveBeenCalled();
-    });
-
-    it('should enable display of the editor panel', function () {
-      scope.showEditorPanel = false;
-      environmentService.setPrivateExperiment(false);
-
-      scope.toggleEditors();
-      expect(scope.showEditorPanel).toBe(true);
-    });
-
-    it('should enable display of the editor panel in collab mode when there is no lock', function () {
-      scope.showEditorPanel = false;
-      userContextService.userID = 'test-user-id';
-      scope.userEditingID ='';
-
-      scope.toggleEditors();
-      callback.resolve({ 'success': true });
-      scope.$apply();
-
-      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
-      expect(scope.showEditorPanel).toBe(true);
-      expect(scope.userEditingID).toBe('test-user-id');
-    });
-
-    it('should enable display of the editor panel in collab mode when there is a lock but the current user is the owner of the lock', function () {
-      scope.showEditorPanel = false;
-      var ownerId = 'my-id';
-      userContextService.userID = ownerId;
-
-      scope.toggleEditors();
-      callback.resolve({ 'success': false, 'lock': { 'lockInfo': { 'user': { 'id': ownerId, 'displayName': 'test' }, 'date': 'thedate' } } });
-      scope.$apply();
-
-      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
-      expect(scope.showEditorPanel).toBe(true);
-      expect(scope.userEditingID).toBe(ownerId);
-    });
-
-    it('should NOT enable display of the editor panel in collab mode when there is a lock', function () {
-      scope.showEditorPanel = false;
-      userContextService.userID = 'current_user_id';
-      var userName = 'testName';
-      var theDate = '2016-05-17T17:21:05';
-      var notCurrentUser = 'not_current_user';
-
-      scope.toggleEditors();
-      callback.resolve({ 'success': false, 'lock': { 'lockInfo': { 'user': { 'id': notCurrentUser, 'displayName': userName }, 'date': theDate } } });
-      scope.$apply();
-
-      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
-      expect(userContextService.setEditDisabled).toHaveBeenCalledWith(true);
-      expect(scope.showEditorPanel).toBe(false);
-      expect(userContextService.userEditingID).toBe(notCurrentUser);
-      expect(userContextService.userEditing).toBe(userName);
-      expect(userContextService.timeEditStarted).toBe(moment(new Date(theDate)).fromNow());
-
-    });
-
-    it('should NOT enable display of the editor panel in collab mode when an exception is thrown trying to get the lock', function () {
-      scope.showEditorPanel = false;
-      userContextService.userID = 'current_user_id';
-
-      scope.toggleEditors();
-      callback.reject('something went wrong');
-      scope.$apply();
-
-      expect(lockServiceMock.tryAddLock).toHaveBeenCalled();
-      expect(scope.showEditorPanel).toBe(false);
-      expect(userContextService.userEditingID).toBe('');
-      expect(userContextService.userEditing).toBe('');
-      expect(userContextService.timeEditStarted).toBe('');
-    });
-
-    it('should remove display of the editor panel and remove lock', function () {
-      scope.showEditorPanel = true;
-      scope.toggleEditors();
-      callback.resolve();
-      scope.$apply();
-
-      expect(userContextService.removeEditLock).toHaveBeenCalled();
     });
 
     it('should set all "..._lightHelper" nodes as visible during onSceneLoaded()', function () {

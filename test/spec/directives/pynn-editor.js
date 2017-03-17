@@ -20,7 +20,7 @@ describe('Directive: pynnEditor', function () {
     ScriptObject,
     $timeout,
     hbpDialogFactory,
-    editorsServices;
+    codeEditorsServices;
 
   var backendInterfaceServiceMock = {
     getBrain:  jasmine.createSpy('getBrain'),
@@ -99,7 +99,7 @@ describe('Directive: pynnEditor', function () {
                               _pythonCodeHelper_,
                               _$timeout_,
                               _hbpDialogFactory_,
-                              _editorsServices_) {
+                              _codeEditorsServices_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -108,7 +108,7 @@ describe('Directive: pynnEditor', function () {
     ScriptObject = pythonCodeHelper.ScriptObject;
     $timeout = _$timeout_;
     hbpDialogFactory = _hbpDialogFactory_;
-    editorsServices = _editorsServices_;
+    codeEditorsServices = _codeEditorsServices_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/pynn-editor.html', '');
@@ -142,7 +142,7 @@ describe('Directive: pynnEditor', function () {
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
-      editorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
+      codeEditorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
       backendInterfaceService.getBrain.calls.reset();
       backendInterfaceService.setBrain.calls.reset();
       expected_populations = data.additional_populations;
@@ -270,7 +270,7 @@ describe('Directive: pynnEditor', function () {
 
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
-      editorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
+      codeEditorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
     });
 
     it('should parse a token correctly', function() {

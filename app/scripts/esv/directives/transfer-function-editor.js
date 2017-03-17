@@ -40,7 +40,7 @@
       'DEFAULT_TF_CODE',
       'downloadFileService',
       'RESET_TYPE',
-      'editorsServices',
+      'codeEditorsServices',
       '$q',
       'saveErrorsService',
       'environmentService',
@@ -62,7 +62,7 @@
         DEFAULT_TF_CODE,
         downloadFileService,
         RESET_TYPE,
-        editorsServices,
+        codeEditorsServices,
         $q,
         saveErrorsService,
         environmentService) {
@@ -80,7 +80,7 @@
         scope.isSavingToCollab = false;
         scope.collabDirty = false;
 
-        scope.editorOptions = editorsServices.getDefaultEditorOptions();
+        scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
 
         scope.stateService = stateService;
         scope.STATE = STATE;
@@ -137,7 +137,7 @@
             flawedTransferFunction.error[msg.errorType] = msg;
             if (msg.lineNumber >= 0) { // Python Syntax Error
               // Error line highlighting
-              var editor = editorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
+              var editor = codeEditorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
               var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
               flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = codeMirrorLineNumber;
               editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
@@ -168,7 +168,7 @@
 
         scope.control.refresh = function () {
           if (scope.collabDirty) {
-            editorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
+            codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
             return;
           }
           backendInterfaceService.getTransferFunctions(
@@ -180,12 +180,12 @@
                 var found = angular.isDefined(tf);
                 if (found && !tf.dirty) {
                   tf.code = transferFunction.code;
-                  editorsServices.resetEditor(editorsServices.getEditor('transfer-function-' + transferFunction.id));
+                  codeEditorsServices.resetEditor(codeEditorsServices.getEditor('transfer-function-' + transferFunction.id));
                 } else if (!found) {
                   scope.transferFunctions.unshift(transferFunction);
                 }
               });
-              editorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
+              codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
             });
             refreshPopulations();
         };
@@ -214,7 +214,7 @@
           var compileError = transferFunction.error[scope.ERROR.COMPILE];
           var lineHandle = compileError ? compileError.lineHandle : undefined;
           if (angular.isDefined(lineHandle)) {
-            var editor = editorsServices.getEditor('transfer-function-' + transferFunction.id);
+            var editor = codeEditorsServices.getEditor('transfer-function-' + transferFunction.id);
             editor.removeLineClass(lineHandle, 'background', 'alert-danger');
           }
           delete transferFunction.error[scope.ERROR.COMPILE];

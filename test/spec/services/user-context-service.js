@@ -6,7 +6,8 @@ describe('Services: userContextService', function () {
   var userContextService;
 
   var $rootScope, $scope, $window, $q;
-  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory, environmentService;
+  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory,
+    environmentService;
 
   var remoteProfileMock, lockServiceMock, cancelLockServiceMock;
 

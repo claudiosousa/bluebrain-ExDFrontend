@@ -59,7 +59,7 @@
       'simulationInfo','hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
       'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
-      'simulationConfigService','environmentService', 'userContextService',
+      'simulationConfigService','environmentService', 'userContextService', 'editorsPanelService',
       function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
@@ -71,7 +71,7 @@
         simulationInfo, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
         userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
-        simulationConfigService, environmentService, userContextService) {
+        simulationConfigService, environmentService, userContextService, editorsPanelService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -80,23 +80,6 @@
         $scope.helpDescription = '';
         $scope.helpText = {};
         $scope.currentSelectedUIElement = UI.UNDEFINED;
-
-        if (environmentService.isPrivateExperiment()) {
-          // only use locks if we are in a collab
-          var lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
-          var cancelLockSubscription = lockService.onLockChanged(
-            function (result) {
-              if (!result.locked && userContextService.userEditingID === userContextService.userID) {
-                if ($scope.showEditorPanel) {
-                  // we are the current user editing, but our lock has been released...
-                  // (this can happen if two users want to edit at the same time)
-                  $window.alert("You no longer have the lock to edit anymore. Please try again.");
-                  $scope.toggleEditors();
-                }
-              }
-            }
-          );
-        }
 
         $scope.rosTopics = bbpConfig.get('ros-topics');
         $scope.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
@@ -112,6 +95,7 @@
         $scope.contextMenuState = contextMenuState;
         $scope.objectInspectorService = objectInspectorService;
         $scope.userContextService = userContextService;
+        $scope.editorsPanelService = editorsPanelService;
 
         var setExperimentDetails = function(){
           $scope.ExperimentDescription = simulationInfo.experimentDetails.description;
@@ -754,56 +738,13 @@
           }
         };
 
-        $scope.showEditorPanel = false;
-        $scope.toggleEditors = function () {
-          if (!environmentService.isPrivateExperiment()) {
-            showEditPanel();
-          } else {
-            // only use locks if we are in a collab i.e. ctx is set
-            if (!$scope.showEditorPanel) {
-              $scope.loadingEditPanel = true;
-              // try and add a lock for editing
-              lockService.tryAddLock()
-                .then(function (result) {
-                  if (!result.success && result.lock && result.lock.lockInfo.user.id !== userContextService.userID) {
-                    userContextService.setLockDateAndUser(result.lock.lockInfo);
-                    $window.alert("Sorry you cannot edit at this time. Only one user can edit at a time and " +
-                      userContextService.userEditing + " started editing " + userContextService.timeEditStarted +
-                      ". Please try again later.");
-                    userContextService.setEditDisabled(true);
-                  } else {
-                    $scope.userEditingID = userContextService.userID;
-                    showEditPanel();
-                  }
-                })
-                .catch(function () {
-                  $window.alert("There was an error when opening the edit panel, please try again later.");
-                })
-                .finally(function () {
-                  $scope.loadingEditPanel = false;
-                });
-            } else {
-              showEditPanel();
-              userContextService.removeEditLock();
-            }
-          }
-        };
-
-        function showEditPanel() {
-          $scope.showEditorPanel = !$scope.showEditorPanel;
-          nrpAnalytics.eventTrack('Toggle-editor-panel', {
-            category: 'Simulation-GUI',
-            value: $scope.showEditorPanel
-          });
-        }
-
         $scope.codeEditorButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.CODE_EDITOR);
           } else if (userContextService.editIsDisabled || $scope.loadingEditPanel) {
             return;
           } else {
-            return $scope.toggleEditors();
+            return editorsPanelService.toggleEditors();
           }
         };
 
@@ -838,7 +779,7 @@
           });
 
           if (environmentService.isPrivateExperiment()) {
-            cancelLockSubscription();
+            editorsPanelService.deinit();
             userContextService.deinit();
           }
 

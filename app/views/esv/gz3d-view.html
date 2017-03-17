@@ -333,16 +333,16 @@
               <!-- code editor icon -->
               <div ng-if="userContextService.isOwner()"
                    class="hbp-toolbar-action hide-overflow"
-                   ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': showEditorPanel,
-                              'disabled': !helpModeActivated && editIsDisabled || loadingEditPanel ||
+                   ng-class="{'highlighted': currentSelectedUIElement === UI.CODE_EDITOR, 'active': editorsPanelService.showEditorPanel,
+                              'disabled': !helpModeActivated && userContextService.editIsDisabled || editorsPanelService.loadingEditPanel ||
                                           (stateService.currentState === STATE.HALTED) ||
                                           (stateService.currentState === STATE.STOPPED) ||
                                           (stateService.currentState === STATE.FAILED)}"
                    ng-click="codeEditorButtonClickHandler()"
                    tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}."
                    tooltip-trigger="mouseenter"
-                   tooltip-enable="editIsDisabled"
-                   v-busy="loadingEditPanel"
+                   tooltip-enable="userContextService.editIsDisabled"
+                   v-busy="editorsPanelService.loadingEditPanel"
                    v-busy-label="Loading the edit panel">
                 <i class="fa fa-pencil-square-o fa-2x vertcenter"></i>
               </div>
@@ -397,15 +397,15 @@
             </div>
             <!-- toolbar help icon -->
 
-          <!-- environment settings panel -->
-              <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
+            <!-- environment settings panel -->
+            <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
                   ng-class="{'highlighted': currentSelectedUIElement === UI.ENVIRONMENT_SETTINGS, 'active': showEnvironmentSettingsPanel, disabled: !helpModeActivated && environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
                   ng-click="environmentSettingsClickHandler()"
                   v-busy="loadingEnvironmentSettingsPanel"
                   v-busy-label="Loading the environment settings panel">
-                <img src="img/esv/settings.png" width=28 height=28>
-              </div>
-              <!-- environment settings panel -->
+               <img src="img/esv/settings.png" width=28 height=28>
+            </div>
+            <!-- environment settings panel -->
 
 
           </div>
