@@ -41,7 +41,7 @@
               return experimentList(thisService.serverBaseUrl).experiments({ context_id: contextID }, function(data) {
                 var configuration = data.data.experiment_configuration;
                 setExperimentDetails(configuration);
-              });
+              }).$promise;
             }
 
             return experimentProxyService.getExperiments().then(function(data){
