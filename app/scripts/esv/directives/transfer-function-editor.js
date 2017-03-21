@@ -279,6 +279,7 @@
             scope.transferFunctions.unshift(transferFunction);
           }
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
+          scope.update(transferFunction);
           scope.collabDirty = environmentService.isPrivateExperiment();
           autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
         };
