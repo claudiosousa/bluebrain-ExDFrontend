@@ -2,7 +2,7 @@
   'use strict';
 
   describe('Directive: newExperimentWizard', function () {
-    var $httpBackend, $rootScope, $compile, nrpModalService, collabFolderAPIService, $q, scope, hbpDialogFactory, newExperimentProxyService;
+    var $httpBackend, $rootScope, $compile, nrpModalService, collabFolderAPIService, $q, scope, hbpDialogFactory, newExperimentProxyService, collabConfigService;
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
@@ -10,7 +10,8 @@
 
     beforeEach(inject(function (
       _$rootScope_, _$httpBackend_, _$compile_, _nrpModalService_,
-      _collabFolderAPIService_, _$q_, _hbpDialogFactory_, _newExperimentProxyService_
+      _collabFolderAPIService_, _$q_, _hbpDialogFactory_, _newExperimentProxyService_,
+      _collabConfigService_
     ) {
       $httpBackend = _$httpBackend_;
       $rootScope = _$rootScope_;
@@ -20,6 +21,7 @@
       $q = _$q_;
       hbpDialogFactory = _hbpDialogFactory_;
       newExperimentProxyService = _newExperimentProxyService_;
+      collabConfigService = _collabConfigService_;
 
       $compile('<new-experiment-wizard></new-experiment-wizard>')($rootScope);
       $rootScope.$digest();
@@ -227,46 +229,14 @@
       expect(scope.entityName).toEqual('FakeRobot');
     });
 
-    it('should call the upload from collab libraries for the robot', function () {
-      spyOn(scope, 'uploadEntityDialog').and.callThrough();
-      scope.uploadRobotDialog();
-      scope.uploadEntity('CollabLibraries');
-      scope.$digest();
-      expect(scope.uploadEntityDialog).toHaveBeenCalled();
-      expect(scope.entityName).toEqual('Robot');
-      scope.completeUploadEntity();
-      expect(scope.robotUploaded).toBe(true);
-    });
-
-    it('should call the upload from collab libraries for the brain', function () {
-      spyOn(scope, 'uploadEntityDialog').and.callThrough();
-      scope.uploadBrainDialog();
-      scope.uploadEntity('CollabLibraries');
-      scope.$digest();
-      expect(scope.uploadEntityDialog).toHaveBeenCalled();
-      expect(scope.entityName).toEqual('Brain');
-      scope.completeUploadEntity();
-      expect(scope.brainUploaded).toBe(true);
-    });
-
-    it('should call the upload from collab libraries for the  environment', function () {
-      spyOn(scope, 'uploadEntityDialog').and.callThrough();
-      scope.uploadEnvironmentDialog();
-      scope.uploadEntity('CollabLibraries');
-      scope.$digest();
-      expect(scope.uploadEntityDialog).toHaveBeenCalled();
-      expect(scope.entityName).toEqual('Environment');
-      scope.completeUploadEntity();
-      expect(scope.environmentUploaded).toBe(true);
-    });
-
     it('should call the upload from public env for the robot', function () {
       var mockProxyResponse = {
         data: [
           {
             name: 'Arm robot force based version',
             description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
-            thumbnail: null
+            thumbnail: null,
+            path: 'robots/icub_model/model.config'
           },
           {
             name: 'Arm robot',
@@ -300,7 +270,8 @@
       expect(scope.entities[1].description).toEqual('First Hollie arm model.');
       expect(scope.entities[2].thumbnail).toBe(null || undefined);
       expect(scope.entities.length).toBe(4);
-      scope.completeUploadEntity();
+      var mockSelectedEntity = mockProxyResponse.data[0];
+      scope.completeUploadEntity(mockSelectedEntity);
       expect(scope.robotUploaded).toBe(true);
     });
 
@@ -310,7 +281,8 @@
           {
             name: 'Fake environment1',
             description: 'Fake Description1',
-            thumbnail: null
+            thumbnail: null,
+            path: 'environments/virtual_world/model.config'
           },
           {
             name: 'Fake environment2',
@@ -343,32 +315,37 @@
       expect(scope.entities[1].description).toEqual('Fake Description2');
       expect(scope.entities[2].thumbnail).toBe(null || undefined);
       expect(scope.entities.length).toBe(4);
-      scope.completeUploadEntity();
+      var mockSelectedEntity = mockProxyResponse.data[0];
+      scope.completeUploadEntity(mockSelectedEntity);
       expect(scope.environmentUploaded).toBe(true);
     });
 
-    it('should call the upload from public env for the robot', function () {
+    it('should call the upload from public env for the brain', function () {
       var mockProxyResponse = {
         data: [
           {
             name: 'FakeBrain1',
             description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
-            thumbnail: null
+            thumbnail: null,
+            path: 'brains/braitenberg.py'
           },
           {
             name: 'FakeBrain2',
             description: 'FakeBrain2Description',
-            thumbnail: null
+            thumbnail: null,
+            path: 'fakePath2/fakePath2.sdf'
           },
           {
             name: 'FakeBrain3',
             description: 'FakeBrain3Description',
-            thumbnail: null
+            thumbnail: null,
+            path: 'fakePath3/fakePath3.sdf'
           },
           {
             name: 'FakeBrain4',
             description: 'FakeBrain4Description',
-            thumbnail: null
+            thumbnail: null,
+            path: 'fakePath4/fakePath4.sdf'
           }]
       };
       spyOn(newExperimentProxyService, 'getEntity').and.callFake(function () {
@@ -386,40 +363,59 @@
       expect(scope.entities[1].name).toEqual('FakeBrain2');
       expect(scope.entities[1].thumbnail).toBe(null || undefined);
       expect(scope.entities.length).toBe(4);
-      scope.completeUploadEntity();
+      var mockSelectedEntity = mockProxyResponse.data[0];
+      scope.completeUploadEntity(mockSelectedEntity);
       expect(scope.brainUploaded).toBe(true);
     });
 
     it('should call the upload from local env for the robot', function () {
+      var mockSelectedEntity = {
+        name: 'Arm robot force based version',
+        description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
+        thumbnail: null,
+        path: 'robots/icub_model/model.config'
+      };
       spyOn(scope, 'createUploadModal').and.callThrough();
       scope.uploadRobotDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
       expect(scope.createUploadModal).toHaveBeenCalled();
       expect(scope.entityName).toEqual('Robot');
-      scope.completeUploadEntity();
+      scope.completeUploadEntity(mockSelectedEntity);
       expect(scope.robotUploaded).toBe(true);
     });
 
     it('should call the upload from local env for the environment', function () {
+      var mockSelectedEntity = {
+        name: 'Fake environment1',
+        description: 'Fake Description1',
+        thumbnail: null,
+        path: 'environments/virtual_world/model.config'
+      };
       spyOn(scope, 'createUploadModal').and.callThrough();
       scope.uploadEnvironmentDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
       expect(scope.createUploadModal).toHaveBeenCalled();
       expect(scope.entityName).toEqual('Environment');
-      scope.completeUploadEntity();
+      scope.completeUploadEntity(mockSelectedEntity);
       expect(scope.environmentUploaded).toBe(true);
     });
 
     it('should call the upload from local env for the brain', function () {
+      var selectedEntity = {
+        name: 'FakeBrain1',
+        description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
+        thumbnail: null,
+        path: 'brains/braitenberg.py'
+      };
       spyOn(scope, 'createUploadModal').and.callThrough();
       scope.uploadBrainDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
       expect(scope.createUploadModal).toHaveBeenCalled();
       expect(scope.entityName).toEqual('Brain');
-      scope.completeUploadEntity();
+      scope.completeUploadEntity(selectedEntity);
       expect(scope.brainUploaded).toBe(true);
     });
 
@@ -563,24 +559,60 @@
       expect(scope.entityPageState.selected).toEqual(1);
     });
 
-    it('should check that clone new experiment function works', function () {
+    it('should check that model selection enables clone', function () {
+
+      var mockSelectedEntities = [{
+        name: 'FakeBrain1',
+        description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
+        thumbnail: null,
+        path: 'brains/braitenberg.py'
+      }, {
+        name: 'Fake environment1',
+        description: 'Fake Description1',
+        thumbnail: null,
+        path: 'environments/virtual_world/model.config'
+      }, {
+        name: 'Arm robot force based version',
+        description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
+        thumbnail: null,
+        path: 'robots/icub_model/model.config'
+      }
+      ];
       scope.uploadBrainDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
-      scope.completeUploadEntity();
+      scope.completeUploadEntity(mockSelectedEntities[0]);
       scope.uploadEnvironmentDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
-      scope.completeUploadEntity();
+      scope.completeUploadEntity(mockSelectedEntities[1]);
       scope.uploadRobotDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
-      scope.completeUploadEntity();
-      scope.cloneNewExperiment();
+      scope.completeUploadEntity(mockSelectedEntities[2]);
       expect(scope.brainUploaded).toBe(true);
       expect(scope.robotUploaded).toBe(true);
       expect(scope.environmentUploaded).toBe(true);
-      expect(scope.experimentCloned).toBe(true);
+    });
+
+    it('should test that the clone new experiment function works', function () {
+      spyOn(collabConfigService, 'clone').and.callFake(function () {
+        return;
+      });
+      scope.cloneNewExperiment('fakeExpID');
+      expect(scope.isCloneRequested).toBe(true);
+    });
+
+    it('should test that the complete upload entity function creates an error popup when the path is not correct', function () {
+      var mockSelectedEntity = {
+        path: 'C:\\WindowsFakePath'
+      };
+      spyOn(scope, 'createErrorPopup')
+        .and.callFake(function () {
+          return;
+        });
+      scope.completeUploadEntity(mockSelectedEntity);
+      expect(scope.createErrorPopup).toHaveBeenCalled();
     });
   });
 })();

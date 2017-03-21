@@ -43,7 +43,7 @@
         }
 
         function getAvailableServers(experimentId) {
-          return $http.get(getProxyUrl() + '/availableServers/' + experimentId)
+          return $http.get(getProxyUrl() + '/availableServers/' + (experimentId || ''))
             .then(function (response) { return response.data; })
             .catch(serverError.displayHTTPError);
         }

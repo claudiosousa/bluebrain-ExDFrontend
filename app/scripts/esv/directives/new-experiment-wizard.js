@@ -9,13 +9,19 @@
             'hbpDialogFactory',
             '$http',
             'newExperimentProxyService',
+            'collabConfigService',
+            '$window',
+            '$stateParams',
             function (
                 $q,
                 collabFolderAPIService,
                 nrpModalService,
                 hbpDialogFactory,
                 $http,
-                newExperimentProxyService
+                newExperimentProxyService,
+                collabConfigService,
+                $window,
+                $stateParams
             ) {
                 return {
                     templateUrl: 'views/esv/new-experiment-wizard.html',
@@ -23,7 +29,7 @@
                     replace: true,
                     scope: true, // create a child scope for the directive and inherits the parent scope properties
                     link: function ($scope, element, attrs) {
-                        $scope.query = "";
+                        $scope.query = '';
                         $scope.entities = null;
                         $scope.entityPageState = {};
                         $scope.brainUploaded = false;
@@ -32,6 +38,13 @@
                         $scope.newExperiment = 'newExperiment';
                         $scope.brain = false;
                         $scope.experimentCloned = false;
+                        //object containing the path to the robot,env, brain
+                        //looks like : {
+                        // robotPath: 'icub_model/icub.sdf'
+                        // environmentPath: 'virtual_room/vitual_room.sdf'
+                        // brainPath: 'brain_models/braitenberg.py'
+                        //}
+                        $scope.paths = {};
 
                         var RobotUploader = {
                             name: 'Robot',
@@ -55,9 +68,6 @@
                                         $scope.entities = robots;
                                     });
                                 $scope.createUploadModal('PrivateCollab');
-                            },
-                            uploadFromCollabLibraries: function () {
-                                return 'nothing yet';
                             },
                             uploadFromLocalEnv: function () {
                                 $scope.entityName = $scope.entityUploader.name;
@@ -88,9 +98,6 @@
                                     });
                                 $scope.createUploadModal('PrivateCollab');
                             },
-                            uploadFromCollabLibraries: function () {
-                                return 'nothing yet';
-                            },
                             uploadFromLocalEnv: function () {
                                 $scope.entityName = $scope.entityUploader.name;
                                 $scope.createUploadModal('LocalEnv');
@@ -119,9 +126,6 @@
                                         $scope.brain = true;
                                     });
                                 $scope.createUploadModal('PrivateCollab');
-                            },
-                            uploadFromCollabLibraries: function () {
-                                return 'nothing yet';
                             },
                             uploadFromLocalEnv: function () {
                                 $scope.entityName = $scope.entityUploader.name;
@@ -156,16 +160,9 @@
                             $scope.uploadEntityDialog(BrainUploader);
                         };
 
-                        $scope.cloneNewExperiment = function () {
-                            if ($scope.environmentUploaded && $scope.robotUploaded && $scope.brainUploaded) {
-                                $scope.experimentCloned = true;
-                            }
-                        };
-
                         var dict = {
                             PublicEnv: 'uploadFromPublicEnv',
                             PrivateCollab: 'uploadFromPrivateCollab',
-                            CollabLibraries: 'uploadFromCollabLibraries',
                             LocalEnv: 'uploadFromLocalEnv'
                         };
 
@@ -174,15 +171,24 @@
                             $scope.entityUploader[dict[environment]]();
                         };
 
-                        $scope.completeUploadEntity = function () {
-                            if ($scope.entityUploader.name === 'Robot') {
-                                $scope.robotUploaded = true;
-                            }
-                            if ($scope.entityUploader.name === 'Environment') {
-                                $scope.environmentUploaded = true;
-                            }
-                            if ($scope.entityUploader.name === 'Brain') {
-                                $scope.brainUploaded = true;
+                        $scope.completeUploadEntity = function (selectedEntity) {
+                            if (selectedEntity.path.match('/')) {
+                                var entityType = selectedEntity.path.split('/')[0];
+                                if (entityType === 'environments') {
+                                    $scope.paths.environmentPath = _.join(_.drop(selectedEntity.path.split('/')), '/');
+                                    $scope.environmentUploaded = true;
+                                }
+                                if (entityType === 'robots') {
+                                    $scope.paths.robotPath = _.join(_.drop(selectedEntity.path.split('/')), '/');
+                                    $scope.robotUploaded = true;
+                                }
+                                if (entityType === 'brains') {
+                                    $scope.paths.brainPath = _.join(_.drop(selectedEntity.path.split('/')), '/');
+                                    $scope.brainUploaded = true;
+                                }
+                            } else {
+                                //code to handle other OS. For now create an error createErrorPopup
+                                $scope.createErrorPopup('The provided path cannot be handled by the operating system');
                             }
                             $scope.destroyDialog();
                         };
@@ -220,9 +226,9 @@
                         };
 
                         $scope.createEntitiesListFromBrainFiles = function (brainFiles) {
-                           return $q.all(brainFiles.results.map(function (brain) {
-                                return collabFolderAPIService.downloadFile(brain._uuid).then(function(resp) {
-                                   return {
+                            return $q.all(brainFiles.results.map(function (brain) {
+                                return collabFolderAPIService.downloadFile(brain._uuid).then(function (resp) {
+                                    return {
                                         name: brain._name.split(".")[0],
                                         id: brain._name.split(".")[0],
                                         description: resp.match(/^"""([^\"]*)"""/m)[1].trim() || 'Brain description'
@@ -313,7 +319,6 @@
 
                         $scope.parseEntityList = function (entityArray) {
                             var entities = [];
-                            var entitiesParsed = 0;
                             entityArray.data.forEach(function (entity) {
                                 entities.push({
                                     name: entity.name,
@@ -321,13 +326,24 @@
                                     id: entity,
                                     imageData: entity.thumbnail
                                 });
-                                entitiesParsed++;
                             });
                             return entities;
                         };
 
-                        $scope.completeUpload = function () {
-
+                        $scope.cloneNewExperiment = function (experimentID) {
+                            $scope.isCloneRequested = true;
+                            collabConfigService.clone({ contextID: $stateParams.ctx },
+                                {
+                                    experimentID: experimentID,
+                                    brainPath: $scope.paths.brainPath,
+                                    robotPath: $scope.paths.robotPath,
+                                    envPath: $scope.paths.environmentPath
+                                }, function () {
+                                    $window.location.reload();
+                                    $window.parent.postMessage({
+                                        eventName: 'navigation.reload'
+                                    }, '*');
+                                });
                         };
                     }
                 };
