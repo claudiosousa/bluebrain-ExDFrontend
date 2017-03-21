@@ -7,7 +7,6 @@ describe('Directive: spiketrain', function () {
 
   var parentscope, $scope, element, roslib, stateService, STATE, window, timeout, RESET_TYPE, SPIKE_TIMELABEL_SPACE, simulationInfo;
   var SERVER_URL = 'ws://localhost:1234';
-  var SPIKE_TOPIC = '/monitor/spike_recorder';
 
   function setShow(showBool) {
     parentscope.showSpikeTrain = showBool;
@@ -79,8 +78,6 @@ describe('Directive: spiketrain', function () {
     // Compile a piece of HTML containing the directive
     expect(element.prop('outerHTML')).toContain('resizeable');
     expect(element.prop('outerHTML')).toContain('spikegraph');
-    expect($scope.server).toBe(SERVER_URL);
-    expect($scope.spikeTopic).toBe(SPIKE_TOPIC);
     expect(element.prop('outerHTML')).toContain('ng-show="showSpikeTrain"');
     expect(element.prop('outerHTML')).toContain('leftaxis');
     expect(element.prop('outerHTML')).toContain('spiketrain');
@@ -243,7 +240,7 @@ describe('Directive: spiketrain', function () {
 
 
     // Mock this DIV, because offsetWidth is not available in this test
-    $scope.splikeContainer = $scope.directiveDiv = { style: {} };
+    $scope.spikeContainer = $scope.directiveDiv = { style: {} };
     $scope.directiveDiv.offsetWidth = 400;
     $scope.directiveDiv.offsetHeight = 200;
 
@@ -294,9 +291,9 @@ describe('Directive: spiketrain', function () {
   });
 
   it('should unsubscribe when stopSpikeDisplay is called', function () {
-    $scope.spikeTopicSubscriber = {unsubscribe: jasmine.createSpy('unsubscribe')};
+    $scope.startSpikeDisplay();
     $scope.stopSpikeDisplay();
-    expect($scope.spikeTopicSubscriber.unsubscribe).toHaveBeenCalled();
+    expect(roslib.createTopic().unsubscribe).toHaveBeenCalled();
   });
 
 });

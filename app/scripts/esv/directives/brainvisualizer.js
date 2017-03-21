@@ -3,8 +3,8 @@
   'use strict';
   /* global BRAIN3D: false */
   angular.module('exdFrontendApp')
-    .directive('brainvisualizer', ['simulationConfigService', 'backendInterfaceService', 'RESET_TYPE',
-      function (simulationConfigService, backendInterfaceService, RESET_TYPE)
+    .directive('brainvisualizer', ['simulationConfigService', 'backendInterfaceService', 'RESET_TYPE','spikeListenerService',
+      function (simulationConfigService, backendInterfaceService, RESET_TYPE,spikeListenerService)
       {
         return {
           templateUrl: 'views/esv/brainvisualizer.html',
@@ -22,10 +22,16 @@
             scope.minMaxClippingSliderValue = 0;
             scope.pointSizeSliderValue = 0;
             scope.populations = [];
+            scope.spikeScaler = 0;
             scope.shapes = [BRAIN3D.REP_SHAPE_SPHERICAL, BRAIN3D.REP_SHAPE_CUBIC, BRAIN3D.REP_SHAPE_FLAT, BRAIN3D.REP_SHAPE_CLOUD];
-            scope.currentShape = BRAIN3D.REP_SHAPE_SPHERICAL;
             scope.distributions = [BRAIN3D.REP_DISTRIBUTION_OVERLAP, BRAIN3D.REP_DISTRIBUTION_DISTRIBUTE, BRAIN3D.REP_DISTRIBUTION_SPLIT];
-            scope.currentDistribution = BRAIN3D.REP_DISTRIBUTION_OVERLAP;
+            scope.displays = [BRAIN3D.DISPLAY_TYPE_POINT, BRAIN3D.DISPLAY_TYPE_BLENDED];
+            scope.currentValues = {
+              currentShape: BRAIN3D.REP_SHAPE_SPHERICAL,
+              currentDistribution: BRAIN3D.REP_DISTRIBUTION_OVERLAP,
+              currentDisplay: BRAIN3D.DISPLAY_TYPE_POINT
+            };
+
 
             //------------------------------------------------
             // Init brain 3D visualizer when the panel is open
@@ -38,7 +44,8 @@
               }
               else
               {
-                brain3D = new BRAIN3D.MainView(brainContainer[0], data, 'img/brainvisualizer/brain3dballsimple256.png');
+                brain3D = new BRAIN3D.MainView(brainContainer[0], data, 'img/brainvisualizer/brain3dballsimple256.png',
+                                                                        'img/brainvisualizer/brain3dballglow256.png');
 
                 // Update UI with default brain 3D visualizer
 
@@ -77,7 +84,7 @@
                         newPop.to = pop.to;
                       }
 
-                      newPop.color = 'hsl(' + (i / (popNames.length + 1) * 360.0) + ',70%,80%)';
+                      newPop.color = 'hsl(' + (i / (popNames.length + 1) * 360.0) + ',100%,80%)';
                       newPop.name = popNames[i];
                       newPop.visible = true;
 
@@ -144,8 +151,48 @@
               else if (brain3D)
               {
                 brain3D.setPaused(!visible);
+                brain3D.flushPendingSpikes();
               }
+
+              if (!visible)
+              {
+                spikeListenerService.stopListening(scope);
+              }
+              else if (scope.spikeScaler>0)
+              {
+                  spikeListenerService.startListening(scope);
+              }
+
             });
+
+            scope.onNewSpikesMessageReceived = function (message)
+            {
+              if (brain3D)
+              {
+                brain3D.displaySpikes(message.spikes);
+              }
+            };
+
+            scope.updateSpikeScaler = function()
+            {
+              if (brain3D)
+              {
+                if (scope.spikeScaler>0)
+                {
+                  spikeListenerService.startListening(scope);
+                }
+                else
+                {
+                  spikeListenerService.stopListening(scope);
+                  if (brain3D)
+                  {
+                    brain3D.flushPendingSpikes();
+                  }
+                }
+
+                brain3D.setSpikeScaleFactor(scope.spikeScaler);
+              }
+            };
 
             scope.update = function ()
             {
@@ -156,11 +203,20 @@
               }
             };
 
+            scope.setDisplay = function (display)
+            {
+              if (brain3D)
+              {
+                scope.currentValues.currentDisplay = display;
+                brain3D.setDisplayType(display);
+              }
+            };
+
             scope.setShape = function (shape)
             {
               if (brain3D)
               {
-                scope.currentShape = shape;
+                scope.currentValues.currentShape = shape;
                 brain3D.setShape(shape);
               }
             };
@@ -169,7 +225,7 @@
             {
               if (brain3D)
               {
-                scope.currentDistribution = distribution;
+                scope.currentValues.currentDistribution = distribution;
                 brain3D.setDistribution(distribution);
               }
             };
@@ -195,6 +251,8 @@
               {
                 brain3D.terminate();
               }
+
+              spikeListenerService.stopListening(scope);
             });
           }
         };

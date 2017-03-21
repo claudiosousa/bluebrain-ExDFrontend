@@ -4,12 +4,12 @@
   angular.module('exdFrontendApp')
     .constant('SPIKE_TIMELABEL_SPACE', 15)// Vertical space in the canvas reserved for the time label
     .directive('spiketrain',
-    ['$timeout', '$log', '$window', '$filter', '$document', 'roslib', 'stateService', 'STATE', 'RESET_TYPE', 'SPIKE_TIMELABEL_SPACE', 'simulationInfo', 'bbpConfig',
-      function ($timeout, $log, $window, $filter, $document, roslib, stateService, STATE, RESET_TYPE, SPIKE_TIMELABEL_SPACE, simulationInfo, bbpConfig) {
-        function configureSpiketrain(scope, canvas1, canvas2, directiveDiv, splikeContainer) {
+    ['$timeout', '$window', '$filter', '$document', 'stateService', 'STATE', 'RESET_TYPE', 'SPIKE_TIMELABEL_SPACE','spikeListenerService',
+      function ($timeout, $window, $filter, $document, stateService, STATE, RESET_TYPE, SPIKE_TIMELABEL_SPACE, spikeListenerService) {
+        function configureSpiketrain(scope, canvas1, canvas2, directiveDiv, spikeContainer) {
           scope.canvas = [canvas1, canvas2];
           scope.directiveDiv = directiveDiv;
-          scope.splikeContainer = splikeContainer;
+          scope.spikeContainer = spikeContainer;
           scope.ctx = [scope.canvas[0].getContext("2d"), scope.canvas[1].getContext("2d")];
           scope.neuronYSize = 1;
           scope.currentCanvasIndex = 1;
@@ -34,7 +34,9 @@
           scope.$on("$destroy", function () {
             // unbind resetListener callback
             scope.resetListenerUnbindHandler();
+            spikeListenerService.stopListening(scope);
           });
+
           scope.clearPlot();
 
           var fontSize = Number(scope.ctx[0].font.split('px')[0]);
@@ -125,10 +127,10 @@
           // Unfortunately, this is mandatory. The canvas size can't be set to 100% of its container,
           var previousSize = { height: 0, width: 0 };
           scope.onScreenSizeChanged = function () {
-            if (previousSize.height !== scope.splikeContainer.offsetHeight || previousSize.width !== scope.splikeContainer.offsetWidth) {
+            if (previousSize.height !== scope.spikeContainer.offsetHeight || previousSize.width !== scope.spikeContainer.offsetWidth) {
               calculateCanvasHeight();
-              previousSize.height = scope.splikeContainer.offsetHeight;
-              previousSize.width = scope.splikeContainer.offsetWidth;
+              previousSize.height = scope.spikeContainer.offsetHeight;
+              previousSize.width = scope.spikeContainer.offsetWidth;
             }
 
             // Draw spikes on refreshed canvas
@@ -147,15 +149,15 @@
             var currentCanvas = scope.canvas[scope.currentCanvasIndex];
 
             var requiredHeight = Math.max(scope.directiveDiv.offsetHeight, nbNeuronsShown * (MIN_NEURO_HEIGHT + 1) + 2 * SPIKE_TIMELABEL_SPACE);
-            if (scope.splikeContainer.offsetHeight === requiredHeight && scope.splikeContainer.offsetWidth === currentCanvas.width) {
+            if (scope.spikeContainer.offsetHeight === requiredHeight && scope.spikeContainer.offsetWidth === currentCanvas.width) {
               return;
             }
 
-            scope.splikeContainer.style.height = requiredHeight + 'px';
+            scope.spikeContainer.style.height = requiredHeight + 'px';
 
             scope.canvas.forEach(function (canvas) {
               canvas.height = requiredHeight;
-              canvas.width = scope.splikeContainer.offsetWidth;
+              canvas.width = scope.spikeContainer.offsetWidth;
             });
 
             // Resize the canvas accordingly
@@ -209,9 +211,7 @@
 
           // Subscribe to the ROS topic
           scope.startSpikeDisplay = function (firstTimeRun) {
-            var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
-            scope.spikeTopicSubscriber = scope.spikeTopicSubscriber || roslib.createTopic(rosConnection, scope.spikeTopic, 'cle_ros_msgs/SpikeEvent');
-            scope.spikeTopicSubscriber.subscribe(scope.onNewSpikesMessageReceived);
+            spikeListenerService.startListening(scope);
             if (firstTimeRun === false) {
               scope.drawSeparator();
             }
@@ -219,11 +219,7 @@
 
           // Unsubscribe to the ROS topic
           scope.stopSpikeDisplay = function () {
-            if (scope.spikeTopicSubscriber) {
-              // One has to be careful here: it is not sufficient to only call unsubscribe but you have to
-              // put in the function as an argument, otherwise your function will be called twice!
-              scope.spikeTopicSubscriber.unsubscribe(scope.onNewSpikesMessageReceived);
-            }
+            spikeListenerService.stopListening(scope);
           };
         }
 
@@ -256,16 +252,6 @@
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs) {
-            scope.server = simulationInfo.serverConfig.rosbridge.websocket;
-            if (angular.isUndefined(scope.server) || scope.server.length === 0) {
-              $log.error('The server URL was not specified!');
-            }
-
-            scope.spikeTopic = bbpConfig.get('ros-topics').spikes;
-            if (angular.isUndefined(scope.spikeTopic) || scope.spikeTopic.length === 0) {
-              $log.error('The topic for the spikes was not specified!');
-            }
-
             var firstTimeRun = true;
             var display = element[0].querySelector('#spiketrain-display');
             var container = element[0].querySelector('#spiketrain-container');
@@ -304,6 +290,7 @@
             });
 
             scope.$on('$destroy', function () {
+              spikeListenerService.stopListening(scope);
               angular.element($window).off('resize.spiketrain');
               angular.element($window).off('resize', scope.onScreenSizeChanged);
               $(display).off('.spiketrain .spiketrain_down');
