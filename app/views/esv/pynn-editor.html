@@ -61,6 +61,14 @@
       <div ng-include src="'views/esv/pynn-editor-buttons.html'"></div>
     </form>
     <hr>
+    <h4>PyNN Brain</h4>
+    <button class="btn btn-default btn-md" ng-click="download()">
+     <i class="glyphicon glyphicon-download"></i><span> Download</span>
+    </button>
+    <button class="btn btn-default btn-md" type="file" ngf-select="uploadFile($file)" accept=".py">
+      <i class="glyphicon glyphicon-upload"></i><span> Upload</span>
+    </button>
+    <hr>
     <div id="codeEditor" ui-codemirror ui-codemirror-opts="editorOptions"
          ng-model="pynnScript">
     </div>
