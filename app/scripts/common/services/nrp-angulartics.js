@@ -10,8 +10,9 @@
 
   module.factory('nrpAnalytics', [
     '$analytics',
+    '$log',
     'nrpUser',
-    function($analytics, nrpUser) {
+    function($analytics, $log, nrpUser) {
       var durationClocks = {};
 
       function eventTrack (actionName, options) {
@@ -31,7 +32,7 @@
       }
       function durationEventTrack (actionName, options) {
         if (_.isUndefined(durationClocks[actionName])) {
-          console.log('Analytics duration: missing tick for action: '+ actionName);
+          $log.debug('Analytics duration: missing tick for action: '+ actionName);
           return;
         }
         var duration = moment() - durationClocks[actionName];

@@ -55,22 +55,23 @@
 
   }]);
 
-  module.controller('ModalInstanceCtrl', function ($scope, $log, splash, $timeout) {
-    $scope.headline = '';
-    $scope.subHeadline = '';
-    $scope.progressInformation = '';
-    $scope.showButton = splash.showButton;
-    $scope.animate = false;
+  module.controller('ModalInstanceCtrl', ['$scope', '$log', 'splash', '$timeout',
+    function($scope, $log, splash, $timeout) {
+      $scope.headline = '';
+      $scope.subHeadline = '';
+      $scope.progressInformation = '';
+      $scope.showButton = splash.showButton;
+      $scope.animate = false;
 
-    $timeout(function () {$scope.animate = true;}, 100);
+      $timeout(function () {$scope.animate = true;}, 100);
 
-    splash.setObserver(function (message) {
-      if (!message.headline && !message.subHeadline) {
-        $log.error('Wrong message format!');
-        return;
-      }
+      splash.setObserver(function (message) {
+        if (!message.headline && !message.subHeadline) {
+          $log.error('Wrong message format!');
+          return;
+        }
 
-      $timeout(function () {
+        $timeout(function () {
           $scope.headline = message.headline ? message.headline : '';
           $scope.subHeadline = message.subHeadline ? message.subHeadline : '';
           $scope.progressInformation = message.progressInformation ? message.progressInformation : '';
@@ -78,10 +79,10 @@
         });
       });
 
-    $scope.close = function() {
-      splash.close();
-    };
+      $scope.close = function() {
+        splash.close();
+      };
 
-  });
+    }]);
 
 }());
