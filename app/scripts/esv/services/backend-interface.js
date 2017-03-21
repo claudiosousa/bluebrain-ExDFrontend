@@ -130,11 +130,10 @@
      };
 
      var resourceCSVRecordesFiles = function (backendBaseUrl) {
-       return $resource(backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders', {}, {
+       return $resource(backendBaseUrl + '/simulation/:sim_id/csv-recorders', {}, {
          dump: {
            method: 'PUT',
-           interceptor: {responseError: serverError.displayHTTPError},
-           url: backendBaseUrl + '/simulation/:sim_id/:context_id/csv-recorders'
+           interceptor: {responseError: serverError.displayHTTPError}
          }
        });
      };
@@ -262,11 +261,10 @@
           return resourceTransferFunctionExperiment(simulationInfo.serverBaseUrl).save({ context_id: contextID }, data,
             successCallback, errorCallback);
         },
-        saveCSVRecordersFiles: function(contextID, successCallback, errorCallback) {
+        saveCSVRecordersFiles: function(successCallback, errorCallback) {
           resourceCSVRecordesFiles(simulationInfo.serverBaseUrl).dump(
             {
-              sim_id: simulationInfo.simulationID,
-              context_id: contextID
+              sim_id: simulationInfo.simulationID
             }, {}, successCallback, errorCallback
           );
         },

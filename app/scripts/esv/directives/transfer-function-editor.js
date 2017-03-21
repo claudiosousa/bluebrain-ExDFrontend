@@ -375,7 +375,6 @@
         scope.saveCSVIntoCollabStorage = function () {
           scope.isSavingCSVToCollab = true;
           backendInterfaceService.saveCSVRecordersFiles(
-            simulationInfo.contextID,
             function () { // Success callback
               scope.isSavingCSVToCollab = false;
             }, function () { // Failure callback

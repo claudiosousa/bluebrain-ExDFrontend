@@ -170,7 +170,7 @@ describe('Directive: transferFunctionEditor', function () {
     isolateScope.saveCSVIntoCollabStorage();
     expect(backendInterfaceServiceMock.saveCSVRecordersFiles).toHaveBeenCalled();
     expect(isolateScope.isSavingCSVToCollab).toBe(true);
-    backendInterfaceServiceMock.saveCSVRecordersFiles.calls.mostRecent().args[2]();
+    backendInterfaceServiceMock.saveCSVRecordersFiles.calls.mostRecent().args[1]();
     expect(isolateScope.isSavingCSVToCollab).toBe(false);
   });
 
