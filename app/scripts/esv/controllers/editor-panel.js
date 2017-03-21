@@ -4,13 +4,14 @@
   /* global console: false */
 
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService','saveErrorsService',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler,autoSaveService, saveErrorsService) {
+    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService','saveErrorsService', 'editorsPanelService',
+    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler, autoSaveService, saveErrorsService, editorsPanelService) {
 
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
     $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
+    $scope.editorsPanelService = editorsPanelService;
     $scope.panelIsOpen = false;
     $scope.activeTab = {};
     $scope.activeTab.transferfunction = false;
@@ -99,11 +100,11 @@
     // clean up on leaving
     $scope.$on("$destroy", function() {
       // prevent calling the select functions of the tabs
-      $scope.showEditorPanel = false;
+      editorsPanelService.showEditorPanel = false;
     });
 
-    $scope.$watch('showEditorPanel', function() {
-      if ($scope.showEditorPanel) {
+    $scope.$watch('editorsPanelService.showEditorPanel', function() {
+      if (editorsPanelService.showEditorPanel) {
         $scope.openCallback();
       } else {
         $scope.closeCallback();
