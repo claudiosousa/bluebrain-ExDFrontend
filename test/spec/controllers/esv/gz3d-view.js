@@ -20,7 +20,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationInfo,
     contextMenuState,
     colorableObjectService,
-    splashInstance,
     exampleProgressData,
     assetLoadingSplash,
     simulations,
@@ -51,96 +50,44 @@ describe('Controller: Gz3dViewCtrl', function () {
     environmentService,
     userContextService,
     editorsPanelService,
-    environmentRenderingService;
-
-  var simulationStateObject = {
-    update: jasmine.createSpy('update'),
-    state: jasmine.createSpy('state')
-  };
-
-  var simulationControlObject = {
-    simulation: jasmine.createSpy('simulation')
-  };
-
-  var assetLoadingSplashInstance = {
-    close: jasmine.createSpy('close')
-  };
-
-  var nrpBackendVersionsObject = {
-    get: jasmine.createSpy('get')
-  };
-
-  var objectInspectorServiceMock = {
-    toggleView: jasmine.createSpy('toggleView'),
-    update: jasmine.createSpy('update'),
-    removeEventListeners: jasmine.createSpy('removeEventListeners')
-  };
-
-  var userNavigationServiceMock = {
-    init: jasmine.createSpy('init'),
-    deinit: jasmine.createSpy('deinit'),
-    setDefaultPose: jasmine.createSpy('setDefaultPose'),
-    isUserAvatar: jasmine.createSpy('isUserAvatar').and.callFake(function(entity) {
-      return entity.name === 'user-avatar';
-    }),
-    setModeFreeCamera: jasmine.createSpy('setModeFreeCamera'),
-    setModeGhost: jasmine.createSpy('setModeGhost'),
-    setModeHumanBody: jasmine.createSpy('setModeHumanBody'),
-    update: jasmine.createSpy('update')
-  };
-
-  var simulationConfigServiceMock = {};
+    environmentRenderingService,
+    simulationStateObject,
+    simulationControlObject,
+    nrpBackendVersionsObject;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
-  beforeEach(module('simulationStateServices', function ($provide) {
-    var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
-    var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
-    var ensureStateBeforeExecutingSpy = jasmine.createSpy('ensureStateBeforeExecuting');
-    var getThenSpy = jasmine.createSpy('then');
-    var setThenSpy = jasmine.createSpy('then');
-    var setCatchSpy = jasmine.createSpy('catch');
-    var localCurrentState;
-    var localStatePending = false;
 
-    getCurrentStateSpy.and.callFake(function () {
-      return { then: getThenSpy.and.callFake(function (f) { f(); }) };
-    });
-
-    setCurrentStateSpy.and.callFake(function (s) {
-      localCurrentState = s;
-      return {
-        then: setThenSpy.and.callFake(function (f) { f(); }).
-        and.returnValue({ catch: function (f) { f(); } }),
-        catch: setCatchSpy.and.callFake(function (f) { f(); })
-      };
-    });
-
-    $provide.value('stateService', {
-      Initialize: jasmine.createSpy('Initialize'),
-      startListeningForStatusInformation: jasmine.createSpy('startListeningForStatusInformation'),
-      stopListeningForStatusInformation: jasmine.createSpy('stopListeningForStatusInformation'),
-      addStateCallback: jasmine.createSpy('addStateCallback'),
-      removeStateCallback: jasmine.createSpy('removeStateCallback'),
-      addMessageCallback: jasmine.createSpy('addMessageCallback'),
-      removeMessageCallback: jasmine.createSpy('removeMessageCallback'),
-      getCurrentState: getCurrentStateSpy,
-      setCurrentState: setCurrentStateSpy,
-      ensureStateBeforeExecuting: ensureStateBeforeExecutingSpy,
-      currentState: localCurrentState,
-      statePending: localStatePending
-    });
-  }));
-
-  beforeEach(module('contextMenuStateService', function ($provide) {
-    $provide.value('contextMenuState', {
-      toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
-      pushItemGroup : jasmine.createSpy('pushItemGroup')
-    });
-  }));
+  beforeEach(module('stateServiceMock'));
+  beforeEach(module('colorableObjectServiceMock'));
+  beforeEach(module('gz3dMock'));
+  beforeEach(module('splashMock'));
+  beforeEach(module('hbpDialogFactoryMock'));
+  beforeEach(module('backendInterfaceServiceMock'));
+  beforeEach(module('objectInspectorServiceMock'));
+  beforeEach(module('userNavigationServiceMock'));
+  beforeEach(module('userContextServiceMock'));
+  beforeEach(module('editorsPanelServiceMock'));
+  beforeEach(module('environmentRenderingServiceMock'));
+  beforeEach(module('cameraManipulationMock'));
+  beforeEach(module('contextMenuStateServiceMock'));
+  beforeEach(module('simulationInfoMock'));
 
   beforeEach(module(function ($provide) {
+
+    simulationStateObject = {
+      update: jasmine.createSpy('update'),
+      state: jasmine.createSpy('state')
+    };
+
+    simulationControlObject = {
+      simulation: jasmine.createSpy('simulation')
+    };
+
+    nrpBackendVersionsObject = {
+      get: jasmine.createSpy('get')
+    };
 
     var collab3DSettingsServiceMock = {};
 
@@ -156,232 +103,23 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
 
-    simulationConfigServiceMock.simulateCatch = false;
-
-    simulationConfigServiceMock.doesConfigFileExist = function ()
-    {
-      var res = {};
-      res.then = function (callback)
-      {
-        callback(true);
-      };
-      return res;
-    };
-
-    simulationConfigServiceMock.loadConfigFile = function ()
-    {
-      var that = this;
-      var res = {};
-      res.then = function (callback)
-      {
-        callback('{"shadows":true,"antiAliasing":true,"ssao":false,"ssaoDisplay":false,"ssaoClamp":0.8,"ssaoLumInfluence":0.7,"rgbCurve":{"red":[[0,0],[0.277587890625,0.2623291015625],[0.683837890625,0.7545166015625],[1,1]],"green":[[0,0],[0.324462890625,0.3560791015625],[0.636962890625,0.7193603515625],[1,1]],"blue":[[0,0],[0.515869140625,0.4693603515625],[1,1]]},"levelsInBlack":0.14,"levelsInGamma":1.44,"levelsInWhite":1,"levelsOutBlack":0,"levelsOutWhite":1,"skyBox":"img/3denv/sky/clouds/clouds","sun":"SIMPLELENSFLARE","bloom":true,"bloomStrength":"0.35","bloomRadius":0.37,"bloomThreshold":0.98,"fog":true,"fogDensity":"0.04","fogColor":"#d8ccb1"}');
-
-        var catchres = {};
-
-        catchres.catch = function(callback)
-        {
-          if (that.simulateCatch)
-          {
-            callback();
-          }
-        };
-
-        return catchres;
-      };
-      return res;
-    };
-
-    $provide.value('simulationConfigService', simulationConfigServiceMock);
-
-
-    var gz3dMock = {
-      Initialize : jasmine.createSpy('Initialize'),
-      deInitialize : jasmine.createSpy('deInitialize'),
-      setLightHelperVisibility: jasmine.createSpy('setLightHelperVisibility'),
-      isGlobalLightMinReached: jasmine.createSpy('isGlobalLightMinReached'),
-      isGlobalLightMaxReached: jasmine.createSpy('isGlobalLightMaxReached'),
-      scene : {
-        resetView: jasmine.createSpy('resetView'),
-        setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
-        container : {
-          addEventListener : jasmine.createSpy('addEventListener')
-        },
-        radialMenu : {
-          showing: false
-        },
-        modelManipulator: {
-          pickerNames: ''
-        },
-        emitter: {
-          emit: jasmine.createSpy('emit')
-        },
-        setManipulationMode : jasmine.createSpy('setManipulationMode'),
-        controls: {
-          onMouseDownManipulator: jasmine.createSpy('onMouseDownManipulator'),
-          onMouseUpManipulator: jasmine.createSpy('onMouseUpManipulator'),
-          update: jasmine.createSpy('update')
-        },
-        gui: {
-          emitter: {}
-        },
-        setShadowMaps: jasmine.createSpy('setShadowMaps'),
-        renderer: {
-          shadowMapEnabled: false
-        },
-        viewManager: {
-          views: [
-            {type: 'camera', active: true, container: {style: {visibility: 'visible'}}},
-            {type: 'camera', active: false, container: {style: {visibility: 'hidden'}}}
-          ]
-        },
-        scene: new THREE.Scene(),
-        selectEntity: jasmine.createSpy('selectEntity'),
-        applyComposerSettings: jasmine.createSpy('applyComposerSettings')
-      },
-      iface: {
-        addCanDeletePredicate: angular.noop,
-        setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
-        registerWebSocketConnectionCallback: jasmine.createSpy('registerWebSocketConnectionCallback'),
-        webSocket: {
-          close: jasmine.createSpy('close')
-        }
-      }
-    };
-    //provide gz3dMock
-    $provide.value('gz3d', gz3dMock);
-
-    var cameraManipulationMock = {
-      firstPersonRotate : jasmine.createSpy('firstPersonRotate'),
-      firstPersonTranslate : jasmine.createSpy('firstPersonTranslate'),
-      lookAtOrigin : jasmine.createSpy('lookAtOrigin'),
-      resetToInitialPose : jasmine.createSpy('resetToInitialPose')
-    };
-    $provide.value('cameraManipulation', cameraManipulationMock);
-    splashInstance = {
-      close: jasmine.createSpy('modalInstance.close'),
-      result: {
-        then: jasmine.createSpy('modalInstance.result.then')
-      }
-    };
-    var splashServiceMock = {
-      close: jasmine.createSpy('close'),
-      open: jasmine.createSpy('open').and.returnValue(splashInstance),
-      setMessage: jasmine.createSpy('setMessage')
-    };
-    $provide.value('splash', splashServiceMock);
-    var assetLoadingSplashMock = {
-      open: jasmine.createSpy('open').and.returnValue(assetLoadingSplashInstance),
-      close: jasmine.createSpy('close')
-    };
-    $provide.value('assetLoadingSplash', assetLoadingSplashMock);
     $provide.value('simulationState', jasmine.createSpy('simulationState').and.returnValue(simulationStateObject));
     $provide.value('simulationControl',  jasmine.createSpy('simulationControl').and.returnValue(simulationControlObject));
 
-    var colorableObjectServiceMock = {
-      setEntityMaterial: jasmine.createSpy('setEntityMaterial')
-    };
-
-    $provide.value('colorableObjectService', colorableObjectServiceMock);
-
-    var hbpIdentityUserDirectoryMock = {
-      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue({then: jasmine.createSpy('then')}),
-      get: jasmine.createSpy('get').and.returnValue({then: jasmine.createSpy('then')})
-    };
-    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
     $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
     $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
     $provide.value('serverError', jasmine.createSpy('serverError'));
     $provide.value('panels', { open: jasmine.createSpy('open') });
-    var proxyMock = {
-      getExperiments: jasmine.createSpy('getExperiments').and.returnValue({ then: jasmine.createSpy('then') }),
-    };
-    $provide.value('experimentProxyService', proxyMock);
     var experimentListMock = {
-      experiments: jasmine.createSpy('experiments'),
+      experiments: jasmine.createSpy('experiments')
     };
     $provide.value('experimentList',jasmine.createSpy('experimentList').and.returnValue(experimentListMock));
-    var configuration = { description: 'The Husky robot plays chess with Icub', name: 'TrueBlue', cameraPose: { x: 1.0, y: 2.0, z: 3.0 } };
-    simulationInfo = {
-      serverConfig: { rosbridge: {topics: {} }},
-      serverID: 'bbpce016',
-      simulationID: 'mocked_simulation_id',
-      serverBaseUrl: 'http://bbpce016.epfl.ch:8080',
-      Initialize: jasmine.createSpy('Initialize'),
-      mode: undefined,
-      contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
-      experimentDetails: configuration,
-      experimentID: 'experimentID'
-    };
-    $provide.value('simulationInfo', simulationInfo);
-
-    var hbpDialogFactoryMock = {
-      confirm: jasmine.createSpy('confirm').and.returnValue({
-        then: jasmine.createSpy('then')
-      }),
-      alert: jasmine.createSpy('alert')
-    };
-    $provide.value('hbpDialogFactory', hbpDialogFactoryMock);
-    var backendInterfaceServiceMock = {
-      reset: jasmine.createSpy('reset'),
-      resetCollab: jasmine.createSpy('resetCollab')
-    };
-    $provide.value('backendInterfaceService', backendInterfaceServiceMock);
-
-    $provide.value('objectInspectorService', objectInspectorServiceMock);
-
     $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
-
-    $provide.value('userNavigationService', userNavigationServiceMock);
-
-    var userContextServiceMock = {
-      isInitialized: false,
-      isJoiningStoppedSimulation: false,
-      userEditingID: '',
-      userEditing : '',
-      timeEditStarted: '',
-      editIsDisabled: false,
-      init: jasmine.createSpy('init'),
-      deinit: jasmine.createSpy('deinit'),
-      isOwner: jasmine.createSpy('isOwner'),
-      removeEditLock: jasmine.createSpy('removeEditLock').and.returnValue({
-        then: jasmine.createSpy('then').and.callFake(function (f) { f(); })
-      }),
-      hasEditRights: jasmine.createSpy('hasEditRights').and.callFake(function(entity) {
-        return (userContextServiceMock.isOwner || userNavigationServiceMock.isUserAvatar(entity));
-      }),
-      setEditDisabled: jasmine.createSpy('setEditDisabled'),
-      setLockDateAndUser: jasmine.createSpy('setLockDateAndUser').and.callFake(function(lockInfo) {
-        userContextServiceMock.userEditing = lockInfo.user.displayName;
-        userContextServiceMock.userEditingID = lockInfo.user.id;
-        userContextServiceMock.timeEditStarted = moment(new Date(lockInfo.date)).fromNow();
-      })
-    };
-    $provide.value('userContextService', userContextServiceMock);
-
-    var editorsPanelServiceMock = {
-      init: jasmine.createSpy('init'),
-      deinit: jasmine.createSpy('deinit'),
-      toggleEditors: jasmine.createSpy('toggleEditors')
-    };
-    $provide.value('editorsPanelService', editorsPanelServiceMock);
-
-    var environmentRenderingServiceMock = {
-      init: jasmine.createSpy('init'),
-      deinit: jasmine.createSpy('deinit'),
-      hasCameraView: jasmine.createSpy('hasCameraView')
-    };
-    $provide.value('environmentRenderingService', environmentRenderingServiceMock);
 
     simulationStateObject.update.calls.reset();
     simulationStateObject.state.calls.reset();
     simulationControlObject.simulation.calls.reset();
-    assetLoadingSplashInstance.close.calls.reset();
     nrpBackendVersionsObject.get.calls.reset();
-    hbpDialogFactoryMock.confirm.calls.reset();
-    hbpDialogFactoryMock.confirm().then.calls.reset();
-    backendInterfaceServiceMock.reset.calls.reset();
-    backendInterfaceServiceMock.resetCollab.calls.reset();
-
   }));
 
 
@@ -400,6 +138,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _assetLoadingSplash_,
                               _simulationState_,
                               _simulationControl_,
+                              _simulationInfo_,
                               _stateService_,
                               _contextMenuState_,
                               _colorableObjectService_,
@@ -440,6 +179,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     assetLoadingSplash = _assetLoadingSplash_;
     simulationState = _simulationState_;
     simulationControl = _simulationControl_;
+    simulationInfo = _simulationInfo_;
     stateService = _stateService_;
     contextMenuState = _contextMenuState_;
     colorableObjectService = _colorableObjectService_;
@@ -501,6 +241,10 @@ describe('Controller: Gz3dViewCtrl', function () {
       simulationID: 1,
       experimentConfiguration: 'FakeExperiment'
     };
+
+    userContextService.hasEditRights.and.callFake(function(entity) {
+      return (userContextService.isOwner || userNavigationService.isUserAvatar(entity));
+    });
 
     // create mock for $log
     spyOn(log, 'error');
@@ -568,13 +312,13 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(false);
       userContextService.isOwner = true;
       expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(true);
-      expect(userNavigationServiceMock.isUserAvatar).toHaveBeenCalled();
+      expect(userNavigationService.isUserAvatar).toHaveBeenCalled();
     });
 
     it('should have editRights for user avatar', function () {
       userContextService.isOwner = false;
       expect(userContextService.hasEditRights({name: 'user-avatar'})).toBe(true);
-      expect(userNavigationServiceMock.isUserAvatar).toHaveBeenCalled();
+      expect(userNavigationService.isUserAvatar).toHaveBeenCalled();
     });
 
     it('should initialize experimentDetails', function() {
