@@ -722,12 +722,6 @@ describe('Controller: Gz3dViewCtrl', function () {
         backendInterfaceService.resetCollab.calls.mostRecent().args[3](); //3 is the failure callback
         timeout.flush(100);
 
-        expect(hbpDialogFactory.alert).toHaveBeenCalledWith(
-          { title: 'Error.',
-            template: 'Error while resetting from Collab storage.'
-          }
-        );
-
         expect(splash.close).toHaveBeenCalled();
         expect(scope.splashScreen).not.toBeDefined();
       }
