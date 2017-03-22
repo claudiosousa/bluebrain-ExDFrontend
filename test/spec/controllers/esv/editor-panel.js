@@ -6,12 +6,14 @@ describe('Controller: editorPanelCtrl', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('gz3dServices'));
 
-  var experimentCtrl,
+  var $httpBackend,
+      experimentCtrl,
       scope,
       rootScope,
       bbpConfig,
       controller,
-      gz3d;
+      gz3d,
+      editorsPanelService;
 
   var simulationInfo;
 
@@ -30,13 +32,17 @@ describe('Controller: editorPanelCtrl', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
+                              _$httpBackend_,
                               _bbpConfig_,
+                              _editorsPanelService_,
                               _gz3d_) {
     controller = $controller;
+    $httpBackend = _$httpBackend_;
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
     gz3d = _gz3d_;
+    editorsPanelService = _editorsPanelService_;
 
     // Mock the scene controls object
     gz3d.scene = {};
@@ -70,6 +76,8 @@ describe('Controller: editorPanelCtrl', function () {
     scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
     scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
     scope.controls.pynneditor.refresh = jasmine.createSpy('refresh');
+
+    $httpBackend.whenGET(/\/me/).respond(200);
   }));
 
   it('should set the panelIsOpen on the open and close callbacks', function () {
@@ -156,11 +164,11 @@ describe('Controller: editorPanelCtrl', function () {
   });
 
   it('should set the variable showEditorPanel to be false', function () {
-    scope.showEditorPanel = true;
+    editorsPanelService.showEditorPanel = true;
 
     scope.$destroy();
 
-    expect(scope.showEditorPanel).toBeFalsy();
+    expect(editorsPanelService.showEditorPanel).toBeFalsy();
   });
 
   it('should refresh code editors after resizing', function () {
@@ -189,11 +197,11 @@ describe('Controller: editorPanelCtrl', function () {
     spyOn(scope, 'openCallback');
     spyOn(scope, 'closeCallback');
 
-    scope.showEditorPanel = false;
+    editorsPanelService.showEditorPanel = false;
     scope.$digest();
     expect(scope.closeCallback).toHaveBeenCalled();
 
-    scope.showEditorPanel = true;
+    editorsPanelService.showEditorPanel = true;
     scope.$digest();
     expect(scope.openCallback).toHaveBeenCalled();
   });

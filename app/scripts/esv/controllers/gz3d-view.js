@@ -350,9 +350,8 @@
 
           stateService.setCurrentState(STATE.PAUSED);
 
-          if ($scope.showEditorPanel)
-          {
-            $scope.toggleEditors();
+          if (editorsPanelService.showEditorPanel) {
+            editorsPanelService.toggleEditors();
           }
 
           $timeout(function(){
