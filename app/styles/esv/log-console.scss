@@ -1,63 +1,15 @@
-@import "pop-over-viewer.scss";
-$logConsolePanelStartWidth: 550px;
-$logConsolePanelStartHeight: 400px;
-$logConsolePanelMinWidth: 250px;
-$logConsolePanelMinHeight: 120px;
-$logConsolePanelHeadingHeight: 25px;
-$logConsolePanelHeadingMargin: 5px;
-$logConsolePanelHeadingHeightTotal: $logConsolePanelHeadingHeight+2 * $logConsolePanelHeadingMargin;
+@import "widget-popup.scss";
 @font-face {
     font-family: 'Inconsolata';
     src: url('../fonts/Inconsolata.otf') format('opentype');
 }
 
-.log-console-panel-widget {
-    @extend .pop-over-viewer;
-    display: flex;
-    top: 2%;
-    left: 2%;
-    width: $logConsolePanelStartWidth;
-    height: $logConsolePanelStartHeight;
-    min-width: $logConsolePanelMinWidth;
-    min-height: $logConsolePanelMinHeight;
-    background: rgba(255, 255, 255, 0.95);
-    .log-console-panel-close {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-    }
-    .log-console-panel-header {
-        position: absolute;
-        width: 80%;
-        width: calc(100% - 50px);
-        height: $logConsolePanelHeadingHeight;
-        margin: $logConsolePanelHeadingMargin;
-        border-radius: 3px;
-        -moz-border-radius: 3px;
-        -webkit-border-radius: 3px;
-        border: 1px solid #e1e1e1;
-        background: #f8f8f8;
-    }
-    .log-console-panel-title {
-        padding-left: 10px;
-        margin: $logConsolePanelHeadingMargin;
-    }
-    .log-console-panel-content {
-        width: 100%;
-        height: calc(100% - 2.51em);
-        padding: 15px;
-        padding-top: 5px;
-        margin: $logConsolePanelHeadingHeightTotal 0 0 0;
-        overflow: auto;
+.log-console-popup {
+    .widget-popup-content {
         font-family: Inconsolata;
 
         b{
             display: inline-block;
         }
-    }
-    .button-close {
-        position: absolute;
-        top: 5px;
-        right: 5px;
     }
 }

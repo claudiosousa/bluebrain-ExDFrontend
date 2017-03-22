@@ -1,0 +1,39 @@
+@import "widget-popup.scss";
+
+.video-streams-popup {
+    .widget-popup-content{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .video-streams-chooser{
+        flex-grow: 0;
+        margin-bottom: 5px;
+    }
+
+    .video-streams-image {
+        width:100%;
+        flex-grow: 1;
+        position:relative;
+
+        .video-streams-unavailable {
+            height: 100%;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            > *{
+                text-align: center;
+            }
+        }
+
+        > *{
+            height:100%;
+            width:100%;
+            position: absolute;
+        }
+    }
+}

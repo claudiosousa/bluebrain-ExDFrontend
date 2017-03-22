@@ -198,6 +198,12 @@
   pointer-events: none;
 }
 
+.disabled-image-with-events {
+  opacity: 0.4;
+  filter: alpha(opacity=40); /* msie */
+  cursor: default;
+}
+
 .disabled {
   opacity: 0.6;
   filter: alpha(opacity=60); /* msie */
