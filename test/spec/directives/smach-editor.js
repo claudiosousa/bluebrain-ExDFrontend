@@ -211,7 +211,7 @@ describe('Directive: smachEditor', function () {
       expect(URLMock.createObjectURL).toHaveBeenCalled();
       expect(window.Blob.calls.mostRecent().args[0]).not.toContain('stateMachineName');
       var link = document.body.appendChild.calls.mostRecent().args[0];
-      expect(link.download).toBe('stateMachines.py');
+      expect(link.download).toBe('stateMachines.exd');
       expect(document.body.removeChild).toHaveBeenCalledWith(link);
     });
 

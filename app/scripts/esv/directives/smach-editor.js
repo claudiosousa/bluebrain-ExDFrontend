@@ -249,7 +249,7 @@
             });
             var file = new Blob(stateMachinesCodeText, { type: "plain/text", endings: 'native' });
             var href = URL.createObjectURL(file);
-            downloadFileService.downloadFile(href, 'stateMachines.py');
+            downloadFileService.downloadFile(href, 'stateMachines.exd');
           };
 
           scope.loadStateMachine = function(file) {
