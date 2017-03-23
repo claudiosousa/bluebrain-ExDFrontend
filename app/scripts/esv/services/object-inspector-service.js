@@ -150,10 +150,14 @@
             }
           };
 
+          this.emitEntityChanged = function(){
+            gz3d.scene.emitter.emit('entityChanged', this.selectedObject);
+          };
+
           this.onObjectChange = function (transformType) {
             this.updateSelectedObject(transformType);
             this.selectedObject.updateMatrixWorld();
-            gz3d.scene.emitter.emit('entityChanged', this.selectedObject);
+            this.emitEntityChanged();
           };
 
           this.setViewMode = function (mode) {
@@ -323,6 +327,7 @@
               return;
             }
             that.update();
+            that.emitEntityChanged();
           };
 
           this.setStyle = function (style, idx) {
