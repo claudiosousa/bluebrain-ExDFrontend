@@ -14,27 +14,30 @@
 
             <div>
 
-                <label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">
             <input class="environment-settings-radio" type="radio"
+             ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
             ng-model="selectedColorChannel" ng-value="0">Red</label>
 
-                <label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">
             <input class="environment-settings-radio" type="radio"
+             ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
             ng-model="selectedColorChannel" ng-value="1">Green</label>
 
-                <label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">
             <input class="environment-settings-radio" type="radio"
+             ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
             ng-model="selectedColorChannel" ng-value="2">Blue</label>
 
             </div>
 
         </div>
 
-        <rgb-curve-editor selected-color-channel="selectedColorChannel" curve="composerSettings.rgbCurve" on-change="onRGBCurveChanged()"></rgb-curve-editor>
+        <rgb-curve-editor selected-color-channel="selectedColorChannel" disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')" curve="composerSettings.rgbCurve" on-change="onRGBCurveChanged()"></rgb-curve-editor>
 
         <div class="environment-settings-color-reset">
 
-            <button type="button" class="btn btn-default" ng-click="resetCurve()" ng-mouseup="$event.stopPropagation(); focus('container');">
+            <button type="button" class="btn btn-default" ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')" ng-click="resetCurve()" ng-mouseup="$event.stopPropagation(); focus('container');">
                 <span>Flat Curve</span>
         </button>
 
@@ -52,29 +55,34 @@
 
             <div class="environment-settings-option-subblock">
 
-                <label>Black Point</label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">Black Point</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsInBlack" step="0.01" min="0" max="0.5"
+                    ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label>Midtone</label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">Midtone</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="inGamma" step="0.01" min="0.5" max="1.5"
+                    ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label>White Point</label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">White Point</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsInWhite" step="0.01" min="0.5" max="1.0"
+                    ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label>Output Black</label>
+                <label  ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">Output Black</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsOutBlack" step="0.01" min="0" max="0.5"
+                    ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
-                <label>Output White</label>
+                <label  ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('colorCorrection')}">Output White</label>
                 <input class="esv-envsettings-slider" type="range" ng-change="updateEnvColorSettings()" ng-model="composerSettings.levelsOutWhite" step="0.01" min="0.5" max="1.0"
+                    ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')"
                     ng-mouseup="$event.stopPropagation(); focus('container');"/>
 
                 <div class="environment-settings-color-reset">
 
-                    <button type="button" class="btn btn-default" ng-click="resetLevels()" ng-mouseup="$event.stopPropagation(); focus('container');">
+                    <button type="button" ng-disabled="!gz3d.scene.isSupportedByMasterSetting('colorCorrection')" class="btn btn-default" ng-click="resetLevels()" ng-mouseup="$event.stopPropagation(); focus('container');">
                         <span>Flat Levels</span>
                     </button>
 

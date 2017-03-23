@@ -15,32 +15,38 @@
 
             <span> Sky Box </br></br> </span>
 
-            <label>
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
         ng-model="selectedSky" ng-value="0" ng-change="updateEnvSettings()">None</label>
 
-            <label>
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
         ng-model="selectedSky" ng-value="1" ng-change="updateEnvSettings()">Gradient</label>
 
-            <label>
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
         ng-model="selectedSky" ng-value="2" ng-change="updateEnvSettings()">Soft Gradient</label>
 
-        <label>
+        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
         ng-model="selectedSky" ng-value="3" ng-change="updateEnvSettings()">Blur</label>
 
 
         </br>
         </br>
 
-        <label>
+        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
         ng-model="selectedSky" ng-value="4" ng-change="updateEnvSettings()">Dark Blur</label>
 
-        <label>
+        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
         ng-model="selectedSky" ng-value="5" ng-change="updateEnvSettings()">Sky</label>
 
 
@@ -63,12 +69,14 @@
 
             <span> Sun </br></br> </span>
 
-            <label>
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('sun')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('sun')"
         ng-model="selectedSun" ng-value="0" ng-change="updateEnvSettings()">None</label>
 
-            <label>
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('sun')}">
         <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('sun')"
         ng-model="selectedSun" ng-value="1" ng-change="updateEnvSettings()">Lens Flare</label>
 
 
@@ -86,12 +94,13 @@
 
     <div class="environment-settings-option-subblock">
 
-        <label>
+        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('bloom')}">
         <input class="environment-settings-checkbox" type="checkbox"
         ng-model="bloom"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('bloom')"
         ng-change="updateEnvSettings()">Bloom</label>
 
-        <div class="environment-settings-option-subblock-environment"  ng-show="bloom">
+        <div class="environment-settings-option-subblock-environment"  ng-show="bloom && gz3d.scene.isSupportedByMasterSetting('bloom')">
 
 
             <label>Threshold
@@ -128,12 +137,13 @@
 
     <div class="environment-settings-option-subblock">
 
-        <label>
+        <label  ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('fog')}">
         <input class="environment-settings-checkbox" type="checkbox"
         ng-model="fog"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('fog')"
         ng-change="updateEnvSettings()">Fog</label>
 
-        <div class="environment-settings-option-subblock-environment" ng-show="fog">
+        <div class="environment-settings-option-subblock-environment" ng-show="fog && gz3d.scene.isSupportedByMasterSetting('fog')">
 
             <label>Density
                 <input  type="range" ng-change="updateEnvSettings()" ng-model="fogDensity"

@@ -7,36 +7,36 @@
 
 <hr class="environment-settings-hr" >
 
-<label>
+<label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('shadows')}">
     <input class="environment-settings-checkbox"
     type="checkbox"
      ng-model="renderShadows"
+     ng-disabled="!gz3d.scene.isSupportedByMasterSetting('shadows')"
     ng-change="updateEnvQualitySettings()">Shadows</label>
 
 <br>
 
 <hr class="environment-settings-hr" >
 
-<label>
+<label  ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('pbrMaterial')}">
     <input class="environment-settings-checkbox" type="checkbox"
      ng-model="renderPBR"
+     ng-disabled="!gz3d.scene.isSupportedByMasterSetting('pbrMaterial')"
     ng-change="updateEnvQualitySettings()">Physically Based Rendering (PBR)</label>
 
 <br>
 
 <hr class="environment-settings-hr" >
 
-<label>
+<label  ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('ssao')}">
     <input class="environment-settings-checkbox" type="checkbox"
      ng-model="renderAmbientOcclusion"
+     ng-disabled="!gz3d.scene.isSupportedByMasterSetting('ssao')"
     ng-change="updateEnvQualitySettings()">Ambient Occlusion</label>
 
 <br>
 
-
-
-
-<div class="environment-settings-option-subblock" ng-show="renderAmbientOcclusion">
+<div class="environment-settings-option-subblock" ng-show="renderAmbientOcclusion && gz3d.scene.isSupportedByMasterSetting('ssao')">
 
     <label>Clamp
 
@@ -57,9 +57,10 @@
 
 <hr class="environment-settings-hr" >
 
-<label>
+<label  ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('antiAliasing')}">
     <input class="environment-settings-checkbox" type="checkbox"
      ng-model="antiAliasingEnabled"
+     ng-disabled="!gz3d.scene.isSupportedByMasterSetting('antiAliasing')"
     ng-change="updateEnvQualitySettings()">Anti-aliasing</label>
 
 

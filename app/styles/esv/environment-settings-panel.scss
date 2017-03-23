@@ -130,9 +130,14 @@ environment-settings-panel label
   font-family: 'Gotham', sans-serif;
 }
 
+.environment-settings-panel-disabled-label
+{
+  color: gray;
+}
+
 .environment-settings-option-subblock {
   margin:10px 50px 10px 10px;
-};
+}
 
 .environment-settings-textfield
 {
@@ -152,7 +157,7 @@ environment-settings-panel label
     margin-bottom: 20px;
     border: 0;
     border-top: 1px solid #dddddd;
-};
+}
 
 input[type="range"]
 {
