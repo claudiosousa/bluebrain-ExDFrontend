@@ -12,7 +12,7 @@
     "bower_components/brainvisualizer/src/brain3D.js",
     "bower_components/brainvisualizer/src/brain3Dmainview.js",
     "bower_components/brainvisualizer/src/brain3Dneuronrepresentation.js",
-    "bower_components/brainvisualizer/shaders/brain3Dshaders.js",
+    "bower_components/brainvisualizer/shaders/brain3Dshaders.js"
   ],
   "license": "MIT",
   "homepage": "",
