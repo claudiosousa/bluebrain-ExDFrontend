@@ -13,9 +13,11 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 {
   'use strict';
 
+  var that = this;
+
   this.object = object;
   this.domElement = angular.isDefined(domElement) ? domElement : document;
-  domElementForKeyBindings = angular.isDefined(domElementForKeyBindings) ? domElementForKeyBindings : document;
+  this.domElementForKeyBindings = angular.isDefined(domElementForKeyBindings) ? domElementForKeyBindings : document;
 
   if (this.domElement !== document) {
     this.domElement.setAttribute('tabindex', -1);
@@ -60,9 +62,12 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.freeze = false;
 
-  this.mouseDragOn = false;
+  this.mouseRotate = false;
   this.mousePosOnKeyDown = new THREE.Vector2();
   this.mousePosCurrent = new THREE.Vector2();
+  this.touchRotate = false;
+  this.touchPosOnStart = new THREE.Vector2();
+  this.touchPosCurrent = new THREE.Vector2();
 
   this.startTouchDistance = new THREE.Vector2();
   this.startTouchMid = new THREE.Vector2();
@@ -82,15 +87,15 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.activeLook) {
+    if (that.activeLook) {
       switch (event.button) {
         case 0:
-          this.updateSphericalAngles();
-          this.mousePosOnKeyDown.set(event.pageX, event.pageY);
-          this.mousePosCurrent.copy(this.mousePosOnKeyDown);
-          this.azimuthOnMouseDown = this.azimuth;
-          this.zenithOnMouseDown = this.zenith;
-          this.mouseDragOn = true;
+          that.updateSphericalAngles();
+          that.mousePosOnKeyDown.set(event.pageX, event.pageY);
+          that.mousePosCurrent.copy(that.mousePosOnKeyDown);
+          that.azimuthOnMouseDown = that.azimuth;
+          that.zenithOnMouseDown = that.zenith;
+          that.mouseRotate = true;
           break;
       }
     }
@@ -104,12 +109,12 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     // and expect the event to be fired.
     //event.stopPropagation();
 
-    if (this.activeLook) {
+    if (that.activeLook) {
       switch (event.button) {
         case 0:
-          this.mouseDragOn = false;
-          this.azimuthOnMouseDown = this.azimuth;
-          this.zenithOnMouseDown = this.zenith;
+          that.mouseRotate = false;
+          that.azimuthOnMouseDown = that.azimuth;
+          that.zenithOnMouseDown = that.zenith;
           break;
       }
     }
@@ -119,9 +124,9 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     // only update the position, when a mouse button is pressed
     // else end the lookAround-mode
     if (event.buttons !== 0) {
-      this.mousePosCurrent.set(event.pageX, event.pageY);
+      that.mousePosCurrent.set(event.pageX, event.pageY);
     } else {
-      this.endLookAround();
+      that.endLookAround();
     }
   };
 
@@ -134,26 +139,26 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     switch (event.touches.length) {
       case 1:
         // look around
-        this.updateSphericalAngles();
-        this.mousePosOnKeyDown.set(event.touches[0].pageX, event.touches[0].pageY);
-        this.mousePosCurrent.copy(this.mousePosOnKeyDown);
-        this.azimuthOnMouseDown = this.azimuth;
-        this.zenithOnMouseDown = this.zenith;
-        this.mouseDragOn = true;
+        that.updateSphericalAngles();
+        that.touchPosOnStart.set(event.touches[0].pageX, event.touches[0].pageY);
+        that.touchPosCurrent.copy(that.touchPosOnStart);
+        that.azimuthOnMouseDown = that.azimuth;
+        that.zenithOnMouseDown = that.zenith;
+        that.touchRotate = true;
         break;
       case 2:
-        this.endLookAround();
+        that.endLookAround();
 
         var touch1 = new THREE.Vector2(event.touches[0].pageX, event.touches[0].pageY);
         var touch2 = new THREE.Vector2(event.touches[1].pageX, event.touches[1].pageY);
 
         // Compute distance of both touches when they start touching the display
-        this.startTouchDistance = touch1.distanceTo(touch2);
+        that.startTouchDistance = touch1.distanceTo(touch2);
 
         // Compute the mid of both touches
-        this.startTouchMid.addVectors(touch1, touch2).divideScalar(2.0);
+        that.startTouchMid.addVectors(touch1, touch2).divideScalar(2.0);
 
-        this.startCameraPosition.copy(this.object.position);
+        that.startCameraPosition.copy(that.object.position);
         break;
     }
   };
@@ -163,10 +168,10 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     switch (event.touches.length) {
       case 1:
         // look around
-        this.mousePosCurrent.set(event.touches[0].pageX, event.touches[0].pageY);
+        that.touchPosCurrent.set(event.touches[0].pageX, event.touches[0].pageY);
         break;
       case 2:
-        this.endLookAround();
+        that.endLookAround();
 
         // Compute distance of both touches
         var touch1 = new THREE.Vector2(event.touches[0].pageX, event.touches[0].pageY);
@@ -174,26 +179,26 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         var distance = touch1.distanceTo(touch2);
 
         // How much did the touches moved compared to the initial touch distances
-        var delta = distance - this.startTouchDistance;
+        var delta = distance - that.startTouchDistance;
         var forwardDirection = new THREE.Vector3();
         var straveDirection = new THREE.Vector3();
 
         // Only do something when the change is above a threshold. This prevents unwanted movements
         if (Math.abs(delta) >= 10) {
-          forwardDirection = this.cameraLookDirection.clone().setLength((delta-10) * this.touchSensitivity);
+          forwardDirection = that.cameraLookDirection.clone().setLength((delta-10) * that.touchSensitivity);
         }
 
         // Compute the mid of both touches
         var touchMid = new THREE.Vector2().addVectors(touch1, touch2).divideScalar(2.0);
-        var touchMidDistance = touchMid.distanceTo(this.startTouchMid);
+        var touchMidDistance = touchMid.distanceTo(that.startTouchMid);
 
         // Only strave when the change is above a threshold. This prevents unwanted movements
         if (Math.abs(touchMidDistance) >= 10) {
-          var touchMidDelta = new THREE.Vector2().subVectors(touchMid, this.startTouchMid).multiplyScalar(this.touchSensitivity);
-          straveDirection.set(touchMidDelta.x, -touchMidDelta.y, 0.0).applyQuaternion(this.object.quaternion);
+          var touchMidDelta = new THREE.Vector2().subVectors(touchMid, that.startTouchMid).multiplyScalar(that.touchSensitivity);
+          straveDirection.set(-touchMidDelta.x, touchMidDelta.y, 0.0).applyQuaternion(that.object.quaternion);
         }
 
-        this.object.position.addVectors(this.startCameraPosition, forwardDirection).add(straveDirection);
+        that.object.position.addVectors(that.startCameraPosition, forwardDirection).add(straveDirection);
 
         break;
     }
@@ -203,102 +208,103 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     switch (event.touches.length) {
       case 0:
         // look around
-        this.endLookAround();
+        that.endLookAround();
         break;
       case 1:
         // Reset the start distance
-        this.startTouchDistance = new THREE.Vector2();
-        this.startCameraPosition = new THREE.Vector3();
-        this.startTouchMid = new THREE.Vector2();
+        that.startTouchDistance = new THREE.Vector2();
+        that.startCameraPosition = new THREE.Vector3();
+        that.startTouchMid = new THREE.Vector2();
         break;
     }
   };
 
   this.endLookAround = function() {
-    this.mouseDragOn = false;
+    this.mouseRotate = false;
+    this.touchRotate = false;
     this.azimuthOnMouseDown = this.azimuth;
     this.zenithOnMouseDown = this.zenith;
   };
 
   this.onKeyDown = function (event) {
-    if(this.keyBindingsEnabled === false || event.metaKey || event.ctrlKey) {
+    if(that.keyBindingsEnabled === false || event.metaKey || event.ctrlKey) {
       return;
     }
-    this.shiftHold = event.shiftKey;
+    that.shiftHold = event.shiftKey;
     switch(event.code) {
 
       case "KeyW":
-        this.moveForward = true; break;
+        that.moveForward = true; break;
 
       case "KeyS":
-        this.moveBackward = true; break;
+        that.moveBackward = true; break;
 
       case "KeyA":
-        this.moveLeft = true; break;
+        that.moveLeft = true; break;
 
       case "KeyD":
-        this.moveRight = true; break;
+        that.moveRight = true; break;
 
       case "ArrowUp":
-        this.rotateUp = true; break;
+        that.rotateUp = true; break;
 
       case "ArrowLeft":
-        this.rotateLeft = true; break;
+        that.rotateLeft = true; break;
 
       case "ArrowDown":
-        this.rotateDown = true; break;
+        that.rotateDown = true; break;
 
       case "ArrowRight":
-        this.rotateRight = true; break;
+        that.rotateRight = true; break;
 
       case "PageUp":
       case "KeyR":
-        this.moveUp = true; break;
+        that.moveUp = true; break;
 
       case "PageDown":
       case "KeyF":
-        this.moveDown = true; break;
+        that.moveDown = true; break;
     }
   };
 
   this.onKeyUp = function (event) {
-    if(this.keyBindingsEnabled === false) {
+    if(that.keyBindingsEnabled === false) {
       return;
     }
-    this.shiftHold = event.shiftKey;
+    that.shiftHold = event.shiftKey;
     switch(event.code) {
 
       case "KeyW":
-        this.moveForward = false; break;
+        that.moveForward = false; break;
 
       case "KeyS":
-        this.moveBackward = false; break;
+        that.moveBackward = false; break;
 
       case "KeyA":
-        this.moveLeft = false; break;
+        that.moveLeft = false; break;
 
       case "KeyD":
-        this.moveRight = false; break;
+        that.moveRight = false; break;
 
       case "ArrowUp":
-        this.rotateUp = false; break;
+        that.rotateUp = false; break;
 
       case "ArrowLeft":
-        this.rotateLeft = false; break;
+        that.rotateLeft = false; break;
 
       case "ArrowDown":
-        this.rotateDown = false; break;
+        that.rotateDown = false; break;
 
       case "ArrowRight":
-        this.rotateRight = false; break;
+        that.rotateRight = false; break;
 
       case "PageUp":
       case "KeyR":
-        this.moveUp = false; break;
+        that.moveUp = false; break;
 
       case "PageDown":
       case "KeyF":
-        this.moveDown = false; break;
+        that.moveDown = false; break;
     }
   };
 
@@ -316,7 +322,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.update = function(delta) {
     if (!this.enabled)
     {
-      if (this.mouseDragOn)
+      if (this.mouseRotate || this.touchRotate)
       {
         this.endLookAround();
       }
@@ -376,7 +382,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       }
 
       /* --- rotation by means of a mouse drag --- */
-      if (this.mouseDragOn) {
+      if (this.mouseRotate) {
         var actualLookSpeed = this.lookSpeed;
         if (!this.activeLook) {
           actualLookSpeed = 0;
@@ -406,16 +412,47 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.object.position);
       }
 
+      /* --- rotation by means of a touch drag --- */
+      if (this.touchRotate) {
+        var actualLookSpeed = this.lookSpeed;
+        if (!this.activeLook) {
+          actualLookSpeed = 0;
+        }
+
+        var touchDelta = new THREE.Vector2();
+        touchDelta.x = this.touchPosCurrent.x - this.touchPosOnStart.x;
+        touchDelta.y = this.touchPosCurrent.y - this.touchPosOnStart.y;
+
+        this.azimuth = this.azimuthOnMouseDown + touchDelta.x * actualLookSpeed;
+        this.azimuth = this.azimuth % (2 * Math.PI);
+
+        if (this.lookVertical) {
+          this.zenith = this.zenithOnMouseDown - touchDelta.y * actualLookSpeed;
+          this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith));
+        } else {
+          this.zenith = Math.PI / 2;
+        }
+
+        var targetPosition = this.target, position = this.object.position;
+
+        targetPosition.x = position.x + Math.sin(this.zenith) * Math.cos(this.azimuth);
+        targetPosition.y = position.y + Math.sin(this.zenith) * Math.sin(this.azimuth);
+        targetPosition.z = position.z + Math.cos(this.zenith);
+
+        this.object.lookAt(targetPosition);
+        this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.object.position);
+      }
+
       this.object.updateMatrixWorld();  // I need to add this to get the camera working with the new ThreeJS version
     }
   };
 
   this.onMouseDownManipulator = function(action) {
-    this[action] = true;
+    that[action] = true;
   };
 
   this.onMouseUpManipulator = function(action) {
-    this[action] = false;
+    that[action] = false;
   };
 
   this.updateSphericalAngles = function() {
@@ -427,22 +464,37 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     this.azimuth = Math.atan2(vecForward.y, vecForward.x)  + Math.PI ;
   };
 
-  function bind(scope, fn) {
-    return function () {
-      fn.apply(scope, arguments);
-    };
-  }
+  this.attachEventListeners = function() {
+    this.domElement.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+    this.domElement.addEventListener('mousedown', this.onMouseDown, false);
+    this.domElement.addEventListener('mousemove', this.onMouseMove, false);
+    this.domElement.addEventListener('mouseup', this.onMouseUp, false);
+    this.domElement.addEventListener('touchstart', this.onTouchStart, false);
+    this.domElement.addEventListener('touchmove', this.onTouchMove, false);
+    this.domElement.addEventListener('touchend', this.onTouchEnd, false);
 
-  this.domElement.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-  this.domElement.addEventListener('mousemove', bind(this, this.onMouseMove), false);
-  this.domElement.addEventListener('mousedown', bind(this, this.onMouseDown), false);
-  this.domElement.addEventListener('mouseup', bind(this, this.onMouseUp), false);
-  this.domElement.addEventListener('touchstart', bind(this, this.onTouchStart), false);
-  this.domElement.addEventListener('touchmove', bind(this, this.onTouchMove), false);
-  this.domElement.addEventListener('touchend', bind(this, this.onTouchEnd), false);
+    this.domElementForKeyBindings.addEventListener('keydown', this.onKeyDown, false);
+    this.domElementForKeyBindings.addEventListener('keyup', this.onKeyUp, false);
 
-  domElementForKeyBindings.addEventListener('keydown', bind(this, this.onKeyDown), false);
-  domElementForKeyBindings.addEventListener('keyup', bind(this, this.onKeyUp), false);
+    this.domElement.addEventListener('mousewheel', this.onMouseWheel, false);
+    this.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel, false);
+  };
+
+  this.detachEventListeners = function() {
+    this.domElement.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+    this.domElement.removeEventListener('mousedown', this.onMouseDown, false);
+    this.domElement.removeEventListener('mousemove', this.onMouseMove, false);
+    this.domElement.removeEventListener('mouseup', this.onMouseUp, false);
+    this.domElement.removeEventListener('touchstart', this.onTouchStart, false);
+    this.domElement.removeEventListener('touchmove', this.onTouchMove, false);
+    this.domElement.removeEventListener('touchend', this.onTouchEnd, false);
+
+    this.domElementForKeyBindings.removeEventListener('keydown', this.onKeyDown, false);
+    this.domElementForKeyBindings.removeEventListener('keyup', this.onKeyUp, false);
+
+    this.domElement.removeEventListener('mousewheel', this.onMouseWheel, false);
+    this.domElement.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
+  };
 
 };
 

@@ -57,7 +57,9 @@ describe('Services: userNavigationService', function () {
       init: jasmine.createSpy('init'),
       createAvatarTopics: jasmine.createSpy('createAvatarTopics'),
       applyPose: jasmine.createSpy('applyPose'),
-      setPose: jasmine.createSpy('setPose')
+      setPose: jasmine.createSpy('setPose'),
+      attachEventListeners: jasmine.createSpy('attachEventListeners'),
+      detachEventListeners: jasmine.createSpy('detachEventListeners')
     };
     $provide.value('avatarControls', avatarControlsMock);
 
@@ -67,7 +69,9 @@ describe('Services: userNavigationService', function () {
       domElement: {
         addEventListener: jasmine.createSpy('addEventListener'),
         removeEventListener: jasmine.createSpy('removeEventListener')
-      }
+      },
+      attachEventListeners: jasmine.createSpy('attachEventListeners'),
+      detachEventListeners: jasmine.createSpy('detachEventListeners')
     };
     $provide.value('firstPersonControls', firstPersonControlsMock);
 
@@ -309,6 +313,7 @@ describe('Services: userNavigationService', function () {
     expect(avatarControls.lockVerticalMovement).toBe(true);
     expect(gz3d.scene.controls).toBe(avatarControls);
     expect(avatarControls.enabled).toBe(true);
+    expect(avatarControls.attachEventListeners).toHaveBeenCalled();
     expect(userNavigationService.avatarInitialized).toBe(true);
   });
 
@@ -396,9 +401,11 @@ describe('Services: userNavigationService', function () {
     expect(gz3d.scene.controls).not.toBeDefined();
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
     expect(userNavigationService.createAvatar).toHaveBeenCalledWith(true);
+    expect(firstPersonControls.detachEventListeners).toHaveBeenCalled();
   });
 
   it(' - setModeFreeCamera()', function () {
+    userNavigationService.avatarControls = avatarControls;
     // test for already in FREE_CAMERA mode
     userNavigationService.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
 
@@ -425,6 +432,8 @@ describe('Services: userNavigationService', function () {
     expect(camera.position.copy).toHaveBeenCalled();
     expect(camera.updateMatrixWorld).toHaveBeenCalled();
     expect(camera.lookAt).toHaveBeenCalled();
+    expect(avatarControls.detachEventListeners).toHaveBeenCalled();
+    expect(firstPersonControls.attachEventListeners).toHaveBeenCalled();
 
     expect(userNavigationService.freeCameraControls.enabled).toBe(true);
     expect(gz3d.scene.controls).toBe(firstPersonControls);

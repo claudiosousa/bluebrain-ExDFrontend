@@ -180,6 +180,7 @@
               // set and activate controls
               this.controls = gz3d.scene.controls = this.avatarControls;
               this.avatarControls.enabled = true;
+              this.avatarControls.attachEventListeners();
 
               this.avatarInitialized = true;
             },
@@ -226,13 +227,11 @@
 
               this.freeCameraControls.enabled = false;
               this.controls = gz3d.scene.controls = undefined;
+              this.freeCameraControls.detachEventListeners();
 
               this.removeAvatar();
               var avatarCollision = true;
               this.createAvatar(avatarCollision);
-
-              this.freeCameraControls.domElement.removeEventListener('mousewheel', this.freeCameraControls.onMouseWheel);
-              this.freeCameraControls.domElement.removeEventListener('DOMMouseScroll', this.freeCameraControls.onMouseWheel);
             },
 
             setModeFreeCamera: function() {
@@ -247,6 +246,9 @@
               // detach camera
               gz3d.scene.scene.add(this.userCamera);
 
+              this.avatarControls.enabled = false;
+              gz3d.scene.controls = undefined;
+              this.avatarControls.detachEventListeners();
               this.removeAvatar();
 
               if (angular.isDefined(this.currentPosition) && angular.isDefined(this.currentDirection)) {
@@ -257,11 +259,10 @@
               }
 
               window.firstPersonControls = this.freeCameraControls;
-              this.freeCameraControls.domElement.addEventListener('mousewheel', this.freeCameraControls.onMouseWheel, false);
-              this.freeCameraControls.domElement.addEventListener('DOMMouseScroll', this.freeCameraControls.onMouseWheel, false);
 
               this.freeCameraControls.enabled = true;
               this.controls = gz3d.scene.controls = this.freeCameraControls;
+              this.freeCameraControls.attachEventListeners();
             }
           };
         }

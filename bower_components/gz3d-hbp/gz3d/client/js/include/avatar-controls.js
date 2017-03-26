@@ -9,6 +9,8 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 {
   'use strict';
 
+  var that = this;
+
   this.userNavigationService = userNavigationService;
 
   this.gz3d = gz3d;
@@ -30,10 +32,12 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 
   this.lockVerticalMovement = false;
 
-  this.movementSpeed = 2.5;
+  this.MOVEMENT_SPEED = 2.5;
   this.MOUSE_ROTATION_SPEED = 0.01;
   this.KEYBOARD_ROTATION_SPEED = 0.05;
-  this.touchSensitivity = 0.01;
+  this.SHIFT_SPEEDUP_FACTOR = 3.0;
+  this.TOUCH_ROTATION_SPEED = 0.01;
+  this.TOUCH_MOVE_THRESHOLD = 20;
 
   this.lookVertical = true;
   this.thirdPerson = false;
@@ -42,9 +46,8 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   this.zenith = 0.0;
   this.zenithMin = Math.PI;
   this.zenithMax = 2*Math.PI;
-  this.azimuthOnMouseDown = this.azimuth;
-  this.zenithOnMouseDown = this.zenith;
-  this.speedUpFactor = 3.0;
+  this.azimuthOnRotStart = this.azimuth;
+  this.zenithOnRotStart = this.zenith;
 
   this.shiftHold = false;
   this.moveForward = false;
@@ -61,13 +64,19 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 
   this.freeze = false;
 
-  this.mouseDragOn = false;
+  this.mouseRotationEnabled = false;
+  this.touchRotationEnabled = false;
+
   this.mousePosOnKeyDown = new THREE.Vector2();
   this.mousePosCurrent = new THREE.Vector2();
 
-  this.startTouchDistance = new THREE.Vector2();
-  this.startTouchMid = new THREE.Vector2();
-  this.userStartPosition = new THREE.Vector3();
+  this.singleTouchPosOnStart = new THREE.Vector2();
+  this.singleTouchPosCurrent = new THREE.Vector2();
+  this.doubleTouchDistanceOnStart = new THREE.Vector2();
+  this.doubleTouchDistanceCurrent = new THREE.Vector2();
+  this.doubleTouchMidPosOnStart = new THREE.Vector2();
+  this.doubleTouchMidPosCurrent = new THREE.Vector2();
+
   this.cameraLookDirection = new THREE.Vector3();
 
   // init ROS velocity topic for avatar movement
@@ -114,18 +123,17 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     event.preventDefault();
     event.stopPropagation();
 
-    if (!this.mouseBindingsEnabled) {
+    if (!that.mouseBindingsEnabled) {
       return;
     }
 
     switch (event.button) {
       case 0:
-        //this.updateSphericalAnglesFromForwardVector();
-        this.mousePosOnKeyDown.set(event.pageX, event.pageY);
-        this.mousePosCurrent.copy(this.mousePosOnKeyDown);
-        this.azimuthOnMouseDown = this.azimuth;
-        this.zenithOnMouseDown = this.zenith;
-        this.mouseDragOn = true;
+        that.mousePosOnKeyDown.set(event.pageX, event.pageY);
+        that.mousePosCurrent.copy(that.mousePosOnKeyDown);
+        that.azimuthOnRotStart = that.azimuth;
+        that.zenithOnRotStart = that.zenith;
+        that.mouseRotationEnabled = true;
         break;
     }
   };
@@ -138,15 +146,15 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     // and expect the event to be fired.
     //event.stopPropagation();
 
-    if (!this.mouseBindingsEnabled) {
+    if (!that.mouseBindingsEnabled) {
       return;
     }
 
     switch (event.button) {
       case 0:
-        this.mouseDragOn = false;
-        //this.azimuthOnMouseDown = this.azimuth;
-        //this.zenithOnMouseDown = this.zenith;
+        that.mouseRotationEnabled = false;
+        //that.azimuthOnRotStart = that.azimuth;
+        //that.zenithOnRotStart = that.zenith;
         break;
     }
   };
@@ -155,14 +163,14 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     // only update the position, when a mouse button is pressed
     // else end the lookAround-mode
 
-    if (!this.mouseBindingsEnabled) {
+    if (!that.mouseBindingsEnabled) {
       return;
     }
 
     if (event.buttons !== 0) {
-      this.mousePosCurrent.set(event.pageX, event.pageY);
+      that.mousePosCurrent.set(event.pageX, event.pageY);
     } else {
-      this.endLookAround();
+      that.endLookAround();
     }
   };
 
@@ -170,26 +178,34 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     switch (event.touches.length) {
       case 1:
         // look around
-        this.updateSphericalAnglesFromForwardVector();
-        this.mousePosOnKeyDown.set(event.touches[0].pageX, event.touches[0].pageY);
-        this.mousePosCurrent.copy(this.mousePosOnKeyDown);
-        this.azimuthOnMouseDown = this.azimuth;
-        this.zenithOnMouseDown = this.zenith;
-        this.mouseDragOn = true;
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!that.mouseBindingsEnabled) {
+          return;
+        }
+
+        that.singleTouchPosOnStart.set(event.touches[0].pageX, event.touches[0].pageY);
+        that.singleTouchPosCurrent.copy(that.singleTouchPosOnStart);
+        that.azimuthOnRotStart = that.azimuth;
+        that.zenithOnRotStart = that.zenith;
+        that.touchRotationEnabled = true;
+
         break;
+
       case 2:
-        this.endLookAround();
+        // move
+        that.endLookAround();
 
         var touch1 = new THREE.Vector2(event.touches[0].pageX, event.touches[0].pageY);
         var touch2 = new THREE.Vector2(event.touches[1].pageX, event.touches[1].pageY);
 
         // Compute distance of both touches when they start touching the display
-        this.startTouchDistance = touch1.distanceTo(touch2);
+        that.doubleTouchDistanceOnStart = touch1.distanceTo(touch2);
 
         // Compute the mid of both touches
-        this.startTouchMid.addVectors(touch1, touch2).divideScalar(2.0);
+        that.doubleTouchMidPosOnStart.addVectors(touch1, touch2).divideScalar(2.0);
 
-        this.userStartPosition.copy(this.avatar.position);
         break;
     }
   };
@@ -199,37 +215,50 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     switch (event.touches.length) {
       case 1:
         // look around
-        this.mousePosCurrent.set(event.touches[0].pageX, event.touches[0].pageY);
+        that.singleTouchPosCurrent.set(event.touches[0].pageX, event.touches[0].pageY);
         break;
+
       case 2:
-        this.endLookAround();
+        // move
+        that.endLookAround();
 
         // Compute distance of both touches
         var touch1 = new THREE.Vector2(event.touches[0].pageX, event.touches[0].pageY);
         var touch2 = new THREE.Vector2(event.touches[1].pageX, event.touches[1].pageY);
-        var distance = touch1.distanceTo(touch2);
 
-        // How much did the touches moved compared to the initial touch distances
-        var delta = distance - this.startTouchDistance;
-        var forwardDirection = new THREE.Vector3();
-        var straveDirection = new THREE.Vector3();
-
-        // Only do something when the change is above a threshold. This prevents unwanted movements
-        if (Math.abs(delta) >= 10) {
-          forwardDirection = this.cameraLookDirection.clone().setLength((delta-10) * this.touchSensitivity);
+        //TODO: this could become relative to the magnitude of the delta later
+        that.doubleTouchDistanceCurrent = touch1.distanceTo(touch2);
+        var distanceDelta = that.doubleTouchDistanceCurrent - that.doubleTouchDistanceOnStart;
+        // move forward / backward
+        if (distanceDelta > that.TOUCH_MOVE_THRESHOLD) {
+          that.moveForward = true;
+        } else if (distanceDelta < -that.TOUCH_MOVE_THRESHOLD) {
+          that.moveBackward = true;
+        } else {
+          that.moveForward = false;
+          that.moveBackward = false;
         }
 
-        // Compute the mid of both touches
-        var touchMid = new THREE.Vector2().addVectors(touch1, touch2).divideScalar(2.0);
-        var touchMidDistance = touchMid.distanceTo(this.startTouchMid);
-
-        // Only strave when the change is above a threshold. This prevents unwanted movements
-        if (Math.abs(touchMidDistance) >= 10) {
-          var touchMidDelta = new THREE.Vector2().subVectors(touchMid, this.startTouchMid).multiplyScalar(this.touchSensitivity);
-          straveDirection.set(touchMidDelta.x, -touchMidDelta.y, 0.0).applyQuaternion(this.camera.quaternion);
+        that.doubleTouchMidPosCurrent.addVectors(touch1, touch2).divideScalar(2.0);
+        var posDelta = new THREE.Vector2().sub(that.doubleTouchMidPosCurrent, that.doubleTouchMidPosOnStart);
+        // move up / down
+        if (posDelta.y > that.TOUCH_MOVE_THRESHOLD) {
+          that.moveDown = true;
+        } else if (posDelta.y < -that.TOUCH_MOVE_THRESHOLD) {
+          that.moveUp = true;
+        } else {
+          that.moveUp = false;
+          that.moveDown = false;
         }
-
-        this.avatar.position.addVectors(this.userStartPosition, forwardDirection).add(straveDirection);
+        // move right / left
+        if (posDelta.x > that.TOUCH_MOVE_THRESHOLD) {
+          that.moveLeft = true;
+        } else if (posDelta.x < -that.TOUCH_MOVE_THRESHOLD) {
+          that.moveRight = true;
+        } else {
+          that.moveRight = false;
+          that.moveLeft = false;
+        }
 
         break;
     }
@@ -238,103 +267,111 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   this.onTouchEnd = function (event) {
     switch (event.touches.length) {
       case 0:
-        // look around
-        this.endLookAround();
+        that.endLookAround();
+        that.endMovement();
         break;
       case 1:
-        // Reset the start distance
-        this.startTouchDistance = new THREE.Vector2();
-        this.userStartPosition = new THREE.Vector3();
-        this.startTouchMid = new THREE.Vector2();
+        // move ends, one finger still down for rotation
+        that.endMovement();
         break;
     }
   };
 
   this.endLookAround = function() {
-    this.mouseDragOn = false;
-    this.azimuthOnMouseDown = this.azimuth;
-    this.zenithOnMouseDown = this.zenith;
+    this.mouseRotationEnabled = false;
+    this.touchRotationEnabled = false;
+    this.azimuthOnRotStart = this.azimuth;
+    this.zenithOnRotStart = this.zenith;
+  };
+
+  this.endMovement = function() {
+    this.moveForward = false;
+    this.moveBackward = false;
+    this.moveRight = false;
+    this.moveLeft = false;
+    this.moveUp = false;
+    this.moveDown = false;
   };
 
   this.onKeyDown = function (event) {
-    if(this.keyboardBindingsEnabled === false || event.metaKey || event.ctrlKey) {
+    if(that.keyboardBindingsEnabled === false || event.metaKey || event.ctrlKey) {
       return;
     }
-    this.shiftHold = event.shiftKey;
+    that.shiftHold = event.shiftKey;
     switch(event.code) {
       case "ArrowUp":
-        this.keyboardRotateUp = true; break;
+        that.keyboardRotateUp = true; break;
       case "KeyW":
-        this.moveForward = true; break;
+        that.moveForward = true; break;
 
       case "ArrowLeft":
-        this.keyboardRotateLeft = true; break;
+        that.keyboardRotateLeft = true; break;
       case "KeyA":
-        this.moveLeft = true; break;
+        that.moveLeft = true; break;
 
       case "ArrowDown":
-        this.keyboardRotateDown = true; break;
+        that.keyboardRotateDown = true; break;
       case "KeyS":
-        this.moveBackward = true; break;
+        that.moveBackward = true; break;
 
       case "ArrowRight":
-        this.keyboardRotateRight = true; break;
+        that.keyboardRotateRight = true; break;
       case "KeyD":
-        this.moveRight = true; break;
+        that.moveRight = true; break;
 
       case "PageUp":
       case "KeyR":
-        this.moveUp = true; break;
+        that.moveUp = true; break;
 
       case "PageDown":
       case "KeyF":
-        this.moveDown = true; break;
+        that.moveDown = true; break;
     }
   };
 
   this.onKeyUp = function (event) {
-    if(this.keyboardBindingsEnabled === false) {
+    if(that.keyboardBindingsEnabled === false) {
       return;
     }
-    this.shiftHold = event.shiftKey;
+    that.shiftHold = event.shiftKey;
     switch(event.code) {
       case "ArrowUp":
-        this.keyboardRotateUp = false; break;
+        that.keyboardRotateUp = false; break;
       case "KeyW":
-        this.moveForward = false; break;
+        that.moveForward = false; break;
 
       case "ArrowLeft":
-        this.keyboardRotateLeft = false; break;
+        that.keyboardRotateLeft = false; break;
       case "KeyA":
-        this.moveLeft = false; break;
+        that.moveLeft = false; break;
 
       case "ArrowDown":
-        this.keyboardRotateDown = false; break;
+        that.keyboardRotateDown = false; break;
       case "KeyS":
-        this.moveBackward = false; break;
+        that.moveBackward = false; break;
 
       case "ArrowRight":
-        this.keyboardRotateRight = false; break;
+        that.keyboardRotateRight = false; break;
       case "KeyD":
-        this.moveRight = false; break;
+        that.moveRight = false; break;
 
       case "PageUp":
       case "KeyR":
-        this.moveUp = false; break;
+        that.moveUp = false; break;
 
       case "PageDown":
       case "KeyF":
-        this.moveDown = false; break;
+        that.moveDown = false; break;
 
       case "KeyT":
       {
-        this.thirdPerson = !this.thirdPerson;
-        if (this.thirdPerson) {
-          this.camera.position.set(0, -5, this.avatarEyeHeight + 1);
+        that.thirdPerson = !that.thirdPerson;
+        if (that.thirdPerson) {
+          that.camera.position.set(0, -5, that.avatarEyeHeight + 1);
         } else {
-          this.camera.position.set(0, this.avatarRadius, this.avatarEyeHeight);
+          that.camera.position.set(0, that.avatarRadius, that.avatarEyeHeight);
         }
-        this.camera.updateMatrixWorld();
+        that.camera.updateMatrixWorld();
         break;
       }
     }
@@ -435,10 +472,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     vecForward.normalize();
 
     this.azimuth = Math.atan2(vecForward.y, vecForward.x) - 0.5 * Math.PI;
-    this.azimuthOnMouseDown = this.azimuth;
+    this.azimuthOnRotStart = this.azimuth;
 
     this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, Math.acos(vecForward.z) + Math.PI));
-    this.zenithOnMouseDown = this.zenith;
+    this.zenithOnRotStart = this.zenith;
   };
 
   this.updateSphericalAnglesFromUserInput = function(timeDelta) {
@@ -457,7 +494,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     }
 
     /* --- rotation by means of a mouse drag --- */
-    if (this.mouseDragOn) {
+    if (this.mouseRotationEnabled) {
       var actualLookSpeed = this.MOUSE_ROTATION_SPEED;
       if (!this.mouseBindingsEnabled) {
         actualLookSpeed = 0;
@@ -465,12 +502,33 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
 
       var mouseDelta = new THREE.Vector2().subVectors(this.mousePosCurrent, this.mousePosOnKeyDown);
 
-      this.azimuth = this.azimuthOnMouseDown - mouseDelta.x * actualLookSpeed;
+      this.azimuth = this.azimuthOnRotStart - mouseDelta.x * actualLookSpeed;
 
       // horizontally rotate the whole user object instead of only camera/"head" for now
 
       if (this.lookVertical) {
-        this.zenith = this.zenithOnMouseDown + mouseDelta.y * actualLookSpeed;
+        this.zenith = this.zenithOnRotStart + mouseDelta.y * actualLookSpeed;
+        this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith));
+      } else {
+        this.zenith = Math.PI / 2;
+      }
+    }
+
+    /* --- rotation by means of touch --- */
+    if (this.touchRotationEnabled) {
+      var actualLookSpeed = this.TOUCH_ROTATION_SPEED;
+      if (!this.mouseBindingsEnabled) {
+        actualLookSpeed = 0;
+      }
+
+      var touchDelta = new THREE.Vector2().subVectors(this.singleTouchPosCurrent, this.singleTouchPosOnStart);
+
+      this.azimuth = this.azimuthOnRotStart + touchDelta.x * actualLookSpeed;
+
+      // horizontally rotate the whole user object instead of only camera/"head" for now
+
+      if (this.lookVertical) {
+        this.zenith = this.zenithOnRotStart - touchDelta.y * actualLookSpeed;
         this.zenith = Math.max(this.zenithMin, Math.min(this.zenithMax, this.zenith));
       } else {
         this.zenith = Math.PI / 2;
@@ -517,9 +575,9 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   };
 
   this.updateLinearVelocity = function(delta) {
-    var speed = this.movementSpeed;
+    var speed = this.MOVEMENT_SPEED;
     if (this.shiftHold) {
-      speed = speed * this.speedUpFactor;
+      speed = speed * this.SHIFT_SPEEDUP_FACTOR;
     }
 
     this.linearVelocity.set(0, 0, 0);
@@ -563,7 +621,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
    */
   this.update = function(delta) {
     if (!this.enabled) {
-      if (this.mouseDragOn)
+      if (this.mouseRotationEnabled || this.touchRotationEnabled)
       {
         this.endLookAround();
       }
@@ -606,21 +664,29 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
     this[action] = false;
   };
 
-  function bind(scope, fn) {
-    return function () {
-      fn.apply(scope, arguments);
-    };
-  }
+  this.attachEventListeners = function() {
+    this.domElementPointerBindings.addEventListener('mousedown', this.onMouseDown, false);
+    this.domElementPointerBindings.addEventListener('mousemove', this.onMouseMove, false);
+    this.domElementPointerBindings.addEventListener('mouseup', this.onMouseUp, false);
+    this.domElementPointerBindings.addEventListener('touchstart', this.onTouchStart, false);
+    this.domElementPointerBindings.addEventListener('touchmove', this.onTouchMove, false);
+    this.domElementPointerBindings.addEventListener('touchend', this.onTouchEnd, false);
 
-  this.domElementPointerBindings.addEventListener('mousemove', bind(this, this.onMouseMove), false);
-  this.domElementPointerBindings.addEventListener('mousedown', bind(this, this.onMouseDown), false);
-  this.domElementPointerBindings.addEventListener('mouseup', bind(this, this.onMouseUp), false);
-  this.domElementPointerBindings.addEventListener('touchstart', bind(this, this.onTouchStart), false);
-  this.domElementPointerBindings.addEventListener('touchmove', bind(this, this.onTouchMove), false);
-  this.domElementPointerBindings.addEventListener('touchend', bind(this, this.onTouchEnd), false);
+    this.domElementKeyboardBindings.addEventListener('keydown', this.onKeyDown, false);
+    this.domElementKeyboardBindings.addEventListener('keyup',  this.onKeyUp, false);
+  };
 
-  this.domElementKeyboardBindings.addEventListener('keydown', bind(this, this.onKeyDown), false);
-  this.domElementKeyboardBindings.addEventListener('keyup', bind(this, this.onKeyUp), false);
+  this.detachEventListeners = function() {
+    this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
+    this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
+    this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
+    this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
+    this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
+    this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
+
+    this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
+    this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
+  };
 
 };
 
