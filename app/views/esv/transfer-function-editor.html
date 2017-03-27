@@ -22,7 +22,7 @@
         <tr>
           <th>Name</th>
           <th>Type</th>
-          <th>Neurons</th>
+        <th>Indices</th>
           <th>Parameters</th>
         </tr>
       </thead>
@@ -30,7 +30,7 @@
         <tr ng-repeat="pop in populations" ng-click="togglePopulationParameters(pop)">
           <td>{{pop.name}}</td>
           <td>{{pop.neuron_model}}</td>
-          <td>{{pop.gids}}</td>
+          <td>{{pop.indices}}</td>
           <td class="parameters-column">
             <!--<a ng-click="togglePopulationParameters(pop)"> {{(pop.showDetails ? 'Hide' : 'Show')+' parameters'}}</a>-->
             <span ng-hide="pop.showDetails" class="collapsed-text">...</span>
