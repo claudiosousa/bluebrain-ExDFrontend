@@ -51,23 +51,6 @@ body.experiment-view-route{
   display: block !important;
 }
 
-
-// Canvas issue see
-// http://stackoverflow.com/questions/15807833/div-containing-canvas-have-got-a-strange-bottom-margin-of-5px
-canvas {
-  display: block;
-}
-
-// Let the toolbar overlay be "at the top" such that other elements (like moveable objects)
-// will not cover the toolbar.
-#overlay {
-  z-index: 1000;
-  position: absolute;
-}
-
-.esv-overlay {
-  width: 100%
-}
 .esv-contextmenu {
     position: absolute;
     z-index: 1000;
