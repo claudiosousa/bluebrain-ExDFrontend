@@ -1202,6 +1202,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     it('should go back to the esv-web page when no "ctx" parameter was in the url', function() {
       environmentService.setPrivateExperiment(false);
       scope.exit();
+      timeout.flush();
       expect(location.path()).toEqual('/esv-web');
     });
   });
@@ -1219,13 +1220,11 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
-    it('should go back to the esv-web page when a "ctx" parameter was in the url', function (done) {
-      scope.exit().then(function () {
-        expect(location.path()).toEqual('/esv-private');
-        expect(userContextService.deinit).toHaveBeenCalled();
-        done();
-      });
-      scope.$digest();
+    it('should go back to the esv-web page when a "ctx" parameter was in the url', function () {
+      scope.exit();
+      timeout.flush();
+      expect(location.path()).toEqual('/esv-private');
+      expect(userContextService.deinit).toHaveBeenCalled();
     });
 
     it('should clean up when destroy is called', function () {
