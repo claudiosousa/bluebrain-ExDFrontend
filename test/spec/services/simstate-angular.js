@@ -36,6 +36,7 @@ describe('Services: simulation state', function () {
   }));
 
   beforeEach(module('gz3dServices'));
+  beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide) {
     // Mock RosLib
     var roslibMock = {
@@ -88,8 +89,6 @@ describe('Services: simulation state', function () {
     httpBackend = _$httpBackend_;
     STATE = _STATE_;
     roslib = _roslib_;
-
-    httpBackend.whenGET('views/common/home.html').respond({}); // Templates are requested via HTTP and processed locally.
 
     // create mock for console
     spyOn(console, 'error');

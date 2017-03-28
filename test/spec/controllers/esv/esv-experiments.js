@@ -147,7 +147,6 @@
 
       environmentService.setPrivateExperiment(pageOptions.collab);
 
-      $httpBackend.whenGET('views/common/home.html').respond(200);
       $httpBackend.whenGET(new RegExp(proxyUrl + '/experiments')).respond(200, pageOptions.experiments);
       $httpBackend.whenGET(new RegExp(proxyUrl + '/experimentImage/')).respond(200, {});
       $httpBackend.whenGET(slurmUrl + '/api/v1/partitions/interactive').respond(200, pageOptions.slurm);

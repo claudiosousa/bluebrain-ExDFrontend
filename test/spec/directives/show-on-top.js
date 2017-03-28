@@ -3,13 +3,10 @@
 describe('Directive: show-on-top', function () {
 
     beforeEach(module('exdFrontendApp'));
+    beforeEach(module('exd.templates'));
 
     var panels;
     var $rootScope, MAX_PANEL_ZINDEX, $compile;
-
-    beforeEach(inject(function ($httpBackend) {
-        $httpBackend.whenGET(/.*/).respond(200);
-    }));
 
     beforeEach(inject(function (_$rootScope_, _MAX_PANEL_ZINDEX_, _$compile_) {
         $rootScope = _$rootScope_;

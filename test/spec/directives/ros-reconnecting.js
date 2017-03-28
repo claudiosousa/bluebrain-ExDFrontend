@@ -3,6 +3,7 @@
 describe('Directive: rosReconnecting', function() {
 
     beforeEach(module('exdFrontendApp'));
+    beforeEach(module('exd.templates'));
     var $rootScope, $timeout, $q, element, onReconnectingCallback, RECONNECTING_TIMEOUT_MS,
         unsubscribeRos = jasmine.createSpy('unsubscribeRos');
 
@@ -26,7 +27,6 @@ describe('Directive: rosReconnecting', function() {
                 return unsubscribeRos;
             });
 
-        $httpBackend.whenGET(new RegExp('.*')).respond(200);
 
         $rootScope.exit = jasmine.createSpy('exit');
         element = $compile('<div class="ros-reconnecting" on-reconnect-timeout="exit()"></div>')($rootScope);

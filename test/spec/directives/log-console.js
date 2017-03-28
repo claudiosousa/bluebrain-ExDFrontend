@@ -27,7 +27,6 @@ describe('Directive: logConsole', function() {
     beforeEach(inject(function(_$rootScope_, $httpBackend, _$timeout_, $compile) {
         $rootScope = _$rootScope_;
         $timeout = _$timeout_;
-        $httpBackend.whenGET(new RegExp('.*')).respond(200);
         element = $compile('<log-console server="server" topic="topic"></log-console>')($rootScope);
         $rootScope.$digest();
         childScope = $rootScope.$$childHead;

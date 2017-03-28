@@ -13,6 +13,7 @@ describe('Services: nrpUser', function () {
   };
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide) {
     initialForceuserValue = window.bbpConfig.localmode.forceuser;
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectory);
@@ -29,7 +30,6 @@ describe('Services: nrpUser', function () {
     nrpUser = _nrpUser_;
 
     hbpIdentityUserDirectory.getCurrentUser.calls.reset();
-    $httpBackend.whenGET(/.*/).respond(200);
   }));
 
   it('should call hbpIdentityUserDirectory when not forcing user', function () {

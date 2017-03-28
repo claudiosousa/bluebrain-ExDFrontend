@@ -34,6 +34,7 @@ describe('Services: AutoSaveService', function () {
   });
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
 
   beforeEach(module(function ($provide) {
     tempFileService = {
@@ -54,7 +55,6 @@ describe('Services: AutoSaveService', function () {
     AUTO_SAVE_INTERVAL = _AUTO_SAVE_INTERVAL_;
     environmentService = _environmentService_;
     environmentService.setPrivateExperiment(true);
-    $httpBackend.whenGET(new RegExp('.*')).respond(200);
   }));
 
   beforeEach(function () { //default behavior

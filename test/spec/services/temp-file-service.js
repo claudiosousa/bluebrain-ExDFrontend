@@ -13,6 +13,7 @@ describe('Services: tempFileService', function () {
   var $rootScope, $q, tempFileService;
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
 
   beforeEach(module(function ($provide) {
     collabFolderAPIService = {
@@ -43,8 +44,6 @@ describe('Services: tempFileService', function () {
     tempFileService = _tempFileService_;
     environmentService = _environmentService_;
     environmentService.setPrivateExperiment(true);
-
-    $httpBackend.whenGET(new RegExp('.*')).respond(200);
   }));
 
   beforeEach(function () { //default behavior

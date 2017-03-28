@@ -16,7 +16,7 @@ describe('Services: oidc-client-service', function ()
   };
 
   beforeEach(module('exdFrontendApp'));
-
+  beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide)
   {
     $provide.value('bbpConfig', bbpConfig);
@@ -27,7 +27,6 @@ describe('Services: oidc-client-service', function ()
   {
     rootScope = $rootScope;
     interval = $interval;
-    $httpBackend.whenGET(/.*/).respond(200);
     oidcClientService = _oidcClientService_;
   }));
 

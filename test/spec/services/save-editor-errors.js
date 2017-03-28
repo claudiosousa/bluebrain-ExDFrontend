@@ -10,7 +10,7 @@ describe('Services: saveErrorsService', function () {
   var $rootScope, $q, saveErrorsService, SAVE_FILE, environmentService;
 
   beforeEach(module('exdFrontendApp'));
-
+  beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide) {
 
     tempFileService = {
@@ -41,8 +41,6 @@ describe('Services: saveErrorsService', function () {
     SAVE_FILE = _SAVE_FILE_;
     environmentService = _environmentService_;
     environmentService.setPrivateExperiment(true);
-
-    $httpBackend.whenGET(new RegExp('.*')).respond(200);
   }));
 
   beforeEach(function () { //default behavior

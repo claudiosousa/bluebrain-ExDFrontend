@@ -5,6 +5,7 @@ describe('Services: server-info-service', function () {
 
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
   beforeEach(function () {
     simulationData = {
       serverID: 'bbpce016',
@@ -39,7 +40,6 @@ describe('Services: server-info-service', function () {
 
   it('should set simulationInfo properties using $stateParams properties', function () {
     httpBackend.whenGET('http://proxy/server/' + simulationData.serverID).respond(200, serverConfig);
-    httpBackend.whenGET('views/common/home.html').respond(200);
 
     // Collab mode
     environmentService.setPrivateExperiment(true);

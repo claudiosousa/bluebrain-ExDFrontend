@@ -94,6 +94,7 @@ describe('Services: simulation-config-service', function ()
   };
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
   beforeEach(module('gz3dServices'));
 
   // load the service to test and mock the necessary service
@@ -114,7 +115,6 @@ describe('Services: simulation-config-service', function ()
 
     var fileresult = { resources: [{ type: 'mockedFileType', file: 'mockedpath/configfilename' }] };
     httpBackend.expectGET(simulationInfo.serverBaseUrl + '/simulation/mocked_simulation_id/resources').respond(JSON.stringify(fileresult));
-    httpBackend.whenGET('views/common/home.html').respond(200);
   }));
 
  it('should check if config file exists in backend', function ()

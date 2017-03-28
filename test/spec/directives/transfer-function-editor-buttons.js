@@ -7,11 +7,10 @@ describe('Directive: transferFunctionEditorButtons', function () {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
-  beforeEach(inject(function (_$rootScope_, _$compile_, $httpBackend) {
+  beforeEach(inject(function (_$rootScope_, _$compile_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $rootScope.create = jasmine.createSpy('create');
-    $httpBackend.whenGET(/.*/).respond(200);
   }));
 
   it('should create TFs at the beginning by default', function () {

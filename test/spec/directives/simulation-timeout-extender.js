@@ -3,6 +3,8 @@
 describe('Directive: simulation-timeout-extender', function () {
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
+  
   var $rootScope, $q, $compile,
     hbpDialogFactoryConfirmResponse, backendInterfaceServiceExtendResponse;
 
@@ -28,7 +30,6 @@ describe('Directive: simulation-timeout-extender', function () {
     $rootScope.simTimeoutText = 300;
     hbpDialogFactoryConfirmResponse = $q.when();
     backendInterfaceServiceExtendResponse = $q.when();
-    $httpBackend.whenGET(new RegExp('.*')).respond(200);
     $compile('<simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}"></simulation-timeout-extender>')($rootScope);
   }));
 

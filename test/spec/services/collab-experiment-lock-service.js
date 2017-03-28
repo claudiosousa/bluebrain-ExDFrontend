@@ -14,7 +14,7 @@ describe('Services: collab-experiment-lock-service', function () {
 
     // loads the service to test and mock the necessary service
     beforeEach(module('exdFrontendApp'));
-
+    beforeEach(module('exd.templates'));
     beforeEach(inject(function (
         _$httpBackend_,
         _bbpConfig_,
@@ -31,7 +31,6 @@ describe('Services: collab-experiment-lock-service', function () {
 
         collabConfigResponse = httpBackend.whenGET(bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration/' + FAKE_CONTEXT_ID)
             .respond(200, { experimentFolderUUID: FAKE_EXPERIMENT_FOLDER_ID });
-        httpBackend.whenGET('views/common/home.html').respond(200);
     }));
 
     afterEach(function () {
