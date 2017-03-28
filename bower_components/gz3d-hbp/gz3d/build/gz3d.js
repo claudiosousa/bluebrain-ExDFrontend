@@ -3586,9 +3586,6 @@ GZ3D.GZIface.prototype.onError = function()
 
 GZ3D.GZIface.prototype.onConnected = function()
 {
-  this.isConnected = true;
-  this.emitter.emit('connection');
-
   this.heartbeatTopic = new ROSLIB.Topic({
     ros : this.webSocket,
     name : '~/heartbeat',
@@ -4244,6 +4241,9 @@ GZ3D.GZIface.prototype.onConnected = function()
         publishWorldControl(paused, null);
       }
   );
+
+  this.isConnected = true;
+  this.emitter.emit('connection');
 };
 
 GZ3D.GZIface.prototype.updateStatsGuiFromMsg = function(stats)
@@ -8351,88 +8351,8 @@ GZ3D.Scene.prototype.getDomElement = function()
 
 GZ3D.Scene.prototype.render = function()
 {
-   // Check page visibily
-
-    var isPageVisible = true;
-
-    if (typeof document.hidden !== 'undefined')
-    {
-        isPageVisible = !document['hidden'];
-    }
-    else if (typeof document.msHidden !== 'undefined')
-    {
-        isPageVisible = !document['msHidden'];
-    }
-    else if (typeof document.webkitHidden !== 'undefined')
-    {
-        isPageVisible = !document['webkitHidden'];
-    }
-
-    if (isPageVisible && !this.wasPageVisible)
-    {
-      this.needsImmediateUpdate = true;
-    }
-
-    this.wasPageVisible = isPageVisible;
-
-    if (isPageVisible || this.needsImmediateUpdate)  // Update only when frame visible
-    {
-        var frameDuration = 1000.0 / 20.0;  // Cap to 20 fps by default
-
-        var newWorldDir,newWorldPos;
-
-        this.camera.updateMatrixWorld();
-        newWorldPos = this.camera.getWorldPosition();
-        newWorldDir = this.camera.getWorldDirection();
-
-        if (this.worldDir)
-        {
-          if (!newWorldDir.equals(this.worldDir) || !newWorldPos.equals(this.worldPos))
-          {
-            frameDuration = 1000.0 / 30.0;   // Boost to 30 fps when camera is moving
-          }
-        }
-
-        this.worldDir = newWorldDir;
-        this.worldPos = newWorldPos;
-
-        if (this.dropCycles>0 && !this.needsImmediateUpdate)
-        {
-          // Drop cycles when the animation loop
-          // gets too slow to lower CPU usage
-
-          this.dropCycles--;
-          return;
-        }
-
-        var currentTime = Date.now();
-        var elapsed = (this.lastTime === undefined) ? 0 : currentTime - this.lastTime;
-        this.lastTime = currentTime;
-
-        if (elapsed >= 100.0)
-        {
-            elapsed = 100.0;    // Cap elapsed to 1/10 secs.
-            this.dropCycles = 3;
-        }
-        else if (elapsed>=40.0)
-        {
-            this.dropCycles = 2;
-        }
-        else  if (elapsed>=25.0)
-        {
-            this.dropCycles = 1;
-        }
-
-        this.frameTime += elapsed;
-
-        if (this.frameTime >= frameDuration || this.needsImmediateUpdate)
-        {
-            this.frameTime -= frameDuration;
-            this.viewManager.renderViews();
-            this.updateUI();
-            this.needsImmediateUpdate = false;
-        }
-    }
+  this.viewManager.renderViews();
+  this.updateUI();
 };
 
 /**

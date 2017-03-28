@@ -75,7 +75,6 @@ describe('testing the gz3d service', function () {
     expect(GZ3D.Gui).toHaveBeenCalledWith(SceneObject);
     expect(GZ3D.GZIface).toHaveBeenCalledWith(SceneObject, GuiObject);
     expect(GZ3D.SdfParser).toHaveBeenCalledWith(SceneObject, GuiObject , GZIfaceObject);
-    expect(SceneObject.render).toHaveBeenCalled();
   });
 
   it('checks for the correct callback of the DIV size changes', function() {
@@ -111,7 +110,6 @@ describe('testing the gz3d service', function () {
     expect(gz3d.gui).toBeDefined();
     expect(gz3d.scene).toBeDefined();
     expect(gz3d.container).toBeDefined();
-    expect(gz3d.stats).toBeDefined();
   });
 
   it('should not initialize when already initialized', function() {

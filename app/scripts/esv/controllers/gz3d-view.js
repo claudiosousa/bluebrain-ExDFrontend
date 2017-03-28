@@ -53,26 +53,26 @@
       '$location', '$window', '$document', '$log', 'bbpConfig',
       'hbpIdentityUserDirectory',
       'simulationControl', 'colorableObjectService',
-      'timeDDHHMMSSFilter', 'splash',
-      'assetLoadingSplash', 'STATE', 'nrpBackendVersions',
+      'timeDDHHMMSSFilter', 'splash', 'STATE', 'nrpBackendVersions',
       'nrpFrontendVersion', 'UI',
       'gz3d', 'EDIT_MODE', 'stateService', 'contextMenuState', 'objectInspectorService',
       'simulationInfo','hbpDialogFactory',
       'backendInterfaceService', 'RESET_TYPE', 'nrpAnalytics', 'collabExperimentLockService',
-      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', 'collab3DSettingsService', '$q',
+      'userNavigationService', 'NAVIGATION_MODES', 'experimentsFactory', 'isNotARobotPredicate', '$q',
       'simulationConfigService','environmentService', 'userContextService', 'editorsPanelService', 'videoStreamService',
+      'environmentRenderingService',
       function ($rootScope, $scope, $timeout,
         $location, $window, $document, $log, bbpConfig,
         hbpIdentityUserDirectory,
         simulationControl, colorableObjectService,
-        timeDDHHMMSSFilter, splash,
-        assetLoadingSplash, STATE, nrpBackendVersions,
+        timeDDHHMMSSFilter, splash, STATE, nrpBackendVersions,
         nrpFrontendVersion, UI,
         gz3d, EDIT_MODE, stateService, contextMenuState, objectInspectorService,
         simulationInfo, hbpDialogFactory,
         backendInterfaceService, RESET_TYPE, nrpAnalytics, collabExperimentLockService,
-        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, collab3DSettingsService, $q,
-        simulationConfigService, environmentService, userContextService, editorsPanelService, videoStreamService) {
+        userNavigationService, NAVIGATION_MODES, experimentsFactory, isNotARobotPredicate, $q,
+        simulationConfigService, environmentService, userContextService, editorsPanelService, videoStreamService,
+        environmentRenderingService) {
 
         $scope.simulationInfo = simulationInfo;
 
@@ -97,23 +97,11 @@
         $scope.objectInspectorService = objectInspectorService;
         $scope.userContextService = userContextService;
         $scope.editorsPanelService = editorsPanelService;
+        $scope.environmentRenderingService = environmentRenderingService;
 
         var setExperimentDetails = function(){
           $scope.ExperimentDescription = simulationInfo.experimentDetails.description;
           $scope.ExperimentName = simulationInfo.experimentDetails.name;
-          var sceneWatch = $scope.$watch(
-            function() {
-              return typeof gz3d.scene !== 'undefined' && typeof gz3d.scene.scene !== 'undefined';
-            }, function(sceneReady) {
-              if (sceneReady) {
-                $scope.updateInitialCameraPose(simulationInfo.experimentDetails.cameraPose);
-                sceneWatch(); // deregister watch
-              }
-            }
-          );
-          sceneInitialized.promise.then(function(){
-            $scope.initComposerSettings();
-          });
         };
 
         simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, function (data) {
@@ -203,8 +191,14 @@
           }
         };
 
+        var onStateChanged = function (newState) {
+          if (newState === STATE.STOPPED) {
+            $scope.onSimulationDone();
+            exitSimulation();
+          }
+        };
+
         // Query the state of the simulation
-        var sceneInitialized = $q.defer();
         stateService.getCurrentState().then(function () {
           if (stateService.currentState === STATE.STOPPED) {
             // The Simulation is already Stopped, so do nothing more but show the alert popup
@@ -213,18 +207,17 @@
               category: 'Simulation'
             });
           } else {
-            // Initialize GZ3D and so on...
             nrpAnalytics.durationEventTrack('Server-initialization', {
               category: 'Experiment'
             });
             nrpAnalytics.tickDurationEvent('Browser-initialization');
 
-            gz3d.Initialize();
-            gz3d.iface.addCanDeletePredicate(isNotARobotPredicate);
-            gz3d.iface.addCanDeletePredicate(userContextService.hasEditRights);
+            environmentRenderingService.init();
 
+            //TODO: touch event handling for context menu should happen somewhere else?
             // Handle touch clicks to toggle the context menu
             // This is used to save the position of a touch start event used for content menu toggling
+            /*
             var touchStart = { clientX: 0, clientY: 0 };
             var touchMove = { clientX: 0, clientY: 0 };
 
@@ -255,6 +248,7 @@
               touchStart = { clientX: 0, clientY: 0 };
               touchMove = { clientX: 0, clientY: 0 };
             }, false);
+           */
 
             // Register for the status updates as well as the timing stats
             // Note that we have two different connections here, hence we only put one as a callback for
@@ -262,31 +256,9 @@
             /* Listen for status informations */
             stateService.startListeningForStatusInformation();
             stateService.addMessageCallback(messageCallback);
-            stateService.addStateCallback(stateCallback);
-
-            // Show the splash screen for the progress of the asset loading
-            $scope.assetLoadingSplashScreen = $scope.assetLoadingSplashScreen || assetLoadingSplash.open($scope.onSceneLoaded);
-            gz3d.iface.setAssetProgressCallback(function (data) {
-              assetLoadingSplash.setProgress(data);
-            });
+            stateService.addStateCallback(onStateChanged);
           }
         });
-
-        $scope.onSceneLoaded = function () {
-          delete $scope.assetLoadingSplashScreen;
-
-          nrpAnalytics.durationEventTrack('Browser-initialization', {
-            category: 'Simulation'
-          });
-          nrpAnalytics.tickDurationEvent('Simulate');
-
-          // make light's helper geometry visible
-          gz3d.scene.showLightHelpers = true;
-          sceneInitialized.resolve();
-          gz3d.setLightHelperVisibility();
-          userNavigationService.init();
-          $scope.sceneLoading = false;
-        };
 
         // Lights management
         $scope.modifyLightClickHandler = function (direction, button) {
@@ -552,13 +524,6 @@
           }
         };
 
-        $scope.updateInitialCameraPose = function (pose) {
-          if (pose !== null) {
-            gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
-          }
-          userNavigationService.setDefaultPose.apply(userNavigationService, pose);
-        };
-
         $scope.cameraRotationButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.CAMERA_ROTATION);
@@ -591,16 +556,11 @@
           });
         };
 
-        // robot view
-        sceneInitialized.promise.then(function(){
-            $scope.hasCameraView = gz3d.scene && gz3d.scene.viewManager && gz3d.scene.viewManager.views.some(function(v){return v.type && v.type === 'camera';});
-        });
-
         $scope.robotViewButtonClickHandler = function () {
           if ($scope.helpModeActivated) {
             return $scope.help($scope.UI.ROBOT_VIEW);
           }
-          if (!$scope.hasCameraView)
+          if (!environmentRenderingService.hasCameraView())
             return;
           $scope.showRobotView = !$scope.showRobotView;
           nrpAnalytics.eventTrack('Toggle-robot-view', {
@@ -612,16 +572,6 @@
               view.active = !view.active;
               view.container.style.visibility = view.active ? 'visible' : 'hidden';
             }
-          });
-        };
-
-        // Init composer settings
-        $scope.initComposerSettings = function ()
-        {
-          $scope.loadingEnvironmentSettingsPanel = true;
-          collab3DSettingsService.loadSettings()
-          .finally(function () {
-            $scope.loadingEnvironmentSettingsPanel = false;
           });
         };
 
@@ -699,19 +649,11 @@
           stateService.stopListeningForStatusInformation();
         }
 
-        function stateCallback(newState) {
-          if (newState === STATE.STOPPED) {
-            if (gz3d.iface && gz3d.iface.webSocket) {
-              gz3d.iface.webSocket.disableRebirth();
-            }
-          }
-        }
-
         $scope.onSimulationDone = function () {
           closeSimulationConnections();
           // unregister the message callback
           stateService.removeMessageCallback(messageCallback);
-          stateService.removeStateCallback(stateCallback);
+          stateService.removeStateCallback(onStateChanged);
         };
 
         $scope.help = function (uiElement) {
@@ -758,7 +700,7 @@
         }
 
         $scope.cleanUp = function() {
-          userNavigationService.deinit();
+          environmentRenderingService.deinit();
 
           document.removeEventListener('keydown', $scope.displayHumanNavInfo);
 
@@ -773,17 +715,7 @@
             userContextService.deinit();
           }
 
-          // Close the splash screens
-          if (angular.isDefined($scope.assetLoadingSplashScreen)) {
-            if (angular.isDefined(assetLoadingSplash)) {
-              assetLoadingSplash.close();
-            }
-            delete $scope.assetLoadingSplashScreen;
-          }
-
           closeSimulationConnections();
-          gz3d.deInitialize();
-
         };
 
         $scope.showBrainvisualizerPanel = false;

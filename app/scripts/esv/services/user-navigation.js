@@ -1,5 +1,4 @@
 /* global THREE: false */
-/* global console: false */
 (function () {
     'use strict';
 
@@ -10,12 +9,10 @@
         HUMAN_BODY: 'HumanBody'
       })
       .factory('userNavigationService', [
-        'NAVIGATION_MODES',
-        'gz3d',
-        'nrpUser',
-        'simulationInfo',
-        'roslib',
-        function (NAVIGATION_MODES, gz3d, nrpUser, simulationInfo, roslib) {
+        'NAVIGATION_MODES', 'STATE',
+        'gz3d', 'nrpUser', 'simulationInfo', 'roslib', 'stateService',
+        function (NAVIGATION_MODES, STATE,
+                  gz3d, nrpUser, simulationInfo, roslib, stateService) {
           return {
 
             navigationMode: undefined,
@@ -37,37 +34,52 @@
             roslib: undefined,
 
             init: function() {
-
-              this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
-              this.roslib = roslib;
-
-              this.userCamera = gz3d.scene.viewManager.mainUserView.camera;
-
-              // react to updates from gazebo server
-              gz3d.iface.modelInfoTopic.subscribe(this.onModelInfo.bind(this));
-
-
-              this.avatarObjectName = this.avatarNameBase;
-              // get user info
               var that = this;
-              nrpUser.getCurrentUser().then(function (profile) {
-                that.setUserData(profile);
 
-                that.removeAvatar();
+              stateService.getCurrentState().then(function () {
+                if (stateService.currentState !== STATE.STOPPED) {
+                  that.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+                  that.roslib = roslib;
 
-                // set up controls
-                var domElementForKeyBindings = document.getElementsByTagName('body')[0];
-                that.freeCameraControls = new THREE.FirstPersonControls(that.userCamera, gz3d.scene.container, domElementForKeyBindings);
-                that.avatarControls = new THREE.AvatarControls(that, gz3d, gz3d.scene.container, domElementForKeyBindings);
-                that.avatarControls.createAvatarTopics(that.avatarObjectName);
+                  that.userCamera = gz3d.scene.viewManager.mainUserView.camera;
 
-                // start in free camera mode
-                that.setModeFreeCamera();
+                  // react to updates from gazebo server
+                  if (angular.isDefined(gz3d.iface.modelInfoTopic)) {
+                    gz3d.iface.modelInfoTopic.subscribe(that.onModelInfo.bind(that));
+                  } else {
+                    gz3d.iface.emitter.on('connection', function() {
+                      gz3d.iface.modelInfoTopic.subscribe(that.onModelInfo.bind(that));
+                    });
+                  }
+
+                  that.avatarObjectName = that.avatarNameBase;
+                  // get user info
+                  nrpUser.getCurrentUser().then(function (profile) {
+                    that.setUserData(profile);
+
+                    that.removeAvatar();
+
+                    // set up controls
+                    var domElementForKeyBindings = document.getElementsByTagName('body')[0];
+                    that.freeCameraControls = new THREE.FirstPersonControls(that.userCamera, gz3d.scene.container, domElementForKeyBindings);
+                    that.avatarControls = new THREE.AvatarControls(that, gz3d, gz3d.scene.container, domElementForKeyBindings);
+                    that.avatarControls.createAvatarTopics(that.avatarObjectName);
+
+                    // start in free camera mode
+                    that.setModeFreeCamera();
+                  });
+                }
               });
             },
 
             deinit: function() {
               this.removeAvatar();
+            },
+
+            update: function(tElapsed) {
+              if (angular.isDefined(this.controls)) {
+                this.controls.update(tElapsed);
+              }
             },
 
             setUserData: function(profile) {
@@ -136,6 +148,8 @@
               }
 
               gz3d.gui.emitter.emit('entityCreated', avatar, modelName);
+
+              this.avatarInitialized = false;
             },
 
             initAvatar: function() {
@@ -164,7 +178,7 @@
               }
 
               // set and activate controls
-              gz3d.scene.controls = this.avatarControls;
+              this.controls = gz3d.scene.controls = this.avatarControls;
               this.avatarControls.enabled = true;
 
               this.avatarInitialized = true;
@@ -211,7 +225,7 @@
               this.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
 
               this.freeCameraControls.enabled = false;
-              gz3d.scene.controls = undefined;
+              this.controls = gz3d.scene.controls = undefined;
 
               this.removeAvatar();
               var avatarCollision = true;
@@ -247,7 +261,7 @@
               this.freeCameraControls.domElement.addEventListener('DOMMouseScroll', this.freeCameraControls.onMouseWheel, false);
 
               this.freeCameraControls.enabled = true;
-              gz3d.scene.controls = this.freeCameraControls;
+              this.controls = gz3d.scene.controls = this.freeCameraControls;
             }
           };
         }
