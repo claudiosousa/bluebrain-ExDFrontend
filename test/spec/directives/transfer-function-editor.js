@@ -41,7 +41,10 @@ describe('Directive: transferFunctionEditor', function () {
   var simulationInfoMock = {
     contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
     simulationID : 'mocked_simulation_id',
-    isPrivateExperiment: true
+    isPrivateExperiment: true,
+    experimentDetails: {
+      brainProcesses: 1
+    }
   };
 
   var roslibMock = {};
@@ -672,6 +675,14 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
 
   var shownPopulation = { name: 'test2', showDetails : false};
 
+  var simulationInfoMock = {
+    contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
+    simulationID: 'mocked_simulation_id',
+    isPrivateExperiment: true,
+    experimentDetails: {
+      brainProcesses: 1
+    }
+  };
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('currentStateMockFactory'));
@@ -679,6 +690,7 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('roslib', roslibMock);
+    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,

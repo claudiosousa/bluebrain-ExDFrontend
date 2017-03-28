@@ -5,12 +5,13 @@
 <div class="reset-checklist-template">
     <fieldset>
         <ul style="list-style: none">
-            <span ng-show="simulationInfo.experimentDetails.brainProcesses > 1">
-                <strong style="color: red;">Brain Reset Functionality Is Currently Disabled for Multi-process Brains</strong>
+            <!-- TODO: remove when we support distributed brain reset, also see ng-show conditions below -->
+            <span ng-show="isMultipleBrains()">
+                <strong style="color: red;">Brain Reset Functionality Is Currently Disabled for Multiprocess Brain Simulations</strong>
                 <br/><br/>
             </span>
 
-            <span ng-show="simulationInfo.experimentDetails.brainProcesses === 1">
+            <span ng-hide="isMultipleBrains()">
                 <b>Simulation</b>
 
                 <li>
@@ -41,7 +42,7 @@
             </li>
             <br/>
 
-            <span ng-show="simulationInfo.experimentDetails.brainProcesses === 1">
+            <span ng-hide="isMultipleBrains()">
                 <b>Brain</b>
                 <li>
                     <label>

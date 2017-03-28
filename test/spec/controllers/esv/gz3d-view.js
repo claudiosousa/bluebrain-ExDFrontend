@@ -1220,6 +1220,10 @@ describe('Controller: Gz3dViewCtrl', function () {
       });
     });
 
+    it('should set the multiple brains display property', function() {
+      expect(scope.isMultipleBrains()).toEqual(false);
+    });
+
     it('should go back to the esv-web page when a "ctx" parameter was in the url', function () {
       scope.exit();
       timeout.flush();

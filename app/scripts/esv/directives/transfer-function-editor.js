@@ -80,7 +80,11 @@
         scope.isSavingToCollab = false;
         scope.collabDirty = false;
 
-        scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
+        scope.isMultipleBrains = function() {
+          return simulationInfo.experimentDetails.brainProcesses > 1;
+        };
+
+        scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), { readOnly: scope.isMultipleBrains() && 'nocursor' });
 
         scope.stateService = stateService;
         scope.STATE = STATE;
