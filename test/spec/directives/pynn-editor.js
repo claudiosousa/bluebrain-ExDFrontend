@@ -37,6 +37,11 @@ describe('Directive: pynnEditor', function () {
     }
   };
 
+  var autoSaveServiceMock = {
+    registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
+    clearDirty: jasmine.createSpy('clearDirty')
+  };
+
   var documentationURLsMock =
   {
     getDocumentationURLs: function () {
@@ -97,6 +102,7 @@ describe('Directive: pynnEditor', function () {
     $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('simulationInfo' , simulationInfoMock);
     $provide.value('downloadFileService' , downloadFileServiceMock);
+    $provide.value('autoSaveService' , autoSaveServiceMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,
@@ -118,6 +124,7 @@ describe('Directive: pynnEditor', function () {
     hbpDialogFactory = _hbpDialogFactory_;
     codeEditorsServices = _codeEditorsServices_;
 
+    autoSaveServiceMock.registerFoundAutoSavedCallback.calls.reset();
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/pynn-editor.html', '');
     $scope.control = {};
@@ -408,6 +415,23 @@ describe('Directive: pynnEditor', function () {
       angular.forEach(populations, function(population){
         expect(typeof(population.list)).toBe('string');
       });
+    });
+
+    it('should set pyNN script & population when auto saved data found', function() {
+      isolateScope.agreeAction = jasmine.createSpy('agreeAction');
+      expect(isolateScope.collabDirty).toBe(false);
+      expect(autoSaveServiceMock.registerFoundAutoSavedCallback.calls.count()).toBe(1);
+
+      var autosavedData = ['pynnScript', 'population'];
+
+      autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, false);
+      expect(isolateScope.agreeAction).not.toHaveBeenCalled();
+      expect(isolateScope.collabDirty).toBe(true);
+      expect(isolateScope.pynnScript).toBe(autosavedData[0]);
+      expect(isolateScope.populations).toBe(autosavedData[1]);
+
+      autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, true);
+      expect(isolateScope.agreeAction).toHaveBeenCalled();
     });
   });
 

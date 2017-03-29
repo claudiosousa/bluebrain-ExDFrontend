@@ -26,10 +26,10 @@ describe('Directive: smachEditor', function () {
     $q;
 
   var backendInterfaceServiceMock = {
-    getStateMachines: jasmine.createSpy('getStateMachines'),
-    setStateMachine: jasmine.createSpy('setStateMachine'),
+    getStateMachines: jasmine.createSpy('getStateMachines').and.callFake(function(){return $q.when();}),
+    setStateMachine: jasmine.createSpy('setStateMachine').and.callFake(function(){return $q.when();}),
     saveStateMachines: jasmine.createSpy('saveStateMachines'),
-    deleteStateMachine: jasmine.createSpy('deleteStateMachine'),
+    deleteStateMachine: jasmine.createSpy('deleteStateMachine').and.callFake(function(){return $q.when();}),
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl')
   };
 
@@ -65,6 +65,7 @@ describe('Directive: smachEditor', function () {
   returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
   roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({});
   roslibMock.createTopic = jasmine.createSpy('createTopic').and.returnValue(returnedConnectionObject);
+
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
@@ -114,6 +115,7 @@ describe('Directive: smachEditor', function () {
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
 
+    autoSaveServiceMock.registerFoundAutoSavedCallback.calls.reset();
     $scope = $rootScope.$new();
     $templateCache.put(VIEW, '');
     $scope.control = {};
@@ -177,7 +179,7 @@ describe('Directive: smachEditor', function () {
       var sm = new ScriptObject('SM', 'Code of SM');
       isolateScope.stateMachines = [sm];
       isolateScope.update(sm);
-      expect(backendInterfaceService.setStateMachine).toHaveBeenCalledWith(sm.id, sm.code, jasmine.any(Function), jasmine.any(Function));
+      expect(backendInterfaceService.setStateMachine).toHaveBeenCalledWith(sm.id, sm.code, jasmine.any(Function));
       sm.dirty = true;
       sm.local = true;
       backendInterfaceService.setStateMachine.calls.mostRecent().args[2]();
@@ -377,6 +379,27 @@ describe('Directive: smachEditor', function () {
       });
       isolateScope.onNewErrorMessageReceived(msg);
       expect(Object.keys(_.find.calls.mostRecent().args[1])[0]).toBe('name');
+    });
+
+
+    it('should set pyNN script & population when auto saved data found', function() {
+      var autosavedData = [{ id: '0', error: [] }];
+      expect(isolateScope.collabDirty).toBe(false);
+      expect(isolateScope.stateMachines).not.toBe(autosavedData);
+      backendInterfaceServiceMock.getStateMachines.calls.reset();
+      $rootScope.$digest();
+      expect(autoSaveServiceMock.registerFoundAutoSavedCallback.calls.count()).toBe(1);
+
+      autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, false);
+      expect(isolateScope.collabDirty).toBe(true);
+      expect(isolateScope.stateMachines).toBe(autosavedData);
+      expect(backendInterfaceServiceMock.getStateMachines).not.toHaveBeenCalled();
+
+      autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, true);
+      expect(backendInterfaceServiceMock.getStateMachines).toHaveBeenCalled();
+      $rootScope.$digest();
+      // autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, true);
+      // expect(isolateScope.agreeAction).toHaveBeenCalled();
     });
   });
 

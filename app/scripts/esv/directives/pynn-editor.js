@@ -66,7 +66,7 @@
                 codeEditorsServices.refreshEditor(editor);
                 scope.loading = false;
                 setTimeout(function () {
-                  //codeEditorsServices.resetEditor(editor);
+                  codeEditorsServices.resetEditor(editor);
                   scope.searchToken("si");
                 }, 100);
               } else {
@@ -353,10 +353,12 @@
             scope.control.refresh = undefined;
           });
 
-          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved) {
-            scope.collabDirty = true;
+          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved, applyChanges) {
             scope.pynnScript = autoSaved[0];
             scope.populations = autoSaved[1];
+            scope.collabDirty = true;
+            if (applyChanges)
+              scope.agreeAction();
           });
 
           scope.download = function(){

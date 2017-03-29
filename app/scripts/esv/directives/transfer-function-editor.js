@@ -172,17 +172,13 @@
           }
         });
 
-        scope.control.refresh = function () {
-          if (scope.collabDirty) {
-            codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
-            return;
-          }
-          backendInterfaceService.getTransferFunctions(
-            function (response) {
+        function loadTFs() {
+          return backendInterfaceService.getTransferFunctions(
+            function(response) {
               _.forEach(response.data, function(code, id) {
                 var transferFunction = new ScriptObject(id, code);
                 // If we already have local changes, we do not update
-                var tf = _.find(scope.transferFunctions, {'name':  id});
+                var tf = _.find(scope.transferFunctions, { 'name': id });
                 var found = angular.isDefined(tf);
                 if (found && !tf.dirty) {
                   tf.code = transferFunction.code;
@@ -191,9 +187,18 @@
                   scope.transferFunctions.unshift(transferFunction);
                 }
               });
-              codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
             });
+        }
+
+        scope.control.refresh = function () {
+          if (scope.collabDirty) {
+            codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
+            return;
+          }
+          loadTFs().then(function() {
+            codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) { return 'transfer-function-' + tf.id; }));
             refreshPopulations();
+          });
         };
 
         // initialize transfer functions
@@ -257,20 +262,25 @@
           }
         };
 
-        scope.delete = function (transferFunction) {
-          if (transferFunction === undefined) return;
-          var index = scope.transferFunctions.indexOf(transferFunction);
-          if (transferFunction.local) {
-            return scope.transferFunctions.splice(index, 1);
-          } else {
-            return ensurePauseStateAndExecute(function(cb) {
+        scope.delete = function(transferFunctions) {
+          if (transferFunctions === undefined) return;
+
+          //make sure transferFunctions is an array
+          transferFunctions = [].concat(transferFunctions);
+          return $q.all(transferFunctions.map(function(transferFunction) {
+            var index = scope.transferFunctions.indexOf(transferFunction);
+            if (transferFunction.local) {
+              return scope.transferFunctions.splice(index, 1);
+            } else {
+              return ensurePauseStateAndExecute(function(cb) {
                 backendInterfaceService.deleteTransferFunction(transferFunction.id, function() {
                   cb();
                 });
                 scope.transferFunctions.splice(index, 1);
               }
-            );
-          }
+              );
+            }
+          }));
         };
 
         scope.create = function (appendAtEnd) {
@@ -393,28 +403,30 @@
           );
         };
 
+        function applyTranfertFunctions(tfs) {
+          return ensurePauseStateAndExecute(function(cb) {
+            // Removes all TFs
+            return $q.all(_.map(scope.transferFunctions, scope.delete))
+              .then(function() {
+                // Upload new TFs to back-end
+                scope.transferFunctions = tfs;
+                return $q.all(scope.transferFunctions.map(function(tf) {
+                  scope.onTransferFunctionChange(tf);
+                  tf.id = tf.name;
+                  tf.local = true;
+                  return scope.update(tf);
+                }));
+              })
+              .then(cb);
+          });
+        }
+
         scope.loadTransferFunctions = function(file) {
           if (file && !file.$error) {
             var deferred = $q.defer();
             var textReader = new FileReader();
             textReader.onload = function(e) {
-              ensurePauseStateAndExecute(function(cb) {
-                  var content = e.target.result;
-                  var loadedTransferFunctions = splitCodeFile(content);
-                  // Removes all TFs
-                  return $q.all(_.map(scope.transferFunctions, scope.delete))
-                    .then(function(){
-                      // Upload new TFs to back-end
-                      scope.transferFunctions = loadedTransferFunctions;
-                      return $q.all(scope.transferFunctions.map(function(tf) {
-                        scope.onTransferFunctionChange(tf);
-                        tf.id = tf.name;
-                        tf.local = true;
-                        return scope.update(tf);
-                      }));
-                    })
-                  .then(cb);
-                  })
+              applyTranfertFunctions(splitCodeFile(e.target.result))
                 .then(deferred.resolve);
             };
             textReader.readAsText(file);
@@ -426,9 +438,14 @@
           scope.transferFunctions = newTFs;
         });
 
-        autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved){
+        autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved, applyChanges){
           scope.collabDirty = true;
-          scope.transferFunctions = autoSaved;
+          if (applyChanges)
+            loadTFs().then(function() {
+              applyTranfertFunctions(autoSaved);
+            });
+          else
+            scope.transferFunctions = autoSaved;
         });
       }
     };

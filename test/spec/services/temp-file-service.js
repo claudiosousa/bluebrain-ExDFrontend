@@ -5,10 +5,10 @@ describe('Services: tempFileService', function () {
   var DIRTY_TYPE = 'dirtyType';
   var DIRTY_DATA = 'dirtyData';
 
-  var collabFolderAPIService, hbpIdentityUserDirectory, hbpDialogFactory, stateParams,
+
+  var collabFolderAPIService, hbpIdentityUserDirectory, nrpModalService, stateParams,
     previouslySavedFile,
     createFileResponse,
-    confirmRestoreTempWorkUserReponse,
     environmentService;
   var $rootScope, $q, tempFileService;
 
@@ -27,14 +27,14 @@ describe('Services: tempFileService', function () {
       downloadFile: jasmine.createSpy('downloadFile').and.callFake(function () { return $q.when(previouslySavedFile); })
     };
     hbpIdentityUserDirectory = { get: jasmine.createSpy('get').and.callFake(function () { return $q.when({ userid: {} }); }) };
-    hbpDialogFactory = {
-      confirm: jasmine.createSpy('confirm').and.callFake(function () { return confirmRestoreTempWorkUserReponse; })
+    nrpModalService = {
+      createModal: jasmine.createSpy('confirm').and.callFake(function () { return $q.when(); })
     };
     stateParams = { ctx: CONTEXT_ID };
 
     $provide.value('collabFolderAPIService', collabFolderAPIService);
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectory);
-    $provide.value('hbpDialogFactory', hbpDialogFactory);
+    $provide.value('nrpModalService', nrpModalService);
     $provide.value('$stateParams', stateParams);
   }));
 
@@ -49,7 +49,6 @@ describe('Services: tempFileService', function () {
   beforeEach(function () { //default behavior
     previouslySavedFile = undefined; //by default, there is now previously auto saved file
     createFileResponse = $q.when();//succeeds by default
-    confirmRestoreTempWorkUserReponse = $q.when();//user says 'yes' by default
   });
 
   it('should create a file for temporary work when saveDirtyData called', function () {
@@ -157,10 +156,10 @@ describe('Services: tempFileService', function () {
     tempFileService.checkSavedWork('filename', {}, false);
 
     $rootScope.$digest();
-    expect(hbpDialogFactory.confirm).not.toHaveBeenCalled();
+    expect(nrpModalService.createModal).not.toHaveBeenCalled();
 
     tempFileService.checkSavedWork('filename', {}, true);
     $rootScope.$digest();
-    expect(hbpDialogFactory.confirm).toHaveBeenCalled();
+    expect(nrpModalService.createModal).toHaveBeenCalled();
   });
 });

@@ -92,9 +92,12 @@
           }
           retrieving = true;
           return tempFileService.checkSavedWork(AUTO_SAVE_FILE, foundAutoSavedCallbacks, true)
-            .then(function(savedWork){
-              dirtyDataCol = savedWork;
-            })
+            .then(_.spread(function(savedWork, applySaved) {
+              if (applySaved)
+                removeAutoSavedWork();
+              else
+                dirtyDataCol = savedWork;
+            }))
             .catch(function(){
               removeAutoSavedWork();
               return $q.reject();
