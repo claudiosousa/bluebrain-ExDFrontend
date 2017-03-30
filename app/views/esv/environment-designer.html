@@ -15,15 +15,6 @@
     assets).
   <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable environment edition.</div>
   <hr>
-  <button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
-          ng-click="saveSDFIntoCollabStorage()"
-          ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
-          v-busy="isSavingToCollab"
-          v-busy-label="Saving to Collab"
-          v-pressable>
-    <i class="glyphicon glyphicon-book"></i>
-    <span> Save to Collab</span>
-  </button>
 
 
   <div ng-controller="insertControl">
@@ -118,6 +109,16 @@
       </div>
     </div>
   </div>
+  <button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
+          ng-click="saveSDFIntoCollabStorage()"
+          ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
+          v-busy="isSavingToCollab"
+          v-busy-label="Saving to Collab"
+          v-pressable>
+    <i class="glyphicon glyphicon-book"></i>
+    <span> Save to Collab</span>
+  </button>
+
   <button type="button" class="btn btn-default"
           ng-click="exportSDFWorld()"
           ng-disabled="(stateService.currentState === STATE.INITIALIZED)">
