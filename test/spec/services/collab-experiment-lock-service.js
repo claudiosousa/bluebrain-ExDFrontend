@@ -9,8 +9,8 @@ describe('Services: collab-experiment-lock-service', function () {
     var FAKE_USER_NAME = 'FAKE_USER_NAME';
     var POLLING_TIME = 10 * 1000;//10s
 
-    var httpBackend, bbpConfig, collabExperimentLockService, $rootScope, collabConfigResponse, $interval,
-        createdLockService, userBaseUrl;
+    var httpBackend, bbpConfig, collabExperimentLockService, $rootScope, $q, collabConfigResponse, $interval,
+        createdLockService, userBaseUrl, LOCK_FILE_VALIDITY_MAX_AGE_HOURS;
 
     // loads the service to test and mock the necessary service
     beforeEach(module('exdFrontendApp'));
@@ -20,14 +20,22 @@ describe('Services: collab-experiment-lock-service', function () {
         _bbpConfig_,
         _collabExperimentLockService_,
         _$rootScope_,
-        _$interval_) {
+        _$interval_,
+        _$q_,
+        _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_) {
         httpBackend = _$httpBackend_;
         bbpConfig = _bbpConfig_;
         collabExperimentLockService = _collabExperimentLockService_;
         $rootScope = _$rootScope_;
         $interval = _$interval_;
+        $q = _$q_;
+        LOCK_FILE_VALIDITY_MAX_AGE_HOURS = _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_;
 
         userBaseUrl = bbpConfig.get('api.user.v0');
+
+
+        httpBackend.whenGET(userBaseUrl + '/user/me').respond({});
+        httpBackend.whenGET(userBaseUrl + '/user/me/groups').respond({});
 
         collabConfigResponse = httpBackend.whenGET(bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration/' + FAKE_CONTEXT_ID)
             .respond(200, { experimentFolderUUID: FAKE_EXPERIMENT_FOLDER_ID });
@@ -47,8 +55,6 @@ describe('Services: collab-experiment-lock-service', function () {
     it('should throw an exception if in case of Collab internal error', function () {
         collabConfigResponse.respond(500, '');
 
-        httpBackend.whenGET(userBaseUrl + '/user/me').respond({});
-        httpBackend.whenGET(userBaseUrl + '/user/me/groups').respond({});
 
         createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
         var err;
@@ -64,18 +70,32 @@ describe('Services: collab-experiment-lock-service', function () {
 
     describe('createdLockServiceForContext :', function () {
 
-        var lockFileRequest, documentBaseUrl;
+        var lockFileRequest, documentBaseUrl, collabFolderAPIService;
+
+        beforeEach(inject(function(_collabFolderAPIService_) {
+            collabFolderAPIService = _collabFolderAPIService_;
+        }));
 
         beforeEach(function () {
             documentBaseUrl = bbpConfig.get('api.document.v0');
             lockFileRequest = httpBackend.whenGET(documentBaseUrl + '/folder/' + FAKE_EXPERIMENT_FOLDER_ID + '/children?filter=_name=edit.lock');
+
+            httpBackend.whenGET(userBaseUrl + '/user?filter=id=' + FAKE_USER_ID)
+                .respond({
+                    _embedded: {
+                        users: [{
+                            id: FAKE_USER_ID,
+                            displayName: FAKE_USER_NAME
+                        }]
+                    }
+                });
         });
 
         var fileResponse = {
             _createdBy: FAKE_USER_ID,
             _uuid: FAKE_LOCK_FILE_ID,
             _entityType: 'file',
-            _createdOn: '2016-05-13T10:58:56.955130'
+            _createdOn: new Date()
         };
 
         it('isLocked should not find a lock', function () {
@@ -158,16 +178,6 @@ describe('Services: collab-experiment-lock-service', function () {
 
         it('isLocked shoud find a lock', function () {
 
-            httpBackend.whenGET(userBaseUrl + '/user?filter=id=' + FAKE_USER_ID)
-                .respond({
-                    _embedded: {
-                        users: [{
-                            id: FAKE_USER_ID,
-                            displayName: FAKE_USER_NAME
-                        }]
-                    }
-                });
-
             lockFileRequest.respond({ result: [fileResponse] });
 
             createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
@@ -184,17 +194,34 @@ describe('Services: collab-experiment-lock-service', function () {
             expect(lockObj.lockInfo.user.displayName).toBe(FAKE_USER_NAME);
         });
 
-        it('polling should find a lock', function () {
+        it('lock too old shoud be removed and ignored', function() {
 
-            httpBackend.whenGET(userBaseUrl + '/user?filter=id=' + FAKE_USER_ID)
-                .respond({
-                    _embedded: {
-                        users: [{
-                            id: FAKE_USER_ID,
-                            displayName: FAKE_USER_NAME
-                        }]
-                    }
+            lockFileRequest.respond({
+                result: [
+                    _.assignIn({}, fileResponse, {
+                        _createdOn: moment().subtract(LOCK_FILE_VALIDITY_MAX_AGE_HOURS, 'hours')
+                    })
+                ]
+            });
+
+            collabFolderAPIService.deleteFile = jasmine.createSpy('deleteFile').and.returnValue($q.when());
+
+            var lockObj;
+            createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
+            createdLockService.isLocked().then(
+                function(lockObj_) {
+                    lockObj = lockObj_;
                 });
+
+            httpBackend.flush();
+            $rootScope.$digest();
+            expect(lockObj.locked).toBe(false);
+
+            expect(collabFolderAPIService.deleteFile.calls.count()).toBe(1);
+            expect(collabFolderAPIService.deleteFile).toHaveBeenCalledWith(FAKE_EXPERIMENT_FOLDER_ID, 'edit.lock');
+        });
+
+        it('polling should find a lock', function () {
 
             lockFileRequest.respond({ result: [fileResponse] });
 
@@ -218,18 +245,7 @@ describe('Services: collab-experiment-lock-service', function () {
             expect(lockObj).not.toBeDefined();
         });
 
-
         it('tryAddLock should fail', function () {
-
-            httpBackend.whenGET(userBaseUrl + '/user?filter=id=' + FAKE_USER_ID)
-                .respond({
-                    _embedded: {
-                        users: [{
-                            id: FAKE_USER_ID,
-                            displayName: FAKE_USER_NAME
-                        }]
-                    }
-                });
 
             lockFileRequest.respond({ result: [fileResponse] });
 

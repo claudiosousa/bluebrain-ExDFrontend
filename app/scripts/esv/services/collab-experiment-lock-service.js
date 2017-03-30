@@ -2,6 +2,7 @@
   'use strict';
 
   angular.module('exdFrontendApp')
+    .value('LOCK_FILE_VALIDITY_MAX_AGE_HOURS', 24) //after x hours, lock file is ignored
     .provider('collabExperimentLockService', function () {
 
       //The edition lock file name that will be created within the experiment folder
@@ -14,7 +15,11 @@
           '$interval',
           'hbpIdentityUserDirectory',
           'collabFolderAPIService',
-          function ($q, $interval, hbpIdentityUserDirectory, collabFolderAPIService) {
+          'nrpUser',
+          'LOCK_FILE_VALIDITY_MAX_AGE_HOURS',
+          function($q, $interval, hbpIdentityUserDirectory, collabFolderAPIService, nrpUser, LOCK_FILE_VALIDITY_MAX_AGE_HOURS) {
+
+            var currentUser = nrpUser.getCurrentUser();
 
             //whether a file name exists within a folder id
             var getFolderFileMetaData = function (folderId, fileName) {
@@ -41,17 +46,40 @@
                 });
             };
 
+            var isValidLockFile = function(lockInfo) {
+              return currentUser.then(function(currentUser) {
+                return currentUser.id !== lockInfo.user.id && //lock owned by someone else
+                  moment(lockInfo.date).add(LOCK_FILE_VALIDITY_MAX_AGE_HOURS, 'hours') > Date.now(); // lock file not yet expired
+              });
+            };
+
             //creates a contextfull lock service for a given contextId
-            var createLockServiceForContext = function (contextId) {
+            var createLockServiceForContext = function(contextId) {
 
               //the folderId for the Collab context
               var folderId = collabFolderAPIService.getExperimentFolderId(contextId);
 
               //gets whether the experiment is lock for edition
-              var isLocked = function () {
+              var isLocked = function() {
                 return folderId
-                  .then(function (folderId) {
+                  .then(function(folderId) {
                     return getFolderFileMetaData(folderId, LOCK_FILE_NAME);
+                  })
+                  .then(function(lockResponse) {
+                    if (!lockResponse.locked)
+                      return lockResponse;
+                    return isValidLockFile(lockResponse.lockInfo)
+                      .then(function(validLockFile) {
+                        if (!validLockFile) {
+                          //the lock file is invalid, we set it as such and remove it
+                          lockResponse.locked = false;
+                          return releaseLock()
+                            .then(function() {
+                              return lockResponse;
+                            });
+                        }
+                        return lockResponse;
+                      });
                   });
               };
 
