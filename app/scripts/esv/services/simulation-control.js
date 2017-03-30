@@ -97,10 +97,6 @@
         export: {
           method: 'GET',
           interceptor: { responseError: serverError.displayHTTPError }
-        },
-        import: {
-          method: 'PUT',
-          interceptor: { responseError: serverError }
         }
       });
     };
@@ -132,10 +128,10 @@
 
   module.factory('experimentSimulationService', [
     '$q', '$http','$log', '$timeout', '$stateParams', 'nrpAnalytics',
-    'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'simulationSDFWorld', 'experimentProxyService', 'bbpConfig',
+    'simulationState', 'simulationGenerator', 'roslib', 'STATE', 'experimentProxyService', 'bbpConfig',
     'simulationConfigService', 'environmentService',
     function ($q, $http, $log, $timeout, $stateParams, nrpAnalytics, simulationState,
-      simulationGenerator, roslib, STATE, simulationSDFWorld, experimentProxyService, bbpConfig,
+      simulationGenerator, roslib, STATE, experimentProxyService, bbpConfig,
       simulationConfigService, environmentService) {
       var rosConnection, statusListener;
 
@@ -168,7 +164,7 @@
         });
       };
 
-      var launchExperimentInPossibleServers = function (experiment, launchSingleMode, envSDFData, reservation) {
+      var launchExperimentInPossibleServers = function (experiment, launchSingleMode, reservation) {
 
         var fatalErrorOccurred = false,
           serversToTry = experiment.devServer ? [experiment.devServer] : _.clone(experiment.availableServers);
@@ -194,12 +190,8 @@
                   brainProcesses, server, serverConfig, reservation
                 ).catch(oneSimulationFailed);
               }
-              if (envSDFData) {
-                return simulationSDFWorld(serverConfig.gzweb['nrp-services']).import({ sdf: envSDFData }).$promise
-                  .then(launch);
-              } else {
-                return launch();
-              }
+
+              return launch();
             });
         }
 
@@ -304,11 +296,11 @@
         return deferred.promise;
       };
 
-      var startNewExperiment = function (experiment, launchSingleMode, envSDFData, reservation) {
+      var startNewExperiment = function (experiment, launchSingleMode, reservation) {
         nrpAnalytics.eventTrack('Start', { category: 'Experiment' });
         nrpAnalytics.tickDurationEvent('Server-initialization');
 
-        return launchExperimentInPossibleServers(experiment, launchSingleMode, envSDFData, reservation);
+        return launchExperimentInPossibleServers(experiment, launchSingleMode, reservation);
       };
 
       // Public methods of the service

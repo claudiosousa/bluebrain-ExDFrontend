@@ -110,24 +110,6 @@
                 <i class="fa fa-plus"></i> Launch in Single Process Mode
               </button>
 
-              <!-- Servers are available and the user has edit rights: upload custom environment button is enabled -->
-              <button analytics-on analytics-event="Upload-environment" analytics-category="Experiment" ng-if="config.canUploadEnvironment && userinfo.hasEditRights && exp.availableServers.length>0"
-                class="btn btn-default" ng-disabled="pageState.startingExperiment == exp.id" ng-click="pageState.startingExperiment == exp.id || uploadEnvironmentAndStart(exp, false);">
-                <i class="fa fa-upload"></i> Upload custom environment
-              </button>
-
-              <!-- No server available but the user has edit rights: upload custom environment button is disabled -->
-              <button ng-if="config.canUploadEnvironment && userinfo.hasEditRights && exp.availableServers.length==0" class="btn btn-default disabled enable-tooltip"
-                tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
-                <i class="fa fa-upload"></i> Upload custom environment
-              </button>
-
-              <!-- No edit rights: upload custom environment button is disabled -->
-              <button ng-if="config.canUploadEnvironment && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have edit rights."
-                tooltip-trigger="mouseenter" tooltip-placement="top">
-                <i class="fa fa-upload"></i> Upload custom environment
-              </button>
-
               <!-- Join button -->
               <button analytics-on analytics-event="Join" analytics-category="Experiment" ng-if="config.canLaunchExperiments && exp.joinableServers.length > 0"
                 class="btn btn-default" ng-disabled="pageState.startingExperiment" ng-click="pageState.showJoin = !pageState.showJoin">

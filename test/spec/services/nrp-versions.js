@@ -36,13 +36,12 @@ describe('Services: nrp-versions', function () {
 
   it('should parse properly the versions', function() {
     var response = nrpBackendVersions(serverURL).get();
-    // Many lines are ignored for jshint. The reason is the use of underscore. And we use them to reflect the way python packages are named.
     var softwareAVersion = '1.2.3';
     var softwareBVersion = '1.3.4.dev4';
     var softwareCVersion = 'Not_a_standard_version';
 
-    var serverResponse = {software_a: softwareAVersion, software_b: softwareBVersion, software_c: softwareCVersion}; // jshint ignore:line
-    httpBackend.expectGET(serverURL + '/version').respond(200, serverResponse); // jshint ignore:line
+    var serverResponse = {'software_a': softwareAVersion, 'software_b': softwareBVersion, 'software_c': softwareCVersion};
+    httpBackend.expectGET(serverURL + '/version').respond(200, serverResponse);
     httpBackend.flush();
     expect(response.toString).toEqual('Backend:\n\tsoftware_a: 1.2.3\n\tsoftware_b: 1.3.4.dev4\n\tsoftware_c: Not_a_standard_version\n');
   });
@@ -56,4 +55,10 @@ describe('Services: nrp-versions', function () {
     expect(response.status).toBe(400);
    });
 
+  it('should parse the frontend version', function() {
+    httpBackend.expectGET('version.json').respond(200, '{"hbp_nrp_esv":1}');
+    var response = nrpFrontendVersion.get();
+    httpBackend.flush();
+    expect(response.toString).toBe('Frontend: 1\n');
+   });
 });

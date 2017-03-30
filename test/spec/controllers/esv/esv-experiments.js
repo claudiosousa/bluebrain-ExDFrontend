@@ -274,7 +274,6 @@
     }
     function checkButtonsVisibility(page, options) {
       checkButtonVisibility(page, 'Launch', options.launch);
-      checkButtonVisibility(page, 'Upload-environment', options.upload);
       checkButtonVisibility(page, 'Clone', options.clone);
     }
 
@@ -400,7 +399,7 @@
         var page = renderEsvWebPage();
         page.find('.experiment-box').first().click();
 
-        checkButtonsVisibility(page, { launch: 1, upload: 1, clone: 0 });
+        checkButtonsVisibility(page, { launch: 1, clone: 0 });
       });
 
       it('should show the right buttons when editing right', function () {
@@ -412,10 +411,6 @@
           uploadElement = angularElement(e);
           return uploadElement;
         });
-
-        page.find('[analytics-event="Upload-environment"]').click();
-        expect(uploadElement).toBeDefined();
-        uploadElement.trigger('change', []);
       });
     });
 
@@ -445,7 +440,7 @@
         it('should only show the clone button', function () {
           var page = renderEsvWebPage({collab:true});
           page.find('.experiment-box').last().click();
-          checkButtonsVisibility(page, { launch: 0, upload: 0, clone: 1 });
+          checkButtonsVisibility(page, { launch: 0, clone: 1 });
         });
 
         it('should only show the correct new experiment buttons', function () {
@@ -498,7 +493,7 @@
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var page = renderEsvWebPage({collab:true});
           page.find('.experiment-box').first().click();
-          checkButtonsVisibility(page, { launch: 1, upload: 0, clone: 0 });
+          checkButtonsVisibility(page, { launch: 1, clone: 0 });
         });
 
         it('should show edit button', function () {

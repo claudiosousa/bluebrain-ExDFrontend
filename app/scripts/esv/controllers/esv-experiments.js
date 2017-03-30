@@ -58,21 +58,7 @@
         $scope.config = {
           loadingMessage: 'Loading list of experiments...',
           canLaunchExperiments: true,
-          canCloneExperiments: false,
-          canUploadEnvironment: true
-        };
-
-        $scope.uploadEnvironmentAndStart = function (experiment, launchSingleMode) {
-          var inputElement = angular.element('<input type="file" />');
-          inputElement.bind('change', function () {
-            // Uploading the SDF file
-            var reader = new FileReader();
-            reader.readAsText(inputElement[0].files[0], 'UTF-8');
-            reader.onload = function (evt) {
-              $scope.startNewExperiment(experiment, launchSingleMode, evt.target.result);
-            };
-          });
-          inputElement[0].click();
+          canCloneExperiments: false
         };
 
         $scope.cloneExperiment = function (experimentID) {
@@ -226,9 +212,9 @@
             return div.innerText !== input;
           };
 
-          $scope.startNewExperiment = function (experiment, launchSingleMode, sdfData) {
+          $scope.startNewExperiment = function (experiment, launchSingleMode) {
             $scope.pageState.startingExperiment = experiment.id;
-            experimentsService.startExperiment(experiment, launchSingleMode, sdfData, nrpUser.getReservation())
+            experimentsService.startExperiment(experiment, launchSingleMode, nrpUser.getReservation())
               .then(function (path) { $location.path(path); },// succeeded
               function () { $scope.pageState.startingExperiment = null; },// failed
               function (msg) { $scope.progressMessage = msg; }); //in progress
@@ -271,11 +257,8 @@
           var ctx = $stateParams.ctx;
           collabConfigService.get({ contextID: ctx },
             function (response) {
-              $scope.config.canUploadEnvironment = false;
-
               if (response.experimentID) { //there is a cloned experiement
                 $scope.config.loadingMessage = 'Loading experiment description...';
-                $scope.config.canUploadEnvironment = false;
               } else {
                 $scope.config.canCloneExperiments = true;
                 $scope.config.canLaunchExperiments = false;

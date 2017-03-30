@@ -179,14 +179,13 @@ describe('experimentSimulationService', function () {
       },
       rosbridge: { topics: {} }
     });
-    $httpBackend.whenPUT('http://localhost:8080/simulation/sdf_world').respond(200, {});
     $httpBackend.whenPOST('http://localhost:8080/simulation').respond(200, {});
     $httpBackend.whenPUT('http://localhost:8080/simulation/state').respond(200, {});
 
     var progressNotification = jasmine.createSpy(progressNotification);
-    experimentSimulationService.startNewExperiment(experiment, true, {})
+    experimentSimulationService.startNewExperiment(experiment, true)
       .then(angular.noop, angular.noop, progressNotification);
-    $httpBackend.flush(3);
+    $httpBackend.flush(2);
     statusListenerSubscribe({ data: JSON.stringify({ progress: { task: 'true', subtask: 'subtask' } }) });
     statusListenerSubscribe({ data: JSON.stringify({ progress: { done: true } }) });
 
