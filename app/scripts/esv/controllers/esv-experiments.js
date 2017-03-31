@@ -245,12 +245,13 @@
              nrpFrontendVersion.get(function (data) {
                $scope.softwareVersions += data.toString;
              });
-            experimentProxyService.getServerConfig(server)
-            .then(function (serverConfig) {
-              nrpBackendVersions(serverConfig.gzweb['nrp-services']).get(function (result) {
-                $scope.softwareVersions += result.toString;
-              });
-            });
+             if (server)
+               experimentProxyService.getServerConfig(server)
+                 .then(function(serverConfig) {
+                   nrpBackendVersions(serverConfig.gzweb['nrp-services']).get(function(result) {
+                     $scope.softwareVersions += result.toString;
+                   });
+                 });
           }
         };
         function loadCollabExperiments() {
