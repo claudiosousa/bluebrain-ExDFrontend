@@ -1445,6 +1445,35 @@ GZ3D.Composer.prototype.setMasterSettings = function (masterSettings)
     }
 };
 
+/**
+ * Is a specific setting supported by current master settings
+ *
+ */
+
+GZ3D.Composer.prototype.isSupportedByMasterSetting = function (setting)
+{
+    switch (this.currentMasterSettings)
+    {
+        case GZ3D.MASTER_QUALITY_MINIMAL: return false;
+
+        case GZ3D.MASTER_QUALITY_LOW:
+            if (setting === 'shadows') { return false; }
+            if (setting === 'skyBox') { return false; }
+            if (setting === 'pbrMaterial') { return false; }
+
+        /* falls through */
+
+        case GZ3D.MASTER_QUALITY_MIDDLE:
+            if (setting === 'ssao') { return false; }
+            if (setting === 'ssaoDisplay') { return false; }
+            if (setting === 'bloom') { return false; }
+            if (setting === 'fog') { return false; }
+            if (setting === 'sun') { return false; }
+            break;
+    }
+
+    return true;
+};
 
 
 
@@ -10247,6 +10276,18 @@ GZ3D.Scene.prototype.setMasterSettings = function (masterSettings)
     this.composer.setMasterSettings(masterSettings);
     this.needsImmediateUpdate = true;
 };
+
+/**
+ * Check a specific setting is supported by the current master setting level
+ *
+ * @param composer setting
+*/
+
+GZ3D.Scene.prototype.isSupportedByMasterSetting = function (setting)
+{
+  return this.composer.isSupportedByMasterSetting(setting);
+};
+
 
 /**
  * SDF parser constructor initializes SDF parser with the given parameters

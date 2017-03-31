@@ -10,6 +10,7 @@
           restrict: 'E',
           scope: {
             curve: "=",
+            disabled: "=",
             selectedColorChannel: "=",
             onChange: "&"
           },
@@ -84,9 +85,18 @@
                 scope.curve = { 'red': [], 'green': [], 'blue': [] };
               }
 
-              colors.push({ 'key': 'red', 'color': '#FF0000', 'deselectedColor': '#FFBBBB' });
-              colors.push({ 'key': 'green', 'color': '#00FF00', 'deselectedColor': '#BBFFBB' });
-              colors.push({ 'key': 'blue', 'color': '#0000FF', 'deselectedColor': '#BBBBFF' });
+              if (scope.disabled)
+              {
+                colors.push({ 'key': 'red', 'color': '#EEEEEE', 'deselectedColor': '#EEEEEE' });
+                colors.push({ 'key': 'green', 'color': '#EEEEEE', 'deselectedColor': '#EEEEEE' });
+                colors.push({ 'key': 'blue', 'color': '#EEEEEE', 'deselectedColor': '#EEEEEE' });
+              }
+              else
+              {
+                colors.push({ 'key': 'red', 'color': '#FF0000', 'deselectedColor': '#FFBBBB' });
+                colors.push({ 'key': 'green', 'color': '#00FF00', 'deselectedColor': '#BBFFBB' });
+                colors.push({ 'key': 'blue', 'color': '#0000FF', 'deselectedColor': '#BBBBFF' });
+              }
 
               // Render selected channel last, so it appears in front
 
@@ -190,6 +200,11 @@
             //------------------------------------------
             // Update
 
+            scope.$watch('disabled', function ()
+            {
+              scope.renderCurve(); // State modified, update canvas
+            }, true);
+
             scope.$watch('curve', function ()
             {
               scope.renderCurve(); // Curve modified, update canvas
@@ -215,6 +230,11 @@
 
             scope.mouseDown = function (e)
             {
+              if (scope.disabled)
+              {
+                return;
+              }
+
               var mx, my, i, vec, x, y, vx, vy, hitZone;
               scope.mouseEditingVertices = scope.buildVertexList(scope.selectedColor());
 
@@ -284,6 +304,11 @@
 
             scope.mouseMove = function (e)
             {
+              if (scope.disabled)
+              {
+                return;
+              }
+
               var rect = canvas.getBoundingClientRect();
               var mx = e.clientX - rect.left;
               var my = e.clientY - rect.top;
