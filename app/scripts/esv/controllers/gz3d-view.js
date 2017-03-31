@@ -75,6 +75,9 @@
         environmentRenderingService) {
 
         $scope.simulationInfo = simulationInfo;
+        $scope.isMultipleBrains = function() {
+          return simulationInfo.experimentDetails.brainProcesses > 1;
+        };
 
         stateService.Initialize();
         $scope.helpModeActivated = false;

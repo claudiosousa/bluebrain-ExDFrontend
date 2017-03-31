@@ -11,13 +11,15 @@
                           href="{{platformDocumentationURL}}/nrp/user_manual/simulation_setup/hard_reset.html">a few
       points</a> that should be taken into consideration when changing neuronal networks during a simulation.
   </p>
+  <!-- TODO: remove when we support distributed brain updates, also see ng-show conditions below -->
+  <strong style="color: red;" ng-show="isMultipleBrains()">Editing Brain Source Is Currently Disabled for Multiprocess Brain Simulations</strong>
   <div ng-show="pynnScript === undefined" class="alert alert-info" role="alert">
     There is no PyNN script available for this experiment.
   </div>
   <div ng-show="pynnScript !== undefined">
-    <p>Populations (set of neurons indices) can be defined here and referred to in transfer functions:
+    <p ng-hide="isMultipleBrains()">Populations (set of neurons indices) can be defined here and referred to in transfer functions:
     </p>
-    <form name="populationForm">
+    <form name="populationForm" ng-hide="isMultipleBrains()">
       <table class="table table-striped">
         <thead>
           <tr>
@@ -65,7 +67,8 @@
     <button class="btn btn-default btn-md" ng-click="download()">
      <i class="glyphicon glyphicon-download"></i><span> Download</span>
     </button>
-    <button class="btn btn-default btn-md" type="file" ngf-select="uploadFile($file)" accept=".py">
+    <button class="btn btn-default btn-md" type="file" ngf-select="uploadFile($file)" accept=".py"
+      ng-hide="isMultipleBrains()">
       <i class="glyphicon glyphicon-upload"></i><span> Upload</span>
     </button>
     <hr>
@@ -75,6 +78,7 @@
     <hr>
     <div>
       <button type="button" class="btn btn-default btn-md"
+              ng-hide="isMultipleBrains()"
               ng-click="apply(0)"
               ng-disabled="loading || stateService.statePending || !populationForm.$valid"
               v-busy="loading || stateService.statePending"

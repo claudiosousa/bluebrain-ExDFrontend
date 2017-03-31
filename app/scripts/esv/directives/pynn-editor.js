@@ -34,7 +34,11 @@
           scope.localDirty = false;
           scope.isSavingToCollab = false;
 
-          scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
+          scope.isMultipleBrains = function() {
+            return simulationInfo.experimentDetails.brainProcesses > 1;
+          };
+
+          scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), { readOnly: scope.isMultipleBrains() && 'nocursor' });
 
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
@@ -46,6 +50,8 @@
 
           scope.control.refresh = function () {
             var editor = codeEditorsServices.getEditor("codeEditor");
+            if (scope.editorOptions.readOnly)
+              editor.options.readOnly = scope.editorOptions.readOnly;
             if (scope.collabDirty || scope.localDirty) {
               $timeout(function () {
                 codeEditorsServices.refreshEditor(editor);
@@ -60,7 +66,7 @@
                 codeEditorsServices.refreshEditor(editor);
                 scope.loading = false;
                 setTimeout(function () {
-                  codeEditorsServices.resetEditor(editor);
+                  //codeEditorsServices.resetEditor(editor);
                   scope.searchToken("si");
                 }, 100);
               } else {
@@ -75,6 +81,8 @@
              * regular expression to avoid duplicate names.
           */
           scope.preprocessPopulations = function(neuronPopulations) {
+            if (neuronPopulations === null) return undefined;
+
             var populationNames = Object.keys(neuronPopulations);
             var populationsArray = populationNames.map(function (name, index) {
               var populationObject = neuronPopulations[name];
