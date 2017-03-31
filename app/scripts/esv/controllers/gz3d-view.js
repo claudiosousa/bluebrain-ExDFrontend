@@ -682,7 +682,6 @@
 
         $scope.exit = function () {
           exitSimulation();
-          return $q.when();
         };
 
         function exitSimulation() {
