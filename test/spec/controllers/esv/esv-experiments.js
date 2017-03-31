@@ -465,11 +465,9 @@
         it('should trigger reload after clone', function () {
           renderEsvWebPage();
           spyOn($window.location, 'reload');
-          spyOn($window.parent, 'postMessage');
           spyOn(collabConfigService, 'clone');
           $rootScope.cloneExperiment('experiment_id');
           collabConfigService.clone.calls.mostRecent().args[2]();
-          expect($window.parent.postMessage).toHaveBeenCalled();
           expect($window.location.reload).toHaveBeenCalled();
         });
       });
