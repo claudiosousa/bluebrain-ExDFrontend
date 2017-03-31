@@ -1,0 +1,60 @@
+ul {
+    padding-left:15px;
+}
+
+li {
+    list-style-type: none;
+}
+
+.notSelected {
+    color: blue;
+    }
+
+.selected {
+    color: red;
+    }
+
+
+
+.normal{
+    flex: 1;
+    min-width: 200px;
+    padding-right: 15px;
+    padding-left: 15px;
+    transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    }
+
+.normal.selected {
+    flex: 2;
+    min-width: 250px;
+    }
+
+.normal.ng-hide {
+    opacity: 0;
+    }
+
+.normal.ng-hide-add, .normal.ng-hide-remove {
+    transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    }
+
+.container 	{
+	display:flex;
+	width: 100%;
+    word-wrap:break-word;
+}
+
+.left-panel {
+	flex-grow: 1;
+	flex-basis: 20%;
+    }
+
+.center-panel {
+	flex-grow: 3;
+	flex-basis: 50%;
+	flex-direction: column;
+    }
+
+.right-panel {
+	flex-grow: 1;
+	flex-basis:20%;
+    }

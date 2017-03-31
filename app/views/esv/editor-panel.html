@@ -29,6 +29,11 @@
            deselect="reenableKeyBindings()">
         <pynn-editor control="controls.pynneditor"/>
       </tab>
+	  <tab heading="TF Graphical Editor" active="activeTab.graphicalEditor"
+           select="disableKeyBindings(); controls.graphicalEditor.refresh()"
+           deselect="reenableKeyBindings()">
+        <graphical-editor control="controls.graphicalEditor" server="{{rosbridgeWebsocketUrl}}"/>
+      </tab>
     </tabset>
   </div>
   <button type="button" class="button-close" data-ng-click="editorsPanelService.toggleEditors()">×</button>

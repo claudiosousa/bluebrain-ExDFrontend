@@ -130,17 +130,19 @@
                 // if we couldn't find the tf from the id, try against the name
                 flawedTransferFunction = _.find(scope.transferFunctions, {'name': msg.functionName});
             }
-            // Remove error line highlighting if a new compile error is received
-            if (msg.errorType === scope.ERROR.COMPILE) {
-              scope.cleanCompileError(flawedTransferFunction);
-            }
-            flawedTransferFunction.error[msg.errorType] = msg;
-            if (msg.lineNumber >= 0) { // Python Syntax Error
-              // Error line highlighting
-              var editor = codeEditorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
-              var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
-              flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = codeMirrorLineNumber;
-              editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
+            if (flawedTransferFunction !== undefined) {
+              // Remove error line highlighting if a new compile error is received
+              if (msg.errorType === scope.ERROR.COMPILE) {
+                scope.cleanCompileError(flawedTransferFunction);
+              }
+              flawedTransferFunction.error[msg.errorType] = msg;
+              if (msg.lineNumber >= 0) { // Python Syntax Error
+                // Error line highlighting
+                var editor = codeEditorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
+                var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
+                flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = codeMirrorLineNumber;
+                editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
+              }
             }
             if (_.isNull(element[0].offsetParent)) {
               // the editor is currently hidden: we have to display the error in a popup

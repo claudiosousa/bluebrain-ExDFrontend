@@ -18,12 +18,14 @@
     $scope.activeTab.environment = true;
     $scope.activeTab.statemachine = false;
     $scope.activeTab.pynneditor = false;
+    $scope.activeTab.graphicalEditor = false;
     $scope.activeTab.events = false;
 
     $scope.controls = {};
     $scope.controls.transferfunction = {};
     $scope.controls.statemachine = {};
     $scope.controls.pynneditor = {};
+    $scope.controls.graphicalEditor = {};
 
     $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
     $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
@@ -40,7 +42,8 @@
       $scope.panelIsOpen = true;
       if($scope.activeTab.transferfunction === true ||
         $scope.activeTab.statemachine === true ||
-        $scope.activeTab.pynneditor === true) {
+        $scope.activeTab.pynneditor === true ||
+        $scope.activeTab.graphicalEditor === true) {
         gz3d.scene.controls.keyboardBindingsEnabled = false;
       }
 
@@ -54,25 +57,27 @@
         if ($scope.activeTab.transferfunction === true)
         {
           $scope.controls.transferfunction.refresh();
+          }
+          else if ($scope.activeTab.statemachine === true)
+          {
+            $scope.controls.statemachine.refresh();
+          }
+          else if ($scope.activeTab.pynneditor === true)
+          {
+            $scope.controls.pynneditor.refresh();
+          }
+          else if ($scope.activeTab.graphicalEditor === true)
+          {
+            $scope.controls.graphicalEditor.refresh();
+          }
         }
-        else if ($scope.activeTab.statemachine === true)
-        {
-          $scope.controls.statemachine.refresh();
-        }
-        else if ($scope.activeTab.pynneditor === true)
-        {
-          $scope.controls.pynneditor.refresh();
-        }
-      }
+      };
 
-
-    };
-
-    // update UI
-    $scope.$on("UPDATE_PANEL_UI", function() {
-      // prevent calling the select functions of the tabs
-      $scope.refresh();
-    });
+      // update UI
+      $scope.$on("UPDATE_PANEL_UI", function () {
+        // prevent calling the select functions of the tabs
+        $scope.refresh();
+      });
 
     $scope.closeCallback = function() {
       // The Panel is closed
@@ -125,6 +130,7 @@
       else if ($scope.activeTab.pynneditor === true) {
         $scope.controls.pynneditor.refresh();
       }
+      // graphical editor is not refreshed
     };
 
     $scope.suppressKeyPress = function(event) {
