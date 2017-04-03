@@ -227,7 +227,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     this.shiftHold = event.shiftKey;
     switch(event.code) {
 
-       case "KeyW":
+      case "KeyW":
         this.moveForward = true; break;
 
       case "KeyS":
@@ -299,9 +299,6 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       case "PageDown":
       case "KeyF":
         this.moveDown = false; break;
-
-      case "KeyQ":
-        this.freeze = !this.freeze; break;// TODO(Luc): handles this from gz3d-view.js with some visual indication that the scene is frozen
     }
   };
 

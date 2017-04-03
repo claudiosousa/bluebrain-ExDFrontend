@@ -91,16 +91,16 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   this.createAvatarTopics = function(avatarName) {
     this.linearVelocityTopicName = '/' + avatarName + '/user_avatar_basic/body/cmd_vel';
     this.linearVelocityTopic = this.userNavigationService.roslib.createTopic(
-      this.rosConnection,
-      this.linearVelocityTopicName,
-      'geometry_msgs/Vector3'
+    this.rosConnection,
+    this.linearVelocityTopicName,
+    'geometry_msgs/Vector3'
     );
 
     this.avatarRotationTopicName = '/' + avatarName + '/cmd_rot';
     this.avatarRotationTopic = this.userNavigationService.roslib.createTopic(
-      this.rosConnection,
-      this.avatarRotationTopicName,
-      'geometry_msgs/Quaternion'
+    this.rosConnection,
+    this.avatarRotationTopicName,
+    'geometry_msgs/Quaternion'
     );
   };
 
@@ -326,9 +326,6 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
       case "KeyF":
         this.moveDown = false; break;
 
-      case "KeyQ":
-        this.freeze = !this.freeze; break;// TODO(Luc): handles this from gz3d-view.js with some visual indication that the scene is frozen
-
       case "KeyT":
       {
         this.thirdPerson = !this.thirdPerson;
@@ -354,7 +351,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
    * Applies a pose during next update
    * @param position
    * @param lookAt
-     */
+   */
   this.applyPose = function(position, lookAt) {
     this.applyPosePosition = position;
     this.applyPoseLookAt = lookAt;
@@ -393,7 +390,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
    * Take a point in space and project it onto a mesh below/above
    * @param position THREE.Vector3 position in space
    * @returns {*}
-     */
+   */
   this.projectOntoGround = function(position) {
     var that = this;
     var isObjectPartOfAvatar = function(object) {
@@ -433,7 +430,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   /**
    * update spherical angles by a world forward vector
    * @param vecForward
-     */
+   */
   this.updateSphericalAnglesFromForwardVector = function(vecForward) {
     vecForward.normalize();
 
@@ -486,10 +483,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
    */
   this.updateAvatarRotation = function() {
     /*if (this.azimuth > Math.PI) {
-      this.azimuth -= 2 * Math.PI;
-    } else if (this.azimuth < -Math.PI) {
-      this.azimuth += 2 * Math.PI;
-    }*/
+     this.azimuth -= 2 * Math.PI;
+     } else if (this.azimuth < -Math.PI) {
+     this.azimuth += 2 * Math.PI;
+     }*/
 
     this.avatarRotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), this.azimuth);
     this.avatarRotation.normalize();
@@ -563,7 +560,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   /**
    * Method to be called during render cycles for updates between frames.
    * @param delta Time passed since last frame
-     */
+   */
   this.update = function(delta) {
     if (!this.enabled) {
       if (this.mouseDragOn)

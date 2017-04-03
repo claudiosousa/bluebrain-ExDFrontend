@@ -135,7 +135,7 @@ describe('FirstPersonControls', function () {
     expect(domElementForKeyBindings.addEventListener.calls.argsFor(1)[0]).toMatch(/keyup/);
   }));
 
-  it('s for W/A/S/D/R/F/Q', inject(function() {
+  it('s for W/A/S/D/R/F', inject(function() {
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyW');
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyA');
     triggerKeyEvent(domElementForKeyBindings, 'keydown', 'KeyS');
@@ -164,11 +164,6 @@ describe('FirstPersonControls', function () {
     expect(firstPersonControls.moveRight).toBe(false);
     expect(firstPersonControls.moveUp).toBe(false);
     expect(firstPersonControls.moveDown).toBe(false);
-
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyQ');
-    expect(firstPersonControls.freeze).toBe(true);
-    triggerKeyEvent(domElementForKeyBindings, 'keyup', 'KeyQ');
-    expect(firstPersonControls.freeze).toBe(false);
   }));
 
   it('should handle key events for up/left/down/right/pageup/pagedown', inject(function() {
