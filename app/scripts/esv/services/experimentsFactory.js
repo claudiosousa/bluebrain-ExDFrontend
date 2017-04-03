@@ -90,7 +90,7 @@
               service.experiments = experimentProxyService.getJoinableServers(contextId)
                 .then(function(joinableServers){
                   exp[experimentId].joinableServers = joinableServers;
-                  return experimentProxyService.getAvailableServers(experimentId);
+                  return experimentProxyService.getAvailableServers();
                 })
                 .then(function(availableServers){
                   exp[experimentId].availableServers = availableServers;
@@ -281,7 +281,7 @@
                   experimentsDict[experimentId].joinableServers.forEach(function (sim) {
                     sim.stopping = stoppingDict[sim.server] && stoppingDict[sim.server][sim.runningSimulation.simulationID];
                   });
-                  return experimentProxyService.getAvailableServers(experimentId);
+                  return experimentProxyService.getAvailableServers();
                 })
                 .then(function(availableServers){
                   experimentsDict[experimentId].availableServers = availableServers;

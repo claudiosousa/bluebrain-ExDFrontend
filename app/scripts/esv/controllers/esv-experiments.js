@@ -61,7 +61,7 @@
           canCloneExperiments: false
         };
 
-        $scope.cloneExperiment = function (experimentID) {
+       $scope.cloneExperiment = function (experimentID) {
           $scope.isCloneRequested = true;
           collabConfigService.clone({ contextID: $stateParams.ctx }, { experimentID: experimentID }, function () {
            try {
