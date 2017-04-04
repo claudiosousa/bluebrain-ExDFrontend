@@ -113,10 +113,12 @@
           if (response.status === 0) {
             return false;
           }
-          // we ignore errors due to transfer function updates as they are caught by a
+          // we ignore errors due to transfer function and state machines updates as they are caught by a
           // dedicated ROS topic
-          if (response.data && response.data.type === "Transfer function error") {
-            return false;
+          if (response.data) {
+            if(response.data.type === "Transfer function error" || response.data.type === "State machine error") {
+              return false;
+            }
           }
         }
         return true;

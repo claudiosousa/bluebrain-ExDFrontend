@@ -166,6 +166,15 @@ describe('Services: nrp-error-handlers', function () {
     expect(serverError.filter(response)).toBe(false);
   });
 
+  it('should filter out state machine errors', function() {
+    var response = {
+      data: { code: 400, message: 'Syntax Error', type: 'State machine error'},
+      status: 400
+    };
+    serverError.displayHTTPError(response);
+    expect(serverError.filter(response)).toBe(false);
+  });
+
   it('should call once nrpErrorService.httpError and hbpDialogFactory.alert', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response);
