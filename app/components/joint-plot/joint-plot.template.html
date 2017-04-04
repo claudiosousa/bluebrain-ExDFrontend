@@ -1,0 +1,32 @@
+<!-- build:css(.tmp) components/joint-plot/joint-plot.style.css-->
+<link rel="stylesheet" href="components/joint-plot/joint-plot.style.css" />
+<!-- endbuild -->
+
+<div class="jointplot-wrapper" movable resizeable show-on-top style="display:flex;" class="ng-hide" ng-show="ngShow">
+  <div class="jointplot" ng-show="vm.allJoints.length > 0">
+    <div class="property-selector">
+      <div ng-repeat="prop in vm.properties">
+        <label>
+          <input type="radio" ng-model="vm.selectedProperty.name" value="{{prop}}" ng-change="vm.updateVisibleSeries()">
+          {{prop}}
+        </label>
+        <br/>
+      </div>
+    </div>
+    <div class="joint-selector">
+      <span ng-repeat="joint in vm.allJoints" ng-style="{color:joint.color}">
+        <label for="{{joint}}">
+          <input type="checkbox" ng-model="joint.selected" name="group" ng-change="vm.updateVisibleSeries()">
+          {{joint.name}}
+        </label><br/>
+      </span>
+    </div>
+    <div class="linechart-wrapper">
+      <linechart class="linechart" data="vm.plot.curves" options="vm.plot.options"></linechart>
+    </div>
+  </div>
+  <div class="jointplot" ng-hide="vm.allJoints.length > 0">
+    <h4>Start the simulation to display the plot</h4>
+  </div>
+  <button type="button" class="button-close" data-ng-click="jointPlotButtonClickHandler()">×</button>
+</div>

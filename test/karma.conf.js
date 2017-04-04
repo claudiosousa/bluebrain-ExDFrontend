@@ -17,6 +17,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
 
+      'node_modules/babel-polyfill/dist/polyfill.js',
       // The two following files are required by gz3d.js. Since
       // order matters here, they should be in front of the bower
       // section.
@@ -94,22 +95,17 @@ module.exports = function(config) {
       // endbower
 
       'node_modules/d3/d3.min.js',
-      'node_modules/n3-charts/build/LineChart.js',   
+      'node_modules/n3-charts/build/LineChart.js',
       'test/support/**/*.js',
       './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
       'app/scripts/**/*.js',
+      'app/components/**/*.js',
       'test/mock/**/*.js',
       'test/spec/datagenerator/*.js',
       'test/spec/**/*.js',
-      'app/scripts/common/**/*.js',
-      // list the esv directories explicitly, since we do not want
-      // to include all parts of the gz3d folder
-      'app/scripts/esv/controllers/*.js',
-      'app/scripts/esv/directives/*.js',
-      'app/scripts/esv/services/*.js',
-      'app/views/esv/*.html',
-      'app/views/common/*.html',
+      'app/components/**/*.html',
+      'app/views/**/*.html',
 
       {pattern: 'app/views/*.*', included: true, served: true}
     ],
@@ -118,13 +114,24 @@ module.exports = function(config) {
         // source files, that you want to generate coverage for
         // do not include tests or libraries
         // (these files will be instrumented by Istanbul)
-        'app/scripts/app/**/*.js': ['coverage'],
-        'app/scripts/common/**/*.js': ['coverage'],
-        'app/scripts/esv/controllers/*.js': ['coverage'],
-        'app/scripts/esv/directives/*.js': ['coverage'],
-        'app/scripts/esv/services/*.js': ['coverage'],
-        'app/views/esv/*.html': ['ng-html2js'],
-        'app/views/common/*.html': ['ng-html2js']
+        'app/scripts/*/**/*.js': ['babel', 'coverage'],
+        'app/components/**/*.js': ['babel','coverage'],
+        'app/components/**/*.html': ['ng-html2js'],
+        'app/views/**/*.html': ['ng-html2js']
+    },
+
+    babelPreprocessor: {
+        options: {
+            babelrc: false,
+            presets: ['es2015'],
+            sourceMap: 'inline'
+        },
+        filename: function(file) {
+            return file.originalPath.replace(/\.js$/, '.es5.js');
+        },
+        sourceFileName: function(file) {
+            return file.originalPath;
+        }
     },
 
     ngHtml2JsPreprocessor: {
@@ -160,6 +167,7 @@ module.exports = function(config) {
         'karma-phantomjs-launcher',
         'karma-chrome-launcher',
         'karma-jasmine',
+        'karma-babel-preprocessor',
         'karma-coverage',
         'karma-junit-reporter',
         'karma-ng-html2js-preprocessor'

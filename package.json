@@ -3,10 +3,12 @@
   "version": "1.2.31",
   "description": "Neurorobotics experiment designer",
   "dependencies": {
-    "n3-charts": "2.0.28",
-    "d3": "3.5.17"
+    "d3": "3.5.17",
+    "n3-charts": "2.0.28"
   },
   "devDependencies": {
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1",
     "core-js": "2.4.1",
     "docdash": "0.4.0",
     "grunt": "1.0.1",
@@ -42,6 +44,7 @@
     "jsdoc": "3.4.3",
     "jshint-stylish": "2.2.1",
     "karma": "1.5.0",
+    "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "2.0.0",
     "karma-coverage": "1.1.1",
     "karma-jasmine": "1.1.0",
@@ -53,6 +56,7 @@
     "protractor": "5.1.1",
     "serve-static": "1.11.2",
     "time-grunt": "1.4.0",
+    "uglify-js": "github:mishoo/UglifyJS2#harmony",
     "vinyl-fs": "2.4.4"
   },
   "engines": {
@@ -62,7 +66,8 @@
     "test": "grunt test",
     "validate": "grunt validate",
     "build": "grunt build",
-    "tag": "grunt publish"
+    "tag": "grunt publish",
+    "postinstall":"rm -r node_modules/grunt-contrib-uglify/node_modules/uglify-js/"
   },
   "publishConfig": {
     "registry": "http://bbpteam.epfl.ch/repository/npm"

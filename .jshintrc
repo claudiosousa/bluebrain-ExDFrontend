@@ -118,6 +118,6 @@
         "d3",
         "THREE"
     ],
-    "indent"        : 4         // Specify indentation spacing
-
+    "indent"        : 4,         // Specify indentation spacing
+    "esversion": 6
 }

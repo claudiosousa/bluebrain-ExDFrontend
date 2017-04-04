@@ -76,7 +76,8 @@
       'nrpUser',
       'hbpCollaboratoryCore',
       'editorToolbarModule',
-      'editorsPanelModule'])
+      'editorsPanelModule',
+      'jointPlotModule'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {

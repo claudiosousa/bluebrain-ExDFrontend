@@ -24,7 +24,7 @@
   var module = angular.module('exdFrontendFilters', []);
   module.filter('timeDDHHMMSS', function() {
     return function(input) {
-      if (typeof input != 'number') {
+      if (typeof input !== 'number') {
         return '--\u00A0--:--:--';
       }
       var timeValue = '';
@@ -63,7 +63,7 @@
       var now = new Date().getTime();
       var creationDate = new Date(input).getTime();
       return (now - creationDate)/1000;
-    }
+    };
   });
 
 }());
