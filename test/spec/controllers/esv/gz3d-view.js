@@ -227,37 +227,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(userContextService.hasEditRights({name: 'user-avatar'})).toBe(true);
       expect(userNavigationService.isUserAvatar).toHaveBeenCalled();
     });
-
-    it('should initialize experimentDetails', function() {
-      window.bbpConfig.localmode.forceuser = true;
-      controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope
-      });
-      scope.experimentConfiguration = 'test_config';
-      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
-      scope.$digest(); // force the $watch to be evaluated in experimentDetails
-      var configuration = simulationInfo.experimentDetails;
-      expect(scope.ExperimentDescription).toBe(configuration.description);
-      expect(scope.ExperimentName).toBe(configuration.name);
-
-      window.bbpConfig.localmode.forceuser = false;
-    });
-
-    it('should initialize experimentDetails when in collab mode', function() {
-      window.bbpConfig.localmode.forceuser = true;
-      controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope
-      });
-      environmentService.setPrivateExperiment(true);
-      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
-      scope.$digest(); // force the $watch to be evaluated in experimentDetails
-      var configuration = simulationInfo.experimentDetails;
-      expect(scope.ExperimentDescription).toBe(configuration.description);
-      expect(scope.ExperimentName).toBe(configuration.name);
-      window.bbpConfig.localmode.forceuser = false;
-    });
   
     it('should set a color on the selected screen', function() {
       //Ignore this warning because of the sim_id
@@ -414,19 +383,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       //gz3d.scene.getLightType = GZ3D.Scene.prototype.getLightType;
       //gz3d.scene.intensityToAttenuation = GZ3D.Scene.prototype.intensityToAttenuation;
       //scope.incrementLightIntensities(-0.5);
-    });
-
-    it('should call nrpBackendVersions.get and set scope.versions with retrieved back-end versions', function() {
-      expect(nrpBackendVersions.calls.count()).toBe(1);
-      expect(nrpBackendVersions.calls.mostRecent().args[0].indexOf(simulationInfo.serverID) > -1).toBe(true);
-      expect(nrpBackendVersionsObject.get.calls.mostRecent().args[0]).toEqual(jasmine.any(Function));
-      expect(nrpBackendVersionsObject.get.calls.count()).toBe(1);
-
-      var backendData = {toString: 'Backend:0.5.dev0'};
-      var frontendData = { toString: 'Frontend: 0.0.1' };
-      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
-      nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendData);
-      expect(scope.versionString).toEqual(frontendData.toString + backendData.toString);
     });
 
     it('should set the focus on the supplied html element', function() {
