@@ -10,11 +10,11 @@
             };
 
             /**
-             * Creates a modal (UI dialog) object on top of the current view 
-             * provided an html template. The templateUrl object must hold 
-             * the Url itself, the scope, the closable option, and optionally 
-             * parametes for the size and the css styling class. Example usage:
-             * 
+             * Creates a modal (UI dialog) object on top of the current view
+             * The templateUrl object must hold the html template Url itself, 
+             * the scope, the closable option and, optionally, parameters 
+             * for the size and the css styling class. Example usage:
+             *
              *  var templateUrl = {
              *                      templateUrl: 'views/esv/robot-upload-dialog.html',
              *                      closable: true,
@@ -23,12 +23,13 @@
              *                      size:'lg'
              *                     };
              *  nrpModalService.createModal(templateUrl)
-             *                 
-             * @param  templateUrl an object containing the Url,the scope and 
+             *
+             * @param  templateUrl an object containing the Url,the scope and
              *                     the closable option for the modal
              */
             function createModal(templateUrl) {
                 if (angular.isDefined(modal)) { modal.close(); }
+
                 modal = $modal.open({
                     templateUrl: templateUrl.templateUrl,
                     show: true,
@@ -38,10 +39,14 @@
                     windowClass: templateUrl.windowClass,
                     size: templateUrl.size
                 });
+
+                return modal.result.finally(function() {
+                    destroyModal();
+                });
             }
 
             /**
-             * Destroys the modal object 
+             * Destroys the modal object
              */
             function destroyModal() {
                 if (angular.isDefined(modal)) {

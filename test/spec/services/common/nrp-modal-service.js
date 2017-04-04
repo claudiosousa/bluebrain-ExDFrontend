@@ -3,29 +3,39 @@
 
     describe('Services: nrpModalService', function () {
 
-        var nrpModalService, $modal, $scope, fakeModal;
+        var nrpModalService, $modal, $scope, $q, fakeModal;
+
+        var mockUrl = {
+            templateUrl: 'views/esv/robot-upload-dialog.html',
+            closable: true,
+            scope: $scope,
+            windowClass: 'modal-window',
+            size: 'lg'
+        };
+
         beforeEach(module('exdFrontendApp'));
-        beforeEach(inject(function (_nrpModalService_, _$modal_) {
+        beforeEach(inject(function(_nrpModalService_, _$modal_, _$q_) {
             nrpModalService = _nrpModalService_;
             $modal = _$modal_;
+            $q = _$q_;
         }));
 
-        it('should create a modal', function () {
-            spyOn($modal, 'open').and.callFake(function () {
+        beforeEach(function() {
+            spyOn($modal, 'open').and.callFake(function() {
                 fakeModal = {
-                    close: function () {
+                    close: function() {
                         return;
-                    }
+                    },
+                    result: $q.when()
                 };
                 return fakeModal;
             });
-            var mockUrl = {
-                templateUrl: 'views/esv/robot-upload-dialog.html',
-                closable: true,
-                scope: $scope,
-                windowClass: 'modal-window',
-                size: 'lg'
-            };
+
+            spyOn(nrpModalService, 'destroyModal').and.callThrough();
+        });
+
+        it('should create a modal', function () {
+
             nrpModalService.createModal(mockUrl);
             //call again to check what happens if the modal already exists
             nrpModalService.createModal(mockUrl);
@@ -41,22 +51,7 @@
         });
 
         it('should destroy a modal', function () {
-            spyOn($modal, 'open').and.callFake(function () {
-                fakeModal = {
-                    close: function () {
-                        return;
-                    }
-                };
-                return fakeModal;
-            });
-            spyOn(nrpModalService, 'destroyModal').and.callThrough();
-            var mockUrl = {
-                templateUrl: 'views/esv/robot-upload-dialog.html',
-                closable: true,
-                scope: $scope,
-                windowClass: 'modal-window',
-                size: 'lg'
-            };
+
             nrpModalService.createModal(mockUrl);
             nrpModalService.destroyModal();
             expect(nrpModalService.destroyModal).toHaveBeenCalled();

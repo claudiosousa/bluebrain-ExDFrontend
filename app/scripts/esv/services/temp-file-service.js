@@ -1,11 +1,11 @@
-(function () {
+(function (){
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('tempFileService', ['$stateParams', '$q', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
-      'hbpDialogFactory', 'environmentService',
-      function ($stateParams, $q, collabFolderAPIService, hbpIdentityUserDirectory,
-        hbpDialogFactory, environmentService) {
+    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
+      'nrpModalService', 'environmentService',
+      function ($stateParams, $q, $rootScope, collabFolderAPIService, hbpIdentityUserDirectory,
+        nrpModalService, environmentService) {
 
         var dirtyDataCol = {},
           getFolderId = _.memoize(collabFolderAPIService.getExperimentFolderId);
@@ -46,7 +46,7 @@
                   defer.resolve();
                 });
             });
-            return defer.promise;
+          return defer.promise;
         }
 
         function removeSavedWork(filename) {
@@ -62,15 +62,15 @@
           if (!environmentService.isPrivateExperiment())
             return $q.reject();
           return retrieveSavedWork(filename, confirmBox)
-            .then(function (savedWork) {
+            .then(_.spread(function(savedWork, applySaved) {
               if (!savedWork)
                 return $q.reject();
 
-              _.forEach(savedWork, function (value, key) {
-                callbacks[key] && callbacks[key](value);
+              _.forEach(savedWork, function(value, key) {
+                callbacks[key] && callbacks[key](value, applySaved);
               });
-              return savedWork;
-            });
+              return [savedWork, applySaved];
+            }));
         }
 
         function retrieveSavedWork(filename, confirmBox) {
@@ -80,34 +80,33 @@
             })
             .then(function (file) {
               if (!file)
-                 return $q.reject();
+                return $q.reject();
               return $q.all([
                 file,
                 collabFolderAPIService.downloadFile(file._uuid).then(angular.fromJson),
                 hbpIdentityUserDirectory.get([file._createdBy])
               ]);
             })
-            .then(_.spread(function (file, foundFile, userInfo) {
-              var username = userInfo[file._createdBy].displayName;
-              if (confirmBox){
-                return hbpDialogFactory.confirm({
-                  title: 'Auto-saved data',
-                  confirmLabel: 'Restore',
-                  cancelLabel: 'Discard',
-                  template: 'There is unsaved work from a previous session by user ' + username + '. Would you like to restore it or discard it?',
-                  closable: false
-                }).then(function () {
-                  return foundFile;
+            .then(_.spread(function(file, foundFile, userInfo) {
+              if (confirmBox) {
+                var localScope = $rootScope.$new();
+                localScope.username = userInfo[file._createdBy].displayName;
+                return nrpModalService.createModal({
+                  templateUrl: 'views/common/restore-auto-saved.html',
+                  closable: true,
+                  scope: localScope
+                }).then(function(applySaved) {
+                  return [foundFile, applySaved];
                 });
               }
               else {
-                return foundFile;
+                return [foundFile];
               }
             }));
         }
       }]
     );
-} ());
+}());
 
 
 

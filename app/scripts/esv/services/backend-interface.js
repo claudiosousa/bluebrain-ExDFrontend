@@ -229,12 +229,12 @@
           },
 
           getStateMachines: function (callback) {
-            resourceStateMachineSimulation(simulationInfo.serverBaseUrl).get(
+            return resourceStateMachineSimulation(simulationInfo.serverBaseUrl).get(
               {sim_id: simulationInfo.simulationID},
               function (response) {
                 callback(response);
               }
-            );
+            ).$promise;
           },
 
           deleteTransferFunction: function (name, callback) {
@@ -273,17 +273,17 @@
             );
           },
           setStateMachine: function (name, data, successCallback, errorCallback) {
-            resourceStateMachineSimulation(simulationInfo.serverBaseUrl).put({
+            return resourceStateMachineSimulation(simulationInfo.serverBaseUrl).put({
               sim_id: simulationInfo.simulationID,
               state_machine_name: name
-            }, data, successCallback, errorCallback);
+            }, data, successCallback, errorCallback).$promise;
           },
           deleteStateMachine: function (name, callback) {
-            resourceStateMachineSimulation(simulationInfo.serverBaseUrl).delete(
+            return resourceStateMachineSimulation(simulationInfo.serverBaseUrl).delete(
               {
                 sim_id: simulationInfo.simulationID, state_machine_name: name
               }, callback
-            );
+            ).$promise;
           },
           saveStateMachines: function (contextID, transferFunctions, successCallback, errorCallback) {
             var data = {
@@ -295,13 +295,13 @@
           },
 
           getTransferFunctions: function (callback) {
-            resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).transferFunctions(
+            return resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).transferFunctions(
               {
                 sim_id: simulationInfo.simulationID
               }, function (data) {
                 callback(data);
               }
-            );
+            ).$promise;
           },
           getStructuredTransferFunctions: function (callback) {
             resourceStructuredTransferFunctions(simulationInfo.serverBaseUrl).get(

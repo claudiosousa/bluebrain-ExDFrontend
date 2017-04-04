@@ -2,6 +2,7 @@
   'use strict';
 
   angular.module('exdFrontendApp').directive('smachEditor', [
+    '$q',
     'backendInterfaceService',
     'pythonCodeHelper',
     'documentationURLs',
@@ -20,7 +21,8 @@
     'codeEditorsServices',
     'saveErrorsService',
     'environmentService',
-    function (backendInterfaceService,
+    function ($q,
+              backendInterfaceService,
               pythonCodeHelper,
               documentationURLs,
               roslib,
@@ -65,53 +67,66 @@
           scope.backendDocumentationURL = docs.backendDocumentationURL;
           scope.platformDocumentationURL = docs.platformDocumentationURL;
 
-          scope.control.refresh = function () {
-            if (scope.collabDirty) {
-              codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
-              return;
-            }
-            backendInterfaceService.getStateMachines(
-              function (response) {
+          function loadStateMachines() {
+            return backendInterfaceService.getStateMachines(
+              function(response) {
                 _.forEach(response.data, function(code, id) {
                   var stateMachine = new ScriptObject(id, code);
                   stateMachine.name = scope.getStateMachineName(id);
                   // If we already have local changes, we do not update
-                  var sm = _.find(scope.stateMachines, {'id':  id});
+                  var sm = _.find(scope.stateMachines, { 'id': id });
                   var found = angular.isDefined(sm);
-                  if (found && !sm.dirty)
-                  {
+                  if (found && !sm.dirty) {
                     sm = stateMachine;
                   } else if (!found) {
                     scope.stateMachines.unshift(stateMachine);
                   }
                 });
-                codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
+                return scope.stateMachines;
               });
+          }
+
+          scope.control.refresh = function () {
+            if (scope.collabDirty) {
+              codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
+              return;
+            }
+            loadStateMachines().then(function() {
+              codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) { return 'state-machine-' + sm.id; }));
+            });
           };
 
-          scope.update = function (stateMachine) {
+          scope.update = function(stateMachines) {
             var restart = stateService.currentState === STATE.STARTED;
             stateService.ensureStateBeforeExecuting(
               STATE.PAUSED,
-              function () {
-                delete stateMachine.error[scope.ERROR.RUNTIME];
-                delete stateMachine.error[scope.ERROR.LOADING];
-                backendInterfaceService.setStateMachine(
-                  stateMachine.id,
-                  stateMachine.code,
-                  function () {
-                    stateMachine.dirty = false;
-                    stateMachine.local = false;
-                    scope.cleanCompileError(stateMachine);
-                    if (restart) {
+              function(cb) {
+                //if not an array, convert it to one
+                stateMachines = [].concat(stateMachines);
+
+                $q.all(stateMachines.map(function(stateMachine) {
+                  delete stateMachine.error[scope.ERROR.RUNTIME];
+                  delete stateMachine.error[scope.ERROR.LOADING];
+                  return backendInterfaceService.setStateMachine(
+                    stateMachine.id,
+                    stateMachine.code,
+                    function() {
+                      stateMachine.dirty = false;
+                      stateMachine.local = false;
+                      scope.cleanCompileError(stateMachine);
+                    });
+                }))
+                  .then(function() {
+                    if (restart)
                       stateService.setCurrentState(STATE.STARTED);
-                    }
-                  }, function (data) {
-                    serverError.displayHTTPError(data);
-                    if (restart) {
+                  })
+                  .catch(function(err) {
+                    serverError.displayHTTPError(err);
+                    if (restart)
                       stateService.setCurrentState(STATE.STARTED);
-                    }
-                  });
+
+                  })
+                  .finally(cb);
               }
             );
           };
@@ -213,17 +228,21 @@
             return stateMachine;
           };
 
-          scope.delete = function(stateMachine) {
-            var index = scope.stateMachines.indexOf(stateMachine);
-            if (stateMachine.local) {
-              scope.stateMachines.splice(index, 1);
-            } else {
-              backendInterfaceService.deleteStateMachine(stateMachine.id,
-                function() {
-                  scope.stateMachines.splice(index, 1);
-                }
-              );
-            }
+          scope.delete = function(stateMachines) {
+            //make sure stateMachines is an array
+            stateMachines = [].concat(stateMachines);
+            return $q.all(stateMachines.map(function(stateMachine) {
+              var index = scope.stateMachines.indexOf(stateMachine);
+              if (stateMachine.local) {
+                scope.stateMachines.splice(index, 1);
+              } else {
+                return backendInterfaceService.deleteStateMachine(stateMachine.id,
+                  function() {
+                    scope.stateMachines.splice(index, 1);
+                  }
+                );
+              }
+            }));
           };
 
           scope.getStateMachineName = function(id) {
@@ -347,10 +366,20 @@
         saveErrorsService.registerCallback(DIRTY_TYPE, function(newSMs){
           scope.stateMachines = newSMs;
         });
-          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved) {
-            scope.collabDirty = true;
+        autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved, applyChanges) {
+          scope.collabDirty = true;
+          if (applyChanges)
+            loadStateMachines()
+              .then(function() {
+                return scope.delete(scope.stateMachines);
+              })
+              .then(function() {
+                scope.stateMachines = autoSaved;
+                scope.update(scope.stateMachines);
+              });
+          else
             scope.stateMachines = autoSaved;
-          });
+        });
         }
       };
     }

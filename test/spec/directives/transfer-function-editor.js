@@ -10,7 +10,7 @@ describe('Directive: transferFunctionEditor', function () {
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
-    getTransferFunctions: jasmine.createSpy('getTransferFunctions'),
+    getTransferFunctions: jasmine.createSpy('getTransferFunctions').and.callFake(function(){return $q.when();}),
     setTransferFunction: jasmine.createSpy('setTransferFunction'),
     deleteTransferFunction: jasmine.createSpy('deleteTransferFunction'),
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl'),
@@ -114,6 +114,7 @@ describe('Directive: transferFunctionEditor', function () {
     $q = _$q_;
     environmentService = _environmentService_;
 
+    spyOn(codeEditorsServices, 'refreshAllEditors');
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
     $scope.control = {};
@@ -139,6 +140,7 @@ describe('Directive: transferFunctionEditor', function () {
   it('should load the populations when showPopulations is True', function () {
     isolateScope.showPopulations = true;
     $scope.control.refresh();
+    $scope.$digest();
     expect(isolateScope.populations).toEqual([]);
     expect(isolateScope.showPopulations).toBe(true);
     expect(backendInterfaceService.getPopulations).toHaveBeenCalled();
@@ -193,12 +195,12 @@ describe('Directive: transferFunctionEditor', function () {
   });
 
    it('should refresh code editors on refresh if dirty', function() {
+    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(1);
     isolateScope.collabDirty = true;
     isolateScope.transferFunctions = [1, 2, 3];
-    spyOn(codeEditorsServices, 'refreshAllEditors');
     isolateScope.control.refresh();
     $rootScope.$digest();
-    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(1);
+    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(2);
   });
 
   it('should add new populations correctly', function() {
@@ -224,7 +226,6 @@ describe('Directive: transferFunctionEditor', function () {
     it('should handle the retrieved transferFunctions properly', function () {
       // call the callback given to getTransferFunctions with a response mock
       spyOn(document, 'getElementById').and.returnValue({ firstChild: { CodeMirror: editorMock}});
-      spyOn(codeEditorsServices, 'refreshAllEditors');
       backendInterfaceService.getTransferFunctions.calls.mostRecent().args[0](response);
       expect(_.findIndex(isolateScope.transferFunctions, expectedTf1)).not.toBe(-1);
       expect(isolateScope.transferFunctions.length).toBe(1);
@@ -644,7 +645,7 @@ describe('Directive: transferFunctionEditor', function () {
 
 describe('Directive: transferFunctionEditor refresh populations', function () {
 
-  var $rootScope, $compile, $scope, isolateScope,
+  var $rootScope, $compile, $scope, $q, isolateScope,
     element;
 
   var backendInterfaceServiceMock = {};
@@ -653,7 +654,7 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
   };
 
   backendInterfaceServiceMock.getTransferFunctions = function () {
-    return [];
+    return $q.when();
   };
 
   var documentationURLsMock =
@@ -694,10 +695,12 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
   }));
 
   beforeEach(inject(function (_$rootScope_,
+                              _$q_,
                               _$compile_,
                               $templateCache) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
+    $q = _$q_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
