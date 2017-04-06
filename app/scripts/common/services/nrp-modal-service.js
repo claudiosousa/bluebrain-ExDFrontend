@@ -1,8 +1,8 @@
-(function() {
+(function () {
     'use strict';
 
     angular.module('exdFrontendApp')
-        .service('nrpModalService', ['$modal', function($modal) {
+        .service('nrpModalService', ['$modal', function ($modal) {
             var modal;
             return {
                 createModal: createModal,
@@ -40,18 +40,21 @@
                     size: templateUrl.size
                 });
 
-                return modal.result.finally(function() {
-                    destroyModal();
-                });
+                return modal.result.finally((function (destModal) {
+                    return function () { destroyModal(destModal); };
+                })(modal));
             }
 
             /**
              * Destroys the modal object
              */
-            function destroyModal() {
-                if (angular.isDefined(modal)) {
-                    modal.close();
-                    modal = undefined;
+            function destroyModal(destModal) {
+                destModal = destModal || modal;
+                if (angular.isDefined(destModal)) {
+                    destModal.close();
+                    if (destModal === modal) {
+                        modal = undefined;
+                    }
                 }
             }
 
