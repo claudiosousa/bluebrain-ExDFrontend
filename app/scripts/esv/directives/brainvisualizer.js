@@ -58,38 +58,28 @@
 
             scope.initWithPopulations = function ()
             {
-              backendInterfaceService.getBrain(function (response)
+              backendInterfaceService.getPopulations(function (response)
               {
-                if (response.additional_populations)
+                if (response.populations)
                 {
-                  var popNames = Object.keys(response.additional_populations);
                   var data = { populations: {} };
-
                   scope.populations = [];
 
-                  for (var i in popNames)
+                  for (var i in response.populations)
                   {
-                    if (popNames.hasOwnProperty(i))
+                    if (response.populations.hasOwnProperty(i))
                     {
+                      var pop = response.populations[i];
                       var newPop = {};
-                      var pop = response.additional_populations[popNames[i]];
-                      if (Object.prototype.toString.call(pop) === '[object Array]')
-                      {
-                        newPop.list = pop;
-                      }
-                      else
-                      {
-                        newPop.from = pop.from;
-                        newPop.step = pop.step;
-                        newPop.to = pop.to;
-                      }
+                      newPop.list = pop.indices;
+                      newPop.gids = pop.gids;
 
-                      newPop.color = 'hsl(' + (i / (popNames.length + 1) * 360.0) + ',100%,80%)';
-                      newPop.name = popNames[i];
+                      newPop.color = 'hsl(' + (i / (response.populations.length + 1) * 360.0) + ',100%,80%)';
+                      newPop.name = pop.name;
                       newPop.visible = true;
 
                       scope.populations.push(newPop);
-                      data.populations[popNames[i]] = newPop;
+                      data.populations[pop.name] = newPop;
                     }
                   }
 
