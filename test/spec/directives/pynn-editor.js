@@ -222,12 +222,6 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.apply).toHaveBeenCalledWith(1);
     });
 
-    it('should check set brain disagree helper', function () {
-      spyOn(isolateScope, 'apply');
-      isolateScope.doNotAgreeAction();
-      expect(isolateScope.apply).toHaveBeenCalledWith(2);
-    });
-
     it('should save the pynn script and the neuron populations properly', function () {
       isolateScope.pynnScript = '# some dummy pynn script';
       isolateScope.populations = {'dummy_population': {list: ' 1, 2, 3 '}};
