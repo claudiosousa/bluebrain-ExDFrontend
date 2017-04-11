@@ -7,7 +7,7 @@ describe('Services: userNavigationService', function () {
   var userNavigationService;
   var NAVIGATION_MODES, STATE;
 
-  var gz3d, camera, avatar, avatarControls, firstPersonControls;
+  var gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
   var hbpIdentityUserDirectory, userProfile, hbpIdentityUserDirectoryPromise, simulationInfo, roslib, stateService;
 
   // provide mock objects
@@ -24,6 +24,7 @@ describe('Services: userNavigationService', function () {
       },
       scene: {
         scene: new THREE.Scene(),
+        getByName:function(){return null;},
         viewManager: {
           mainUserView: {
             camera: new THREE.PerspectiveCamera()
@@ -62,6 +63,20 @@ describe('Services: userNavigationService', function () {
       detachEventListeners: jasmine.createSpy('detachEventListeners')
     };
     $provide.value('avatarControls', avatarControlsMock);
+
+    // look at robot mocks
+
+    var lookatRobotControlsMock = {
+      enabled: false,
+      domElement: {
+        addEventListener: jasmine.createSpy('addEventListener'),
+        removeEventListener: jasmine.createSpy('removeEventListener')
+      },
+      attachEventListeners: jasmine.createSpy('attachEventListeners'),
+      detachEventListeners: jasmine.createSpy('detachEventListeners')
+    };
+    $provide.value('lookatRobotControls', lookatRobotControlsMock);
+
 
     // free camera mocks
     var firstPersonControlsMock = {
@@ -120,7 +135,7 @@ describe('Services: userNavigationService', function () {
 
     // inject service for testing.
     inject(function (_userNavigationService_, _NAVIGATION_MODES_, _STATE_, _gz3d_, _camera_, _avatar_, _avatarControls_,
-                     _firstPersonControls_, _userProfile_, _hbpIdentityUserDirectory_,
+                     _firstPersonControls_,_lookatRobotControls_, _userProfile_, _hbpIdentityUserDirectory_,
                      _hbpIdentityUserDirectoryPromise_, _simulationInfo_, _roslib_, _stateService_) {
       userNavigationService = _userNavigationService_;
       NAVIGATION_MODES = _NAVIGATION_MODES_;
@@ -132,6 +147,7 @@ describe('Services: userNavigationService', function () {
       avatar = _avatar_;
       avatarControls = _avatarControls_;
       firstPersonControls = _firstPersonControls_;
+      lookatRobotControls = _lookatRobotControls_;
       userProfile = _userProfile_;
       hbpIdentityUserDirectoryPromise = _hbpIdentityUserDirectoryPromise_;
       simulationInfo = _simulationInfo_;
@@ -141,6 +157,7 @@ describe('Services: userNavigationService', function () {
 
     spyOn(THREE, 'FirstPersonControls').and.returnValue(firstPersonControls);
     spyOn(THREE, 'AvatarControls').and.returnValue(avatarControls);
+    spyOn(THREE, 'LookatRobotControls').and.returnValue(lookatRobotControls);
 
     spyOn(gz3d.scene.scene, 'add').and.callThrough();
 
@@ -154,6 +171,7 @@ describe('Services: userNavigationService', function () {
     spyOn(userNavigationService, 'removeAvatar').and.callThrough();
     spyOn(userNavigationService, 'createAvatar').and.callThrough();
     spyOn(userNavigationService, 'setModeFreeCamera').and.callThrough();
+    spyOn(userNavigationService, 'setLookatRobotCamera').and.callThrough();
     spyOn(userNavigationService, 'setUserData').and.callThrough();
     spyOn(userNavigationService, 'saveCurrentPose').and.callThrough();
   });
@@ -290,6 +308,7 @@ describe('Services: userNavigationService', function () {
   it(' - initAvatar()', function () {
     spyOn(userNavigationService, 'getUserAvatar').and.callThrough();
     userNavigationService.freeCameraControls = firstPersonControls;
+    userNavigationService.lookatRobotControls = lookatRobotControls;
     userNavigationService.avatarControls = avatarControls;
     userNavigationService.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
 
@@ -388,6 +407,7 @@ describe('Services: userNavigationService', function () {
     // test for switching modes
     userNavigationService.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
     userNavigationService.freeCameraControls = firstPersonControls;
+    userNavigationService.lookatRobotControls = lookatRobotControls;
     userNavigationService.avatarControls = avatarControls;
     userNavigationService.userCamera = camera;
 
@@ -417,6 +437,7 @@ describe('Services: userNavigationService', function () {
     // test for switching modes
     userNavigationService.freeCameraControls = firstPersonControls;
     userNavigationService.userCamera = camera;
+    userNavigationService.lookatRobotControls = lookatRobotControls;
     userNavigationService.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
     var positionMock = new THREE.Vector3(1, 2, 3);
     userNavigationService.currentPosition = positionMock;
@@ -439,5 +460,17 @@ describe('Services: userNavigationService', function () {
     expect(gz3d.scene.controls).toBe(firstPersonControls);
   });
 
+ it(' - setLookatRobotCamera()', function () {
+    // test for already in LOOKAT_ROBOT mode
+    userNavigationService.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
+    userNavigationService.lookatRobotControls = lookatRobotControls;
+    userNavigationService.freeCameraControls = firstPersonControls;
+
+    userNavigationService.setLookatRobotCamera();
+
+    expect(userNavigationService.navigationMode).toBe(NAVIGATION_MODES.LOOKAT_ROBOT);
+
+    expect(gz3d.scene.controls).toBe(lookatRobotControls);
+  });
 
 });

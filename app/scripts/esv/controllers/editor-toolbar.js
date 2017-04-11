@@ -426,6 +426,11 @@
               userNavigationService.setModeHumanBody();
             }
             break;
+
+         case NAVIGATION_MODES.LOOKAT_ROBOT:
+              document.removeEventListener('keydown', $scope.displayHumanNavInfo);
+              userNavigationService.setLookatRobotCamera();
+              break;
         }
       };
 

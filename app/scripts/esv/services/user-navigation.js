@@ -24,7 +24,8 @@
       .constant('NAVIGATION_MODES', {
         FREE_CAMERA: 'FreeCamera',
         GHOST: 'Ghost',
-        HUMAN_BODY: 'HumanBody'
+        HUMAN_BODY: 'HumanBody',
+        LOOKAT_ROBOT: 'LookatRobot'
       })
       .factory('userNavigationService', [
         'NAVIGATION_MODES', 'STATE',
@@ -80,6 +81,7 @@
                     // set up controls
                     var domElementForKeyBindings = document.getElementsByTagName('body')[0];
                     that.freeCameraControls = new THREE.FirstPersonControls(that.userCamera, gz3d.scene.container, domElementForKeyBindings);
+                    that.lookatRobotControls = new THREE.LookatRobotControls(that.userCamera,gz3d.scene.getByName('robot'),gz3d.scene.container, domElementForKeyBindings);
                     that.avatarControls = new THREE.AvatarControls(that, gz3d, gz3d.scene.container, domElementForKeyBindings);
                     that.avatarControls.createAvatarTopics(that.avatarObjectName);
 
@@ -178,6 +180,7 @@
 
               // avatar controls
               this.freeCameraControls.enabled = false;
+              this.lookatRobotControls.enabled = false;
               this.avatarControls.init(this.avatarObject, this.userCamera);
 
               switch (this.navigationMode) {
@@ -244,8 +247,10 @@
               this.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
 
               this.freeCameraControls.enabled = false;
+              this.lookatRobotControls.enabled = false;
               this.controls = gz3d.scene.controls = undefined;
               this.freeCameraControls.detachEventListeners();
+              this.lookatRobotControls.detachEventListeners();
 
               this.removeAvatar();
               var avatarCollision = true;
@@ -277,11 +282,39 @@
               }
 
               window.firstPersonControls = this.freeCameraControls;
-
               this.freeCameraControls.enabled = true;
+
+              this.lookatRobotControls.detachEventListeners();
+              this.lookatRobotControls.enabled = false;
+
               this.controls = gz3d.scene.controls = this.freeCameraControls;
               this.freeCameraControls.attachEventListeners();
+            },
+
+            setLookatRobotCamera: function() {
+              if (this.navigationMode === NAVIGATION_MODES.LOOKAT_ROBOT) {
+                return;
+              }
+
+              this.navigationMode = NAVIGATION_MODES.LOOKAT_ROBOT;
+
+              this.saveCurrentPose();
+
+              // detach camera
+              gz3d.scene.scene.add(this.userCamera);
+
+              this.removeAvatar();
+
+              window.lookatRobotControls = this.lookatRobotControls;
+              this.lookatRobotControls.attachEventListeners();
+              this.lookatRobotControls.enabled = true;
+
+              this.freeCameraControls.detachEventListeners();
+              this.freeCameraControls.enabled = false;
+
+              this.controls = gz3d.scene.controls = this.lookatRobotControls;
             }
+
           };
         }
       ]);

@@ -13,6 +13,7 @@
     this.setModeFreeCamera = jasmine.createSpy('setModeFreeCamera');
     this.setModeGhost = jasmine.createSpy('setModeGhost');
     this.setModeHumanBody = jasmine.createSpy('setModeHumanBody');
+    this.setLookatRobotCamera = jasmine.createSpy('setLookatRobotCamera');
     this.update = jasmine.createSpy('update')
   });
 }());

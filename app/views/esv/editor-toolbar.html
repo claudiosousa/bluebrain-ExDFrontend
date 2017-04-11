@@ -216,12 +216,19 @@
                  ng-click="navigationModeMenuClickHandler()"
                  ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
                 <i class="fa fa-compass fa-2x vertcenter"></i>
-                <div show-on-top ng-show="showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -128px; background-color: lightgrey;">
+                <div show-on-top ng-show="showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -169px; background-color: lightgrey;">
                     <div  class="hbp-toolbar-action hide-overflow"
                           ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY), 'disabled-image': stateService.currentState === STATE.PAUSED}"
                           ng-click="setNavigationMode(NAVIGATION_MODES.HUMAN_BODY)">
                         <i class="fa fa-male fa-2x vertcenter"></i>
                     </div>
+
+                    <div class="hbp-toolbar-action hide-overflow"
+                        ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.LOOKAT_ROBOT)}"
+                        ng-click="setNavigationMode(NAVIGATION_MODES.LOOKAT_ROBOT);">
+                        <img src="img/esv/lookatrobot_icon.png" width=32 height=32>
+                    </div>
+
                     <div class="hbp-toolbar-action hide-overflow"
                          ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.FREE_CAMERA)}"
                          ng-click="setNavigationMode(NAVIGATION_MODES.FREE_CAMERA)">
