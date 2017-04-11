@@ -190,7 +190,6 @@ describe('Directive: spiketrain', function () {
     spyOn($scope, 'startSpikeDisplay').and.callThrough();
     spyOn($scope, 'drawSeparator').and.callThrough();
     setShow(true);
-    expect($scope.startSpikeDisplay).toHaveBeenCalledWith(true);
     expect($scope.drawSeparator).not.toHaveBeenCalled();
 
     // canvas size is 300x150 as default
@@ -206,7 +205,6 @@ describe('Directive: spiketrain', function () {
     $scope.xPosition = 10;
 
     setShow(true);
-    expect($scope.startSpikeDisplay).toHaveBeenCalledWith(false);
     expect($scope.drawSeparator).toHaveBeenCalled();
 
     // canvas size is 300x150 as default
