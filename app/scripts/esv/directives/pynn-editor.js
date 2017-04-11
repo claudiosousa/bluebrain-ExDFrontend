@@ -93,7 +93,10 @@
               }
               if (!isSlice) {
                 var str = populationObject.toString();
-                populationObject.list = str;
+                populationObject = {
+                  list: str,
+                  name: name
+                };
               }
               populationObject.regex = generateRegexPattern(populationNames, index);
               return populationObject;
