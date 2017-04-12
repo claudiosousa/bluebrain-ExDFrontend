@@ -14,9 +14,12 @@
           scope.neuronYSize = 1;
           scope.currentCanvasIndex = 1;
           scope.xPosition = 0;
+          scope.firstTimeRun = true;
+
           var SECONDS_TO_MS_FACTOR = 1000;
           var MARK_INTERVAL = 2000; // time lapse (ms) between two consecutive time marks
           var MIN_NEURO_HEIGHT = 1; // minimal heuron height (>=1)
+          var messages = scope.messages = [];
 
           scope.clearPlot = function () {
             scope.ctx[0].clearRect(0, 0, scope.canvas[0].width, scope.canvas[0].height);
@@ -27,6 +30,8 @@
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
               scope.clearPlot();
+              scope.messages.length = 0;
+              scope.firstTimeRun = true;
             }
           });
 
@@ -42,7 +47,6 @@
           var fontSize = Number(scope.ctx[0].font.split('px')[0]);
 
           // Keeps messages to redraw spikes when spike monitor is resized
-          var messages = scope.messages = [];
 
           // Called each time a spike message is received
           scope.onNewSpikesMessageReceived = function (message) {
@@ -127,15 +131,17 @@
           // Unfortunately, this is mandatory. The canvas size can't be set to 100% of its container,
           var previousSize = { height: 0, width: 0 };
           scope.onScreenSizeChanged = function () {
-            if (previousSize.height !== scope.spikeContainer.offsetHeight || previousSize.width !== scope.spikeContainer.offsetWidth) {
+            if (previousSize.height !== scope.spikeContainer.offsetHeight || previousSize.width !== scope.spikeContainer.offsetWidth)
+            {
               calculateCanvasHeight();
               previousSize.height = scope.spikeContainer.offsetHeight;
               previousSize.width = scope.spikeContainer.offsetWidth;
-            }
 
-            // Draw spikes on refreshed canvas
-            for (var i = 0; i < messages.length; i = i + 1) {
-              plotSingleMessageSpikes(messages[i]);
+              // Draw spikes on refreshed canvas
+              for (var i = 0; i < messages.length; i = i + 1)
+              {
+                plotSingleMessageSpikes(messages[i]);
+              }
             }
           };
 
@@ -210,11 +216,14 @@
           };
 
           // Subscribe to the ROS topic
-          scope.startSpikeDisplay = function (firstTimeRun) {
+          scope.startSpikeDisplay = function ()
+          {
             spikeListenerService.startListening(scope);
-            if (firstTimeRun === false) {
+            if (scope.firstTimeRun === false)
+            {
               scope.drawSeparator();
             }
+            scope.firstTimeRun = false;
           };
 
           // Unsubscribe to the ROS topic
@@ -252,7 +261,6 @@
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs) {
-            var firstTimeRun = true;
             var display = element[0].querySelector('#spiketrain-display');
             var container = element[0].querySelector('#spiketrain-container');
             var canvas1 = element[0].querySelector('#spiketrain-canvas-1');
@@ -278,8 +286,7 @@
             scope.$watch("showSpikeTrain", function (visible) {
               if (visible) {
                 element.show();
-                scope.startSpikeDisplay(firstTimeRun);
-                firstTimeRun = false;
+                scope.startSpikeDisplay();
                 // asynchronous recomputation of the size
                 $timeout(scope.onScreenSizeChanged, 0);
               }
