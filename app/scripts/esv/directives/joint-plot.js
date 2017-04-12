@@ -1,11 +1,11 @@
 (function () {
   'use strict';
-  var pointFrequency = 5.0; // number of points per seconds
+  var pointFrequency = 2; // number of points per seconds
   var topicSubCb;
 
   /* global n3Charts */
 
-  n3Charts.Factory.Transition.defaultDuration = 100;
+  n3Charts.Factory.Transition.defaultDuration = 0;
 
   function configureJointPlot(scope, roslib) {
     scope.curves = {};
@@ -42,8 +42,8 @@
         scope.jointColors.push(color);
 
         scope.properties.forEach(function (prop) {
-          scope.curves[joint + '_' + prop] = [];
           var curveName = joint + '_' + prop;
+          scope.curves[curveName] = [];
           var curve = {
             key: 'y',
             joint: joint,
