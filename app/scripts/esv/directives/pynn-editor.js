@@ -158,9 +158,6 @@
           scope.agreeAction = function () {
             scope.apply(1);
           };
-          scope.doNotAgreeAction = function () {
-            scope.apply(2);
-          };
 
           /**
            * @param {integer} [change_population]
@@ -190,12 +187,12 @@
                     scope.clearError();
                     if (result.data.handle_population_change) {
                       hbpDialogFactory.confirm({
-                        title: 'Change TFs',
+                        title: 'Confirm changing neural network',
                         confirmLabel: 'Yes',
-                        cancelLabel: 'No',
-                        template: 'Would you like to have your transfer functions updated with the new population name?',
+                        cancelLabel: 'Cancel',
+                        template: 'Applying your changes may update the population name your transfer functions. Do you wish to continue?',
                         closable: false
-                      }).then(scope.agreeAction, scope.doNotAgreeAction);
+                      }).then(scope.agreeAction, function () {});
                     }
                     else {
                       scope.markError(
