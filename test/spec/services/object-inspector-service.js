@@ -3,6 +3,8 @@
 
 'use strict';
 
+//TODO: layout of tests could be reworked, lots of duplicate re-initialization
+
 GZ3D.TRANSFORM_TYPE_NAME_PREFIX = { //same as GZ3D.TRANSFORM_TYPE_NAME_PREFIX
   TRANSLATE:  'T',
   SCALE:      'S',
@@ -92,6 +94,7 @@ describe('Services: objectInspectorService', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_,
@@ -642,6 +645,7 @@ describe('Services: objectInspectorService2', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
@@ -695,9 +699,15 @@ describe('Services: objectInspectorService3', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
-    inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
+    inject(function (_$timeout_,
+                     _objectInspectorService_,
+                     _gz3d_, _stateService_,
+                     _EDIT_MODE_,
+                     _STATE_,
+                     _colorableObjectService_) {
       $timeout = _$timeout_;
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
@@ -750,6 +760,7 @@ describe('Services: objectInspectorService4', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
@@ -799,6 +810,7 @@ describe('Services: objectInspectorService5', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
@@ -854,6 +866,7 @@ describe('Services: objectInspectorService6', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
@@ -909,6 +922,7 @@ describe('Services: objectInspectorService7', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {
@@ -962,6 +976,7 @@ describe('Services: objectInspectorService8', function () {
     module('objectInspectorModule');
     module('experimentServices');
     module('exdFrontendApp.Constants');
+    module('simulationInfoMock');
 
     // inject service for testing.
     inject(function (_$timeout_, _objectInspectorService_, _gz3d_, _stateService_, _EDIT_MODE_, _STATE_, _colorableObjectService_) {

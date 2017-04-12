@@ -57,6 +57,7 @@
       'vButton',
       'nrpUser',
       'hbpCollaboratoryCore',
+      'editorToolbarModule',
       'editorsPanelModule'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
