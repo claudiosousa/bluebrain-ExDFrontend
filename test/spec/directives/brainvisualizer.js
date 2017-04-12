@@ -23,6 +23,22 @@ describe('Directive: brainvisualizer', function ()
      callback(testData);
    };
 
+   backendInterfaceServiceMock.getPopulations = function (callback)
+   {
+     var testData = {};
+
+     /* jshint ignore:start */
+
+     testData.populations = new Array();
+     testData.populations.push({ "indices": [0, 1], "neuron_model": "IF_cond_alpha", "name": "circuit", "parameters": [{ "parameterName": "tau_refrac", "value": 10 }, { "parameterName": "tau_m", "value": 10 }, { "parameterName": "e_rev_E", "value": 0 }, { "parameterName": "i_offset", "value": 0 }, { "parameterName": "cm", "value": 0.02500000037252903 }, { "parameterName": "e_rev_I", "value": -75 }, { "parameterName": "v_thresh", "value": -60 }, { "parameterName": "tau_syn_E", "value": 2.5 }, { "parameterName": "v_rest", "value": -60.5 }, { "parameterName": "tau_syn_I", "value": 2.5 }, { "parameterName": "v_reset", "value": -60.5 }], "gids": [3, 4] });
+
+     testData.populations.push({ "indices": [0, 1], "neuron_model": "IF_cond_alpha", "name": "record", "parameters": [{ "parameterName": "tau_refrac", "value": 10 }, { "parameterName": "tau_m", "value": 10 }, { "parameterName": "e_rev_E", "value": 0 }, { "parameterName": "i_offset", "value": 0 }, { "parameterName": "cm", "value": 0.02500000037252903 }, { "parameterName": "e_rev_I", "value": -75 }, { "parameterName": "v_thresh", "value": -60 }, { "parameterName": "tau_syn_E", "value": 2.5 }, { "parameterName": "v_rest", "value": -60.5 }, { "parameterName": "tau_syn_I", "value": 2.5 }, { "parameterName": "v_reset", "value": -60.5 }], "gids": [3, 4] });
+
+     /* jshint ignore:end */
+     callback(testData);
+   };
+
+
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
 
     simulationConfigServiceMock.simulateCatch = false;
