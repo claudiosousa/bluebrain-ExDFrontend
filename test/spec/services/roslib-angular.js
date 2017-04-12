@@ -28,7 +28,7 @@ describe('Services: roslib-angular', function () {
   it('should create a connection if there is none for this URL currently', function() {
     roslib.getOrCreateConnectionTo(testURL);
     expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
-    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=mockaccesstoken'});
+    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123?token=mockaccesstoken'});
   });
 
   it('should create a dummy token if localStorage token is malformed or absent', function() {
@@ -37,12 +37,12 @@ describe('Services: roslib-angular', function () {
     window.localStorage.getItem = jasmine.createSpy('getItem').and.returnValue(undefined);
     roslib.getOrCreateConnectionTo(testURL);
     expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
-    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=no-token'});
+    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123?token=no-token'});
     window.localStorage.getItem.calls.reset();
     window.localStorage.getItem = jasmine.createSpy('getItem').and.returnValue([{}]);
     roslib.getOrCreateConnectionTo(testURL);
     expect(localStorage.getItem).toHaveBeenCalledWith(tokenKey);
-    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123/?token=malformed-token'});
+    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123?token=malformed-token'});
   });
 
   it('should not use token if in full local mode (user forced)', function() {
