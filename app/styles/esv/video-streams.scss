@@ -35,5 +35,9 @@
             width:100%;
             position: absolute;
         }
+
+        > img {
+            image-rendering: pixelated;
+        }
     }
 }
