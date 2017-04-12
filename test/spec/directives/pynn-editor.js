@@ -139,11 +139,11 @@ describe('Directive: pynnEditor', function () {
       'data': '// A PyNN script',
       'data_type': 'text',
       'filename': '/path/filename.py',
-      'additional_populations': [
-        { list: '1,2,3', name: 'list1', id: 1 },
-        { list: '9', name: 'index1', id: 2 },
-        { name: 'slice0', from: 0, to: 10, step: 1, id: 3 }
-      ]
+      'additional_populations': {
+        list1: [1, 2, 3],
+        index1: [9],
+        slice0: { from: 0, to: 10, step: 1 }
+      }
     };
     var data2 = {
       'brain_type': 'h5',
@@ -155,12 +155,31 @@ describe('Directive: pynnEditor', function () {
     var expected_script = data.data;
     var expected_populations;
 
+    expected_populations = [
+      {
+        list: '1,2,3',
+        name: 'list1',
+        regex: '^\\b(?!\\bindex1\\b|\\bslice0\\b)([A-z_]+[\\w_]*)$'
+      },
+      {
+        list: '9',
+        name: 'index1',
+        regex: '^\\b(?!\\blist1\\b|\\bslice0\\b)([A-z_]+[\\w_]*)$'
+      },
+      {
+        from: 0,
+        to: 10,
+        step: 1,
+        name: 'slice0',
+        regex: '^\\b(?!\\blist1\\b|\\bindex1\\b)([A-z_]+[\\w_]*)$'
+      }
+    ];
+
     beforeEach(function () {
       // Mock functions that access elements that are not available in test environment
       codeEditorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
       backendInterfaceService.getBrain.calls.reset();
       backendInterfaceService.setBrain.calls.reset();
-      expected_populations = data.additional_populations;
     });
 
     it('should handle the retrieved populations and pynn script properly', function () {
@@ -169,6 +188,8 @@ describe('Directive: pynnEditor', function () {
       $scope.control.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toEqual(expected_script);
+      console.log(JSON.stringify(isolateScope.populations, null, '\t'));
+      console.log(JSON.stringify(expected_populations, null, '\t'));
       expect(isolateScope.populations).toEqual(expected_populations);
     });
 
