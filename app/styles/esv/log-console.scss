@@ -11,5 +11,19 @@
         b{
             display: inline-block;
         }
+
+        .log-line > span{
+            display: inline-block;
+        }
+
+        .log-line > span:first-child{
+            height: 100%;
+            vertical-align: top;
+            margin-right: 10px;
+        }
+
+         .log-line > span:last-child{
+           white-space: pre-line;
+        }
     }
 }

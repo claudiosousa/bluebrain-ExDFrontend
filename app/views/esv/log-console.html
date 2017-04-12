@@ -9,7 +9,11 @@
     <button type="button" class="widget-popup-close" ng-click="toggleVisibility()">×</button>
     <div class="widget-popup-content log-list">
         <span ng-if="logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
-        <div ng-repeat="log in logs">[{{log.time}}] {{log.msg}}</div>
+        <div class="log-line" ng-repeat="log in logs">
+            <span>[{{log.time}}]</span>
+            <span>{{log.msg}}</span>
+        </div>
+
         <b ng-if="stateService.currentState == STATE.HALTED">The simulation detected an error situation and cannot be recovered. Any further interaction with the simulation is disabled. Please save any data and shut down the simulation.</b>
     </div>
 </div>
