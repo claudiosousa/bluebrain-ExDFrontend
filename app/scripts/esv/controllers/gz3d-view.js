@@ -71,6 +71,36 @@
         $scope.editorsPanelService = editorsPanelService;
         $scope.environmentRenderingService = environmentRenderingService;
 
+        var setExperimentDetails = function(){
+          $scope.ExperimentDescription = simulationInfo.experimentDetails.description;
+          $scope.ExperimentName = simulationInfo.experimentDetails.name;
+        };
+
+        simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, function (data) {
+          userContextService.ownerID = data.owner;
+          $scope.experimentConfiguration = data.experimentConfiguration;
+          $scope.environmentConfiguration = data.environmentConfiguration;
+          $scope.creationDate = data.creationDate;
+          setExperimentDetails();
+
+          if (!bbpConfig.get('localmode.forceuser', false)) {
+            experimentsFactory.getOwnerDisplayName(data.owner).then(function (owner) {
+              $scope.owner = owner;
+            });
+          } else {
+            $scope.owner = bbpConfig.get('localmode.ownerID');
+            userContextService.ownerID = $scope.owner;
+          }
+        });
+
+        $scope.versionString = "";
+        nrpFrontendVersion.get(function (data) {
+          $scope.versionString += data.toString;
+        });
+        nrpBackendVersions(simulationInfo.serverBaseUrl).get(function (data) {
+          $scope.versionString += data.toString;
+        });
+
         // Query the state of the simulation
         stateService.getCurrentState().then(function () {
           if (stateService.currentState !== STATE.STOPPED) {
