@@ -33,7 +33,6 @@
             hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
               that.userID = profile.id;
             });
-            that.ownerID = simulationInfo.owner;
           } else {
             that.userID = that.ownerID = bbpConfig.get('localmode.ownerID');
           }

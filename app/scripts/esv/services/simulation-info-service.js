@@ -4,62 +4,12 @@
   'use strict';
 
   angular.module('simulationInfoService', [])
-    .factory('simulationInfo', [
-      'experimentProxyService',
-      'experimentList',
-      'environmentService',
-      'simulationControl',
-      'bbpConfig',
-      'hbpIdentityUserDirectory',
-      'nrpFrontendVersion',
-      'nrpBackendVersions',
-    function (experimentProxyService,
-              experimentList,
-              environmentService,
-              simulationControl,
-              bbpConfig,
-              hbpIdentityUserDirectory,
-              nrpFrontendVersion,
-              nrpBackendVersions) {
+    .factory('simulationInfo', ['experimentProxyService', 'experimentList', 'environmentService',
+    function (experimentProxyService, experimentList, environmentService) {
       var thisService = {
-        initialize: initialize,
-        getVersionStrings: getVersionStrings,
-        getSimulationDetails: getSimulationDetails
+        initialize: initialize
       };
       return thisService;
-
-      function getVersionStrings() {
-        thisService.versionString = "";
-        nrpFrontendVersion.get(function (data) {
-          thisService.versionString += data.toString;
-        });
-        if (angular.isDefined(thisService.serverBaseUrl)) {
-          nrpBackendVersions(thisService.serverBaseUrl).get(function (data) {
-            thisService.versionString += data.toString;
-          });
-        }
-      }
-
-      function getSimulationDetails() {
-        if (!angular.isDefined(thisService.serverBaseUrl) || !angular.isDefined(thisService.simulationID)) {
-          return;
-        }
-
-        simulationControl(thisService.serverBaseUrl).simulation({ sim_id: thisService.simulationID }, function (data) {
-          thisService.ownerID = data.owner;
-          thisService.experimentConfiguration = data.experimentConfiguration;
-          thisService.environmentConfiguration = data.environmentConfiguration;
-          thisService.creationDate = data.creationDate;
-
-          if (!bbpConfig.get('localmode.forceuser', false)) {
-            hbpIdentityUserDirectory.get([data.owner]).then(function (profile) {
-              thisService.owner = (profile[data.owner] && profile[data.owner].displayName) || 'Unkwown';
-            });
-          } else {
-            thisService.owner = bbpConfig.get('localmode.ownerID');
-          }
-        });
-      }
 
       // This function loads the server specific configuration and sets the simulation specific values
       function initialize(serverID, experimentID, simulationID, contextID) {
@@ -78,7 +28,6 @@
             thisService.serverConfig = serverConfig;
             thisService.serverBaseUrl = serverConfig.gzweb['nrp-services'];
             thisService.animatedModel = null;
-
             var setExperimentDetails = function(configuration) {
               // Test whether the robot model has an animated visual that needs to be instantied by gz3d's Collada loader
               if (configuration && configuration.visualModel) {
@@ -94,10 +43,6 @@
                 setExperimentDetails(configuration);
               }).$promise;
             }
-
-            thisService.getSimulationDetails();
-
-            thisService.getVersionStrings();
 
             return experimentProxyService.getExperiments().then(function(data){
               var configuration = data[thisService.experimentID] && data[thisService.experimentID].configuration;
