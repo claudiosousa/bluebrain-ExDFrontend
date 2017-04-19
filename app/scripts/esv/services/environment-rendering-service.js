@@ -31,6 +31,7 @@
           this.tLastFrame = 0;
           this.maxDropCycles = 10;
           this.skippedFramesForDropCycles = 5;
+          this.sceneLoading = true;
 
           this.init = function() {
             this.initAnimationFrameFunctions();
@@ -223,7 +224,7 @@
             that.sceneInitialized.resolve();
             gz3d.setLightHelperVisibility();
             userNavigationService.init();
-            this.sceneLoading = false;
+            that.sceneLoading = false;
           };
 
           // Init composer settings

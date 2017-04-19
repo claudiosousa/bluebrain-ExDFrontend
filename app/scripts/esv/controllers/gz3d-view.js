@@ -91,7 +91,6 @@
         $scope.STATE = STATE;
         $scope.UI = UI;
         $scope.RESET_TYPE = RESET_TYPE;
-        $scope.sceneLoading = true;
 
         $scope.gz3d = gz3d;
         $scope.stateService = stateService;
@@ -151,7 +150,7 @@
 
             /* splashScreen == null means it has been already closed and should not be reopened */
             if ($scope.splashScreen !== null &&
-                !$scope.sceneLoading &&
+                !environmentRenderingService.sceneLoading &&
                (angular.isDefined(message.state) ||
                (stateStopFailed || (angular.isDefined(message.progress.subtask) && message.progress.subtask.length>0 ))))
             {
@@ -194,10 +193,9 @@
           }
         };
 
-        var onStateChanged = function (newState) {
-          if (newState === STATE.STOPPED) {
-            $scope.onSimulationDone();
-            exitSimulation();
+        var onStateChanged = function(newState) {
+          if (newState === STATE.STOPPED && gz3d.iface && gz3d.iface.webSocket) {
+            gz3d.iface.webSocket.disableRebirth();
           }
         };
 
@@ -339,9 +337,9 @@
               gz3d.scene.resetView();
             }
           } else { // Backend-bound reset
+            $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
             if (environmentService.isPrivateExperiment()) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
-              $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
 
               var resetWhat = '', downloadWhat = '';
 
@@ -689,6 +687,7 @@
 
         function exitSimulation() {
           $scope.cleanUp();
+          $scope.onSimulationDone();
 
           $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
           if (environmentService.isPrivateExperiment())
