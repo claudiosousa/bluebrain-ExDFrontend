@@ -63,6 +63,12 @@
 
             scope.updateEnvQualitySettings = function ()
             {
+              var change = false;
+              // Consider a change in ambient occlusion as a color setting, so call applyComposerSettings with first argument "updateColorCurve"" as true
+              if ((gz3d.scene.composerSettings.ssaoClamp !== scope.ambientOcclusionClamp) || (gz3d.scene.composerSettings.ssaoLumInfluence !== scope.ambientOcclusionLum))
+              {
+                change = true;
+              }
               gz3d.scene.composerSettings.shadows = scope.renderShadows;
               gz3d.scene.composerSettings.ssao = scope.renderAmbientOcclusion;
               gz3d.scene.composerSettings.ssaoClamp = scope.ambientOcclusionClamp;
@@ -70,7 +76,14 @@
               gz3d.scene.composerSettings.antiAliasing = scope.antiAliasingEnabled;
               gz3d.scene.composerSettings.pbrMaterial = scope.renderPBR;
 
-              gz3d.scene.applyComposerSettings();
+              if (change!==true)
+              {
+                gz3d.scene.applyComposerSettings();
+              }
+              else
+              {
+                gz3d.scene.applyComposerSettings(undefined,undefined,true);
+              }
             };
           }
         };
