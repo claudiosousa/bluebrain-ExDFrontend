@@ -18,7 +18,7 @@ describe('Services: server-info-service', function () {
 
   var httpBackend, simulations, returnSimulations, experimentTemplates;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, _hbpIdentityUserDirectory_, _bbpStubFactory_,
+  beforeEach(inject(function (_$httpBackend_, $rootScope, $timeout,_hbpIdentityUserDirectory_, _bbpStubFactory_,
       _simulationControl_, _simulationState_, _simulationGenerator_,
       _objectControl_, _STATE_) {
     httpBackend = _$httpBackend_;
@@ -125,7 +125,7 @@ describe('Services: server-info-service', function () {
 });
 
 describe('experimentSimulationService', function () {
-  var $httpBackend, $rootScope, experimentSimulationService, bbpConfig, statusListenerSubscribe,
+  var $httpBackend, $rootScope,$timeout ,experimentSimulationService, bbpConfig, statusListenerSubscribe,
     removeAllListenersFn;
 
   beforeEach(module('simulationControlServices'));
@@ -155,10 +155,11 @@ describe('experimentSimulationService', function () {
 
     $provide.value('nrpAnalytics', { eventTrack: angular.noop, tickDurationEvent: angular.noop });
   }));
-  beforeEach(inject(function (_$httpBackend_, _experimentSimulationService_, _$rootScope_, _bbpConfig_) {
+  beforeEach(inject(function (_$httpBackend_, _experimentSimulationService_, _$rootScope_,_$timeout_, _bbpConfig_) {
     experimentSimulationService = _experimentSimulationService_;
     $httpBackend = _$httpBackend_;
     $rootScope = _$rootScope_;
+    $timeout = _$timeout_;
     bbpConfig = _bbpConfig_;
   }));
 
@@ -180,6 +181,7 @@ describe('experimentSimulationService', function () {
       rosbridge: { topics: {} }
     });
     $httpBackend.whenPOST('http://localhost:8080/simulation').respond(200, {});
+    $httpBackend.whenGET('http://localhost:8080/simulation').respond(200, [{'simulationID': 1, 'state': 'paused'}]);
     $httpBackend.whenPUT('http://localhost:8080/simulation/state').respond(200, {});
 
     var progressNotification = jasmine.createSpy(progressNotification);
@@ -189,7 +191,9 @@ describe('experimentSimulationService', function () {
     statusListenerSubscribe({ data: JSON.stringify({ progress: { task: 'true', subtask: 'subtask' } }) });
     statusListenerSubscribe({ data: JSON.stringify({ progress: { done: true } }) });
 
+    $timeout.flush();
     $httpBackend.flush();
+    $rootScope.$digest();
     expect(progressNotification.calls.mostRecent().args).toEqual([{ main: 'Simulation initialized.' }]);
 
     expect(removeAllListenersFn).toHaveBeenCalled();

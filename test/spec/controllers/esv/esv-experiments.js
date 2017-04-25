@@ -53,7 +53,8 @@
       rosbridge: { topics: {} }
     },
     startExperiment: {
-      'simulationID': 1
+      'simulationID': 1,
+      'state': 'paused'
     },
     userQuery: {
       _embedded: {
@@ -65,7 +66,7 @@
   };
 
   describe('Controller: esvExperimentsCtrl', function () {
-    var $controller, $httpBackend, $rootScope, $templateCache, $compile, $stateParams, $interval, environmentService,
+    var $controller, $httpBackend, $rootScope,$timeout, $templateCache, $compile, $stateParams, $interval, environmentService,
       $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory, nrpBackendVersions, nrpFrontendVersion,collabConfigService;
 
     var serverErrorMock = {
@@ -99,13 +100,14 @@
     }));
 
     beforeEach(inject(function (
-      _$controller_, _$rootScope_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
+      _$controller_, _$rootScope_, _$timeout_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
       _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _hbpDialogFactory_,
        _nrpBackendVersions_, _nrpFrontendVersion_, _collabConfigService_){
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
       $rootScope = _$rootScope_;
+      $timeout = _$timeout_;
       $compile = _$compile_;
       $stateParams = _$stateParams_;
       $interval = _$interval_;
@@ -300,24 +302,26 @@
       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
 
+      spyOn(Math, 'random').and.returnValue(0);
+      spyOn(Date, 'now').and.returnValue(0);
+
       //get server config
       $httpBackend.whenGET(proxyUrl + '/server/' + hostName).respond(200, defaultPageOptions.server);
       //start experiment
       var startUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation';
       $httpBackend.whenPOST(startUrl).respond(200, defaultPageOptions.startExperiment);
+      $httpBackend.whenGET(startUrl).respond(200, [{ 'simulationID': 1, 'state': 'paused', 'creationUniqueID': '0' }]);
+
       //mock roslib
       spyOn(roslib, 'createStringTopic').and.returnValue({ subscribe: angular.noop });
-      //start experiment
-      $httpBackend.whenPOST(startUrl).respond(200, defaultPageOptions.startExperiment);
-      //update experiement state
-      $httpBackend.whenPUT(startUrl + '/' + defaultPageOptions.startExperiment.simulationID + '/state')
-        .respond(200, {});
 
       spyOn($location, 'path');
 
       page.find('[analytics-event="Launch"]').click();
-
       $httpBackend.flush();
+      $timeout.flush();
+      $httpBackend.flush();
+      $rootScope.$digest();
 
       //simulation url
       var experimentID = Object.keys(defaultPageOptions.experiments)[0];
@@ -328,7 +332,7 @@
     });
 
     it('should reset startingExperiment when failing to launch an experiment', function () {
-      var page = renderEsvWebPage();
+       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
 
       //get server config
@@ -336,11 +340,21 @@
       //start experiment
       var startUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation';
       $httpBackend.whenPOST(startUrl).respond(500, defaultPageOptions.startExperiment);
+      $httpBackend.whenGET(startUrl).respond(500, [defaultPageOptions.startExperiment]);
+
+      //mock roslib
+      spyOn(roslib, 'createStringTopic').and.returnValue({ subscribe: angular.noop });
+      spyOn($location, 'path');
+
 
       page.find('[analytics-event="Launch"]').click();
       expect($rootScope.pageState.startingExperiment).toBe($rootScope.experiments[0].id);
       $httpBackend.flush();
+      $timeout.flush();
+      $httpBackend.flush();
+      $rootScope.$digest();
       expect($rootScope.pageState.startingExperiment).toBe(null);
+
     });
 
     it('should trigger the right requests when stopping a simulation', function () {
