@@ -3592,7 +3592,7 @@ GZ3D.GZIface.prototype.connect = function() {
   var url = GZ3D.webSocketUrl;
 
   if (GZ3D.webSocketToken !== undefined) {
-    url = url + '/?token=' + GZ3D.webSocketToken;
+    url = url + '?token=' + GZ3D.webSocketToken;
   }
 
   this.webSocket = new ROSLIB.PhoenixRos({

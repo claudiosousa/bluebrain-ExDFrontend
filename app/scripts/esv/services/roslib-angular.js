@@ -56,7 +56,7 @@
           // this token will be rejected by the server and the client will get a proper auth error
           token[0] = { access_token : 'no-token' };
         }
-        url = url + '/?token=' + token[0].access_token;
+        url = url + '?token=' + token[0].access_token;
       }
 
       return new ROSLIB.PhoenixRos({ url: url });
