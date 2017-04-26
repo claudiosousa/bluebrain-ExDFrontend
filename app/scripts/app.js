@@ -82,7 +82,8 @@
       'simulationConfigModule',
       'collabExperimentLockModule',
       'roslibModule',
-      'helpTooltipModule'])
+      'helpTooltipModule',
+      'dynamicViewModule'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
