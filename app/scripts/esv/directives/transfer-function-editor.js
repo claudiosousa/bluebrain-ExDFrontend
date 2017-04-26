@@ -39,7 +39,7 @@
   .constant('DEFAULT_TF_CODE', '@nrp.Robot2Neuron()\ndef {0}(t):\n\
     #log the first timestep (20ms), each couple of seconds\n\
     if (t%2<0.02):\n\
-        clientLogger.info(\'Hello world at time \' + str(t))')
+        clientLogger.info(\'Time: \', t)')
   .directive('transferFunctionEditor', [
       '$log',
       'backendInterfaceService',
