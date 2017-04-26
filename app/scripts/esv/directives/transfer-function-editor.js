@@ -158,11 +158,11 @@
                 scope.cleanCompileError(flawedTransferFunction);
               }
               flawedTransferFunction.error[msg.errorType] = msg;
-              if (msg.lineNumber >= 0) { // Python Syntax Error
+              if (msg.lineNumber >= 0) { // There is a line information for the error
                 // Error line highlighting
                 var editor = codeEditorsServices.getEditor('transfer-function-' + flawedTransferFunction.id);
                 var codeMirrorLineNumber = msg.lineNumber - 1;// 0-based line numbering
-                flawedTransferFunction.error[scope.ERROR.COMPILE].lineHandle = codeMirrorLineNumber;
+                flawedTransferFunction.error[msg.errorType].lineHandle = codeMirrorLineNumber;
                 editor.addLineClass(codeMirrorLineNumber, 'background', 'alert-danger');
               }
             }
@@ -246,6 +246,7 @@
             var editor = codeEditorsServices.getEditor('transfer-function-' + transferFunction.id);
             editor.removeLineClass(lineHandle, 'background', 'alert-danger');
           }
+          delete transferFunction.error[scope.ERROR.RUNTIME];
           delete transferFunction.error[scope.ERROR.COMPILE];
           delete transferFunction.error[scope.ERROR.NO_OR_MULTIPLE_NAMES];
         };
