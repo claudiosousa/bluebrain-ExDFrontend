@@ -19,8 +19,24 @@
 (function() {
     'use strict';
 
-    angular.module('exdFrontendApp').directive('logConsole', ['$log', '$filter', 'roslib', '$timeout', 'RESET_TYPE', 'stateService', 'STATE',
-        function($log, $filter, roslib, $timeout, RESET_TYPE, stateService, STATE) {
+    angular.module('exdFrontendApp')
+      .directive('logConsole', [
+        '$log',
+        '$filter',
+        '$timeout',
+        'RESET_TYPE',
+        'STATE',
+        'roslib',
+        'stateService',
+        'simulationInfo',
+        function($log,
+                 $filter,
+                 $timeout,
+                 RESET_TYPE,
+                 STATE,
+                 roslib,
+                 stateService,
+                 simulationInfo) {
             //auto scroll when the distance from bottom of the scrollable area <= than AUTO_SCROLL_MAX_DISTANCE
             var AUTO_SCROLL_MAX_DISTANCE = 10;
             var MAX_VISIBLE_LOGS = 100; //number of last received logs kept visible
@@ -30,13 +46,12 @@
                 restrict: 'E',
                 replace: true,
                 scope: {
-                    server: '@',
                     topic: '@',
                     toggleVisibility: '&',
                     logReceived: '&'
                 },
                 link: function(scope, element) {
-                    ['server', 'topic']
+                    ['topic']
                     .forEach(function(mandatoryProp) {
                         if (angular.isUndefined(scope[mandatoryProp])) {
                             $log.error('The ' + mandatoryProp + ' property was not specified!');
@@ -66,7 +81,7 @@
                         });
                     }
 
-                    var rosConnection = roslib.getOrCreateConnectionTo(scope.server);
+                    var rosConnection = roslib.getOrCreateConnectionTo(simulationInfo.serverConfig.rosbridge.websocket);
                     var topicSubscriber = roslib.createStringTopic(rosConnection, scope.topic);
                     var topicSubscription = topicSubscriber.subscribe(newMessageReceived, true);
 

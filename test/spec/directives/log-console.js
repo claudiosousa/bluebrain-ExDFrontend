@@ -4,6 +4,7 @@ describe('Directive: logConsole', function() {
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates')); // import html template
+    beforeEach(module('simulationInfoMock'));
 
     var $rootScope, $timeout, element, susbscribeCallback, childScope;
 
