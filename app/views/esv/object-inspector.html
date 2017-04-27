@@ -68,18 +68,21 @@
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-x" type="number" name="translate-x" class="vec3-num-input"
                        ng-model="objectInspectorService.translation.x"
+                       ng-keydown="suppressKeyPress($event)"
                        ng-change="objectInspectorService.onTranslationChange('x')"
                        style="{{objectInspectorService.selectedStyle['TX']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-y" type="number" name="translate-y" class="vec3-num-input"
                        ng-model="objectInspectorService.translation.y"
+                       ng-keydown="suppressKeyPress($event)"
                        ng-change="objectInspectorService.onTranslationChange('y')"
                        style="{{objectInspectorService.selectedStyle['TY']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-z" type="number" name="translate-z" class="vec3-num-input"
                        ng-model="objectInspectorService.translation.z"
+                       ng-keydown="suppressKeyPress($event)"
                        ng-change="objectInspectorService.onTranslationChange('z')"
                        style="{{objectInspectorService.selectedStyle['TZ']}}">
               </li>
@@ -93,6 +96,7 @@
                 <input interactive id="oi-scale-x" type="number" name="scale-x" class="vec3-num-input"
                        ng-model="objectInspectorService.scaling.x"
                        ng-change="objectInspectorService.onScaleChange('x')"
+                       ng-keydown="suppressKeyPress($event)"
                        ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
                        style="{{objectInspectorService.selectedStyle['SX']}}">
               </li>
@@ -100,6 +104,7 @@
                 <input interactive id="oi-scale-y" type="number" name="scale-y" class="vec3-num-input"
                        ng-model="objectInspectorService.scaling.y"
                        ng-change="objectInspectorService.onScaleChange('y')"
+                       ng-keydown="suppressKeyPress($event)"
                        ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
                        style="{{objectInspectorService.selectedStyle['SY']}}">
               </li>
@@ -107,6 +112,7 @@
                 <input interactive id="oi-scale-z" type="number" name="scale-z" class="vec3-num-input"
                        ng-model="objectInspectorService.scaling.z"
                        ng-change="objectInspectorService.onScaleChange('z')"
+                       ng-keydown="suppressKeyPress($event)"
                        ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
                        style="{{objectInspectorService.selectedStyle['SZ']}}">
               </li>
@@ -118,22 +124,22 @@
             <ol class="vec3-num-input-list" ng-show="objectInspectorService.selectedObject.rotation">
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input"
-                       ng-model="objectInspectorService.rotationEuler.x"
-                       
+                       ng-model="objectInspectorService.rotationEuler.x"                      
                        ng-change="objectInspectorService.onRotationChange('x')"
+                       ng-keydown="suppressKeyPress($event)"
                        style="{{objectInspectorService.selectedStyle['RX']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-y" type="number" name="rotate-y" class="vec3-num-input"
                        ng-model="objectInspectorService.rotationEuler.y"
-                       
+                       ng-keydown="suppressKeyPress($event)"
                        ng-change="objectInspectorService.onRotationChange('y')"
                        style="{{objectInspectorService.selectedStyle['RY']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-z" type="number" name="rotate-z" class="vec3-num-input"
                        ng-model="objectInspectorService.rotationEuler.z"
-                       
+                       ng-keydown="suppressKeyPress($event)"
                        ng-change="objectInspectorService.onRotationChange('z')"
                        style="{{objectInspectorService.selectedStyle['RZ']}}">
               </li>
