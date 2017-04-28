@@ -21,7 +21,6 @@ describe('Controller: Gz3dViewCtrl', function () {
     STATE,
     gz3d,
     userNavigationService,
-    collabExperimentLockService,
     collabExperimentLockServiceMock ={},
     lockServiceMock,
     q,
@@ -33,7 +32,8 @@ describe('Controller: Gz3dViewCtrl', function () {
     simulationStateObject,
     simulationControlObject,
     nrpBackendVersionsObject,
-    colorableObjectService;
+    colorableObjectService,
+    experimentService;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -48,6 +48,7 @@ describe('Controller: Gz3dViewCtrl', function () {
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('assetLoadingSplashMock'));
   beforeEach(module('colorableObjectServiceMock'));
+  beforeEach(module('experimentServiceMock'));
 
   beforeEach(module(function ($provide) {
 
@@ -116,6 +117,7 @@ describe('Controller: Gz3dViewCtrl', function () {
                               _userNavigationService_,
                               _$q_,
                               _environmentService_,
+                              _experimentService_,
                               _userContextService_,
                               _colorableObjectService_
                               ) {
@@ -127,6 +129,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     window = _$window_;
     window.location.reload = function () { };
     simulationInfo = _simulationInfo_;
+    experimentService = _experimentService_;
     stateService = _stateService_;
     contextMenuState = _contextMenuState_;
     nrpBackendVersions = _nrpBackendVersions_;
@@ -211,10 +214,6 @@ describe('Controller: Gz3dViewCtrl', function () {
 
     });
 
-    it('should call and stateService.Initialize()', function(){
-      expect(stateService.Initialize.calls.count()).toBe(1);
-    });
-
     it('should have editRights when owner', function () {
       userContextService.isOwner = false;
       expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(false);
@@ -229,145 +228,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(userNavigationService.isUserAvatar).toHaveBeenCalled();
     });
 
-    it('should initialize experimentDetails', function() {
-      window.bbpConfig.localmode.forceuser = true;
-      controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope
-      });
-      scope.experimentConfiguration = 'test_config';
-      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
-      scope.$digest(); // force the $watch to be evaluated in experimentDetails
-      var configuration = simulationInfo.experimentDetails;
-      expect(scope.ExperimentDescription).toBe(configuration.description);
-      expect(scope.ExperimentName).toBe(configuration.name);
-
-      window.bbpConfig.localmode.forceuser = false;
-    });
-
-    it('should initialize experimentDetails when in collab mode', function() {
-      window.bbpConfig.localmode.forceuser = true;
-      controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope
-      });
-      environmentService.setPrivateExperiment(true);
-      simulationControlObject.simulation.calls.mostRecent().args[1](fakeSimulationData);
-      scope.$digest(); // force the $watch to be evaluated in experimentDetails
-      var configuration = simulationInfo.experimentDetails;
-      expect(scope.ExperimentDescription).toBe(configuration.description);
-      expect(scope.ExperimentName).toBe(configuration.name);
-      window.bbpConfig.localmode.forceuser = false;
-    });
-
-    it('should set a color on the selected screen', function() {
-      //Ignore this warning because of the sim_id
-      /*jshint camelcase: false */
-      scope.activeSimulation = simulations[3];
-
-      // prepare the test: create mockups
-      var entityToChange = { 'children' : [ { 'material' : {} } ] };
-      gz3d.scene.getByName = jasmine.createSpy('getByName').and.returnValue(entityToChange);
-      // actual test
-      // currently no element is selected, hence we want a console.error message
-      gz3d.scene.selectedEntity = undefined;
-      scope.setMaterialOnEntity('value_does_not_matter_here');
-      expect(log.error).toHaveBeenCalled();
-
-      gz3d.scene.selectedEntity = { 'name' : 'left_vr_screen' };
-      scope.setMaterialOnEntity('Gazebo/Red');
-
-      expect(colorableObjectService.setEntityMaterial).toHaveBeenCalledWith(
-      simulationInfo,
-      gz3d.scene.selectedEntity,
-      'Gazebo/Red'
-      );
-    });
-
-    it('should call context menu service if user is the simulation owner', function() {
-      var event = {button : 2};
-
-      //false case
-      userContextService.isOwner.and.returnValue(false);
-
-      scope.onContainerMouseDown(event); //call the function under test
-
-      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
-
-      //true case
-      userContextService.isOwner.and.returnValue(true);
-
-      scope.onContainerMouseDown(event);//call the function under test
-
-      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, event);
-    });
-
-    // These test correspond to touch event context menu handling. However, the handling of these touch event
-    // is misplaced in gz3d-controller.js and is commented there until moved to a more sensible location.
-    // Therefore these tests are commented as well and should be moved together with the functionality.
-    /*
-    it('should register touch events for the context menu', function() {
-      gz3d.scene.container.addEventListener.calls.reset();
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      expect(gz3d.scene.container.addEventListener.calls.argsFor(0)[0]).toBe('touchstart');
-      expect(gz3d.scene.container.addEventListener.calls.argsFor(1)[0]).toBe('touchmove');
-      expect(gz3d.scene.container.addEventListener.calls.argsFor(2)[0]).toBe('touchend');
-    });
-
-    it('should toggle the context menu on touch tap', function() {
-      gz3d.scene.container.addEventListener.calls.reset();
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
-      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
-
-      touchstart({touches: [{clientX: 10, clientY: 20}]});
-      touchend({});
-
-      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, {clientX: 10, clientY: 20});
-    });
-
-    it('should toggle the context menu on touch with a bit move', function() {
-      gz3d.scene.container.addEventListener.calls.reset();
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
-      var touchmove = gz3d.scene.container.addEventListener.calls.argsFor(1)[1];
-      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
-
-      touchstart({touches: [{clientX: 10, clientY: 20}]});
-      touchmove({touches: [{clientX: 15, clientY: 25}]});
-      touchend({});
-
-      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, {clientX: 15, clientY: 25});
-    });
-
-    it('should not toggle the context menu on touch with a large movement', function() {
-      gz3d.scene.container.addEventListener.calls.reset();
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
-      var touchmove = gz3d.scene.container.addEventListener.calls.argsFor(1)[1];
-      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
-
-      touchstart({touches: [{clientX: 10, clientY: 20}]});
-      touchmove({touches: [{clientX: 100, clientY: 200}]});
-      touchend({});
-
-      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
-    });
-
-    it('should not toggle the context menu on touches with clientX and clientY = 0', function() {
-      gz3d.scene.container.addEventListener.calls.reset();
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      var touchstart = gz3d.scene.container.addEventListener.calls.argsFor(0)[1];
-      var touchmove = gz3d.scene.container.addEventListener.calls.argsFor(1)[1];
-      var touchend = gz3d.scene.container.addEventListener.calls.argsFor(2)[1];
-
-      touchstart({touches: [{clientX: 0, clientY: 0}]});
-      touchmove({touches: [{clientX: 0, clientY: 0}]});
-      touchend({});
-
-      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
-    });
-    */
 
     it('should emit light intensity changes', function() {
       gz3d.scene.scene = {};
@@ -416,29 +276,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       //scope.incrementLightIntensities(-0.5);
     });
 
-    it('should call nrpBackendVersions.get and set scope.versions with retrieved back-end versions', function() {
-      expect(nrpBackendVersions.calls.count()).toBe(1);
-      expect(nrpBackendVersions.calls.mostRecent().args[0].indexOf(simulationInfo.serverID) > -1).toBe(true);
-      expect(nrpBackendVersionsObject.get.calls.mostRecent().args[0]).toEqual(jasmine.any(Function));
-      expect(nrpBackendVersionsObject.get.calls.count()).toBe(1);
-
-      var backendData = {toString: 'Backend:0.5.dev0'};
-      var frontendData = { toString: 'Frontend: 0.0.1' };
-      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
-      nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendData);
-      expect(scope.versionString).toEqual(frontendData.toString + backendData.toString);
-    });
-
-    it('should set the focus on the supplied html element', function() {
-      var element = {'focus': jasmine.createSpy('focus')};
-      var backup = window.document.getElementById;
-      window.document.getElementById = jasmine.createSpy('getElementById').and.returnValue(element);
-      scope.focus('dummyelement');
-      timeout.flush();
-      expect(element.focus).toHaveBeenCalled();
-      window.document.getElementById = backup;
-    });
-
     it('should do nothing on $destroy when all is undefined', function() {
       scope.assetLoadingSplashScreen = undefined;
       gz3d.iface.webSocket = undefined;
@@ -454,46 +291,6 @@ describe('Controller: Gz3dViewCtrl', function () {
       expect(scope.rosConnection).not.toBeDefined();
       expect(gz3d.iface.webSocket).not.toBeDefined();
     });
-  });
-
-  describe('(EditMode)', function() {
-    beforeEach(function () {
-      environmentService.setPrivateExperiment(true);
-      lockServiceMock.tryAddLock.calls.reset();
-      lockServiceMock.releaseLock.calls.reset();
-
-      Gz3dViewCtrl = controller('Gz3dViewCtrl', {
-        $rootScope: rootScope,
-        $scope: scope,
-        collabExperimentLockService: collabExperimentLockService
-      });
-    });
-
-    it('should set the multiple brains display property', function() {
-      expect(scope.isMultipleBrains()).toEqual(false);
-    });
-
-    it(' - onContainerMouseDown() should make the right calls', function() {
-      var eventMock = {};
-
-      scope.onContainerMouseDown(eventMock);
-      expect(contextMenuState.toggleContextMenu).not.toHaveBeenCalled();
-
-      userContextService.isOwner.and.returnValue(true);
-
-      eventMock.button = 0;  // left mouse
-      scope.onContainerMouseDown(eventMock);
-      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
-
-      eventMock.button = 1;  // left mouse
-      scope.onContainerMouseDown(eventMock);
-      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
-
-      eventMock.button = 2;  // left mouse
-      scope.onContainerMouseDown(eventMock);
-      expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(true, eventMock);
-    });
-
   });
 
 });

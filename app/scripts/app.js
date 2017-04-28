@@ -77,6 +77,7 @@
       'hbpCollaboratoryCore',
       'editorToolbarModule',
       'editorsPanelModule',
+      'experimentModule',
       'jointPlotModule'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
@@ -95,6 +96,7 @@
         name: 'experiment-view',
         url: '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
         templateUrl: 'views/esv/experiment-view.html',
+        controller: 'experimentViewController',
         onEnter: ['$document', function ($document) {
           $document.find('body').addClass('experiment-view-route');
         }],

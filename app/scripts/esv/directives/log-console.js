@@ -29,6 +29,7 @@
         'roslib',
         'stateService',
         'simulationInfo',
+        'bbpConfig',
         function($log,
                  $filter,
                  $timeout,
@@ -36,7 +37,8 @@
                  STATE,
                  roslib,
                  stateService,
-                 simulationInfo) {
+                 simulationInfo,
+                 bbpConfig) {
             //auto scroll when the distance from bottom of the scrollable area <= than AUTO_SCROLL_MAX_DISTANCE
             var AUTO_SCROLL_MAX_DISTANCE = 10;
             var MAX_VISIBLE_LOGS = 100; //number of last received logs kept visible
@@ -46,17 +48,10 @@
                 restrict: 'E',
                 replace: true,
                 scope: {
-                    topic: '@',
                     toggleVisibility: '&',
                     logReceived: '&'
                 },
                 link: function(scope, element) {
-                    ['topic']
-                    .forEach(function(mandatoryProp) {
-                        if (angular.isUndefined(scope[mandatoryProp])) {
-                            $log.error('The ' + mandatoryProp + ' property was not specified!');
-                        }
-                    });
 
                     scope.logs = [];
                     scope.STATE = STATE;
@@ -81,8 +76,9 @@
                         });
                     }
 
+                    var rosTopics = bbpConfig.get('ros-topics');
                     var rosConnection = roslib.getOrCreateConnectionTo(simulationInfo.serverConfig.rosbridge.websocket);
-                    var topicSubscriber = roslib.createStringTopic(rosConnection, scope.topic);
+                    var topicSubscriber = roslib.createStringTopic(rosConnection, rosTopics.logs);
                     var topicSubscription = topicSubscriber.subscribe(newMessageReceived, true);
 
                     var unubscribeReset = scope.$on('RESET', function() {
