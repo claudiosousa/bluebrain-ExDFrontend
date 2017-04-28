@@ -16,30 +16,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-/* global console: false */
-/* global THREE: false */
-
-(function ()
-{
+(function() {
   'use strict';
 
-  /**
-   * @ngdoc function
-   * @name exdFrontendApp.controller:Gz3dViewCtrl
-   * @description
-   * # Gz3dViewCtrl
-   * Controller of the exdFrontendApp
-   */
-  angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl',
-    ['$scope',
-      'userContextService',
-      'experimentService',
-      function ( $scope,
-        userContextService,
-        experimentService)
-      {
-        $scope.userContextService = userContextService;
-        $scope.experimentService = experimentService;
-      }]);
-} ());
+  angular.module('helpTooltipPopoverModule', ['exdFrontendApp.Constants', 'simulationStateServices', 'helpTooltipModule', 'experimentModule'])
+    .directive('helpTooltipPopover',
+    ['STATE', 'helpTooltipService', 'stateService','experimentService', 'simulationInfo',
+    function(STATE, helpTooltipService, stateService, experimentService, simulationInfo) {
+      return {
+        restrict: 'E',
+        templateUrl: 'components/help-tooltip/popover/help-tooltip-popover.template.html',
+        scope: {},
+        link: function(scope) {
+          scope.STATE = STATE;
+          scope.helpTooltipService = helpTooltipService;
+          scope.stateService = stateService;
+          scope.experimentService = experimentService;
+          scope.simulationInfo = simulationInfo;
+        }
+      };
+    }]);
+}());

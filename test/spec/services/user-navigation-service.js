@@ -10,6 +10,8 @@ describe('Services: userNavigationService', function () {
   var gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
   var hbpIdentityUserDirectory, userProfile, hbpIdentityUserDirectoryPromise, simulationInfo, roslib, stateService;
 
+  beforeEach(module('userNavigationModule'));
+
   // provide mock objects
   beforeEach(module(function ($provide) {
     // gz3d mock
@@ -130,7 +132,6 @@ describe('Services: userNavigationService', function () {
   }));
 
   beforeEach(function () {
-    module('userNavigationModule');
     module('exdFrontendApp.Constants');
 
     // inject service for testing.

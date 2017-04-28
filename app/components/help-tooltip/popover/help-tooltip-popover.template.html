@@ -1,0 +1,59 @@
+<!-- build:css(.tmp) components/help-tooltip/help-tooltip.style.css-->
+<link rel="stylesheet" href="components/help-tooltip/popover/help-tooltip-popover.style.css" />
+<!-- endbuild -->
+
+<div show-on-top class="description-window panels ng-hide" ng-show="helpTooltipService.visible && (stateService.currentState != STATE.STOPPED)">
+  <div>
+    <div class="help-title">{{experimentService.experimentName}}:</div>
+    <div class="help-text pre">{{experimentService.experimentDescription}}</div>
+    <div class="help-title">Version Information:</div>
+    <div class="help-text prewrap">{{experimentService.versionString}}</div>
+    <div class="help-title">Simulation Information:</div>
+    <div class="help-text">
+      <table class="table table-condensed table-compact borderless">
+        <col class="col-md-1">
+        <col>
+        <tbody>
+          <tr>
+            <td>ServerID:</td>
+            <td>{{simulationInfo.serverID}}</td>
+          </tr>
+          <tr>
+            <td>SimulationID:</td>
+            <td>{{simulationInfo.simulationID}}</td>
+          </tr>
+          <tr>
+            <td>ServerBaseURL:</td>
+            <td>{{simulationInfo.serverBaseUrl}}</td>
+          </tr>
+          <tr>
+            <td>ExperimentID:</td>
+            <td>{{simulationInfo.experimentID}}</td>
+          </tr>
+          <tr>
+            <td>ExperimentConfig:</td>
+            <td>{{experimentService.experimentConfiguration}}</td>
+          </tr>
+          <tr>
+            <td>EnvironmentConfig:</td>
+            <td>{{experimentService.environmentConfiguration}}</td>
+          </tr>
+          <tr>
+            <td>Owner:</td>
+            <td>{{experimentService.owner}}</td>
+          </tr>
+          <tr>
+            <td>Creation Date:</td>
+            <td>{{experimentService.creationDate}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div show-on-top class="toolbar-help-window panels ng-hide" ng-show="helpTooltipService.visible && (stateService.currentState != STATE.STOPPED)">
+  <div class="help-title">UI-Element Description:</div>
+  <div class="help-text" ng-hide="helpTooltipService.helpCode">(A description will be displayed here when you click on the corresponding user interface element)</div>
+  <div class="help-text pre" ng-show="helpTooltipService.helpCode">{{helpTooltipService.helpDescription}}</div>
+</div>

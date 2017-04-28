@@ -1,44 +1,18 @@
 ﻿(function () {
   'use strict';
 
-  /* global console: false */
-  angular.module('exdFrontendApp.Constants')
-  .constant('UI', {
-    UNDEFINED: -1,
-    PLAY_BUTTON: 0,
-    PAUSE_BUTTON: 1,
-    STOP_BUTTON: 2,
-    RESET_BUTTON: 3,
-    TIME_DISPLAY: 4,
-    INCREASE_LIGHT: 5,
-    DECREASE_LIGHT: 6,
-    CAMERA_TRANSLATION: 7,
-    CAMERA_ROTATION: 8,
-    SPIKE_TRAIN: 9,
-    OWNER_DISPLAY: 10,
-    EXIT_BUTTON: 11,
-    ROBOT_VIEW: 12,
-    CODE_EDITOR: 13,
-    JOINT_PLOT: 14,
-    ENVIRONMENT_SETTINGS: 15,
-    BRAIN_VISUALIZER: 16,
-    USER_NAVIGATION: 17,
-    LOG_CONSOLE: 18,
-    SERVER_VIDEO_STREAM: 19
-  });
-
-  angular.module('editorToolbarModule', [])
+  angular.module('editorToolbarModule', ['helpTooltipModule'])
   .controller('editorToolbarCntrl',
   ['$rootScope', '$scope', '$timeout', '$location', '$q', '$window',
     'STATE', 'contextMenuState', 'userContextService', 'stateService', 'gz3d', 'editorsPanelService', 'userNavigationService',
     'objectInspectorService', 'nrpAnalytics', 'hbpDialogFactory', 'environmentService', 'backendInterfaceService', 'environmentRenderingService',
     'splash', 'simulationInfo', 'videoStreamService',
-    'NAVIGATION_MODES', 'UI', 'EDIT_MODE', 'RESET_TYPE',
+    'NAVIGATION_MODES', 'helpTooltipService', 'EDIT_MODE', 'RESET_TYPE',
     function ($rootScope, $scope, $timeout, $location, $q, $window,
               STATE, contextMenuState, userContextService, stateService, gz3d, editorsPanelService, userNavigationService,
               objectInspectorService, nrpAnalytics, hbpDialogFactory, environmentService, backendInterfaceService, environmentRenderingService,
               splash, simulationInfo, videoStreamService,
-              NAVIGATION_MODES, UI, EDIT_MODE, RESET_TYPE) {
+              NAVIGATION_MODES, helpTooltipService, EDIT_MODE, RESET_TYPE) {
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
       $scope.stateService = stateService;
@@ -53,11 +27,6 @@
       $scope.simulationInfo = simulationInfo;
       $scope.videoStreamService = videoStreamService;
 
-      $scope.helpModeActivated = false;
-      $scope.helpDescription = '';
-      $scope.helpText = {};
-      $scope.currentSelectedUIElement = UI.UNDEFINED;
-      $scope.UI = UI;
       $scope.EDIT_MODE = EDIT_MODE;
       $scope.RESET_TYPE = RESET_TYPE;
       $scope.NAVIGATION_MODES = NAVIGATION_MODES;
@@ -158,10 +127,6 @@
 
       // Lights management
       $scope.modifyLightClickHandler = function (direction, button) {
-        if ($scope.helpModeActivated) {
-          return $scope.help(button);
-        }
-
         if ((direction < 0 && gz3d.isGlobalLightMinReached()) || (direction > 0 && gz3d.isGlobalLightMaxReached()))
         {
           return;
@@ -175,10 +140,7 @@
       };
 
       // play/pause/stop button handler
-      $scope.simControlButtonHandler = function (newState, button) {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI[button]);
-        }
+      $scope.simControlButtonHandler = function (newState) {
         $scope.updateSimulation(newState);
         $scope.setEditMode(EDIT_MODE.VIEW);
         if (objectInspectorService !== null) {
@@ -198,9 +160,6 @@
       };
 
       $scope.resetButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.RESET_BUTTON);
-        }
         $scope.request = {
           resetType: RESET_TYPE.NO_RESET
         };
@@ -304,46 +263,25 @@
         }, 100);
       };
 
-      $scope.timeDisplayClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          $scope.help($scope.UI.TIME_DISPLAY);
-        }
-      };
-
       // Camera manipulation
 
       // This should be integrated to the tutorial story when
       // it will be implemented !
-      $scope.cameraTranslationButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.CAMERA_TRANSLATION);
-        }
-      };
-
       $scope.requestMove = function (event, action) {
-        if (!$scope.helpModeActivated && event.which === 1) { // camera control uses left button only
+        if (event.which === 1) { // camera control uses left button only
           gz3d.scene.controls.onMouseDownManipulator(action);
         }
       };
 
       $scope.releaseMove = function (event, action) {
-        if (!$scope.helpModeActivated && event.which === 1) { // camera control uses left button only
+        if (event.which === 1) { // camera control uses left button only
           gz3d.scene.controls.onMouseUpManipulator(action);
-        }
-      };
-
-      $scope.cameraRotationButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.CAMERA_ROTATION);
         }
       };
 
       // Spiketrain
       $scope.showSpikeTrain = false;
       $scope.spikeTrainButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.SPIKE_TRAIN);
-        }
         $scope.showSpikeTrain = !$scope.showSpikeTrain;
         nrpAnalytics.eventTrack('Toggle-spike-train', {
           category: 'Simulation-GUI',
@@ -354,9 +292,6 @@
       // JointPlot
       $scope.showJointPlot = false;
       $scope.jointPlotButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.JOINT_PLOT);
-        }
         $scope.showJointPlot = !$scope.showJointPlot;
         nrpAnalytics.eventTrack('Toggle-joint-plot', {
           category: 'Simulation-GUI',
@@ -366,9 +301,6 @@
 
       // robot view
       $scope.robotViewButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.ROBOT_VIEW);
-        }
         if (!environmentRenderingService.hasCameraView())
           return;
         $scope.showRobotView = !$scope.showRobotView;
@@ -392,9 +324,6 @@
       };
 
       $scope.navigationModeMenuClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.USER_NAVIGATION);
-        }
         $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
       };
 
@@ -434,21 +363,10 @@
         }
       };
 
-      // help mode
-      $scope.toggleHelpMode = function () {
-        $scope.helpModeActivated = !$scope.helpModeActivated;
-        nrpAnalytics.eventTrack('Toggle-help-mode', {
-          category: 'Simulation-GUI',
-          value: $scope.helpModeActivated
-        });
-        $scope.helpDescription = "";
-        $scope.currentSelectedUIElement = UI.UNDEFINED;
-      };
+      $scope.helpTooltipService = helpTooltipService;
 
       $scope.codeEditorButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.CODE_EDITOR);
-        } else if (userContextService.editIsDisabled || $scope.loadingEditPanel) {
+        if (userContextService.editIsDisabled || $scope.loadingEditPanel) {
           return;
         } else {
           return editorsPanelService.toggleEditors();
@@ -462,14 +380,6 @@
           category: 'Simulation-GUI',
           value: $scope.showBrainvisualizerPanel
         });
-      };
-
-      $scope.brainVisualizerButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.BRAIN_VISUALIZER);
-        } else {
-          return $scope.toggleBrainvisualizer();
-        }
       };
 
       $scope.videoStreamsAvailable = false;
@@ -496,9 +406,6 @@
        * Toogle the video stream widget visibility
        */
       $scope.videoStreamsToggle = function() {
-        if ($scope.helpModeActivated)
-          return $scope.help($scope.UI.SERVER_VIDEO_STREAM);
-
         if (!$scope.videoStreamsAvailable)
           return;
 
@@ -508,9 +415,6 @@
       // log console
       $scope.showLogConsole = false;
       $scope.logConsoleButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.LOG_CONSOLE);
-        }
         $scope.showLogConsole = !$scope.showLogConsole;
         if ($scope.showLogConsole)
           $scope.missedConsoleLogs = 0;
@@ -526,20 +430,11 @@
           $scope.missedConsoleLogs++;
       };
 
-      // Owner information
-      $scope.ownerInformationClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.OWNER_DISPLAY);
-        }
-      };
-
       // Environment settings panel
       $scope.showEnvironmentSettingsPanel = false;
 
       $scope.environmentSettingsClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.ENVIRONMENT_SETTINGS);
-        } else if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel) {
+        if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel) {
           return;
         } else {
           $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
@@ -564,20 +459,6 @@
         // unregister the message callback
         stateService.removeMessageCallback(messageCallback);
         stateService.removeStateCallback(onStateChanged);
-      };
-
-      $scope.help = function (uiElement) {
-        if ($scope.currentSelectedUIElement === uiElement) {
-          $scope.helpDescription = "";
-          $scope.currentSelectedUIElement = UI.UNDEFINED;
-        } else {
-          $scope.helpDescription = $scope.helpText[uiElement];
-          $scope.currentSelectedUIElement = uiElement;
-          nrpAnalytics.eventTrack('Help', {
-            category: 'Simulation',
-            value: uiElement
-          });
-        }
       };
 
       //When resetting do something
@@ -635,13 +516,6 @@
         }
 
         closeSimulationConnections();
-      };
-
-      $scope.exitButtonClickHandler = function () {
-        if ($scope.helpModeActivated) {
-          return $scope.help($scope.UI.EXIT_BUTTON);
-        }
-        $scope.exit();
       };
 
       // clean up on leaving

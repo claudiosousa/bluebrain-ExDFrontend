@@ -23,12 +23,12 @@ describe('Controller: editorToolbarCntrl', function() {
       simulationInfo,
       NAVIGATION_MODES,
       STATE,
-      UI,
       EDIT_MODE,
       RESET_TYPE;
 
   // load the controller's module
   beforeEach(module('editorToolbarModule'));
+  beforeEach(module('helpTooltipModule'));
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
 
@@ -103,7 +103,6 @@ describe('Controller: editorToolbarCntrl', function() {
                              _simulationInfo_,
                              _STATE_,
                              _NAVIGATION_MODES_,
-                             _UI_,
                              _EDIT_MODE_,
                              _RESET_TYPE_) {
     $controller = _$controller_;
@@ -126,7 +125,6 @@ describe('Controller: editorToolbarCntrl', function() {
     simulationInfo = _simulationInfo_;
     STATE = _STATE_;
     NAVIGATION_MODES = _NAVIGATION_MODES_;
-    UI = _UI_;
     EDIT_MODE = _EDIT_MODE_;
     RESET_TYPE = _RESET_TYPE_;
 
@@ -415,38 +413,27 @@ describe('Controller: editorToolbarCntrl', function() {
 
       $scope.lightDiffuse = initiaLightness;
 
-      $scope.modifyLightClickHandler(1, UI.INCREASE_LIGHT);
+      $scope.modifyLightClickHandler(1);
       expect(gz3d.scene.emitter.lightDiffuse).toBeGreaterThan(initiaLightness);
 
-      $scope.modifyLightClickHandler(-1, UI.DECREASE_LIGHT);
-      $scope.modifyLightClickHandler(-1, UI.DECREASE_LIGHT);
+      $scope.modifyLightClickHandler(-1);
+      $scope.modifyLightClickHandler(-1);
       expect(gz3d.scene.emitter.lightDiffuse).toBeLessThan(initiaLightness);
     });
 
     it('should call or skip camera controls according to mouse events and help mode status', function() {
       var e = { which: 1 }; // 1 for left mouse button
-      $scope.helpModeActivated = false;
       $scope.requestMove(e, 'moveForward');
       expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
       $scope.releaseMove(e, 'moveForward');
       expect(gz3d.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
 
       e.which = 2; // 2 for right mouse button
-      $scope.helpModeActivated = false;
       gz3d.scene.controls.onMouseDownManipulator.calls.reset();
       gz3d.scene.controls.onMouseUpManipulator.calls.reset();
       $scope.requestMove(e, 'moveBackward');
       expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
       $scope.releaseMove(e, 'moveBackward');
-      expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
-
-      e.which = 1;
-      $scope.helpModeActivated = true;
-      gz3d.scene.controls.onMouseDownManipulator.calls.reset();
-      gz3d.scene.controls.onMouseUpManipulator.calls.reset();
-      $scope.requestMove(e, 'rotateRight');
-      expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
-      $scope.releaseMove(e, 'rotateRight');
       expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
     });
 
@@ -521,86 +508,6 @@ describe('Controller: editorToolbarCntrl', function() {
       expect(gz3d.iface.webSocket).not.toBeDefined();
     });
 
-    it('should toggle the help mode variable and show the help text correctly', function() {
-      $scope.helpModeActivated = false;
-      $scope.toggleHelpMode();
-
-      expect($scope.helpModeActivated).toBe(true);
-      expect($scope.helpDescription).toBe('');
-      expect($scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
-
-      $scope.simControlButtonHandler('state', 'PLAY_BUTTON');
-      expect($scope.currentSelectedUIElement).toBe(UI.PLAY_BUTTON);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.PLAY_BUTTON]);
-      $scope.simControlButtonHandler('state', 'PLAY_BUTTON');
-      expect($scope.currentSelectedUIElement).toBe(UI.UNDEFINED);
-      expect($scope.helpDescription).toBe('');
-
-      $scope.resetButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.RESET_BUTTON);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.RESET_BUTTON]);
-
-      $scope.timeDisplayClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.TIME_DISPLAY);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.TIME_DISPLAY]);
-
-      $scope.modifyLightClickHandler(1, UI.INCREASE_LIGHT);
-      expect($scope.currentSelectedUIElement).toBe(UI.INCREASE_LIGHT);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.INCREASE_LIGHT]);
-
-      $scope.modifyLightClickHandler(1, UI.DECREASE_LIGHT);
-      expect($scope.currentSelectedUIElement).toBe(UI.DECREASE_LIGHT);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.DECREASE_LIGHT]);
-
-      $scope.cameraTranslationButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.CAMERA_TRANSLATION);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.CAMERA_TRANSLATION]);
-
-      $scope.cameraRotationButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.CAMERA_ROTATION);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.CAMERA_ROTATION]);
-
-      $scope.spikeTrainButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.SPIKE_TRAIN);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.SPIKE_TRAIN]);
-
-      $scope.jointPlotButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.JOINT_PLOT);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.JOINT_PLOT]);
-
-      $scope.robotViewButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.ROBOT_VIEW);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.ROBOT_VIEW]);
-
-      $scope.ownerInformationClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.OWNER_DISPLAY);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.OWNER_DISPLAY]);
-
-      $scope.environmentSettingsClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.ENVIRONMENT_SETTINGS);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.ENVIRONMENT_SETTINGS]);
-
-      $scope.navigationModeMenuClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.USER_NAVIGATION);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.USER_NAVIGATION]);
-
-      $scope.codeEditorButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.CODE_EDITOR);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.CODE_EDITOR]);
-
-      $scope.brainVisualizerButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.BRAIN_VISUALIZER);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.BRAIN_VISUALIZER]);
-
-      $scope.logConsoleButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.LOG_CONSOLE);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.LOG_CONSOLE]);
-
-      $scope.exitButtonClickHandler();
-      expect($scope.currentSelectedUIElement).toBe(UI.EXIT_BUTTON);
-      expect($scope.helpDescription).toBe($scope.helpText[UI.EXIT_BUTTON]);
-    });
-
     it('should go back to the esv-web page when no "ctx" parameter was in the url', function () {
       spyOn($window.location, 'reload');
 
@@ -659,29 +566,14 @@ describe('Controller: editorToolbarCntrl', function() {
       $scope.loadingBrainvisualizerPanel = false;
       $scope.brainvisualizerIsDisabled = false;
       $scope.showBrainvisualizerPanel = false;
-      $scope.brainVisualizerButtonClickHandler();
+      $scope.toggleBrainvisualizer();
       expect($scope.showBrainvisualizerPanel).toBe(true);
-    });
-
-    it('should display the help of brainvisualizer panel', function() {
-      $scope.showBrainvisualizerPanel = false;
-      $scope.helpModeActivated = true;
-      $scope.brainVisualizerButtonClickHandler();
-      expect($scope.showBrainvisualizerPanel).toBe(false);
-      $scope.helpModeActivated = false;
     });
 
     it('should open the log-console panel', function() {
       $scope.showLogConsole = false;
       $scope.logConsoleButtonClickHandler();
       expect($scope.showLogConsole).toBe(true);
-    });
-
-    it('should display help of the log-console panel', function() {
-      $scope.showLogConsole = false;
-      $scope.helpModeActivated = true;
-      $scope.logConsoleButtonClickHandler();
-      expect($scope.showLogConsole).toBe(false);
     });
   });
 
@@ -703,14 +595,6 @@ describe('Controller: editorToolbarCntrl', function() {
       $scope.showEnvironmentSettingsPanel = false;
       $scope.environmentSettingsClickHandler();
       expect($scope.showEnvironmentSettingsPanel).toBe(true);
-    });
-
-    it('should display the help of environment settings panel', function() {
-      $scope.showEnvironmentSettingsPanel = false;
-      $scope.helpModeActivated = true;
-      $scope.environmentSettingsClickHandler();
-      expect($scope.showEnvironmentSettingsPanel).toBe(false);
-      $scope.helpModeActivated = false;
     });
   });
 });

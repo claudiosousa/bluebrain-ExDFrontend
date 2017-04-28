@@ -6,49 +6,6 @@
   position: relative;
 }
 
-.toolbar-help-window {
-  position: absolute;
-  left:0;
-  right:0;
-  margin-left:auto;
-  margin-right:auto;
-  top: 75%;
-  bottom: 75px;
-  background:rgba(150, 220, 150, 0.95);
-  width: 80%;
-  border-radius: 8px;
-  border-color: green;
-  border: 2px solid;
-  transition: 0.5s linear all;
-  opacity: 1;
-  div {
-    margin-left: 20px;
-    margin-right: 20px;
-    margin-bottom: 10px;
-  }
-}
-
-.toolbar-help-window.ng-hide {
-  opacity: 0;
-}
-
-.help-title {
-  margin-top: 10px;
-  font-size: large;
-  font-weight: bold;
-}
-
-.help-text {
-  font-size: medium;
-}
-
-.help-text.pre {
-  white-space: pre-line;
-}
-.help-text.prewrap {
-  white-space: pre-wrap;
-}
-
 .vertcenter {
   line-height: 42px;
   vertical-align: middle;

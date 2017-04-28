@@ -1,0 +1,93 @@
+/**---LICENSE-BEGIN - DO NOT CHANGE OR MOVE THIS HEADER
+ * This file is part of the Neurorobotics Platform software
+ * Copyright (C) 2014,2015,2016,2017 Human Brain Project
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * ---LICENSE-END **/
+
+
+.toolbar-help-highlighted {
+  box-shadow: inset 0px 0px 20px 10px rgba(150,220,150,1) !important;
+}
+
+.toolbar-help-window {
+  position: absolute;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+  top: 75%;
+  bottom: 75px;
+  background:rgba(150, 220, 150, 0.95);
+  width: 80%;
+  border-radius: 8px;
+  border-color: green;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+  div {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+  }
+}
+
+.toolbar-help-window.ng-hide {
+  opacity: 0;
+}
+
+.help-title {
+  margin-top: 10px;
+  font-size: large;
+  font-weight: bold;
+}
+
+.help-text {
+  font-size: medium;
+}
+
+.help-text.pre {
+  white-space: pre-line;
+}
+.help-text.prewrap {
+  white-space: pre-wrap;
+}
+
+
+.description-window {
+  position: absolute;
+  left:0;
+  right:0;
+  margin-left:auto;
+  margin-right:auto;
+  top: 1%;
+  max-height: 70%;
+  background:rgba(150, 220, 150, 0.95);
+  width: 80%;
+  border-radius: 8px;
+  border-color: green;
+  border: 2px solid;
+  transition: 0.5s linear all;
+  opacity: 1;
+  div {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+  }
+}
+
+.description-window.ng-hide {
+  opacity: 0;
+}

@@ -19,7 +19,7 @@
 (function () {
   'use strict';
 
-  angular.module('experimentServices', ['environmentServiceModule'])
+  angular.module('experimentServices', ['environmentServiceModule', 'slurminfoService'])
     .service('experimentProxyService',
     ['$http', '$q', 'bbpConfig', 'serverError',
       function ($http, $q, bbpConfig, serverError) {
