@@ -46,7 +46,7 @@ describe('Service: joint-service', function() {
     expect(rosLibConnectionObject.subscribe).toHaveBeenCalled();
 
     expect(jointMessageCallback).not.toHaveBeenCalled();
-    rosLibConnectionObject.subscribe.calls.first().args[0]();
+    rosLibConnectionObject.subscribe.calls.first().args[0]({'header':{'stamp':{'secs':1000,'nsecs':0}}});
     expect(jointMessageCallback).toHaveBeenCalled();
   });
 
