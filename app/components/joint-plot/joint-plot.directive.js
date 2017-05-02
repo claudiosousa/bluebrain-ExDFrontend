@@ -10,6 +10,7 @@
           restrict: 'E',
           scope: {
             ngShow: '=',
+            close:'&closeFn'
           },
           controller: 'JoinPlotController',
           controllerAs: 'vm',
