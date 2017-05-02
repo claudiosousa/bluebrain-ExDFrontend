@@ -517,6 +517,12 @@ module.exports = function(grunt) {
                     'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'
                 ],
                 dest: '<%= yeoman.app %>/style/images'
+            },
+            fontawesome: {
+                expand: true,
+                cwd: 'bower_components/font-awesome/',
+                src: 'fonts/*',
+                dest: '<%= yeoman.app %>'
             }
         },
 
@@ -696,6 +702,7 @@ module.exports = function(grunt) {
         grunt.task.run([
             'version:test',
             'clean:server',
+            'copy:fontawesome', // copy files needed by css style [NRRPLT-4817]
             'copy:gz3dImages', // copy files needed by gz3d [NRRPLT-3145]
             'wiredep',
             'concurrent:server',
