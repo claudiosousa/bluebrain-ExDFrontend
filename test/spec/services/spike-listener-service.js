@@ -30,7 +30,7 @@ describe('Services: spike-listener-service', function ()
     messages: [],
     onNewSpikesMessageReceived: function (message)
     {
-        this.messages.push(message);
+        listenerMock.messages.push(message);
     }
   };
 
@@ -50,34 +50,34 @@ describe('Services: spike-listener-service', function ()
 
   it('should support register listener', function ()
   {
-    spikeListenerService.startListening(listenerMock);
+    spikeListenerService.startListening(listenerMock.onNewSpikesMessageReceived);
 
     expect(roslibMock.getOrCreateConnectionTo).toHaveBeenCalled();
     expect(roslibMock.createTopic).toHaveBeenCalled();
     expect(roslibMock.createTopic().subscribeCount).toBe(1);
-    spikeListenerService.stopListening(listenerMock);
+    spikeListenerService.stopListening(listenerMock.onNewSpikesMessageReceived);
 
   });
 
 
   it('should support unregister listener', function ()
   {
-    spikeListenerService.startListening(listenerMock);
-    spikeListenerService.stopListening(listenerMock);
+    spikeListenerService.startListening(listenerMock.onNewSpikesMessageReceived);
+    spikeListenerService.stopListening(listenerMock.onNewSpikesMessageReceived);
 
     expect(roslibMock.createTopic().subscribeCount).toBe(0);
   });
 
   it('should support multiple time registration', function ()
   {
-    spikeListenerService.startListening(listenerMock);
-    spikeListenerService.startListening(listenerMock);
+    spikeListenerService.startListening(listenerMock.onNewSpikesMessageReceived);
+    spikeListenerService.startListening(listenerMock.onNewSpikesMessageReceived);
     expect(roslibMock.createTopic().subscribeCount).toBe(1);
   });
 
   it('should handle spike message', function ()
   {
-    spikeListenerService.startListening(listenerMock);
+    spikeListenerService.startListening(listenerMock.onNewSpikesMessageReceived);
 
     roslibMock.createTopic().onNewSpikesMessageReceived('test message');
 

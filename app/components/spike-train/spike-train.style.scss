@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "pop-over-viewer.scss";
+@import "styles/esv/pop-over-viewer.scss";
 
 $spikeTrainBottom: 65px;
 $spikeTrainHeight: 175px;
@@ -40,21 +40,11 @@ $spikeTrainMinHeight: 160px;
 }
 
 .spiketrain {
-  position: relative;
-  margin: $spikeTrainMargin 30px $spikeTrainMargin 0px;
-  display: inline-block;
+  height: calc(100% - 10px);
+  margin: 5px;
   flex-grow: 1;
   overflow-x: hidden;
   overflow-y: auto;
-}
-
-.spikerate {
-  bottom: $spikeTrainBottom + $spikeTrainHeight + 10px;
-  height: 120px;
-}
-
-.spiketrain canvas {
-  position: absolute;
 }
 
 .spikegraph .leftaxis {
@@ -91,8 +81,10 @@ $spikeTrainMinHeight: 160px;
   padding-right: 15px;
 }
 
-.button-close {
-  position: absolute;
-  top: 5px;
-  right: 5px;
+.spikegraph .button-close {
+  margin: 5px 5px 0 0;
+  position: relative;
+  top: 0;
+  left: 0;
+  align-self: flex-start;
 }

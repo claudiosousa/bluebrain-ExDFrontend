@@ -21,7 +21,7 @@
 (function () {
   'use strict';
 
-  angular.module('simulationInfoService', ['experimentServices'])
+  angular.module('simulationInfoService', ['experimentServices', 'simulationControlServices'])
     .factory('simulationInfo', ['experimentProxyService', 'experimentList', 'environmentService',
     function (experimentProxyService, experimentList, environmentService) {
       var thisService = {

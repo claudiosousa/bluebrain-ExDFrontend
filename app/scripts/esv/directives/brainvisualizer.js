@@ -28,7 +28,7 @@
           templateUrl: 'views/esv/brainvisualizer.html',
           restrict: 'E',
           scope: {
-            data: "="
+            data: '='
           },
           link: function (scope, element)
           {
@@ -164,11 +164,11 @@
 
               if (!visible)
               {
-                spikeListenerService.stopListening(scope);
+                spikeListenerService.stopListening(scope.onNewSpikesMessageReceived);
               }
               else if (scope.spikeScaler>0)
               {
-                  spikeListenerService.startListening(scope);
+                  spikeListenerService.startListening(scope.onNewSpikesMessageReceived);
               }
 
             });
@@ -187,11 +187,11 @@
               {
                 if (scope.spikeScaler>0)
                 {
-                  spikeListenerService.startListening(scope);
+                  spikeListenerService.startListening(scope.onNewSpikesMessageReceived);
                 }
                 else
                 {
-                  spikeListenerService.stopListening(scope);
+                  spikeListenerService.stopListening(scope.onNewSpikesMessageReceived);
                   if (brain3D)
                   {
                     brain3D.flushPendingSpikes();
@@ -247,20 +247,20 @@
             });
 
             // Population changed update
-            scope.$on("pynn.populationsChanged", function ()
+            scope.$on('pynn.populationsChanged', function ()
             {
               scope.update();
             });
 
             // Clean up on leaving
-            scope.$on("$destroy", function ()
+            scope.$on('$destroy', function ()
             {
               if (brain3D !== undefined)
               {
                 brain3D.terminate();
               }
 
-              spikeListenerService.stopListening(scope);
+              spikeListenerService.stopListening(scope.onNewSpikesMessageReceived);
             });
           }
         };
