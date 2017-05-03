@@ -21,7 +21,7 @@
   'use strict';
 
 
-  angular.module('exdFrontendApp')
+  angular.module('spikeListenerModule', ['roslibModule', 'bbpConfig', 'simulationInfoService'])
     .service('spikeListenerService', ['$log', 'roslib', 'simulationInfo', 'bbpConfig',
       function ($log, roslib, simulationInfo, bbpConfig)
       {
@@ -63,7 +63,7 @@
         {
           $.each(listeners, function (i)
           {
-            listeners[i].onNewSpikesMessageReceived(message);
+            listeners[i](message);
           });
         };
 

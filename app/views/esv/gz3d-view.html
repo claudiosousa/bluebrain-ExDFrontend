@@ -101,7 +101,8 @@
         <div show-on-top class="human-navigation-info ng-hide" ng-show="showHumanNavInfoDiv">
           <span>When paused, avatar navigation is not possible</span>
         </div>
-        <spiketrain></spiketrain>
+
+        <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
         <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
 
 

@@ -41,6 +41,7 @@
     "undef"         : true,     // Require all non-global variables be declared before they are used.
     "strict"        : true,     // Require `use strict` pragma in every file.
     "trailing"      : true,     // Prohibit trailing whitespaces.
+   // "quotmark"      : "single",
 
     // == Relaxing Options ================================================
     //
@@ -73,6 +74,8 @@
     "sub"           : false,    // Tolerate all forms of subscript notation besides dot notation e.g. `dict['key']` instead of `dict.key`.
     "supernew"      : false,    // Tolerate `new function () { ... };` and `new Object;`.
     "validthis"     : false,    // Tolerate strict violations when the code is running in strict mode and you use this in a non-constructor function.
+    "-W078"         : false,    // accept setters without getters
+    "-W008"         : false,    // accept leading decimals
 
     // == Environments ====================================================
     //
@@ -91,7 +94,6 @@
     "prototypejs"   : false,    // Enable globals exposed by Prototype JavaScript framework.
     "rhino"         : false,    // Enable globals available when your code is running inside of the Rhino runtime environment.
     "wsh"           : false,    // Enable globals available when your code is running as a script for the Windows Script Host.
-
     // == JSLint Legacy ===================================================
     //
     // These options are legacy from JSLint. Aside from bug fixes they will
