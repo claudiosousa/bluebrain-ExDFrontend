@@ -30,27 +30,15 @@
    * # Gz3dViewCtrl
    * Controller of the exdFrontendApp
    */
-
   angular.module('exdFrontendApp')
     .controller('Gz3dViewCtrl',
     ['$scope',
-      'simulationControl',
-      'STATE',
-      'stateService',
-      'simulationInfo',
       'userContextService',
       'experimentService',
       function ( $scope,
-        simulationControl,
-        STATE,
-        stateService,
-        simulationInfo,
         userContextService,
         experimentService)
       {
-        $scope.STATE = STATE;
-        $scope.simulationInfo = simulationInfo;
-        $scope.stateService = stateService;
         $scope.userContextService = userContextService;
         $scope.experimentService = experimentService;
       }]);

@@ -27,6 +27,7 @@
 
   var module = angular.module('simulationControlServices', ['ngResource',
     'exdFrontendApp.Constants',
+    'simulationConfigModule',
     'exdFrontendFilters',
     'nrpErrorHandlers',
     'nrpAngulartics',

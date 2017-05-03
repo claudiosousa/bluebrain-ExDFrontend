@@ -78,7 +78,11 @@
       'editorToolbarModule',
       'editorsPanelModule',
       'experimentModule',
-      'jointPlotModule'])
+      'jointPlotModule',
+      'simulationConfigModule',
+      'collabExperimentLockModule',
+      'roslibModule',
+      'helpTooltipModule'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {

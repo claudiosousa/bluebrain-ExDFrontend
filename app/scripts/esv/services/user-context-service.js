@@ -20,7 +20,7 @@
 (function () {
   'use strict';
 
-  angular.module('userContextModule', [])
+  angular.module('userContextModule', ['userNavigationModule', 'collabExperimentLockModule'])
 
   .factory('userContextService', [
     '$window',

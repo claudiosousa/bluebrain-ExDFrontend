@@ -1,11 +1,11 @@
 var _ = require('lodash');
 
 function toggleSpikesWidget(show) {
-  return element(by.css('[ng-class*="UI.SPIKE_TRAIN"]')).click()
+  return element(by.css('[help-tooltip="SPIKE_TRAIN"]')).click()
     .then(() =>
       browser.wait(() => {
         return element(by.id('spiketrain-widget')).isDisplayed().then((displayed) => {
-          return displayed == show;
+          return displayed === show;
         })
       })
     );

@@ -20,7 +20,7 @@
 (function () {
     'use strict';
 
-    angular.module('userNavigationModule', ['nrpUser'])
+    angular.module('userNavigationModule', ['nrpUser', 'gz3dServices'])
       .constant('NAVIGATION_MODES', {
         FREE_CAMERA: 'FreeCamera',
         GHOST: 'Ghost',

@@ -105,73 +105,9 @@
         <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
 
 
-           <context-menu></context-menu>
+        <context-menu></context-menu>
         <object-inspector></object-inspector>
 
-        <!-- large top-right help icon -->
-        <div ng-if="helpModeActivated" class="fa fa-question-circle fa-5x help-icon active" ng-click="toggleHelpMode()"></div>
-        <div ng-if="helpModeActivated" class="fa fa-question fa-4x help-icon-inner" ng-click="toggleHelpMode()"></div>
-        <!-- large top-right help icon -->
-
-        <!-- Description -->
-        <div show-on-top class="description-window panels ng-hide" ng-show="helpModeActivated && (stateService.currentState != STATE.STOPPED)">
-          <div>
-            <div class="help-title">{{experimentService.experimentName || ''}}:</div>
-            <div class="help-text pre">{{experimentService.experimentDescription || ''}}</div>
-            <div class="help-title">Version Information:</div>
-            <div class="help-text prewrap" >{{experimentService.versionString || ''}}</div>
-            <div class="help-title">Simulation Information:</div>
-            <div class="help-text">
-              <table class="table table-condensed table-compact borderless">
-                <col class="col-md-1">
-                <col>
-                <tbody>
-                  <tr>
-                    <td>ServerID:</td>
-                    <td>{{simulationInfo && simulationInfo.serverID  || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>SimulationID:</td>
-                    <td>{{simulationInfo && simulationInfo.simulationID || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>ServerBaseURL:</td>
-                    <td>{{simulationInfo && simulationInfo.serverBaseUrl || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>ExperimentID:</td>
-                    <td>{{simulationInfo && simulationInfo.experimentID || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>ExperimentConfig:</td>
-                    <td>{{experimentService.experimentConfiguration  || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>EnvironmentConfig:</td>
-                    <td>{{experimentService.environmentConfiguration || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>Owner:</td>
-                    <td>{{experimentService.owner || ''}}</td>
-                  </tr>
-                  <tr>
-                    <td>Creation Date:</td>
-                    <td>{{experimentService.creationDate || ''}}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <!-- Description -->
-
-        <!-- Toolbar-Help window -->
-        <div show-on-top class="toolbar-help-window panels ng-hide" ng-show="helpModeActivated && (stateService.currentState != STATE.STOPPED)">
-          <div class="help-title">UI-Element Description:</div>
-          <div class="help-text" ng-show="currentSelectedUIElement === UI.UNDEFINED">(A description will be displayed here when you click on the corresponding user interface element)</div>
-          <div class="help-text pre" ng-show="currentSelectedUIElement != UI.UNDEFINED">{{helpDescription}}</div>
-        </div>
-        <!-- Toolbar-Help window -->
 
         <!-- Code editor panel -->
         <editor-panel></editor-panel>

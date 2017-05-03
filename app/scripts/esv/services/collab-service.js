@@ -20,7 +20,7 @@
   'use strict';
 
   var module = angular.module('collabServices', ['ngResource', 'bbpConfig',
-    'nrpErrorHandlers']);
+    'nrpErrorHandlers', 'hbpDocumentClient', 'clb-storage']);
 
   module.factory('collabConfigService', ['$resource', 'serverError', 'bbpConfig', function ($resource, serverError, bbpConfig) {
     var baseUrl = bbpConfig.get('api.collabContextManagement.url');
@@ -117,18 +117,18 @@
 
     /**
      *  Fetches all the files under a folder in the storage of the current collab
-     *  First we get the current experiment context, then using that context we get the 
-     *  list of navigational entities. These entities are objects that are appearing in 
-     *  the list on the left column of the collab. Then we 
+     *  First we get the current experiment context, then using that context we get the
+     *  list of navigational entities. These entities are objects that are appearing in
+     *  the list on the left column of the collab. Then we
      *  get the files under a specific folder in the navigational entity
-     *  
-     *  Example usage : 
+     *
+     *  Example usage :
      *  var robotsList = collabFolderAPIService.getFilesFromNavEntityFolder('Storage','robots');
      *  which will fetch all the files under the robots folder in the storage
      *
-     * @param  navEntityName the name of the navigational entity                
-     * @param  folderName the name of the folder under the navigational entity 
-     * @return a promise that contains the files under the storage folder 
+     * @param  navEntityName the name of the navigational entity
+     * @param  folderName the name of the folder under the navigational entity
+     * @return a promise that contains the files under the storage folder
      **/
     this.getFilesFromNavEntityFolder = function (navEntityName, folderName) {
       return getCurrentCollab(this.getContextId())
@@ -160,13 +160,13 @@
     /**
      *  Returns the current collab (i.e. the collab on which the experiment belongs to),
      *  based on the input context id
-     *  
-     *  Example usage : 
-     *  var collabDataPromise = getCurrentCollab($stateParams.ctx);
-     *  which will return the promise containing the current collab data 
      *
-     * @param  contextId the context id provided                
-     * @return a promise that contains the collab data 
+     *  Example usage :
+     *  var collabDataPromise = getCurrentCollab($stateParams.ctx);
+     *  which will return the promise containing the current collab data
+     *
+     * @param  contextId the context id provided
+     * @return a promise that contains the collab data
      **/
     var getCurrentCollab = function (contextId) {
       return $http({
@@ -178,15 +178,15 @@
     /**
      *  Returns the navigational entities under the current collab (i.e. the collab on which the experiment belongs to),
      *  based on the input collab data
-     *  
-     *  Example usage : 
+     *
+     *  Example usage :
      *  var currentCollabPromise =  getCurrentCollab($stateParams.ctx);
      *  var collabNavigationalEntitiesPromise = currentCollabPromise.then(function (response){
      *  return getCollabNavEntities(response.data)};
-     *  which will return the promise containing the current collab data 
+     *  which will return the promise containing the current collab data
      *
-     * @param  contextId the context id provided                
-     * @return a promise that contains the collab data 
+     * @param  contextId the context id provided
+     * @return a promise that contains the collab data
      **/
     var getCollabNavEntities = function (currentCollab) {
       return $http({
@@ -197,10 +197,10 @@
 
     /**
      *  Returns the current collab contextId
-     *  
-     *  Example usage : 
+     *
+     *  Example usage :
      *  var contextId =  collabFolderAPIService.getContextId;
-     *              
+     *
      * @return the current contextId uuid
      **/
     this.getContextId = function () {

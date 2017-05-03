@@ -32,9 +32,7 @@
   /* global console: false */
 
   var module = angular.module('simulationStateServices',
-    ['bbpConfig', 'simulationInfoService',
-     'nrpErrorHandlers'
-    ]);
+    ['bbpConfig', 'simulationInfoService','simulationControlServices','nrpErrorHandlers', 'roslibModule']);
   module.factory('stateService',
     ['simulationState', 'STATE',
     '$log', 'bbpConfig', '$q', 'serverError', 'roslib',

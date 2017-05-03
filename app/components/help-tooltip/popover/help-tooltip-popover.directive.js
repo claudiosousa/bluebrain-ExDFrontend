@@ -16,20 +16,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
+(function() {
+  'use strict';
 
-.esv-overlay {
-  width: 100%
-}
-
-.hbp-toolbar-action{
-  position: relative;
-}
-
-.vertcenter {
-  line-height: 42px;
-  vertical-align: middle;
-}
-
-.hide-overflow {
-  overflow: hidden;
-}
+  angular.module('helpTooltipPopoverModule', ['exdFrontendApp.Constants', 'simulationStateServices', 'helpTooltipModule', 'experimentModule'])
+    .directive('helpTooltipPopover',
+    ['STATE', 'helpTooltipService', 'stateService','experimentService', 'simulationInfo',
+    function(STATE, helpTooltipService, stateService, experimentService, simulationInfo) {
+      return {
+        restrict: 'E',
+        templateUrl: 'components/help-tooltip/popover/help-tooltip-popover.template.html',
+        scope: {},
+        link: function(scope) {
+          scope.STATE = STATE;
+          scope.helpTooltipService = helpTooltipService;
+          scope.stateService = stateService;
+          scope.experimentService = experimentService;
+          scope.simulationInfo = simulationInfo;
+        }
+      };
+    }]);
+}());

@@ -75,7 +75,7 @@
     }
   }
 
-  angular.module('experimentModule', [])
+  angular.module('experimentModule', ['userContextModule', 'nrpBackendAbout'])
     .factory('experimentService', ['simulationInfo', 'simulationControl',
                                     'userContextService','bbpConfig',
                                    'experimentsFactory','nrpFrontendVersion','nrpBackendVersions',
