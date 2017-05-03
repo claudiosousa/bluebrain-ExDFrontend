@@ -987,6 +987,17 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 };
 
 /**
+ * Disable shadow receiving
+ *
+ */
+
+GZ3D.Composer.prototype.disableShadowReceiving = function (node)
+{
+    node.receiveShadow = false;
+    node.traverse(function (subnode){subnode.receiveShadow = false;});
+};
+
+/**
  * Apply shadow settings
  *
  */
@@ -994,6 +1005,7 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 GZ3D.Composer.prototype.applyShadowSettings = function ()
 {
     var cs = this.gz3dScene.normalizedComposerSettings;
+    var that = this;
 
     if (cs.shadowSettings)
     {
@@ -1002,6 +1014,11 @@ GZ3D.Composer.prototype.applyShadowSettings = function ()
             for (var i = 0; i < cs.shadowSettings.length; i = i + 1)
             {
                 var settings = cs.shadowSettings[i];
+
+                if (node.name.indexOf('robot:')===0)
+                {
+                    that.disableShadowReceiving(node);
+                }
 
                 if (node.name===settings.lightName && node instanceof THREE.Light)
                 {
