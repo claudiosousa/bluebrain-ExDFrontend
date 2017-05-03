@@ -25,7 +25,7 @@
     'gz3d', 'editorsPanelService',
       function (STATE, contextMenuState, userContextService, stateService, gz3d, editorsPanelService) {
         return {
-          templateUrl: 'views/esv/editor-toolbar.html',
+          templateUrl: 'components/editor-toolbar/editor-toolbar.template.html',
           restrict: 'E',
           scope: false,
           controller: 'editorToolbarCntrl',
