@@ -66,15 +66,27 @@
       });
     };
     return function (error) {
-      var isFatal = isFatalError(error);
-      if (isFatal) {
-        // If it is a fatal error, then we go through the normal error handling
-        serverError.displayHTTPError(error, true);
-      } else {
-        // Log error on console
-        $log.debug(error);
+      if (error.status === 504)
+      {
+        // The initialization of a large brain in the backend might cause a timeout (504) for this REST call.
+        // Since we don't need the result, we don't consider this timeout as an error.
+        return $q.resolve();
       }
-      return $q.reject({ error: error, isFatal: isFatal });
+      else
+      {
+
+        var isFatal = isFatalError(error);
+        if (isFatal)
+        {
+          // If it is a fatal error, then we go through the normal error handling
+          serverError.displayHTTPError(error, true);
+        } else
+        {
+          // Log error on console
+          $log.debug(error);
+        }
+        return $q.reject({ error: error, isFatal: isFatal });
+      }
     };
   }]);
 
@@ -95,17 +107,84 @@
     };
   }]);
 
-  module.factory('simulationGenerator', ['$resource', 'simulationCreationInterceptor', function ($resource, simulationCreationInterceptor) {
+  module.factory('simulationGenerator', ['$resource', '$timeout','$q','simulationCreationInterceptor','serverError','STATE', function ($resource, $timeout,$q,simulationCreationInterceptor,serverError,STATE) {
     return function (baseUrl) {
 
-      return $resource(baseUrl + '/simulation', {}, {
+      var rsc = $resource(baseUrl + '/simulation', {}, {
         create: {
           method: 'POST',
           interceptor: {
             responseError: simulationCreationInterceptor
           }
+        },
+        simulationReady: {
+          method: 'GET',
+          isArray: true,
+          interceptor: { responseError: serverError.displayHTTPError }
         }
       });
+
+      // Since it is possible to have two (or more) front-ends trying to start a simulation at the same time,
+      // the creationUniqueID is used to be sure that we are the owner of the launched simulation.
+      // This ID is passed at the creation of the simulation and caught later here. If the
+      // simulationReady function does not have the correct ID as an argument, we don't join the simulation and show
+      // an error to the user.
+
+      var simulationReady = function (creationUniqueID)
+      {
+        var deferred = $q.defer();
+
+        var verifySimulation = function ()
+        {
+          $timeout(function ()
+          {
+            rsc.simulationReady().$promise
+              .then(function (simulations)
+              {
+                var continueVerify = true;
+
+                if (simulations.length > 0)
+                {
+                  var last = simulations.length - 1;
+                  var state = simulations[last].state;
+
+                  if (state === STATE.PAUSED || state === STATE.INITIALIZED)
+                  {
+                    if (simulations[last].creationUniqueID === creationUniqueID)
+                    {
+                      continueVerify = false;
+                      deferred.resolve(simulations[last]);
+                    }
+                    else
+                    {
+                      deferred.reject();
+                    }
+                  }
+                  else if (state === STATE.HALTED || state === STATE.FAILED)
+                  {
+                    continueVerify = false;
+                    deferred.reject();
+                  }
+                }
+
+                if (continueVerify)
+                {
+                  verifySimulation();
+                }
+              })
+              .catch(deferred.reject);
+          }, 1000);
+        };
+
+        verifySimulation();
+
+        return deferred.promise;
+      };
+
+      return {
+        create: rsc.create,
+        simulationReady: simulationReady
+      };
     };
   }]);
 
@@ -190,6 +269,12 @@
         var brainProcesses = (launchSingleMode) ? 1 : experiment.configuration.brainProcesses;
 
         var oneSimulationFailed = function (failure) {
+
+          if (!failure)
+          {
+            return $q.reject();
+          }
+
           if (failure.error && failure.error.data) {
             $log.error('Failed to start simulation: ' + angular.toJson(failure.error.data));
           }
@@ -246,7 +331,8 @@
           gzserverHost: serverJobLocation,
           contextID: environmentService.isPrivateExperiment() ? $stateParams.ctx : null,
           brainProcesses: brainProcesses,
-          reservation: reservation
+          reservation: reservation,
+          creationUniqueID: (Date.now() + Math.random()).toString()
         };
 
         if (!!environmentConfiguration) {
@@ -254,29 +340,26 @@
         }
 
         // Create a new simulation.
-        simulationGenerator(serverURL).create(simInitData).$promise
-          .then(function (createData) {
-            deferred.notify({ main: 'Initialize Simulation...' });
-            // register for messages during initialization
-            registerForStatusInformation(serverConfiguration.rosbridge, deferred.notify);
+        simulationGenerator(serverURL).create(simInitData);
 
-            function updateSimulationState(state) {
-              return simulationState(serverURL).update({ sim_id: createData.simulationID }, { state: state }).$promise;
-            }
-            // initialize the newly created simulation
-            return updateSimulationState(STATE.INITIALIZED)
-              .then(function ()
-               {
-                simulationConfigService.initConfigFiles(serverURL, createData.simulationID).then(function ()
-                {
-                  deferred.resolve(
-                    'esv-web/experiment-view/' + server + '/' + experimentID + '/' + environmentService.isPrivateExperiment() + "/" + createData.simulationID);
-                }).catch(function (err)
-                {
-                  deferred.reject(err);
-                });
+        deferred.notify({ main: 'Initialize Simulation...' });
+        // register for messages during initialization
+        registerForStatusInformation(serverConfiguration.rosbridge, deferred.notify);
+
+        simulationGenerator(serverURL).simulationReady(simInitData.creationUniqueID)
+          .then(function (simulation)
+          {
+            simulationConfigService.initConfigFiles(serverURL, simulation.simulationID).then(function ()
+            {
+              deferred.resolve(
+                'esv-web/experiment-view/' + server + '/' + experimentID + '/' + environmentService.isPrivateExperiment() + "/" + simulation.simulationID);
+            }).catch(function (err)
+            {
+              deferred.reject(err);
             });
-          }).catch(function (err) {
+
+          }).catch(function (err)
+          {
             deferred.reject(err);
           });
 
