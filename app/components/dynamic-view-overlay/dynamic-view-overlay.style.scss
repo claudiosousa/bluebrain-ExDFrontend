@@ -17,21 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
 
-.editor-display
-{
-  position: absolute;
-  width: 100%;
-  height: calc(100% - 42px);
-}
+@import "styles/esv/pop-over-viewer.scss";
 
-.toolbar {
-  width: 100%;
-  height: 42px;
-  position: absolute;
-  bottom: 0;
-}
+.dynamic-view-overlay-wrapper {
+  @extend .pop-over-viewer;
 
-#experiment-view-widget-overlays {
-  width: 100%;
-  height: 100%;
+  z-index: 999;  //TODO: event listeners of gz3d-view eating events? show-on-top not working?
 }

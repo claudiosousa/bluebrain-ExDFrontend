@@ -17,21 +17,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
 
-.editor-display
-{
-  position: absolute;
-  width: 100%;
-  height: calc(100% - 42px);
-}
+/* global console: false */
 
-.toolbar {
-  width: 100%;
-  height: 42px;
-  position: absolute;
-  bottom: 0;
-}
+(function () {
+  'use strict';
 
-#experiment-view-widget-overlays {
-  width: 100%;
-  height: 100%;
-}
+  angular.module('dynamicViewOverlayModule', [])
+
+    .directive('dynamicViewOverlay', [
+      '$timeout',
+      function($timeout) {
+        return {
+          templateUrl: 'components/dynamic-view-overlay/dynamic-view-overlay.template.html',
+          restrict: 'E',
+          link: function(scope, element, attrs) {
+
+            scope.onResizeBegin = () => element.addClass('resizing');
+
+            // the chart needs a bit of time to adjust its size
+            scope.onResizeEnd = () => $timeout(() => element.removeClass('resizing'), 200);
+          }
+        };
+      }
+    ]);
+}());

@@ -7,27 +7,29 @@
     <!-- <dynamic-view dynamic-view-default-directive="environment-rendering"></dynamic-view> -->
     <environment-rendering></environment-rendering>
 
-    <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
+    <div id="experiment-view-widget-overlays">
+      <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
 
-    <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
+      <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
 
-    <object-inspector></object-inspector>
+      <object-inspector></object-inspector>
 
-    <editor-panel></editor-panel>
+      <editor-panel></editor-panel>
 
-    <brainvisualizer-panel></brainvisualizer-panel>
+      <brainvisualizer-panel></brainvisualizer-panel>
 
-    <environment-settings-panel></environment-settings-panel>
+      <environment-settings-panel></environment-settings-panel>
 
-    <log-console
-      class="ng-hide"
-      ng-show="showLogConsole"
-      show-on-top
-      log-received="consoleLogReceived()"
-      toggle-visibility="logConsoleButtonClickHandler()">
-    </log-console>
+      <log-console
+        class="ng-hide"
+        ng-show="showLogConsole"
+        show-on-top
+        log-received="consoleLogReceived()"
+        toggle-visibility="logConsoleButtonClickHandler()">
+      </log-console>
 
-    <video-stream-generator ng-show="showVideoStreams"></video-stream-generator>
+      <video-stream-generator ng-show="showVideoStreams"></video-stream-generator>
+    </div>
   </div>
 
   <div class="ros-reconnecting" on-reconnect-timeout="exit()"></div>

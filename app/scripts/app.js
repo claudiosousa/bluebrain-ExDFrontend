@@ -87,6 +87,7 @@
       'roslibModule',
       'helpTooltipModule',
       'dynamicViewModule',
+      'dynamicViewOverlayModule',
       'videoStreamModule',
       'showOnTop'])
     // Routes
