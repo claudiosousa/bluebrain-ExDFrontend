@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-describe('Controller: editorToolbarCntrl', function() {
+describe('Controller: EditorToolbarController', function() {
 
   var $controller,
       $rootScope,
@@ -8,7 +8,7 @@ describe('Controller: editorToolbarCntrl', function() {
       $timeout,
       $window,
       location,
-      EditorToolbarController,
+      editorToolbarController,
       stateService,
       userContextService,
       userNavigationService,
@@ -136,7 +136,7 @@ describe('Controller: editorToolbarCntrl', function() {
   describe('(ViewMode)', function() {
 
     beforeEach(function() {
-      EditorToolbarController = $controller('editorToolbarCntrl', {
+      editorToolbarController = $controller('EditorToolbarController', {
         $rootScope: $rootScope,
         $scope: $scope
       });
@@ -519,7 +519,7 @@ describe('Controller: editorToolbarCntrl', function() {
     beforeEach(function() {
       environmentService.setPrivateExperiment(true);
 
-      EditorToolbarController = $controller('editorToolbarCntrl', {
+      editorToolbarController = $controller('EditorToolbarController', {
         $rootScope: $rootScope,
         $scope: $scope
       });
@@ -546,7 +546,7 @@ describe('Controller: editorToolbarCntrl', function() {
 
   describe('(BrainVisualizer)', function() {
     beforeEach(function() {
-      EditorToolbarController = $controller('editorToolbarCntrl', {
+      editorToolbarController = $controller('EditorToolbarController', {
         $rootScope: $rootScope,
         $scope: $scope
       });
@@ -575,7 +575,7 @@ describe('Controller: editorToolbarCntrl', function() {
 
   describe('(EnvironmentSettings)', function() {
     beforeEach(function() {
-      EditorToolbarController = $controller('editorToolbarCntrl', {
+      editorToolbarController = $controller('EditorToolbarController', {
         $rootScope: $rootScope,
         $scope: $scope
       });
@@ -654,7 +654,7 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
   describe('(Clean up code tested with a mocked window object)', function() {
 
     beforeEach(function() {
-      editorToolbar = controller('editorToolbarCntrl', {
+      editorToolbar = controller('EditorToolbarController', {
         $rootScope: rootScope,
         $scope: scope
       });

@@ -77,6 +77,9 @@
     "-W078"         : false,    // accept setters without getters
     "-W008"         : false,    // accept leading decimals
     "-W093"         : false,    //accept return assignments
+    "-W032"         : false,    // accept unnecessary semicolon coming with google style guide for JavaScript
+
+
     // == Environments ====================================================
     //
     // These options pre-define global variables that are exposed by

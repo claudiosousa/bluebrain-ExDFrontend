@@ -16,21 +16,37 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('editorToolbarModule', ['helpTooltipModule'])
-  .controller('editorToolbarCntrl',
-  ['$rootScope', '$scope', '$timeout', '$location', '$q', '$window',
-    'STATE', 'contextMenuState', 'userContextService', 'stateService', 'gz3d', 'editorsPanelService', 'userNavigationService',
-    'objectInspectorService', 'nrpAnalytics', 'hbpDialogFactory', 'environmentService', 'backendInterfaceService', 'environmentRenderingService',
-    'splash', 'simulationInfo', 'videoStreamService', 'dynamicViewOverlayService',
-    'NAVIGATION_MODES', 'helpTooltipService', 'EDIT_MODE', 'RESET_TYPE',
-    function ($rootScope, $scope, $timeout, $location, $q, $window,
-              STATE, contextMenuState, userContextService, stateService, gz3d, editorsPanelService, userNavigationService,
-              objectInspectorService, nrpAnalytics, hbpDialogFactory, environmentService, backendInterfaceService, environmentRenderingService,
-              splash, simulationInfo, videoStreamService, dynamicViewOverlayService,
-              NAVIGATION_MODES, helpTooltipService, EDIT_MODE, RESET_TYPE) {
+  class EditorToolbarController {
+    constructor($rootScope,
+                $scope,
+                $timeout,
+                $location,
+                $window,
+                contextMenuState,
+                userContextService,
+                stateService,
+                gz3d,
+                editorsPanelService,
+                userNavigationService,
+                objectInspectorService,
+                nrpAnalytics,
+                hbpDialogFactory,
+                environmentService,
+                backendInterfaceService,
+                environmentRenderingService,
+                splash,
+                simulationInfo,
+                videoStreamService,
+                dynamicViewOverlayService,
+                helpTooltipService,
+                STATE,
+                NAVIGATION_MODES,
+                EDIT_MODE,
+                RESET_TYPE) {
+
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
       $scope.stateService = stateService;
@@ -51,7 +67,7 @@
       $scope.STATE = STATE;
 
       // prevent this analytics event from sent multiple time
-      var analyticsEventTimeout = _.once(function () {
+      let analyticsEventTimeout = _.once(function() {
         nrpAnalytics.eventTrack('Timeout', {
           category: 'Simulation'
         });
@@ -61,27 +77,30 @@
       /* This is the case when closing or resetting a simulation/environment for example.
        /* Loading is taken take of by a progressbar somewhere else. */
       /* Timeout messages are displayed in the toolbar. */
-      var messageCallback = function (message) {
+      var messageCallback = function(message) {
         /* Progress messages (except start state progress messages which are handled by another progress bar) */
         if (angular.isDefined(message.progress)) {
 
-          var stateStopFailed = stateService.currentState === STATE.STOPPED || stateService.currentState === STATE.FAILED;
+          var stateStopFailed = stateService.currentState === STATE.STOPPED ||
+              stateService.currentState === STATE.FAILED;
 
           //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
           //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
           /* splashScreen == null means it has been already closed and should not be reopened */
-          if(splash.splashScreen !== null &&
-          !environmentRenderingService.sceneLoading &&
-          (angular.isDefined(message.state) ||
-          (stateStopFailed || (angular.isDefined(message.progress.subtask) && message.progress.subtask.length>0 ))))
-          {
+          if (splash.splashScreen !== null &&
+              !environmentRenderingService.sceneLoading &&
+              (angular.isDefined(message.state) ||
+              (stateStopFailed ||
+              (angular.isDefined(message.progress.subtask) &&
+              message.progress.subtask.length > 0 )))) {
             splash.splashScreen = splash.splashScreen || splash.open(
-            !message.progress.block_ui,
-            (stateStopFailed ? $scope.exit : undefined));
+                    !message.progress.block_ui,
+                    (stateStopFailed ? $scope.exit : undefined));
           }
-          if (angular.isDefined(message.progress.done) && message.progress.done) {
+          if (angular.isDefined(message.progress.done) &&
+              message.progress.done) {
             splash.spin = false;
-            splash.setMessage({ headline: 'Finished' });
+            splash.setMessage({headline: 'Finished'});
             /* if splash is a blocking modal (no button), then close it*/
             /* (else it is closed by the user on button click) */
             if (!splash.showButton) {
@@ -96,7 +115,10 @@
               $scope.onSimulationDone();
             }
           } else {
-            splash.setMessage({ headline: message.progress.task, subHeadline: message.progress.subtask });
+            splash.setMessage({
+              headline: message.progress.task,
+              subHeadline: message.progress.subtask
+            });
           }
         }
         /* Time messages */
@@ -121,7 +143,7 @@
       };
 
       // Query the state of the simulation
-      stateService.getCurrentState().then(function () {
+      stateService.getCurrentState().then(function() {
         if (stateService.currentState === STATE.STOPPED) {
           // The Simulation is already Stopped, so do nothing more but show the alert popup
           userContextService.isJoiningStoppedSimulation = true;
@@ -146,21 +168,21 @@
       });
 
       // Lights management
-      $scope.modifyLightClickHandler = function (direction, button) {
-        if ((direction < 0 && gz3d.isGlobalLightMinReached()) || (direction > 0 && gz3d.isGlobalLightMaxReached()))
-        {
+      $scope.modifyLightClickHandler = function(direction, button) {
+        if ((direction < 0 && gz3d.isGlobalLightMinReached()) ||
+            (direction > 0 && gz3d.isGlobalLightMaxReached())) {
           return;
         }
 
         gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
       };
 
-      $scope.updateSimulation = function (newState) {
+      $scope.updateSimulation = function(newState) {
         stateService.setCurrentState(newState);
       };
 
       // play/pause/stop button handler
-      $scope.simControlButtonHandler = function (newState) {
+      $scope.simControlButtonHandler = function(newState) {
         $scope.updateSimulation(newState);
         $scope.setEditMode(EDIT_MODE.VIEW);
         if (objectInspectorService !== null) {
@@ -168,18 +190,18 @@
         }
       };
 
-      $scope.setEditMode = function (newMode) {
+      $scope.setEditMode = function(newMode) {
         //currentMode !== newMode
         if (gz3d.scene.manipulationMode !== newMode) {
           gz3d.scene.setManipulationMode(newMode);
         }
       };
 
-      $scope.notifyResetToWidgets = function (resetType) {
+      $scope.notifyResetToWidgets = function(resetType) {
         $scope.$broadcast('RESET', resetType);
       };
 
-      $scope.resetButtonClickHandler = function () {
+      $scope.resetButtonClickHandler = function() {
         $scope.request = {
           resetType: RESET_TYPE.NO_RESET
         };
@@ -187,17 +209,19 @@
           'title': 'Reset Menu',
           'templateUrl': 'views/esv/reset-checklist-template.html',
           'scope': $scope
-        }).then(function () {
+        }).then(function() {
           stateService.ensureStateBeforeExecuting(
-          STATE.PAUSED,
-          $scope.__resetButtonClickHandler
+              STATE.PAUSED,
+              $scope.__resetButtonClickHandler
           );
         });
       };
 
-      $scope.__resetButtonClickHandler = function () {
+      $scope.__resetButtonClickHandler = function() {
         var resetType = $scope.request.resetType;
-        if (resetType === RESET_TYPE.NO_RESET) { return; }
+        if (resetType === RESET_TYPE.NO_RESET) {
+          return;
+        }
 
         stateService.setCurrentState(STATE.PAUSED);
 
@@ -205,7 +229,7 @@
           editorsPanelService.toggleEditors();
         }
 
-        $timeout(function(){
+        $timeout(function() {
 
           $scope.notifyResetToWidgets(resetType);
 
@@ -214,13 +238,14 @@
               gz3d.scene.resetView();
             }
           } else { // Backend-bound reset
-            splash.splashScreen = splash.splashScreen || splash.open(false, undefined);
+            splash.splashScreen = splash.splashScreen ||
+                splash.open(false, undefined);
             if (environmentService.isPrivateExperiment()) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
 
               var resetWhat = '', downloadWhat = '';
 
-              (function (resetType) { //customize user message depending on the reset type
+              (function(resetType) { //customize user message depending on the reset type
                 if (resetType === RESET_TYPE.RESET_WORLD) {
                   resetWhat = 'Environment';
                   downloadWhat = 'World SDF ';
@@ -231,18 +256,22 @@
               })(resetType);
 
               var messageHeadline = 'Resetting ' + resetWhat;
-              var messageSubHeadline = 'Downloading ' + downloadWhat + 'from the Collab';
+              var messageSubHeadline = 'Downloading ' + downloadWhat +
+                  'from the Collab';
 
-              _.defer(function () {
+              _.defer(function() {
                 splash.spin = true;
-                splash.setMessage({ headline: messageHeadline, subHeadline: messageSubHeadline });
+                splash.setMessage({
+                  headline: messageHeadline,
+                  subHeadline: messageSubHeadline
+                });
               });
 
               backendInterfaceService.resetCollab(
-                simulationInfo.contextID,
-                $scope.request,
-                splash.closeSplash,
-                splash.closeSplash
+                  simulationInfo.contextID,
+                  $scope.request,
+                  splash.closeSplash,
+                  splash.closeSplash
               );
             } else {
               //other kinds of reset
@@ -269,13 +298,13 @@
 
       // This should be integrated to the tutorial story when
       // it will be implemented !
-      $scope.requestMove = function (event, action) {
+      $scope.requestMove = function(event, action) {
         if (event.which === 1) { // camera control uses left button only
           gz3d.scene.controls.onMouseDownManipulator(action);
         }
       };
 
-      $scope.releaseMove = function (event, action) {
+      $scope.releaseMove = function(event, action) {
         if (event.which === 1) { // camera control uses left button only
           gz3d.scene.controls.onMouseUpManipulator(action);
         }
@@ -283,7 +312,7 @@
 
       // Spiketrain
       $scope.showSpikeTrain = false;
-      $scope.spikeTrainButtonClickHandler = function () {
+      $scope.spikeTrainButtonClickHandler = function() {
         $scope.showSpikeTrain = !$scope.showSpikeTrain;
         nrpAnalytics.eventTrack('Toggle-spike-train', {
           category: 'Simulation-GUI',
@@ -293,7 +322,7 @@
 
       // JointPlot
       $scope.showJointPlot = false;
-      $scope.jointPlotButtonClickHandler = function () {
+      $scope.jointPlotButtonClickHandler = function() {
         $scope.showJointPlot = !$scope.showJointPlot;
         nrpAnalytics.eventTrack('Toggle-joint-plot', {
           category: 'Simulation-GUI',
@@ -302,7 +331,7 @@
       };
 
       // robot view
-      $scope.robotViewButtonClickHandler = function () {
+      $scope.robotViewButtonClickHandler = function() {
         if (!environmentRenderingService.hasCameraView())
           return;
         $scope.showRobotView = !$scope.showRobotView;
@@ -310,10 +339,13 @@
           category: 'Simulation-GUI',
           value: $scope.showRobotView
         });
-        gz3d.scene.viewManager.views.forEach(function (view) {
-          if (angular.isDefined(view.type) && view.type === 'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
+        gz3d.scene.viewManager.views.forEach(function(view) {
+          if (angular.isDefined(view.type) && view.type ===
+              'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
             view.active = !view.active;
-            view.container.style.visibility = view.active ? 'visible' : 'hidden';
+            view.container.style.visibility = view.active ?
+                'visible' :
+                'hidden';
           }
         });
       };
@@ -321,25 +353,25 @@
       // navigation mode
       $scope.showNavigationModeMenu = false;
 
-      $scope.isActiveNavigationMode = function (mode) {
+      $scope.isActiveNavigationMode = function(mode) {
         return (userNavigationService.navigationMode === mode);
       };
 
-      $scope.navigationModeMenuClickHandler = function () {
+      $scope.navigationModeMenuClickHandler = function() {
         $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
       };
 
       $scope.showHumanNavInfoDiv = false;
-      $scope.displayHumanNavInfo = function (event) {
+      $scope.displayHumanNavInfo = function(event) {
         if (stateService.currentState === STATE.PAUSED) {
           $scope.showHumanNavInfoDiv = true;
-          $timeout(function () {
+          $timeout(function() {
             $scope.showHumanNavInfoDiv = false;
           }, 5000);
         }
       };
 
-      $scope.setNavigationMode = function (mode) {
+      $scope.setNavigationMode = function(mode) {
         switch (mode) {
           case NAVIGATION_MODES.FREE_CAMERA:
             document.removeEventListener('keydown', $scope.displayHumanNavInfo);
@@ -358,16 +390,16 @@
             }
             break;
 
-         case NAVIGATION_MODES.LOOKAT_ROBOT:
-              document.removeEventListener('keydown', $scope.displayHumanNavInfo);
-              userNavigationService.setLookatRobotCamera();
-              break;
+          case NAVIGATION_MODES.LOOKAT_ROBOT:
+            document.removeEventListener('keydown', $scope.displayHumanNavInfo);
+            userNavigationService.setLookatRobotCamera();
+            break;
         }
       };
 
       $scope.helpTooltipService = helpTooltipService;
 
-      $scope.codeEditorButtonClickHandler = function () {
+      $scope.codeEditorButtonClickHandler = function() {
         if (userContextService.editIsDisabled || $scope.loadingEditPanel) {
           return;
         } else {
@@ -376,7 +408,7 @@
       };
 
       $scope.showBrainvisualizerPanel = false;
-      $scope.toggleBrainvisualizer = function () {
+      $scope.toggleBrainvisualizer = function() {
         $scope.showBrainvisualizerPanel = !$scope.showBrainvisualizerPanel;
         nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
           category: 'Simulation-GUI',
@@ -387,8 +419,7 @@
       $scope.videoStreamsAvailable = false;
 
       function checkIfVideoStreamsAvailable() {
-        videoStreamService.getStreamUrls()
-        .then(function(videoStreams) {
+        videoStreamService.getStreamUrls().then(function(videoStreams) {
           $scope.videoStreamsAvailable = videoStreams && !!videoStreams.length;
         });
       }
@@ -397,7 +428,8 @@
 
       $scope.$watch('stateService.currentState', function() {
         //starting the experiment might publish new video streams, so we check again
-        if (!$scope.videoStreamsAvailable && stateService.currentState === STATE.STARTED)
+        if (!$scope.videoStreamsAvailable &&
+            stateService.currentState === STATE.STARTED)
           $timeout(checkIfVideoStreamsAvailable, 500);
       });
 
@@ -413,7 +445,7 @@
 
       // log console
       $scope.showLogConsole = false;
-      $scope.logConsoleButtonClickHandler = function () {
+      $scope.logConsoleButtonClickHandler = function() {
         $scope.showLogConsole = !$scope.showLogConsole;
         if ($scope.showLogConsole)
           $scope.missedConsoleLogs = 0;
@@ -424,7 +456,7 @@
       };
 
       $scope.missedConsoleLogs = 0;
-      $scope.consoleLogReceived = function () {
+      $scope.consoleLogReceived = function() {
         if (!$scope.showLogConsole)
           $scope.missedConsoleLogs++;
       };
@@ -432,8 +464,9 @@
       // Environment settings panel
       $scope.showEnvironmentSettingsPanel = false;
 
-      $scope.environmentSettingsClickHandler = function () {
-        if ($scope.environmentSettingsIsDisabled || $scope.loadingEnvironmentSettingsPanel) {
+      $scope.environmentSettingsClickHandler = function() {
+        if ($scope.environmentSettingsIsDisabled ||
+            $scope.loadingEnvironmentSettingsPanel) {
           return;
         } else {
           $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
@@ -453,7 +486,7 @@
         stateService.stopListeningForStatusInformation();
       }
 
-      $scope.onSimulationDone = function () {
+      $scope.onSimulationDone = function() {
         closeSimulationConnections();
         // unregister the message callback
         stateService.removeMessageCallback(messageCallback);
@@ -461,13 +494,15 @@
       };
 
       //When resetting do something
-      $scope.resetListenerUnbindHandler = $scope.$on('RESET', function (event, resetType) {
-        if(resetType === RESET_TYPE.RESET_FULL || resetType === RESET_TYPE.RESET_WORLD) {
-          $scope.resetGUI();
-        }
-      });
+      $scope.resetListenerUnbindHandler = $scope.$on('RESET',
+          function(event, resetType) {
+            if (resetType === RESET_TYPE.RESET_FULL ||
+                resetType === RESET_TYPE.RESET_WORLD) {
+              $scope.resetGUI();
+            }
+          });
 
-      $scope.resetGUI = function () {
+      $scope.resetGUI = function() {
         gz3d.scene.controls.onMouseDownManipulator('initPosition');
         gz3d.scene.controls.onMouseDownManipulator('initRotation');
         gz3d.scene.controls.update();
@@ -480,7 +515,7 @@
         }
       };
 
-      $scope.exit = function () {
+      $scope.exit = function() {
         exitSimulation();
       };
 
@@ -530,12 +565,43 @@
       };
 
       // clean up on leaving
-      $scope.$on('$destroy', function () {
+      $scope.$on('$destroy', function() {
         /* NOT CALLED AUTOMATICALLY ON EXITING AN EXPERIMENT */
         /* possible cause of memory leaks */
 
         $scope.cleanUp();
       });
+    }
+  }
+  angular.module('editorToolbarModule', ['helpTooltipModule']).
+      controller('EditorToolbarController',
+          [
+            '$rootScope',
+            '$scope',
+            '$timeout',
+            '$location',
+            '$window',
+            'contextMenuState',
+            'userContextService',
+            'stateService',
+            'gz3d',
+            'editorsPanelService',
+            'userNavigationService',
+            'objectInspectorService',
+            'nrpAnalytics',
+            'hbpDialogFactory',
+            'environmentService',
+            'backendInterfaceService',
+            'environmentRenderingService',
+            'splash',
+            'simulationInfo',
+            'videoStreamService',
+            'dynamicViewOverlayService',
+            'helpTooltipService',
+            'STATE',
+            'NAVIGATION_MODES',
+            'EDIT_MODE',
+            'RESET_TYPE',
+            (...args) => new EditorToolbarController(...args)]);
 
-    }]);
-}());
+})();
