@@ -26,9 +26,7 @@
 
     .directive('dynamicView', [
       '$compile',
-      '$timeout',
-      function($compile,
-               $timeout) {
+      function($compile) {
         return {
 
           templateUrl: 'components/dynamic-view/dynamic-view.template.html',
