@@ -29,11 +29,13 @@
           return {
             pre: (scope, element, attrs) => {
 
-              element.on('click', (e) => {
-                if (helpTooltipService.visible) {
+              let tryPreventEvent = e => helpTooltipService.visible && e.stopImmediatePropagation();
+
+              element[0].addEventListener('mousedown', tryPreventEvent, true);
+
+              element.on('click.helptooltip', e => {
+                if (tryPreventEvent(e) !== false)
                   helpTooltipService.display(attrs.helpTooltip);
-                  e.stopImmediatePropagation();
-                }
               });
 
               scope.helpTooltipService = helpTooltipService;
@@ -44,7 +46,10 @@
                   element.removeClass(SELECTED_STYLE);
               });
 
-              scope.$on('$destroy', ()=> element.off('click'));
+              scope.$on('$destroy', () => {
+                element.off('.helptooltip');
+                element[0].removeEventListener('mousedown', tryPreventEvent, true);
+              });
             }
           };
         }
