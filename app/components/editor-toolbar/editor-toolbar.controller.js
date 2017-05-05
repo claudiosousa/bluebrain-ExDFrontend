@@ -213,6 +213,13 @@
             }
           } else { // Backend-bound reset
             $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
+            let closeSplash = ()=>{
+                if (angular.isDefined($scope.splashScreen)) {
+                  splash.close();
+                  delete $scope.splashScreen;
+                }
+            };
+
             if (environmentService.isPrivateExperiment()) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
 
@@ -239,21 +246,8 @@
               backendInterfaceService.resetCollab(
               simulationInfo.contextID,
               $scope.request,
-              function () { // Success callback
-                //close the splash
-                if (angular.isDefined($scope.splashScreen)) {
-                  splash.close();
-                  delete $scope.splashScreen;
-                }
-              },
-              function () { // Failure callback
-                //close the splash
-                if (angular.isDefined($scope.splashScreen)) {
-                  splash.close();
-                  delete $scope.splashScreen;
-                }
-              }
-              );
+              closeSplash,
+              closeSplash);
             } else {
               //other kinds of reset
               backendInterfaceService.reset(
@@ -264,18 +258,13 @@
 
                 gz3d.scene.applyComposerSettings(true,false);
 
+                closeSplash();
                 if (resetType === RESET_TYPE.RESET_BRAIN)
                 {
                   $scope.$broadcast('UPDATE_PANEL_UI');
                 }
               },
-              function () { // Failure callback
-                if (angular.isDefined($scope.splashScreen)) {
-                  splash.close();
-                  delete $scope.splashScreen;
-                }
-              }
-              );
+              closeSplash);
             }
           }
         }, 100);
