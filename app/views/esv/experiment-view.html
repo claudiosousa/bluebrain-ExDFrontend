@@ -4,8 +4,40 @@
 
 <div>
   <div class="editor-display">
+    <!-- <dynamic-view dynamic-view-default-directive="environment-rendering"></dynamic-view> -->
     <environment-rendering></environment-rendering>
+
+    <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
+
+    <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
+
+    <object-inspector></object-inspector>
+
+    <editor-panel></editor-panel>
+
+    <brainvisualizer-panel></brainvisualizer-panel>
+
+    <environment-settings-panel></environment-settings-panel>
+
+    <log-console
+      class="ng-hide"
+      ng-show="showLogConsole"
+      show-on-top
+      log-received="consoleLogReceived()"
+      toggle-visibility="logConsoleButtonClickHandler()">
+    </log-console>
+
+    <video-streams
+      class="ng-hide"
+      ng-show="showVideoStreams"
+      show-on-top
+      toggle-visibility="videoStreamsToggle()">
+    </video-streams>
   </div>
+
+  <div class="ros-reconnecting" on-reconnect-timeout="exit()"></div>
+
+  <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}" ng-if="userContextService.isOwner()"></simulation-timeout-extender>
 
   <help-tooltip-popover></help-tooltip-popover>
 

@@ -102,46 +102,9 @@
           <span>When paused, avatar navigation is not possible</span>
         </div>
 
-        <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
-        <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
-
-
         <context-menu></context-menu>
-        <object-inspector></object-inspector>
-
-
-        <!-- Code editor panel -->
-        <editor-panel></editor-panel>
-        <!-- Code editor panel -->
-
-        <!-- Brainvisualizer panel -->
-        <brainvisualizer-panel></brainvisualizer-panel>
-        <!-- Brainvisualizer panel -->
-
-        <!-- Environment settings panel -->
-        <environment-settings-panel></environment-settings-panel>
-        <!-- Environment settings panel -->
-
-        <log-console
-          class="ng-hide"
-          ng-show="showLogConsole"
-          show-on-top
-          log-received="consoleLogReceived()"
-          toggle-visibility="logConsoleButtonClickHandler()">
-        </log-console>
-
-        <video-streams
-            class="ng-hide"
-            ng-show="showVideoStreams"
-            show-on-top
-            toggle-visibility="videoStreamsToggle()">
-        </video-streams>
 
       </div>
       <!-- container -->
-
-      <div class="ros-reconnecting" on-reconnect-timeout="exit()"></div>
-
-      <simulation-timeout-extender extent-timeout-condition="{{simTimeoutText < 300}}" ng-if="userContextService.isOwner()"></simulation-timeout-extender>
     </div>
     <!-- page -->
