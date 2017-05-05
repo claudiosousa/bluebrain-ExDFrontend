@@ -59,12 +59,12 @@
             scope.updateEnvColorSettings = function (p)
             {
               gz3d.scene.composerSettings.levelsInGamma = (1.0 - (scope.inGamma - 1.0));
-              gz3d.scene.applyComposerSettings();
+              gz3d.scene.applyComposerSettings(undefined,undefined,true);
             };
 
             scope.onRGBCurveChanged = function ()
             {
-              gz3d.scene.applyComposerSettings(true);
+              gz3d.scene.applyComposerSettings(true,undefined,true);
             };
 
             //----------------------------------------------

@@ -107,7 +107,7 @@
               gz3d.scene.composerSettings.fogDensity = scope.fogDensity;
               gz3d.scene.composerSettings.fogColor = scope.fogColor;
 
-              gz3d.scene.applyComposerSettings();
+              gz3d.scene.applyComposerSettings(undefined,undefined,true);
             };
 
           }

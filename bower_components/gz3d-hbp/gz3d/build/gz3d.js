@@ -1066,7 +1066,7 @@ GZ3D.Composer.prototype.applyShadowSettings = function ()
  *
  */
 
-GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,forcePBRUpdate)
+GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,forcePBRUpdate,shadowReset)
 {
     this.normalizedMasterSetting = null;
     this.updateComposerWithMasterSettings();
@@ -1086,7 +1086,12 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
     // Shadows
 
     this.applyShadowSettings();
-    this.gz3dScene.setShadowMaps(cs.shadows);
+
+    // call setShadowsMap only when the shadow setting is changed, not at every color update (ambient occlusion,bloom,color correction)
+    if (shadowReset !== true)
+    {
+        this.gz3dScene.setShadowMaps(cs.shadows);
+    }
 
     // Fog
 
@@ -10264,9 +10269,9 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
  * @param updateColorCurve
 */
 
-  GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate)
+  GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate,shadowReset)
   {
-    this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate);
+    this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate,shadowReset);
     this.needsImmediateUpdate = true;
   };
 
