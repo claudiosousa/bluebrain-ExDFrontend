@@ -20,7 +20,7 @@
   'use strict';
 
   angular.module('spikeTrainModule')
-    .directive('spikeTrain', ['$timeout', 'RESET_TYPE', ($timeout, RESET_TYPE) => {
+    .directive('spikeTrain', ['$interval', 'RESET_TYPE', ($interval, RESET_TYPE) => {
 
       return {
         templateUrl: 'components/spike-train/spike-train.template.html',
@@ -35,13 +35,20 @@
 
           const canvas = scope.vm.drawingCanvas = element.find('canvas')[0];
 
+          /**
+           * Returns whether the size could been calculated
+           */
           let calculateCanvas = () => {
             const parent = canvas.parentNode;
+            if (!parent.clientHeight)
+              return false;
+
             canvas.setAttribute('height', parent.clientHeight - 6);//margin to avoid parasite scrollbar
             canvas.setAttribute('width', parent.clientWidth);
 
             scope.vm.calculateCanvasSize();
             scope.vm.redraw();
+            return true;
           };
 
           scope.onResizeEnd = calculateCanvas;
@@ -50,12 +57,11 @@
           angular.element(window).on('resize.spiketrain', _.debounce(scope.onResizeEnd, 300));
 
           scope.$watch('visible', visible => {
-            if (visible)
-              $timeout(() => {
-                scope.vm.startSpikeDisplay();
-                calculateCanvas();
-              }, 30);//wait for the container to be visible
-            else
+            if (visible) {
+              scope.vm.startSpikeDisplay();
+              //will try to render the canvas until it is visible
+              let checkForVisibility = $interval(() => calculateCanvas() && $interval.cancel(checkForVisibility), 30);
+            } else
               scope.vm.stopSpikeDisplay();
           });
 

@@ -17,12 +17,12 @@ describe('Directive: spiketrain', function() {
     $provide.value('simulationInfo', simulationInfoMock);
   }));
 
-  var scope, $rootScope, $timeout;
+  var scope, $rootScope, $timeout, element;
   beforeEach(inject(function(_$rootScope_, $compile, _$timeout_) {
     $rootScope = _$rootScope_;
     $timeout = _$timeout_;
     $rootScope.visible = false;
-    var element = $compile('<spike-train ng-show="visible"></spike-train>')($rootScope);
+    element = $compile('<spike-train ng-show="visible"></spike-train>')($rootScope);
     $rootScope.$digest();
     scope = element.isolateScope();
   }));
@@ -39,9 +39,8 @@ describe('Directive: spiketrain', function() {
     $rootScope.visible = true;
     $rootScope.$digest();
     $timeout.flush();
+
     expect(scope.vm.startSpikeDisplay).toHaveBeenCalled();
-    expect(scope.vm.calculateCanvasSize).toHaveBeenCalled();
-    expect(scope.vm.redraw).toHaveBeenCalled();
   });
 
   it('should clearPlot on RESET', function() {
