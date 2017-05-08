@@ -239,21 +239,25 @@
           return deferred.promise;
         }
 
-        scope.cleanCompileError = function(transferFunction) {
-          var compileError = transferFunction.error[scope.ERROR.COMPILE];
-          var lineHandle = compileError ? compileError.lineHandle : undefined;
-          if (angular.isDefined(lineHandle)) {
+        function cleanError(transferFunction, errorType) {
+          var error = transferFunction.error[errorType];
+          if (error && error.lineHandle){
             var editor = codeEditorsServices.getEditor('transfer-function-' + transferFunction.id);
-            editor.removeLineClass(lineHandle, 'background', 'alert-danger');
+            editor.removeLineClass(error.lineHandle, 'background', 'alert-danger');
           }
-          delete transferFunction.error[scope.ERROR.RUNTIME];
+          delete transferFunction.error[errorType];
+        }
+
+        scope.cleanCompileError = function(transferFunction) {
+          cleanError(transferFunction, scope.ERROR.COMPILE);
+
           delete transferFunction.error[scope.ERROR.COMPILE];
           delete transferFunction.error[scope.ERROR.NO_OR_MULTIPLE_NAMES];
         };
 
         scope.update = function(transferFunction) {
           return ensurePauseStateAndExecute(function(cb) {
-            delete transferFunction.error[scope.ERROR.RUNTIME];
+            cleanError(transferFunction, scope.ERROR.RUNTIME);
             delete transferFunction.error[scope.ERROR.LOADING];
             backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code,
               function(){
