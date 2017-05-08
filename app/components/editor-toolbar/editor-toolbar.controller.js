@@ -511,11 +511,16 @@
           $location.path('esv-private');
         else
           $location.path('esv-web');
-        $timeout(function ()
-        {
-          $window.location.reload();
-        });
       }
+
+      const esvPages = new Set(['esv-private', 'esv-web']);
+
+      // force page reload when navigating to esv pages, to discard experiment related context
+      // valid for all navigation reasons: explicit $location.path, or browser nav button
+      $rootScope.$on('$stateChangeStart', (e, state) => {
+        if (esvPages.has(state.name))
+          $timeout(() => $window.location.reload());
+      });
 
       $scope.cleanUp = function() {
         environmentRenderingService.deinit();
