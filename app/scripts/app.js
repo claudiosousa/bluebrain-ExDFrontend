@@ -87,7 +87,8 @@
       'roslibModule',
       'helpTooltipModule',
       'dynamicViewModule',
-      'videoStreamModule'])
+      'videoStreamModule',
+      'showOnTop'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
