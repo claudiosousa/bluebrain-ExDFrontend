@@ -29,6 +29,7 @@
     this.showButton = false;
     this.callbackOnClose = undefined;
     this.spin = true;
+    this.splashScreen = undefined;
 
     // We have to work around a bit here: The controller of the HTML will register
     // a function as a callback. This function will then update the contents of the
@@ -69,6 +70,13 @@
       }
       this.callbackOnClose = undefined;
       this.modal = undefined;
+    };
+
+    this.closeSplash = () => {
+      if (angular.isDefined(this.splashScreen)) {
+        this.close();
+        delete this.splashScreen;
+      }
     };
 
   }]);

@@ -67,13 +67,15 @@
 
           var stateStopFailed = stateService.currentState === STATE.STOPPED || stateService.currentState === STATE.FAILED;
 
+          //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
+          //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
           /* splashScreen == null means it has been already closed and should not be reopened */
-          if ($scope.splashScreen !== null &&
+          if(splash.splashScreen !== null &&
           !environmentRenderingService.sceneLoading &&
           (angular.isDefined(message.state) ||
           (stateStopFailed || (angular.isDefined(message.progress.subtask) && message.progress.subtask.length>0 ))))
           {
-            $scope.splashScreen = $scope.splashScreen || splash.open(
+            splash.splashScreen = splash.splashScreen || splash.open(
             !message.progress.block_ui,
             (stateStopFailed ? $scope.exit : undefined));
           }
@@ -86,7 +88,7 @@
               // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
               // so we don't have to close the websocket, just the splash screen.
               splash.close();
-              $scope.splashScreen = undefined;
+              splash.splashScreen = undefined;
             } else {
               // the modal is non blocking (i.e. w/ button) ->
               // we are closing the simulation thus we have to
@@ -212,14 +214,7 @@
               gz3d.scene.resetView();
             }
           } else { // Backend-bound reset
-            $scope.splashScreen = $scope.splashScreen || splash.open(false, undefined);
-            let closeSplash = ()=>{
-                if (angular.isDefined($scope.splashScreen)) {
-                  splash.close();
-                  delete $scope.splashScreen;
-                }
-            };
-
+            splash.splashScreen = splash.splashScreen || splash.open(false, undefined);
             if (environmentService.isPrivateExperiment()) { //reset from collab
               //open splash screen, blocking ui (i.e. no ok button) and no closing callback
 
@@ -244,27 +239,27 @@
               });
 
               backendInterfaceService.resetCollab(
-              simulationInfo.contextID,
-              $scope.request,
-              closeSplash,
-              closeSplash);
+                simulationInfo.contextID,
+                $scope.request,
+                splash.closeSplash,
+                splash.closeSplash
+              );
             } else {
               //other kinds of reset
               backendInterfaceService.reset(
-              $scope.request,
-              function () { // Success callback
-                //do not close the splash if successful
-                //it will be closed by messageCallback
-
-                gz3d.scene.applyComposerSettings(true,false);
-
-                closeSplash();
-                if (resetType === RESET_TYPE.RESET_BRAIN)
-                {
-                  $scope.$broadcast('UPDATE_PANEL_UI');
-                }
-              },
-              closeSplash);
+                $scope.request,
+                function() { // Success callback
+                  // do not close the splash if successful
+                  // it will be closed by messageCallback
+                  gz3d.scene.applyComposerSettings(true,false);
+                  splash.closeSplash();
+                  if (resetType === RESET_TYPE.RESET_BRAIN)
+                  {
+                    $scope.$broadcast('UPDATE_PANEL_UI');
+                  }
+                },
+                splash.closeSplash
+              );
             }
           }
         }, 100);
@@ -492,7 +487,7 @@
       function exitSimulation() {
         $scope.cleanUp();
 
-        $scope.splashScreen = null;  // do not reopen splashscreen if further messages happen
+        splash.splashScreen = null;  // do not reopen splashscreen if further messages happen
         if (environmentService.isPrivateExperiment())
           $location.path('esv-private');
         else
@@ -529,7 +524,7 @@
 
       $scope.createDynamicOverlay = function(componentName) {
         dynamicViewOverlayService.createOverlay(
-          document.getElementById('experiment-view-dynamic-overlays'), /* parent element to attach overlay to */
+          document.getElementById('experiment-view-widget-overlays'), /* parent element to attach overlay to */
           componentName
         );
       };

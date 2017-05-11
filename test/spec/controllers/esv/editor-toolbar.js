@@ -285,18 +285,14 @@ describe('Controller: editorToolbarCntrl', function() {
 
         backendInterfaceService.resetCollab.calls.mostRecent().args[2](); //2 is the success callback
 
-        expect(splash.close).toHaveBeenCalled();
-        expect($scope.splashScreen).not.toBeDefined();
+        expect(splash.closeSplash).toHaveBeenCalled();
 
         //reset spies
         splash.close.calls.reset();
-        $scope.splashScreen = 'isDefined';
+        splash.splashScreen = 'isDefined';
 
         backendInterfaceService.resetCollab.calls.mostRecent().args[3](); //3 is the failure callback
         $timeout.flush(100);
-
-        expect(splash.close).toHaveBeenCalled();
-        expect($scope.splashScreen).not.toBeDefined();
       }
     });
 
@@ -340,7 +336,7 @@ describe('Controller: editorToolbarCntrl', function() {
       stateService.currentState = STATE.STOPPED;
       $scope.sceneLoading = false;
       //Test the messageCallback
-      $scope.splashScreen = undefined;
+      splash.splashScreen = undefined;
       stateService.addMessageCallback.calls.mostRecent().args[0]({
         progress: {
           'block_ui': 'False',
@@ -353,7 +349,7 @@ describe('Controller: editorToolbarCntrl', function() {
       expect(callbackOnClose).toBeDefined();
       expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Task1', subHeadline: 'Subtask1' });
       // test open splash screen without callbackOnClose
-      $scope.splashScreen = undefined;
+      splash.splashScreen = undefined;
       stateService.currentState = STATE.INITIALIZED;
       stateService.addMessageCallback.calls.mostRecent().args[0]({
         progress: {
@@ -381,7 +377,7 @@ describe('Controller: editorToolbarCntrl', function() {
 
       // test "done" in IF path (with close, without onSimulationDone)
       stateService.currentState = STATE.STOPPED;
-      $scope.splashScreen = undefined;
+      splash.splashScreen = undefined;
       splash.close.calls.reset();
       stateService.removeMessageCallback.calls.reset();
       splash.showButton = false;
