@@ -24,12 +24,12 @@
   ['$rootScope', '$scope', '$timeout', '$location', '$q', '$window',
     'STATE', 'contextMenuState', 'userContextService', 'stateService', 'gz3d', 'editorsPanelService', 'userNavigationService',
     'objectInspectorService', 'nrpAnalytics', 'hbpDialogFactory', 'environmentService', 'backendInterfaceService', 'environmentRenderingService',
-    'splash', 'simulationInfo', 'videoStreamService',
+    'splash', 'simulationInfo', 'videoStreamService', 'dynamicViewOverlayService',
     'NAVIGATION_MODES', 'helpTooltipService', 'EDIT_MODE', 'RESET_TYPE',
     function ($rootScope, $scope, $timeout, $location, $q, $window,
               STATE, contextMenuState, userContextService, stateService, gz3d, editorsPanelService, userNavigationService,
               objectInspectorService, nrpAnalytics, hbpDialogFactory, environmentService, backendInterfaceService, environmentRenderingService,
-              splash, simulationInfo, videoStreamService,
+              splash, simulationInfo, videoStreamService, dynamicViewOverlayService,
               NAVIGATION_MODES, helpTooltipService, EDIT_MODE, RESET_TYPE) {
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
@@ -525,6 +525,13 @@
         }
 
         closeSimulationConnections();
+      };
+
+      $scope.createDynamicOverlay = function(componentName) {
+        dynamicViewOverlayService.createOverlay(
+          document.getElementById('experiment-view-dynamic-overlays'), /* parent element to attach overlay to */
+          componentName
+        );
       };
 
       // clean up on leaving

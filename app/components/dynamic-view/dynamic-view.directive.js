@@ -22,60 +22,17 @@
 (function () {
   'use strict';
 
-  angular.module('dynamicViewModule', [])
+  angular.module('dynamicViewModule')
 
     .directive('dynamicView', [
-      '$compile',
-      function($compile) {
+      function() {
         return {
 
           templateUrl: 'components/dynamic-view/dynamic-view.template.html',
           restrict: 'E',
           scope: {},
-          link: function(scope, element, attrs) {
-
-            let getViewContainerElement = function(parentElement) {
-              var childElements = parentElement.getElementsByTagName('*');
-              for (var i = 0; i < childElements.length; i++) {
-                if (childElements[i].hasAttribute('dynamic-view-container')) {
-                  return childElements[i];
-                }
-              }
-            };
-
-            scope.setViewContent = function(content) {
-              // trigger $destroy event before replacing and recompiling content
-              // elements/directives set as content of this dynamic-view directive can de-initialize via
-              // $scope.$on('$destroy', ...)
-              if (angular.isDefined(scope.contentScope)) {
-                scope.contentScope.$destroy();
-              }
-
-              // content container should exist
-              if (!angular.isDefined(scope.viewContainer)) {
-                console.warn('dynamicView.setViewContent() - viewContainer element not defined!');
-                return;
-              }
-
-              // set and compile new content
-              scope.viewContent = content;
-              scope.viewContainer.innerHTML = scope.viewContent;
-              scope.contentScope = scope.$new();
-              $compile(scope.viewContainer)(scope.contentScope);
-            };
-
-            scope.setViewContentViaDirective = function(directiveName) {
-              scope.setViewContent('<' + directiveName + '></' + directiveName + '>');
-            };
-
-            /* initialization */
-            scope.viewContainer = getViewContainerElement(element[0]);
-
-            if (angular.isDefined(attrs.dynamicViewDefaultDirective)) {
-              // html example: <dynamic-view dynamic-view-default-directive="some-directive-name">
-              scope.setViewContentViaDirective(attrs.dynamicViewDefaultDirective);
-            }
-          }
+          controller: 'DynamicViewController',
+          controllerAs: 'vm'
         };
       }
     ]);

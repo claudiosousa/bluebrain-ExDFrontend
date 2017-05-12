@@ -3,5 +3,6 @@
 <!-- endbuild -->
 
 <div movable resizeable show-on-top ng-show="true" class="dynamic-view-overlay-wrapper">
-  <dynamic-view></dynamic-view>
+  <dynamic-view dynamic-view-default-directive="joint-plot"></dynamic-view>
+  <button type="button" class="button-close" data-ng-click="vm.closeOverlay()">×</button>
 </div>

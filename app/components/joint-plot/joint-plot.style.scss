@@ -26,10 +26,8 @@ $rgbCurveEditorMinWidth: 650px;
 $rgbCurveEditorMinHeight: 150px;
 
 .jointplot-wrapper {
-  @extend .pop-over-viewer;
-  @include compute-top($jointPlotBottom, $jointPlotHeight);
   display: flex;
-  height: $jointPlotHeight;
+  height: 100%;
   min-width: $rgbCurveEditorMinWidth;
   min-height: $rgbCurveEditorMinHeight;
 

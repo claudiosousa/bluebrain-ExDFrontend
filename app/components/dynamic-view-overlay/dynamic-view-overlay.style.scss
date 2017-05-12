@@ -22,5 +22,8 @@
 .dynamic-view-overlay-wrapper {
   @extend .pop-over-viewer;
 
+  min-width: 200px;
+  min-height: 100px;
+
   z-index: 999;  //TODO: event listeners of gz3d-view eating events? show-on-top not working?
 }

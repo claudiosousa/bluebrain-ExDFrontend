@@ -10,7 +10,6 @@
     get properties() { return ["position", "velocity", "effort"]; }
 
     constructor(scope, RESET_TYPE, jointService) {
-
       this.plot = {
         curves: {},
         options: {
@@ -38,15 +37,10 @@
           this.clearPlot();
       });
 
-      let jointServiceUnsubscribe;
-      scope.$watch("ngShow", visible => {
-        if (visible)
-          jointServiceUnsubscribe = jointService.subscribe((msg) => this.onNewJointMessage(msg));
-        else
-          jointServiceUnsubscribe && jointServiceUnsubscribe();
-      });
+      let messageCallback = (msg) => this.onNewJointMessage(msg);
+      jointService.subscribe(messageCallback);
 
-      scope.$on('$destroy', () => jointServiceUnsubscribe && jointServiceUnsubscribe());
+      scope.$on('$destroy', () => jointService.unsubscribe(messageCallback));
     }
 
     onNewJointMessage(message) {

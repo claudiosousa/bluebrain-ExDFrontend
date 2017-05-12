@@ -22,7 +22,7 @@
 (function () {
   'use strict';
 
-  angular.module('dynamicViewOverlayModule', [])
+  angular.module('dynamicViewOverlayModule')
 
     .directive('dynamicViewOverlay', [
       '$timeout',
@@ -30,6 +30,9 @@
         return {
           templateUrl: 'components/dynamic-view-overlay/dynamic-view-overlay.template.html',
           restrict: 'E',
+          scope: {},
+          controller: 'DynamicViewOverlayController',
+          controllerAs: 'vm',
           link: function(scope, element, attrs) {
 
             scope.onResizeBegin = () => element.addClass('resizing');

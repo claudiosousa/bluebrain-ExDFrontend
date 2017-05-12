@@ -22,7 +22,8 @@
     var jointServiceMockUnsubscribe = jasmine.createSpy('jointServiceMockUnsubscribe');
 
     var jointServiceMock = {
-      subscribe: jasmine.createSpy('subscribe').and.returnValue(jointServiceMockUnsubscribe)
+      subscribe: jasmine.createSpy('subscribe').and.returnValue(jointServiceMockUnsubscribe),
+      unsubscribe: jasmine.createSpy('unsubscribe')
     };
 
     beforeEach(module('exdFrontendApp'));
@@ -94,24 +95,12 @@
       expect(element.hasClass('resizing')).toBe(false);
     }));
 
-    it('should unsusbscribe when invisible', function() {
-      parentscope.showJointPlot = false;
+    it('should unsusbscribe when destroyed', function() {
+      parentscope.$destroy();
       parentscope.$digest();
       scope.$digest();
 
-      expect(jointServiceMockUnsubscribe).toHaveBeenCalled();
-    });
-
-    it('should call the re-subscribe when visible again', function() {
-      parentscope.showJointPlot = false;
-      parentscope.$digest();
-      scope.$digest();
-
-      jointServiceMock.subscribe.calls.reset();
-      parentscope.showJointPlot = true;
-      parentscope.$digest();
-      scope.$digest();
-      expect(jointServiceMock.subscribe).toHaveBeenCalled();
+      expect(jointServiceMock.unsubscribe).toHaveBeenCalled();
     });
 
     it('should make new joint visible', function() {

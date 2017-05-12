@@ -4,13 +4,10 @@
 
 <div>
   <div class="editor-display">
-    <!-- <dynamic-view dynamic-view-default-directive="environment-rendering"></dynamic-view> -->
     <environment-rendering></environment-rendering>
 
     <div id="experiment-view-widget-overlays">
       <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
-
-      <joint-plot ng-show="showJointPlot" close-fn="jointPlotButtonClickHandler()"></joint-plot>
 
       <object-inspector></object-inspector>
 
