@@ -66,17 +66,17 @@
             </div>
 
             <!-- global lights -->
-            <div ng-if="userContextService.isOwner()" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item"
-                 ng-class="{'disabled': (stateService.currentState === STATE.HALTED) ||
-                                          (stateService.currentState === STATE.STOPPED) ||
-                                          (stateService.currentState === STATE.FAILED)}">
+            <div ng-if="vm.userContextService.isOwner()" class="hbp-toolbar-light-icon vertcenter hbp-toolbar-item"
+                 ng-class="{'disabled': (vm.stateService.currentState === vm.STATE.HALTED) ||
+                                          (vm.stateService.currentState === vm.STATE.STOPPED) ||
+                                          (vm.stateService.currentState === vm.STATE.FAILED)}">
 
-                <i ng-class="{'disabled-image': gz3d.isGlobalLightMinReached()}" class="hbp-toolbar-light-min fa fa-lightbulb-o fa-1x vertcenter"></i>
+                <i ng-class="{'disabled-image': vm.gz3d.isGlobalLightMinReached()}" class="hbp-toolbar-light-min fa fa-lightbulb-o fa-1x vertcenter"></i>
                 <div class="hbp-toolbar-light-divbar"></div>
-                <i ng-class="{'disabled-image': gz3d.isGlobalLightMaxReached()}" class="hbp-toolbar-light-max fa fa-lightbulb-o fa-2x vertcenter"></i>
+                <i ng-class="{'disabled-image': vm.gz3d.isGlobalLightMaxReached()}" class="hbp-toolbar-light-max fa fa-lightbulb-o fa-2x vertcenter"></i>
 
-                <div class="hbp-toolbar-light-left-click" help-tooltip="DECREASE_LIGHT" ng-click="modifyLightClickHandler(-1)"></div>
-                <div class="hbp-toolbar-light-right-click" help-tooltip="INCREASE_LIGHT" ng-click="modifyLightClickHandler(1)"></div>
+                <div class="hbp-toolbar-light-left-click" help-tooltip="DECREASE_LIGHT" ng-click="vm.modifyLightClickHandler(-1)"></div>
+                <div class="hbp-toolbar-light-right-click" help-tooltip="INCREASE_LIGHT" ng-click="vm.modifyLightClickHandler(1)"></div>
 
             </div>
             <!-- global lights -->

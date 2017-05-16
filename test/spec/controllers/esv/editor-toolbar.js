@@ -412,11 +412,11 @@ describe('Controller: EditorToolbarController', function() {
 
       $scope.lightDiffuse = initiaLightness;
 
-      $scope.modifyLightClickHandler(1);
+      editorToolbarController.modifyLightClickHandler(1);
       expect(gz3d.scene.emitter.lightDiffuse).toBeGreaterThan(initiaLightness);
 
-      $scope.modifyLightClickHandler(-1);
-      $scope.modifyLightClickHandler(-1);
+      editorToolbarController.modifyLightClickHandler(-1);
+      editorToolbarController.modifyLightClickHandler(-1);
       expect(gz3d.scene.emitter.lightDiffuse).toBeLessThan(initiaLightness);
     });
 

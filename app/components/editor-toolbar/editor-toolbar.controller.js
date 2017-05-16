@@ -190,16 +190,6 @@
         }
       });
 
-      // Lights management
-      $scope.modifyLightClickHandler = function(direction, button) {
-        if ((direction < 0 && gz3d.isGlobalLightMinReached()) ||
-            (direction > 0 && gz3d.isGlobalLightMaxReached())) {
-          return;
-        }
-
-        gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
-      };
-
       $scope.notifyResetToWidgets = function(resetType) {
         $scope.$broadcast('RESET', resetType);
       };
@@ -582,6 +572,16 @@
           }
         }
       }, 100);
+    };
+
+    // Lights management
+    modifyLightClickHandler(direction, button) {
+      if ((direction < 0 && this.gz3d.isGlobalLightMinReached()) ||
+          (direction > 0 && this.gz3d.isGlobalLightMaxReached())) {
+        return;
+      }
+
+      this.gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
     };
 
     toggleBrainvisualizer() {
