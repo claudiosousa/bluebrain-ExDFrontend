@@ -21,6 +21,7 @@ describe('Controller: EditorToolbarController', function() {
       environmentRenderingService,
       objectInspectorService,
       simulationInfo,
+      editorToolbarService,
       NAVIGATION_MODES,
       STATE,
       EDIT_MODE,
@@ -101,6 +102,7 @@ describe('Controller: EditorToolbarController', function() {
                              _environmentRenderingService_,
                              _objectInspectorService_,
                              _simulationInfo_,
+                             _editorToolbarService_,
                              _STATE_,
                              _NAVIGATION_MODES_,
                              _EDIT_MODE_,
@@ -123,6 +125,7 @@ describe('Controller: EditorToolbarController', function() {
     environmentRenderingService = _environmentRenderingService_;
     objectInspectorService = _objectInspectorService_;
     simulationInfo = _simulationInfo_;
+    editorToolbarService = _editorToolbarService_;
     STATE = _STATE_;
     NAVIGATION_MODES = _NAVIGATION_MODES_;
     EDIT_MODE = _EDIT_MODE_;
@@ -553,17 +556,17 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should enable display of the brainvisualizer panel', function() {
-      $scope.showBrainvisualizerPanel = false;
-      $scope.toggleBrainvisualizer();
-      expect($scope.showBrainvisualizerPanel).toBe(true);
+      editorToolbarService.showBrainvisualizerPanel = false;
+      editorToolbarController.toggleBrainvisualizer();
+      expect(editorToolbarService.showBrainvisualizerPanel).toBeTruthy();
     });
 
     it('should open of the brainvisualizer panel', function() {
       $scope.loadingBrainvisualizerPanel = false;
       $scope.brainvisualizerIsDisabled = false;
-      $scope.showBrainvisualizerPanel = false;
-      $scope.toggleBrainvisualizer();
-      expect($scope.showBrainvisualizerPanel).toBe(true);
+      editorToolbarService.showBrainvisualizerPanel = false;
+      editorToolbarController.toggleBrainvisualizer();
+      expect(editorToolbarService.showBrainvisualizerPanel).toBe(true);
     });
 
     it('should open the log-console panel', function() {

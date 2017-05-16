@@ -42,10 +42,14 @@
                 videoStreamService,
                 dynamicViewOverlayService,
                 helpTooltipService,
+                editorToolbarService,
                 STATE,
                 NAVIGATION_MODES,
                 EDIT_MODE,
                 RESET_TYPE) {
+
+      this.editorToolbarService = editorToolbarService;
+      this.nrpAnalytics = nrpAnalytics;
 
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
@@ -407,15 +411,6 @@
         }
       };
 
-      $scope.showBrainvisualizerPanel = false;
-      $scope.toggleBrainvisualizer = function() {
-        $scope.showBrainvisualizerPanel = !$scope.showBrainvisualizerPanel;
-        nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
-          category: 'Simulation-GUI',
-          value: $scope.showBrainvisualizerPanel
-        });
-      };
-
       $scope.videoStreamsAvailable = false;
 
       function checkIfVideoStreamsAvailable() {
@@ -572,6 +567,14 @@
         $scope.cleanUp();
       });
     }
+
+    toggleBrainvisualizer() {
+      this.editorToolbarService.showBrainvisualizerPanel = !this.editorToolbarService.isBrainVisualizerActive;
+      this.nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
+        category: 'Simulation-GUI',
+        value: this.editorToolbarService.isBrainVisualizerActive
+      });
+    }
   }
   angular.module('editorToolbarModule', ['helpTooltipModule']).
       controller('EditorToolbarController',
@@ -598,6 +601,7 @@
             'videoStreamService',
             'dynamicViewOverlayService',
             'helpTooltipService',
+            'editorToolbarService',
             'STATE',
             'NAVIGATION_MODES',
             'EDIT_MODE',

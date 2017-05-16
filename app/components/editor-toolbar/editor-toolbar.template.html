@@ -237,12 +237,12 @@
 
             <!-- brain visualizer icon -->
             <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
-                 ng-class="{  'active': showBrainvisualizerPanel,
+                 ng-class="{  'active': vm.editorToolbarService.showBrainvisualizerPanel,
                               'disabled': brainvisualizerIsDisabled || loadingBrainvisualizerPanel ||
                                           (stateService.currentState === STATE.HALTED) ||
                                           (stateService.currentState === STATE.STOPPED) ||
                                           (stateService.currentState === STATE.FAILED)}"
-                 ng-click="toggleBrainvisualizer()"
+                 ng-click="vm.toggleBrainvisualizer()"
                  help-tooltip="BRAIN_VISUALIZER"
                  tooltip-trigger="mouseenter"
             >

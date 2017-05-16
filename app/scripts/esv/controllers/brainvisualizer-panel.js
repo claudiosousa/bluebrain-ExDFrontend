@@ -20,12 +20,25 @@
   'use strict';
 
   angular.module('exdFrontendApp').controller('brainvisualizerPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler) {
+    ['$rootScope',
+      '$scope',
+      'simulationInfo',
+      'bbpConfig',
+      'gz3d',
+      'baseEventHandler',
+      'editorToolbarService',
+    function ($rootScope,
+              $scope,
+              simulationInfo,
+              bbpConfig,
+              gz3d,
+              baseEventHandler,
+              editorToolbarService) {
 
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
     $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
+    $scope.editorToolbarService = editorToolbarService; // TODO: remove this from scope and use it as viewmodel via its directive
 
     $scope.panelIsOpen = false;
 
@@ -45,8 +58,8 @@
       $scope.showBrainvisualizerPanel = false;
     });
 
-    $scope.$watch('showBrainvisualizerPanel', function() {
-      if ($scope.showBrainvisualizerPanel) {
+    $scope.$watch('editorToolbarService.showBrainvisualizerPanel', function() {
+      if (editorToolbarService.isBrainVisualizerActive) {
         $scope.openCallback();
       } else {
         $scope.closeCallback();
@@ -55,6 +68,10 @@
 
     $scope.suppressKeyPress = function(event) {
       baseEventHandler.suppressAnyKeyPress(event);
+    };
+
+    $scope.closePanel = function() {
+      editorToolbarService.closeBrainVisualizer();
     };
   }]);
 }());

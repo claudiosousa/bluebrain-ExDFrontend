@@ -2,12 +2,12 @@
 <link rel="stylesheet" href="styles/esv/brainvisualizer-panel.css"/>
 <!-- endbuild -->
 
-<div resizeable show-on-top movable movable-anchor=".brainvisualizer-panel-header" class="brainvisualizer-panel-widget noselect ng-hide" ng-show="showBrainvisualizerPanel" ng-controller="brainvisualizerPanelCtrl"
+<div resizeable show-on-top movable movable-anchor=".brainvisualizer-panel-header" class="brainvisualizer-panel-widget noselect ng-hide" ng-show="editorToolbarService.showBrainvisualizerPanel" ng-controller="brainvisualizerPanelCtrl"
       ng-keydown="suppressKeyPress($event)" >
   <div class="brainvisualizer-panel-header">
     <h5 class="brainvisualizer-panel-title">Brain Visualizer</h5>
   </div>
   <brainvisualizer class="brainvisualizer-panel-content" data="brainVisualizerData">
   </brainvisualizer>
-  <button type="button" class="button-close" data-ng-click="toggleBrainvisualizer()">×</button>
+  <button type="button" class="button-close" data-ng-click="closePanel()">×</button>
 </div>

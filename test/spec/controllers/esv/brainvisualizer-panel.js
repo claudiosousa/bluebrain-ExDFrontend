@@ -11,6 +11,7 @@ describe('Controller: brainvisualizerPanelCtrl', function () {
       rootScope,
       bbpConfig,
       controller,
+      editorToolbarService,
       gz3d;
 
   var simulationInfo;
@@ -31,12 +32,14 @@ describe('Controller: brainvisualizerPanelCtrl', function () {
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _bbpConfig_,
-                              _gz3d_) {
+                              _gz3d_,
+                              _editorToolbarService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
     gz3d = _gz3d_;
+    editorToolbarService = _editorToolbarService_;
 
     // Mock the scene controls object
     gz3d.scene = {};
@@ -79,9 +82,9 @@ describe('Controller: brainvisualizerPanelCtrl', function () {
   });
 
   it('should set the variable showBrainvisualizerPanel to be false', function () {
-    scope.showBrainvisualizerPanel = true;
-    scope.$destroy();
-    expect(scope.showBrainvisualizerPanel).toBeFalsy();
+    editorToolbarService.showBrainvisualizerPanel = true;
+    editorToolbarService.closeBrainVisualizer();
+    expect(editorToolbarService.showBrainvisualizerPanel).toBeFalsy();
   });
 
 
@@ -89,11 +92,11 @@ describe('Controller: brainvisualizerPanelCtrl', function () {
     spyOn(scope, 'openCallback');
     spyOn(scope, 'closeCallback');
 
-    scope.showBrainvisualizerPanel = false;
+    editorToolbarService.showBrainvisualizerPanel = false;
     scope.$digest();
     expect(scope.closeCallback).toHaveBeenCalled();
 
-    scope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     scope.$digest();
     expect(scope.openCallback).toHaveBeenCalled();
   });

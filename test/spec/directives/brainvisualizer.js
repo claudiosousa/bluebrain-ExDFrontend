@@ -3,12 +3,14 @@
 describe('Directive: brainvisualizer', function ()
 {
   var $rootScope, element,RESET_TYPE;
+  var editorToolbarService;
 
   var spikeListenerServiceMock = {};
   var simulationConfigServiceMock = {};
   var backendInterfaceServiceMock = {};
 
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('editorToolbarModule'));
   beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide)
   {
@@ -110,7 +112,8 @@ describe('Directive: brainvisualizer', function ()
   beforeEach(inject(function (
     _$rootScope_,
     _RESET_TYPE_,
-    $compile)
+    $compile,
+    _editorToolbarService_)
   {
     RESET_TYPE = _RESET_TYPE_;
 
@@ -139,14 +142,16 @@ describe('Directive: brainvisualizer', function ()
     window.BRAIN3D.DISPLAY_TYPE_BLENDED ='Small Blended';
 
     $rootScope = _$rootScope_;
+    editorToolbarService = _editorToolbarService_;
     element = $compile('<brainvisualizer></brainvisualizer>')($rootScope);
+    $rootScope.editorToolbarService = editorToolbarService;
     $rootScope.$digest();
   }));
 
 
   it('should create BRAIN3D main view', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     expect(window.BRAIN3D.MainView).toHaveBeenCalled();
@@ -157,7 +162,7 @@ describe('Directive: brainvisualizer', function ()
   {
     simulationConfigServiceMock.simulateCatch = true;
 
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     expect(window.BRAIN3D.MainView).toHaveBeenCalled();
@@ -169,7 +174,7 @@ describe('Directive: brainvisualizer', function ()
     simulationConfigServiceMock.simulateCatch = true;
     simulationConfigServiceMock.fileExists = true;
     simulationConfigServiceMock.fileWrongFormat = true;
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     expect(window.BRAIN3D.MainView).toHaveBeenCalled();
@@ -181,7 +186,7 @@ describe('Directive: brainvisualizer', function ()
     simulationConfigServiceMock.simulateCatch = false;
     simulationConfigServiceMock.fileExists = false;
     simulationConfigServiceMock.fileWrongFormat = false;
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     expect(window.BRAIN3D.MainView).toHaveBeenCalled();
@@ -191,7 +196,7 @@ describe('Directive: brainvisualizer', function ()
 
   it('should toggle visibility', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     var pop = {visible:true};
@@ -204,9 +209,9 @@ describe('Directive: brainvisualizer', function ()
 
   it('should set pause when hidden', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
-    $rootScope.showBrainvisualizerPanel = false;
+    editorToolbarService.showBrainvisualizerPanel = false;
     $rootScope.$digest();
 
     expect($rootScope.pausedState).toBe(true);
@@ -216,7 +221,7 @@ describe('Directive: brainvisualizer', function ()
 
   it('should handle spike scaler', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$$childTail.spikeScaler = 1.0;
     $rootScope.$digest();
     $rootScope.$$childTail.updateSpikeScaler();
@@ -234,7 +239,7 @@ describe('Directive: brainvisualizer', function ()
 
   it('should set shape', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     $rootScope.$$childTail.setShape(true);
@@ -244,7 +249,7 @@ describe('Directive: brainvisualizer', function ()
 
  it('should set distribution', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     $rootScope.$$childTail.setDistribution(true);
@@ -254,7 +259,7 @@ describe('Directive: brainvisualizer', function ()
 
  it('should set display', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
 
     $rootScope.$$childTail.setDisplay(true);
@@ -267,7 +272,7 @@ describe('Directive: brainvisualizer', function ()
   {
     simulationConfigServiceMock.simulateCatch = false;
     simulationConfigServiceMock.fileExists = false;
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$digest();
     $rootScope.$$childTail.update();
 
@@ -279,7 +284,7 @@ describe('Directive: brainvisualizer', function ()
   {
     $rootScope.$$childTail.update = jasmine.createSpy('update');
 
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$broadcast('RESET',RESET_TYPE.RESET_FULL);
     $rootScope.$digest();
 
@@ -291,7 +296,7 @@ describe('Directive: brainvisualizer', function ()
   {
     $rootScope.$$childTail.update = jasmine.createSpy('update');
 
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$broadcast('pynn.populationsChanged');
     $rootScope.$digest();
 
@@ -301,7 +306,7 @@ describe('Directive: brainvisualizer', function ()
 
    it('should be terminate on destroy', function ()
   {
-    $rootScope.showBrainvisualizerPanel = true;
+    editorToolbarService.showBrainvisualizerPanel = true;
     $rootScope.$broadcast('$destroy');
     $rootScope.$digest();
 

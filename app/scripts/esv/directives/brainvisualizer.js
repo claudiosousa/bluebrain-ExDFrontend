@@ -21,8 +21,17 @@
   'use strict';
   /* global BRAIN3D: false */
   angular.module('exdFrontendApp')
-    .directive('brainvisualizer', ['simulationConfigService', 'backendInterfaceService', 'RESET_TYPE','spikeListenerService',
-      function (simulationConfigService, backendInterfaceService, RESET_TYPE,spikeListenerService)
+    .directive('brainvisualizer',
+    ['simulationConfigService',
+      'backendInterfaceService',
+      'RESET_TYPE',
+      'spikeListenerService',
+      'editorToolbarService',
+      function (simulationConfigService,
+                backendInterfaceService,
+                RESET_TYPE,
+                spikeListenerService,
+                editorToolbarService)
       {
         return {
           templateUrl: 'views/esv/brainvisualizer.html',
@@ -148,9 +157,9 @@
               brain3D.updatePopulationVisibility();
             };
 
-            parentScope.$watch('showBrainvisualizerPanel', function ()
+            parentScope.$watch('editorToolbarService.showBrainvisualizerPanel', function ()
             {
-              var visible = parentScope.showBrainvisualizerPanel;
+              var visible = editorToolbarService.showBrainvisualizerPanel;
 
               if (visible && !brain3D)
               {
