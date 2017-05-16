@@ -197,7 +197,7 @@
         }
         else {
           thisStateService.setCurrentState(state)
-            .then(function () {
+            .then(() => {
               toBeExecuted();
             });
         }

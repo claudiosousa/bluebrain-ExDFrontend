@@ -55,9 +55,20 @@
       this.stateService = stateService;
       this.gz3d = gz3d;
       this.objectInspectorService = objectInspectorService;
+      this.hbpDialogFactory = hbpDialogFactory;
+      this.editorsPanelService = editorsPanelService;
+      this.environmentService = environmentService;
+      this.splash = splash;
+      this.backendInterfaceService = backendInterfaceService;
+      this.simulationInfo = simulationInfo;
 
       this.EDIT_MODE = EDIT_MODE;
+      this.RESET_TYPE = RESET_TYPE;
       this.STATE = STATE;
+
+      this.$timeout = $timeout;
+      // TODO: remove this after refactoring is completed
+      this.scope = $scope;
 
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
@@ -191,99 +202,6 @@
 
       $scope.notifyResetToWidgets = function(resetType) {
         $scope.$broadcast('RESET', resetType);
-      };
-
-      $scope.resetButtonClickHandler = function() {
-        $scope.request = {
-          resetType: RESET_TYPE.NO_RESET
-        };
-        hbpDialogFactory.confirm({
-          'title': 'Reset Menu',
-          'templateUrl': 'views/esv/reset-checklist-template.html',
-          'scope': $scope
-        }).then(function() {
-          stateService.ensureStateBeforeExecuting(
-              STATE.PAUSED,
-              $scope.__resetButtonClickHandler
-          );
-        });
-      };
-
-      $scope.__resetButtonClickHandler = function() {
-        var resetType = $scope.request.resetType;
-        if (resetType === RESET_TYPE.NO_RESET) {
-          return;
-        }
-
-        stateService.setCurrentState(STATE.PAUSED);
-
-        if (editorsPanelService.showEditorPanel) {
-          editorsPanelService.toggleEditors();
-        }
-
-        $timeout(function() {
-
-          $scope.notifyResetToWidgets(resetType);
-
-          if (resetType >= 256) { // Frontend-bound reset
-            if (resetType === RESET_TYPE.RESET_CAMERA_VIEW) {
-              gz3d.scene.resetView();
-            }
-          } else { // Backend-bound reset
-            splash.splashScreen = splash.splashScreen ||
-                splash.open(false, undefined);
-            if (environmentService.isPrivateExperiment()) { //reset from collab
-              //open splash screen, blocking ui (i.e. no ok button) and no closing callback
-
-              var resetWhat = '', downloadWhat = '';
-
-              (function(resetType) { //customize user message depending on the reset type
-                if (resetType === RESET_TYPE.RESET_WORLD) {
-                  resetWhat = 'Environment';
-                  downloadWhat = 'World SDF ';
-                } else if (resetType === RESET_TYPE.RESET_BRAIN) {
-                  resetWhat = 'Brain';
-                  downloadWhat = 'brain configuration file ';
-                }
-              })(resetType);
-
-              var messageHeadline = 'Resetting ' + resetWhat;
-              var messageSubHeadline = 'Downloading ' + downloadWhat +
-                  'from the Collab';
-
-              _.defer(function() {
-                splash.spin = true;
-                splash.setMessage({
-                  headline: messageHeadline,
-                  subHeadline: messageSubHeadline
-                });
-              });
-
-              backendInterfaceService.resetCollab(
-                  simulationInfo.contextID,
-                  $scope.request,
-                  splash.closeSplash,
-                  splash.closeSplash
-              );
-            } else {
-              //other kinds of reset
-              backendInterfaceService.reset(
-                $scope.request,
-                function() { // Success callback
-                  // do not close the splash if successful
-                  // it will be closed by messageCallback
-                  gz3d.scene.applyComposerSettings(true,false);
-                  splash.closeSplash();
-                  if (resetType === RESET_TYPE.RESET_BRAIN)
-                  {
-                    $scope.$broadcast('UPDATE_PANEL_UI');
-                  }
-                },
-                splash.closeSplash
-              );
-            }
-          }
-        }, 100);
       };
 
       // Camera manipulation
@@ -574,6 +492,96 @@
       if (this.gz3d.scene.manipulationMode !== newMode) {
         this.gz3d.scene.setManipulationMode(newMode);
       }
+    };
+
+    resetButtonClickHandler() {
+      this.scope.request = {
+        resetType: this.RESET_TYPE.NO_RESET
+      };
+      this.hbpDialogFactory.confirm({
+        'title': 'Reset Menu',
+        'templateUrl': 'views/esv/reset-checklist-template.html',
+        'scope': this.scope
+      }).then(() => {
+        this.stateService.ensureStateBeforeExecuting(
+            this.STATE.PAUSED,
+            // TODO: can we pass request as parameter?
+            () => this.__resetButtonClickHandler()
+        );
+      });
+    };
+
+    __resetButtonClickHandler() {
+      const resetType = this.scope.request.resetType;
+      if (resetType === this.RESET_TYPE.NO_RESET) {
+        return;
+      }
+
+      this.stateService.setCurrentState(this.STATE.PAUSED);
+
+      if (this.editorsPanelService.showEditorPanel) {
+        this.editorsPanelService.toggleEditors();
+      }
+
+      this.$timeout(() => {
+        this.scope.notifyResetToWidgets(resetType);
+
+        if (resetType >= 256) { // Frontend-bound reset
+          if (resetType === this.RESET_TYPE.RESET_CAMERA_VIEW) {
+            this.gz3d.scene.resetView();
+          }
+        } else { // Backend-bound reset
+          this.splash.splashScreen = this.splash.splashScreen ||
+              this.splash.open(false, undefined);
+          if (this.environmentService.isPrivateExperiment()) { //reset from collab
+            //open splash screen, blocking ui (i.e. no ok button) and no closing callback
+
+            let resetWhat = '', downloadWhat = '';
+
+            ((resetType) => { //customize user message depending on the reset type
+              if (resetType === this.RESET_TYPE.RESET_WORLD) {
+                resetWhat = 'Environment';
+                downloadWhat = 'World SDF ';
+              } else if (resetType === this.RESET_TYPE.RESET_BRAIN) {
+                resetWhat = 'Brain';
+                downloadWhat = 'brain configuration file ';
+              }
+            })(resetType);
+
+            const messageHeadline = 'Resetting ' + resetWhat;
+            const messageSubHeadline = 'Downloading ' + downloadWhat +
+                'from the Collab';
+
+            _.defer(() => {
+              this.splash.spin = true;
+              this.splash.setMessage(
+                  {headline: messageHeadline, subHeadline: messageSubHeadline});
+            });
+
+            this.backendInterfaceService.resetCollab(
+                this.simulationInfo.contextID,
+                this.scope.request,
+                this.splash.closeSplash,
+                this.splash.closeSplash
+            );
+          } else {
+            //other kinds of reset
+            this.backendInterfaceService.reset(
+                this.scope.request,
+                () => { // Success callback
+                  // do not close the splash if successful
+                  // it will be closed by messageCallback
+                  this.gz3d.scene.applyComposerSettings(true, false);
+                  this.splash.closeSplash();
+                  if (resetType === this.RESET_TYPE.RESET_BRAIN) {
+                    this.scope.$broadcast('UPDATE_PANEL_UI');
+                  }
+                },
+                this.splash.closeSplash
+            );
+          }
+        }
+      }, 100);
     };
 
     toggleBrainvisualizer() {

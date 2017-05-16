@@ -29,14 +29,14 @@
                           (vm.stateService.currentState !== vm.STATE.FAILED)">
             <i class="glyphicon glyphicon-stop"></i>
         </div>
-        <div ng-if="userContextService.isOwner()"
+        <div ng-if="vm.userContextService.isOwner()"
              class="hbp-toolbar-action ng-hide"
              ng-disabled="vm.stateService.statePending"
              help-tooltip="RESET_BUTTON"
-             ng-click="resetButtonClickHandler()"
-             ng-show="(stateService.currentState !== STATE.STOPPED) &&
-                          (stateService.currentState !== STATE.HALTED) &&
-                          (stateService.currentState !== STATE.FAILED)">
+             ng-click="vm.resetButtonClickHandler()"
+             ng-show="(vm.stateService.currentState !== vm.STATE.STOPPED) &&
+                          (vm.stateService.currentState !== vm.STATE.HALTED) &&
+                          (vm.stateService.currentState !== vm.STATE.FAILED)">
             <i class="glyphicon glyphicon glyphicon-repeat"></i>
         </div>
         <div>

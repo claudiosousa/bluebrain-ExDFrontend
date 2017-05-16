@@ -177,7 +177,7 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should ensure that the state is PAUSED when resetting', function() {
-      $scope.resetButtonClickHandler();
+      editorToolbarController.resetButtonClickHandler();
 
       hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
 
@@ -185,7 +185,7 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should show a popup when the reset button is pressed', function() {
-      $scope.resetButtonClickHandler();
+      editorToolbarController.resetButtonClickHandler();
       expect(hbpDialogFactory.confirm).toHaveBeenCalled();
     });
 
@@ -194,7 +194,7 @@ describe('Controller: EditorToolbarController', function() {
       spyOn($scope, 'notifyResetToWidgets');
       $scope.request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
 
-      $scope.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler();
       $timeout.flush(100);
 
       environmentService.setPrivateExperiment(false); //Collab IS NOT available
@@ -215,7 +215,7 @@ describe('Controller: EditorToolbarController', function() {
 
       $scope.request = { resetType: RESET_TYPE.RESET_WORLD };
 
-      $scope.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler();
       $timeout.flush(100);
 
       expect($scope.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
@@ -224,7 +224,7 @@ describe('Controller: EditorToolbarController', function() {
     it('should hide object inspector window when resetting', function() {
       $scope.request = { resetType: RESET_TYPE.RESET_FULL };
 
-      $scope.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler();
       $timeout.flush(100);
 
       expect(objectInspectorService.toggleView).toHaveBeenCalled();
@@ -248,7 +248,7 @@ describe('Controller: EditorToolbarController', function() {
 
       for(var i = 0; i < testCases.length; i++) {
 
-        $scope.resetButtonClickHandler();
+        editorToolbarController.resetButtonClickHandler();
         $scope.request = { resetType: testCases[i].type };
         environmentService.setPrivateExperiment(true); //Collab IS available
         $scope.splashScreen = undefined;
@@ -300,7 +300,7 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('shouldn\'t do anything if no radio button is set', function() {
-      $scope.resetButtonClickHandler();
+      editorToolbarController.resetButtonClickHandler();
       $scope.request = { resetType: RESET_TYPE.NO_RESET };
       hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
       expect(backendInterfaceService.reset.calls.count()).toBe(0);
@@ -318,10 +318,10 @@ describe('Controller: EditorToolbarController', function() {
     it('should call resetView() when "Reset Camera view" checkbox is checked', function() {
       //gz3d.scene.resetView is already being spied on
 
-      $scope.resetButtonClickHandler();
+      editorToolbarController.resetButtonClickHandler();
       $scope.request = { resetType: RESET_TYPE.RESET_CAMERA_VIEW };
 
-      $scope.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler();
       $timeout.flush(100);
       expect(gz3d.scene.resetView).toHaveBeenCalled();
     });
