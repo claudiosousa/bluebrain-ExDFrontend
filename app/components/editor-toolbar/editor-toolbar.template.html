@@ -4,34 +4,34 @@
 
 <!-- overlay -->
 <div id="overlay" class="esv-overlay noselect">
-    <div class="hbp-toolbar" ng-mousedown="contextMenuState.toggleContextMenu(false, $event);">
-        <div ng-if="userContextService.isOwner() && stateService.currentState === STATE.PAUSED"
+    <div class="hbp-toolbar" ng-mousedown="vm.contextMenuState.toggleContextMenu(false, $event);">
+        <div ng-if="vm.userContextService.isOwner() && vm.stateService.currentState === vm.STATE.PAUSED"
              class="hbp-toolbar-action"
-             ng-disabled="stateService.statePending"
+             ng-disabled="vm.stateService.statePending"
              help-tooltip="PLAY_BUTTON"
-             ng-click="simControlButtonHandler(STATE.STARTED)">
+             ng-click="vm.simControlButtonHandler(vm.STATE.STARTED)">
             <i class="glyphicon glyphicon-play"></i>
         </div>
-        <div ng-if="userContextService.isOwner()"
+        <div ng-if="vm.userContextService.isOwner()"
              class="hbp-toolbar-action ng-hide"
-             ng-disabled="stateService.statePending"
+             ng-disabled="vm.stateService.statePending"
              help-tooltip="PAUSE_BUTTON"
-             ng-click="simControlButtonHandler(STATE.PAUSED)"
-             ng-show="(stateService.currentState === STATE.STARTED)">
+             ng-click="vm.simControlButtonHandler(vm.STATE.PAUSED)"
+             ng-show="(vm.stateService.currentState === vm.STATE.STARTED)">
             <i class="glyphicon glyphicon-pause"></i>
         </div>
-        <div ng-if="userContextService.isOwner()"
+        <div ng-if="vm.userContextService.isOwner()"
              class="hbp-toolbar-action ng-hide"
-             ng-disabled="stateService.statePending"
+             ng-disabled="vm.stateService.statePending"
              help-tooltip="STOP_BUTTON"
-             ng-click="simControlButtonHandler(STATE.STOPPED)"
-             ng-show="(stateService.currentState !== STATE.STOPPED) &&
-                          (stateService.currentState !== STATE.FAILED)">
+             ng-click="vm.simControlButtonHandler(vm.STATE.STOPPED)"
+             ng-show="(vm.stateService.currentState !== vm.STATE.STOPPED) &&
+                          (vm.stateService.currentState !== vm.STATE.FAILED)">
             <i class="glyphicon glyphicon-stop"></i>
         </div>
         <div ng-if="userContextService.isOwner()"
              class="hbp-toolbar-action ng-hide"
-             ng-disabled="stateService.statePending"
+             ng-disabled="vm.stateService.statePending"
              help-tooltip="RESET_BUTTON"
              ng-click="resetButtonClickHandler()"
              ng-show="(stateService.currentState !== STATE.STOPPED) &&

@@ -440,26 +440,26 @@ describe('Controller: EditorToolbarController', function() {
       gz3d.scene.manipulationMode = EDIT_MODE.VIEW;
 
       //false case
-      $scope.setEditMode(EDIT_MODE.VIEW);
+      editorToolbarController.setEditMode(EDIT_MODE.VIEW);
       expect(gz3d.scene.setManipulationMode).not.toHaveBeenCalled();
 
       //true case
-      $scope.setEditMode(EDIT_MODE.EDIT);
+      editorToolbarController.setEditMode(EDIT_MODE.EDIT);
       expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.EDIT);
     });
 
     it('should correctly execute simControlButtonHandler', function() {
       //test setup
       var newState = STATE.STARTED;
-      $scope.setEditMode = jasmine.createSpy('setEditMode');
-      $scope.updateSimulation = jasmine.createSpy('updateSimulation');
+      editorToolbarController.setEditMode = jasmine.createSpy('setEditMode');
+      editorToolbarController.updateSimulation = jasmine.createSpy('updateSimulation');
 
       //call function under test
-      $scope.simControlButtonHandler(newState);
+      editorToolbarController.simControlButtonHandler(newState);
 
       //check test outcome
-      expect($scope.updateSimulation).toHaveBeenCalledWith(newState);
-      expect($scope.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
+      expect(editorToolbarController.updateSimulation).toHaveBeenCalledWith(newState);
+      expect(editorToolbarController.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
     });
 
     it('should toggle the showSpikeTrain variable', function() {

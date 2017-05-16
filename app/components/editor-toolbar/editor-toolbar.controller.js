@@ -48,8 +48,16 @@
                 EDIT_MODE,
                 RESET_TYPE) {
 
+      this.contextMenuState = contextMenuState;
+      this.userContextService = userContextService;
       this.editorToolbarService = editorToolbarService;
       this.nrpAnalytics = nrpAnalytics;
+      this.stateService = stateService;
+      this.gz3d = gz3d;
+      this.objectInspectorService = objectInspectorService;
+
+      this.EDIT_MODE = EDIT_MODE;
+      this.STATE = STATE;
 
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
@@ -179,26 +187,6 @@
         }
 
         gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
-      };
-
-      $scope.updateSimulation = function(newState) {
-        stateService.setCurrentState(newState);
-      };
-
-      // play/pause/stop button handler
-      $scope.simControlButtonHandler = function(newState) {
-        $scope.updateSimulation(newState);
-        $scope.setEditMode(EDIT_MODE.VIEW);
-        if (objectInspectorService !== null) {
-          objectInspectorService.removeEventListeners();
-        }
-      };
-
-      $scope.setEditMode = function(newMode) {
-        //currentMode !== newMode
-        if (gz3d.scene.manipulationMode !== newMode) {
-          gz3d.scene.setManipulationMode(newMode);
-        }
       };
 
       $scope.notifyResetToWidgets = function(resetType) {
@@ -567,6 +555,26 @@
         $scope.cleanUp();
       });
     }
+
+    updateSimulation(newState) {
+      this.stateService.setCurrentState(newState);
+    };
+
+    // play/pause/stop button handler
+    simControlButtonHandler(newState) {
+      this.updateSimulation(newState);
+      this.setEditMode(this.EDIT_MODE.VIEW);
+      if (this.objectInspectorService !== null) {
+        this.objectInspectorService.removeEventListeners();
+      }
+    };
+
+    setEditMode(newMode) {
+      //currentMode !== newMode
+      if (this.gz3d.scene.manipulationMode !== newMode) {
+        this.gz3d.scene.setManipulationMode(newMode);
+      }
+    };
 
     toggleBrainvisualizer() {
       this.editorToolbarService.showBrainvisualizerPanel = !this.editorToolbarService.isBrainVisualizerActive;
