@@ -88,33 +88,33 @@
                     <div class="hbp-camera-tool-controls-overlay"><img src="img/esv/translation_icon.png" width=32 height=32></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'moveUp');"
-                         ng-mouseup="releaseMove($event, 'moveUp')"
-                         ng-mouseleave="releaseMove($event, 'moveUp')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'moveUp');"
+                         ng-mouseup="vm.releaseMove($event, 'moveUp')"
+                         ng-mouseleave="vm.releaseMove($event, 'moveUp')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'moveForward');"
-                         ng-mouseup="releaseMove($event, 'moveForward');"
-                         ng-mouseleave="releaseMove($event, 'moveForward')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'moveForward');"
+                         ng-mouseup="vm.releaseMove($event, 'moveForward');"
+                         ng-mouseleave="vm.releaseMove($event, 'moveForward')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'moveLeft');"
-                         ng-mouseup="releaseMove($event, 'moveLeft');"
-                         ng-mouseleave="releaseMove($event, 'moveLeft')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'moveLeft');"
+                         ng-mouseup="vm.releaseMove($event, 'moveLeft');"
+                         ng-mouseleave="vm.releaseMove($event, 'moveLeft')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'initPosition');"
-                         ng-mouseup="releaseMove($event, 'initPosition');"
-                         ng-mouseleave="releaseMove($event, 'initPosition')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'initPosition');"
+                         ng-mouseup="vm.releaseMove($event, 'initPosition');"
+                         ng-mouseleave="vm.releaseMove($event, 'initPosition')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'moveRight');"
-                         ng-mouseup="releaseMove($event, 'moveRight');"
-                         ng-mouseleave="releaseMove($event, 'moveRight')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'moveRight');"
+                         ng-mouseup="vm.releaseMove($event, 'moveRight');"
+                         ng-mouseleave="vm.releaseMove($event, 'moveRight')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'moveBackward');"
-                         ng-mouseup="releaseMove($event, 'moveBackward');"
-                         ng-mouseleave="releaseMove($event, 'moveBackward')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'moveBackward');"
+                         ng-mouseup="vm.releaseMove($event, 'moveBackward');"
+                         ng-mouseleave="vm.releaseMove($event, 'moveBackward')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'moveDown');"
-                         ng-mouseup="releaseMove($event, 'moveDown');"
-                         ng-mouseleave="releaseMove($event, 'moveDown')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'moveDown');"
+                         ng-mouseup="vm.releaseMove($event, 'moveDown');"
+                         ng-mouseleave="vm.releaseMove($event, 'moveDown')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                 </div>
             </div>
@@ -128,27 +128,27 @@
                     <!-- in each flex little box, we put an 1 pixel image, else the box has a null size. And on Firefox, <img/> is not working -->
                     <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'rotateUp');"
-                         ng-mouseup="releaseMove($event, 'rotateUp');"
-                         ng-mouseleave="releaseMove($event, 'rotateUp')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'rotateUp');"
+                         ng-mouseup="vm.releaseMove($event, 'rotateUp');"
+                         ng-mouseleave="vm.releaseMove($event, 'rotateUp')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'rotateLeft');"
-                         ng-mouseup="releaseMove($event, 'rotateLeft');"
-                         ng-mouseleave="releaseMove($event, 'rotateLeft')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'rotateLeft');"
+                         ng-mouseup="vm.releaseMove($event, 'rotateLeft');"
+                         ng-mouseleave="vm.releaseMove($event, 'rotateLeft')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'initRotation');"
-                         ng-mouseup="releaseMove($event, 'initRotation');"
-                         ng-mouseleave="releaseMove($event, 'initRotation')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'initRotation');"
+                         ng-mouseup="vm.releaseMove($event, 'initRotation');"
+                         ng-mouseleave="vm.releaseMove($event, 'initRotation')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'rotateRight');"
-                         ng-mouseup="releaseMove($event, 'rotateRight');"
-                         ng-mouseleave="releaseMove($event, 'rotateRight')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'rotateRight');"
+                         ng-mouseup="vm.releaseMove($event, 'rotateRight');"
+                         ng-mouseleave="vm.releaseMove($event, 'rotateRight')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"
-                         ng-mousedown="requestMove($event, 'rotateDown');"
-                         ng-mouseup="releaseMove($event, 'rotateDown');"
-                         ng-mouseleave="releaseMove($event, 'rotateDown')"><img src="img/esv/empty.png"></div>
+                         ng-mousedown="vm.requestMove($event, 'rotateDown');"
+                         ng-mouseup="vm.releaseMove($event, 'rotateDown');"
+                         ng-mouseleave="vm.releaseMove($event, 'rotateDown')"><img src="img/esv/empty.png"></div>
                     <div class="fa hbp-camera-tool-controls-grid-third"><img src="img/esv/empty.png"></div>
                 </div>
             </div>

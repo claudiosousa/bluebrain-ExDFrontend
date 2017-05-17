@@ -194,22 +194,6 @@
         $scope.$broadcast('RESET', resetType);
       };
 
-      // Camera manipulation
-
-      // This should be integrated to the tutorial story when
-      // it will be implemented !
-      $scope.requestMove = function(event, action) {
-        if (event.which === 1) { // camera control uses left button only
-          gz3d.scene.controls.onMouseDownManipulator(action);
-        }
-      };
-
-      $scope.releaseMove = function(event, action) {
-        if (event.which === 1) { // camera control uses left button only
-          gz3d.scene.controls.onMouseUpManipulator(action);
-        }
-      };
-
       // Spiketrain
       $scope.showSpikeTrain = false;
       $scope.spikeTrainButtonClickHandler = function() {
@@ -582,6 +566,21 @@
       }
 
       this.gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
+    };
+
+    // Camera manipulation
+    // This should be integrated to the tutorial story when
+    // it will be implemented !
+    requestMove(event, action) {
+      if (event.which === 1) { // camera control uses left button only
+        this.gz3d.scene.controls.onMouseDownManipulator(action);
+      }
+    };
+
+    releaseMove(event, action) {
+      if (event.which === 1) { // camera control uses left button only
+        this.gz3d.scene.controls.onMouseUpManipulator(action);
+      }
     };
 
     toggleBrainvisualizer() {

@@ -422,17 +422,17 @@ describe('Controller: EditorToolbarController', function() {
 
     it('should call or skip camera controls according to mouse events and help mode status', function() {
       var e = { which: 1 }; // 1 for left mouse button
-      $scope.requestMove(e, 'moveForward');
+      editorToolbarController.requestMove(e, 'moveForward');
       expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
-      $scope.releaseMove(e, 'moveForward');
+      editorToolbarController.releaseMove(e, 'moveForward');
       expect(gz3d.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
 
       e.which = 2; // 2 for right mouse button
       gz3d.scene.controls.onMouseDownManipulator.calls.reset();
       gz3d.scene.controls.onMouseUpManipulator.calls.reset();
-      $scope.requestMove(e, 'moveBackward');
+      editorToolbarController.requestMove(e, 'moveBackward');
       expect(gz3d.scene.controls.onMouseDownManipulator).not.toHaveBeenCalled();
-      $scope.releaseMove(e, 'moveBackward');
+      editorToolbarController.releaseMove(e, 'moveBackward');
       expect(gz3d.scene.controls.onMouseUpManipulator).not.toHaveBeenCalled();
     });
 
