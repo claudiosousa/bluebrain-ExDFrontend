@@ -32,7 +32,8 @@
 	  <tab heading="TF Graphical Editor" active="activeTab.graphicalEditor"
            select="disableKeyBindings(); controls.graphicalEditor.refresh()"
            deselect="reenableKeyBindings()">
-        <graphical-editor control="controls.graphicalEditor" server="{{rosbridgeWebsocketUrl}}"/>
+        <graphical-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
+                          control="controls.graphicalEditor"/>
       </tab>
     </tabset>
   </div>
