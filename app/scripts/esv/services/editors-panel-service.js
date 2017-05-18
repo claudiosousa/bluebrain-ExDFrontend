@@ -37,20 +37,18 @@
           this.showEditorPanel = false;
 
           this.init = function () {
-            if (environmentService.isPrivateExperiment()) {
+            if (userContextService.lockService) {
               // only use locks if we are in a private collab
               this.cancelLockSubscription = userContextService.lockService.onLockChanged(that.onLockChanged);
             }
           };
 
           this.deinit = function () {
-            if (environmentService.isPrivateExperiment()) {
-              this.cancelLockSubscription();
-            }
+            this.cancelLockSubscription && this.cancelLockSubscription();
           };
 
           this.toggleEditors = function () {
-            if (!environmentService.isPrivateExperiment()) {
+            if (!environmentService.isPrivateExperiment() || !userContextService.lockService) {
               that.showEditorsPanel();
             } else {
               if (!that.showEditorPanel) {

@@ -191,11 +191,6 @@ describe('Services: userContextService', function () {
       expect(hbpIdentityUserDirectory.getCurrentUser().then).toHaveBeenCalled();
       expect(userContextService.userID).toBe(remoteProfileMock.id);
 
-      expect(collabExperimentLockService.createLockServiceForContext).toHaveBeenCalledWith(simulationInfo.contextID);
-      expect(userContextService.lockService).toBe(lockServiceMock);
-      expect(userContextService.cancelLockSubscription).toBe(cancelLockServiceMock);
-      expect(lockServiceMock.onLockChanged).toHaveBeenCalledWith(userContextService.onLockChangedCallback);
-      expect(userContextService.cancelLockSubscription).toBe(cancelLockServiceMock);
       expect(userContextService.isInitialized).toBe(true);
     });
 
@@ -204,7 +199,6 @@ describe('Services: userContextService', function () {
 
       userContextService.deinit();
 
-      expect(cancelLockServiceMock).toHaveBeenCalled();
       expect(userContextService.removeEditLock).toHaveBeenCalledWith(true);
     });
   });

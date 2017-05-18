@@ -217,8 +217,7 @@
             <!-- navigation mode -->
 
             <!-- code editor icon -->
-            <div ng-if="vm.userContextService.isOwner()"
-                 class="hbp-toolbar-action hide-overflow"
+            <div class="hbp-toolbar-action hide-overflow"
                  ng-class="{ 'active': vm.editorsPanelService.showEditorPanel,
                               'disabled': vm.userContextService.editIsDisabled || vm.editorsPanelService.loadingEditPanel ||
                                           (vm.stateService.currentState === vm.STATE.HALTED) ||
@@ -236,7 +235,7 @@
             <!-- code editor icon -->
 
             <!-- brain visualizer icon -->
-            <div ng-if="vm.userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
+            <div class="hbp-toolbar-action hide-overflow"
                  ng-class="{  'active': vm.editorToolbarService.showBrainvisualizerPanel,
                               'disabled': (vm.stateService.currentState === vm.STATE.HALTED) ||
                                           (vm.stateService.currentState === vm.STATE.STOPPED) ||
@@ -298,7 +297,7 @@
         <!-- toolbar help icon -->
 
         <!-- environment settings panel -->
-        <div ng-if="vm.userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
+        <div class="hbp-toolbar-action right-align hide-overflow"
              ng-class="{'active': vm.editorToolbarService.isEnvironmentSettingsPanelActive, disabled: vm.environmentRenderingService.loadingEnvironmentSettingsPanel}"
              ng-click="vm.environmentSettingsClickHandler()"
              help-tooltip="ENVIRONMENT_SETTINGS"

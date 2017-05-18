@@ -33,9 +33,10 @@
     'codeEditorsServices',
     'environmentService',
     'downloadFileService',
+    'userContextService',
     function ($timeout, $rootScope,backendInterfaceService, documentationURLs,
     hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,
-    RESET_TYPE, codeEditorsServices, environmentService, downloadFileService) {
+    RESET_TYPE, codeEditorsServices, environmentService, downloadFileService, userContextService) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -57,6 +58,7 @@
           };
 
           scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), { readOnly: scope.isMultipleBrains() && 'nocursor' });
+          scope.editorOptions = codeEditorsServices.ownerOnlyOptions(scope.editorOptions);
 
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
@@ -371,7 +373,7 @@
             scope.control.refresh = undefined;
           });
 
-          autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved, applyChanges) {
+          userContextService.isOwner() && autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved, applyChanges) {
             scope.pynnScript = autoSaved[0];
             scope.populations = autoSaved[1];
             scope.collabDirty = true;

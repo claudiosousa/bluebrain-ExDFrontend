@@ -9,7 +9,8 @@
   </div>
   <div class="editor-panel-content">
     <tabset>
-      <tab heading="Environment" active="activeTab.environment">
+      <tab heading="Environment" active="activeTab.environment"
+          disabled="!isOwner">
         <environment-designer/>
       </tab>
       <tab heading="Transfer Functions" active="activeTab.transferfunction"
@@ -31,6 +32,7 @@
       </tab>
 	  <tab heading="TF Graphical Editor" active="activeTab.graphicalEditor"
            select="disableKeyBindings(); controls.graphicalEditor.refresh()"
+           disabled="!isOwner"
            deselect="reenableKeyBindings()">
         <graphical-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
                           control="controls.graphicalEditor"/>

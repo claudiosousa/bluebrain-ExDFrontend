@@ -154,6 +154,7 @@
       $httpBackend.whenGET(slurmUrl + '/api/v1/partitions/interactive').respond(200, pageOptions.slurm);
       $httpBackend.whenGET(oidcUrl + '/user/me').respond(200, pageOptions.me);
       $httpBackend.whenGET(oidcUrl + '/user/me/groups').respond(200, pageOptions.groups);
+      $httpBackend.whenGET(/api\/collab\/configuration/).respond(200);
 
       $controller('esvExperimentsCtrl', {
         $rootScope: $rootScope,
@@ -484,11 +485,14 @@
 
       describe('with cloned experiment', function () {
 
+        var lockMock;
+
         beforeEach(function () {
           $httpBackend.whenGET(new RegExp(proxyUrl + '/joinableServers/')).respond(200, []);
           $httpBackend.whenGET(new RegExp(proxyUrl + '/availableServers/')).respond(200, matureExperiment.availableServers);
           spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
           spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(''));
+          lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock', 'onLockChanged', 'releaseLock']);
         });
 
         it('should select first experiment if only one experiment is shown', function () {
@@ -520,7 +524,6 @@
         it('test editExperiment when it is not a collab experiment', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var testUser = 'testUserID';
-          var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
           lockMock.tryAddLock.and.callFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage();
@@ -535,7 +538,6 @@
         it('test editExperiment when everything goes normally', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var testUser = 'testUserID';
-          var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
           lockMock.tryAddLock.and.callFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
@@ -554,7 +556,6 @@
         it('test editExperiment when someone else is the owner of the edit lock', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var testUser = 'testUserID';
-          var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
           lockMock.tryAddLock.and.callFake(function(){return $q.when({success: false, lock: {lockInfo:{user:{id: testUser}}}});});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
@@ -571,7 +572,6 @@
 
         it('test editExperiment when an error came from the lock service', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock']);
           lockMock.tryAddLock.and.callFake(function(){return $q.reject(new Error());});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
@@ -588,7 +588,6 @@
 
         it('test stopEditingExperimentDetails', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var lockMock = jasmine.createSpyObj('lockMock', ['releaseLock']);
           lockMock.releaseLock.and.callFake(function(){return $q.when('');});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
@@ -603,7 +602,6 @@
 
         it('test stopEditingExperimentDetails deal with lock exceptions', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var lockMock = jasmine.createSpyObj('lockMock', ['releaseLock']);
           lockMock.releaseLock.and.callFake(function(){ return $q.reject(new Error());});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});
@@ -618,7 +616,6 @@
 
         it('test saveExperimentDetails when description is empty', function () {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var lockMock = jasmine.createSpyObj('lockMock', ['releaseLock']);
           lockMock.releaseLock.and.callFake(function(){ return $q.reject(new Error());});
           spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
           renderEsvWebPage({collab:true});

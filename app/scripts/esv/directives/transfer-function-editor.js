@@ -62,6 +62,7 @@
       '$q',
       'saveErrorsService',
       'environmentService',
+      'userContextService',
     function (
         $log,
         backendInterfaceService,
@@ -83,7 +84,8 @@
         codeEditorsServices,
         $q,
         saveErrorsService,
-        environmentService) {
+        environmentService,
+        userContextService) {
     var DIRTY_TYPE = 'TF';
 
     return {
@@ -102,7 +104,14 @@
           return simulationInfo.experimentDetails.brainProcesses > 1;
         };
 
-        scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), { readOnly: scope.isMultipleBrains() && 'nocursor' });
+        scope.editorOptions = angular.extend({},
+          codeEditorsServices.getDefaultEditorOptions(),
+          {
+            readOnly: scope.isMultipleBrains() && 'nocursor'
+          }
+        );
+
+        scope.editorOptions = codeEditorsServices.ownerOnlyOptions(scope.editorOptions);
 
         scope.stateService = stateService;
         scope.STATE = STATE;
@@ -461,7 +470,7 @@
           scope.transferFunctions = newTFs;
         });
 
-        autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved, applyChanges){
+        userContextService.isOwner() && autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved, applyChanges){
           scope.collabDirty = true;
           if (applyChanges)
             loadTFs().then(function() {

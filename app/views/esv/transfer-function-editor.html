@@ -75,6 +75,7 @@
 
   <div ng-hide="isMultipleBrains()">
     <button type="button" class="btn btn-default btn-md"
+      owner-only
       ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
       ng-click="update(transferFunction)"
       v-busy="transferFunction.dirty && stateService.statePending"
@@ -83,6 +84,7 @@
       <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
     </button>
     <button type="button" class="btn btn-default btn-md"
+      owner-only
       ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
       ng-click="delete(transferFunction)">
       <i class="glyphicon glyphicon-remove"></i><span> Delete</span>

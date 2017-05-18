@@ -1,7 +1,11 @@
-<button type="button" class="btn btn-default btn-md" ng-click="create()">
+<button type="button"
+        owner-only
+        class="btn btn-default btn-md"
+        ng-click="create()">
   <i class="glyphicon glyphicon-star"></i><span> New</span>
 </button>
 <button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
+        owner-only
         ng-click="saveSMIntoCollabStorage()"
         ng-disabled="stateService.currentState === STATE.INITIALIZED || !collabDirty || stateMachines.length === 0"
         v-busy="isSavingToCollab"
@@ -9,10 +13,14 @@
         v-pressable>
   <i class="glyphicon glyphicon-book"></i><span> Save to Collab</span>
 </button>
-<button class="btn btn-default btn-md" ng-click="save()" ng-disabled="stateMachines.length === 0">
+<button class="btn btn-default btn-md"
+        owner-only
+        ng-click="save()" ng-disabled="stateMachines.length === 0">
  <i class="glyphicon glyphicon-download"></i><span> Download</span>
 </button>
-<button class="btn btn-default btn-md" type="file"
+<button class="btn btn-default btn-md"
+        owner-only
+        type="file"
         ngf-select="loadStateMachine($file)" accept=".exd"
         ng-disabled="stateService.statePending">
   <i class="glyphicon glyphicon-upload"></i><span> Upload</span>

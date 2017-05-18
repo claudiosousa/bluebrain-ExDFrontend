@@ -22,14 +22,16 @@
   angular.module('exdFrontendApp')
     .service('codeEditorsServices', [
       '$timeout',
-      function ($timeout) {
+      'userContextService',
+      function ($timeout, userContextService) {
 
         return {
           getDefaultEditorOptions: getDefaultEditorOptions,
           getEditor: getEditor,
           refreshEditor: refreshEditor,
           refreshAllEditors: refreshAllEditors,
-          resetEditor: resetEditor
+          resetEditor: resetEditor,
+          ownerOnlyOptions: ownerOnlyOptions
         };
 
         function getDefaultEditorOptions() {
@@ -40,6 +42,10 @@
             indentUnit: 4,
             mode: 'text/x-python'
           };
+        }
+
+        function ownerOnlyOptions(options) {
+          return userContextService.isOwner() ? options : _.assign(options, { readOnly: 'nocursor' });
         }
 
         function getEditor(id) {

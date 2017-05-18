@@ -14,7 +14,8 @@
 <div ng-repeat="stateMachine in stateMachines">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
-  <div ui-codemirror="editorOptions"
+  <div ui-codemirror
+       ui-codemirror-opts="editorOptions"
        ng-model="stateMachine.code"
        ui-refresh="stateMachine.code"
        ng-attr-id="state-machine-{{stateMachine.id}}"

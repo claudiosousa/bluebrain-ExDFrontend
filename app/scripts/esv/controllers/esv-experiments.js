@@ -37,6 +37,7 @@
       'experimentProxyService',
       'nrpBackendVersions',
       'nrpFrontendVersion',
+      'userContextService',
       function (
         $scope,
         $location,
@@ -54,7 +55,8 @@
         environmentService,
         experimentProxyService,
         nrpBackendVersions,
-        nrpFrontendVersion
+        nrpFrontendVersion,
+        userContextService
       ) {
         $scope.isCollapsed = true;
         $scope.versionString = "Show versions";
@@ -70,8 +72,9 @@
         $scope.editing = {};
         $scope.editing[$scope.descID]= false;
         $scope.editing[$scope.nameID]= false;
-        if (environmentService.isPrivateExperiment()){
-          var lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
+        let lockService;
+        if (environmentService.isPrivateExperiment() && userContextService.isOwner()){
+          lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
         }
         $scope.config = {
           loadingMessage: 'Loading list of experiments...',
@@ -123,7 +126,7 @@
           };
 
           $scope.editExperiment = function(elementID) {
-            if (environmentService.isPrivateExperiment()) {
+            if (lockService) {
               $scope.loadingEdit = true;
               lockService.tryAddLock()
                 .then(function(result) {
@@ -154,7 +157,7 @@
           };
 
           $scope.stopEditingExperimentDetails = function(editingKey){
-            lockService.releaseLock()
+            lockService && lockService.releaseLock()
               .catch(function () {
                 hbpDialogFactory.alert({
                   title: "Error",

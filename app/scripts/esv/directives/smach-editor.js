@@ -39,6 +39,7 @@
     'codeEditorsServices',
     'saveErrorsService',
     'environmentService',
+    'userContextService',
     function ($q,
               backendInterfaceService,
               pythonCodeHelper,
@@ -57,7 +58,8 @@
               RESET_TYPE,
               codeEditorsServices,
               saveErrorsService,
-              environmentService) {
+              environmentService,
+              userContextService) {
 
       var DIRTY_TYPE = 'SM';
 
@@ -73,6 +75,7 @@
           scope.collabDirty = false;
 
           scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
+          scope.editorOptions = codeEditorsServices.ownerOnlyOptions(scope.editorOptions);
 
           scope.STATE = STATE;
           scope.ERROR = SIMULATION_FACTORY_CLE_ERROR;
@@ -384,7 +387,8 @@
         saveErrorsService.registerCallback(DIRTY_TYPE, function(newSMs){
           scope.stateMachines = newSMs;
         });
-        autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved, applyChanges) {
+
+        userContextService.isOwner() && autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(autoSaved, applyChanges) {
           scope.collabDirty = true;
           if (applyChanges)
             loadStateMachines()

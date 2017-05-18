@@ -22,8 +22,8 @@
   /* global console: false */
 
   angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService','saveErrorsService', 'editorsPanelService',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler, autoSaveService, saveErrorsService, editorsPanelService) {
+    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService','saveErrorsService', 'editorsPanelService', 'userContextService',
+    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler, autoSaveService, saveErrorsService, editorsPanelService, userContextService) {
 
     var serverConfig = simulationInfo.serverConfig;
     $scope.simulationID = simulationInfo.simulationID;
@@ -32,9 +32,9 @@
     $scope.editorsPanelService = editorsPanelService;
     $scope.panelIsOpen = false;
     $scope.activeTab = {};
-    $scope.activeTab.transferfunction = false;
-    $scope.activeTab.environment = true;
     $scope.activeTab.statemachine = false;
+    $scope.isOwner = userContextService.isOwner();
+    $scope.activeTab.transferfunction = !($scope.activeTab.environment = $scope.isOwner);
     $scope.activeTab.pynneditor = false;
     $scope.activeTab.graphicalEditor = false;
     $scope.activeTab.events = false;
@@ -51,7 +51,7 @@
     $scope.openCallback = function() {
       // The Panel is opened
 
-      autoSaveService.checkAutoSavedWork()
+      userContextService.isOwner() && autoSaveService.checkAutoSavedWork()
       .catch(function(){
         // auto saved data will always be the freshest data, so only load the error data if there is no autosave data or it was discarded.
         saveErrorsService.getErrorSavedWork();

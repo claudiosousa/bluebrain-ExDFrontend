@@ -55,7 +55,7 @@
             that.userID = that.ownerID = bbpConfig.get('localmode.ownerID');
           }
 
-          if (environmentService.isPrivateExperiment()) {
+          if (environmentService.isPrivateExperiment() && that.isOwner()) {
             // only use locks if we are in a collab
             this.lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
             this.cancelLockSubscription = this.lockService.onLockChanged(that.onLockChangedCallback);
@@ -67,7 +67,7 @@
         this.deinit = function() {
           if (!environmentService.isPrivateExperiment())
             return;
-          this.cancelLockSubscription();
+          this.cancelLockSubscription && this.cancelLockSubscription();
           this.removeEditLock(true);
         };
 
@@ -103,7 +103,7 @@
         };
 
         this.removeEditLock = function(skipResponse) {
-          return this.lockService.releaseLock()
+          return this.lockService && this.lockService.releaseLock()
           .catch(function () {
             if (!skipResponse) {
               $window.alert("I could not release the edit lock. Please remove it manually from the Storage area.");

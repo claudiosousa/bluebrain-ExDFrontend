@@ -22,9 +22,9 @@
 
       <button type="button" class="btn btn-default"
             ng-click="saveSettings()"
+            owner-only
             ng-disabled="!isPrivateExperiment || !simulationInfo.contextID"
             ng-mouseup="$event.stopPropagation(); focus('container');">
-
             <i class="glyphicon glyphicon-download"></i>
             <span>Save Settings</span>
       </button>
