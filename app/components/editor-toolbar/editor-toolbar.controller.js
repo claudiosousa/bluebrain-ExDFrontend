@@ -417,9 +417,6 @@
           $timeout(checkIfVideoStreamsAvailable, 500);
       });
 
-      $scope.showVideoStreams = false;
-      // refresh in a moment if the simulation has started with the directive visible
-      // in case new topics are published by the TFs
       /**
        * Toogle the video stream widget visibility
        */
@@ -427,7 +424,7 @@
         if (!$scope.videoStreamsAvailable)
           return;
 
-        $scope.showVideoStreams = !$scope.showVideoStreams;
+        $rootScope.$emit('openVideoStream');
       };
 
       // log console

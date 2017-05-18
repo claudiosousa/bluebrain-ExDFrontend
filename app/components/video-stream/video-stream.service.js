@@ -19,7 +19,7 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
+  angular.module('videoStreamModule')
     .constant('STREAM_URL', 'stream?topic=')
     .service('videoStreamService', ['$q', '$log', '$http', 'simulationInfo', 'STREAM_URL',
       function($q, $log, $http, simulationInfo, STREAM_URL) {

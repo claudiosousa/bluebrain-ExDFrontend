@@ -27,12 +27,7 @@
       toggle-visibility="logConsoleButtonClickHandler()">
     </log-console>
 
-    <video-streams
-      class="ng-hide"
-      ng-show="showVideoStreams"
-      show-on-top
-      toggle-visibility="videoStreamsToggle()">
-    </video-streams>
+    <video-stream-generator ng-show="showVideoStreams"></video-stream-generator>
   </div>
 
   <div class="ros-reconnecting" on-reconnect-timeout="exit()"></div>

@@ -76,7 +76,7 @@
     "validthis"     : false,    // Tolerate strict violations when the code is running in strict mode and you use this in a non-constructor function.
     "-W078"         : false,    // accept setters without getters
     "-W008"         : false,    // accept leading decimals
-
+    "-W093"         : false,    //accept return assignments
     // == Environments ====================================================
     //
     // These options pre-define global variables that are exposed by
