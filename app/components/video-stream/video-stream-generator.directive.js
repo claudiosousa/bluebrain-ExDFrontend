@@ -24,7 +24,6 @@
 
             const viewerTemplate = `<video-stream
                                             show-on-top
-                                            ng-show="true"
                                             toggle-visibility="closeVideoStream()">
                                         </video-stream>`;
 

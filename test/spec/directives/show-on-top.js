@@ -8,10 +8,10 @@ describe('Directive: show-on-top', function () {
     var panels;
     var $rootScope, MAX_PANEL_ZINDEX, $compile;
 
-    beforeEach(inject(function (_$rootScope_, _MAX_PANEL_ZINDEX_, _$compile_) {
+    beforeEach(inject(function (_$rootScope_, $controller, _$compile_, showOnTopService) {
         $rootScope = _$rootScope_;
         $compile = _$compile_;
-        MAX_PANEL_ZINDEX = _MAX_PANEL_ZINDEX_;
+        MAX_PANEL_ZINDEX = Object.getPrototypeOf(showOnTopService).constructor.MAX_PANEL_ZINDEX;
         panels = [];
         for (var i = 0; i < 3; i++) {
             $rootScope['show' + i] = false;
@@ -75,13 +75,6 @@ describe('Directive: show-on-top', function () {
         expect(getZINdex(panels[0])).toBe(MAX_PANEL_ZINDEX);
         expect(getZINdex(panels[2])).toBe(MAX_PANEL_ZINDEX - 1);
         expect(getZINdex(panels[1])).toBe(MAX_PANEL_ZINDEX - 2);
-    });
-
-
-    it('should through exception if applied to element without ng-show', function () {
-        expect(function () {
-            $compile('<div show-on-top/>')($rootScope.$new());
-        }).toThrow('Directive \'show-on-top\' requires a ng-show to exist in the same element');
     });
 
     it('should not re-apply z-index if panel is already on top', function () {
