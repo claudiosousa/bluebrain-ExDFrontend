@@ -160,10 +160,12 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
     that.shiftHold = event.shiftKey;
     switch (event.code)
     {
-      case "KeyW":
+      case "PageUp":
+      case "KeyR":
         that.moveForward = true; break;
 
-      case "KeyS":
+      case "PageDown":
+      case "KeyF":
         that.moveBackward = true; break;
 
       case "KeyA":
@@ -184,12 +186,10 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
       case "ArrowRight":
         that.rotateRight = true; break;
 
-      case "PageUp":
-      case "KeyR":
+      case "KeyW":
         that.moveUp = true; break;
 
-      case "PageDown":
-      case "KeyF":
+      case "KeyS":
         that.moveDown = true; break;
     }
   };
@@ -204,10 +204,12 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
     switch (event.code)
     {
 
-      case "KeyW":
+      case "PageUp":
+      case "KeyR":
         that.moveForward = false; break;
 
-      case "KeyS":
+      case "PageDown":
+      case "KeyF":
         that.moveBackward = false; break;
 
       case "KeyA":
@@ -228,12 +230,10 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
       case "ArrowRight":
         that.rotateRight = false; break;
 
-      case "PageUp":
-      case "KeyR":
+      case "KeyW":
         that.moveUp = false; break;
 
-      case "PageDown":
-      case "KeyF":
+      case "KeyS":
         that.moveDown = false; break;
     }
   };
@@ -308,6 +308,21 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
       this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), 1.0);
     }
 
+
+    if (this.moveUp)
+    {
+      currentDistance -= elapsed *0.004;
+      currentDistance = Math.max(Math.min( currentDistance, 20.0), 1.0);
+      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), 1.0);
+    }
+
+    if (this.moveDown)
+    {
+      currentDistance += elapsed *0.004;
+      currentDistance = Math.max(Math.min( currentDistance, 20.0), 1.0);
+      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), 1.0);
+    }
+
     if (this.averageDistance <= 0)
     {
       this.averageDistance = currentDistance;
@@ -315,17 +330,6 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
 
     currentDistance = Math.min(currentDistance, this.averageDistance*1.2);
 
-    if (this.moveUp)
-    {
-      currentDistance -= elapsed *0.004;
-      currentDistance = Math.max(Math.min( currentDistance, 20.0), 1.0);
-    }
-
-    if (this.moveDown)
-    {
-      currentDistance += elapsed *0.004;
-      currentDistance = Math.max(Math.min( currentDistance, 20.0), 1.0);
-    }
 
     if (this.mouseDragOn)
     {
