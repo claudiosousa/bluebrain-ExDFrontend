@@ -2,7 +2,9 @@
 <link rel="stylesheet" href="components/dynamic-view-overlay/dynamic-view-overlay.style.css"/>
 <!-- endbuild -->
 
-<div movable resizeable show-on-top ng-show="true" class="dynamic-view-overlay-wrapper">
-  <dynamic-view dynamic-view-default-directive="joint-plot"></dynamic-view>
+<div movable resizeable show-on-top
+     randomize-initial-position random-position-parent-selector="vm.dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR"
+     class="dynamic-view-overlay-wrapper">
+  <dynamic-view></dynamic-view>
   <button type="button" class="button-close" data-ng-click="vm.closeOverlay()">×</button>
 </div>

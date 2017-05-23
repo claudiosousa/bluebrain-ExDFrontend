@@ -548,8 +548,7 @@
 
     createDynamicOverlay(componentName) {
       this.dynamicViewOverlayService.createOverlay(
-          document.getElementById('experiment-view-widget-overlays'),
-          /* parent element to attach overlay to */
+          angular.element(this.dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR)[0], /* parent element to attach overlay to */
           componentName
       );
     };

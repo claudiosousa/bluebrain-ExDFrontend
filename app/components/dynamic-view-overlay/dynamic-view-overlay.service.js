@@ -11,6 +11,7 @@
   class DynamicViewOverlayService {
 
     static get OVERLAY_HTML() { return '<dynamic-view-overlay></dynamic-view-overlay>'; }
+    get OVERLAY_PARENT_SELECTOR() { return '.experiment-view-widget-overlays'; }
 
     constructor($compile,
                 $rootScope,
@@ -64,6 +65,10 @@
     removeOverlay(id) {
       document.getElementById(id).remove();
       delete this.overlays[id];
+    }
+
+    getOverlayParentElement() {
+      return angular.element(this.OVERLAY_PARENT_SELECTOR);
     }
   }
 
