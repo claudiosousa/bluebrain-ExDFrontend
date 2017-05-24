@@ -61,6 +61,7 @@
       this.splash = splash;
       this.backendInterfaceService = backendInterfaceService;
       this.simulationInfo = simulationInfo;
+      this.environmentRenderingService = environmentRenderingService;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
 
       this.EDIT_MODE = EDIT_MODE;
@@ -212,26 +213,6 @@
         nrpAnalytics.eventTrack('Toggle-joint-plot', {
           category: 'Simulation-GUI',
           value: $scope.showJointPlot
-        });
-      };
-
-      // robot view
-      $scope.robotViewButtonClickHandler = function() {
-        if (!environmentRenderingService.hasCameraView())
-          return;
-        $scope.showRobotView = !$scope.showRobotView;
-        nrpAnalytics.eventTrack('Toggle-robot-view', {
-          category: 'Simulation-GUI',
-          value: $scope.showRobotView
-        });
-        gz3d.scene.viewManager.views.forEach(function(view) {
-          if (angular.isDefined(view.type) && view.type ===
-              'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
-            view.active = !view.active;
-            view.container.style.visibility = view.active ?
-                'visible' :
-                'hidden';
-          }
         });
       };
 
@@ -582,6 +563,26 @@
       this.nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
         category: 'Simulation-GUI',
         value: this.editorToolbarService.isBrainVisualizerActive
+      });
+    }
+
+    // robot view
+    robotViewButtonClickHandler() {
+      if (!this.environmentRenderingService.hasCameraView())
+        return;
+      this.editorToolbarService.showRobotView = !this.editorToolbarService.isRobotCameraViewActive;
+      this.nrpAnalytics.eventTrack('Toggle-robot-view', {
+        category: 'Simulation-GUI',
+        value: this.editorToolbarService.isRobotCameraViewActive
+      });
+      this.gz3d.scene.viewManager.views.forEach((view) => {
+        if (angular.isDefined(view.type) && view.type ===
+            'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
+          view.active = !view.active;
+          view.container.style.visibility = view.active ?
+              'visible' :
+              'hidden';
+        }
       });
     }
 

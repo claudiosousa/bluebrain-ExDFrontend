@@ -475,7 +475,7 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should toggle the robot camera views', function() {
-      expect($scope.showRobotView).toBe(undefined);
+      expect(editorToolbarService.showRobotView).toBe(false);
       expect(gz3d.scene.viewManager.views[0].type).toBe('camera');
       expect(gz3d.scene.viewManager.views[0].active).toBe(true);
       expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('visible');
@@ -483,8 +483,8 @@ describe('Controller: EditorToolbarController', function() {
       expect(gz3d.scene.viewManager.views[1].active).toBe(false);
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
       environmentRenderingService.hasCameraView.and.returnValue(true);
-      $scope.robotViewButtonClickHandler();
-      expect($scope.showRobotView).toBe(true);
+      editorToolbarController.robotViewButtonClickHandler();
+      expect(editorToolbarService.showRobotView).toBe(true);
       expect(gz3d.scene.viewManager.views[0].active).toBe(false);
       expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('hidden');
       expect(gz3d.scene.viewManager.views[1].active).toBe(true);

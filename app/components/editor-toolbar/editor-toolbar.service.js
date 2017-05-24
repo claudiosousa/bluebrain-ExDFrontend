@@ -23,6 +23,7 @@
 
     constructor() {
       this.showBrainvisualizerPanel = false;
+      this.showRobotView = false;
     }
 
     closeBrainVisualizer() {
@@ -31,6 +32,11 @@
     get isBrainVisualizerActive()
     {
       return this.showBrainvisualizerPanel;
+    }
+
+    get isRobotCameraViewActive()
+    {
+      return this.showRobotView;
     }
   }
 

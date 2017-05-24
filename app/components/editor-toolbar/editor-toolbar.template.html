@@ -175,13 +175,13 @@
 
             <!-- toggle robot camera view --><!-- todo: check if tooltip-enable="!hasCameraView" is valid, think it should be like "!environmentRenderingService.hasCameraView()" (Sven, Sandro)-->
             <div class="hbp-toolbar-action hide-overflow ng-hide"
-                 ng-class="{'active': showRobotView, 'disabled-image-with-events': !environmentRenderingService.hasCameraView()}"
-                 ng-click="robotViewButtonClickHandler()"
+                 ng-class="{'active': vm.editorToolbarService.isRobotCameraViewActive, 'disabled-image-with-events': !vm.environmentRenderingService.hasCameraView()}"
+                 ng-click="vm.robotViewButtonClickHandler()"
                  help-tooltip="ROBOT_VIEW"
                  tooltip="No camera is available"
                  tooltip-trigger="mouseenter"
-                 tooltip-enable="!hasCameraView"
-                 ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+                 tooltip-enable="!vm.environmentRenderingService"
+                 ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
               <i class="fa fa-eye fa-2x vertcenter"></i>
             </div>
             <!-- toggle robot camera view -->
