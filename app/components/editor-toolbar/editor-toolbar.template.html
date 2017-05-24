@@ -265,13 +265,14 @@
 
             <!-- log console icon -->
             <div class="hbp-toolbar-action hide-overflow"
-                 ng-class="{'active': showLogConsole}"
-                 ng-click="logConsoleButtonClickHandler()"
+                 ng-class="{'active': vm.editorToolbarService.isLogConsoleActive}"
+                 ng-click="vm.logConsoleButtonClickHandler()"
                  help-tooltip="LOG_CONSOLE">
                 <i class="fa fa-terminal fa-2x vertcenter"></i>
-                <div ng-if="missedConsoleLogs" class="missed-console-badge missed-console-number-{{missedConsoleLogs<=9}}" ng-class="'missed-console-badge-count-'+(missedConsoleLogs%2)">
-                    <div ng-if="missedConsoleLogs<=9">{{missedConsoleLogs}}</div>
-                    <div ng-if="missedConsoleLogs>9">...</div>
+                <div ng-if="vm.editorToolbarService.missedConsoleLogs"
+                     class="missed-console-badge missed-console-number-{{vm.editorToolbarService.missedConsoleLogs<=9}}" ng-class="'missed-console-badge-count-'+(vm.editorToolbarService.missedConsoleLogs%2)">
+                    <div ng-if="vm.editorToolbarService.missedConsoleLogs<=9">{{vm.editorToolbarService.missedConsoleLogs}}</div>
+                    <div ng-if="vm.editorToolbarService.missedConsoleLogs>9">...</div>
                 </div>
             </div>
             <!-- log console icon -->

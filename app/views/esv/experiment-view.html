@@ -7,9 +7,9 @@
     <environment-rendering></environment-rendering>
 
     <log-adverts></log-adverts>
-    
+
     <div id="experiment-view-widget-overlays">
-    
+
       <spike-train ng-show="showSpikeTrain" close-fn="spikeTrainButtonClickHandler()"></spike-train>
 
       <object-inspector></object-inspector>
@@ -20,13 +20,7 @@
 
       <environment-settings-panel></environment-settings-panel>
 
-      <log-console
-        class="ng-hide"
-        ng-show="showLogConsole"
-        show-on-top
-        log-received="consoleLogReceived()"
-        toggle-visibility="logConsoleButtonClickHandler()">
-      </log-console>
+      <log-console></log-console>
 
       <video-stream-generator ng-show="showVideoStreams"></video-stream-generator>
     </div>

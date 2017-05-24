@@ -236,24 +236,6 @@
         }
       });
 
-      // log console
-      $scope.showLogConsole = false;
-      $scope.logConsoleButtonClickHandler = function() {
-        $scope.showLogConsole = !$scope.showLogConsole;
-        if ($scope.showLogConsole)
-          $scope.missedConsoleLogs = 0;
-        nrpAnalytics.eventTrack('Toggle-log-console', {
-          category: 'Simulation-GUI',
-          value: $scope.showLogConsole
-        });
-      };
-
-      $scope.missedConsoleLogs = 0;
-      $scope.consoleLogReceived = function() {
-        if (!$scope.showLogConsole)
-          $scope.missedConsoleLogs++;
-      };
-
       // Environment settings panel
       $scope.showEnvironmentSettingsPanel = false;
 
@@ -573,6 +555,16 @@
       }
 
       this.$rootScope.$emit('openVideoStream'); // TODO: introduce a video stream for this?
+    };
+
+    logConsoleButtonClickHandler() {
+      this.editorToolbarService.showLogConsole = !this.editorToolbarService.isLogConsoleActive;
+      if (this.editorToolbarService.showLogConsole)
+        this.editorToolbarService.resetLoggedMessages();
+      this.nrpAnalytics.eventTrack('Toggle-log-console', {
+        category: 'Simulation-GUI',
+        value: this.editorToolbarService.showLogConsole
+      });
     };
 
     createDynamicOverlay(componentName) {

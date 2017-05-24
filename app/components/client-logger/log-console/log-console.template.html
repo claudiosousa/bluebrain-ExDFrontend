@@ -1,4 +1,5 @@
-<div movable movable-anchor=".widget-popup-header" class="widget-popup log-console-popup" resizeable>
+<div movable movable-anchor=".widget-popup-header" class="ng-hide widget-popup log-console-popup" resizeable
+     show-on-top ng-show="editorToolbarService.isLogConsoleActive">
     <!-- build:css(.tmp) components/client-logger/log-console/log-console.style.css -->
     <link rel="stylesheet" href="components/client-logger/log-console/log-console.style.css" />
     <!-- endbuild -->
@@ -6,7 +7,7 @@
     <div class="widget-popup-header">
         <h5 class="widget-popup-title">Log console</h5>
     </div>
-    <button type="button" class="widget-popup-close" ng-click="toggleVisibility()">×</button>
+    <button type="button" class="widget-popup-close" ng-click="closePanel()">×</button>
     <div class="widget-popup-content log-list">
         <span ng-if="logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
         <div class="log-line" ng-repeat="log in logs">

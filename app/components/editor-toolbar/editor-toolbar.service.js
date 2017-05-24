@@ -23,15 +23,35 @@
 
     constructor() {
       this.showBrainvisualizerPanel = false;
+      this.showLogConsole = false;
+      this.missedConsoleLogs = 0;
       this.showRobotView = false;
     }
 
     closeBrainVisualizer() {
       this.showBrainvisualizerPanel = false;
     }
+
     get isBrainVisualizerActive()
     {
       return this.showBrainvisualizerPanel;
+    }
+
+    get isLogConsoleActive()
+    {
+      return this.showLogConsole;
+    }
+
+    resetLoggedMessages()
+    {
+      this.missedConsoleLogs = 0;
+    }
+
+    consoleLogReceived()
+    {
+      if (!this.showLogConsole) {
+        this.missedConsoleLogs++;
+      }
     }
 
     get isRobotCameraViewActive()

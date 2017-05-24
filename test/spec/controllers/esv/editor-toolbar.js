@@ -568,9 +568,9 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should open the log-console panel', function() {
-      $scope.showLogConsole = false;
-      $scope.logConsoleButtonClickHandler();
-      expect($scope.showLogConsole).toBe(true);
+      editorToolbarService.showLogConsole = false;
+      editorToolbarController.logConsoleButtonClickHandler();
+      expect(editorToolbarService.showLogConsole).toBe(true);
     });
   });
 

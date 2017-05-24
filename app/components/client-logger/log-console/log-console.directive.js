@@ -26,11 +26,13 @@
             'STATE',
             'stateService',
             'clientLoggerService',
+            'editorToolbarService',
             function(
                 $timeout,
                 STATE,
                 stateService,
-                clientLoggerService) {
+                clientLoggerService,
+                editorToolbarService) {
                 //auto scroll when the distance from bottom of the scrollable area <= than AUTO_SCROLL_MAX_DISTANCE
                 const AUTO_SCROLL_MAX_DISTANCE = 10;
                 const MAX_VISIBLE_LOGS = 100; //number of last received logs kept visible
@@ -41,14 +43,14 @@
                     restrict: 'E',
                     replace: true,
                     scope: {
-                        toggleVisibility: '&',
-                        logReceived: '&'
+                        toggleVisibility: '&'
                     },
                     link: function(scope, element) {
 
                         scope.logs = [];
                         scope.STATE = STATE;
                         scope.stateService = stateService;
+                        scope.editorToolbarService = editorToolbarService;
 
                         const logList = element.find('.log-list')[0];
 
@@ -61,7 +63,7 @@
                         function newMessageReceived(message) {
                             $timeout(() => {
                                 //notify log received
-                                scope.logReceived();
+                                editorToolbarService.consoleLogReceived();
 
                                 scope.logs.push({
                                     time: moment().format('HH:mm:ss'),
@@ -84,6 +86,10 @@
                             unsubscribeReset();
                             logSubscription.unsubscribe();
                         });
+
+                        scope.closePanel = function() {
+                          editorToolbarService.showLogConsole = false;
+                        };
                     }
                 };
             }
