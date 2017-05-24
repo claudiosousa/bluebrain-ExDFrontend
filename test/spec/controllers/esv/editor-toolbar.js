@@ -562,8 +562,6 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should open of the brainvisualizer panel', function() {
-      $scope.loadingBrainvisualizerPanel = false;
-      $scope.brainvisualizerIsDisabled = false;
       editorToolbarService.showBrainvisualizerPanel = false;
       editorToolbarController.toggleBrainvisualizer();
       expect(editorToolbarService.showBrainvisualizerPanel).toBe(true);

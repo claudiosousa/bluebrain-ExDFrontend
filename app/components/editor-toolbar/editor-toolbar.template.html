@@ -41,11 +41,11 @@
         </div>
         <div>
             <div class="hbp-toolbar-large-tool hbp-time-display default-cursor"
-                 ng-class="{ 'disabled': (stateService.currentState === STATE.HALTED) ||
-                                          (stateService.currentState === STATE.STOPPED) ||
-                                          (stateService.currentState === STATE.FAILED)}"
+                 ng-class="{ 'disabled': (vm.stateService.currentState === vm.STATE.HALTED) ||
+                                          (vm.stateService.currentState === vm.STATE.STOPPED) ||
+                                          (vm.stateService.currentState === vm.STATE.FAILED)}"
                  help-tooltip="TIME_DISPLAY">
-                <div ng-show="(stateService.currentState === STATE.INITIALIZED) || (stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED)">
+                <div ng-show="(vm.stateService.currentState === vm.STATE.INITIALIZED) || (vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED)">
                     <div>
                         <span>Simulation time:</span><br/>
                         <span>Real time:</span><br/>
@@ -57,7 +57,7 @@
                         <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 300 ? 'red' : '' }">{{simTimeoutText | timeDDHHMMSS}}</span>
                     </div>
                 </div>
-                <div ng-show="stateService.currentState === STATE.HALTED">
+                <div ng-show="vm.stateService.currentState === vm.STATE.HALTED">
                     <div>
                         <span>An exception occurred in the simulation.</span><br />
                         <span>The simulation needs to be terminated.</span>
@@ -159,7 +159,7 @@
                  ng-class="{'active': showSpikeTrain}"
                  help-tooltip="SPIKE_TRAIN"
                  ng-click="spikeTrainButtonClickHandler()"
-                 ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+                 ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
                 <img src="img/esv/spiketrain_logo.png">
             </div>
             <!-- toggle spiketrain -->
@@ -236,12 +236,11 @@
             <!-- code editor icon -->
 
             <!-- brain visualizer icon -->
-            <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
+            <div ng-if="vm.userContextService.isOwner()" class="hbp-toolbar-action hide-overflow"
                  ng-class="{  'active': vm.editorToolbarService.showBrainvisualizerPanel,
-                              'disabled': brainvisualizerIsDisabled || loadingBrainvisualizerPanel ||
-                                          (stateService.currentState === STATE.HALTED) ||
-                                          (stateService.currentState === STATE.STOPPED) ||
-                                          (stateService.currentState === STATE.FAILED)}"
+                              'disabled': (vm.stateService.currentState === vm.STATE.HALTED) ||
+                                          (vm.stateService.currentState === vm.STATE.STOPPED) ||
+                                          (vm.stateService.currentState === vm.STATE.FAILED)}"
                  ng-click="vm.toggleBrainvisualizer()"
                  help-tooltip="BRAIN_VISUALIZER"
                  tooltip-trigger="mouseenter"
