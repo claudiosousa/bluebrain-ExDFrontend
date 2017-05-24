@@ -154,13 +154,13 @@ describe('Controller: EditorToolbarController', function() {
 
     it('should properly update navigation mode', function() {
       userNavigationService.nagitationMode = NAVIGATION_MODES.FREE_CAMERA;
-      $scope.setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);
       expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
 
-      $scope.setNavigationMode(NAVIGATION_MODES.GHOST);
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.GHOST);
       expect(userNavigationService.setModeGhost).toHaveBeenCalled();
 
-      $scope.setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);
       expect(userNavigationService.setModeHumanBody).toHaveBeenCalled();
     });
 

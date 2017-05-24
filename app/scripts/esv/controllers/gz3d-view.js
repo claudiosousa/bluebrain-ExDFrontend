@@ -35,11 +35,14 @@
     ['$scope',
       'userContextService',
       'experimentService',
-      function ( $scope,
-        userContextService,
-        experimentService)
+      'userNavigationService',
+      function ($scope,
+                userContextService,
+                experimentService,
+                userNavigationService)
       {
         $scope.userContextService = userContextService;
         $scope.experimentService = experimentService;
+        $scope.userNavigationService = userNavigationService;
       }]);
 } ());

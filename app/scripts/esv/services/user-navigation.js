@@ -28,9 +28,11 @@
         LOOKAT_ROBOT: 'LookatRobot'
       })
       .factory('userNavigationService', [
+        '$timeout',
         'NAVIGATION_MODES', 'STATE',
         'gz3d', 'nrpUser', 'simulationInfo', 'roslib', 'stateService',
-        function (NAVIGATION_MODES, STATE,
+        function ($timeout,
+                  NAVIGATION_MODES, STATE,
                   gz3d, nrpUser, simulationInfo, roslib, stateService) {
           return {
 
@@ -48,12 +50,13 @@
             userID: undefined,
             userDisplayName: undefined,
             userReferenceROSCompliant: undefined,
+            showHumanNavInfoDiv: false,
 
             rosbridgeWebsocketUrl: undefined,
             roslib: undefined,
 
             init: function() {
-              var that = this;
+              const that = this;
 
               stateService.getCurrentState().then(function () {
                 if (stateService.currentState !== STATE.STOPPED) {
@@ -90,6 +93,16 @@
                   });
                 }
               });
+
+
+              this.displayHumanNavInfo = function(event) {
+                if ((stateService.currentState === STATE.PAUSED) && (that.showHumanNavInfoDiv === false)) {
+                  that.showHumanNavInfoDiv = true;
+                  $timeout(function () {
+                    that.showHumanNavInfoDiv = false;
+                  }, 5000);
+                }
+              };
             },
 
             deinit: function() {
@@ -236,6 +249,9 @@
             },
 
             setModeHumanBody: function() {
+              const that = this;
+              document.addEventListener('keydown', this.displayHumanNavInfo);
+
               if (this.navigationMode === NAVIGATION_MODES.HUMAN_BODY) {
                 return;
               }
@@ -258,6 +274,8 @@
             },
 
             setModeFreeCamera: function() {
+              document.removeEventListener('keydown', this.displayHumanNavInfo);
+
               if (this.navigationMode === NAVIGATION_MODES.FREE_CAMERA) {
                 return;
               }
@@ -292,6 +310,8 @@
             },
 
             setLookatRobotCamera: function() {
+              document.removeEventListener('keydown', this.displayHumanNavInfo);
+
               if (this.navigationMode === NAVIGATION_MODES.LOOKAT_ROBOT) {
                 return;
               }
@@ -313,7 +333,7 @@
               this.freeCameraControls.enabled = false;
 
               this.controls = gz3d.scene.controls = this.lookatRobotControls;
-            }
+            },
 
           };
         }

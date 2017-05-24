@@ -62,11 +62,13 @@
       this.backendInterfaceService = backendInterfaceService;
       this.simulationInfo = simulationInfo;
       this.environmentRenderingService = environmentRenderingService;
+      this.userNavigationService = userNavigationService;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
 
       this.EDIT_MODE = EDIT_MODE;
       this.RESET_TYPE = RESET_TYPE;
       this.STATE = STATE;
+      this.NAVIGATION_MODES = NAVIGATION_MODES;
 
       this.$timeout = $timeout;
       // TODO: remove this after refactoring is completed
@@ -217,51 +219,7 @@
       };
 
       // navigation mode
-      $scope.showNavigationModeMenu = false;
-
-      $scope.isActiveNavigationMode = function(mode) {
-        return (userNavigationService.navigationMode === mode);
-      };
-
-      $scope.navigationModeMenuClickHandler = function() {
-        $scope.showNavigationModeMenu = !$scope.showNavigationModeMenu;
-      };
-
-      $scope.showHumanNavInfoDiv = false;
-      $scope.displayHumanNavInfo = function(event) {
-        if (stateService.currentState === STATE.PAUSED) {
-          $scope.showHumanNavInfoDiv = true;
-          $timeout(function() {
-            $scope.showHumanNavInfoDiv = false;
-          }, 5000);
-        }
-      };
-
-      $scope.setNavigationMode = function(mode) {
-        switch (mode) {
-          case NAVIGATION_MODES.FREE_CAMERA:
-            document.removeEventListener('keydown', $scope.displayHumanNavInfo);
-            userNavigationService.setModeFreeCamera();
-            break;
-
-          case NAVIGATION_MODES.GHOST:
-            document.removeEventListener('keydown', $scope.displayHumanNavInfo);
-            userNavigationService.setModeGhost();
-            break;
-
-          case NAVIGATION_MODES.HUMAN_BODY:
-            if (stateService.currentState !== STATE.PAUSED) {
-              document.addEventListener('keydown', $scope.displayHumanNavInfo);
-              userNavigationService.setModeHumanBody();
-            }
-            break;
-
-          case NAVIGATION_MODES.LOOKAT_ROBOT:
-            document.removeEventListener('keydown', $scope.displayHumanNavInfo);
-            userNavigationService.setLookatRobotCamera();
-            break;
-        }
-      };
+      this.showNavigationModeMenu = false;
 
       $scope.helpTooltipService = helpTooltipService;
 
@@ -397,8 +355,6 @@
 
       $scope.cleanUp = function() {
         environmentRenderingService.deinit();
-
-        document.removeEventListener('keydown', $scope.displayHumanNavInfo);
 
         // unbind resetListener callback
         $scope.resetListenerUnbindHandler();
@@ -584,6 +540,36 @@
               'hidden';
         }
       });
+    }
+
+    isActiveNavigationMode(mode) {
+      return (this.userNavigationService.navigationMode === mode);
+    };
+
+    navigationModeMenuClickHandler() {
+      this.showNavigationModeMenu = !this.showNavigationModeMenu;
+    };
+
+    setNavigationMode(mode) {
+      switch (mode) {
+        case this.NAVIGATION_MODES.FREE_CAMERA:
+          this.userNavigationService.setModeFreeCamera();
+          break;
+
+        case this.NAVIGATION_MODES.GHOST:
+          this.userNavigationService.setModeGhost();
+          break;
+
+        case this.NAVIGATION_MODES.HUMAN_BODY:
+          if (this.stateService.currentState !== this.STATE.PAUSED) {
+            this.userNavigationService.setModeHumanBody();
+          }
+          break;
+
+        case this.NAVIGATION_MODES.LOOKAT_ROBOT:
+          this.userNavigationService.setLookatRobotCamera();
+          break;
+      }
     }
 
     createDynamicOverlay(componentName) {

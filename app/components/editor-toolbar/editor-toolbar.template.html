@@ -189,27 +189,27 @@
 
             <!-- navigation mode -->
             <div class="hbp-toolbar-action ng-hide"
-                 ng-class="{'active': showNavigationModeMenu}"
-                 ng-click="navigationModeMenuClickHandler()"
+                 ng-class="{'active': vm.showNavigationModeMenu}"
+                 ng-click="vm.navigationModeMenuClickHandler()"
                  help-tooltip="USER_NAVIGATION"
-                 ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+                 ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
                 <i class="fa fa-compass fa-2x vertcenter"></i>
-                <div show-on-top ng-show="showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -169px; background-color: lightgrey;">
+                <div show-on-top ng-show="vm.showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -169px; background-color: lightgrey;">
                     <div  class="hbp-toolbar-action hide-overflow"
-                          ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.HUMAN_BODY), 'disabled-image': stateService.currentState === STATE.PAUSED}"
-                          ng-click="setNavigationMode(NAVIGATION_MODES.HUMAN_BODY)">
+                          ng-class="{'active': vm.isActiveNavigationMode(vm.NAVIGATION_MODES.HUMAN_BODY), 'disabled-image': vm.stateService.currentState === vm.STATE.PAUSED}"
+                          ng-click="vm.setNavigationMode(vm.NAVIGATION_MODES.HUMAN_BODY)">
                         <i class="fa fa-male fa-2x vertcenter"></i>
                     </div>
 
                     <div class="hbp-toolbar-action hide-overflow"
-                        ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.LOOKAT_ROBOT)}"
-                        ng-click="setNavigationMode(NAVIGATION_MODES.LOOKAT_ROBOT);">
+                        ng-class="{'active': vm.isActiveNavigationMode(vm.NAVIGATION_MODES.LOOKAT_ROBOT)}"
+                        ng-click="vm.setNavigationMode(vm.NAVIGATION_MODES.LOOKAT_ROBOT);">
                         <img src="img/esv/lookatrobot_icon.png" width=32 height=32>
                     </div>
 
                     <div class="hbp-toolbar-action hide-overflow"
-                         ng-class="{'active': isActiveNavigationMode(NAVIGATION_MODES.FREE_CAMERA)}"
-                         ng-click="setNavigationMode(NAVIGATION_MODES.FREE_CAMERA)">
+                         ng-class="{'active': vm.isActiveNavigationMode(vm.NAVIGATION_MODES.FREE_CAMERA)}"
+                         ng-click="vm.setNavigationMode(vm.NAVIGATION_MODES.FREE_CAMERA)">
                         <i class="fa fa-video-camera fa-2x vertcenter"></i>
                     </div>
                 </div>
