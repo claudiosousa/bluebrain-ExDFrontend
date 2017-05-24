@@ -251,13 +251,13 @@
 
             <!-- video streams icon -->
             <div class="hbp-toolbar-action hide-overflow"
-                 ng-class="{  'active': showVideoStreams,
-                              'disabled-image-with-events': !videoStreamsAvailable}"
-                 ng-click="videoStreamsToggle()"
+                 ng-class="{  'active': vm.showVideoStreams,
+                              'disabled-image-with-events': !vm.videoStreamsAvailable}"
+                 ng-click="vm.videoStreamsToggle()"
                  help-tooltip="SERVER_VIDEO_STREAM"
                  tooltip="No video stream available"
                  tooltip-trigger="mouseenter"
-                 tooltip-enable="!videoStreamsAvailable">
+                 tooltip-enable="!vm.videoStreamsAvailable">
                 <img src="img/esv/videostream_icon.png" width=31 height=31>
             </div>
             <!-- video streams icon -->

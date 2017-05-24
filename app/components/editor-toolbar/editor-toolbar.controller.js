@@ -63,6 +63,7 @@
       this.simulationInfo = simulationInfo;
       this.environmentRenderingService = environmentRenderingService;
       this.userNavigationService = userNavigationService;
+      this.videoStreamService = videoStreamService;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
 
       this.EDIT_MODE = EDIT_MODE;
@@ -73,6 +74,7 @@
       this.$timeout = $timeout;
       // TODO: remove this after refactoring is completed
       this.scope = $scope;
+      this.$rootScope = $rootScope;
 
       $scope.contextMenuState = contextMenuState;
       $scope.userContextService = userContextService;
@@ -223,32 +225,16 @@
 
       $scope.helpTooltipService = helpTooltipService;
 
-      $scope.videoStreamsAvailable = false;
-
-      function checkIfVideoStreamsAvailable() {
-        videoStreamService.getStreamUrls().then(function(videoStreams) {
-          $scope.videoStreamsAvailable = videoStreams && !!videoStreams.length;
-        });
-      }
-
-      checkIfVideoStreamsAvailable();
-
-      $scope.$watch('stateService.currentState', function() {
+      // video streams
+      this.videoStreamsAvailable = false;
+      this.checkIfVideoStreamsAvailable();
+      $scope.$watch('vm.stateService.currentState', () => {
         //starting the experiment might publish new video streams, so we check again
-        if (!$scope.videoStreamsAvailable &&
-            stateService.currentState === STATE.STARTED)
-          $timeout(checkIfVideoStreamsAvailable, 500);
+        if (!this.videoStreamsAvailable &&
+            this.stateService.currentState === this.STATE.STARTED) {
+          $timeout(this.checkIfVideoStreamsAvailable(), 500);
+        }
       });
-
-      /**
-       * Toogle the video stream widget visibility
-       */
-      $scope.videoStreamsToggle = function() {
-        if (!$scope.videoStreamsAvailable)
-          return;
-
-        $rootScope.$emit('openVideoStream');
-      };
 
       // log console
       $scope.showLogConsole = false;
@@ -571,6 +557,23 @@
         return this.editorsPanelService.toggleEditors();
       }
     }
+
+    checkIfVideoStreamsAvailable() {
+      this.videoStreamService.getStreamUrls().then((videoStreams) => {
+        this.videoStreamsAvailable = videoStreams && !!videoStreams.length;
+      });
+    }
+
+    /**
+     * Toogle the video stream widget visibility
+     */
+    videoStreamsToggle() {
+      if (!this.videoStreamsAvailable) {
+        return;
+      }
+
+      this.$rootScope.$emit('openVideoStream'); // TODO: introduce a video stream for this?
+    };
 
     createDynamicOverlay(componentName) {
       this.dynamicViewOverlayService.createOverlay(
