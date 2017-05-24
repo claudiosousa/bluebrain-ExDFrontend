@@ -166,9 +166,9 @@
 
             <!-- toggle jointPlot -->
             <div class="hbp-toolbar-action ng-hide"
-                 ng-click="createDynamicOverlay('joint-plot')"
+                 ng-click="vm.createDynamicOverlay('joint-plot')"
                  help-tooltip="JOINT_PLOT"
-                 ng-show="(stateService.currentState === STATE.STARTED) || (stateService.currentState === STATE.PAUSED) || (stateService.currentState === STATE.INITIALIZED)">
+                 ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
                 <img src="img/esv/jointplot_logo.png">
             </div>
             <!-- toggle jointPlot -->

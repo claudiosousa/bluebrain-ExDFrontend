@@ -61,6 +61,7 @@
       this.splash = splash;
       this.backendInterfaceService = backendInterfaceService;
       this.simulationInfo = simulationInfo;
+      this.dynamicViewOverlayService = dynamicViewOverlayService;
 
       this.EDIT_MODE = EDIT_MODE;
       this.RESET_TYPE = RESET_TYPE;
@@ -432,13 +433,6 @@
         closeSimulationConnections();
       };
 
-      $scope.createDynamicOverlay = function(componentName) {
-        dynamicViewOverlayService.createOverlay(
-          document.getElementById('experiment-view-widget-overlays'), /* parent element to attach overlay to */
-          componentName
-        );
-      };
-
       // clean up on leaving
       $scope.$on('$destroy', function() {
         /* NOT CALLED AUTOMATICALLY ON EXITING AN EXPERIMENT */
@@ -590,6 +584,16 @@
         value: this.editorToolbarService.isBrainVisualizerActive
       });
     }
+
+    createDynamicOverlay(componentName) {
+      this.dynamicViewOverlayService.createOverlay(
+          document.getElementById('experiment-view-widget-overlays'),
+          /* parent element to attach overlay to */
+          componentName
+      );
+    };
+
+
   }
   angular.module('editorToolbarModule', ['helpTooltipModule']).
       controller('EditorToolbarController',
