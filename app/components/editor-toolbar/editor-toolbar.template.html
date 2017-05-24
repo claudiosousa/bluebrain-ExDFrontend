@@ -217,19 +217,19 @@
             <!-- navigation mode -->
 
             <!-- code editor icon -->
-            <div ng-if="userContextService.isOwner()"
+            <div ng-if="vm.userContextService.isOwner()"
                  class="hbp-toolbar-action hide-overflow"
-                 ng-class="{ 'active': editorsPanelService.showEditorPanel,
-                              'disabled': userContextService.editIsDisabled || editorsPanelService.loadingEditPanel ||
-                                          (stateService.currentState === STATE.HALTED) ||
-                                          (stateService.currentState === STATE.STOPPED) ||
-                                          (stateService.currentState === STATE.FAILED)}"
-                 ng-click="codeEditorButtonClickHandler()"
+                 ng-class="{ 'active': vm.editorsPanelService.showEditorPanel,
+                              'disabled': vm.userContextService.editIsDisabled || vm.editorsPanelService.loadingEditPanel ||
+                                          (vm.stateService.currentState === vm.STATE.HALTED) ||
+                                          (vm.stateService.currentState === vm.STATE.STOPPED) ||
+                                          (vm.stateService.currentState === vm.STATE.FAILED)}"
+                 ng-click="vm.codeEditorButtonClickHandler()"
                  help-tooltip="CODE_EDITOR"
                  tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}."
                  tooltip-trigger="mouseenter"
-                 tooltip-enable="userContextService.editIsDisabled"
-                 v-busy="editorsPanelService.loadingEditPanel"
+                 tooltip-enable="vm.userContextService.editIsDisabled"
+                 v-busy="vm.editorsPanelService.loadingEditPanel"
                  v-busy-label="Loading the edit panel">
                 <i class="fa fa-pencil-square-o fa-2x vertcenter"></i>
             </div>

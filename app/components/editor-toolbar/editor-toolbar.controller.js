@@ -223,14 +223,6 @@
 
       $scope.helpTooltipService = helpTooltipService;
 
-      $scope.codeEditorButtonClickHandler = function() {
-        if (userContextService.editIsDisabled || $scope.loadingEditPanel) {
-          return;
-        } else {
-          return editorsPanelService.toggleEditors();
-        }
-      };
-
       $scope.videoStreamsAvailable = false;
 
       function checkIfVideoStreamsAvailable() {
@@ -569,6 +561,14 @@
         case this.NAVIGATION_MODES.LOOKAT_ROBOT:
           this.userNavigationService.setLookatRobotCamera();
           break;
+      }
+    }
+
+    codeEditorButtonClickHandler() {
+      if (this.userContextService.editIsDisabled || this.scope.loadingEditPanel) {
+        return;
+      } else {
+        return this.editorsPanelService.toggleEditors();
       }
     }
 

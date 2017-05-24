@@ -166,13 +166,13 @@ describe('Controller: EditorToolbarController', function() {
 
     it('should toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function() {
       userContextService.editIsDisabled = false;
-      $scope.codeEditorButtonClickHandler();
+      editorToolbarController.codeEditorButtonClickHandler();
       expect(editorsPanelService.toggleEditors).toHaveBeenCalled();
     });
 
     it('should not toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function() {
       userContextService.editIsDisabled = true;
-      $scope.codeEditorButtonClickHandler();
+      editorToolbarController.codeEditorButtonClickHandler();
       expect(editorsPanelService.toggleEditors).not.toHaveBeenCalled();
     });
 
