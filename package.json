@@ -3,6 +3,7 @@
   "version": "1.2.31",
   "description": "Neurorobotics experiment designer",
   "dependencies": {
+    "@reactivex/rxjs": "^5.4.0",
     "d3": "3.5.17",
     "n3-charts": "2.0.28"
   },
@@ -67,7 +68,7 @@
     "validate": "grunt validate",
     "build": "grunt build",
     "tag": "grunt publish",
-    "postinstall":"rm -r node_modules/grunt-contrib-uglify/node_modules/uglify-js/"
+    "postinstall": "rm -r node_modules/grunt-contrib-uglify/node_modules/uglify-js/"
   },
   "publishConfig": {
     "registry": "http://bbpteam.epfl.ch/repository/npm"
