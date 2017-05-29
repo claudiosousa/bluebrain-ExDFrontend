@@ -299,10 +299,10 @@
 
         <!-- environment settings panel -->
         <div ng-if="vm.userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
-             ng-class="{'active': showEnvironmentSettingsPanel, disabled: environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
-             ng-click="environmentSettingsClickHandler()"
+             ng-class="{'active': vm.editorToolbarService.isEnvironmentSettingsPanelActive, disabled: vm.environmentRenderingService.loadingEnvironmentSettingsPanel}"
+             ng-click="vm.environmentSettingsClickHandler()"
              help-tooltip="ENVIRONMENT_SETTINGS"
-             v-busy="loadingEnvironmentSettingsPanel"
+             v-busy="vm.environmentRenderingService.loadingEnvironmentSettingsPanel"
              v-busy-label="Loading the environment settings panel">
             <img src="img/esv/settings.png" width=28 height=28>
         </div>

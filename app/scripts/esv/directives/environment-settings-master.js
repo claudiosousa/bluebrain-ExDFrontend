@@ -23,7 +23,8 @@
   'use strict';
   angular.module('exdFrontendApp')
     .directive('environmentSettingsMaster', ['gz3d', 'nrpAnalytics',
-      function (gz3d, nrpAnalytics)
+      'editorToolbarService',
+      function (gz3d, nrpAnalytics, editorToolbarService)
       {
         return {
           templateUrl: 'views/esv/environment-settings-master.html',
@@ -31,6 +32,8 @@
           scope: true,
           link: function (scope, element, attrs)
           {
+            scope.editorToolbarService = editorToolbarService;
+
             scope.masterSettings = [GZ3D.MASTER_QUALITY_BEST,GZ3D.MASTER_QUALITY_MIDDLE,GZ3D.MASTER_QUALITY_LOW,GZ3D.MASTER_QUALITY_MINIMAL];
             scope.masterSettingsImage = {};
             scope.masterSettingsImage[GZ3D.MASTER_QUALITY_BEST]="img/3denv/quality_best.jpg";
@@ -44,13 +47,13 @@
 
             scope.masterSettingsToUI = function ()
             {
-              if (scope.showEnvironmentSettingsPanel)
+              if (editorToolbarService.isEnvironmentSettingsPanelActive)
               {
                 scope.currentMasterSettings = gz3d.scene.composer.currentMasterSettings;
               }
             };
 
-            scope.$watch('showEnvironmentSettingsPanel', function ()
+            scope.$watch('editorToolbarService.showEnvironmentSettingsPanel', function ()
             {
               scope.masterSettingsToUI();
             });

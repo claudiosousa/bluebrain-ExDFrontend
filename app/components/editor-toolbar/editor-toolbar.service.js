@@ -25,6 +25,7 @@
       this.showBrainvisualizerPanel = false;
       this.showLogConsole = false;
       this.missedConsoleLogs = 0;
+      this.showEnvironmentSettingsPanel = false;
       this.showRobotView = false;
     }
 
@@ -52,6 +53,11 @@
       if (!this.showLogConsole) {
         this.missedConsoleLogs++;
       }
+    }
+
+    get isEnvironmentSettingsPanelActive()
+    {
+      return this.showEnvironmentSettingsPanel;
     }
 
     get isRobotCameraViewActive()

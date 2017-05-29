@@ -11,7 +11,8 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
       rootScope,
       bbpConfig,
       controller,
-      gz3d;
+      gz3d,
+      editorToolbarService;
 
   var simulationInfo;
 
@@ -31,12 +32,14 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _bbpConfig_,
-                              _gz3d_) {
+                              _gz3d_,
+                              _editorToolbarService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
     gz3d = _gz3d_;
+    editorToolbarService = _editorToolbarService_;
 
     // Mock the scene controls object
     gz3d.scene = {};
@@ -60,7 +63,8 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
     experimentCtrl = $controller('environmentSettingsPanelCtrl', {
       $rootScope: rootScope,
       $scope: scope,
-      simulationInfo: simulationInfo
+      simulationInfo: simulationInfo,
+      editorToolbarService : editorToolbarService
     });
 
     // create mock for console
@@ -79,9 +83,9 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
   });
 
   it('should set the variable showEnvironmentSettingsPanel to be false', function () {
-    scope.showEnvironmentSettingsPanel = true;
+    editorToolbarService.showEnvironmentSettingsPanel = true;
     scope.$destroy();
-    expect(scope.showEnvironmentSettingsPanel).toBeFalsy();
+    expect(editorToolbarService.showEnvironmentSettingsPanel).toBeFalsy();
   });
 
 
@@ -89,11 +93,11 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
     spyOn(scope, 'openCallback');
     spyOn(scope, 'closeCallback');
 
-    scope.showEnvironmentSettingsPanel = false;
+    editorToolbarService.showEnvironmentSettingsPanel = false;
     scope.$digest();
     expect(scope.closeCallback).toHaveBeenCalled();
 
-    scope.showEnvironmentSettingsPanel = true;
+    editorToolbarService.showEnvironmentSettingsPanel = true;
     scope.$digest();
     expect(scope.openCallback).toHaveBeenCalled();
   });

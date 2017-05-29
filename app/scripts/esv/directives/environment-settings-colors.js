@@ -21,7 +21,8 @@
   'use strict';
   angular.module('exdFrontendApp')
     .directive('environmentSettingsColors', ['gz3d', 'nrpAnalytics',
-      function (gz3d, nrpAnalytics)
+      'editorToolbarService',
+      function (gz3d, nrpAnalytics, editorToolbarService)
       {
         return {
           templateUrl: 'views/esv/environment-settings-colors.html',
@@ -29,6 +30,8 @@
           scope: true,
           link: function (scope, element, attrs)
           {
+            scope.editorToolbarService = editorToolbarService;
+
             //----------------------------------------------
             // Init the values
 
@@ -36,14 +39,14 @@
 
             scope.composerSettingsToUI = function ()
             {
-              if (scope.showEnvironmentSettingsPanel)
+              if (editorToolbarService.isEnvironmentSettingsPanelActive)
               {
                 scope.composerSettings = gz3d.scene.composerSettings;
                 scope.inGamma = (1.0 - (gz3d.scene.composerSettings.levelsInGamma - 1.0));
               }
             };
 
-            scope.$watch('showEnvironmentSettingsPanel', function ()
+            scope.$watch('editorToolbarService.showEnvironmentSettingsPanel', function ()
             {
               scope.composerSettingsToUI();
             });

@@ -22,7 +22,8 @@
 
   angular.module('exdFrontendApp')
     .directive('environmentSettingsPanel', ['gz3d', 'collab3DSettingsService', 'simulationInfo',
-      function (gz3d, collab3DSettingsService, simulationInfo)
+    'editorToolbarService',
+      function (gz3d, collab3DSettingsService, simulationInfo, editorToolbarService)
       {
         return {
           templateUrl: 'views/esv/environment-settings-panel.html',
@@ -31,6 +32,7 @@
           link: function (scope, element, attrs)
           {
             scope.simulationInfo = simulationInfo;
+            scope.editorToolbarService = editorToolbarService;
 
             scope.resetSettings = function ()
             {
@@ -44,6 +46,10 @@
             scope.saveSettings = function ()
             {
                 collab3DSettingsService.saveSettings();
+            };
+
+            scope.closePanel = function() {
+              editorToolbarService.showEnvironmentSettingsPanel = false;
             };
           }
         };

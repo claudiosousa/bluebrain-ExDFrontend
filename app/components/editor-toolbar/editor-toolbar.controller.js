@@ -235,22 +235,6 @@
         }
       });
 
-      // Environment settings panel
-      $scope.showEnvironmentSettingsPanel = false;
-
-      $scope.environmentSettingsClickHandler = function() {
-        if ($scope.environmentSettingsIsDisabled ||
-            $scope.loadingEnvironmentSettingsPanel) {
-          return;
-        } else {
-          $scope.showEnvironmentSettingsPanel = !$scope.showEnvironmentSettingsPanel;
-          nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
-            category: 'Simulation-GUI',
-            value: $scope.showEnvironmentSettingsPanel
-          });
-        }
-      };
-
       function closeSimulationConnections() {
         // Stop listening for status messages
         if (gz3d.iface && gz3d.iface.webSocket) {
@@ -564,6 +548,18 @@
         category: 'Simulation-GUI',
         value: this.editorToolbarService.showLogConsole
       });
+    };
+
+    environmentSettingsClickHandler() {
+      if (this.environmentRenderingService.loadingEnvironmentSettingsPanel) {
+        return;
+      } else {
+        this.editorToolbarService.showEnvironmentSettingsPanel = !this.editorToolbarService.isEnvironmentSettingsPanelActive;
+        this.nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
+          category: 'Simulation-GUI',
+          value: this.editorToolbarService.showEnvironmentSettingsPanel
+        });
+      }
     };
 
     createDynamicOverlay(componentName) {

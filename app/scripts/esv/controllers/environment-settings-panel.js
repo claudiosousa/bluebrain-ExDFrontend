@@ -21,8 +21,11 @@
 
   angular.module('exdFrontendApp').controller('environmentSettingsPanelCtrl',
     ['$rootScope', '$scope', 'bbpConfig', 'gz3d', 'baseEventHandler',
-    function ($rootScope, $scope, bbpConfig, gz3d, baseEventHandler) {
+      'editorToolbarService',
+      function($rootScope, $scope, bbpConfig, gz3d, baseEventHandler,
+               editorToolbarService) {
 
+    $scope.editorToolbarService = editorToolbarService;
     $scope.panelIsOpen = false;
     $scope.activeTab = {};
     $scope.activeTab.master = false;
@@ -43,16 +46,17 @@
     // clean up on leaving
     $scope.$on("$destroy", function() {
       // prevent calling the select functions of the tabs
-      $scope.showEnvironmentSettingsPanel = false;
+      editorToolbarService.showEnvironmentSettingsPanel = false;
     });
 
-    $scope.$watch('showEnvironmentSettingsPanel', function() {
-      if ($scope.showEnvironmentSettingsPanel) {
-        $scope.openCallback();
-      } else {
-        $scope.closeCallback();
-      }
-    });
+    $scope.$watch('editorToolbarService.showEnvironmentSettingsPanel',
+        function() {
+          if (editorToolbarService.isEnvironmentSettingsPanelActive) {
+            $scope.openCallback();
+          } else {
+            $scope.closeCallback();
+          }
+        });
 
     $scope.suppressKeyPress = function(event) {
       baseEventHandler.suppressAnyKeyPress(event);

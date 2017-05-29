@@ -152,18 +152,6 @@ describe('Controller: EditorToolbarController', function() {
       expect(userContextService.isJoiningStoppedSimulation).toBe(true);
     });
 
-    it('should properly update navigation mode', function() {
-      userNavigationService.nagitationMode = NAVIGATION_MODES.FREE_CAMERA;
-      editorToolbarController.setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);
-      expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
-
-      editorToolbarController.setNavigationMode(NAVIGATION_MODES.GHOST);
-      expect(userNavigationService.setModeGhost).toHaveBeenCalled();
-
-      editorToolbarController.setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);
-      expect(userNavigationService.setModeHumanBody).toHaveBeenCalled();
-    });
-
     it('should toggle showEditorPanel visibility on codeEditorButtonClickHandler()', function() {
       userContextService.editIsDisabled = false;
       editorToolbarController.codeEditorButtonClickHandler();
@@ -516,6 +504,13 @@ describe('Controller: EditorToolbarController', function() {
       expect(location.path()).toEqual('/esv-web');
       expect($window.location.reload).toHaveBeenCalled();
     });
+
+    it('check that update simulation change state', function() {
+
+      editorToolbarController.updateSimulation(STATE.STARTED);
+
+      expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STARTED);
+    });
   });
 
   describe('(EditMode)', function() {
@@ -583,15 +578,75 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should enable display of the environment settings panel', function() {
-      $scope.showEnvironmentSettingsPanel = false;
-      $scope.environmentSettingsClickHandler();
-      expect($scope.showEnvironmentSettingsPanel).toBe(true);
+      editorToolbarService.showEnvironmentSettingsPanel = false;
+      editorToolbarController.environmentSettingsClickHandler();
+      expect(editorToolbarService.showEnvironmentSettingsPanel).toBe(true);
     });
 
-    it('should open of the environment settings panel', function() {
-      $scope.showEnvironmentSettingsPanel = false;
-      $scope.environmentSettingsClickHandler();
-      expect($scope.showEnvironmentSettingsPanel).toBe(true);
+    it('should disable display of the environment settings panel', function() {
+      editorToolbarService.showEnvironmentSettingsPanel = true;
+      editorToolbarController.environmentSettingsClickHandler();
+      expect(editorToolbarService.showEnvironmentSettingsPanel).toBe(false);
+    });
+  });
+
+  describe('(Video Panel)', function() {
+    beforeEach(function() {
+      editorToolbarController = $controller('EditorToolbarController', {
+        $rootScope: $rootScope,
+        $scope: $scope
+      });
+    });
+
+    it('should enable the video panel if no stream is available', function() {
+      spyOn($rootScope, '$emit');
+
+      editorToolbarController.videoStreamsAvailable = true;
+      editorToolbarController.videoStreamsToggle();
+
+      expect($rootScope.$emit).toHaveBeenCalledWith('openVideoStream');
+    });
+
+    it('should not enable the video panel if no stream is available', function() {
+      spyOn($rootScope, '$emit');
+
+      editorToolbarController.videoStreamsAvailable = false;
+      editorToolbarController.videoStreamsToggle();
+
+      expect($rootScope.$emit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('(User Navigation)', function() {
+    beforeEach(function() {
+      editorToolbarController = $controller('EditorToolbarController', {
+        $rootScope: $rootScope,
+        $scope: $scope
+      });
+    });
+
+    it('should properly update navigation mode', function() {
+      userNavigationService.nagitationMode = NAVIGATION_MODES.FREE_CAMERA;
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.FREE_CAMERA);
+      expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
+
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.GHOST);
+      expect(userNavigationService.setModeGhost).toHaveBeenCalled();
+
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.HUMAN_BODY);
+      expect(userNavigationService.setModeHumanBody).toHaveBeenCalled();
+
+      editorToolbarController.setNavigationMode(NAVIGATION_MODES.LOOKAT_ROBOT);
+      expect(userNavigationService.setLookatRobotCamera).toHaveBeenCalled();
+    });
+
+    it('change show state for navigation mode menu', function() {
+      editorToolbarController.showNavigationModeMenu = false;
+
+      editorToolbarController.navigationModeMenuClickHandler();
+      expect(editorToolbarController.showNavigationModeMenu).toBeTruthy();
+      editorToolbarController.navigationModeMenuClickHandler();
+      expect(editorToolbarController.showNavigationModeMenu).toBeFalsy();
     });
   });
 });

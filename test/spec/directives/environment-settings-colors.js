@@ -2,7 +2,7 @@
 
 describe('Directive: environment settings colors', function ()
 {
-  var $rootScope, element, gz3dMock;
+  var $rootScope, element, gz3dMock, editorToolbarService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -26,16 +26,18 @@ describe('Directive: environment settings colors', function ()
 
   beforeEach(inject(function (
     _$rootScope_,
-    $compile)
+    $compile,
+    _editorToolbarService_)
   {
     $rootScope = _$rootScope_;
+    editorToolbarService = _editorToolbarService_;
     element = $compile('<environment-settings-colors></environment-settings-colors>')($rootScope);
     $rootScope.$digest();
   }));
 
   it('should initialize default values', function ()
   {
-    $rootScope.showEnvironmentSettingsPanel = true;
+    editorToolbarService.showEnvironmentSettingsPanel = true;
     $rootScope.$digest();
 
     expect($rootScope.$$childTail.inGamma).toBeDefined();
