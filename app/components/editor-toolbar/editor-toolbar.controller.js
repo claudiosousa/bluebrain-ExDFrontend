@@ -261,11 +261,6 @@
           });
 
       $scope.resetGUI = function() {
-        gz3d.scene.controls.onMouseDownManipulator('initPosition');
-        gz3d.scene.controls.onMouseDownManipulator('initRotation');
-        gz3d.scene.controls.update();
-        gz3d.scene.controls.onMouseUpManipulator('initPosition');
-        gz3d.scene.controls.onMouseUpManipulator('initRotation');
         gz3d.scene.resetView(); //update the default camera position, if defined
         if (objectInspectorService !== null) {
           gz3d.scene.selectEntity(null);
