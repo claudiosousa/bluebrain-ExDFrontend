@@ -65,6 +65,7 @@
       this.userNavigationService = userNavigationService;
       this.videoStreamService = videoStreamService;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
+      this.helpTooltipService = helpTooltipService;
 
       this.EDIT_MODE = EDIT_MODE;
       this.RESET_TYPE = RESET_TYPE;
@@ -222,8 +223,6 @@
 
       // navigation mode
       this.showNavigationModeMenu = false;
-
-      $scope.helpTooltipService = helpTooltipService;
 
       // video streams
       this.videoStreamsAvailable = false;

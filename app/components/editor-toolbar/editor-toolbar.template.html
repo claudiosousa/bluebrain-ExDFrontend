@@ -278,7 +278,7 @@
             <!-- log console icon -->
 
         <!-- owner information -->
-        <div ng-if="userContextService.isOwner() === false"
+        <div ng-if="vm.userContextService.isOwner() === false"
              class="hbp-toolbar-large-tool-two-lines default-cursor"
              help-tooltip="OWNER_DISPLAY">View-Only Mode<br/>Owner: {{owner}}</div>
         <!-- owner information -->
@@ -292,13 +292,13 @@
         </div>
         <!-- exit button -->
         <!-- toolbar help icon -->
-        <div class="hbp-toolbar-action right-align hide-overflow" ng-click="helpTooltipService.toggleVisibility()">
-            <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: helpTooltipService.visible}"></i>
+        <div class="hbp-toolbar-action right-align hide-overflow" ng-click="vm.helpTooltipService.toggleVisibility()">
+            <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: vm.helpTooltipService.visible}"></i>
         </div>
         <!-- toolbar help icon -->
 
         <!-- environment settings panel -->
-        <div ng-if="userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
+        <div ng-if="vm.userContextService.isOwner()" class="hbp-toolbar-action right-align hide-overflow"
              ng-class="{'active': showEnvironmentSettingsPanel, disabled: environmentSettingsIsDisabled || loadingEnvironmentSettingsPanel}"
              ng-click="environmentSettingsClickHandler()"
              help-tooltip="ENVIRONMENT_SETTINGS"
