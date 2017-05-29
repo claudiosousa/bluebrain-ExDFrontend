@@ -20,7 +20,8 @@
   'use strict';
 
   angular.module('spikeTrainModule')
-    .directive('spikeTrain', ['$interval', 'RESET_TYPE', ($interval, RESET_TYPE) => {
+    .directive('spikeTrain', ['$interval', 'editorToolbarService', 'RESET_TYPE',
+    ($interval, editorToolbarService, RESET_TYPE) => {
 
       return {
         templateUrl: 'components/spike-train/spike-train.template.html',
@@ -33,6 +34,7 @@
         controllerAs: 'vm',
         link: function(scope, element, attrs) {
 
+          scope.editorToolbarService = editorToolbarService;
           const canvas = scope.vm.drawingCanvas = element.find('canvas')[0];
 
           /**
@@ -56,7 +58,7 @@
           //ensures that redraw only happens after window resizing stoped for some time
           angular.element(window).on('resize.spiketrain', _.debounce(scope.onResizeEnd, 300));
 
-          scope.$watch('visible', visible => {
+          scope.$watch('editorToolbarService.showSpikeTrain', visible => {
             if (visible) {
               scope.vm.startSpikeDisplay();
               //will try to render the canvas until it is visible
@@ -74,6 +76,11 @@
             scope.vm.stopSpikeDisplay();
             angular.element(window).off('resize.spiketrain');
           });
+
+          scope.close = () =>
+          {
+            editorToolbarService.showSpikeTrain = false;
+          };
         }
       };
     }]);

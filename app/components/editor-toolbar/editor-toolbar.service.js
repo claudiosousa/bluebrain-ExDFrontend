@@ -26,6 +26,7 @@
       this.showLogConsole = false;
       this.missedConsoleLogs = 0;
       this.showEnvironmentSettingsPanel = false;
+      this.showSpikeTrain = false;
       this.showRobotView = false;
     }
 
@@ -58,6 +59,11 @@
     get isEnvironmentSettingsPanelActive()
     {
       return this.showEnvironmentSettingsPanel;
+    }
+
+    get isSpikeTrainActive()
+    {
+      return this.showSpikeTrain;
     }
 
     get isRobotCameraViewActive()

@@ -156,9 +156,9 @@
 
             <!-- toggle spiketrain -->
             <div class="hbp-toolbar-action ng-hide"
-                 ng-class="{'active': showSpikeTrain}"
+                 ng-class="{'active': vm.editorToolbarService.isSpikeTrainActive}"
                  help-tooltip="SPIKE_TRAIN"
-                 ng-click="spikeTrainButtonClickHandler()"
+                 ng-click="vm.spikeTrainButtonClickHandler()"
                  ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
                 <img src="img/esv/spiketrain_logo.png">
             </div>

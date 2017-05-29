@@ -451,9 +451,9 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should toggle the showSpikeTrain variable', function() {
-      expect($scope.showSpikeTrain).toBe(false);
-      $scope.spikeTrainButtonClickHandler();
-      expect($scope.showSpikeTrain).toBe(true);
+      expect(editorToolbarService.showSpikeTrain).toBe(false);
+      editorToolbarController.spikeTrainButtonClickHandler();
+      expect(editorToolbarService.showSpikeTrain).toBe(true);
     });
 
     it('should toggle the showJoinPlot variable', function() {

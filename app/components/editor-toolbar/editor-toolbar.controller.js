@@ -201,16 +201,6 @@
         $scope.$broadcast('RESET', resetType);
       };
 
-      // Spiketrain
-      $scope.showSpikeTrain = false;
-      $scope.spikeTrainButtonClickHandler = function() {
-        $scope.showSpikeTrain = !$scope.showSpikeTrain;
-        nrpAnalytics.eventTrack('Toggle-spike-train', {
-          category: 'Simulation-GUI',
-          value: $scope.showSpikeTrain
-        });
-      };
-
       // JointPlot
       $scope.showJointPlot = false;
       $scope.jointPlotButtonClickHandler = function() {
@@ -555,6 +545,15 @@
           value: this.editorToolbarService.showEnvironmentSettingsPanel
         });
       }
+    };
+
+    // Spiketrain
+    spikeTrainButtonClickHandler() {
+      this.editorToolbarService.showSpikeTrain = !this.editorToolbarService.isSpikeTrainActive;
+      this.nrpAnalytics.eventTrack('Toggle-spike-train', {
+        category: 'Simulation-GUI',
+        value: this.editorToolbarService.isSpikeTrainActive
+      });
     };
 
     createDynamicOverlay(componentName) {

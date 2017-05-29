@@ -2,6 +2,7 @@
 
 describe('Directive: spiketrain', function() {
 
+  beforeEach(module('exdFrontendApp'));
   beforeEach(module('spikeTrainModule'));
   beforeEach(module('exd.templates')); // import html template
 
@@ -17,14 +18,16 @@ describe('Directive: spiketrain', function() {
     $provide.value('simulationInfo', simulationInfoMock);
   }));
 
-  var scope, $rootScope, $timeout, element;
-  beforeEach(inject(function(_$rootScope_, $compile, _$timeout_) {
+  var scope, $rootScope, $timeout, element, editorToolbarService;
+  beforeEach(inject(function(_$rootScope_, $compile, _$timeout_,
+                             _editorToolbarService_) {
     $rootScope = _$rootScope_;
     $timeout = _$timeout_;
     $rootScope.visible = false;
     element = $compile('<spike-train ng-show="visible"></spike-train>')($rootScope);
     $rootScope.$digest();
     scope = element.isolateScope();
+    editorToolbarService = _editorToolbarService_;
   }));
 
   beforeEach(function() {
@@ -36,7 +39,7 @@ describe('Directive: spiketrain', function() {
   });
 
   it('should call controller methods when visible', function() {
-    $rootScope.visible = true;
+    editorToolbarService.showSpikeTrain = true;
     $rootScope.$digest();
     $timeout.flush();
 
