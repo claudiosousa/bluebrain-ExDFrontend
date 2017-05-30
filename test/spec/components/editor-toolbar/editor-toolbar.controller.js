@@ -456,12 +456,6 @@ describe('Controller: EditorToolbarController', function() {
       expect(editorToolbarService.showSpikeTrain).toBe(true);
     });
 
-    it('should toggle the showJoinPlot variable', function() {
-      expect($scope.showJointPlot).toBe(false);
-      $scope.jointPlotButtonClickHandler();
-      expect($scope.showJointPlot).toBe(true);
-    });
-
     it('should toggle the robot camera views', function() {
       expect(editorToolbarService.showRobotView).toBe(false);
       expect(gz3d.scene.viewManager.views[0].type).toBe('camera');

@@ -7,6 +7,7 @@ describe('Service: dynamicViewOverlayService', function() {
 
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayModule'));
+  beforeEach(module('nrpAnalyticsMock'));
   //beforeEach(module('dynamicViewModule'));
 
   beforeEach(inject(function(_$timeout_, _dynamicViewOverlayService_) {

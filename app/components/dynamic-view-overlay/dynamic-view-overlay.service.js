@@ -14,10 +14,12 @@
 
     constructor($compile,
                 $rootScope,
-                $timeout) {
+                $timeout,
+                nrpAnalytics) {
       this.$compile = $compile;
       this.$rootScope = $rootScope;
       this.$timeout = $timeout;
+      this.nrpAnalytics = nrpAnalytics;
 
       this.overlays = {};
       this.overlayIDCount = 0;
@@ -43,6 +45,19 @@
         overlay.controller('dynamicViewOverlay').setDynamicViewComponent(componentName);
       }, 100);
 
+
+      this.nrpAnalytics.eventTrack('Toggle-'+componentName, {
+        category: 'Simulation-GUI',
+        value: true,
+      });
+
+      scope.$on('$destroy', () => {
+        this.nrpAnalytics.eventTrack('Toggle-'+componentName, {
+          category: 'Simulation-GUI',
+          value: false,
+        });
+      });
+
       return overlay;
     }
 
@@ -57,6 +72,7 @@
       '$compile',
       '$rootScope',
       '$timeout',
+      'nrpAnalytics',
       (...args) => new DynamicViewOverlayService(...args)
     ]);
 

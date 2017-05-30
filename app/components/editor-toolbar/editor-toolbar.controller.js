@@ -201,16 +201,6 @@
         $scope.$broadcast('RESET', resetType);
       };
 
-      // JointPlot
-      $scope.showJointPlot = false;
-      $scope.jointPlotButtonClickHandler = function() {
-        $scope.showJointPlot = !$scope.showJointPlot;
-        nrpAnalytics.eventTrack('Toggle-joint-plot', {
-          category: 'Simulation-GUI',
-          value: $scope.showJointPlot
-        });
-      };
-
       // navigation mode
       this.showNavigationModeMenu = false;
 

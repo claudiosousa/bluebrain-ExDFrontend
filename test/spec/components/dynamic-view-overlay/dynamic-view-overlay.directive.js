@@ -7,6 +7,7 @@ describe('Directive: dynamic-view-overlay', function() {
 
   beforeEach(module('dynamicViewOverlayModule'));
   beforeEach(module('exd.templates'));
+  beforeEach(module('nrpAnalyticsMock'));
 
   beforeEach(inject(function(_$rootScope_, _$compile_, _$timeout_) {
     $rootScope = _$rootScope_;
