@@ -47,7 +47,6 @@ module.exports = function(config) {
       'bower_components/angular-sanitize/angular-sanitize.js',
       'bower_components/angular-toArrayFilter/toArrayFilter.js',
       'bower_components/angular-touch/angular-touch.js',
-      'bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
       'bower_components/codemirror/lib/codemirror.js',
       'bower_components/codemirror/mode/python/python.js',
       'bower_components/codemirror/mode/shell/shell.js',
