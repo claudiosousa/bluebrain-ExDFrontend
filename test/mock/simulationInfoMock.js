@@ -30,7 +30,5 @@
       $httpBackend.whenGET(/.*\/simulation\/mocked_simulation_id/).respond(200);
 
       this.initialized = $q.when();
-
-      $rootScope.$digest();
     }]);
 }());

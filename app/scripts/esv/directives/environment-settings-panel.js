@@ -33,6 +33,7 @@
           {
             scope.simulationInfo = simulationInfo;
             scope.editorToolbarService = editorToolbarService;
+            scope.gz3d = gz3d;
 
             scope.resetSettings = function ()
             {

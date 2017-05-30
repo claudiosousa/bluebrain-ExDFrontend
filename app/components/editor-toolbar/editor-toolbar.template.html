@@ -49,12 +49,12 @@
                     <div>
                         <span>Simulation time:</span><br/>
                         <span>Real time:</span><br/>
-                        <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 300 ? 'red' : '' }">Timeout:</span>
+                        <span ng-style="{ color: vm.simTimeoutText !== undefined && vm.simTimeoutText < 300 ? 'red' : '' }">Timeout:</span>
                     </div>
                     <div>
-                        <span id="simTime">{{simulationTimeText | timeDDHHMMSS}}</span><br/>
-                        <span id="realTime">{{realTimeText | timeDDHHMMSS}}</span><br/>
-                        <span ng-style="{ color: simTimeoutText !== undefined && simTimeoutText < 300 ? 'red' : '' }">{{simTimeoutText | timeDDHHMMSS}}</span>
+                        <span id="simTime">{{vm.simulationTimeText | timeDDHHMMSS}}</span><br/>
+                        <span id="realTime">{{vm.realTimeText | timeDDHHMMSS}}</span><br/>
+                        <span ng-style="{ color: vm.simTimeoutText !== undefined && vm.simTimeoutText < 300 ? 'red' : '' }">{{vm.simTimeoutText | timeDDHHMMSS}}</span>
                     </div>
                 </div>
                 <div ng-show="vm.stateService.currentState === vm.STATE.HALTED">
@@ -189,26 +189,26 @@
 
             <!-- navigation mode -->
             <div class="hbp-toolbar-action ng-hide"
-                 ng-class="{'active': vm.showNavigationModeMenu}"
+                 ng-class="{'active': vm.editorToolbarService.isNavigationModeMenuActive}"
                  ng-click="vm.navigationModeMenuClickHandler()"
                  help-tooltip="USER_NAVIGATION"
                  ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
                 <i class="fa fa-compass fa-2x vertcenter"></i>
-                <div show-on-top ng-show="vm.showNavigationModeMenu" style="position: absolute; width: 42px; margin-top: -169px; background-color: lightgrey;">
+                <div show-on-top ng-show="vm.editorToolbarService.isNavigationModeMenuActive" style="position: absolute; width: 42px; margin-top: -169px; background-color: lightgrey;">
                     <div  class="hbp-toolbar-action hide-overflow"
-                          ng-class="{'active': vm.isActiveNavigationMode(vm.NAVIGATION_MODES.HUMAN_BODY), 'disabled-image': vm.stateService.currentState === vm.STATE.PAUSED}"
+                          ng-class="{'active': vm.userNavigationService.isActiveNavigationMode(vm.NAVIGATION_MODES.HUMAN_BODY), 'disabled-image': vm.stateService.currentState === vm.STATE.PAUSED}"
                           ng-click="vm.setNavigationMode(vm.NAVIGATION_MODES.HUMAN_BODY)">
                         <i class="fa fa-male fa-2x vertcenter"></i>
                     </div>
 
                     <div class="hbp-toolbar-action hide-overflow"
-                        ng-class="{'active': vm.isActiveNavigationMode(vm.NAVIGATION_MODES.LOOKAT_ROBOT)}"
+                        ng-class="{'active': vm.userNavigationService.isActiveNavigationMode(vm.NAVIGATION_MODES.LOOKAT_ROBOT)}"
                         ng-click="vm.setNavigationMode(vm.NAVIGATION_MODES.LOOKAT_ROBOT);">
                         <img src="img/esv/lookatrobot_icon.png" width=32 height=32>
                     </div>
 
                     <div class="hbp-toolbar-action hide-overflow"
-                         ng-class="{'active': vm.isActiveNavigationMode(vm.NAVIGATION_MODES.FREE_CAMERA)}"
+                         ng-class="{'active': vm.userNavigationService.isActiveNavigationMode(vm.NAVIGATION_MODES.FREE_CAMERA)}"
                          ng-click="vm.setNavigationMode(vm.NAVIGATION_MODES.FREE_CAMERA)">
                         <i class="fa fa-video-camera fa-2x vertcenter"></i>
                     </div>
@@ -251,12 +251,12 @@
             <!-- video streams icon -->
             <div class="hbp-toolbar-action hide-overflow"
                  ng-class="{  'active': vm.showVideoStreams,
-                              'disabled-image-with-events': !vm.videoStreamsAvailable}"
+                              'disabled-image-with-events': !vm.editorToolbarService.videoStreamsAvailable}"
                  ng-click="vm.videoStreamsToggle()"
                  help-tooltip="SERVER_VIDEO_STREAM"
                  tooltip="No video stream available"
                  tooltip-trigger="mouseenter"
-                 tooltip-enable="!vm.videoStreamsAvailable">
+                 tooltip-enable="!vm.editorToolbarService.videoStreamsAvailable">
                 <img src="img/esv/videostream_icon.png" width=31 height=31>
             </div>
             <!-- video streams icon -->
@@ -286,7 +286,7 @@
         <!-- exit button -->
         <div class="hbp-toolbar-action right-align hide-overflow"
              help-tooltip="EXIT_BUTTON"
-             ng-click="exit()">
+             ng-click="vm.exit()">
             <i class="fa fa-sign-out fa-2x vertcenter"></i>
         </div>
         <!-- exit button -->

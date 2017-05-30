@@ -335,6 +335,10 @@
               this.controls = gz3d.scene.controls = this.lookatRobotControls;
             },
 
+            isActiveNavigationMode: function(mode) {
+              return (this.navigationMode === mode);
+            }
+
           };
         }
       ]);

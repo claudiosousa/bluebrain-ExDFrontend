@@ -179,16 +179,16 @@ describe('Controller: EditorToolbarController', function() {
 
     it('should pass the radio button value to resetService when Collab not available', function() {
 
-      spyOn($scope, 'notifyResetToWidgets');
-      $scope.request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
+      spyOn(editorToolbarController, 'notifyResetToWidgets');
+      var request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
 
-      editorToolbarController.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
       environmentService.setPrivateExperiment(false); //Collab IS NOT available
 
       expect(backendInterfaceService.reset).toHaveBeenCalledWith(
-      $scope.request,
+      request,
       jasmine.any(Function),
       jasmine.any(Function));
 
@@ -199,20 +199,20 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should notify the widgets when resetting', function() {
-      spyOn($scope, 'notifyResetToWidgets').and.callThrough();
+      spyOn(editorToolbarController, 'notifyResetToWidgets').and.callThrough();
 
-      $scope.request = { resetType: RESET_TYPE.RESET_WORLD };
+      var request = { resetType: RESET_TYPE.RESET_WORLD };
 
-      editorToolbarController.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
-      expect($scope.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
+      expect(editorToolbarController.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
     });
 
     it('should hide object inspector window when resetting', function() {
-      $scope.request = { resetType: RESET_TYPE.RESET_FULL };
+      var request = { resetType: RESET_TYPE.RESET_FULL };
 
-      editorToolbarController.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
       expect(objectInspectorService.toggleView).toHaveBeenCalled();
@@ -236,10 +236,11 @@ describe('Controller: EditorToolbarController', function() {
 
       for(var i = 0; i < testCases.length; i++) {
 
+        var request = { resetType: testCases[i].type };
         editorToolbarController.resetButtonClickHandler();
-        $scope.request = { resetType: testCases[i].type };
+        editorToolbarController.request = request; // overwrites default button state | Fake user input
         environmentService.setPrivateExperiment(true); //Collab IS available
-        $scope.splashScreen = undefined;
+        splash.splashScreen = undefined;
 
         hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
 
@@ -269,7 +270,7 @@ describe('Controller: EditorToolbarController', function() {
 
         expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
         simulationInfo.contextID,
-        $scope.request,
+        request,
         jasmine.any(Function),
         jasmine.any(Function)
         );
@@ -287,35 +288,51 @@ describe('Controller: EditorToolbarController', function() {
       }
     });
 
+    it('notify everything to update panel ui if there is a RESET of the brain', function() {
+      spyOn($scope, '$broadcast').and.callThrough();
+      var request = {resetType: RESET_TYPE.RESET_BRAIN};
+
+      editorToolbarController.__resetButtonClickHandler(request);
+      $timeout.flush(100);
+
+      expect($scope.$broadcast, 'UPDATE_PANEL_UI').toHaveBeenCalled();
+    });
+
     it('shouldn\'t do anything if no radio button is set', function() {
       editorToolbarController.resetButtonClickHandler();
-      $scope.request = { resetType: RESET_TYPE.NO_RESET };
+      editorToolbarController.request = { resetType: RESET_TYPE.NO_RESET };
       hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
       expect(backendInterfaceService.reset.calls.count()).toBe(0);
     });
 
     it('should reset GUI when reset type is RESET.RESET_ALL', function() {
-      spyOn($scope, 'resetGUI').and.callThrough();
+      spyOn(editorToolbarController, 'resetGUI').and.callThrough();
 
       $scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
       $scope.$digest();
 
-      expect($scope.resetGUI).toHaveBeenCalled();
+      expect(editorToolbarController.resetGUI).toHaveBeenCalled();
+    });
+
+    it('should reset GUI when reset type is RESET.RESET_ALL', function() {
+      editorToolbarController.resetGUI();
+      expect(gz3d.scene.resetView).toHaveBeenCalled();
+      expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(null);
+      expect(objectInspectorService.toggleView).toHaveBeenCalledWith(false);
     });
 
     it('should call resetView() when "Reset Camera view" checkbox is checked', function() {
       //gz3d.scene.resetView is already being spied on
 
+      var request = { resetType: RESET_TYPE.RESET_CAMERA_VIEW };
       editorToolbarController.resetButtonClickHandler();
-      $scope.request = { resetType: RESET_TYPE.RESET_CAMERA_VIEW };
 
-      editorToolbarController.__resetButtonClickHandler();
+      editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
       expect(gz3d.scene.resetView).toHaveBeenCalled();
     });
 
     it('should register for status information', function() {
-      $scope.state = STATE.UNDEFINED;
       stateService.currentState = STATE.STARTED;
       stateService.getCurrentState().then.calls.mostRecent().args[0]();
       expect(stateService.startListeningForStatusInformation).toHaveBeenCalled();
@@ -378,11 +395,11 @@ describe('Controller: EditorToolbarController', function() {
       expect(stateService.removeMessageCallback).not.toHaveBeenCalled();
       // test "timeout"
       stateService.addMessageCallback.calls.mostRecent().args[0]({ timeout: 264, simulationTime: 1, realTime: 2 });
-      expect($scope.simTimeoutText).toBe(264);
+      expect(editorToolbarController.simTimeoutText).toBe(264);
       // test "simulationTime"
-      expect($scope.simulationTimeText).toBe(1);
+      expect(editorToolbarController.simulationTimeText).toBe(1);
       // test "realTime"
-      expect($scope.realTimeText).toBe(2);
+      expect(editorToolbarController.realTimeText).toBe(2);
     });
 
     it('should test light change', function() {
@@ -406,6 +423,32 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.modifyLightClickHandler(-1);
       editorToolbarController.modifyLightClickHandler(-1);
       expect(gz3d.scene.emitter.lightDiffuse).toBeLessThan(initiaLightness);
+    });
+
+    it('should respect maximum light limit', function() {
+      gz3d.isGlobalLightMinReached.and.returnValue(false);
+      gz3d.isGlobalLightMaxReached.and.returnValue(true);
+
+      editorToolbarController.modifyLightClickHandler(1);
+      expect(gz3d.scene.emitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('should respect minimum light limit', function() {
+      gz3d.isGlobalLightMinReached.and.returnValue(true);
+      gz3d.isGlobalLightMaxReached.and.returnValue(false);
+
+      editorToolbarController.modifyLightClickHandler(-1);
+      expect(gz3d.scene.emitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('should respect light to be changed', function() {
+      gz3d.isGlobalLightMinReached.and.returnValue(false);
+      gz3d.isGlobalLightMaxReached.and.returnValue(false);
+
+      editorToolbarController.modifyLightClickHandler(1);
+      expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 0.1);
+      editorToolbarController.modifyLightClickHandler(-1);
+      expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', -0.1);
     });
 
     it('should call or skip camera controls according to mouse events and help mode status', function() {
@@ -473,16 +516,17 @@ describe('Controller: EditorToolbarController', function() {
       expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('visible');
     });
 
+    // todo: is the test in this way really suitable ?
     it('should do nothing on $destroy when all is undefined', function() {
-      $scope.assetLoadingSplashScreen = undefined;
+      environmentRenderingService.assetLoadingSplashScreen = undefined;
       gz3d.iface.webSocket = undefined;
       $scope.rosConnection = undefined;
       $scope.statusListener = undefined;
 
       $scope.$destroy();
 
-      expect($scope.splashScreen).not.toBeDefined();
-      expect($scope.assetLoadingSplashScreen).not.toBeDefined();
+      expect(splash.splashScreen).not.toBeDefined();
+      expect(environmentRenderingService.assetLoadingSplashScreen).not.toBeDefined();
       expect($scope.statusListener).not.toBeDefined();
       expect($scope.worldStatsListener).not.toBeDefined();
       expect($scope.rosConnection).not.toBeDefined();
@@ -493,18 +537,72 @@ describe('Controller: EditorToolbarController', function() {
       spyOn($window.location, 'reload');
 
       environmentService.setPrivateExperiment(false);
-      $scope.exit();
+      editorToolbarController.exit();
       $timeout.flush();
       expect(location.path()).toEqual('/esv-web');
       expect($window.location.reload).toHaveBeenCalled();
     });
 
     it('check that update simulation change state', function() {
-
       editorToolbarController.updateSimulation(STATE.STARTED);
 
       expect(stateService.setCurrentState).toHaveBeenCalledWith(STATE.STARTED);
     });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.STOPPED);
+      expect(gz3d.iface.webSocket.disableRebirth).toHaveBeenCalled();
+    });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.STARTED);
+      expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
+    });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.PAUSED);
+      expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
+    });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.CREATED);
+      expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
+    });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.FAILED);
+      expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
+    });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.INITIALIZED);
+      expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
+    });
+
+    it('disable rebirth if state is stopped', function() {
+      editorToolbarController.onStateChanged(STATE.HALTED);
+      expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
+    });
+
+    it('should create a dynamic overlay for the given component', function() {
+      spyOn(editorToolbarController.dynamicViewOverlayService, 'createOverlay');
+      expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
+
+      editorToolbarController.createDynamicOverlay('test');
+
+      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
+    });
+
+    it('should clean up on destroy', function() {
+      spyOn(editorToolbarController, 'resetListenerUnbindHandler').and.callThrough();
+
+      $scope.$destroy();
+
+      expect(environmentRenderingService.deinit).toHaveBeenCalled();
+      expect(editorToolbarController.resetListenerUnbindHandler).toHaveBeenCalled();
+      expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
+    });
+
   });
 
   describe('(EditMode)', function() {
@@ -520,7 +618,7 @@ describe('Controller: EditorToolbarController', function() {
     it('should go back to the esv-web page when a "ctx" parameter was in the url', function () {
       spyOn($window.location, 'reload');
 
-      $scope.exit();
+      editorToolbarController.exit();
       $timeout.flush();
       expect(location.path()).toEqual('/esv-private');
       expect(userContextService.deinit).toHaveBeenCalled();
@@ -528,11 +626,11 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should clean up when exit is called', function() {
-      spyOn($scope, 'cleanUp').and.callThrough();
+      spyOn(editorToolbarController, 'cleanUp').and.callThrough();
 
-      $scope.exit();
+      editorToolbarController.exit();
 
-      expect($scope.cleanUp).toHaveBeenCalled();
+      expect(editorToolbarController.cleanUp).toHaveBeenCalled();
     });
   });
 
@@ -595,7 +693,7 @@ describe('Controller: EditorToolbarController', function() {
     it('should enable the video panel if no stream is available', function() {
       spyOn($rootScope, '$emit');
 
-      editorToolbarController.videoStreamsAvailable = true;
+      editorToolbarService.videoStreamsAvailable = true;
       editorToolbarController.videoStreamsToggle();
 
       expect($rootScope.$emit).toHaveBeenCalledWith('openVideoStream');
@@ -604,7 +702,7 @@ describe('Controller: EditorToolbarController', function() {
     it('should not enable the video panel if no stream is available', function() {
       spyOn($rootScope, '$emit');
 
-      editorToolbarController.videoStreamsAvailable = false;
+      editorToolbarService.videoStreamsAvailable = false;
       editorToolbarController.videoStreamsToggle();
 
       expect($rootScope.$emit).not.toHaveBeenCalled();
@@ -635,12 +733,12 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('change show state for navigation mode menu', function() {
-      editorToolbarController.showNavigationModeMenu = false;
+      editorToolbarService.showNavigationModeMenu = false;
 
       editorToolbarController.navigationModeMenuClickHandler();
-      expect(editorToolbarController.showNavigationModeMenu).toBeTruthy();
+      expect(editorToolbarService.isNavigationModeMenuActive).toBeTruthy();
       editorToolbarController.navigationModeMenuClickHandler();
-      expect(editorToolbarController.showNavigationModeMenu).toBeFalsy();
+      expect(editorToolbarService.isNavigationModeMenuActive).toBeFalsy();
     });
   });
 });
@@ -715,7 +813,7 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
       stateService.removeMessageCallback.calls.reset();
 
       // call the method under test
-      scope.onSimulationDone();
+      editorToolbar.onSimulationDone();
 
       expect(stateService.stopListeningForStatusInformation).toHaveBeenCalled();
       expect(stateService.removeMessageCallback).toHaveBeenCalled();

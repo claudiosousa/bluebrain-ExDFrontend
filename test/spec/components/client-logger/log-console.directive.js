@@ -9,12 +9,15 @@ describe('Directive: logConsole', function() {
         $timeout,
         element,
         childScope,
-        clientLoggerServiceMock;
+        clientLoggerServiceMock,
+        editorToolbarService;
 
     var LOG_TYPE = {
         INFO: 1,
         ADVERTS: 2
     };
+
+    beforeEach(module('editorToolbarServiceMock'));
 
     beforeEach(module(function($provide) {
         clientLoggerServiceMock = {
@@ -23,12 +26,13 @@ describe('Directive: logConsole', function() {
         $provide.value('clientLoggerService', clientLoggerServiceMock);
     }));
 
-    beforeEach(inject(function(_$rootScope_, _$timeout_, $compile) {
+    beforeEach(inject(function(_$rootScope_, _$timeout_, $compile, _editorToolbarService_) {
         $rootScope = _$rootScope_;
         $timeout = _$timeout_;
         element = $compile('<log-console></log-console>')($rootScope);
         $rootScope.$digest();
         childScope = $rootScope.$$childHead;
+        editorToolbarService = _editorToolbarService_;
     }));
 
     it('should listen to INFO logs', function() {
@@ -55,5 +59,11 @@ describe('Directive: logConsole', function() {
         expect(clientLoggerServiceMock.logs.observers.length).toBe(1);
         $rootScope.$destroy();
         expect(clientLoggerServiceMock.logs.observers.length).toBe(0);
+    });
+
+    it('should close the panel', function() {
+      editorToolbarService.showLogConsole = true;
+      childScope.closePanel();
+      expect(editorToolbarService.showLogConsole).toBe(false);
     });
 });
