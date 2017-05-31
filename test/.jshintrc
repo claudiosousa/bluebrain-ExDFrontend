@@ -18,6 +18,7 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
+  "-W093" : false,    //accept return assignments
   "globals": {
     "after": false,
     "afterEach": false,
@@ -35,5 +36,8 @@
     "$": false,
     "d3": false,
     "moment": false
-  }
+  },
+  "predef" : [
+    "Rx"
+  ]
 }

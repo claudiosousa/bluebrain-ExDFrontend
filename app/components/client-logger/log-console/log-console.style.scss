@@ -16,10 +16,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "widget-popup.scss";
+@import "styles/esv/widget-popup.scss";
 @font-face {
     font-family: 'Inconsolata';
-    src: url('../fonts/Inconsolata.otf') format('opentype');
+    src: url('../../../styles/fonts/Inconsolata.otf') format('opentype');
 }
 
 .log-console-popup {

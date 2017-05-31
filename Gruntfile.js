@@ -496,6 +496,12 @@ module.exports = function(grunt) {
                     cwd: 'node_modules/d3',
                     src: ['d3.min.js'],
                     dest: '<%= yeoman.dist %>/node_modules/d3'
+                },
+                {
+                    expand: true,
+                    cwd: 'node_modules/@reactivex/rxjs/dist/global',
+                    src: ['Rx.min.js'],
+                    dest: '<%= yeoman.dist %>/node_modules/@reactivex/rxjs/dist/global'
                 }]
             },
             styles: {

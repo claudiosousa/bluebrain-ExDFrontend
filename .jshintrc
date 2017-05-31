@@ -121,7 +121,8 @@
         "moment",
         "_",
         "d3",
-        "THREE"
+        "THREE",
+        "Rx"
     ],
     "indent"        : 4,         // Specify indentation spacing
     "esversion": 6
