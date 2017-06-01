@@ -192,6 +192,8 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
       case "KeyS":
         that.moveDown = true; break;
     }
+
+    event.preventDefault();
   };
 
   this.onKeyUp = function (event)
@@ -236,6 +238,8 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
       case "KeyS":
         that.moveDown = false; break;
     }
+
+    event.preventDefault();
   };
 
   this.update = function (elapsed)
