@@ -35,17 +35,24 @@
       let scope = this.$rootScope.$new();
       let overlay = this.$compile(DynamicViewOverlayService.OVERLAY_HTML)(scope);
       // each overlay gets a unique ID
-      var htmlID = 'dynamic-view-overlay-' + this.overlayIDCount;
+      let htmlID = 'dynamic-view-overlay-' + this.overlayIDCount;
       overlay[0].id = htmlID;
       this.overlays[htmlID] = overlay;
       this.overlayIDCount = this.overlayIDCount + 1;
 
       parentElement.appendChild(overlay[0]);
 
-      this.$timeout(() => {
-        overlay.controller('dynamicViewOverlay').setDynamicViewComponent(componentName);
-      }, 100);
-
+      let waitForController = () => {
+        let controller = overlay.controller('dynamicViewOverlay');
+        if (angular.isDefined(controller)) {
+          // once we have a controller, set the component
+          controller.setDynamicViewComponent(componentName);
+        } else {
+          // check again in 100ms
+          this.$timeout(waitForController, 100);
+        }
+      };
+      waitForController();
 
       this.nrpAnalytics.eventTrack('Toggle-'+componentName, {
         category: 'Simulation-GUI',
