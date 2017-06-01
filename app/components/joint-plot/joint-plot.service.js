@@ -29,7 +29,9 @@
     }
 
     close() {
-      this.jointTopicSubscriber.unsubscribe((msg) => this.parseMessages(msg));
+      if (angular.isDefined(this.topicCallback)) {
+        this.jointTopicSubscriber.unsubscribe(this.topicCallback);
+      }
     }
 
     /**
@@ -64,7 +66,8 @@
       this.callbacks.push(callback);
       if (this.callbacks.length === 1) {
         // we went from zero subscribers to one
-        this.jointTopicSubscriber.subscribe((msg) => this.parseMessages(msg));
+        this.topicCallback = (msg) => this.parseMessages(msg);
+        this.jointTopicSubscriber.subscribe(this.topicCallback);
       }
     }
 
@@ -78,9 +81,11 @@
       let index = this.callbacks.indexOf(callback);
       if (index > -1) {
         this.callbacks.splice(index, 1);
-      }
-      if (this.callbacks.length === 0) {
-        this.jointTopicSubscriber.unsubscribe((msg) => this.parseMessages(msg));
+
+        // in case we have zero callbacks now, unsubscribe
+        if (this.callbacks.length === 0) {
+          this.jointTopicSubscriber.unsubscribe(this.topicCallback);
+        }
       }
     }
   }
