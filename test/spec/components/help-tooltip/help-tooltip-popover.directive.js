@@ -3,9 +3,9 @@
 
   describe('Directive: help-tooltip-popover', function() {
 
+    beforeEach(module('simulationConfigServiceMock'));
     beforeEach(module('helpTooltipPopoverModule'));
     beforeEach(module('exd.templates')); // import html template
-
 
     var scope,
       helpTooltipService,

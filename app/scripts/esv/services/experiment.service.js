@@ -17,8 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
 
-(function ()
-{
+(function() {
   'use strict';
 
   /**
@@ -28,57 +27,57 @@
    * @name experimentModule.experimentService
    * @description Service that manage experiment informations
    */
-  class ExperimentService
-  {
-    constructor(simulationInfo,
-               simulationControl, userContextService, bbpConfig,experimentsFactory,
-               nrpFrontendVersion,
-               nrpBackendVersions)
-    {
-      simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, (data) =>
-      {
-        userContextService.ownerID = data.owner;
-        this.experimentConfiguration = data.experimentConfiguration;
-        this.environmentConfiguration = data.environmentConfiguration;
-        this.creationDate = data.creationDate;
+  class ExperimentService {
+    constructor($q, simulationInfo,
+      simulationControl, bbpConfig, experimentsFactory,
+      nrpFrontendVersion,
+      nrpBackendVersions) {
 
-        this.experimentDescription = simulationInfo.experimentDetails.description;
-        this.experimentName = simulationInfo.experimentDetails.name;
+      //this.experiment is a promise that resolves to the same value as the service
+      this.experiment =
+        simulationInfo.initialized
+          .then(() => {
+            this.versionString = '';
+            nrpFrontendVersion.get((data) => {
+              this.versionString += data.toString;
+            });
 
-        this.rosTopics = bbpConfig.get('ros-topics');
-        this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+            nrpBackendVersions(simulationInfo.serverBaseUrl).get((data) => {
+              this.versionString += data.toString;
+            });
 
-        if (!bbpConfig.get('localmode.forceuser', false))
-        {
-          experimentsFactory.getOwnerDisplayName(data.owner).then((owner)=>
-          {
-            this.owner = owner;
+            return $q(resolve => {
+              simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, (data) => {
+                this.ownerID = data.owner;
+                this.experimentConfiguration = data.experimentConfiguration;
+                this.environmentConfiguration = data.environmentConfiguration;
+                this.creationDate = data.creationDate;
+
+                this.experimentDescription = simulationInfo.experimentDetails.description;
+                this.experimentName = simulationInfo.experimentDetails.name;
+
+                this.rosTopics = bbpConfig.get('ros-topics');
+                this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+
+                if (!bbpConfig.get('localmode.forceuser', false)) {
+                  experimentsFactory.getOwnerDisplayName(data.owner).then((owner) => {
+                    this.owner = owner;
+                  }).finally(() => resolve(this));
+                }
+                else {
+                  this.ownerID = this.owner = bbpConfig.get('localmode.ownerID');
+                  resolve(this);
+                }
+              });
+            });
           });
-        }
-        else
-        {
-          this.owner = bbpConfig.get('localmode.ownerID');
-          userContextService.ownerID = this.owner;
-        }
-      });
-
-      this.versionString = '';
-      nrpFrontendVersion.get((data)=>
-      {
-        this.versionString += data.toString;
-      });
-
-      nrpBackendVersions(simulationInfo.serverBaseUrl).get((data)=>
-      {
-        this.versionString += data.toString;
-      });
     }
   }
 
-  angular.module('experimentModule', ['userContextModule', 'nrpBackendAbout', 'editorToolbarModule'])
-    .factory('experimentService', ['simulationInfo', 'simulationControl',
-                                    'userContextService','bbpConfig',
-                                   'experimentsFactory','nrpFrontendVersion','nrpBackendVersions',
-     (...args) => new ExperimentService(...args)]);
+  angular.module('experimentModule', ['nrpBackendAbout', 'editorToolbarModule'])
+    .factory('experimentService', ['$q', 'simulationInfo', 'simulationControl',
+      'bbpConfig',
+      'experimentsFactory', 'nrpFrontendVersion', 'nrpBackendVersions',
+      (...args) => new ExperimentService(...args)]);
 
-} ());
+}());

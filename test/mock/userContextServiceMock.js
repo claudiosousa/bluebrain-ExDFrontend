@@ -10,10 +10,10 @@
     this.userEditing = '';
     this.timeEditStarted = '';
     this.editIsDisabled = false;
-    this.ownerID = '';
+    this.ownerID = 'Some owner id';
     this.init = jasmine.createSpy('init');
     this.deinit = jasmine.createSpy('deinit');
-    this.isOwner = jasmine.createSpy('isOwner');
+    this.isOwner = jasmine.createSpy('isOwner').and.returnValue(true);
     this.removeEditLock = jasmine.createSpy('removeEditLock');
     this.hasEditRights = jasmine.createSpy('hasEditRights');
     this.setEditDisabled = jasmine.createSpy('setEditDisabled');

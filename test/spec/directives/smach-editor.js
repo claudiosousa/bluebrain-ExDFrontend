@@ -54,11 +54,6 @@ describe('Directive: smachEditor', function () {
 
     }
   };
-  var simulationInfoMock = {
-    contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
-    simulationID: 'mocked_simulation_id',
-    isPrivateExperiment: true
-  };
 
   var roslibMock = {};
   var returnedConnectionObject = {};
@@ -69,10 +64,11 @@ describe('Directive: smachEditor', function () {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
+  beforeEach(module('simulationInfoMock'));
+  beforeEach(module('userContextServiceMock'));
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
-    $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('roslib', roslibMock);
     $provide.value('autoSaveService', autoSaveServiceMock);
     $provide.value('saveErrorsService', saveErrorsServiceMock);

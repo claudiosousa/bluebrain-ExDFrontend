@@ -20,7 +20,7 @@
 {
   'use strict';
 
-  angular.module('simulationConfigModule', []).service('simulationConfigService',
+  angular.module('simulationConfigModule', ['collabServices']).service('simulationConfigService',
     ['$resource', 'simulationInfo', 'serverError', '$q', 'collabFolderAPIService', '$http', 'environmentService',
       function ($resource, simulationInfo, serverError, $q, collabFolderAPIService, $http, environmentService)
       {

@@ -15,9 +15,6 @@ describe('Services: editorsPanelService', function () {
     };
     $provide.value('environmentService', environmentServiceMock);
 
-    var simulationInfoMock = {};
-    $provide.value('simulationInfo', simulationInfoMock);
-
     cancelLockSubscription = jasmine.createSpy('cancelLockSubscription');
     var userContextServiceMock = {
       lockService: {
@@ -38,6 +35,7 @@ describe('Services: editorsPanelService', function () {
 
   beforeEach(function () {
     module('editorsPanelModule');
+    module('simulationInfoMock');
 
     inject(function (_$window_, _$q_, _$rootScope_,
                      _editorsPanelService_, _environmentService_, _simulationInfo_, _userContextService_,

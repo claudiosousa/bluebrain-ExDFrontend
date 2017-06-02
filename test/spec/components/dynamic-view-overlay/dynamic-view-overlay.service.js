@@ -44,6 +44,7 @@ describe('Service: dynamicViewOverlayService', function() {
     overlay.controller = jasmine.createSpy('controller').and.returnValue(mockController);
     $timeout.flush();
     expect(overlay.controller('dynamicViewOverlay').setDynamicViewComponent).toHaveBeenCalledWith(componentName);
+    overlay.remove();
   });
 
   it(' - createOverlay(), no parentElement specified', function() {
@@ -51,6 +52,8 @@ describe('Service: dynamicViewOverlayService', function() {
     var overlay = dynamicViewOverlayService.createOverlay(undefined, componentName);
     // should be attached to document
     expect(overlay[0].parentElement).toBe(document.body);
+    overlay.remove();
+    //dynamicViewOverlayService.removeOverlay(overlay[0].id);
   });
 
   it(' - removeOverlay()', function() {

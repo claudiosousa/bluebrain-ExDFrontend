@@ -16,7 +16,7 @@ describe('Services: experimentService', function ()
 
   var simulationData =
     {
-      owner: 'Jun ichiro Tanizaki',
+      owner: 'Some owner id',
       experimentConfiguration: 'expconf',
       environmentConfiguration: 'envconf',
       creationDate: '19.02.1970'
@@ -86,34 +86,32 @@ describe('Services: experimentService', function ()
     rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
 
-    $httpBackend.expectGET('views/common/home.html').respond(200, '');
-
     rootScope.$digest();
   }));
 
   it('should set owner in userContextService', function ()
   {
-    expect(userContextService.ownerID).toBe('Jun ichiro Tanizaki');
+    expect(userContextService.ownerID).toBe(simulationData.owner);
   });
 
   it('should set experimentConfiguration', function ()
   {
-    expect(experimentService.experimentConfiguration).toBe('expconf');
+    expect(experimentService.experimentConfiguration).toBe(simulationData.experimentConfiguration);
   });
 
   it('should set environmentConfiguration', function ()
   {
-    expect(experimentService.environmentConfiguration).toBe('envconf');
+    expect(experimentService.environmentConfiguration).toBe(simulationData.environmentConfiguration);
   });
 
   it('should set creationDate', function ()
   {
-    expect(experimentService.creationDate).toBe('19.02.1970');
+    expect(experimentService.creationDate).toBe(simulationData.creationDate);
   });
 
   it('should set creationDate', function ()
   {
-    expect(experimentService.creationDate).toBe('19.02.1970');
+    expect(experimentService.creationDate).toBe(simulationData.creationDate);
   });
 
   it('should set owner display name', function ()

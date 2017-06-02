@@ -4,6 +4,8 @@
 (function() {
     'use strict';
 
+
+
     angular.module('exdFrontendApp')
      .config(['$compileProvider', '$logProvider', 'environmentServiceProvider',
       function($compileProvider, $logProvider) {

@@ -10,24 +10,9 @@ describe('Directive: environment-designer', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('currentStateMockFactory'));
+  beforeEach(module('simulationInfoMock'));
   beforeEach(module(function ($provide) {
     $provide.value('stateService', currentStateMock);
-    var simulationInfoMock = {
-      mode: undefined,
-      contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
-      serverID: 'bbpce016',
-      simulationID: 'mocked_simulation_id',
-      serverConfig: {
-        gzweb: {assets: {}},
-        rosbridge: {
-          topics: {
-            cleError: {}
-          }
-        }
-      },
-      isPrivateExperiment: true
-    };
-    $provide.value('simulationInfo', simulationInfoMock);
     $provide.value('gz3d', gz3dMock);
     $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').and.callThrough());
     $provide.value('contextMenuState', {

@@ -10,6 +10,7 @@ describe('Services: userNavigationService', function () {
   var gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
   var hbpIdentityUserDirectory, userProfile, hbpIdentityUserDirectoryPromise, simulationInfo, roslib, stateService;
 
+  beforeEach(module('simulationInfoMock'));
   beforeEach(module('userNavigationModule'));
 
   // provide mock objects
@@ -111,15 +112,6 @@ describe('Services: userNavigationService', function () {
       getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(hbpIdentityUserDirectoryPromiseMock)
     };
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
-
-    var simulationInfoMock = {
-      serverConfig: {
-        rosbridge: {
-          websocket: 'mock_rosbridge_websocket_url'
-        }
-      }
-    };
-    $provide.value('simulationInfo', simulationInfoMock);
 
     var roslibMock = {};
     $provide.value('roslib', roslibMock);

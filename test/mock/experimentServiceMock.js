@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('experimentServiceMock', [])
+  angular.module('experimentServiceMock', ['simulationInfoMock'])
   .service('experimentService', function () {
 
         this.experimentConfiguration = 'ExperimentConfiguration';

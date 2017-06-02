@@ -20,14 +20,16 @@
 (function () {
   'use strict';
 
-  angular.module('userContextModule', ['userNavigationModule', 'collabExperimentLockModule'])
+  angular.module('userContextModule', ['experimentModule', 'userNavigationModule', 'collabExperimentLockModule'])
 
   .factory('userContextService', [
-    '$window',
+    '$q', '$window', 'experimentService',
     'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'hbpIdentityUserDirectory',
     'environmentService',
     function (
+      $q,
       $window,
+      experimentService,
       userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory,
       environmentService) {
 
@@ -35,33 +37,33 @@
 
         var that = this;
 
-        var _userID, _ownerID;
-
-        this.isInitialized = false;
-        this.isJoiningStoppedSimulation = false;
         this.editIsDisabled = false;
-        this.userID = '';
-        this.ownerID = '';
+        let _ownerId;
+        //DON'T set ownerID from outside!!!
+        Object.defineProperty(this, 'ownerID', { get: ()=>  _ownerId } );
         this.userEditingID = '';
         this.userEditing = '';
         this.timeEditStarted = '';
 
-        this.init = function() {
-          if (!bbpConfig.get('localmode.forceuser', false)) {
-            hbpIdentityUserDirectory.getCurrentUser().then(function (profile) {
-              that.userID = profile.id;
+        let getUserId = () => {
+          if (!bbpConfig.get('localmode.forceuser', false))
+            return hbpIdentityUserDirectory.getCurrentUser()
+              .then(profile => profile.id);
+
+          return $q.when(bbpConfig.get('localmode.ownerID'));
+        };
+
+        this.init = () => {
+          return $q.all([getUserId(), experimentService.experiment])
+            .then(([userid, { ownerID }]) => {
+              this.userID = userid;
+              _ownerId = ownerID;
+              if (environmentService.isPrivateExperiment() && this.isOwner()) {
+                // only use locks if we are in a collab
+                this.lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
+                this.cancelLockSubscription = this.lockService.onLockChanged(this.onLockChangedCallback);
+              }
             });
-          } else {
-            that.userID = that.ownerID = bbpConfig.get('localmode.ownerID');
-          }
-
-          if (environmentService.isPrivateExperiment() && that.isOwner()) {
-            // only use locks if we are in a collab
-            this.lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
-            this.cancelLockSubscription = this.lockService.onLockChanged(that.onLockChangedCallback);
-          }
-
-          this.isInitialized = true;
         };
 
         this.deinit = function() {
@@ -84,7 +86,7 @@
         };
 
         this.isOwner = function() {
-          return ((this.userID.length > 0) && (this.userID === this.ownerID));
+          return this.userID !== undefined && this.userID === this.ownerID;
         };
 
         this.hasEditRights = function (entity) {
@@ -113,7 +115,7 @@
       }
 
       var service = new UserContextService();
-      service.init();
+      service.initialized = service.init();
 
       return service;
     }

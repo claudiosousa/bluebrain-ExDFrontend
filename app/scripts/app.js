@@ -122,7 +122,8 @@
           siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
             return simulationInfo.initialize(
               $stateParams.serverID, $stateParams.experimentID, $stateParams.simulationID, $stateParams.ctx);
-          }]
+          }],
+          initUserContextService: ['userContextService', function(userContextService) { return userContextService.initialized; }]
         }
       };
 

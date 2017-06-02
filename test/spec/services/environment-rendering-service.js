@@ -70,12 +70,6 @@ describe('Services: environmentRenderingService', function () {
     };
     $provide.value('assetLoadingSplash', assetLoadingSplashMock);
 
-    var simulationInfoMock = {
-      experimentDetails: {
-        cameraPose: {}
-      }
-    };
-    $provide.value('simulationInfo', simulationInfoMock);
 
     var isNotARobotPredicateMock = {};
     $provide.value('isNotARobotPredicate', isNotARobotPredicateMock);
@@ -97,7 +91,7 @@ describe('Services: environmentRenderingService', function () {
   beforeEach(function () {
     module('environmentRenderingModule');
     module('exdFrontendApp.Constants');
-
+    module('simulationInfoMock');
     // inject service for testing.
     inject(function (_$rootScope_, _STATE_, _environmentRenderingService_, _nrpAnalytics_, _stateService_,
                      _gz3d_, _isNotARobotPredicate_, _userContextService_, _assetLoadingSplash_, _simulationInfo_,

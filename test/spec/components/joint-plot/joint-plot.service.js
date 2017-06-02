@@ -12,17 +12,10 @@ describe('Service: joint-service', function() {
     createTopic: jasmine.createSpy('createTopic').and.returnValue(rosLibConnectionObject)
   };
 
-  var simulationInfoMock = {
-    serverConfig: {
-      rosbridge: {
-        websocket: 'ws://localhost:1234'
-      }
-    }
-  };
+  beforeEach(module('simulationInfoMock'));
 
   beforeEach(module(function($provide) {
     $provide.value('roslib', roslibMock);
-    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
   beforeEach(module('jointPlotModule'));

@@ -4,6 +4,7 @@ describe('Controller: editorPanelCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('simulationInfoMock'));
   beforeEach(module('gz3dServices'));
 
   var $httpBackend,
@@ -15,8 +16,6 @@ describe('Controller: editorPanelCtrl', function () {
       gz3d,
       editorsPanelService;
 
-  var simulationInfo;
-
   var baseEventHandlerMock = {
     suppressAnyKeyPress: jasmine.createSpy('suppressAnyKeyPress')
   };
@@ -25,17 +24,14 @@ describe('Controller: editorPanelCtrl', function () {
     $provide.value('baseEventHandler', baseEventHandlerMock);
   }));
 
-  beforeEach(module(function ($provide) {
-    $provide.value('simulationInfo', simulationInfo);
-  }));
-
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _$httpBackend_,
                               _bbpConfig_,
                               _editorsPanelService_,
-                              _gz3d_) {
+                              _gz3d_,
+                              simulationInfo) {
     controller = $controller;
     $httpBackend = _$httpBackend_;
     rootScope = $rootScope;
@@ -49,19 +45,6 @@ describe('Controller: editorPanelCtrl', function () {
     gz3d.scene.controls = {};
     gz3d.scene.controls.keyboardBindingsEnabled = true;
 
-    simulationInfo = {
-      mode : undefined,
-      serverID : 'bbpce016',
-      simulationID : 'mocked_simulation_id',
-      serverConfig: {
-        gzweb: {},
-        rosbridge: {
-          topics: {
-            cleError: {}
-          }
-        }
-      }
-    };
 
     experimentCtrl = $controller('editorPanelCtrl', {
       $rootScope: rootScope,

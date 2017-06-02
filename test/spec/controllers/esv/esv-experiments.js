@@ -75,7 +75,9 @@
    var nrpBackendVersionsObject = {
      get: jasmine.createSpy('get')
    };
+
     beforeEach(module('exdFrontendApp'));
+    beforeEach(module('userContextServiceMock'));
     beforeEach(module('exd.templates'));
 
     beforeEach(module(function ($provide) {

@@ -70,8 +70,6 @@
 
           scope.control.refresh = function () {
             var editor = codeEditorsServices.getEditor("codeEditor");
-            if (scope.editorOptions.readOnly)
-              editor.options.readOnly = scope.editorOptions.readOnly;
             if (scope.collabDirty || scope.localDirty) {
               $timeout(function () {
                 codeEditorsServices.refreshEditor(editor);

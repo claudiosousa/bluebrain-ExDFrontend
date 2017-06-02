@@ -1,7 +1,7 @@
 
 'use strict';
 
-describe('Services: userContextService', function () {
+describe('Services: userContextService', function() {
 
   var userContextService;
 
@@ -12,12 +12,21 @@ describe('Services: userContextService', function () {
   var remoteProfileMock, lockServiceMock, cancelLockServiceMock;
 
   beforeEach(function() {
-    module('userContextModule');
-    module('exdFrontendApp');
+    window.bbpConfig.localmode.forceuser = true;
   });
 
+  afterEach(function() {
+    window.bbpConfig.localmode.forceuser = false;
+  });
+
+  beforeEach(module('exdFrontendApp'));
+  beforeEach(module('simulationInfoMock'));
+  beforeEach(module('userContextModule'));
+
+
+
   // provide mock objects
-  beforeEach(module(function ($provide) {
+  beforeEach(module(function($provide) {
     // userNavigationService
     var userNavigationServiceMock = {
       isUserAvatar: jasmine.createSpy('isUserAvatar').and.callFake(function(entity) {
@@ -44,13 +53,6 @@ describe('Services: userContextService', function () {
     };
     $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
 
-    // simulationInfo
-    var simulationInfoMock = {
-      isCollabExperiment: false,
-      contextID: 'context_id'
-    };
-    $provide.value('simulationInfo', simulationInfoMock);
-
     // bbpConfig
     $provide.value('bbpConfig', window.bbpConfig);
 
@@ -69,14 +71,15 @@ describe('Services: userContextService', function () {
     $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
   }));
 
-  // inject dependencies
-  beforeEach(function () {
-    inject(function (_$rootScope_, _$window_, _$q_, _userContextService_, _userNavigationService_,
-                     _collabExperimentLockService_, _simulationInfo_, _bbpConfig_, _hbpIdentityUserDirectory_,
-                     _environmentService_)
-    {
-      userContextService = _userContextService_;
 
+  var httpBackend, experimentService;
+  // inject dependencies
+  beforeEach(function() {
+    inject(function(_$rootScope_, _$window_, _$q_, $httpBackend, _userContextService_, _userNavigationService_,
+      _collabExperimentLockService_, _simulationInfo_, _bbpConfig_, _hbpIdentityUserDirectory_,
+      _environmentService_, _experimentService_) {
+      userContextService = _userContextService_;
+      experimentService = _experimentService_;
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       $window = _$window_;
@@ -87,21 +90,34 @@ describe('Services: userContextService', function () {
       bbpConfig = _bbpConfig_;
       hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
       environmentService = _environmentService_;
+      httpBackend = $httpBackend;
+
+      environmentService.setPrivateExperiment(true);
+
     });
   });
 
-  it(' - init() - userID, ownerID and isOwner()', function () {
-    expect(userContextService.isOwner()).toBe(false);
+  beforeEach(function(done) {
+    userContextService.initialized.then(function() {
+      done();
+    });
+    $rootScope.$digest();
+    httpBackend.flush();
+    $rootScope.$digest();
+  });
 
+  it(' - init() - userID, ownerID and isOwner()', function() {
+    userContextService.userID = 'someone else';
+    expect(userContextService.isOwner()).toBe(false);
     userContextService.userID = 'user_id';
-    userContextService.ownerID = 'owner_id';
+    //userContextService.ownerID = 'owner_id';
     expect(userContextService.isOwner()).toBe(false);
 
-    userContextService.userID = 'owner_id';
+    userContextService.userID = 'testUser';
     expect(userContextService.isOwner()).toBe(true);
   });
 
-  it(' - onLockChangedCallback()', function () {
+  it(' - onLockChangedCallback()', function() {
     spyOn(userContextService, 'setEditDisabled').and.callThrough();
     spyOn(userContextService, 'setLockDateAndUser').and.callThrough();
 
@@ -126,12 +142,12 @@ describe('Services: userContextService', function () {
     expect(userContextService.setEditDisabled).toHaveBeenCalledWith(lockChangeEvent.locked);
   });
 
-  it(' - hasEditRights()', function () {
+  it(' - hasEditRights()', function() {
     var avatarMock = {
       name: 'not_user_avatar'
     };
 
-    userContextService.userID = userContextService.ownerID = 'owner';
+    userContextService.userID = 'testUser';
     expect(userContextService.hasEditRights(avatarMock)).toBe(true);
 
     userContextService.userID = 'not_owner';
@@ -141,7 +157,7 @@ describe('Services: userContextService', function () {
     expect(userContextService.hasEditRights(avatarMock)).toBe(true);
   });
 
-  it(' - setLockDateAndUser()', function () {
+  it(' - setLockDateAndUser()', function() {
     var lockInfoMock = {
       user: {
         displayName: 'display_name',
@@ -156,7 +172,7 @@ describe('Services: userContextService', function () {
     expect(userContextService.timeEditStarted).toBe(moment(new Date(lockInfoMock.date)).fromNow());
   });
 
-  it(' - setEditDisabled()', function () {
+  it(' - setEditDisabled()', function() {
     userContextService.setEditDisabled(false);
     expect(userContextService.editIsDisabled).toBe(false);
 
@@ -174,27 +190,17 @@ describe('Services: userContextService', function () {
     it(' - after init()', function () {
       expect(userContextService.userID).toBe(window.bbpConfig.localmode.ownerID);
       expect(userContextService.ownerID).toBe(window.bbpConfig.localmode.ownerID);
-      expect(userContextService.isInitialized).toBe(true);
     });
   });
 
-  describe('remote collab mode', function () {
+  describe('remote collab mode', function() {
     beforeEach(function() {
       window.bbpConfig.localmode.forceuser = false;
       simulationInfo.isCollabExperiment = true;
       environmentService.setPrivateExperiment(true);
-      userContextService.init();
     });
 
-    it(' - after init()', function () {
-      expect(hbpIdentityUserDirectory.getCurrentUser).toHaveBeenCalled();
-      expect(hbpIdentityUserDirectory.getCurrentUser().then).toHaveBeenCalled();
-      expect(userContextService.userID).toBe(remoteProfileMock.id);
-
-      expect(userContextService.isInitialized).toBe(true);
-    });
-
-    it(' - deinit()', function () {
+    it(' - deinit()', function() {
       spyOn(userContextService, 'removeEditLock').and.callThrough();
 
       userContextService.deinit();

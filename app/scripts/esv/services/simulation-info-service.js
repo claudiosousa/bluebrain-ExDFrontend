@@ -22,10 +22,13 @@
   'use strict';
 
   angular.module('simulationInfoService', ['experimentServices', 'simulationControlServices'])
-    .factory('simulationInfo', ['experimentProxyService', 'experimentList', 'environmentService',
-    function (experimentProxyService, experimentList, environmentService) {
+    .factory('simulationInfo', ['$q', 'experimentProxyService', 'experimentList', 'environmentService',
+    function ($q, experimentProxyService, experimentList, environmentService) {
+
+    let initialized =  $q.defer();
       var thisService = {
-        initialize: initialize
+        initialize: initialize,
+        initialized: initialized.promise
       };
       return thisService;
 
@@ -81,7 +84,8 @@
               setExperimentDetails(configuration);
             });
 
-          });
+          })
+          .then(() => initialized.resolve());
       }
     }]);
 } ());

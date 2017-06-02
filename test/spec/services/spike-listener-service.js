@@ -2,16 +2,7 @@
 
 describe('Services: spike-listener-service', function ()
 {
-  var SERVER_URL = 'ws://localhost:1234';
   var spikeListenerService;
-
-  var simulationInfoMock = {
-    serverConfig: {
-      rosbridge: {
-        websocket: SERVER_URL
-      }
-    }
-  };
 
   var returnedConnectionObject = {
     onNewSpikesMessageReceived:null,
@@ -35,11 +26,10 @@ describe('Services: spike-listener-service', function ()
   };
 
   beforeEach(module('exdFrontendApp'));
-
+  beforeEach(module('simulationInfoMock'));
   beforeEach(module(function ($provide)
   {
     $provide.value('roslib', roslibMock);
-    $provide.value('simulationInfo', simulationInfoMock);
   }));
 
 

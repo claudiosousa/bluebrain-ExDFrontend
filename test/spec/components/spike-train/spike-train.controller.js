@@ -5,22 +5,12 @@ describe('Directive: spiketrain', function() {
   beforeEach(module('spikeTrainModule'));
   beforeEach(module('exd.templates')); // import html template
 
-  var simulationInfoMock = {
-    serverConfig: {
-      rosbridge: {
-        websocket: ''
-      }
-    }
-  };
+  beforeEach(module('simulationInfoMock'));
 
   var spikeListenerServiceMock = {
     startListening: jasmine.createSpy('startListening'),
     stopListening: jasmine.createSpy('stopListening')
   };
-
-  beforeEach(module(function($provide) {
-    $provide.value('simulationInfo', simulationInfoMock);
-  }));
 
   var spikeController, canvas,
     SPIKE_TIMELABEL_SPACE = 0;

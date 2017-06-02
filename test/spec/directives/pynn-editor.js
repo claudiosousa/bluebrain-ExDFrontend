@@ -28,15 +28,6 @@ describe('Directive: pynnEditor', function () {
     saveBrain: jasmine.createSpy('saveBrain')
   };
 
-  var simulationInfoMock = {
-    contextID: '97923877-13ea-4b43-ac31-6b79e130d344',
-    simulationID : 'mocked_simulation_id',
-    isPrivateExperiment: true,
-    experimentDetails: {
-      brainProcesses: 1
-    }
-  };
-
   var autoSaveServiceMock = {
     registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
     clearDirty: jasmine.createSpy('clearDirty')
@@ -97,14 +88,17 @@ describe('Directive: pynnEditor', function () {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
+  beforeEach(module('simulationInfoMock'));
+  beforeEach(module('userContextServiceMock'));
+
   beforeEach(module(function ($provide) {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
-    $provide.value('simulationInfo' , simulationInfoMock);
     $provide.value('downloadFileService' , downloadFileServiceMock);
     $provide.value('autoSaveService' , autoSaveServiceMock);
   }));
 
+  var simulationInfoMock;
   beforeEach(inject(function (_$rootScope_,
                               _$httpBackend_,
                               _$compile_,
@@ -113,7 +107,9 @@ describe('Directive: pynnEditor', function () {
                               _pythonCodeHelper_,
                               _$timeout_,
                               _hbpDialogFactory_,
-                              _codeEditorsServices_) {
+                              _codeEditorsServices_,
+                              simulationInfo) {
+
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -123,6 +119,7 @@ describe('Directive: pynnEditor', function () {
     $timeout = _$timeout_;
     hbpDialogFactory = _hbpDialogFactory_;
     codeEditorsServices = _codeEditorsServices_;
+    simulationInfoMock = simulationInfo;
 
     autoSaveServiceMock.registerFoundAutoSavedCallback.calls.reset();
     $scope = $rootScope.$new();
@@ -134,6 +131,7 @@ describe('Directive: pynnEditor', function () {
   }));
 
   describe('Get/Set brain, PyNN script', function () {
+
     var data = {
       'brain_type': 'py',
       'data': '// A PyNN script',
@@ -176,6 +174,7 @@ describe('Directive: pynnEditor', function () {
     ];
 
     beforeEach(function () {
+
       // Mock functions that access elements that are not available in test environment
       codeEditorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
       backendInterfaceService.getBrain.calls.reset();
@@ -452,10 +451,6 @@ describe('Directive: pynnEditor', function () {
 
   describe('Pynn-editor Upload & download', function () {
 
-    beforeEach(function () {
-      // Mock functions that access elements that are not available in test environment
-      //editorsServices.getEditor = jasmine.createSpy('getEditor').and.returnValue(cmMock);
-    });
 
     it('should call downloadFileService.downloadFile with the right parameters when downloading a file', function() {
       isolateScope.download();
