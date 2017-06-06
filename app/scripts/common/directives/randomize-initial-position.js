@@ -24,11 +24,17 @@
       restrict: 'A',
       compile: () => ({
         pre: (scope, element) => element.css('visibility', 'hidden'),
-        post: (scope, element) => _.defer(() => {
+        post: (scope, element, attrs) => _.defer(() => {
           const MARGIN = .05;//margin in respect to the parent's width
 
           const elementDom = element[0];
-          const parentDom = element.parent()[0];
+          let parentDom;
+          const parentElementSelector = scope.$eval(attrs.randomPositionParentSelector);
+          if (parentElementSelector) {
+            parentDom = element.parents(parentElementSelector)[0];
+          } else {
+            parentDom = element.parent()[0];
+          }
 
           let getRandomDimension = prop => (MARGIN + Math.random() * (1 - 2 * MARGIN)) * (parentDom[prop] - elementDom[prop]);
 

@@ -59,4 +59,37 @@ describe('Controller: DynamicViewController', function() {
     expect(elementController.viewContainer.innerHTML).toContain(content);
   });
 
+  it('should destroy existing content scope before switching content', function() {
+    var contentScope = {
+      $destroy: jasmine.createSpy('$destroy')
+    };
+    elementController.contentScope = contentScope;
+
+    elementController.setViewContent('some-content');
+
+    expect(contentScope.$destroy).toHaveBeenCalled();
+  });
+
+  it('should destroy the content scope when its own scope is destroyed', function() {
+    var contentScope = {
+      $destroy: jasmine.createSpy('$destroy')
+    };
+    elementController.contentScope = contentScope;
+
+    elementController.onDestroy();
+
+    expect(contentScope.$destroy).toHaveBeenCalled();
+  });
+
+  it('should throw a warning when viewContainer is undefined', function() {
+    elementController.viewContainer = undefined;
+    spyOn(console, 'warn');
+    spyOn(elementController, '$compile').and.callThrough();
+
+    elementController.setViewContent('some-content');
+
+    expect(console.warn).toHaveBeenCalled();
+    expect(elementController.$compile).not.toHaveBeenCalled();
+  });
+
 });

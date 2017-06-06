@@ -2,13 +2,15 @@
 <link rel="stylesheet" href="styles/esv/experiment-view.css" />
 <!-- endbuild -->
 
-<div>
+<div id="experiment-view">
   <div class="editor-display">
-    <environment-rendering></environment-rendering>
+    <div id="experiment-view-backdrop">
+      <environment-rendering></environment-rendering>
+    </div>
 
     <log-adverts></log-adverts>
 
-    <div id="experiment-view-widget-overlays">
+    <div class="experiment-view-widget-overlays">
 
       <spike-train></spike-train>
 
