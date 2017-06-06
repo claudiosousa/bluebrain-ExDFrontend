@@ -45,6 +45,7 @@ describe('Service: joint-service', function() {
 
   it('should unsubscribe on close', function() {
     expect(rosLibConnectionObject.unsubscribe).not.toHaveBeenCalled();
+    jointService.topicCallback = {};
     jointService.close();
     expect(rosLibConnectionObject.unsubscribe).toHaveBeenCalled();
   });
