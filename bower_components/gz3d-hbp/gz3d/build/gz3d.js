@@ -1592,6 +1592,8 @@ var modelList =
       {modelPath:'viz_poster', modelTitle:'Poster 1'},
       {modelPath:'viz_poster_2', modelTitle:'Poster 2'},
       {modelPath:'nrp_panel', modelTitle:'HBP/NRP Panel'},
+      {modelPath:'concretewall1', modelTitle:'Concrete Wall 1'},
+      {modelPath:'future_lamp', modelTitle:'Future Lamp'},
     ]}
   ];
 
@@ -9523,6 +9525,21 @@ GZ3D.Scene.prototype.setMaterial = function(obj, material)
 {
   if (obj)
   {
+    if (obj instanceof THREE.Group)
+    {
+      var that = this;
+
+      obj.traverse(function (node)
+      {
+        if (!(node instanceof THREE.Group))
+        {
+          that.setMaterial(node, material);
+        }
+      });
+
+      return;
+    }
+
     if (material)
     {
       obj.material = new THREE.MeshPhongMaterial();

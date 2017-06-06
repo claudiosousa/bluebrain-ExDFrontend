@@ -24,7 +24,7 @@
         .directive('logAdverts', ['$timeout', 'clientLoggerService', ($timeout, clientLoggerService) => {
 
             const LOG_LEVEL_ADVERTS = 2;
-            const VISIBLE_DURATION = 3000;
+            const VISIBLE_DURATION = 5000;
 
             return {
                 templateUrl: 'components/client-logger/log-adverts/log-adverts.template.html',
