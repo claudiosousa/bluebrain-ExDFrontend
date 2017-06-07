@@ -265,6 +265,8 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       case "KeyF":
         that.moveDown = true; break;
     }
+
+    event.preventDefault();
   };
 
   this.onKeyUp = function (event) {
@@ -306,6 +308,8 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       case "KeyF":
         that.moveDown = false; break;
     }
+
+    event.preventDefault();
   };
 
   this.fpRotate = function(rightAmount, upAmount) {

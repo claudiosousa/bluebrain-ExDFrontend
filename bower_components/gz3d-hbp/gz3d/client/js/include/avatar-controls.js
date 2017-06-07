@@ -327,6 +327,8 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
       case "KeyF":
         that.moveDown = true; break;
     }
+
+    event.preventDefault();
   };
 
   this.onKeyUp = function (event) {
@@ -375,6 +377,8 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
         break;
       }
     }
+
+    event.preventDefault();
   };
 
   this.keyboardRotate = function(rightAmount, upAmount) {
