@@ -24,7 +24,6 @@
         .directive('logAdverts', ['$timeout', 'clientLoggerService', ($timeout, clientLoggerService) => {
 
             const LOG_LEVEL_ADVERTS = 2;
-            const VISIBLE_DURATION = 5000;
 
             return {
                 templateUrl: 'components/client-logger/log-adverts/log-adverts.template.html',
@@ -39,20 +38,20 @@
                     scope.showAdvert = null;
 
                     let advertLogs$ = clientLoggerService.logs
-                        .filter(log => log.level === LOG_LEVEL_ADVERTS)
-                        .map(log => log.message);
+                        .filter(log => log.level === LOG_LEVEL_ADVERTS);
 
                     let showLogSubscription = advertLogs$
+                        .map(({ message }) => message)
                         .subscribe(message => {
                             scope.currentAdvert = message; //message to be shown
                             scope.showAdvert = true; //show it
                         });
 
-                     let hideLogSubscription = advertLogs$
-                        .debounceTime(VISIBLE_DURATION)
+                    let hideLogSubscription = advertLogs$
+                        .debounce(log => Rx.Observable.timer(log.duration))
                         .subscribe(message => scope.showAdvert = false); //hide it
 
-                    scope.$on('$destroy', ()=>{
+                    scope.$on('$destroy', () => {
                         showLogSubscription.unsubscribe();
                         hideLogSubscription.unsubscribe();
                     });
