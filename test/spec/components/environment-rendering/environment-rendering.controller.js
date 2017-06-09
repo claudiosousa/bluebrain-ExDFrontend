@@ -2,8 +2,8 @@
 
 'use strict';
 
-describe('Controller: Gz3dViewCtrl', function () {
-  var Gz3dViewCtrl,
+describe('Controller: EnvironmentRenderingController', function () {
+  var environmentRenderingController,
     controller,
     scope,
     rootScope,
@@ -191,7 +191,7 @@ describe('Controller: Gz3dViewCtrl', function () {
     var currentUserInfo1234, currentUserInfo1234Hash, otherUserInfo4321;
 
     beforeEach(function () {
-      Gz3dViewCtrl = controller('Gz3dViewCtrl', {
+      environmentRenderingController = controller('EnvironmentRenderingController', {
         $rootScope: rootScope,
         $scope: scope
       });
