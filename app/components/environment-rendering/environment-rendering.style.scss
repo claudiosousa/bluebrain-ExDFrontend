@@ -89,8 +89,14 @@
   right: 25px;
 }
 
-.fa-question-circle.active {
+.fa-question-circle.active,
+.fa-question-circle.active:hover{
   color: #006400;
+}
+
+.fa-info-circle.active,
+.fa-info-circle.active:hover {
+  color: #116194;
 }
 
 .vertcenter {

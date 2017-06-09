@@ -28,7 +28,7 @@
     });
 
     it('should prevent click action if in help mode', function() {
-      helpTooltipService.toggleVisibility();
+      helpTooltipService.toggleHelp();
       element.trigger('click');
       expect(rootScope.someAction).not.toHaveBeenCalled();
       expect(helpTooltipService.helpDescription).toBe(HELP_CODES.PLAY_BUTTON);
@@ -38,7 +38,7 @@
     it('should highlight element when showing it\'s help', function() {
       expect(element.hasClass('toolbar-help-highlighted')).toBe(false);
 
-      helpTooltipService.toggleVisibility();
+      helpTooltipService.toggleHelp();
       element.trigger('click');
       rootScope.$digest();
 

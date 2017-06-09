@@ -18,8 +18,12 @@
  * ---LICENSE-END **/
 
 
-.toolbar-help-highlighted {
-  box-shadow: inset 0px 0px 20px 10px rgba(150,220,150,1) !important;
+.toolbar-help-highlighted{
+  box-shadow: inset 0px 0px 30px 30px rgb(200, 255, 187), 0px 0px 40px 0px rgb(200, 255, 187);
+}
+
+.toolbar-help-highlighted:hover {
+   box-shadow: inset 0px 0px 30px 30px rgba(200, 255, 187, 0.8), 0px 0px 40px 0px rgba(200, 255, 187, 0.8);
 }
 
 .toolbar-help-window {
@@ -28,9 +32,9 @@
   right:0;
   margin-left:auto;
   margin-right:auto;
-  top: 75%;
+  min-height: 180px;
   bottom: 75px;
-  background:rgba(150, 220, 150, 0.95);
+  background:#eeffed;
   width: 80%;
   border-radius: 8px;
   border-color: green;
@@ -72,12 +76,12 @@
   right:0;
   margin-left:auto;
   margin-right:auto;
-  top: 1%;
+  top: 10%;
   max-height: 70%;
-  background:rgba(150, 220, 150, 0.95);
+  background:#d7efff;
   width: 80%;
   border-radius: 8px;
-  border-color: green;
+  border-color: blue;
   border: 2px solid;
   transition: 0.5s linear all;
   opacity: 1;
