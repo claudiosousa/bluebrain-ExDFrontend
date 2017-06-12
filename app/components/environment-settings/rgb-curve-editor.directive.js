@@ -24,7 +24,7 @@
       function ()
       {
         return {
-          templateUrl: 'views/esv/rgb-curve-editor.html',
+          templateUrl: 'components/environment-settings/rgb-curve-editor.template.html',
           restrict: 'E',
           scope: {
             curve: "=",

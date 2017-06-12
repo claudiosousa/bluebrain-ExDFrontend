@@ -16,56 +16,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "environment-settings-panel.scss";
+@import "environment-settings-panel.style";
 
-.esv-master-settings-radio-button
-{
-    width:100%;
-    background-color: #dddddd;
-    border-color: #999999;
+.environment-settings-environment-wrapper {
+  display:flex;
 }
 
-.esv-master-settings-radio-button-down
-{
-    width:100%;
-    text-decoration: none;
-    background-color: #ffffff;
-    border-color: #000000;
-    outline:0;
-    border-radius: 4px;
+.esv-envsettings-bloom-slider {
+  vertical-align: top;
+  left: 5px;
+  padding: 0px;
 }
 
-.esv-master-settings-radio-button-down:focus
-{
-    text-decoration: none;
-    background-color: #ffffff;
-    border-color: #000000;
-    outline:0;
-    border-radius: 4px;
-}
+.environment-settings-option-subblock-environment {
+  margin:10px 10px 10px 10px;
+};
 
-.environment-settings-master-block
-{
-    padding-bottom:1px;
-    margin: 0 5px;
+input[type="range"].esv-envsettings-bloom-slider {
+  display: inline;
+  width: 110px;
+  margin: 0px 20px 0px 5px;
 }
-
-.environment-settings-master-button-label
-{
-    text-overflow: ellipsis;
-    max-width:100%;
-    overflow-x: hidden;
-}
-
-.environment-settings-master-imageon
-{
-    filter:none;
-    -webkit-filter: none;
-}
-
-.environment-settings-master-imageoff
-{
-    -webkit-filter: grayscale(70%);
-    filter:grayscale(70%);
-}
-

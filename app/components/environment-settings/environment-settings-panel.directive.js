@@ -26,7 +26,7 @@
       function (gz3d, collab3DSettingsService, simulationInfo, editorToolbarService)
       {
         return {
-          templateUrl: 'views/esv/environment-settings-panel.html',
+          templateUrl: 'components/environment-settings/environment-settings-panel.template.html',
           restrict: 'E',
           scope: true,  // create a child scope for the directive and inherits the parent scope properties
           link: function (scope, element, attrs)

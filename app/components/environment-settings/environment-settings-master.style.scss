@@ -16,38 +16,56 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "environment-settings-panel.scss";
+@import "environment-settings-panel.style";
 
-.environment-settings-color-reset {
-  margin:10px 10px 10px 70px;
+.esv-master-settings-radio-button
+{
+    width:100%;
+    background-color: #dddddd;
+    border-color: #999999;
 }
 
-.environment-settings-color-wrapper {
-  display:flex;
+.esv-master-settings-radio-button-down
+{
+    width:100%;
+    text-decoration: none;
+    background-color: #ffffff;
+    border-color: #000000;
+    outline:0;
+    border-radius: 4px;
 }
 
-.environment-settings-color-curves {
-   width: 340px;
-   min-width: 100px;
-   flex-shrink: 0;
+.esv-master-settings-radio-button-down:focus
+{
+    text-decoration: none;
+    background-color: #ffffff;
+    border-color: #000000;
+    outline:0;
+    border-radius: 4px;
 }
 
-.environment-settings-color-levels {
-   width: 50%;
-   min-width: 200px;
-   max-width: 250px;
-   flex-grow: 1;
-   margin:32px 0px 0px 0px;
+.environment-settings-master-block
+{
+    padding-bottom:1px;
+    margin: 0 5px;
 }
 
-.environment-settings-color-levels-title {
-    font-weight: normal;
-    font-size: 16px;
-    font-family: 'Gotham', sans-serif;
-  }
-
-.environment-settings-color-levels label {
-    font-weight: normal;
-    font-size: 12px;
-    font-family: 'Gotham', sans-serif;
+.environment-settings-master-button-label
+{
+    text-overflow: ellipsis;
+    max-width:100%;
+    overflow-x: hidden;
 }
+
+.environment-settings-master-imageon
+{
+    filter:none;
+    -webkit-filter: none;
+}
+
+.environment-settings-master-imageoff
+{
+    -webkit-filter: grayscale(70%);
+    filter:grayscale(70%);
+}
+

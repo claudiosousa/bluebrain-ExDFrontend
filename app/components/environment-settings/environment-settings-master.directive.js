@@ -27,7 +27,7 @@
       function (gz3d, nrpAnalytics, editorToolbarService)
       {
         return {
-          templateUrl: 'views/esv/environment-settings-master.html',
+          templateUrl: 'components/environment-settings/environment-settings-master.template.html',
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs)

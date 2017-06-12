@@ -16,24 +16,5 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "environment-settings-panel.scss";
+@import "environment-settings-panel.style";
 
-.environment-settings-environment-wrapper {
-  display:flex;
-}
-
-.esv-envsettings-bloom-slider {
-  vertical-align: top;
-  left: 5px;
-  padding: 0px;
-}
-
-.environment-settings-option-subblock-environment {
-  margin:10px 10px 10px 10px;
-};
-
-input[type="range"].esv-envsettings-bloom-slider {
-  display: inline;
-  width: 110px;
-  margin: 0px 20px 0px 5px;
-}

@@ -25,7 +25,7 @@
       function (gz3d, nrpAnalytics, editorToolbarService)
       {
         return {
-          templateUrl: 'views/esv/environment-settings-colors.html',
+          templateUrl: 'components/environment-settings/environment-settings-colors.template.html',
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs)
