@@ -265,6 +265,18 @@
         };
 
         scope.update = function(transferFunction) {
+          let homonymousTf = scope.transferFunctions
+            .filter(tf => tf.name === transferFunction.name && tf !== transferFunction);
+
+          if (homonymousTf.length) {
+            serverError.displayError({
+              title: 'Transfer function error',
+              template: `Name '${transferFunction.name}' is used by a different transfer function`,
+              label: 'OK'
+            });
+            return;
+          }
+
           return ensurePauseStateAndExecute(function(cb) {
             cleanError(transferFunction, scope.ERROR.RUNTIME);
             delete transferFunction.error[scope.ERROR.LOADING];
