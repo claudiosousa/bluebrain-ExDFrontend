@@ -13,7 +13,6 @@
     "angular-sanitize": "1.4.14",
     "angular-toArrayFilter": "*",
     "angular-touch": "1.4.14",
-    "angular-ui-bootstrap-bower": "0.12.1",
     "angular-ui-codemirror": "0.3.0",
     "angular-ui-router": "0.4.2",
     "angular.panels": "*",
@@ -33,11 +32,11 @@
     "angulartics-google-analytics": "0.4.0",
     "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer",
     "moment": "2.17.1",
-    "angular-hbp-collaboratory":"0.5.0",
-    "angular-uuid4":"0.3.1",
-    "angular-deferred-bootstrap":"0.1.9",
-    "angular-moment":"1.4.14",
-    "hello":"1.14.0"
+    "angular-hbp-collaboratory": "0.5.0",
+    "angular-uuid4": "0.3.1",
+    "angular-deferred-bootstrap": "0.1.9",
+    "angular-moment": "1.4.14",
+    "hello": "1.14.0"
   },
   "overrides": {
     "angular-hbp-collaboratory": {
@@ -123,7 +122,6 @@
     "angular-bbp-config": "0.3.0",
     "es5-shim": "~4.3.1",
     "json3": "~3.3.1",
-    "angular-ui-bootstrap-bower": "0.12.1",
     "bootstrap-sass-official": "3.3.6",
     "lodash": "4.17.4",
     "angulartics": "^1.2.1",

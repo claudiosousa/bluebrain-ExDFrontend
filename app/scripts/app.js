@@ -140,6 +140,19 @@
         },
       };
 
+      var esvDemoIntroState = {
+        name: 'esv-demo',
+        url: '/esv-demo',
+        templateUrl: 'views/esv/demo-experiments.html',
+        controller: 'demoExperimentsController',
+        resolve: {
+          oidcToken: ['oidcClientService', function (oidcClientService) {
+            return oidcClientService.ensureSession();
+          }],
+          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
+        },
+      };
+
       var esvPrivateState = {
         name: 'esv-private',
         url: '/esv-private?ctx',
@@ -167,6 +180,7 @@
 
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
+      home.state(esvDemoIntroState);
       home.state(esvPrivateState);
       home.state(experimentViewState);
       home.state(supportState);
