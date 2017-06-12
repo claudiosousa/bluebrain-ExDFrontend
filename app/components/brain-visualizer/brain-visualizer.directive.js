@@ -34,7 +34,7 @@
                 editorToolbarService)
       {
         return {
-          templateUrl: 'views/esv/brainvisualizer.html',
+          templateUrl: 'components/brain-visualizer/brain-visualizer.template.html',
           restrict: 'E',
           scope: {
             data: '='
