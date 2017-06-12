@@ -23,7 +23,7 @@
 (function () {
   'use strict';
 
-  angular.module('objectInspectorModule', [])
+  angular.module('objectInspectorModule')
 
     .constant('OBJECT_VIEW_MODE', {
       NORMAL: 'normal',
