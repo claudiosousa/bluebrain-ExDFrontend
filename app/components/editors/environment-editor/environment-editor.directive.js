@@ -63,7 +63,7 @@
         downloadFileService,
         environmentService) {
         return {
-          templateUrl: 'views/esv/environment-designer.html',
+          templateUrl: 'components/editors/environment-editor/environment-editor.template.html',
           restrict: 'E',
           link: function (scope, element, attrs) {
             scope.stateService = stateService;
