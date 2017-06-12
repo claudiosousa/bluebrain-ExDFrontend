@@ -64,7 +64,7 @@
       var DIRTY_TYPE = 'SM';
 
       return {
-        templateUrl: 'views/esv/smach-editor.html',
+        templateUrl: 'components/editors/state-machine-editor/smach-editor.template.html',
         restrict: 'E',
         scope: {
           control: '='

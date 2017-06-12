@@ -10,7 +10,7 @@
   There is no SMACH script available for this experiment.
 </div>
 <hr>
-<div ng-include src="'views/esv/smach-editor-buttons.html'"></div>
+<div ng-include src="'components/editors/state-machine-editor/smach-editor-buttons.template.html'"></div>
 <div ng-repeat="stateMachine in stateMachines">
   <hr>
   <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
@@ -38,4 +38,4 @@
   </button>
 </div>
 <hr>
-<div ng-show="stateMachines.length !== 0" ng-include src="'views/esv/smach-editor-buttons.html'"></div>
+<div ng-show="stateMachines.length !== 0" ng-include src="'components/editors/state-machine-editor/smach-editor-buttons.template.html'"></div>
