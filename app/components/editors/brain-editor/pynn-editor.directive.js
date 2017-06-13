@@ -40,7 +40,7 @@
       var DIRTY_TYPE = 'BRAIN';
 
       return {
-        templateUrl: 'views/esv/pynn-editor.html',
+        templateUrl: 'components/editors/brain-editor/pynn-editor.template.html',
         restrict: 'E',
         scope: {
           control: '='
