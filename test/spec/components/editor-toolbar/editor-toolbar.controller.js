@@ -289,13 +289,13 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('notify everything to update panel ui if there is a RESET of the brain', function() {
-      spyOn($scope, '$broadcast').and.callThrough();
+      spyOn($rootScope, '$broadcast').and.callThrough();
       var request = {resetType: RESET_TYPE.RESET_BRAIN};
 
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
-      expect($scope.$broadcast, 'UPDATE_PANEL_UI').toHaveBeenCalled();
+      expect($rootScope.$broadcast, 'UPDATE_PANEL_UI').toHaveBeenCalled();
     });
 
     it('shouldn\'t do anything if no radio button is set', function() {
