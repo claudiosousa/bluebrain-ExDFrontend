@@ -23,7 +23,7 @@
     .directive('editorPanel', [
       function () {
         return {
-          templateUrl: 'views/esv/editor-panel.html',
+          templateUrl: 'components/editors/editor-panel.template.html',
           restrict: 'E',
           scope: true  // create a child scope for the directive and inherits the parent scope properties
         };
