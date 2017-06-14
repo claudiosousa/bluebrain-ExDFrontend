@@ -23,7 +23,7 @@
 (function () {
   'use strict';
 
-  angular.module('environmentRenderingModule', [])
+  angular.module('environmentRenderingModule')
 
     .constant('FPS_LIMIT', {
       FPS_20: 20,

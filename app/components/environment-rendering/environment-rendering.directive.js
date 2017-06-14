@@ -20,14 +20,14 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp')
+  angular.module('environmentRenderingModule')
     .directive('environmentRendering', [
       function () {
         return {
-          templateUrl: 'views/esv/gz3d-view.html',
+          templateUrl: 'components/environment-rendering/environment-rendering.template.html',
           restrict: 'E',
           scope: true,
-          controller: 'Gz3dViewCtrl'
+          controller: 'EnvironmentRenderingController'
         };
       }]);
 }());

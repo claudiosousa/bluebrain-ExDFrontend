@@ -90,7 +90,8 @@
       'dynamicViewOverlayModule',
       'videoStreamModule',
       'showOnTop',
-      'clientLoggerModule'])
+      'clientLoggerModule',
+      'environmentRenderingModule'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {

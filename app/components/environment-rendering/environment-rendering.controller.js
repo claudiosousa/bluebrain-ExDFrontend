@@ -30,8 +30,8 @@
    * # Gz3dViewCtrl
    * Controller of the exdFrontendApp
    */
-  angular.module('exdFrontendApp')
-    .controller('Gz3dViewCtrl',
+  angular.module('environmentRenderingModule', [])
+    .controller('EnvironmentRenderingController',
     ['$scope',
       'userContextService',
       'experimentService',
@@ -45,4 +45,5 @@
         $scope.experimentService = experimentService;
         $scope.userNavigationService = userNavigationService;
       }]);
+  
 } ());
