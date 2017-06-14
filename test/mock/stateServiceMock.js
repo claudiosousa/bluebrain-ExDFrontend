@@ -3,7 +3,6 @@
 
   angular.module('stateServiceMock', [])
   .service('stateService', function() {
-    var that = this;
 
     var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
     var setCurrentStateSpy = jasmine.createSpy('setCurrentState');

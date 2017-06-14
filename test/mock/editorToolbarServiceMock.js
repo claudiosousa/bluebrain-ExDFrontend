@@ -3,6 +3,5 @@
 
   angular.module('editorToolbarServiceMock', [])
   .service('editorToolbarService', function () {
-    this.consoleLogReceived = jasmine.createSpy('consoleLogReceived');
   });
 }());

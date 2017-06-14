@@ -16,32 +16,50 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "styles/esv/widget-popup.scss";
-@font-face {
-    font-family: 'Inconsolata';
-    src: url('../../../styles/fonts/Inconsolata.otf') format('opentype');
-}
 
 .log-console-popup {
-    .widget-popup-content {
-        font-family: Inconsolata;
+    display: flex;
+    flex-direction: column;
+    margin: 5px 5px 5px 5px;
+    min-width: 300px;
+    min-height: 200px;
 
-        b{
-            display: inline-block;
-        }
+    .widget-popup-header {
+        border-radius: 3px;
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        border: 1px solid #e1e1e1;
+        background: #f8f8f8;
+        margin-right: 30px;
+    }
+    .widget-popup-title {
+        padding-left: 10px;
+        margin: 5px;
+    }
 
-        .log-line > span{
-            display: inline-block;
-        }
+    .log-list {
+        position: absolute;
+        height: calc(100% - 50px);
+        width: calc(100% - 15px);
+        left: 10px;
+        top: 35px;
+        margin: 5px 0 0 0;
+        overflow: auto;
+    }
+    b{
+        display: inline-block;
+    }
 
-        .log-line > span:first-child{
-            height: 100%;
-            vertical-align: top;
-            margin-right: 10px;
-        }
+    .log-line > span{
+        display: inline-block;
+    }
 
-         .log-line > span:last-child{
-           white-space: pre-line;
-        }
+    .log-line > span:first-child{
+        vertical-align: top;
+        margin-right: 10px;
+    }
+
+     .log-line > span:last-child{
+       white-space: pre-line;
     }
 }

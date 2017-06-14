@@ -44,6 +44,7 @@
                 dynamicViewOverlayService,
                 helpTooltipService,
                 editorToolbarService,
+                clientLoggerService,
                 bbpConfig,
                 STATE,
                 NAVIGATION_MODES,
@@ -51,6 +52,7 @@
                 RESET_TYPE,
                 DYNAMIC_VIEW_CHANNELS) {
       this.backendInterfaceService = backendInterfaceService;
+      this.clientLoggerService = clientLoggerService;
       this.contextMenuState = contextMenuState;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
       this.editorsPanelService = editorsPanelService;
@@ -70,11 +72,11 @@
       this.videoStreamService = videoStreamService;
       this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
 
+      this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
       this.EDIT_MODE = EDIT_MODE;
       this.NAVIGATION_MODES = NAVIGATION_MODES;
       this.RESET_TYPE = RESET_TYPE;
       this.STATE = STATE;
-      this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
 
       this.$timeout = $timeout;
       this.$location = $location;
@@ -100,9 +102,9 @@
           // $rootScope.iface and the other one not!
           /* Listen for status informations */
           stateService.startListeningForStatusInformation();
-          stateService.addMessageCallback(
+          this.messageCallbackHandler = stateService.addMessageCallback(
               (message) => this.messageCallback(message));
-          stateService.addStateCallback(
+          this.stateCallbackHandler = stateService.addStateCallback(
               (newState) => this.onStateChanged(newState));
         }
       });
@@ -123,7 +125,8 @@
                 resetType === RESET_TYPE.RESET_WORLD) {
               this.resetGUI();
             }
-          });
+            this.clientLoggerService.logMessage('Reset EVENT occurred...');
+      });
 
       const esvPages = new Set(['esv-private', 'esv-web']);
 
@@ -169,6 +172,7 @@
       };
 
       this.openVideoStream = function() {
+        // TODO: use a service for that?
         $rootScope.$emit('openVideoStream');
       };
     }
@@ -264,10 +268,8 @@
     onSimulationDone() {
       this.closeSimulationConnections();
       // unregister the message callback
-      this.stateService.removeMessageCallback(
-          (message) => this.messageCallback(message));
-      this.stateService.removeStateCallback(
-          (newState) => this.onStateChanged(newState));
+      this.stateService.removeMessageCallback(this.messageCallbackHandler);
+      this.stateService.removeStateCallback(this.stateCallbackHandler);
     }
 
     closeSimulationConnections() {
@@ -296,6 +298,7 @@
 
     cleanUp() {
       this.environmentRenderingService.deinit();
+      this.clientLoggerService.onExit();
 
       // unbind resetListener callback
       this.resetListenerUnbindHandler();
@@ -509,17 +512,6 @@
       this.openVideoStream();
     };
 
-    logConsoleButtonClickHandler() {
-      this.editorToolbarService.showLogConsole = !this.editorToolbarService.isLogConsoleActive;
-      if (this.editorToolbarService.showLogConsole) {
-        this.editorToolbarService.resetLoggedMessages();
-      }
-      this.nrpAnalytics.eventTrack('Toggle-log-console', {
-        category: 'Simulation-GUI',
-        value: this.editorToolbarService.showLogConsole
-      });
-    };
-
     environmentSettingsClickHandler() {
       if (this.environmentRenderingService.loadingEnvironmentSettingsPanel) {
         return;
@@ -581,12 +573,14 @@
             'dynamicViewOverlayService',
             'helpTooltipService',
             'editorToolbarService',
+            'clientLoggerService',
             'bbpConfig',
             'STATE',
             'NAVIGATION_MODES',
             'EDIT_MODE',
             'RESET_TYPE',
             'DYNAMIC_VIEW_CHANNELS',
+            'LOG_TYPE',
             (...args) => new EditorToolbarController(...args)]);
 
 })();

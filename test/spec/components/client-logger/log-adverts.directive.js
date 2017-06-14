@@ -3,18 +3,16 @@
 describe('Directive: logAdverts', function() {
 
     beforeEach(module('exdFrontendApp'));
+    beforeEach(module('clientLoggerModule'));
+    beforeEach(module('editorToolbarServiceMock'));
     beforeEach(module('exd.templates')); // import html template
 
     var $rootScope,
         $timeout,
         element,
         childScope,
-        clientLoggerServiceMock;
-
-    var LOG_TYPE = {
-        INFO: 1,
-        ADVERTS: 2
-    };
+        clientLoggerServiceMock,
+        LOG_TYPE;
 
     beforeEach(module(function($provide) {
         clientLoggerServiceMock = {
@@ -23,12 +21,13 @@ describe('Directive: logAdverts', function() {
         $provide.value('clientLoggerService', clientLoggerServiceMock);
     }));
 
-    beforeEach(inject(function(_$rootScope_, _$timeout_, $compile) {
+    beforeEach(inject(function(_$rootScope_, _$timeout_, $compile, _LOG_TYPE_) {
         $rootScope = _$rootScope_;
         $timeout = _$timeout_;
         element = $compile('<log-adverts></log-adverts>')($rootScope);
         $rootScope.$digest();
         childScope = $rootScope.$$childHead;
+        LOG_TYPE = _LOG_TYPE_;
     }));
 
     it('should listen to ADVERTISEMENT logs', function() {

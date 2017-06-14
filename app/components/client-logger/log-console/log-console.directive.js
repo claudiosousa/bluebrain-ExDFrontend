@@ -18,80 +18,20 @@
  * ---LICENSE-END **/
 
 (function() {
-    'use strict';
+  'use strict';
 
-    angular.module('clientLoggerModule')
-        .directive('logConsole', [
-            '$timeout',
-            'STATE',
-            'stateService',
-            'clientLoggerService',
-            'editorToolbarService',
-            function(
-                $timeout,
-                STATE,
-                stateService,
-                clientLoggerService,
-                editorToolbarService) {
-                //auto scroll when the distance from bottom of the scrollable area <= than AUTO_SCROLL_MAX_DISTANCE
-                const AUTO_SCROLL_MAX_DISTANCE = 10;
-                const MAX_VISIBLE_LOGS = 100; //number of last received logs kept visible
-                const LOG_LEVEL_INFO = 1;
-
-                return {
-                    templateUrl: 'components/client-logger/log-console/log-console.template.html',
-                    restrict: 'E',
-                    replace: true,
-                    scope: {
-                        toggleVisibility: '&'
-                    },
-                    link: function(scope, element) {
-
-                        scope.logs = [];
-                        scope.STATE = STATE;
-                        scope.stateService = stateService;
-                        scope.editorToolbarService = editorToolbarService;
-
-                        const logList = element.find('.log-list')[0];
-
-                        let logSubscription = clientLoggerService.logs
-                            .filter(log => log.level === LOG_LEVEL_INFO)
-                            .map(log => log.message)
-                            .subscribe(newMessageReceived);
-
-
-                        function newMessageReceived(message) {
-                            $timeout(() => {
-                                //notify log received
-                                editorToolbarService.consoleLogReceived();
-
-                                scope.logs.push({
-                                    time: moment().format('HH:mm:ss'),
-                                    msg: message
-                                });
-
-                                //remove extra logs
-                                scope.logs.splice(0, scope.logs.length - MAX_VISIBLE_LOGS);
-
-                                //set vertical scroll to bottom after new log current log is at the botom
-                                if (logList.scrollHeight - (logList.scrollTop + logList.clientHeight) < AUTO_SCROLL_MAX_DISTANCE) {
-                                    setTimeout(() => logList.scrollTop = logList.scrollHeight);
-                                }
-                            });
-                        }
-
-                        let unsubscribeReset = scope.$on('RESET', () => newMessageReceived('Reset EVENT occurred...'));
-
-                        scope.$on('$destroy', function() {
-                            unsubscribeReset();
-                            logSubscription.unsubscribe();
-                        });
-
-                        scope.closePanel = function() {
-                          editorToolbarService.showLogConsole = false;
-                        };
-                    }
-                };
-            }
-        ]);
+  angular.module('clientLoggerModule').directive('logConsole', [
+    function() {
+      return {
+        templateUrl: 'components/client-logger/log-console/log-console.template.html',
+        restrict: 'E',
+        scope: {
+          ngShow: '=',
+          close:'&closeFn'
+        },
+        controller: 'LogConsoleController',
+        controllerAs: 'vm'
+      };
+    }
+  ]);
 }());

@@ -21,7 +21,7 @@
 
   class EditorToolbarService {
 
-    constructor(dynamicViewOverlayService, DYNAMIC_VIEW_CHANNELS) {
+    constructor() {
       this.showBrainvisualizerPanel = false;
       this.showLogConsole = false;
       this.missedConsoleLogs = 0;
@@ -30,8 +30,6 @@
       this.showRobotView = false;
       this.showNavigationModeMenu = false;
       this.videoStreamsAvailable = false;
-      this.dynamicViewOverlayService = dynamicViewOverlayService;
-      this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
     }
 
     closeBrainVisualizer() {
@@ -46,18 +44,6 @@
     get isLogConsoleActive()
     {
       return this.showLogConsole;
-    }
-
-    resetLoggedMessages()
-    {
-      this.missedConsoleLogs = 0;
-    }
-
-    consoleLogReceived()
-    {
-      if (!this.showLogConsole) {
-        this.missedConsoleLogs++;
-      }
     }
 
     get isEnvironmentSettingsPanelActive()
@@ -82,6 +68,6 @@
   }
 
   angular.module('editorToolbarModule')
-  .service('editorToolbarService', ['dynamicViewOverlayService', 'DYNAMIC_VIEW_CHANNELS', (...args) => new EditorToolbarService(...args)]);
+  .service('editorToolbarService', [() => new EditorToolbarService()]);
 
 }());

@@ -4,7 +4,7 @@
   describe('Directive: EditorToolbar', function() {
 
     var $compile, $rootScope, $scope;
-    var editorToolbarService;
+    var editorToolbarService, clientLoggerService;
     var element;
 
     beforeEach(module('editorToolbarModule'));
@@ -25,14 +25,17 @@
     beforeEach(module('simulationInfoMock'));
     beforeEach(module('videoStreamServiceMock'));
     beforeEach(module('dynamicViewOverlayServiceMock'));
+    beforeEach(module('clientLoggerServiceMock'));
 
-    beforeEach(inject(function(_$rootScope_, _$compile_, _editorToolbarService_) {
+    beforeEach(inject(function(_$rootScope_, _$compile_, _editorToolbarService_, _clientLoggerService_) {
       $rootScope = _$rootScope_;
       $compile = _$compile_;
       editorToolbarService = _editorToolbarService_;
+      clientLoggerService = _clientLoggerService_;
     }));
 
     beforeEach(function() {
+
       element = $compile('<editor-toolbar></editor-toolbar>')($rootScope);
       document.createElement('div').appendChild(element[0]);
       $rootScope.$digest();

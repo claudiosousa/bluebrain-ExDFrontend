@@ -75,7 +75,8 @@
       ENVIRONMENT_RENDERING: 'environment-rendering',
       JOINT_PLOT: 'joint-plot',
       SPIKE_TRAIN: 'spike-train',
-      VIDEO_STREAM: 'video-streams'
+      VIDEO_STREAM: 'video-streams',
+      LOG_CONSOLE: 'log-console'
     });
 
 })();

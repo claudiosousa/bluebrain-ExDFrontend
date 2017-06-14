@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 describe('Controller: EditorToolbarController', function() {
 
@@ -23,6 +23,7 @@ describe('Controller: EditorToolbarController', function() {
       objectInspectorService,
       simulationInfo,
       editorToolbarService,
+      clientLoggerService,
       NAVIGATION_MODES,
       STATE,
       EDIT_MODE,
@@ -45,6 +46,7 @@ describe('Controller: EditorToolbarController', function() {
   beforeEach(module('editorsPanelServiceMock'));
   beforeEach(module('environmentRenderingServiceMock'));
   beforeEach(module('simulationInfoMock'));
+  beforeEach(module('clientLoggerServiceMock'));
   beforeEach(module('dynamicViewOverlayServiceMock'));
 
   var simulationStateObject = {
@@ -106,6 +108,7 @@ describe('Controller: EditorToolbarController', function() {
                              _objectInspectorService_,
                              _simulationInfo_,
                              _editorToolbarService_,
+                             _clientLoggerService_,
                              _STATE_,
                              _NAVIGATION_MODES_,
                              _EDIT_MODE_,
@@ -130,6 +133,7 @@ describe('Controller: EditorToolbarController', function() {
     objectInspectorService = _objectInspectorService_;
     simulationInfo = _simulationInfo_;
     editorToolbarService = _editorToolbarService_;
+    clientLoggerService = _clientLoggerService_;
     STATE = _STATE_;
     NAVIGATION_MODES = _NAVIGATION_MODES_;
     EDIT_MODE = _EDIT_MODE_;
@@ -312,11 +316,19 @@ describe('Controller: EditorToolbarController', function() {
     it('should reset GUI when reset type is RESET.RESET_ALL', function() {
       spyOn(editorToolbarController, 'resetGUI').and.callThrough();
 
-      $scope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
-      $scope.$digest();
+      $rootScope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
+      $rootScope.$digest();
 
       expect(editorToolbarController.resetGUI).toHaveBeenCalled();
     });
+
+    it('should add log when RESET occurs', function() {
+      $rootScope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
+      $rootScope.$digest();
+
+      expect(clientLoggerService.logMessage).toHaveBeenCalled();
+    });
+
 
     it('should reset GUI when reset type is RESET.RESET_ALL', function() {
       editorToolbarController.resetGUI();
@@ -720,12 +732,6 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.toggleBrainvisualizer();
       expect(editorToolbarService.showBrainvisualizerPanel).toBe(true);
     });
-
-    it('should open the log-console panel', function() {
-      editorToolbarService.showLogConsole = false;
-      editorToolbarController.logConsoleButtonClickHandler();
-      expect(editorToolbarService.showLogConsole).toBe(true);
-    });
   });
 
   describe('(EnvironmentSettings)', function() {
@@ -827,8 +833,10 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
 
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('environmentRenderingServiceMock'));
+  beforeEach(module('stateServiceMock'));
+  beforeEach(module('clientLoggerServiceMock'));
 
-  beforeEach(module(function($provide) {
+  beforeEach(module(function() {
     var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
     var getThenSpy = jasmine.createSpy('then');
 
@@ -836,16 +844,6 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
       return { then: getThenSpy.and.callFake(function(f) { f(); }) };
     });
 
-    $provide.value('stateService', {
-      Initialize: jasmine.createSpy('Initialize'),
-      startListeningForStatusInformation: jasmine.createSpy('startListeningForStatusInformation'),
-      stopListeningForStatusInformation: jasmine.createSpy('stopListeningForStatusInformation'),
-      addStateCallback: jasmine.createSpy('addStateCallback'),
-      removeStateCallback: jasmine.createSpy('removeStateCallback'),
-      addMessageCallback: jasmine.createSpy('addMessageCallback'),
-      removeMessageCallback: jasmine.createSpy('removeMessageCallback'),
-      getCurrentState: getCurrentStateSpy
-    });
   }));
 
   // Initialize the controller and a mock scope
@@ -876,14 +874,14 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
     });
 
     it('should close rosbridge connections on onSimulationDone', function() {
-      stateService.stopListeningForStatusInformation.calls.reset();
-      stateService.removeMessageCallback.calls.reset();
+      editorToolbar.stateService.stopListeningForStatusInformation.calls.reset();
+      editorToolbar.stateService.removeMessageCallback.calls.reset();
 
       // call the method under test
       editorToolbar.onSimulationDone();
 
-      expect(stateService.stopListeningForStatusInformation).toHaveBeenCalled();
-      expect(stateService.removeMessageCallback).toHaveBeenCalled();
+      expect(editorToolbar.stateService.stopListeningForStatusInformation).toHaveBeenCalled();
+      expect(editorToolbar.stateService.removeMessageCallback).toHaveBeenCalled();
     });
   });
 });

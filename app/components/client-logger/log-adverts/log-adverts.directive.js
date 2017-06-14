@@ -21,9 +21,7 @@
     'use strict';
 
     angular.module('clientLoggerModule')
-        .directive('logAdverts', ['$timeout', 'clientLoggerService', ($timeout, clientLoggerService) => {
-
-            const LOG_LEVEL_ADVERTS = 2;
+        .directive('logAdverts', ['$timeout', 'clientLoggerService', 'LOG_TYPE', ($timeout, clientLoggerService, LOG_TYPE) => {
 
             return {
                 templateUrl: 'components/client-logger/log-adverts/log-adverts.template.html',
@@ -38,7 +36,7 @@
                     scope.showAdvert = null;
 
                     let advertLogs$ = clientLoggerService.logs
-                        .filter(log => log.level === LOG_LEVEL_ADVERTS);
+                        .filter(log => log.level === LOG_TYPE.ADVERTS);
 
                     let showLogSubscription = advertLogs$
                         .map(({ message }) => message)

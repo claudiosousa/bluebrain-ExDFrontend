@@ -80,7 +80,6 @@
       'experimentModule',
       'jointPlotModule',
       'simulationConfigModule',
-      'jointPlotModule',
       'spikeTrainModule',
       'spikeListenerModule',
       'collabExperimentLockModule',

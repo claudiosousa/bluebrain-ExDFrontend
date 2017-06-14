@@ -31,10 +31,15 @@
     // number of points per second
     get logs() { return this.multicasted; }
 
-    constructor(roslib, simulationInfo, bbpConfig) {
+    constructor(roslib, simulationInfo, bbpConfig, dynamicViewOverlayService, DYNAMIC_VIEW_CHANNELS, LOG_TYPE) {
       this.roslib = roslib;
       this.websocket = simulationInfo.serverConfig.rosbridge.websocket;
       this.rosTopic = bbpConfig.get('ros-topics').logs;
+      this.LOG_TYPE = LOG_TYPE;
+      //this.dynamicViewOverlayService = dynamicViewOverlayService;
+      //this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
+      this.logHistory = [];
+      this.missedConsoleLogs = 0;
 
       //creates an observable from subscribe/unsubscribe emthods
       let logsObservable = Rx.Observable.fromEventPattern(
@@ -43,11 +48,40 @@
       );
 
       //let's use a subject to handle multiple subscribers
-      let subject = new Rx.Subject();
+      this.subject = new Rx.Subject();
 
       this.multicasted = logsObservable
-        .multicast(subject) //we multicast the observable to the subject
+        .multicast(this.subject) //we multicast the observable to the subject
         .refCount(); // auto handle the reference count: call 'subscribe' on ref count 0->1 and call unsubscribe on 1->0
+
+      var consoleLogReceived = (log) => {
+        dynamicViewOverlayService.isOverlayOpen(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE).then(
+            (isConsoleOpen) => {
+              if (!isConsoleOpen) {
+                this.missedConsoleLogs++;
+              }
+            });
+        log.time = moment().format('HH:mm:ss');
+        this.logHistory.push(log);
+      };
+      this.logSubscription = this.logs.filter(log => log.level === LOG_TYPE.INFO).
+          subscribe((log) => consoleLogReceived(log));
+    }
+
+    onExit()
+    {
+      this.logSubscription.unsubscribe();
+    }
+
+    /**
+     * Public method to log a message with a specifig log type
+     * @instance
+     * @method logMessage
+     * @param message is a string that includes the message
+     * @param type is a LOG_TYPE that represents the location where the message is displayed
+     */
+    logMessage(message, type = this.LOG_TYPE.INFO) {
+      this.subject.next({ level: type, message: message });
     }
 
     /**
@@ -72,8 +106,32 @@
       delete this.topicSubscriber;
       delete this.topicSubscription;
     }
+
+    /**
+     * Public method that has to be called if log history is collected
+     * @instance
+     * @method resetLoggedMessages
+     */
+    resetLoggedMessages() {
+      this.missedConsoleLogs = 0;
+    }
+
+    /**
+     * Public getter that returns all previously received log messages
+     * @instance
+     * @method getLogHistory
+     */
+    get getLogHistory() {
+      return this.logHistory;
+    }
   }
 
-  angular.module('clientLoggerModule', [])
-    .service('clientLoggerService', ['roslib', 'simulationInfo', 'bbpConfig', (...args) => new ClientLoggerService(...args)]);
+  angular.module('clientLoggerModule', []).
+      service('clientLoggerService',
+          ['roslib', 'simulationInfo', 'bbpConfig', 'dynamicViewOverlayService',
+            'DYNAMIC_VIEW_CHANNELS', 'LOG_TYPE', (...args) => new ClientLoggerService(...args)]).
+      constant('LOG_TYPE', {
+        INFO: 1,
+        ADVERTS: 2
+      });
 }());

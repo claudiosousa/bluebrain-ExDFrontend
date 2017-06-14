@@ -23,9 +23,8 @@ describe('Directive: dynamic-view-overlay', function() {
     elementScope = element.isolateScope();
   });
 
-  beforeEach(function() {
-    spyOn(elementScope, 'onResizeBegin').and.callThrough();
-    spyOn(elementScope, 'onResizeEnd').and.callThrough();
+  it('should have a controller defined as vm', function() {
+    expect(elementScope.vm).toBeDefined();
   });
 
   it('should react to resizing', function() {

@@ -2,7 +2,8 @@
 
 describe('Service: EditorToolbar', function() {
 
-  var editorToolbarService;
+  var editorToolbarService, dynamicViewOverlayService,
+      DYNAMIC_VIEW_CHANNELS;
 
   // load the corresponding module
   beforeEach(module('editorToolbarModule'));
@@ -10,30 +11,11 @@ describe('Service: EditorToolbar', function() {
 
   beforeEach(module('dynamicViewOverlayServiceMock'));
 
-  beforeEach(inject(function(_editorToolbarService_) {
+  beforeEach(inject(function(_editorToolbarService_, _dynamicViewOverlayService_, _DYNAMIC_VIEW_CHANNELS_) {
     editorToolbarService = _editorToolbarService_;
+    dynamicViewOverlayService = _dynamicViewOverlayService_;
+    DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
   }));
-
-  describe('Service: EditorToolbar - Log Console', function() {
-
-    it('Counting of log message if no console is shown', function() {
-      editorToolbarService.showLogConsole = false;
-      editorToolbarService.consoleLogReceived();
-      expect(editorToolbarService.missedConsoleLogs).toBe(1);
-    });
-
-    it('Do not count log message if console is shown', function() {
-      editorToolbarService.showLogConsole = true;
-      editorToolbarService.consoleLogReceived();
-      expect(editorToolbarService.missedConsoleLogs).toBe(0);
-    });
-
-    it('Reset log message has to reset missedConsoleLogs counter', function() {
-      editorToolbarService.missedConsoleLogs = 2;
-      editorToolbarService.resetLoggedMessages();
-      expect(editorToolbarService.missedConsoleLogs).toBe(0);
-    });
-  });
 
   describe('Service: EditorToolbar - Editor Settings', function() {
 
