@@ -19,7 +19,7 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp')
+  angular.module('objectInspectorModule', [])
     .directive('objectInspector', [
       'OBJECT_VIEW_MODE',
       'objectInspectorService', 'baseEventHandler',
@@ -27,7 +27,7 @@
       'EDIT_MODE',
       function (OBJECT_VIEW_MODE, objectInspectorService, baseEventHandler, gz3d, EDIT_MODE) {
         return {
-          templateUrl: 'views/esv/object-inspector.html',
+          templateUrl: 'components/object-inspector/object-inspector.template.html',
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs) {
