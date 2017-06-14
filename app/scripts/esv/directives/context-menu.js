@@ -21,11 +21,15 @@
 
   angular.module('exdFrontendApp')
     .directive('contextMenu', [
-      function () {
+        'contextMenuState',
+      function (contextMenuState) {
         return {
           templateUrl: 'views/esv/context-menu.html',
           restrict: 'E',
-          scope: true
+          scope: true,
+          link: function(scope) {
+            scope.contextMenuState = contextMenuState;
+          }
         };
       }]);
 }());

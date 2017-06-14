@@ -23,7 +23,9 @@
     .directive('objectInspector', [
       'OBJECT_VIEW_MODE',
       'objectInspectorService', 'baseEventHandler',
-      function (OBJECT_VIEW_MODE, objectInspectorService, baseEventHandler) {
+      'gz3d',
+      'EDIT_MODE',
+      function (OBJECT_VIEW_MODE, objectInspectorService, baseEventHandler, gz3d, EDIT_MODE) {
         return {
           templateUrl: 'views/esv/object-inspector.html',
           restrict: 'E',
@@ -37,7 +39,10 @@
             scope.minimized = false;
             scope.collapsedTransform = false;
             scope.collapsedVisuals = false;
+            scope.objectInspectorService = objectInspectorService;
+            scope.gz3d = gz3d;
 
+            scope.EDIT_MODE = EDIT_MODE;
             scope.OBJECT_VIEW_MODE = OBJECT_VIEW_MODE;
 
             scope.suppressKeyPress = function(event) {

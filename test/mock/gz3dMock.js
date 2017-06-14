@@ -54,7 +54,8 @@
       setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
       registerWebSocketConnectionCallback: jasmine.createSpy('registerWebSocketConnectionCallback'),
       webSocket: {
-        close: jasmine.createSpy('close')
+        close: jasmine.createSpy('close'),
+        disableRebirth: jasmine.createSpy('disableRebirth'),
       }
     };
   });

@@ -19,7 +19,8 @@
 (function() {
   'use strict';
 
-  class EditorToolbarController {
+  class EditorToolbarController
+  {
     constructor($rootScope,
                 $scope,
                 $timeout,
@@ -47,133 +48,36 @@
                 NAVIGATION_MODES,
                 EDIT_MODE,
                 RESET_TYPE) {
-
-      this.contextMenuState = contextMenuState;
-      this.userContextService = userContextService;
-      this.editorToolbarService = editorToolbarService;
-      this.nrpAnalytics = nrpAnalytics;
-      this.stateService = stateService;
-      this.gz3d = gz3d;
-      this.objectInspectorService = objectInspectorService;
-      this.hbpDialogFactory = hbpDialogFactory;
-      this.editorsPanelService = editorsPanelService;
-      this.environmentService = environmentService;
-      this.splash = splash;
       this.backendInterfaceService = backendInterfaceService;
-      this.simulationInfo = simulationInfo;
+      this.contextMenuState = contextMenuState;
+      this.dynamicViewOverlayService = dynamicViewOverlayService;
+      this.editorsPanelService = editorsPanelService;
+      this.editorToolbarService = editorToolbarService;
       this.environmentRenderingService = environmentRenderingService;
+      this.environmentService = environmentService;
+      this.gz3d = gz3d;
+      this.hbpDialogFactory = hbpDialogFactory;
+      this.helpTooltipService = helpTooltipService;
+      this.nrpAnalytics = nrpAnalytics;
+      this.objectInspectorService = objectInspectorService;
+      this.simulationInfo = simulationInfo;
+      this.splash = splash;
+      this.stateService = stateService;
+      this.userContextService = userContextService;
       this.userNavigationService = userNavigationService;
       this.videoStreamService = videoStreamService;
-      this.dynamicViewOverlayService = dynamicViewOverlayService;
-      this.helpTooltipService = helpTooltipService;
 
       this.EDIT_MODE = EDIT_MODE;
+      this.NAVIGATION_MODES = NAVIGATION_MODES;
       this.RESET_TYPE = RESET_TYPE;
       this.STATE = STATE;
-      this.NAVIGATION_MODES = NAVIGATION_MODES;
 
       this.$timeout = $timeout;
-      // TODO: remove this after refactoring is completed
-      this.scope = $scope;
-      this.$rootScope = $rootScope;
-
-      $scope.contextMenuState = contextMenuState;
-      $scope.userContextService = userContextService;
-      $scope.stateService = stateService;
-      $scope.gz3d = gz3d;
-      $scope.editorsPanelService = editorsPanelService;
-      $scope.objectInspectorService = objectInspectorService;
-      $scope.environmentService = environmentService;
-      $scope.backendInterfaceService = backendInterfaceService;
-      $scope.environmentRenderingService = environmentRenderingService;
-      $scope.userNavigationService = userNavigationService;
-      $scope.splash = splash;
-      $scope.simulationInfo = simulationInfo;
-      $scope.videoStreamService = videoStreamService;
-
-      $scope.EDIT_MODE = EDIT_MODE;
-      $scope.RESET_TYPE = RESET_TYPE;
-      $scope.NAVIGATION_MODES = NAVIGATION_MODES;
-      $scope.STATE = STATE;
-
-      // prevent this analytics event from sent multiple time
-      let analyticsEventTimeout = _.once(function() {
-        nrpAnalytics.eventTrack('Timeout', {
-          category: 'Simulation'
-        });
-      });
-
-      /* status messages are listened to here. A splash screen is opened to display progress messages. */
-      /* This is the case when closing or resetting a simulation/environment for example.
-       /* Loading is taken take of by a progressbar somewhere else. */
-      /* Timeout messages are displayed in the toolbar. */
-      var messageCallback = function(message) {
-        /* Progress messages (except start state progress messages which are handled by another progress bar) */
-        if (angular.isDefined(message.progress)) {
-
-          var stateStopFailed = stateService.currentState === STATE.STOPPED ||
-              stateService.currentState === STATE.FAILED;
-
-          //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
-          //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
-          /* splashScreen == null means it has been already closed and should not be reopened */
-          if (splash.splashScreen !== null &&
-              !environmentRenderingService.sceneLoading &&
-              (angular.isDefined(message.state) ||
-              (stateStopFailed ||
-              (angular.isDefined(message.progress.subtask) &&
-              message.progress.subtask.length > 0 )))) {
-            splash.splashScreen = splash.splashScreen || splash.open(
-                    !message.progress.block_ui,
-                    (stateStopFailed ? $scope.exit : undefined));
-          }
-          if (angular.isDefined(message.progress.done) &&
-              message.progress.done) {
-            splash.spin = false;
-            splash.setMessage({headline: 'Finished'});
-            /* if splash is a blocking modal (no button), then close it*/
-            /* (else it is closed by the user on button click) */
-            if (!splash.showButton) {
-              // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
-              // so we don't have to close the websocket, just the splash screen.
-              splash.close();
-              splash.splashScreen = undefined;
-            } else {
-              // the modal is non blocking (i.e. w/ button) ->
-              // we are closing the simulation thus we have to
-              // cleanly close ros websocket and stop window
-              $scope.onSimulationDone();
-            }
-          } else {
-            splash.setMessage({
-              headline: message.progress.task,
-              subHeadline: message.progress.subtask
-            });
-          }
-        }
-        /* Time messages */
-        if (angular.isDefined(message.timeout)) {
-          if (parseInt(message.timeout, 10) < 1.0) {
-            analyticsEventTimeout();
-          }
-          $scope.simTimeoutText = message.timeout;
-        }
-        if (angular.isDefined(message.simulationTime)) {
-          $scope.simulationTimeText = message.simulationTime;
-        }
-        if (angular.isDefined(message.realTime)) {
-          $scope.realTimeText = message.realTime;
-        }
-      };
-
-      var onStateChanged = function(newState) {
-        if (newState === STATE.STOPPED && gz3d.iface && gz3d.iface.webSocket) {
-          gz3d.iface.webSocket.disableRebirth();
-        }
-      };
+      this.$location = $location;
+      this.$window = $window;
 
       // Query the state of the simulation
-      stateService.getCurrentState().then(function() {
+      stateService.getCurrentState().then(() => {
         if (stateService.currentState === STATE.STOPPED) {
           // The Simulation is already Stopped, so do nothing more but show the alert popup
           userContextService.isJoiningStoppedSimulation = true;
@@ -192,110 +96,213 @@
           // $rootScope.iface and the other one not!
           /* Listen for status informations */
           stateService.startListeningForStatusInformation();
-          stateService.addMessageCallback(messageCallback);
-          stateService.addStateCallback(onStateChanged);
+          stateService.addMessageCallback(
+              (message) => this.messageCallback(message));
+          stateService.addStateCallback(
+              (newState) => this.onStateChanged(newState));
         }
       });
 
-      $scope.notifyResetToWidgets = function(resetType) {
-        $scope.$broadcast('RESET', resetType);
-      };
-
-      // navigation mode
-      this.showNavigationModeMenu = false;
-
-      // video streams
-      this.videoStreamsAvailable = false;
       this.checkIfVideoStreamsAvailable();
       $scope.$watch('vm.stateService.currentState', () => {
         //starting the experiment might publish new video streams, so we check again
-        if (!this.videoStreamsAvailable &&
+        if (!this.editorToolbarService.videoStreamsAvailable &&
             this.stateService.currentState === this.STATE.STARTED) {
-          $timeout(this.checkIfVideoStreamsAvailable(), 500);
+          this.$timeout(() => this.checkIfVideoStreamsAvailable(), 500);
         }
       });
 
-      function closeSimulationConnections() {
-        // Stop listening for status messages
-        if (gz3d.iface && gz3d.iface.webSocket) {
-          gz3d.iface.webSocket.close();
-        }
-        // Stop listening for status messages
-        stateService.stopListeningForStatusInformation();
-      }
-
-      $scope.onSimulationDone = function() {
-        closeSimulationConnections();
-        // unregister the message callback
-        stateService.removeMessageCallback(messageCallback);
-        stateService.removeStateCallback(onStateChanged);
-      };
-
       //When resetting do something
-      $scope.resetListenerUnbindHandler = $scope.$on('RESET',
-          function(event, resetType) {
+      this.resetListenerUnbindHandler = $scope.$on('RESET',
+          (event, resetType) => {
             if (resetType === RESET_TYPE.RESET_FULL ||
                 resetType === RESET_TYPE.RESET_WORLD) {
-              $scope.resetGUI();
+              this.resetGUI();
             }
           });
-
-      $scope.resetGUI = function() {
-        gz3d.scene.resetView(); //update the default camera position, if defined
-        if (objectInspectorService !== null) {
-          gz3d.scene.selectEntity(null);
-          objectInspectorService.toggleView(false);
-        }
-      };
-
-      $scope.exit = function() {
-        exitSimulation();
-      };
-
-      function exitSimulation() {
-        $scope.cleanUp();
-
-        splash.splashScreen = null;  // do not reopen splashscreen if further messages happen
-        if (environmentService.isPrivateExperiment())
-          $location.path('esv-private');
-        else
-          $location.path('esv-web');
-      }
 
       const esvPages = new Set(['esv-private', 'esv-web']);
 
       // force page reload when navigating to esv pages, to discard experiment related context
       // valid for all navigation reasons: explicit $location.path, or browser nav button
       $rootScope.$on('$stateChangeStart', (e, state) => {
-        if (esvPages.has(state.name))
+        if (esvPages.has(state.name)) {
           $timeout(() => $window.location.reload());
+        }
       });
 
-      $scope.cleanUp = function() {
-        environmentRenderingService.deinit();
-
-        // unbind resetListener callback
-        $scope.resetListenerUnbindHandler();
-        nrpAnalytics.durationEventTrack('Simulate', {
-          category: 'Simulation'
-        });
-
-        if (environmentService.isPrivateExperiment()) {
-          editorsPanelService.deinit();
-          userContextService.deinit();
-        }
-
-        closeSimulationConnections();
-      };
-
       // clean up on leaving
-      $scope.$on('$destroy', function() {
+      $scope.$on('$destroy', () => {
         /* NOT CALLED AUTOMATICALLY ON EXITING AN EXPERIMENT */
         /* possible cause of memory leaks */
 
-        $scope.cleanUp();
+        this.cleanUp();
       });
+
+      this.updatePanelUI = function() {
+        $scope.$broadcast('UPDATE_PANEL_UI');
+      };
+
+      this.notifyResetToWidgets = function(resetType) {
+        $scope.$broadcast('RESET', resetType);
+      };
+
+      this.resetButtonClickHandler = function() {
+        // this.request takes the radio button value from reset-checklist-template.html - TODO: can we refactor this as ClickHandler parameter?
+        this.request = {
+          resetType: this.RESET_TYPE.NO_RESET
+        };
+        hbpDialogFactory.confirm({
+          'title': 'Reset Menu',
+          'templateUrl': 'views/esv/reset-checklist-template.html',
+          'scope': $scope
+        }).then(() => {
+          stateService.ensureStateBeforeExecuting(
+              STATE.PAUSED,
+              () => this.__resetButtonClickHandler(this.request)
+          );
+        });
+      };
+
+      this.openVideoStream = function() {
+        $rootScope.$emit('openVideoStream');
+      };
     }
+
+    /* status messages are listened to here. A splash screen is opened to display progress messages. */
+    /* This is the case when closing or resetting a simulation/environment for example.
+     /* Loading is taken take of by a progressbar somewhere else. */
+    /* Timeout messages are displayed in the toolbar. */
+    messageCallback(message) {
+      // prevent this analytics event from sent multiple time
+      let analyticsEventTimeout = _.once(() => {
+        this.nrpAnalytics.eventTrack('Timeout', {
+          category: 'Simulation'
+        });
+      });
+
+      /* Progress messages (except start state progress messages which are handled by another progress bar) */
+      if (angular.isDefined(message.progress)) {
+
+        var stateStopFailed = this.stateService.currentState === this.STATE.STOPPED ||
+            this.stateService.currentState === this.STATE.FAILED;
+
+        //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
+        //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
+        /* splashScreen == null means it has been already closed and should not be reopened */
+        if (this.splash.splashScreen !== null &&
+            !this.environmentRenderingService.sceneLoading &&
+            (angular.isDefined(message.state) ||
+            (stateStopFailed ||
+            (angular.isDefined(message.progress.subtask) &&
+            message.progress.subtask.length > 0 )))) {
+          this.splash.splashScreen = this.splash.splashScreen || this.splash.open(
+                  !message.progress.block_ui,
+                  (stateStopFailed ? (() => this.exit() ) : undefined));
+        }
+        if (angular.isDefined(message.progress.done) &&
+            message.progress.done) {
+          this.splash.spin = false;
+          this.splash.setMessage({headline: 'Finished'});
+          /* if splash is a blocking modal (no button), then close it*/
+          /* (else it is closed by the user on button click) */
+          if (!this.splash.showButton) {
+            // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
+            // so we don't have to close the websocket, just the splash screen.
+            this.splash.close();
+            this.splash.splashScreen = undefined;
+          } else {
+            // the modal is non blocking (i.e. w/ button) ->
+            // we are closing the simulation thus we have to
+            // cleanly close ros websocket and stop window
+            this.onSimulationDone();
+          }
+        } else {
+          this.splash.setMessage({
+            headline: message.progress.task,
+            subHeadline: message.progress.subtask
+          });
+        }
+      }
+      /* Time messages */
+      if (angular.isDefined(message.timeout)) {
+        if (parseInt(message.timeout, 10) < 1.0) {
+          analyticsEventTimeout();
+        }
+        this.simTimeoutText = message.timeout;
+      }
+      if (angular.isDefined(message.simulationTime)) {
+        this.simulationTimeText = message.simulationTime;
+      }
+      if (angular.isDefined(message.realTime)) {
+        this.realTimeText = message.realTime;
+      }
+    }
+
+    onStateChanged(newState) {
+      if (newState === this.STATE.STOPPED &&
+          this.gz3d.iface && this.gz3d.iface.webSocket) {
+        this.gz3d.iface.webSocket.disableRebirth();
+      }
+    }
+
+    resetGUI() {
+      this.gz3d.scene.resetView(); //update the default camera position, if defined
+      if (this.objectInspectorService !== null) {
+        this.gz3d.scene.selectEntity(null);
+        this.objectInspectorService.toggleView(false);
+      }
+    }
+
+    onSimulationDone() {
+      this.closeSimulationConnections();
+      // unregister the message callback
+      this.stateService.removeMessageCallback(
+          (message) => this.messageCallback(message));
+      this.stateService.removeStateCallback(
+          (newState) => this.onStateChanged(newState));
+    }
+
+    closeSimulationConnections() {
+      // Stop listening for status messages
+      if (this.gz3d.iface && this.gz3d.iface.webSocket) {
+        this.gz3d.iface.webSocket.close();
+      }
+      // Stop listening for status messages
+      this.stateService.stopListeningForStatusInformation();
+    }
+
+    exit() {
+      this.exitSimulation();
+    };
+
+    exitSimulation() {
+      this.cleanUp();
+
+      this.splash.splashScreen = null;  // do not reopen splashscreen if further messages happen
+      if (this.environmentService.isPrivateExperiment()) {
+        this.$location.path('esv-private');
+      } else {
+        this.$location.path('esv-web');
+      }
+    }
+
+    cleanUp() {
+      this.environmentRenderingService.deinit();
+
+      // unbind resetListener callback
+      this.resetListenerUnbindHandler();
+      this.nrpAnalytics.durationEventTrack('Simulate', {
+        category: 'Simulation'
+      });
+
+      if (this.environmentService.isPrivateExperiment()) {
+        this.editorsPanelService.deinit();
+        this.userContextService.deinit();
+      }
+
+      this.closeSimulationConnections();
+    };
 
     updateSimulation(newState) {
       this.stateService.setCurrentState(newState);
@@ -317,25 +324,8 @@
       }
     };
 
-    resetButtonClickHandler() {
-      this.scope.request = {
-        resetType: this.RESET_TYPE.NO_RESET
-      };
-      this.hbpDialogFactory.confirm({
-        'title': 'Reset Menu',
-        'templateUrl': 'views/esv/reset-checklist-template.html',
-        'scope': this.scope
-      }).then(() => {
-        this.stateService.ensureStateBeforeExecuting(
-            this.STATE.PAUSED,
-            // TODO: can we pass request as parameter?
-            () => this.__resetButtonClickHandler()
-        );
-      });
-    };
-
-    __resetButtonClickHandler() {
-      const resetType = this.scope.request.resetType;
+    __resetButtonClickHandler(request) {
+      const resetType = request.resetType;
       if (resetType === this.RESET_TYPE.NO_RESET) {
         return;
       }
@@ -347,7 +337,7 @@
       }
 
       this.$timeout(() => {
-        this.scope.notifyResetToWidgets(resetType);
+        this.notifyResetToWidgets(resetType);
 
         if (resetType >= 256) { // Frontend-bound reset
           if (resetType === this.RESET_TYPE.RESET_CAMERA_VIEW) {
@@ -383,21 +373,21 @@
 
             this.backendInterfaceService.resetCollab(
                 this.simulationInfo.contextID,
-                this.scope.request,
+                request,
                 this.splash.closeSplash,
                 this.splash.closeSplash
             );
           } else {
             //other kinds of reset
             this.backendInterfaceService.reset(
-                this.scope.request,
+                request,
                 () => { // Success callback
                   // do not close the splash if successful
                   // it will be closed by messageCallback
                   this.gz3d.scene.applyComposerSettings(true, false);
                   this.splash.closeSplash();
                   if (resetType === this.RESET_TYPE.RESET_BRAIN) {
-                    this.scope.$broadcast('UPDATE_PANEL_UI');
+                    this.updatePanelUI();
                   }
                 },
                 this.splash.closeSplash
@@ -442,8 +432,9 @@
 
     // robot view
     robotViewButtonClickHandler() {
-      if (!this.environmentRenderingService.hasCameraView())
+      if (!this.environmentRenderingService.hasCameraView()) {
         return;
+      }
       this.editorToolbarService.showRobotView = !this.editorToolbarService.isRobotCameraViewActive;
       this.nrpAnalytics.eventTrack('Toggle-robot-view', {
         category: 'Simulation-GUI',
@@ -460,12 +451,8 @@
       });
     }
 
-    isActiveNavigationMode(mode) {
-      return (this.userNavigationService.navigationMode === mode);
-    };
-
     navigationModeMenuClickHandler() {
-      this.showNavigationModeMenu = !this.showNavigationModeMenu;
+      this.editorToolbarService.showNavigationModeMenu = !this.editorToolbarService.showNavigationModeMenu;
     };
 
     setNavigationMode(mode) {
@@ -491,7 +478,7 @@
     }
 
     codeEditorButtonClickHandler() {
-      if (this.userContextService.editIsDisabled || this.scope.loadingEditPanel) {
+      if (this.userContextService.editIsDisabled || this.editorsPanelService.loadingEditPanel) {
         return;
       } else {
         return this.editorsPanelService.toggleEditors();
@@ -500,7 +487,7 @@
 
     checkIfVideoStreamsAvailable() {
       this.videoStreamService.getStreamUrls().then((videoStreams) => {
-        this.videoStreamsAvailable = videoStreams && !!videoStreams.length;
+        this.editorToolbarService.videoStreamsAvailable = videoStreams && !!videoStreams.length;
       });
     }
 
@@ -508,17 +495,18 @@
      * Toogle the video stream widget visibility
      */
     videoStreamsToggle() {
-      if (!this.videoStreamsAvailable) {
+      if (!this.editorToolbarService.videoStreamsAvailable) {
         return;
       }
 
-      this.$rootScope.$emit('openVideoStream'); // TODO: introduce a video stream for this?
+      this.openVideoStream();
     };
 
     logConsoleButtonClickHandler() {
       this.editorToolbarService.showLogConsole = !this.editorToolbarService.isLogConsoleActive;
-      if (this.editorToolbarService.showLogConsole)
+      if (this.editorToolbarService.showLogConsole) {
         this.editorToolbarService.resetLoggedMessages();
+      }
       this.nrpAnalytics.eventTrack('Toggle-log-console', {
         category: 'Simulation-GUI',
         value: this.editorToolbarService.showLogConsole
@@ -552,7 +540,6 @@
           componentName
       );
     };
-
 
   }
   angular.module('editorToolbarModule', ['helpTooltipModule']).

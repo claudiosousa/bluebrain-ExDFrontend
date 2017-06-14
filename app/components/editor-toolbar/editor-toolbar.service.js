@@ -28,6 +28,8 @@
       this.showEnvironmentSettingsPanel = false;
       this.showSpikeTrain = false;
       this.showRobotView = false;
+      this.showNavigationModeMenu = false;
+      this.videoStreamsAvailable = false;
     }
 
     closeBrainVisualizer() {
@@ -69,6 +71,11 @@
     get isRobotCameraViewActive()
     {
       return this.showRobotView;
+    }
+
+    get isNavigationModeMenuActive()
+    {
+      return this.showNavigationModeMenu;
     }
   }
 
