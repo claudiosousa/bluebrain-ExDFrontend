@@ -22,7 +22,7 @@
   angular.module('exdFrontendApp')
     .directive('transferFunctionEditorButtons', [function () {
       return {
-        templateUrl: 'views/esv/transfer-function-editor-buttons.html',
+        templateUrl: 'components/editors/transfer-function-editor/transfer-function-editor-buttons.template.html',
         restrict: 'E',
         scope: true,
         link: function (scope, element, attrs) {

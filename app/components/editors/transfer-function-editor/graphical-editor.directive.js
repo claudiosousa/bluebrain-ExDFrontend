@@ -64,7 +64,7 @@
                 codeEditorsServices,
                 $q) {
         return {
-          templateUrl: 'views/esv/graphical-editor.html',
+          templateUrl: 'components/editors/transfer-function-editor/graphical-editor.template.html',
           restrict: 'E',
           scope: {
             control: '='

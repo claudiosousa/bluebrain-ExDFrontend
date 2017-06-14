@@ -89,7 +89,7 @@
     var DIRTY_TYPE = 'TF';
 
     return {
-      templateUrl: 'views/esv/transfer-function-editor.html',
+      templateUrl: 'components/editors/transfer-function-editor/transfer-function-editor.template.html',
       restrict: 'E',
       scope: {
         control: '='
