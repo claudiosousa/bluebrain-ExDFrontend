@@ -25,7 +25,7 @@
       function (gz3d, nrpAnalytics, editorToolbarService)
       {
         return {
-          templateUrl: 'views/esv/environment-settings-quality.html',
+          templateUrl: 'components/environment-settings/environment-settings-quality.template.html',
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs)
