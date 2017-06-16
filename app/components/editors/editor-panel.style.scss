@@ -20,7 +20,7 @@
 
 $editorPanelStartWidth: 750px;
 $editorPanelStartWidthLargeScreen: 950px;
-$editorPanelStartHeight: 500px;
+$editorPanelStartHeight: 520px;
 $editorPanelMinWidth: 400px;
 $editorPanelMinHeight: 400px;
 $editorPanelHeadingHeight: 25px;
@@ -94,4 +94,19 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
   -ms-user-select: none;       /* Internet Explorer/Edge */
    user-select: none;           /* Non-prefixed version, currently
                                   not supported by any browser */
+}
+
+
+.tab-content  {
+    height: calc(100% - 32px);
+}
+
+.tab-content {
+  > .tab-pane {
+    display: none;
+  }
+  > .active {
+    display: block;
+    height: calc(100% - 32px);
+  }
 }

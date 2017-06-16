@@ -5,7 +5,7 @@ describe('Directive: environment-designer', function () {
 
   var $scope, element, stateService,
     panels, currentStateMock, gz3dMock, contextMenuState, objectInspectorService, simulationSDFWorld,
-    simulationInfo, backendInterfaceService, hbpDialogFactory, environmentService;
+    simulationInfo, backendInterfaceService, hbpDialogFactory, environmentService,httpBackend;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -53,7 +53,8 @@ describe('Directive: environment-designer', function () {
                               _simulationInfo_,
                               _backendInterfaceService_,
                               _hbpDialogFactory_,
-                              _environmentService_) {
+                              _environmentService_,
+                              _$httpBackend_) {
 
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
@@ -68,8 +69,60 @@ describe('Directive: environment-designer', function () {
     backendInterfaceService = _backendInterfaceService_;
     hbpDialogFactory = _hbpDialogFactory_;
     environmentService = _environmentService_;
+    httpBackend = _$httpBackend_;
+
+
+    var modelLibraryMock = [
+      {
+        'title': 'Shapes',
+        'thumbnail': 'shapes.png',
+        'models': [
+          {
+            'modelPath': 'box',
+            'modelTitle': 'Box',
+            'thumbnail': 'img/esv/objects/box.png'
+          },
+          {
+            'modelPath': 'sphere',
+            'modelTitle': 'Sphere',
+            'thumbnail': 'img/esv/objects/sphere.png'
+          },
+          {
+            'modelPath': 'cylinder',
+            'modelTitle': 'Cylinder',
+            'thumbnail': 'img/esv/objects/cylinder.png'
+          }
+        ]
+      },
+      {
+        'title': 'Lights',
+        'thumbnail': 'lights.png',
+        'models': [
+          {
+            'modelPath': 'pointlight',
+            'modelTitle': 'Point Light',
+            'thumbnail': 'img/esv/objects/pointlight.png'
+          },
+          {
+            'modelPath': 'spotlight',
+            'modelTitle': 'Spot Light',
+            'thumbnail': 'img/esv/objects/spotlight.png'
+          },
+          {
+            'modelPath': 'directionallight',
+            'modelTitle': 'Directional Light',
+            'thumbnail': 'img/esv/objects/directionallight.png'
+          }
+        ]
+      }];
+
+    httpBackend.whenGET('./model_library.json').respond(modelLibraryMock);
+
+
     element = $compile('<environment-designer />')($scope);
     $scope.$digest();
+
+    httpBackend.flush();
 
     var sceneMock = {
       setManipulationMode: jasmine.createSpy('setManipulationMode').
@@ -90,6 +143,8 @@ describe('Directive: environment-designer', function () {
         return this.selectedEntity;
       })
     };
+
+
 
     /*jshint camelcase: false */
     gz3dMock = {
