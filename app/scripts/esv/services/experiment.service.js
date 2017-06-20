@@ -29,7 +29,7 @@
    */
   class ExperimentService {
     constructor($q, simulationInfo,
-      simulationControl, bbpConfig, experimentsFactory,
+      simulationControl, bbpConfig, nrpUser, experimentsFactory,
       nrpFrontendVersion,
       nrpBackendVersions) {
 
@@ -60,7 +60,7 @@
                 this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
 
                 if (!bbpConfig.get('localmode.forceuser', false)) {
-                  experimentsFactory.getOwnerDisplayName(data.owner).then((owner) => {
+                  nrpUser.getOwnerDisplayName(data.owner).then((owner) => {
                     this.owner = owner;
                   }).finally(() => resolve(this));
                 }
@@ -76,7 +76,7 @@
 
   angular.module('experimentModule', ['nrpBackendAbout', 'editorToolbarModule'])
     .factory('experimentService', ['$q', 'simulationInfo', 'simulationControl',
-      'bbpConfig',
+      'bbpConfig', 'nrpUser',
       'experimentsFactory', 'nrpFrontendVersion', 'nrpBackendVersions',
       (...args) => new ExperimentService(...args)]);
 

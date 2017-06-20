@@ -6,7 +6,7 @@ describe('Services: tempFileService', function () {
   var DIRTY_DATA = 'dirtyData';
 
 
-  var collabFolderAPIService, hbpIdentityUserDirectory, nrpModalService, stateParams,
+  var collabFolderAPIService, nrpModalService, stateParams,
     previouslySavedFile,
     createFileResponse,
     environmentService;
@@ -14,6 +14,7 @@ describe('Services: tempFileService', function () {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
+  beforeEach(module('hbpIdentityUserDirectoryMock'));
 
   beforeEach(module(function ($provide) {
     collabFolderAPIService = {
@@ -26,14 +27,13 @@ describe('Services: tempFileService', function () {
       deleteFile: jasmine.createSpy('deleteFile'),
       downloadFile: jasmine.createSpy('downloadFile').and.callFake(function () { return $q.when(previouslySavedFile); })
     };
-    hbpIdentityUserDirectory = { get: jasmine.createSpy('get').and.callFake(function () { return $q.when({ userid: {} }); }) };
+
     nrpModalService = {
       createModal: jasmine.createSpy('confirm').and.callFake(function () { return $q.when(); })
     };
     stateParams = { ctx: CONTEXT_ID };
 
     $provide.value('collabFolderAPIService', collabFolderAPIService);
-    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectory);
     $provide.value('nrpModalService', nrpModalService);
     $provide.value('$stateParams', stateParams);
   }));

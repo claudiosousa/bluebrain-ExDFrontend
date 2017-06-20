@@ -112,7 +112,7 @@
           });
           experimentsService.clusterAvailability.then(function (clusterAvailability) {
             $scope.clusterAvailability = clusterAvailability; });
-          experimentsFactory.getCurrentUserInfo().then(function (userinfo) { $scope.userinfo = userinfo; });
+          nrpUser.getCurrentUserInfo().then(function (userinfo) { $scope.userinfo = userinfo; });
 
           $scope.selectExperiment = function (experiment) {
             if ($scope.pageState.startingExperiment) {

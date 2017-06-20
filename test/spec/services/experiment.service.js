@@ -4,8 +4,8 @@ describe('Services: experimentService', function ()
 {
   var experimentService,
     simulationInfo,
+    nrpUser,
     simulationControlObject,
-    userContextService,
     bbpConfig,
     experimentsFactoryObject,
     nrpFrontendVersion,
@@ -24,15 +24,7 @@ describe('Services: experimentService', function ()
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
-  beforeEach(module('userContextServiceMock'));
-
-  // load the service to test and mock the necessary service
-
-  experimentsFactoryObject = {
-
-    getOwnerDisplayName: function () { return $q.when('ownerDisplayName'); }
-  };
-
+  beforeEach(module('nrpUserMock'));
   beforeEach(module(function ($provide)
   {
     simulationControlObject = {
@@ -71,7 +63,7 @@ describe('Services: experimentService', function ()
   beforeEach(inject(function (_experimentService_,
     _$rootScope_,
     _simulationInfo_,
-    _userContextService_,
+    _nrpUser_,
     _nrpFrontendVersion_,
     _nrpBackendVersions_,
     _bbpConfig_,
@@ -79,20 +71,16 @@ describe('Services: experimentService', function ()
   {
     experimentService = _experimentService_;
     simulationInfo = _simulationInfo_;
-    userContextService = _userContextService_;
+    nrpUser = _nrpUser_;
+
     bbpConfig = _bbpConfig_;
     nrpFrontendVersion = _nrpFrontendVersion_;
     nrpBackendVersions = _nrpBackendVersions_;
     rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
-
     rootScope.$digest();
   }));
 
-  it('should set owner in userContextService', function ()
-  {
-    expect(userContextService.ownerID).toBe(simulationData.owner);
-  });
 
   it('should set experimentConfiguration', function ()
   {

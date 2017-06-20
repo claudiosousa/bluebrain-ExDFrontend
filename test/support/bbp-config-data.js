@@ -83,7 +83,7 @@ window.bbpConfig = {
   },
   "localmode": {
     "forceuser": false,
-    "ownerID": "vonarnim"
+    "ownerID": "testUser"
   },
   'ros-topics': {
     'spikes': '/monitor/spike_recorder',

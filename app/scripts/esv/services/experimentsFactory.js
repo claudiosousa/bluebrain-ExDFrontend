@@ -39,11 +39,12 @@
     ['$q', '$interval', '$log',
       'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
       'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory',
-      'SERVER_POLL_INTERVAL', 'collabFolderAPIService',
+      'SERVER_POLL_INTERVAL', 'collabFolderAPIService', 'nrpUser',
       'environmentService', 'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS',
       function ($q, $interval, $log, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
-        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, collabFolderAPIService,
-        environmentService, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
+        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, 
+        collabFolderAPIService, nrpUser, environmentService, 
+        FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
         var localmode = {
           forceuser: bbpConfig.get('localmode.forceuser', false),
           ownerID: bbpConfig.get('localmode.ownerID', null)
@@ -51,40 +52,9 @@
 
         var experimentsFactory = {
           createExperimentsService: experimentsService,
-          getOwnerDisplayName: _.memoize(getOwnerName),
-          getCurrentUserInfo: getCurrentUserInfo
         };
 
         return experimentsFactory;
-
-        function getOwnerName(owner) {
-          if (localmode.forceuser) {
-            return $q.when(localmode.ownerID);
-          }
-          return hbpIdentityUserDirectory.get([owner]).then(function (profile) {
-            return (profile[owner] && profile[owner].displayName) || 'Unkwown';
-          });
-        }
-
-        function getCurrentUserInfo() {
-          if (localmode.forceuser) {
-            return $q.when({
-              userID: bbpConfig.get('localmode.ownerID'),
-              hasEditRights: true,
-              forceuser: true
-            });
-          }
-          return $q.all([
-            hbpIdentityUserDirectory.getCurrentUser(),
-            hbpIdentityUserDirectory.isGroupMember('hbp-sp10-user-edit-rights')
-          ]).then(function (userInfo) {
-            return {
-              userID: userInfo[0].id,
-              hasEditRights: userInfo[1],
-              forceuser: false
-            };
-          });
-        }
 
         function experimentsService(contextId, experimentId, experimentFolderUUID) {
           var updateUptimeInterval, updateExperimentsInterval, experimentsDict, stoppingDict = {};
@@ -93,7 +63,6 @@
             initialize: initialize,
             startExperiment: startExperiment,
             stopExperiment: stopExperiment,
-            getCurrentUserInfo: getCurrentUserInfo,
             getCollabExperimentXML: getCollabExperimentXML,
             experiments: null,
             clusterAvailability: $q.when({ free: 'N/A', total: 'N/A'}) // Default for local mode
@@ -154,7 +123,7 @@
             return _.forEach(experiments, function (exp, expId) {
               exp.id = expId;
               exp.joinableServers.forEach(function (simul) {
-                experimentsFactory.getOwnerDisplayName(simul.runningSimulation.owner).then(function (owner) {
+                nrpUser.getOwnerDisplayName(simul.runningSimulation.owner).then(function (owner) {
                   simul.owner = owner;
                 });
               });

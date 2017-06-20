@@ -22,22 +22,60 @@
   angular.module('nrpUser', ['bbpConfig']).service('nrpUser', ['$window', '$q', 'hbpIdentityUserDirectory', 'bbpConfig',
     function ($window, $q, hbpIdentityUserDirectory, bbpConfig) {
       var forceuser, ownerID;
-      var loadConfig = _.once(function () {
+      var loadConfig = () => {
         forceuser = bbpConfig.get('localmode.forceuser', false),
           ownerID = bbpConfig.get('localmode.ownerID', null);
-      });
+      };
 
-      this.getCurrentUser = function () {
+      var getCurrentUser = function () {
         loadConfig();
         return forceuser ? $q.when({ displayName: ownerID, id: ownerID }) : hbpIdentityUserDirectory.getCurrentUser();
       };
 
-      this.getReservation = function() {
+      var getReservation = function() {
         return $window.sessionStorage.getItem('clusterReservation');
       };
 
-      this.isMemberOfClusterReservationGroup = function() {
+      var isMemberOfClusterReservationGroup = function() {
         return hbpIdentityUserDirectory.isGroupMember('hbp-sp10-cluster-reservation');
+      };
+
+      var getOwnerName = function(owner) {
+        loadConfig();
+        if (forceuser) {
+          return $q.when(ownerID);
+        }
+        return hbpIdentityUserDirectory.get([owner]).then(function (profile) {
+          return (profile[owner] && profile[owner].displayName) || 'Unkwown';
+        });
+      };
+
+      var getCurrentUserInfo = function() {
+        loadConfig();
+        if (forceuser) {
+          return $q.when({
+            userID: ownerID,
+            hasEditRights: true,
+            forceuser: true
+          });
+        }
+        return $q.all([
+          hbpIdentityUserDirectory.getCurrentUser(),
+          hbpIdentityUserDirectory.isGroupMember('hbp-sp10-user-edit-rights')
+        ]).then(function (userInfo) {
+          return {
+            userID: userInfo[0].id,
+            hasEditRights: userInfo[1],
+            forceuser: false
+          };
+        });
+      };
+      return {
+        getCurrentUser: _.memoize(getCurrentUser),
+        getReservation: getReservation,
+        isMemberOfClusterReservationGroup: _.memoize(isMemberOfClusterReservationGroup),
+        getOwnerDisplayName: _.memoize(getOwnerName),
+        getCurrentUserInfo: _.memoize(getCurrentUserInfo)
       };
 
     }]);

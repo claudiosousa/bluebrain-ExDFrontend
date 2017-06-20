@@ -4,18 +4,21 @@ describe('Controller: MainCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates'));
+  beforeEach(module('nrpUserMock'));
 
-  var controller, scope, $window, $log, $controller;
-  var browserSupport;
+  var controller, scope, $window, $log, $controller, $rootScope;
+  var browserSupport, nrpUser;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function (_browserSupport_, _$controller_, $rootScope, _$window_, _$log_) {
+  beforeEach(inject(function (_browserSupport_, _$controller_, _$window_, _$log_, _$rootScope_, _nrpUser_) {
     browserSupport = _browserSupport_;
     spyOn(browserSupport, 'isSupported').and.returnValue(false);
     spyOn(browserSupport, 'getBrowserVersion').and.returnValue('unknown');
     $window = _$window_;
     spyOn($window.sessionStorage, 'getItem').and.returnValue(null);
     spyOn($window.sessionStorage, 'setItem');
+    $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     spyOn(scope, '$apply');
     /* global _: false */
@@ -25,7 +28,15 @@ describe('Controller: MainCtrl', function () {
     controller = $controller('MainCtrl', {
       $scope: scope
     });
+
+    nrpUser = _nrpUser_;
   }));
+
+  it('should call nrpUser.getCurrentUserInfo() once', function () {
+    expect(nrpUser.isMemberOfClusterReservationGroup.calls.count()).toBe(1);
+    expect(nrpUser.getCurrentUserInfo.calls.count()).toBe(1);
+    $rootScope.$digest();
+  });
 
   it('should call browserSupport.isSupported()', function () {
     expect(browserSupport.isSupported.calls.count()).toBe(1);

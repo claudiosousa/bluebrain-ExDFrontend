@@ -238,6 +238,17 @@
           $location.path(ctxstate.path);
         }
       }
+    }])
+    .run(['$rootScope', 'nrpUser', function($rootScope, nrpUser){
+      // Basic Users are invited to join the Demo Carousel
+      var DEMO_MACHINE = '52.58.114.201';
+
+      $rootScope.demoCarouselUrl = 'http://' + DEMO_MACHINE+ ':9000/#/esv-demo';
+
+      nrpUser.getCurrentUserInfo().then(function(response){
+        $rootScope.displayWatchDemosButton = !response.hasEditRights;
+      });
+
     }]);
 
   // load the configuration used by bbpConfig
