@@ -395,11 +395,11 @@ describe('Controller: EditorToolbarController', function() {
       expect(stateService.removeMessageCallback).not.toHaveBeenCalled();
       // test "timeout"
       stateService.addMessageCallback.calls.mostRecent().args[0]({ timeout: 264, simulationTime: 1, realTime: 2 });
-      expect(editorToolbarController.simTimeoutText).toBe(264);
+      expect(simulationInfo.simTimeoutText).toBe(264);
       // test "simulationTime"
-      expect(editorToolbarController.simulationTimeText).toBe(1);
+      expect(simulationInfo.simulationTimeText).toBe(1);
       // test "realTime"
-      expect(editorToolbarController.realTimeText).toBe(2);
+      expect(simulationInfo.realTimeText).toBe(2);
     });
 
     it('should test light change', function() {

@@ -229,13 +229,13 @@
         if (parseInt(message.timeout, 10) < 1.0) {
           analyticsEventTimeout();
         }
-        this.simTimeoutText = message.timeout;
+        this.simulationInfo.simTimeoutText = message.timeout;
       }
       if (angular.isDefined(message.simulationTime)) {
-        this.simulationTimeText = message.simulationTime;
+        this.simulationInfo.simulationTimeText = message.simulationTime;
       }
       if (angular.isDefined(message.realTime)) {
-        this.realTimeText = message.realTime;
+        this.simulationInfo.realTimeText = message.realTime;
       }
     }
 

@@ -38,7 +38,7 @@
 
   class ExperimentViewController
   {
-    constructor(scope, stateService, STATE,userContextService,
+    constructor(scope, stateService, STATE, userContextService,
                 nrpAnalytics,environmentRenderingService,gz3d,log,
                 colorableObjectService,
                 simulationInfo,
@@ -46,6 +46,9 @@
                 timeout,
                 window)
     {
+      this.userContextService = userContextService;
+      this.simulationInfo = simulationInfo;
+
       stateService.Initialize();
 
       // Query the state of the simulation

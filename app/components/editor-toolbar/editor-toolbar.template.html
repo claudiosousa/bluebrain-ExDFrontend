@@ -1,4 +1,4 @@
-﻿<!-- build:css(.tmp) styles/esv/editor-toolbar.css -->
+<!-- build:css(.tmp) styles/esv/editor-toolbar.css -->
 <link rel="stylesheet" href="components/editor-toolbar/editor-toolbar.style.css" />
 <!-- endbuild -->
 
@@ -49,12 +49,12 @@
                     <div>
                         <span>Simulation time:</span><br/>
                         <span>Real time:</span><br/>
-                        <span ng-style="{ color: vm.simTimeoutText !== undefined && vm.simTimeoutText < 300 ? 'red' : '' }">Timeout:</span>
+                        <span ng-style="{ color: vm.simulationInfo.simTimeoutText !== undefined && vm.simulationInfo.simTimeoutText < 300 ? 'red' : '' }">Timeout:</span>
                     </div>
                     <div>
-                        <span id="simTime">{{vm.simulationTimeText | timeDDHHMMSS}}</span><br/>
-                        <span id="realTime">{{vm.realTimeText | timeDDHHMMSS}}</span><br/>
-                        <span ng-style="{ color: vm.simTimeoutText !== undefined && vm.simTimeoutText < 300 ? 'red' : '' }">{{vm.simTimeoutText | timeDDHHMMSS}}</span>
+                        <span id="simTime">{{vm.simulationInfo.simulationTimeText | timeDDHHMMSS}}</span><br/>
+                        <span id="realTime">{{vm.simulationInfo.realTimeText | timeDDHHMMSS}}</span><br/>
+                        <span ng-style="{ color: vm.simulationInfo.simTimeoutText !== undefined && vm.simulationInfo.simTimeoutText < 300 ? 'red' : '' }">{{vm.simulationInfo.simTimeoutText | timeDDHHMMSS}}</span>
                     </div>
                 </div>
                 <div ng-show="vm.stateService.currentState === vm.STATE.HALTED">

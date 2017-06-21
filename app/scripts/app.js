@@ -110,6 +110,7 @@
         url: '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
         templateUrl: 'views/esv/experiment-view.html',
         controller: 'experimentViewController',
+        controllerAs: 'vm',
         onEnter: ['$document', function ($document) {
           $document.find('body').addClass('experiment-view-route');
         }],
