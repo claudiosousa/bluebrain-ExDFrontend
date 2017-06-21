@@ -127,14 +127,14 @@
     ) {
       var filter = function(response) {
         if (response) {
-          // we ignore errors due to GET requests on  unvailaible servers
+          // we ignore errors due to GET requests on unavailable servers
           if (response.status === 0) {
             return false;
           }
           // we ignore errors due to transfer function and state machines updates as they are caught by a
           // dedicated ROS topic
           if (response.data) {
-            if(response.data.type === "Transfer function error" || response.data.type === "State machine error") {
+            if(response.data.type === "Transfer function error" || response.data.type === "State machine error" || response.data.type === "Duplicate name error") {
               return false;
             }
           }
