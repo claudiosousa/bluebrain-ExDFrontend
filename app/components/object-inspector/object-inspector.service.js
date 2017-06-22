@@ -47,11 +47,12 @@
           this.translation = new THREE.Vector3(0, 0, 0);
           this.scaling = new THREE.Vector3(1, 1, 1);
           this.rotationEuler = new THREE.Euler(0, 0, 0);
-          this.floatPrecision = 5;
+          this.floatPrecision = 3;
           this.showCollision = undefined;
           this.selectedStyle = [];
           this.inputErrorStyle = "background-color:red;";
           this.highlightingStyle = "background-color:yellow;";
+          this.snapToGridDist = 0;
 
           this.getSelectedObjectShape = function () {
             if(this.selectedObject) {
@@ -186,8 +187,21 @@
             gz3d.scene.setViewAs(this.selectedObject, mode);
           };
 
+          this.setSpaceMode = function (mode) {
+
+            gz3d.scene.modelManipulator.space = mode;
+            this.update();
+          };
+
+          this.onSnapToGridDistChange = function()
+          {
+            gz3d.scene.modelManipulator.snapDist = this.snapToGridDist;
+
+          };
+
           this.removeEventListeners = function () {
-            document.removeEventListener('keydown', this.onXYZKeystroke);
+            document.removeEventListener('keydown', this.onKeyDown);
+            document.removeEventListener('keyup', this.onKeyUp);
             document.removeEventListener('mouseup', this.onUpdateNeeded);
             document.removeEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove);
             document.removeEventListener('mousemove', this.onMouseMove);
@@ -205,6 +219,7 @@
                 case EDIT_MODE.TRANSLATE:
                 case EDIT_MODE.SCALE:
                 case EDIT_MODE.ROTATE:
+                case EDIT_MODE.NATURAL:
                   stateService.ensureStateBeforeExecuting(
                     STATE.PAUSED,
                     function () {
@@ -214,7 +229,8 @@
                   // as view mode deselects any selected object, reselect here
                   gz3d.scene.selectEntity(this.selectedObject);
 
-                  document.addEventListener('keydown', this.onXYZKeystroke, false);
+                  document.addEventListener('keydown', this.onKeyDown, false);
+                  document.addEventListener('keyup', this.onKeyUp, false);
                   document.addEventListener('mouseup', this.onUpdateNeeded, false);
                   document.addEventListener('mousemove', gz3d.scene.modelManipulator.onPointerMove, false);
                   document.addEventListener('mousemove', this.onMouseMove, false);
@@ -240,9 +256,25 @@
             });
           };
 
-          this.onXYZKeystroke = function (event) {
+          this.onKeyUp = function (event) {
             if (gz3d.scene === null) {
               return;
+            }
+
+            if (gz3d.scene.naturalAutoAlignMode)
+            {
+                gz3d.scene.naturalAutoAlignMode.onKeyUp(event);
+            }
+          };
+
+          this.onKeyDown = function (event) {
+            if (gz3d.scene === null) {
+              return;
+            }
+
+            if (gz3d.scene.naturalAutoAlignMode)
+            {
+                gz3d.scene.naturalAutoAlignMode.onKeyDown(event);
             }
 
             if (gz3d.scene.modelManipulator.selected === 'null') {
@@ -257,13 +289,13 @@
 
               var ix = null;
               switch (event.key) {
-                case 'KeyX':
+                case 'x':
                   ix = prefix + 'X';
                   break;
-                case 'KeyY':
+                case 'y':
                   ix = prefix + 'Y';
                   break;
-                case 'KeyZ':
+                case 'z':
                   ix = prefix + 'Z';
                   break;
               }
@@ -315,6 +347,12 @@
             if (gz3d.scene.modelManipulator.selected !== 'null') {
               that.update();
             }
+
+            if (gz3d.scene.naturalAutoAlignMode)
+            {
+              gz3d.scene.updateMoveNaturalManipulation(event.clientX, event.clientY);
+            }
+
           };
 
           this.onAxisMoveEnd = function (event) {
@@ -322,7 +360,7 @@
               return;
             }
             gz3d.scene.modelManipulator.handleAxisLockEnd();
-            this.update();
+            that.update();
             document.removeEventListener('mouseup', this.onAxisMoveEnd);
           };
 
@@ -434,6 +472,19 @@
               }
             }
 
+            // update space radio buttons
+
+            document.getElementById('oi-space-local').checked = false;
+            document.getElementById('oi-space-world').checked = false;
+              switch (gz3d.scene.modelManipulator.space) {
+                case 'local':
+                  document.getElementById('oi-space-local').checked = true;
+                  break;
+                case 'world':
+                  document.getElementById('oi-space-world').checked = true;
+                  break;
+              }
+
             // update show collisions
             if (angular.isUndefined(that.selectedObject.showCollision)) {
               that.showCollision = that.selectedObject.showCollision = false;
@@ -482,6 +533,9 @@
           // - rotation
           this.updateInspectorFunctions[TRANSFORM_TYPES.ROTATE] = function () {
             that.rotationEuler.copy(that.selectedObject.rotation);
+            that.rotationEuler.x *= 180 / Math.PI;
+            that.rotationEuler.y *= 180 / Math.PI;
+            that.rotationEuler.z *= 180 / Math.PI;
             that.roundToPrecisionVector3(that.rotationEuler);
           };
           // - all
@@ -505,7 +559,15 @@
           };
           // - rotation
           this.updateSelectedObjectFunctions[TRANSFORM_TYPES.ROTATE] = function () {
-            that.selectedObject.rotation.copy(that.rotationEuler);
+
+            var radRotation = that.rotationEuler.clone();
+
+            radRotation.x *= Math.PI / 180;
+            radRotation.y *= Math.PI / 180;
+            radRotation.z *= Math.PI / 180;
+
+            that.selectedObject.rotation.copy(radRotation);
+
           };
           // - scale
           this.updateSelectedObjectFunctions[TRANSFORM_TYPES.SCALE] = function () {

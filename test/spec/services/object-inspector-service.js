@@ -22,6 +22,8 @@ describe('Services: objectInspectorService', function () {
     this.selected = '';
     this.handleAxisLockEnd = jasmine.createSpy('handleAxisLockEnd');
     this.selectPicker = jasmine.createSpy('selectPicker');
+    this.space = 'world';
+    this.snapDist = 0;
   };
   DummyModelManipulator.prototype = Object.create(THREE.EventDispatcher.prototype);
 
@@ -401,6 +403,20 @@ describe('Services: objectInspectorService', function () {
     expect(gz3d.scene.setViewAs).toHaveBeenCalledWith(mockObject, 'transparent');
   });
 
+  it('should set the space mode', function () {
+    objectInspectorService.selectedObject = mockObject;
+    gz3d.scene.modelManipulator.space = 'world';
+
+    objectInspectorService.setSpaceMode('local');
+    expect(gz3d.scene.modelManipulator.space).toBe('local');
+  });
+
+  it('should update the snapToGrid dist', function () {
+   objectInspectorService.snapToGridDist = 10;
+   objectInspectorService.onSnapToGridDistChange();
+    expect(gz3d.scene.modelManipulator.snapDist).toBe(10);
+  });
+
   it('should set the manipulation mode correctly', function () {
     gz3d.scene.setManipulationMode.calls.reset();
 
@@ -655,9 +671,14 @@ describe('Services: objectInspectorService2', function () {
     });
   });
 
-  it('should test onXYZKeystroke when scene is null', function () {
+  it('should test onKeyDown when scene is null', function () {
     // expect no exception
-    expect(objectInspectorService.onXYZKeystroke()).toBeUndefined();
+    expect(objectInspectorService.onKeyDown()).toBeUndefined();
+  });
+
+  it('should test onKeyUp when scene is null', function () {
+    // expect no exception
+    expect(objectInspectorService.onKeyUp()).toBeUndefined();
   });
 
   it('should test onAxisMoveEnd', function () {
@@ -708,13 +729,13 @@ describe('Services: objectInspectorService3', function () {
     });
   });
 
-  it('should test onXYZKeystroke when modelManipulator.selected is \'null\' and X press', function () {
-    var event = {key:'KeyX'};
+  it('should test onKeyDown when modelManipulator.selected is \'null\' and X press', function () {
+    var event = {key:'x'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').and.returnValue('test');
     spyOn(document, 'addEventListener');
 
-    objectInspectorService.onXYZKeystroke(event);
+    objectInspectorService.onKeyDown(event);
 
     expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(true);
   });
@@ -763,8 +784,8 @@ describe('Services: objectInspectorService4', function () {
     });
   });
 
-  it('should test onXYZKeystroke when modelManipulator.selected is not \'null\'', function () {
-    objectInspectorService.onXYZKeystroke();
+  it('should test onKeyDown when modelManipulator.selected is not \'null\'', function () {
+    objectInspectorService.onKeyDown();
     expect(gz3d.scene.modelManipulator.handleAxisLockEnd).toHaveBeenCalled();
   });
 
@@ -812,13 +833,13 @@ describe('Services: objectInspectorService5', function () {
     });
   });
 
-  it('should test onXYZKeystroke when rotate', function () {
-    var event = {key:'KeyY'};
+  it('should test onKeyDown when rotate', function () {
+    var event = {key:'y'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').and.returnValue('test');
     spyOn(document, 'addEventListener');
 
-    objectInspectorService.onXYZKeystroke(event);
+    objectInspectorService.onKeyDown(event);
 
     expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(true);
   });
@@ -836,7 +857,12 @@ describe('Services: objectInspectorService6', function () {
         selected: 'null',
         pickerMeshes: [{'RZ':'test'}],
         highlightPicker: jasmine.createSpy('highlightPicker')
-      }
+      },
+      naturalAutoAlignMode: {
+        onKeyUp:function(){},
+        onKeyDown:function(){}
+      },
+      updateMoveNaturalManipulation:function(){}
     }
   };
 
@@ -867,13 +893,36 @@ describe('Services: objectInspectorService6', function () {
     });
   });
 
-  it('should test onXYZKeystroke when Z', function () {
-    var event = {key:'KeyZ'};
+  it('should auto align on keyUp', function () {
+
+    spyOn(gz3d.scene.naturalAutoAlignMode, 'onKeyUp');
+    objectInspectorService.onKeyUp();
+    expect(gz3d.scene.naturalAutoAlignMode.onKeyUp).toHaveBeenCalled();
+  });
+
+ it('should update natural object manipulation', function () {
+
+    spyOn(gz3d.scene, 'updateMoveNaturalManipulation');
+    objectInspectorService.onMouseMove({clientX:0,clientY:0});
+    expect(gz3d.scene.updateMoveNaturalManipulation).toHaveBeenCalled();
+  });
+
+ it('should call emitEntityChanged on update', function () {
+
+    spyOn(objectInspectorService, 'emitEntityChanged');
+    spyOn(objectInspectorService, 'update');
+    objectInspectorService.onUpdateNeeded();
+    expect(objectInspectorService.emitEntityChanged).toHaveBeenCalled();
+    expect(objectInspectorService.update).toHaveBeenCalled();
+  });
+
+  it('should test onKeyDown when Z', function () {
+    var event = {key:'z'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').and.returnValue('test');
     spyOn(document, 'addEventListener');
 
-    objectInspectorService.onXYZKeystroke(event);
+    objectInspectorService.onKeyDown(event);
 
     expect(objectInspectorService.setSelectPicker).toHaveBeenCalledWith(true);
   });
@@ -922,13 +971,13 @@ describe('Services: objectInspectorService7', function () {
     });
   });
 
-  it('should test onXYZKeystroke when AnyKey', function () {
+  it('should test onKeyDown when AnyKey', function () {
     var event = {keyCode:0};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').and.returnValue(null);
     spyOn(document, 'addEventListener');
 
-    objectInspectorService.onXYZKeystroke(event);
+    objectInspectorService.onKeyDown(event);
   });
 });
 
@@ -975,14 +1024,14 @@ describe('Services: objectInspectorService8', function () {
     });
   });
 
-  it('should test onXYZKeystroke when modelManipulator.selected is \'null\', X press and mouseMove', function () {
-    var event = {key:'KeyX'};
+  it('should test onKeyDown when modelManipulator.selected is \'null\', X press and mouseMove', function () {
+    var event = {key:'x'};
     spyOn(objectInspectorService, 'setSelectPicker');
     spyOn(objectInspectorService, 'getMeshByName').and.returnValue('test');
     spyOn(document, 'addEventListener');
     spyOn(objectInspectorService, 'getMouseEvent').and.returnValue(true);
 
-    objectInspectorService.onXYZKeystroke(event);
+    objectInspectorService.onKeyDown(event);
 
     expect(gz3d.scene.modelManipulator.selectPicker).toHaveBeenCalled();
   });
