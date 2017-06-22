@@ -67,7 +67,8 @@
     "test": "grunt test",
     "validate": "grunt validate",
     "build": "grunt build",
-    "tag": "grunt publish"
+    "tag": "grunt publish",
+    "postinstall": "rm -rf node_modules/grunt-contrib-uglify/node_modules/uglify-js/"
   },
   "publishConfig": {
     "registry": "http://bbpteam.epfl.ch/repository/npm"
