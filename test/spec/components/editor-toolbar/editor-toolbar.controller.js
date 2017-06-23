@@ -7,6 +7,7 @@ describe('Controller: EditorToolbarController', function() {
       $scope,
       $timeout,
       $window,
+      $q,
       location,
       editorToolbarController,
       stateService,
@@ -44,6 +45,7 @@ describe('Controller: EditorToolbarController', function() {
   beforeEach(module('editorsPanelServiceMock'));
   beforeEach(module('environmentRenderingServiceMock'));
   beforeEach(module('simulationInfoMock'));
+  beforeEach(module('dynamicViewOverlayServiceMock'));
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -90,6 +92,7 @@ describe('Controller: EditorToolbarController', function() {
                              _$timeout_,
                              _$location_,
                              _$window_,
+                             _$q_,
                              _stateService_,
                              _userContextService_,
                              _userNavigationService_,
@@ -113,6 +116,7 @@ describe('Controller: EditorToolbarController', function() {
     $timeout = _$timeout_;
     location = _$location_;
     $window = _$window_;
+    $q = _$q_;
     stateService = _stateService_;
     userContextService = _userContextService_;
     gz3d = _gz3d_;
@@ -585,11 +589,74 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should create a dynamic overlay for the given component', function() {
-      spyOn(editorToolbarController.dynamicViewOverlayService, 'createOverlay');
       expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
+      // fake no view open
+      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+          {
+            then: jasmine.createSpy('then').and.callFake(function(fn) {
+              return fn(false);
+            })
+          }
+      );
 
       editorToolbarController.createDynamicOverlay('test');
 
+      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
+    });
+
+    it('should not create a dynamic overlay for the given component if it is already created', function() {
+      expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
+
+      // fake no view open
+      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
+            then: jasmine.createSpy('then').and.callFake(function(fn) {
+              return fn(false);
+            })
+          }
+      );
+
+      var onlySingleInstance = true;
+      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
+      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(1);
+
+      //  change status to open
+      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
+            then: jasmine.createSpy('then').and.callFake(function(fn) {
+              return fn(true);
+            })
+          }
+      );
+
+      // no new view should be created, as we already have one
+      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
+      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(1); // <==> not.beenCalled
+    });
+
+    it('should create multiple instances of a dynamic view', function() {
+      expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
+
+      // fake no view open
+      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+          {
+            then: jasmine.createSpy('then').and.callFake(function(fn) {
+              return fn(false);
+            })
+          }
+      );
+
+      var onlySingleInstance = false;
+      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
+      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
+
+      // although a view is open, a new one should be created
+      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+          {
+            then: jasmine.createSpy('then').and.callFake(function(fn) {
+              return fn(true);
+            })
+          }
+      );
+      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
       expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
     });
 

@@ -541,11 +541,17 @@
       });
     };
 
-    createDynamicOverlay(componentName) {
-      this.dynamicViewOverlayService.createOverlay(
-          angular.element(this.dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR)[0], /* parent element to attach overlay to */
-          componentName
-      );
+    createDynamicOverlay(componentName, showOnlyOneInstance = false) {
+      this.dynamicViewOverlayService.isOverlayOpen(componentName).then(
+          overlayOpen => {
+            // create a new view, only if multiple instances are possible or the view is not open
+            if (!showOnlyOneInstance || !overlayOpen) {
+              this.dynamicViewOverlayService.createOverlay(
+                  angular.element(this.dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR)[0],
+                  /* parent element to attach overlay to */
+                  componentName);
+            }
+          });
     };
 
   }
