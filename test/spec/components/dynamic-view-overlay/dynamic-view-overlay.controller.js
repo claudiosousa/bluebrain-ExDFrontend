@@ -2,7 +2,7 @@
 
 describe('Controller: DynamicViewOverlayController', function() {
 
-  var $compile, $rootScope, $scope;
+  var $compile, $rootScope, $scope, $q;
   var element, overlayController, dynamicViewController;
   var dynamicViewOverlayService;
 
@@ -10,9 +10,10 @@ describe('Controller: DynamicViewOverlayController', function() {
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayServiceMock'));
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _dynamicViewOverlayService_) {
+  beforeEach(inject(function(_$rootScope_, _$compile_, _$q_, _dynamicViewOverlayService_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
+    $q = _$q_;
     dynamicViewOverlayService = _dynamicViewOverlayService_;
   }));
 
@@ -28,7 +29,7 @@ describe('Controller: DynamicViewOverlayController', function() {
   beforeEach(function() {
     spyOn(overlayController, 'onDestroy').and.callThrough();
     spyOn(overlayController, 'closeOverlay').and.callThrough();
-    spyOn(overlayController, 'setDynamicViewComponent').and.callThrough();
+    spyOn(overlayController, 'setDynamicViewChannel').and.callThrough();
   });
 
   it(' - constructor()', function() {
@@ -54,11 +55,18 @@ describe('Controller: DynamicViewOverlayController', function() {
     expect(dynamicViewOverlayService.removeOverlay).toHaveBeenCalledWith(overlayController.$element[0].id);
   });
 
-  it(' - setDynamicViewComponent()', function() {
-    spyOn(dynamicViewController, 'setViewContentViaDirective');
-    var componentName = 'test-component';
-    overlayController.setDynamicViewComponent(componentName);
-    expect(dynamicViewController.setViewContentViaDirective).toHaveBeenCalledWith(componentName);
+  it(' - setDynamicViewChannel()', function() {
+    spyOn(dynamicViewController, 'setViewContentViaChannelType');
+    var deferredController = $q.defer();
+    dynamicViewOverlayService.getController.and.returnValue(deferredController.promise);
+    var channelType = 'test-channel';
+
+    overlayController.setDynamicViewChannel(channelType);
+    deferredController.resolve(dynamicViewController);
+    $scope.$digest();
+
+    expect(dynamicViewController.setViewContentViaChannelType).toHaveBeenCalledWith(channelType);
+    expect(overlayController.channelType).toBe(channelType);
   });
 
 });

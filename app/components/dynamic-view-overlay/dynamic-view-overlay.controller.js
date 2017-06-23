@@ -26,18 +26,13 @@
       this.dynamicViewOverlayService.removeOverlay(this.$element[0].id);
     }
 
-    setDynamicViewComponent(componentName) {
-      let waitForController = () => {
-        let controller = this.dynamicViewElement.controller('dynamicView');
-        if (angular.isDefined(controller)) {
-          // once we have a controller, set the component
-          controller.setViewContentViaDirective(componentName);
-        } else {
-          // check again in 100ms
-          this.$timeout(waitForController, 100);
+    setDynamicViewChannel(channelType) {
+      this.dynamicViewOverlayService.getController(this.dynamicViewElement, 'dynamicView').then(
+        (controller) => {
+          controller.setViewContentViaChannelType(channelType);
+          this.channelType = channelType;
         }
-      };
-      waitForController();
+      );
     }
   }
 

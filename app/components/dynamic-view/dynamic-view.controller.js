@@ -20,7 +20,7 @@
       this.viewContainer = this.getViewContainerElement(this.$element);
 
       if (this.$element[0].attributes['dynamic-view-component']) {
-        this.setViewContentViaDirective(this.$element[0].attributes['dynamic-view-component'].value);
+        this.setViewContentViaChannelType(this.$element[0].attributes['dynamic-view-component'].value);
       }
     }
 
@@ -55,8 +55,8 @@
       return containerElement[0];
     }
 
-    setViewContentViaDirective(directiveName) {
-      this.setViewContent('<' + directiveName + '></' + directiveName + '>');
+    setViewContentViaChannelType(channelType) {
+      this.setViewContent('<' + channelType + '></' + channelType + '>');
     }
   }
 
@@ -69,7 +69,7 @@
       (...args) => new DynamicViewController(...args)
     ])
 
-    .constant('COMPONENT_DIRECTIVE', {
+    .constant('DYNAMIC_VIEW_CHANNELS', {
       BRAIN_VISUALIZER: 'brainvisualizer-panel',
       DYNAMIC_VIEW: 'dynamic-view',
       ENVIRONMENT_RENDERING: 'environment-rendering',

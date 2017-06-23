@@ -44,11 +44,12 @@
                 dynamicViewOverlayService,
                 helpTooltipService,
                 editorToolbarService,
+                bbpConfig,
                 STATE,
                 NAVIGATION_MODES,
                 EDIT_MODE,
                 RESET_TYPE,
-                bbpConfig) {
+                DYNAMIC_VIEW_CHANNELS) {
       this.backendInterfaceService = backendInterfaceService;
       this.contextMenuState = contextMenuState;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
@@ -73,6 +74,7 @@
       this.NAVIGATION_MODES = NAVIGATION_MODES;
       this.RESET_TYPE = RESET_TYPE;
       this.STATE = STATE;
+      this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
 
       this.$timeout = $timeout;
       this.$location = $location;
@@ -573,11 +575,12 @@
             'dynamicViewOverlayService',
             'helpTooltipService',
             'editorToolbarService',
+            'bbpConfig',
             'STATE',
             'NAVIGATION_MODES',
             'EDIT_MODE',
             'RESET_TYPE',
-            'bbpConfig',
+            'DYNAMIC_VIEW_CHANNELS',
             (...args) => new EditorToolbarController(...args)]);
 
 })();

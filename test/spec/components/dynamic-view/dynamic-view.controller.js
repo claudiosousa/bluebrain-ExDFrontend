@@ -23,7 +23,7 @@ describe('Controller: DynamicViewController', function() {
 
   beforeEach(function() {
     spyOn(elementController, 'setViewContent').and.callThrough();
-    spyOn(elementController, 'setViewContentViaDirective').and.callThrough();
+    spyOn(elementController, 'setViewContentViaChannelType').and.callThrough();
   });
 
   it('should always have a view container element defined', function() {
@@ -44,7 +44,7 @@ describe('Controller: DynamicViewController', function() {
   it('should allow to set a directive as content (directive is compiled)', function() {
     var directiveName = 'my-directive';
 
-    elementController.setViewContentViaDirective(directiveName);
+    elementController.setViewContentViaChannelType(directiveName);
 
     expect(elementController.viewContent).toContain(directiveName);
     expect(elementController.viewContainer.innerHTML).toContain(directiveName);

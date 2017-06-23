@@ -11,13 +11,16 @@
   class DynamicViewOverlayService {
 
     static get OVERLAY_HTML() { return '<dynamic-view-overlay></dynamic-view-overlay>'; }
-    get OVERLAY_PARENT_SELECTOR() { return '.experiment-view-widget-overlays'; }
+    get OVERLAY_PARENT_SELECTOR() { return '.editor-display'; }
+    get OVERLAY_WRAPPER_CLASS_SELECTOR() { return '.dynamic-view-overlay-wrapper'; }
 
     constructor($compile,
+                $q,
                 $rootScope,
                 $timeout,
                 nrpAnalytics) {
       this.$compile = $compile;
+      this.$q = $q;
       this.$rootScope = $rootScope;
       this.$timeout = $timeout;
       this.nrpAnalytics = nrpAnalytics;
@@ -26,7 +29,7 @@
       this.overlayIDCount = 0;
     }
 
-    createOverlay(parentElement, componentName) {
+    createOverlay(parentElement, dynamicViewChannel) {
       if (!angular.isDefined(parentElement)) {
         parentElement = document.body;
       }
@@ -42,25 +45,17 @@
 
       parentElement.appendChild(overlay[0]);
 
-      let waitForController = () => {
-        let controller = overlay.controller('dynamicViewOverlay');
-        if (angular.isDefined(controller)) {
-          // once we have a controller, set the component
-          controller.setDynamicViewComponent(componentName);
-        } else {
-          // check again in 100ms
-          this.$timeout(waitForController, 100);
-        }
-      };
-      waitForController();
+      this.getController(overlay, 'dynamicViewOverlay').then(
+        (controller) => controller.setDynamicViewChannel(dynamicViewChannel)
+      );
 
-      this.nrpAnalytics.eventTrack('Toggle-'+componentName, {
+      this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel, {
         category: 'Simulation-GUI',
         value: true,
       });
 
       scope.$on('$destroy', () => {
-        this.nrpAnalytics.eventTrack('Toggle-'+componentName, {
+        this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel, {
           category: 'Simulation-GUI',
           value: false,
         });
@@ -77,11 +72,34 @@
     getOverlayParentElement() {
       return angular.element(this.OVERLAY_PARENT_SELECTOR);
     }
+
+    getParentOverlayWrapper(element) {
+      return element.parents(this.OVERLAY_WRAPPER_CLASS_SELECTOR)[0];
+    }
+
+    getController(element, controllerType) {
+      let deferredController = this.$q.defer();
+      let waitForController = () => {
+        let controller = element.controller(controllerType);
+        if (angular.isDefined(controller)) {
+          // once we have a controller, resolve
+          deferredController.resolve(controller);
+        } else {
+          // check again in 100ms
+          this.$timeout(waitForController, 100);
+        }
+      };
+      waitForController();
+
+      return deferredController.promise;
+    }
+
   }
 
   angular.module('dynamicViewOverlayModule')
     .factory('dynamicViewOverlayService', [
       '$compile',
+      '$q',
       '$rootScope',
       '$timeout',
       'nrpAnalytics',

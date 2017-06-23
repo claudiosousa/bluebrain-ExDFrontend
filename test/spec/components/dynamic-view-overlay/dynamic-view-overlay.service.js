@@ -2,7 +2,7 @@
 
 describe('Service: dynamicViewOverlayService', function() {
 
-  var $timeout;
+  var $q, $rootScope, $timeout;
   var dynamicViewOverlayService;
 
   beforeEach(module('exd.templates'));
@@ -10,7 +10,9 @@ describe('Service: dynamicViewOverlayService', function() {
   beforeEach(module('nrpAnalyticsMock'));
   //beforeEach(module('dynamicViewModule'));
 
-  beforeEach(inject(function(_$timeout_, _dynamicViewOverlayService_) {
+  beforeEach(inject(function(_$q_, _$rootScope_, _$timeout_, _dynamicViewOverlayService_) {
+    $q = _$q_;
+    $rootScope = _$rootScope_;
     $timeout = _$timeout_;
     dynamicViewOverlayService = _dynamicViewOverlayService_;
   }));
@@ -21,35 +23,36 @@ describe('Service: dynamicViewOverlayService', function() {
   });
 
   it(' - createOverlay()', function() {
+    var defferedOverlayController = $q.defer();
+    spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
+    // set up overlay controller mock
+    var mockOverlayController = {
+      setDynamicViewChannel: jasmine.createSpy('setDynamicViewChannel')
+    };
+
     var idCount = 5;
     var htmlID = 'dynamic-view-overlay-' + idCount;
     dynamicViewOverlayService.overlayIDCount = idCount;
     var parentElement = document.createElement('div');
-    var componentName = 'test-component';
+    var channelName = 'test-channel';
 
-    var overlay = dynamicViewOverlayService.createOverlay(parentElement, componentName);
+    var overlay = dynamicViewOverlayService.createOverlay(parentElement, channelName);
+    defferedOverlayController.resolve(mockOverlayController);
+    $rootScope.$digest();
 
     // check id is set correctly
     expect(overlay[0].id).toBe('dynamic-view-overlay-' + idCount);
     expect(dynamicViewOverlayService.overlays[htmlID]).toBe(overlay);
     expect(dynamicViewOverlayService.overlayIDCount).toBe(idCount + 1);
 
-    // should be attached to parent element
     expect(overlay[0].parentElement).toBe(parentElement);
-
-    // check controller is called with component name
-    var mockController = {
-      setDynamicViewComponent: jasmine.createSpy('setDynamicViewComponent')
-    };
-    overlay.controller = jasmine.createSpy('controller').and.returnValue(mockController);
-    $timeout.flush();
-    expect(overlay.controller('dynamicViewOverlay').setDynamicViewComponent).toHaveBeenCalledWith(componentName);
+    expect(mockOverlayController.setDynamicViewChannel).toHaveBeenCalledWith(channelName);
     overlay.remove();
   });
 
   it(' - createOverlay(), no parentElement specified', function() {
-    var componentName = 'test-component';
-    var overlay = dynamicViewOverlayService.createOverlay(undefined, componentName);
+    var channelName = 'test-component';
+    var overlay = dynamicViewOverlayService.createOverlay(undefined, channelName);
     // should be attached to document
     expect(overlay[0].parentElement).toBe(document.body);
     overlay.remove();

@@ -41,10 +41,10 @@ describe('Services: nrpUser', function () {
     expect(window.bbpConfig.localmode.ownerID).toBeDefined();
     nrpUser.getCurrentUser().then(function (user) {
       expect(user.id).toBe(window.bbpConfig.localmode.ownerID);
+      expect(hbpIdentityUserDirectory.getCurrentUser).not.toHaveBeenCalled();
       done();
     });
     $rootScope.$digest();
-    expect(hbpIdentityUserDirectory.getCurrentUser).not.toHaveBeenCalled();
   });
 
   it('should call hbpIdentityUserDirectory.get when not forcing user', function () {

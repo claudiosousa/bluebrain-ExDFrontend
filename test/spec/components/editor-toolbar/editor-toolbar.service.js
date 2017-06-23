@@ -6,6 +6,9 @@ describe('Service: EditorToolbar', function() {
 
   // load the corresponding module
   beforeEach(module('editorToolbarModule'));
+  beforeEach(module('dynamicViewModule'));
+
+  beforeEach(module('dynamicViewOverlayServiceMock'));
 
   beforeEach(inject(function(_editorToolbarService_) {
     editorToolbarService = _editorToolbarService_;
