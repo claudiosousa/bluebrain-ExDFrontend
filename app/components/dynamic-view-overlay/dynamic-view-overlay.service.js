@@ -94,7 +94,33 @@
       return deferredController.promise;
     }
 
+    isOverlayOpen(type)
+    {
+      let arrayIndex = 0;
+      let deferredIsOpen = this.$q.defer();
+      const array = Object.values(this.overlays);
+
+      if(array.length === 0) {
+        deferredIsOpen.resolve(false);
+      }
+      else {
+        array.forEach((overlay) => {
+          this.getController(overlay, 'dynamicViewOverlay').then(
+              (controller) => {
+                if (controller.channelType && controller.channelType === type) {
+                  deferredIsOpen.resolve(true);
+                }
+                else if (arrayIndex === array.length - 1) {
+                  deferredIsOpen.resolve(false);
+                }
+                arrayIndex++;
+              });
+        });
+      }
+      return deferredIsOpen.promise;
+    }
   }
+
 
   angular.module('dynamicViewOverlayModule')
     .factory('dynamicViewOverlayService', [

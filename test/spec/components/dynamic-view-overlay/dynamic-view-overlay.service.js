@@ -73,4 +73,120 @@ describe('Service: dynamicViewOverlayService', function() {
     expect(mockOverlayElement.remove).toHaveBeenCalled();
     expect(dynamicViewOverlayService.overlays[mockID]).not.toBeDefined();
   });
+
+  describe(' - isOverlayOpen', function() {
+    // prepare
+    var defferedOverlayController;
+    var idCount, htmlID;
+    var overlayMock;
+
+    beforeEach(function() {
+      defferedOverlayController = $q.defer();
+      spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
+      // set up overlay controller mock
+      var channelName = 'test-channel';
+      var mockOverlayController = {
+        setDynamicViewChannel: jasmine.createSpy('setDynamicViewChannel'),
+        channelType: channelName
+      };
+
+      defferedOverlayController.resolve(mockOverlayController);
+      $rootScope.$digest();
+    });
+
+    it(' - return true if there are is one valid element', function() {
+      idCount = 0;
+      htmlID = 'dynamic-view-overlay-' + idCount;
+      dynamicViewOverlayService.overlayIDCount = idCount;
+
+      overlayMock = {
+        id: htmlID
+      };
+      dynamicViewOverlayService.overlays[htmlID] = overlayMock;
+
+      // Test the stuff
+      expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(1);
+    dynamicViewOverlayService.isOverlayOpen('test-channel').then(function(result) {
+      expect(result).toBeTruthy();
+    });
+      $rootScope.$digest();
+    });
+
+    it(' - return false if there is no element', function() {
+      expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(0);
+
+    dynamicViewOverlayService.isOverlayOpen('test-channel').then(function(result) {
+      expect(result).toBeFalsy();
+    });
+      $rootScope.$digest();
+    });
+
+    it(' - return false if there are only other elements', function() {
+      idCount = 0;
+      htmlID = 'dynamic-view-overlay-' + idCount;
+      dynamicViewOverlayService.overlayIDCount = idCount;
+
+      overlayMock = {
+        id: htmlID
+      };
+      dynamicViewOverlayService.overlays[htmlID] = overlayMock;
+
+      expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(1);
+      dynamicViewOverlayService.isOverlayOpen('other-channel').then(function(result) {
+        expect(result).toBeFalsy();
+      });
+      $rootScope.$digest();
+    });
+
+  });
+
+  describe(' - isOverlayOpen multiple entries', function() {
+    // prepare
+    var defferedOverlayController = {};
+    var idCount, htmlID;
+
+    beforeEach(function() {
+      spyOn(dynamicViewOverlayService, 'getController').and.callFake(function(overlay) {
+        return defferedOverlayController[overlay.id].promise;
+      });
+
+      for(var overlayCounter = 0; overlayCounter < 3; overlayCounter++) {
+        idCount = overlayCounter;
+        htmlID = 'dynamic-view-overlay-' + idCount;
+        defferedOverlayController[htmlID] = $q.defer();
+
+        // set up overlay controller mock
+        var channelName = 'test-channel-' + overlayCounter;
+        var mockOverlayController = {
+          setDynamicViewChannel: jasmine.createSpy('setDynamicViewChannel'),
+          channelType: channelName
+        };
+
+        defferedOverlayController[htmlID].resolve(mockOverlayController);
+        $rootScope.$digest();
+        dynamicViewOverlayService.overlayIDCount = idCount;
+
+        dynamicViewOverlayService.overlays[htmlID] = {
+          id: htmlID
+        };
+      }
+      expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
+    });
+
+    it(' - return true if there is at least one element shown', function() {
+      expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
+      dynamicViewOverlayService.isOverlayOpen('test-channel-0').then(function(result) {
+        expect(result).toBeTruthy();
+      });
+      $rootScope.$digest();
+    });
+
+    it(' - return true if there is at least one element shown', function() {
+      expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
+      dynamicViewOverlayService.isOverlayOpen('test-channel-2').then(function(result) {
+        expect(result).toBeTruthy();
+      });
+      $rootScope.$digest();
+    });
+  });
 });
