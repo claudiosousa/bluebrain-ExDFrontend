@@ -291,8 +291,15 @@
         </div>
         <!-- exit button -->
         <!-- toolbar help icon -->
-        <div class="hbp-toolbar-action right-align hide-overflow" ng-click="vm.helpTooltipService.toggleVisibility()">
-            <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: vm.helpTooltipService.visible}"></i>
+        <div class="hbp-toolbar-action right-align hide-overflow" ng-click="vm.helpTooltipService.toggleHelp()">
+            <i class="fa fa-question-circle fa-2x vertcenter" ng-class="{active: vm.helpTooltipService.visible == helpTooltipService.HELP}"></i>
+        </div>
+
+        <div class="hbp-toolbar-action right-align hide-overflow"
+             help-tooltip="INFO_BUTTON"
+             dont-stop-propagation
+             ng-click="vm.helpTooltipService.toggleInfo()">
+            <i class="fa fa-info-circle fa-2x vertcenter" ng-class="{active: vm.helpTooltipService.visible == helpTooltipService.INFO}"></i>
         </div>
         <!-- toolbar help icon -->
 

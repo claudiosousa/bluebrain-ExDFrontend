@@ -40,6 +40,7 @@
       BRAIN_VISUALIZER: 'This button opens the brain visualizer.',
       LOG_CONSOLE: 'This button opens the log console.',
       SERVER_VIDEO_STREAM: 'This button opens the server video viewer.',
-      EXIT_BUTTON: 'Here you can leave the simulation.'
+      EXIT_BUTTON: 'Here you can leave the simulation.',
+      INFO_BUTTON: 'This button shows information about the simulation.'
     });
 }());

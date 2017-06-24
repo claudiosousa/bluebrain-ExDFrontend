@@ -29,13 +29,13 @@
           return {
             pre: (scope, element, attrs) => {
 
-              let tryPreventEvent = e => helpTooltipService.visible && e.stopImmediatePropagation();
+              let tryPreventEvent = e => helpTooltipService.visible && (!angular.isUndefined(attrs.dontStopPropagation) || e.stopImmediatePropagation());
 
               element[0].addEventListener('mousedown', tryPreventEvent, true);
 
               element.on('click.helptooltip', e => {
                 if (tryPreventEvent(e) !== false)
-                  helpTooltipService.display(attrs.helpTooltip);
+                  helpTooltipService.displayHelp(attrs.helpTooltip);
               });
 
               scope.helpTooltipService = helpTooltipService;

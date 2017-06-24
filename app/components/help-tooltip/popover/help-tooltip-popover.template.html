@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="components/help-tooltip/popover/help-tooltip-popover.style.css" />
 <!-- endbuild -->
 
-<div show-on-top class="description-window panels ng-hide" ng-show="helpTooltipService.visible && (stateService.currentState != STATE.STOPPED)">
+<div show-on-top class="description-window panels ng-hide" ng-show="helpTooltipService.visible == helpTooltipService.INFO && (stateService.currentState != STATE.STOPPED)">
   <div>
     <div class="help-title">{{experimentService.experimentName}}:</div>
     <div class="help-text pre">{{experimentService.experimentDescription}}</div>
@@ -52,7 +52,7 @@
   </div>
 </div>
 
-<div show-on-top class="toolbar-help-window panels ng-hide" ng-show="helpTooltipService.visible && (stateService.currentState != STATE.STOPPED)">
+<div show-on-top class="toolbar-help-window panels ng-hide" ng-show="helpTooltipService.visible == helpTooltipService.HELP && (stateService.currentState != STATE.STOPPED)">
   <div class="help-title">UI-Element Description:</div>
   <div class="help-text" ng-hide="helpTooltipService.helpCode">(A description will be displayed here when you click on the corresponding user interface element)</div>
   <div class="help-text pre" ng-show="helpTooltipService.helpCode">{{helpTooltipService.helpDescription}}</div>

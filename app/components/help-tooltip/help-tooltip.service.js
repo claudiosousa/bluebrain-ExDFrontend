@@ -21,14 +21,27 @@
 
   class HelpTooltipService {
 
+    get HELP() { return 'HELP'; }
+    get INFO() { return 'INFO'; }
+
     constructor(HELP_CODES, nrpAnalytics) {
       this.HELP_CODES = HELP_CODES;
       this.nrpAnalytics = nrpAnalytics;
 
       this.visible = false;
+
+      $(window).on("keydown", e => {
+        if (e.keyCode !== 27)/*!=escape key*/
+          return;
+        this.visible = false;
+        this.logAnalytics();
+      });
     }
 
-    display(helpCode) {
+    displayHelp(helpCode) {
+
+      if (this.visible !== this.HELP)
+        return;
 
       if (this.helpCode === helpCode || !helpCode) {
         this.helpCode = this.helpDescription = null;
@@ -44,9 +57,27 @@
       });
     }
 
-    toggleVisibility() {
+    toggleHelp() {
+      //something else than HELP visible
+      if (this.visible && this.visible !== this.HELP)
+        return;
 
-      this.visible = !this.visible;
+      this.visible = this.visible ? false : this.HELP;
+
+      this.logAnalytics();
+    }
+
+    toggleInfo() {
+      //something else than INFO visible
+      if (this.visible && this.visible !== this.INFO)
+        return;
+
+      this.visible = this.visible ? false : this.INFO;
+
+      this.logAnalytics();
+    }
+
+    logAnalytics() {
       this.helpCode = this.helpDescription = null;
 
       this.nrpAnalytics.eventTrack('Toggle-help-mode', {

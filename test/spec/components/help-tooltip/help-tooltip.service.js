@@ -20,35 +20,84 @@ describe('Service: help-service', function() {
     expect(helpTooltipService.visible).toBe(false);
   });
 
-  it('should be toggle visibility on toggleVisibility', function() {
+  it('should be toggle HELP visibility on toggleHelp', function() {
     expect(helpTooltipService.visible).toBe(false);
-    helpTooltipService.toggleVisibility();
-    expect(helpTooltipService.visible).toBe(true);
-    helpTooltipService.toggleVisibility();
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).toBe(helpTooltipService.HELP);
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).toBe(false);
+  });
+
+  it('should be toggle INFO visibility on toggleInfo', function() {
+    expect(helpTooltipService.visible).toBe(false);
+    helpTooltipService.toggleInfo();
+    expect(helpTooltipService.visible).toBe(helpTooltipService.INFO);
+    helpTooltipService.toggleInfo();
+    expect(helpTooltipService.visible).toBe(false);
+  });
+
+  it('should not toggle HELP <-> INFO states directly', function() {
+    expect(helpTooltipService.visible).toBe(false);
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).toBe(helpTooltipService.HELP);
+    helpTooltipService.toggleInfo();
+
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).toBe(false);
+
+    helpTooltipService.toggleInfo();
+    expect(helpTooltipService.visible).toBe(helpTooltipService.INFO);
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).toBe(helpTooltipService.INFO);
+    helpTooltipService.toggleInfo();
     expect(helpTooltipService.visible).toBe(false);
   });
 
   it('should set help details on display', function() {
-    helpTooltipService.display('PLAY_BUTTON');
+    helpTooltipService.toggleHelp();
+    helpTooltipService.displayHelp('PLAY_BUTTON');
     expect(helpTooltipService.helpDescription).toBe(HELP_CODES.PLAY_BUTTON);
     expect(helpTooltipService.helpCode).toBe('PLAY_BUTTON');
     expect(nrpAnalytics.eventTrack).toHaveBeenCalled();
 
-    helpTooltipService.display('PLAY_BUTTON');
+    helpTooltipService.displayHelp('PLAY_BUTTON');
     expect(helpTooltipService.helpDescription).toBe(null);
     expect(helpTooltipService.helpCode).toBe(null);
   });
 
-  it('should be clear context on toggleVisibility', function() {
-    helpTooltipService.toggleVisibility();
-    expect(helpTooltipService.visible).toBe(true);
+  it('should NOT set help details on display if not in HELP mode', function() {
+    helpTooltipService.displayHelp('PLAY_BUTTON');
+    expect(helpTooltipService.helpDescription).not.toBeDefined();
 
-    helpTooltipService.display('PLAY_BUTTON');
+    helpTooltipService.toggleInfo();
+    helpTooltipService.displayHelp('PLAY_BUTTON');
+    expect(helpTooltipService.helpDescription).toBeDefined();
+  });
+
+  it('should be clear context on toggleVisibility', function() {
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).toBe(helpTooltipService.HELP);
+
+    helpTooltipService.displayHelp('PLAY_BUTTON');
     expect(helpTooltipService.helpDescription).not.toBe(null);
     expect(helpTooltipService.helpCode).not.toBe(null);
 
-    helpTooltipService.toggleVisibility();
+    helpTooltipService.toggleHelp();
     expect(helpTooltipService.helpDescription).toBe(null);
     expect(helpTooltipService.helpCode).toBe(null);
+  });
+
+  it('should hide on Escape key and Escape key only', function() {
+    helpTooltipService.toggleHelp();
+    expect(helpTooltipService.visible).not.toBe(false);
+
+    var event = $.Event('keydown');
+    event.keyCode = 65;//Non escape key
+    $(window).trigger(event);
+    expect(helpTooltipService.visible).not.toBe(false);
+
+    event.keyCode = 27;//Escape key
+    $(window).trigger(event);
+    expect(helpTooltipService.visible).toBe(false);
   });
 });
