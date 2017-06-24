@@ -140,11 +140,11 @@
       });
 
       this.updatePanelUI = function() {
-        $scope.$broadcast('UPDATE_PANEL_UI');
+        $rootScope.$broadcast('UPDATE_PANEL_UI');
       };
 
       this.notifyResetToWidgets = function(resetType) {
-        $scope.$broadcast('RESET', resetType);
+        $rootScope.$broadcast('RESET', resetType);
       };
 
       this.resetButtonClickHandler = function() {

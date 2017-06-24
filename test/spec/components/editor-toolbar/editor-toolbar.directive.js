@@ -32,11 +32,10 @@
     }));
 
     beforeEach(function() {
-      $scope = $rootScope.$new();
-
-      element = $compile('<editor-toolbar></editor-toolbar>')($scope);
+      element = $compile('<editor-toolbar></editor-toolbar>')($rootScope);
       document.createElement('div').appendChild(element[0]);
-      $scope.$digest();
+      $rootScope.$digest();
+      $scope = element.scope();
     });
 
     it('should have a controller defined as vm', function() {

@@ -25,7 +25,7 @@
         return {
           templateUrl: 'components/editor-toolbar/editor-toolbar.template.html',
           restrict: 'E',
-          scope: false,
+          scope: true,
           controller: 'EditorToolbarController',
           controllerAs: 'vm',
          };
