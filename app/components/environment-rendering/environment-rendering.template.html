@@ -86,7 +86,7 @@
     <!-- page is display:none until the page spicific css were loaded --->
     <div data-role="page" data-theme="b" data-content-theme="c" class="gz3d-body ng-cloak" oncontextmenu="return false;">
       <!-- Alert popup --->
-      <div class="alert alert-warning ng-hide" ng-show="userContextService.isJoiningStoppedSimulation">
+      <div class="alert alert-warning ng-hide" ng-show="userContextService.isJoiningStoppedSimulation && !userContextService.demoMode">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
         Sorry, the simulation you just wanted to join is already stopped.
 

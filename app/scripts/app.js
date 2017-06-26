@@ -142,6 +142,20 @@
         },
       };
 
+      var esvWegStateDebug = {
+        name: 'esv-webdebug',
+        url: '/esv-webdebug?ctx',
+        templateUrl: 'views/esv/esv-experiments.html',
+        controller: 'esvExperimentsCtrl',
+        resolve: {
+          oidcToken: ['oidcClientService', function (oidcClientService) {
+            return oidcClientService.ensureSession();
+          }],
+          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
+        },
+      };
+
+
       var esvDemoIntroState = {
         name: 'esv-demo',
         url: '/esv-demo',
@@ -180,6 +194,14 @@
         templateUrl: 'views/common/create-collab-overview.html'
       };
 
+      if (window.bbpConfig.demomode && window.bbpConfig.demomode.demoCarousel)
+      {
+        esvWebState.controller = 'demoExperimentsController';
+        esvPrivateState.controller = 'demoExperimentsController';
+        esvWebState.templateUrl = 'views/esv/demo-experiments.html';
+        esvPrivateState.templateUrl = 'views/esv/demo-experiments.html';
+      }
+
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
       home.state(esvDemoIntroState);
@@ -187,6 +209,11 @@
       home.state(experimentViewState);
       home.state(supportState);
       home.state(newCollabOverviewState);
+
+      home.state(esvWegStateDebug);
+
+
+
       // Provide a default route.
       // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
       $urlRouterProvider.otherwise('/');

@@ -44,6 +44,7 @@
         this.userEditingID = '';
         this.userEditing = '';
         this.timeEditStarted = '';
+        this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
 
         let getUserId = () => {
           if (!bbpConfig.get('localmode.forceuser', false))
@@ -86,7 +87,7 @@
         };
 
         this.isOwner = function() {
-          return this.userID !== undefined && this.userID === this.ownerID;
+          return this.userID !== undefined && this.userID === this.ownerID && !this.demoMode;
         };
 
         this.hasEditRights = function (entity) {

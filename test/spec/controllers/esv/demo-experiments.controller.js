@@ -163,7 +163,6 @@
       var template = $templateCache.get('views/esv/demo-experiments.html');
       var page = $compile(template)($rootScope);
 
-      $httpBackend.flush();
       $rootScope.$apply();
 
       return page;
@@ -175,6 +174,9 @@
 
       renderDemoWebPage();
       $rootScope.vm.launchExperiment();
+
+      $httpBackend.flush();
+      $timeout.flush(2000);
 
       var experimentID = Object.keys(defaultPageOptions.experiments)[0];
       var simulationID = defaultPageOptions.startExperiment.simulationID;
@@ -191,6 +193,7 @@
       renderDemoWebPage();
       $rootScope.vm.launchExperiment();
 
+      $httpBackend.flush();
       $timeout.flush(2000);
 
       expect($location.path.calls.mostRecent().args[0]).toEqual('/');
@@ -207,6 +210,7 @@
       $rootScope.vm.launchExperiment();
       $rootScope.vm.joiningExperiment = false;
 
+      $httpBackend.flush();
       $timeout.flush(2000);
 
       expect($location.path.calls.mostRecent().args[0]).toEqual('/');
@@ -221,6 +225,7 @@
       $rootScope.vm.launchExperiment();
       $rootScope.vm.cancelLaunch();
 
+      $httpBackend.flush();
       $timeout.flush(2000);
 
       expect($rootScope.vm.joiningExperiment).toEqual(false);
@@ -230,6 +235,11 @@
      it('should destroy the experiment service on exit', function () {
 
       renderDemoWebPage();
+
+      $rootScope.vm.launchExperiment();
+
+      $httpBackend.flush();
+      $timeout.flush(2000);
 
       spyOn($rootScope.vm.experimentsService, 'destroy');
       $rootScope.$destroy();
