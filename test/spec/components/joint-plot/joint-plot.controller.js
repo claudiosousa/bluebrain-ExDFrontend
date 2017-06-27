@@ -81,20 +81,6 @@
       expect(controller.plot.curves.jointa_position.length).toBe(2);
     });
 
-    it('should hide on resize begin', function() {
-      expect(element.hasClass('resizing')).toBe(false);
-      scope.onResizeBegin();
-      expect(element.hasClass('resizing')).toBe(true);
-    });
-
-    it('should show on resize end', inject(function($timeout) {
-      scope.onResizeBegin();
-      expect(element.hasClass('resizing')).toBe(true);
-      scope.onResizeEnd();
-      $timeout.flush();
-      expect(element.hasClass('resizing')).toBe(false);
-    }));
-
     it('should unsusbscribe when destroyed', function() {
       parentscope.$destroy();
       parentscope.$digest();

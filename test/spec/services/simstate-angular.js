@@ -35,7 +35,7 @@ describe('Services: simulation state', function () {
     });
   }));
 
-  beforeEach(module('gz3dServices'));
+  beforeEach(module('gz3dModule'));
   beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide) {
     // Mock RosLib

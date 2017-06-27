@@ -20,7 +20,7 @@
 (function () {
     'use strict';
 
-    angular.module('userNavigationModule', ['nrpUser', 'gz3dServices'])
+    angular.module('userNavigationModule', ['nrpUser', 'gz3dModule'])
       .constant('NAVIGATION_MODES', {
         FREE_CAMERA: 'FreeCamera',
         GHOST: 'Ghost',
@@ -82,10 +82,9 @@
                     that.removeAvatar();
 
                     // set up controls
-                    var domElementForKeyBindings = document.getElementsByTagName('body')[0];
-                    that.freeCameraControls = new THREE.FirstPersonControls(that.userCamera, gz3d.scene.container, domElementForKeyBindings);
-                    that.lookatRobotControls = new THREE.LookatRobotControls(that.userCamera,gz3d.scene.getByName('robot'),gz3d.scene.container, domElementForKeyBindings);
-                    that.avatarControls = new THREE.AvatarControls(that, gz3d, gz3d.scene.container, domElementForKeyBindings);
+                    that.freeCameraControls = new THREE.FirstPersonControls(gz3d.scene.viewManager.mainUserView);
+                    that.lookatRobotControls = new THREE.LookatRobotControls(gz3d.scene.viewManager.mainUserView, gz3d.scene.getByName('robot'));
+                    that.avatarControls = new THREE.AvatarControls(that, gz3d);
                     that.avatarControls.createAvatarTopics(that.avatarObjectName);
 
                     // start in free camera mode

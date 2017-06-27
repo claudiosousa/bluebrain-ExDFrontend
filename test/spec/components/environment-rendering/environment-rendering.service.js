@@ -3,13 +3,13 @@
 
 describe('Services: environmentRenderingService', function () {
 
-  var $rootScope;
+  var $q, $rootScope;
 
   var STATE;
 
   var environmentRenderingService;
   var stateService, gz3d, userContextService, assetLoadingSplash, simulationInfo, nrpAnalytics, isNotARobotPredicate,
-    userNavigationService, collab3DSettingsService;
+    userNavigationService, collab3DSettingsService, bbpConfig;
 
   var frameInterval, lastFrameTime;
 
@@ -24,30 +24,6 @@ describe('Services: environmentRenderingService', function () {
       removeStateCallback: jasmine.createSpy('removeStateCallback')
     };
     $provide.value('stateService', stateServiceMock);
-
-    var gz3dMock = {
-      Initialize: jasmine.createSpy('Initialize'),
-      deInitialize: jasmine.createSpy('deInitialize'),
-      setLightHelperVisibility: jasmine.createSpy('setLightHelperVisibility'),
-      iface: {
-        addCanDeletePredicate: jasmine.createSpy('addCanDeletePredicate'),
-        setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
-        webSocket: {
-          disableRebirth: jasmine.createSpy('disableRebirth')
-        }
-      },
-      scene: {
-        setDefaultCameraPose: {
-          apply: jasmine.createSpy('apply')
-        },
-        render: jasmine.createSpy('render'),
-        showLightHelpers: undefined,
-        viewManager: {
-          views: []
-        }
-      }
-    };
-    $provide.value('gz3d', gz3dMock);
 
     var userNavigationServiceMock = {
       init: jasmine.createSpy('init'),
@@ -92,10 +68,14 @@ describe('Services: environmentRenderingService', function () {
     module('environmentRenderingModule');
     module('exdFrontendApp.Constants');
     module('simulationInfoMock');
+    module('bbpConfigMock');
+    module('gz3dMock');
+
     // inject service for testing.
-    inject(function (_$rootScope_, _STATE_, _environmentRenderingService_, _nrpAnalytics_, _stateService_,
+    inject(function (_$q_, _$rootScope_, _STATE_, _environmentRenderingService_, _nrpAnalytics_, _stateService_,
                      _gz3d_, _isNotARobotPredicate_, _userContextService_, _assetLoadingSplash_, _simulationInfo_,
-                     _userNavigationService_, _collab3DSettingsService_) {
+                     _userNavigationService_, _collab3DSettingsService_, _bbpConfig_) {
+      $q = _$q_;
       $rootScope = _$rootScope_;
       STATE = _STATE_;
 
@@ -109,6 +89,7 @@ describe('Services: environmentRenderingService', function () {
       simulationInfo = _simulationInfo_;
       userNavigationService = _userNavigationService_;
       collab3DSettingsService = _collab3DSettingsService_;
+      bbpConfig = _bbpConfig_;
     });
   });
 
@@ -141,7 +122,7 @@ describe('Services: environmentRenderingService', function () {
 
     expect(environmentRenderingService.initAnimationFrameFunctions).toHaveBeenCalled();
     expect(environmentRenderingService.setFPSLimit).toHaveBeenCalled();
-    expect(environmentRenderingService.sceneInitialized.promise).toBeDefined();
+    expect(environmentRenderingService.sceneInitialized).toBeDefined();
     expect(gz3d.Initialize).toHaveBeenCalled();
     expect(gz3d.iface.addCanDeletePredicate).toHaveBeenCalledWith(isNotARobotPredicate);
     expect(gz3d.iface.addCanDeletePredicate).toHaveBeenCalledWith(userContextService.hasEditRights);
@@ -152,7 +133,7 @@ describe('Services: environmentRenderingService', function () {
     expect(environmentRenderingService.updateInitialCameraPose).toHaveBeenCalledWith(simulationInfo.experimentDetails.cameraPose);
     expect(environmentRenderingService.animate).toHaveBeenCalled();
 
-    environmentRenderingService.sceneInitialized.resolve();
+    environmentRenderingService.deferredSceneInitialized.resolve();
     $rootScope.$digest();
 
     expect(environmentRenderingService.initComposerSettings).toHaveBeenCalled();
@@ -312,6 +293,7 @@ describe('Services: environmentRenderingService', function () {
   });
 
   it(' - updateInitialCameraPose()', function () {
+    gz3d.scene.setDefaultCameraPose.apply = jasmine.createSpy('apply');
     var pose = {};
     environmentRenderingService.updateInitialCameraPose(pose);
 
@@ -326,6 +308,8 @@ describe('Services: environmentRenderingService', function () {
   });
 
   it(' - onSceneLoaded()', function () {
+    spyOn(environmentRenderingService.deferredSceneInitialized, 'resolve').and.callThrough();
+
     environmentRenderingService.assetLoadingSplashScreen = {};
     environmentRenderingService.sceneInitialized = {
       resolve: jasmine.createSpy('resolve')
@@ -336,7 +320,7 @@ describe('Services: environmentRenderingService', function () {
 
     expect(environmentRenderingService.assetLoadingSplashScreen).not.toBeDefined();
     expect(gz3d.scene.showLightHelpers).toBe(true);
-    expect(environmentRenderingService.sceneInitialized.resolve).toHaveBeenCalled();
+    expect(environmentRenderingService.deferredSceneInitialized.resolve).toHaveBeenCalled();
     expect(gz3d.setLightHelperVisibility).toHaveBeenCalled();
     expect(userNavigationService.init).toHaveBeenCalled();
     expect(environmentRenderingService.sceneLoading).toBe(false);
@@ -346,23 +330,6 @@ describe('Services: environmentRenderingService', function () {
     environmentRenderingService.initComposerSettings();
 
     expect(collab3DSettingsService.loadSettings).toHaveBeenCalled();
-  });
-
-  this.hasCameraView = function () {
-    return gz3d.scene && gz3d.scene.viewManager && gz3d.scene.viewManager.views.some(function(v){return v.type && v.type === 'camera';});
-  };
-
-  it(' - hasCameraView()', function () {
-    gz3d.scene.viewManager.views.push({
-      type: 'not-a-camera'
-    });
-    expect(environmentRenderingService.hasCameraView()).toBe(false);
-
-    gz3d.scene.viewManager.views.push({
-      type: 'camera'
-    });
-    expect(environmentRenderingService.hasCameraView()).toBe(true);
-
   });
 
 });

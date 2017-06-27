@@ -95,7 +95,7 @@ describe('Services: simulation-config-service', function ()
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
-  beforeEach(module('gz3dServices'));
+  beforeEach(module('gz3dModule'));
 
   // load the service to test and mock the necessary service
 

@@ -2,9 +2,11 @@
 <link rel="stylesheet" href="components/dynamic-view-overlay/dynamic-view-overlay.style.css"/>
 <!-- endbuild -->
 
-<div movable resizeable show-on-top
-     randomize-initial-position random-position-parent-selector="vm.dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR"
+<div movable movable-anchor=".titlebar-name" show-on-top resizeable="true"
      class="dynamic-view-overlay-wrapper">
-  <dynamic-view></dynamic-view>
-  <button type="button" class="button-close" data-ng-click="vm.closeOverlay()">×</button>
+  <div class="dynamic-view-overlay-titlebar">
+    <h6 class="titlebar-name">{{vm.channelType.name}}</h6>
+    <button type="button" class="titlebar-button-close" data-ng-click="vm.closeOverlay()">×</button>
+  </div>
+  <dynamic-view class="dynamic-view-overlay-content"></dynamic-view>
 </div>

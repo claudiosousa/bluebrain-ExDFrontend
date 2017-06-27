@@ -31,7 +31,7 @@
 
         // We check whether an attribute is present in this HTML element, i.e. if it looks like this for instance:
         // <div moveable resizeable keep-aspect-ratio>...</div>
-        var keepAspectRatio = angular.isDefined(attrs.keepAspectRatio);
+        var keepAspectRatio = element[0].getAttribute('keep-aspect-ratio');
 
         // This amount of pixels is used in order to avoid scrollbars to appear on the right / on the bottom.
         var SAFETY_PAD = 10;
@@ -42,6 +42,18 @@
         // should be resizeable and is only visible through a small image that visually indicates its resizeability.
         var resizeDiv = angular.element('<div class="resizeable"></div>');
         element.append(resizeDiv);
+        resizeDiv.on('mousedown', mousedown);
+        scope.$watch(
+          function() { return element.attr('resizeable') === 'true'; },
+          (newValue) => {
+            if (newValue === true) {
+              resizeDiv[0].style.visibility = 'visible';
+            } else {
+              resizeDiv[0].style.visibility = 'hidden';
+            }
+          },
+          true
+        );
 
         var mouseDownPosX, mouseDownPosY, mouseDownHeight, mouseDownWidth, aspectRatio = null;
 
@@ -50,17 +62,19 @@
           var maxHeight = $window.innerHeight - element.offset().top - SAFETY_PAD;
 
           var newWidth, newHeight;
-          if (!keepAspectRatio) {
+          if (keepAspectRatio === null) {
+            // no attribute 'keep-aspect-ratio'
             newWidth = Math.min(size.initWidth + size.mouseOffsetX, maxWidth);
             newHeight = Math.min(size.initHeight + size.mouseOffsetY, maxHeight);
           } else {
+            let aspectRatio = parseFloat(keepAspectRatio);
             // don't grow bigger than maxWidth
             newWidth = Math.min(size.initWidth + size.mouseOffsetX, maxWidth);
-            newHeight = newWidth * (size.initHeight / size.initWidth);
+            newHeight = newWidth / aspectRatio;
             // check for maxHeight and adjust if necessary
             if (newHeight > maxHeight) {
               newHeight = maxHeight;
-              newWidth = newHeight * (size.initWidth / size.initHeight);
+              newWidth = newHeight * aspectRatio;
             }
           }
 
@@ -73,6 +87,8 @@
         function mousedown(event) {
           event.stopPropagation();
           event.preventDefault();
+
+          keepAspectRatio = element[0].getAttribute('keep-aspect-ratio');
 
           if (angular.isFunction(scope.onResizeBegin)) {
             scope.onResizeBegin();
@@ -103,7 +119,7 @@
           element.css("width", (newSize.width / window.innerWidth) * FRACTION_TO_PERCENTAGE + '%');
 
           // guarantee aspect ratio in case of min-width / -height
-          if (keepAspectRatio) {
+          if (angular.isDefined(attrs.keepAspectRatio)) {
             var currentWidth = element.width();
             var currentHeight = element.height();
             if ((currentWidth / currentHeight) < aspectRatio) {
@@ -124,8 +140,6 @@
           $document.off('mousemove', mousemove);
           $document.off('mouseup', mouseup);
         }
-
-        resizeDiv.on('mousedown', mousedown);
       }
     };
   }]);

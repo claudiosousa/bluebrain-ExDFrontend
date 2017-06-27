@@ -27,7 +27,8 @@
           templateUrl: 'components/environment-rendering/environment-rendering.template.html',
           restrict: 'E',
           scope: true,
-          controller: 'EnvironmentRenderingController'
+          controller: 'EnvironmentRenderingController',
+          controllerAs: 'vm'
         };
       }]);
 }());

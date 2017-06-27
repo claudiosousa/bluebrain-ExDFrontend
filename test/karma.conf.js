@@ -100,6 +100,7 @@ module.exports = function(config) {
       'node_modules/n3-charts/build/LineChart.js',
       'test/support/**/*.js',
       './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find
+      'app/components/**/*.modules.js', // files defining modules first
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
       'app/scripts/**/*.js',
       'app/components/**/*.js',

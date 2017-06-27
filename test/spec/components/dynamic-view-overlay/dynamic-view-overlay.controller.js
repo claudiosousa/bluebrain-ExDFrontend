@@ -57,16 +57,23 @@ describe('Controller: DynamicViewOverlayController', function() {
 
   it(' - setDynamicViewChannel()', function() {
     spyOn(dynamicViewController, 'setViewContentViaChannelType');
+    spyOn(overlayController, 'applyChannelDefaults');
+    spyOn(overlayController, 'randomizePosition');
+
     var deferredController = $q.defer();
     dynamicViewOverlayService.getController.and.returnValue(deferredController.promise);
-    var channelType = 'test-channel';
+    var channel = {
+      directive: 'test-channel'
+    };
 
-    overlayController.setDynamicViewChannel(channelType);
+    overlayController.setDynamicViewChannel(channel);
     deferredController.resolve(dynamicViewController);
     $scope.$digest();
 
-    expect(dynamicViewController.setViewContentViaChannelType).toHaveBeenCalledWith(channelType);
-    expect(overlayController.channelType).toBe(channelType);
+    expect(dynamicViewController.setViewContentViaChannelType).toHaveBeenCalledWith(channel);
+    expect(overlayController.channelType).toBe(channel);
+    expect(overlayController.applyChannelDefaults).toHaveBeenCalled();
+    expect(overlayController.randomizePosition).toHaveBeenCalled();
   });
 
 });

@@ -9,7 +9,7 @@
     static get WINDOW_TIME() { return 10; }
     get properties() { return ["position", "velocity", "effort"]; }
 
-    constructor(scope, RESET_TYPE, jointService) {
+    constructor($element, scope, RESET_TYPE, jointService, dynamicViewOverlayService) {
       this.plot = {
         curves: {},
         options: {
@@ -41,6 +41,13 @@
       jointService.subscribe(messageCallback);
 
       scope.$on('$destroy', () => jointService.unsubscribe(messageCallback));
+
+      // if we are inside an overlay, set size at start
+      // linechart keeps increasing in size with every draw if container doesn't have a set size
+      let overlayWrapper = dynamicViewOverlayService.getParentOverlayWrapper($element);
+      if (overlayWrapper) {
+        overlayWrapper.style.height = '300px';
+      }
     }
 
     onNewJointMessage(message) {
@@ -109,6 +116,12 @@
 
   angular
     .module('jointPlotModule', ['bbpConfig'])
-    .controller('JoinPlotController', ['$scope', 'RESET_TYPE', 'jointService', (...args) => new JoinPlotController(...args)]);
+    .controller('JoinPlotController', [
+      '$element',
+      '$scope',
+      'RESET_TYPE',
+      'jointService',
+      'dynamicViewOverlayService',
+      (...args) => new JoinPlotController(...args)]);
 
 })();

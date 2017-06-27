@@ -27,9 +27,9 @@
 (function () {
   'use strict';
 
-  var gz3dServices = angular.module('gz3dServices', []);
+  var gz3dModule = angular.module('gz3dModule');
 
-  gz3dServices.factory('gz3d', [
+  gz3dModule.factory('gz3d', [
     '$rootScope', '$window', '$compile', 'simulationInfo', 'bbpConfig',
     function ($rootScope, $window, $compile, simulationInfo, bbpConfig) {
 
@@ -41,29 +41,7 @@
       function GZ3DService() {
 
         var that = this;
-
-        var requestId = null;
         var isInitialized = false;
-        var offsetHeightListenerUnregister = null;
-
-        var resizeGZ3D = function() {
-          that.scene.setWindowSize(that.container.offsetWidth, that.container.offsetHeight);
-        };
-
-        this.createRenderContainer = function(adjustable, name, topic) {
-          var renderContainer,
-            renderContainerHTML = '<camera-view keep-aspect-ratio class="render-view-container camera-view-window"';
-
-          if (adjustable) {
-            renderContainerHTML += ' movable resizeable';
-          }
-          renderContainerHTML += ' topic="' + topic + '"';
-          renderContainerHTML += ' camera-name=' + name + '></camera-view>';
-
-          renderContainer = $compile(renderContainerHTML)($rootScope)[0];
-
-          return renderContainer;
-        };
 
         this.isGlobalLightMaxReached = function () {
           if (that.scene === undefined) {
@@ -129,42 +107,22 @@
             GZ3D.webSocketToken = token;
           }
 
-          this.container = document.getElementById('container');
-
           this.scene = new GZ3D.Scene();
-          this.scene.viewManager.setCallbackCreateRenderContainer(this.createRenderContainer);
 
           this.gui = new GZ3D.Gui(this.scene);
           this.iface = new GZ3D.GZIface(this.scene, this.gui);
           this.sdfParser = new GZ3D.SdfParser(this.scene, this.gui, this.iface);
 
-          $($window).on('resize', resizeGZ3D, false);
-
-          //TODO: is this necessary?
-          offsetHeightListenerUnregister = $rootScope.$watch(function() {
-            return that.container.offsetHeight;
-          }, function(newValue, oldValue) {
-            if ((newValue !== oldValue) && angular.isDefined(that.scene)) { resizeGZ3D(); }
-          }, true);
-
           isInitialized = true;
         };
 
         this.deInitialize = function() {
-          if (angular.isFunction(offsetHeightListenerUnregister)) {
-            offsetHeightListenerUnregister();
-          }
-          $($window).off('resize', resizeGZ3D, false);
-          $window.cancelAnimationFrame(that.requestId);
-
           delete that.sdfParser;
           delete that.iface;
           delete that.gui;
           delete that.scene;
 
-          delete that.container;
           delete that.stats;
-          delete that.createRenderContainer;
 
           isInitialized = false;
         };

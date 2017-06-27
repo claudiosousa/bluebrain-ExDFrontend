@@ -16,8 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-/* global THREE: false */
-/* global GZ3D: false */
+
 /* global console: false */
 
 (function () {
@@ -50,14 +49,17 @@
           this.maxDropCycles = 10;
           this.skippedFramesForDropCycles = 5;
           this.sceneLoading = true;
+          this.deferredSceneInitialized = $q.defer();
 
-          this.init = function() {
+          this.sceneInitialized = function() {
+            return this.deferredSceneInitialized.promise;
+          };
+
+          this.init = function () {
             this.initAnimationFrameFunctions();
 
             // default to 30 fps cap
             this.setFPSLimit(FPS_LIMIT.FPS_30);
-
-            this.sceneInitialized = $q.defer();
 
             stateService.getCurrentState().then(function () {
               if (stateService.currentState !== STATE.STOPPED) {
@@ -83,7 +85,7 @@
               }
             });
 
-            this.sceneInitialized.promise.then(function(){
+            this.deferredSceneInitialized.promise.then(function () {
               that.initComposerSettings();
             });
           };
@@ -106,7 +108,7 @@
             gz3d.deInitialize();
           };
 
-          this.animate = function() {
+          this.animate = function () {
             that.requestID = that.requestAnimationFrame(that.animate);
 
             if (!that.isElementVisible()) {
@@ -141,7 +143,7 @@
             }
           };
 
-          this.update = function(tElapsed) {
+          this.update = function (tElapsed) {
             if (!angular.isDefined(gz3d.scene)) {
               return;
             }
@@ -150,7 +152,7 @@
             gz3d.scene.render();
           };
 
-          this.initAnimationFrameFunctions = function() {
+          this.initAnimationFrameFunctions = function () {
             /**
              * global requestAnimationFrame() and cancelAnimationFrame()
              *
@@ -169,45 +171,47 @@
             this.requestAnimationFrame = window.requestAnimationFrame.bind(window);
             this.cancelAnimationFrame = window.cancelAnimationFrame.bind(window);
 
-            var vendors = [ 'ms', 'moz', 'webkit', 'o' ];
-            for ( var x = 0; x < vendors.length && !this.requestAnimationFrame; x = x+1 ) {
-              this.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ].bind(window);
-              this.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ].bind(window) || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ].bind(window);
+            var vendors = ['ms', 'moz', 'webkit', 'o'];
+            for (var x = 0; x < vendors.length && !this.requestAnimationFrame; x = x + 1) {
+              this.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'].bind(window);
+              this.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'].bind(window) || window[vendors[x] + 'CancelRequestAnimationFrame'].bind(window);
             }
 
-            if ( this.requestAnimationFrame === undefined && setTimeout !== undefined ) {
-              this.requestAnimationFrame = function ( callback ) {
-                var currTime = Date.now(), timeToCall = Math.max( 0, this.frameInterval - ( currTime - this.tLastFrame ) );
-                var id = setTimeout( function() { callback( currTime + timeToCall ); }, timeToCall );
+            if (this.requestAnimationFrame === undefined && setTimeout !== undefined) {
+              this.requestAnimationFrame = function (callback) {
+                var currTime = Date.now(),
+                  timeToCall = Math.max(0, this.frameInterval - ( currTime - this.tLastFrame ));
+                var id = setTimeout(function () {
+                  callback(currTime + timeToCall);
+                }, timeToCall);
                 this.tLastFrame = currTime + timeToCall;
                 return id;
               };
               console.info('requestAnimationFrame undefined, using self-defined');
             }
 
-            if( this.cancelAnimationFrame === undefined && clearTimeout !== undefined ) {
+            if (this.cancelAnimationFrame === undefined && clearTimeout !== undefined) {
               console.info('cancelAnimationFrame undefined, using self-defined');
-              this.cancelAnimationFrame = function ( id ) { clearTimeout( id ); };
+              this.cancelAnimationFrame = function (id) {
+                clearTimeout(id);
+              };
             }
           };
 
-          this.setFPSLimit = function(fps) {
+          this.setFPSLimit = function (fps) {
             this.frameInterval = 1000 / fps;
           };
 
-          this.isElementVisible = function() {
+          this.isElementVisible = function () {
             // Check page visibily
             var isPageVisible = true;
-            if (typeof document.hidden !== 'undefined')
-            {
+            if (typeof document.hidden !== 'undefined') {
               isPageVisible = !document.hidden;
             }
-            else if (typeof document.msHidden !== 'undefined')
-            {
+            else if (typeof document.msHidden !== 'undefined') {
               isPageVisible = !document.msHidden;
             }
-            else if (typeof document.webkitHidden !== 'undefined')
-            {
+            else if (typeof document.webkitHidden !== 'undefined') {
               isPageVisible = !document.webkitHidden;
             }
 
@@ -239,24 +243,19 @@
 
             // make light's helper geometry visible
             gz3d.scene.showLightHelpers = true;
-            that.sceneInitialized.resolve();
+            that.deferredSceneInitialized.resolve();
             gz3d.setLightHelperVisibility();
             userNavigationService.init();
             that.sceneLoading = false;
           };
 
           // Init composer settings
-          this.initComposerSettings = function ()
-          {
+          this.initComposerSettings = function () {
             this.loadingEnvironmentSettingsPanel = true;
             collab3DSettingsService.loadSettings()
-            .finally(function () {
-              that.loadingEnvironmentSettingsPanel = false;
-            });
-          };
-
-          this.hasCameraView = function () {
-            return gz3d.scene && gz3d.scene.viewManager && gz3d.scene.viewManager.views.some(function(v){return v.type && v.type === 'camera';});
+              .finally(function () {
+                that.loadingEnvironmentSettingsPanel = false;
+              });
           };
         }
 

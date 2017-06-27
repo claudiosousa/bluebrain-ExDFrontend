@@ -44,6 +44,7 @@
                 dynamicViewOverlayService,
                 helpTooltipService,
                 editorToolbarService,
+                gz3dViewsService,
                 clientLoggerService,
                 bbpConfig,
                 STATE,
@@ -71,6 +72,7 @@
       this.userNavigationService = userNavigationService;
       this.videoStreamService = videoStreamService;
       this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
+      this.gz3dViewsService = gz3dViewsService;
 
       this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
       this.EDIT_MODE = EDIT_MODE;
@@ -442,22 +444,22 @@
 
     // robot view
     robotViewButtonClickHandler() {
-      if (!this.environmentRenderingService.hasCameraView()) {
+      if (!this.gz3dViewsService.hasCameraView()) {
         return;
       }
-      this.editorToolbarService.showRobotView = !this.editorToolbarService.isRobotCameraViewActive;
+
+      // open overlays for every view that doesn't have a container
+      this.gz3dViewsService.views.forEach(
+        (view, index, array) => {
+          if (view.container === undefined) {
+            this.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
+          }
+        }
+      );
+
       this.nrpAnalytics.eventTrack('Toggle-robot-view', {
         category: 'Simulation-GUI',
-        value: this.editorToolbarService.isRobotCameraViewActive
-      });
-      this.gz3d.scene.viewManager.views.forEach((view) => {
-        if (angular.isDefined(view.type) && view.type ===
-            'camera' /* view will be named the same as the corresponding camera sensor from the gazebo .sdf */) {
-          view.active = !view.active;
-          view.container.style.visibility = view.active ?
-              'visible' :
-              'hidden';
-        }
+        value: true
       });
     }
 
@@ -533,15 +535,12 @@
       });
     };
 
-    createDynamicOverlay(componentName, showOnlyOneInstance = false) {
-      this.dynamicViewOverlayService.isOverlayOpen(componentName).then(
+    createDynamicOverlay(channel, showOnlyOneInstance = false) {
+      this.dynamicViewOverlayService.isOverlayOpen(channel).then(
           overlayOpen => {
             // create a new view, only if multiple instances are possible or the view is not open
             if (!showOnlyOneInstance || !overlayOpen) {
-              this.dynamicViewOverlayService.createOverlay(
-                  angular.element(this.dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR)[0],
-                  /* parent element to attach overlay to */
-                  componentName);
+              this.dynamicViewOverlayService.createOverlay(channel, true);
             }
           });
     };
@@ -573,6 +572,7 @@
             'dynamicViewOverlayService',
             'helpTooltipService',
             'editorToolbarService',
+            'gz3dViewsService',
             'clientLoggerService',
             'bbpConfig',
             'STATE',

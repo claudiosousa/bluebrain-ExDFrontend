@@ -173,14 +173,14 @@
             </div>
             <!-- toggle jointPlot -->
 
-            <!-- toggle robot camera view --><!-- todo: check if tooltip-enable="!hasCameraView" is valid, think it should be like "!environmentRenderingService.hasCameraView()" (Sven, Sandro)-->
+            <!-- toggle robot camera view -->
             <div class="hbp-toolbar-action hide-overflow ng-hide"
-                 ng-class="{'active': vm.editorToolbarService.isRobotCameraViewActive, 'disabled-image-with-events': !vm.environmentRenderingService.hasCameraView()}"
+                 ng-class="{'disabled-image-with-events': !vm.gz3dViewsService.hasCameraView()}"
                  ng-click="vm.robotViewButtonClickHandler()"
                  help-tooltip="ROBOT_VIEW"
                  tooltip="No camera is available"
                  tooltip-trigger="mouseenter"
-                 tooltip-enable="!vm.environmentRenderingService"
+                 tooltip-enable="!vm.gz3dViewsService.hasCameraView()"
                  ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
               <i class="fa fa-eye fa-2x vertcenter"></i>
             </div>

@@ -6,22 +6,15 @@
 /* global THREE: true */
 /* global console: false */
 
-THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKeyBindings)
+THREE.LookatRobotControls = function (userView, robot)
 {
   'use strict';
 
   var that = this;
 
+  this.userView = userView;
   this.robot = robot;
-  this.camera = camera;
   this.activeLook = true;
-  this.domElement = angular.isDefined(domElement) ? domElement : document;
-  this.domElementForKeyBindings = angular.isDefined(domElementForKeyBindings) ? domElementForKeyBindings : document;
-
-  if (this.domElement !== document)
-  {
-    this.domElement.setAttribute('tabindex', -1);
-  }
 
   // Set to false to disable this control
   this.enabled = false;
@@ -299,7 +292,7 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
 
     var currentDistance;
 
-    this.currentVector = this.camera.position.clone();
+    this.currentVector = this.userView.camera.position.clone();
     this.currentVector.sub(this.robot.position);
     currentDistance = this.currentVector.length();
     this.currentVector.normalize();
@@ -370,8 +363,8 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
     var v = this.currentVector.clone();
     v.multiplyScalar(currentDistance);
     v.add(this.robot.position);
-    this.camera.position.copy(v);
-    this.camera.lookAt(this.robot.position);
+    this.userView.camera.position.copy(v);
+    this.userView.camera.lookAt(this.robot.position);
   };
 
   this.onMouseDownManipulator = function (action)
@@ -386,36 +379,45 @@ THREE.LookatRobotControls = function (camera, robot, domElement, domElementForKe
 
   this.attachEventListeners = function ()
   {
-    this.domElement.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-    this.domElement.addEventListener('mousedown', this.onMouseDown, false);
-    this.domElement.addEventListener('mousemove', this.onMouseMove, false);
-    this.domElement.addEventListener('mouseup', this.onMouseUp, false);
-    this.domElement.addEventListener('touchstart', this.onTouchStart, false);
-    this.domElement.addEventListener('touchmove', this.onTouchMove, false);
-    this.domElement.addEventListener('touchend', this.onTouchEnd, false);
+    var userViewDOM = this.userView.container;
+    this.domElementPointerBindings = userViewDOM ? userViewDOM : document;
+    this.domElementKeyboardBindings = document;
 
-    this.domElementForKeyBindings.addEventListener('keydown', this.onKeyDown, false);
-    this.domElementForKeyBindings.addEventListener('keyup', this.onKeyUp, false);
+    this.domElementPointerBindings.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+    this.domElementPointerBindings.addEventListener('mousedown', this.onMouseDown, false);
+    this.domElementPointerBindings.addEventListener('mousemove', this.onMouseMove, false);
+    this.domElementPointerBindings.addEventListener('mouseup', this.onMouseUp, false);
+    this.domElementPointerBindings.addEventListener('touchstart', this.onTouchStart, false);
+    this.domElementPointerBindings.addEventListener('touchmove', this.onTouchMove, false);
+    this.domElementPointerBindings.addEventListener('touchend', this.onTouchEnd, false);
 
-    this.domElement.addEventListener('mousewheel', this.onMouseWheel, false);
-    this.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel, false);
+    this.domElementPointerBindings.addEventListener('mousewheel', this.onMouseWheel, false);
+    this.domElementPointerBindings.addEventListener('DOMMouseScroll', this.onMouseWheel, false);
+
+    this.domElementKeyboardBindings.addEventListener('keydown', this.onKeyDown, false);
+    this.domElementKeyboardBindings.addEventListener('keyup', this.onKeyUp, false);
   };
 
   this.detachEventListeners = function ()
   {
-    this.domElement.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-    this.domElement.removeEventListener('mousedown', this.onMouseDown, false);
-    this.domElement.removeEventListener('mousemove', this.onMouseMove, false);
-    this.domElement.removeEventListener('mouseup', this.onMouseUp, false);
-    this.domElement.removeEventListener('touchstart', this.onTouchStart, false);
-    this.domElement.removeEventListener('touchmove', this.onTouchMove, false);
-    this.domElement.removeEventListener('touchend', this.onTouchEnd, false);
+    if (this.domElementPointerBindings) {
+      this.domElementPointerBindings.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+      this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
+      this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
+      this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
+      this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
+      this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
+      this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
 
-    this.domElementForKeyBindings.removeEventListener('keydown', this.onKeyDown, false);
-    this.domElementForKeyBindings.removeEventListener('keyup', this.onKeyUp, false);
+      this.domElementPointerBindings.removeEventListener('mousewheel', this.onMouseWheel, false);
+      this.domElementPointerBindings.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
+    }
 
-    this.domElement.removeEventListener('mousewheel', this.onMouseWheel, false);
-    this.domElement.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
+    if (this.domElementKeyboardBindings) {
+      this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
+      this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
+    }
+
   };
 
   function bind(scope, fn)

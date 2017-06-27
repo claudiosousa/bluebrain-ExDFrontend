@@ -5,7 +5,7 @@ describe('Controller: editorPanelCtrl', function () {
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
-  beforeEach(module('gz3dServices'));
+  beforeEach(module('gz3dModule'));
 
   var $httpBackend,
       experimentCtrl,

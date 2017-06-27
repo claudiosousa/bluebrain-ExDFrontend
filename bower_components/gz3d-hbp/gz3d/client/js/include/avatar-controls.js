@@ -5,7 +5,7 @@
 /* global THREE: true */
 /* global console: false */
 
-THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBindings, domElementKeyboardBindings)
+THREE.AvatarControls = function(userNavigationService, gz3d)
 {
   'use strict';
 
@@ -14,12 +14,6 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   this.userNavigationService = userNavigationService;
 
   this.gz3d = gz3d;
-  this.domElementPointerBindings = angular.isDefined(domElementPointerBindings) ? domElementPointerBindings : document;
-  this.domElementKeyboardBindings = angular.isDefined(domElementKeyboardBindings) ? domElementKeyboardBindings : document;
-
-  if (this.domElementPointerBindings !== document) {
-    this.domElementPointerBindings.setAttribute('tabindex', -1);
-  }
 
   // hardcoded values, should be requestable from model at some point
   this.avatarRadius = 0.15;
@@ -669,6 +663,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   };
 
   this.attachEventListeners = function() {
+    var userViewDOM = this.gz3d.scene.viewManager.mainUserView.container;
+    this.domElementPointerBindings = userViewDOM ? userViewDOM : document;
+    this.domElementKeyboardBindings = document;
+
     this.domElementPointerBindings.addEventListener('mousedown', this.onMouseDown, false);
     this.domElementPointerBindings.addEventListener('mousemove', this.onMouseMove, false);
     this.domElementPointerBindings.addEventListener('mouseup', this.onMouseUp, false);
@@ -681,15 +679,19 @@ THREE.AvatarControls = function(userNavigationService, gz3d, domElementPointerBi
   };
 
   this.detachEventListeners = function() {
-    this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
-    this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
-    this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
-    this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
-    this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
-    this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
+    if (this.domElementPointerBindings) {
+      this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
+      this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
+      this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
+      this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
+      this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
+      this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
+    }
 
-    this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
-    this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
+    if (this.domElementKeyboardBindings) {
+      this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
+      this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
+    }
   };
 
 };

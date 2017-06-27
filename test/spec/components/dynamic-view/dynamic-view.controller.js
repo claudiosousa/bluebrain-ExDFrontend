@@ -30,24 +30,16 @@ describe('Controller: DynamicViewController', function() {
     expect(elementController.viewContainer).toBeDefined();
   });
 
-  it('should allow the definition of default component (a directive) via an attribute', function() {
-    var $scope = $rootScope.$new();
-    element = $compile('<dynamic-view dynamic-view-component="my-directive"></dynamic-view>')($scope);
-    $scope.$digest();
-
-    elementController = element.controller('dynamic-view');
-
-    expect(elementController.viewContainer.innerHTML).toContain('my-directive');
-    expect(elementController.viewContent).toBe('<my-directive></my-directive>');
-  });
-
   it('should allow to set a directive as content (directive is compiled)', function() {
-    var directiveName = 'my-directive';
+    var channel = {
+      name: 'My Channel',
+      directive: 'my-directive'
+    };
 
-    elementController.setViewContentViaChannelType(directiveName);
+    elementController.setViewContentViaChannelType(channel);
 
-    expect(elementController.viewContent).toContain(directiveName);
-    expect(elementController.viewContainer.innerHTML).toContain(directiveName);
+    expect(elementController.viewContent).toContain(channel.directive);
+    expect(elementController.viewContainer.innerHTML).toContain(channel.directive);
   });
 
   it('should allow to set arbitrary content', function() {

@@ -25,7 +25,8 @@
       function($q, $log, $http, simulationInfo, STREAM_URL) {
 
         return {
-          getStreamUrls: getStreamUrls
+          getStreamUrls: getStreamUrls,
+          getStreamingUrlForTopic: getStreamingUrlForTopic
         };
 
         function getStreamUrls() {
@@ -51,6 +52,22 @@
                 })
                 .toArray();
             });
+        }
+
+        function getStreamingUrlForTopic(topic) {
+          let deferredStreamUrl = $q.defer();
+          let videoStreamingUrls = getStreamUrls()
+            .then(function(topics) {
+              return _.keyBy(topics, 'url');
+            });
+          videoStreamingUrls.then(
+            (urls) => {
+              let streamUrl = urls[topic] && urls[topic].fullUrl;
+              deferredStreamUrl.resolve(streamUrl);
+            }
+          );
+
+          return deferredStreamUrl.promise;
         }
 
       }]

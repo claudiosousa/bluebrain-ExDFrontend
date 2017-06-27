@@ -27,13 +27,4 @@ describe('Directive: dynamic-view-overlay', function() {
     expect(elementScope.vm).toBeDefined();
   });
 
-  it('should react to resizing', function() {
-    elementScope.onResizeBegin();
-    expect(element.hasClass('resizing')).toBe(true);
-
-    elementScope.onResizeEnd();
-    $timeout.flush();
-    expect(element.hasClass('resizing')).toBe(false);
-  });
-
 });

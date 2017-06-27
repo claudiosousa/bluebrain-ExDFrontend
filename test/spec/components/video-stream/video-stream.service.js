@@ -76,4 +76,16 @@ describe('Services: video-stream-service', function() {
     $httpBackend.flush();
     $rootScope.$digest();
   });
+
+  it(' - getStreamingUrlForTopic()', function(done) {
+    videoStreamService.getStreamingUrlForTopic(refTopic).then(
+      function(result) {
+        expect(result).toBe(expectedParsedTopics[1].fullUrl);
+        done();
+      }
+    );
+
+    $httpBackend.flush();
+    $rootScope.$digest();
+  });
 });

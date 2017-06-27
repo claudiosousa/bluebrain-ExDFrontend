@@ -12,7 +12,10 @@
     this.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
       then: jasmine.createSpy('then')
     });
+    this.getParentOverlayWrapper = jasmine.createSpy('getParentOverlayWrapper');
+    this.getOverlayParentElement = jasmine.createSpy('getOverlayParentElement');
   })
+
   .constant('DYNAMIC_VIEW_CHANNELS', {
     BRAIN_VISUALIZER: 'brainvisualizer-panel',
     DYNAMIC_VIEW: 'dynamic-view',
@@ -21,5 +24,6 @@
     SPIKE_TRAIN: 'spike-train',
     VIDEO_STREAM: 'video-streams',
     LOG_CONSOLE: 'log-console'
-  });;
+  });
+
 }());

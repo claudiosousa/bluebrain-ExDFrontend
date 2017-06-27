@@ -50,7 +50,7 @@
       'hbpDocumentClient',
       'hbpIdentity',
       'gzangular',
-      'gz3dServices',
+      'gz3dModule',
       'simulationControlServices',
       'colorableObjectModule',
       'simulationStateServices',

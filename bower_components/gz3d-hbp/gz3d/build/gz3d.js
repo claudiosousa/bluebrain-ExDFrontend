@@ -770,8 +770,8 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
   var point, i;
   var higherZ = -1000;
 
-  var viewWidth = this.scene.container.clientWidth;
-  var viewHeight = this.scene.container.clientHeight;
+  var viewWidth = this.scene.getDomElement().clientWidth;
+  var viewHeight = this.scene.getDomElement().clientHeight;
 
   if (this.scene.snapToFloor && !this.disableSnap)
   {
@@ -1255,7 +1255,6 @@ GZ3D.Composer = function (gz3dScene)
 {
     this.gz3dScene = gz3dScene;
     this.scene = gz3dScene.scene;
-    this.webglRenderer = gz3dScene.renderer;
     this.currenSkyBoxTexture = null;
     this.currentSkyBoxID = '';
     this.pbrMaterial = false;
@@ -1356,14 +1355,14 @@ GZ3D.Composer.prototype.lensFlareUpdateCallback = function (object)
 
 GZ3D.Composer.prototype.initView = function (view)
 {
-    var width = view.container.canvas.width;
-    var height = view.container.canvas.height;
+    var width = view.canvas.width;
+    var height = view.canvas.height;
     var camera = view.camera;
 
     //---------------------------------
     // Init the effect composer which handles all post-processing passes.
 
-    view.composer = new THREE.EffectComposer(this.webglRenderer);
+    view.composer = new THREE.EffectComposer(view.renderer);
 
     view.directRenderPass = new THREE.RenderPass(this.scene, camera);       // First pass simply render the scene
     view.directRenderPass.enabled = true;
@@ -1624,6 +1623,8 @@ GZ3D.Composer.prototype.applyShadowSettings = function ()
 
 GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,forcePBRUpdate,shadowReset)
 {
+    var that = this;
+
     this.normalizedMasterSetting = null;
     this.updateComposerWithMasterSettings();
 
@@ -1716,8 +1717,6 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
     {
         this.pbrMaterial = cs.pbrMaterial;
 
-        var that = this;
-
         this.scene.traverse(function (node)
         {
             if (node.material)
@@ -1738,7 +1737,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
 
     this.gz3dScene.viewManager.views.forEach(function (view)
     {
-        if (view.active)
+        if (that.gz3dScene.viewManager.isViewVisible(view))
         {
             // Color curve
 
@@ -1831,16 +1830,14 @@ GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
  *
  */
 
-GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewportHeight)
+GZ3D.Composer.prototype.render = function (view)
 {
     if (view.composer === undefined)    // No ThreeJS composer for this view, we need to initialize it.
     {
         this.initView(view);
     }
-    else if (firstView)
-    {
-        this.webglRenderer.clear();
-    }
+
+    view.renderer.clear();
 
     if (this.pbrMaterial)
     {
@@ -1853,8 +1850,8 @@ GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewp
     }
 
     var camera = view.camera;
-    var width = viewportWidth;
-    var height = viewportHeight;
+    var width = view.container.clientWidth;
+    var height = view.container.clientHeight;
     var cs = this.gz3dScene.normalizedComposerSettings;
     var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
 
@@ -1862,11 +1859,11 @@ GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewp
     {
         this.lensFlare.visible = false;
         this.scene.background = null;
-        this.webglRenderer.render(this.scene, camera);
+        view.renderer.render(this.scene, camera);
     }
     else
     {
-        var pixelRatio = this.webglRenderer.getPixelRatio();
+        var pixelRatio = view.renderer.getPixelRatio();
         var newWidth = Math.floor(width / pixelRatio) || 1;
         var newHeight = Math.floor(height / pixelRatio) || 1;
 
@@ -1934,7 +1931,7 @@ GZ3D.Composer.prototype.render = function (view, firstView, viewportWidth, viewp
             this.scene.background = null;       // Some effects should be disabled during depth buffer rendering
             this.lensFlare.visible = false;
             this.scene.overrideMaterial = view.depthMaterial;
-            this.webglRenderer.render(this.scene, camera, view.depthRenderTarget, true);    // Render to depth buffer now!
+            view.renderer.render(this.scene, camera, view.depthRenderTarget, true);    // Render to depth buffer now!
             this.scene.overrideMaterial = null;
         }
 
@@ -4363,8 +4360,7 @@ GZ3D.GZIface.prototype.onConnected = function()
       background.g = message.background.g;
       background.b = message.background.b;
 
-      this.scene.renderer.clear();
-      this.scene.renderer.setClearColor(background, 1);
+      this.scene.viewManager.setBackgrounds(background);
     }
 
     for (var i = 0; i < message.light.length; ++i)
@@ -5323,47 +5319,14 @@ GZ3D.GZIface.prototype.createSensorFromMsg = function(sensor)
     };
 
     var viewManager = this.scene.viewManager;
-    var widthPercentage = 0.2;  // each view is afforded 20% of the mainContainer width
-    var width = widthPercentage * viewManager.mainContainer.clientWidth;
-    var height = Math.floor(width / aspectRatio);
-    var viewIndex = viewManager.views.length - 1;
-    if (viewIndex < 0) {
-      console.error('Negative view index: the main_view camera is probably missing');
-    }
-    var maxViewsPerLine = Math.floor(1.0 / widthPercentage);
-    var displayParams = {
-      // Align the new view with the previous ones, if any
-      left: Math.floor(width * (viewIndex % maxViewsPerLine)) + 'px',
-      top: height * Math.floor(viewIndex / maxViewsPerLine) + 'px',
-      zIndex: viewManager.mainContainer.style.zIndex + viewIndex + 1,
-      width: Math.floor(width) + 'px',
-      height: height + 'px',
-      adjustable: true,
-      topic: sensor.topic
-    };
-
     var viewName = 'view_' + sensor.name;
-    var view = viewManager.createView(viewName, displayParams, cameraParams);
+    var view = viewManager.createView(viewName, cameraParams);
     if (!view) {
       console.error('GZ3D.GZIface.createSensorFromMsg() - failed to create view ' + viewName);
       return;
     }
     view.type = sensor.type;
-    view.camera.up = new THREE.Vector3(0, 0, 1);  // gazebo's up vector
-    // gazebo's transform for the sensor object is different for some reason
-    // or the camera sensor looks along the x-axis by default instead of negative z-axis
-    view.camera.lookAt(view.camera.localToWorld(new THREE.Vector3(1, 0, 0)));
-    view.camera.updateMatrixWorld();
-
-    // set view inactive and hide at start
-    viewManager.setViewVisibility(view, false);
-
-    // camera visualization
-    var cameraHelper = new THREE.CameraHelper(view.camera);
-    cameraHelper.visible = false;
-    view.camera.cameraHelper = cameraHelper;
-    this.scene.scene.add( cameraHelper );
-    cameraHelper.update();
+    view.topic = sensor.topic;
 
     sensorObj.add(view.camera);
   }
@@ -6189,15 +6152,10 @@ GZ3D.TRANSFORM_TYPE_NAME_PREFIX = {
  * within the scene.
  * @constructor
  */
-GZ3D.Manipulator = function(camera, mobile, domElement, doc)
+GZ3D.Manipulator = function(gz3dScene, mobile)
 {
-
-  // Needs camera for perspective
-  this.camera = camera;
-
-  // For mouse/touch events
-  this.domElement = (domElement !== undefined) ? domElement : document;
-  this.document = (doc !== undefined) ? doc : document;
+  this.gz3dScene = gz3dScene;
+  this.userView = this.gz3dScene.viewManager.mainUserView;
 
   // Mobile / desktop
   this.mobile = (mobile !== undefined) ? mobile : false;
@@ -6701,12 +6659,12 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
     if(this.mobile)
     {
-      this.domElement.addEventListener('touchstart', onTouchStart, false);
+      this.userView.container.addEventListener('touchstart', onTouchStart, false);
     }
     else
     {
-      this.domElement.addEventListener('mousedown', onMouseDown, false);
-      this.domElement.addEventListener('mousemove', onMouseHover, false);
+      this.userView.container.addEventListener('mousedown', onMouseDown, false);
+      this.userView.container.addEventListener('mousemove', onMouseHover, false);
     }
   };
 
@@ -6723,12 +6681,12 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
 
     if(this.mobile)
     {
-      this.domElement.removeEventListener('touchstart', onTouchStart, false);
+      this.userView.container.removeEventListener('touchstart', onTouchStart, false);
     }
     else
     {
-      this.domElement.removeEventListener('mousedown', onMouseDown, false);
-      this.domElement.removeEventListener('mousemove', onMouseHover, false);
+      this.userView.container.removeEventListener('mousedown', onMouseDown, false);
+      this.userView.container.removeEventListener('mousemove', onMouseHover, false);
     }
   };
 
@@ -6745,8 +6703,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     this.object.updateMatrixWorld();
     worldPosition.setFromMatrixPosition(this.object.matrixWorld);
 
-    this.camera.updateMatrixWorld();
-    camPosition.setFromMatrixPosition(this.camera.matrixWorld);
+    this.userView.camera.updateMatrixWorld();
+    camPosition.setFromMatrixPosition(this.userView.camera.matrixWorld);
 
     scale = worldPosition.distanceTo(camPosition) / 6 * this.scale;
     this.gizmo.position.copy(worldPosition);
@@ -7008,8 +6966,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
       }
     }
 
-    scope.document.addEventListener('touchmove', onPointerMove, false);
-    scope.document.addEventListener('touchend', onTouchEnd, false);
+    scope.userView.container.addEventListener('touchmove', onPointerMove, false);
+    scope.userView.container.addEventListener('touchend', onTouchEnd, false);
   }
 
 
@@ -7032,8 +6990,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     scope.selected = 'null';
     scope.hovered = false;
 
-    scope.document.removeEventListener('touchmove', onPointerMove, false);
-    scope.document.removeEventListener('touchend', onTouchEnd, false);
+    scope.userView.container.removeEventListener('touchmove', onPointerMove, false);
+    scope.userView.container.removeEventListener('touchend', onTouchEnd, false);
   }
 
   this.highlightPicker = function (picker) {
@@ -7086,8 +7044,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
       var intersect = intersectObjects(event, pickerAxes[scope.mode].children);
       highlightPicker(intersect.object);
     }
-    scope.document.addEventListener('mousemove', onPointerMove, false);
-    scope.document.addEventListener('mouseup', onMouseUp, false);
+    scope.userView.container.addEventListener('mousemove', onPointerMove, false);
+    scope.userView.container.addEventListener('mouseup', onMouseUp, false);
   }
 
   this.selectPicker = function (event) {
@@ -7102,7 +7060,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     var planeIntersect = intersectObjects(event,
        [intersectionPlanes[currentPlane]]);
 
-    var rect = domElement.getBoundingClientRect();
+    var rect = scope.userView.container.getBoundingClientRect();
     var x = (event.clientX - rect.left) / rect.width;
     var y = (event.clientY - rect.top) / rect.height;
 
@@ -7145,8 +7103,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
       selectPicker(event);
     }
 
-    scope.document.addEventListener('mousemove', onPointerMove, false);
-    scope.document.addEventListener('mouseup', onMouseUp, false);
+    scope.userView.container.addEventListener('mousemove', onPointerMove, false);
+    scope.userView.container.addEventListener('mouseup', onMouseUp, false);
   }
 
   this.onPointerMove = function (event) {
@@ -7169,7 +7127,7 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     var planeIntersect = intersectObjects(event,
         [intersectionPlanes[currentPlane]]);
 
-    var rect = domElement.getBoundingClientRect();
+    var rect = scope.userView.container.getBoundingClientRect();
     var x = (event.clientX - rect.left) / rect.width;
     var y = (event.clientY - rect.top) / rect.height;
 
@@ -7550,8 +7508,8 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
     highlightPicker();
     scope.selected = 'null';
 
-    scope.document.removeEventListener('mousemove', onPointerMove, false);
-    scope.document.removeEventListener('mouseup', onMouseUp, false);
+    scope.userView.container.removeEventListener('mousemove', onPointerMove, false);
+    scope.userView.container.removeEventListener('mouseup', onMouseUp, false);
   }
 
   function onMouseUp(event)
@@ -7569,14 +7527,14 @@ GZ3D.Manipulator = function(camera, mobile, domElement, doc)
   {
     var pointer = event.touches ? event.touches[0] : event;
 
-    var rect = domElement.getBoundingClientRect();
+    var rect = scope.userView.container.getBoundingClientRect();
     var x = (pointer.clientX - rect.left) / rect.width;
     var y = (pointer.clientY - rect.top) / rect.height;
     var i;
 
     pointerVector.set((x) * 2 - 1, - (y) * 2 + 1, 0.5);
 
-    pointerVector.unproject(scope.camera);
+    pointerVector.unproject(scope.userView.camera);
     ray.set(camPosition, pointerVector.sub(camPosition).normalize());
 
     for(i=0;i<objects.length;i++) {objects[i].visible = true;}  // ThreeJS intersectObjects function requires object to be visible
@@ -7674,61 +7632,31 @@ GZ3D.MultiplyShader = {
  * Created by Sandro Weber (webers@in.tum.de).
  */
 
+GZ3D.RENDER_MODE = {
+  MULTIPLE_CONTEXTS: 1,
+  OFFSCREEN_AND_COPY_TO_CANVAS: 2
+};
+
+
 GZ3D.MULTIVIEW_MAX_VIEW_COUNT = 10;
 GZ3D.MULTIVIEW_MAINVIEW_NAME = 'main_view';
-
-GZ3D.MultiView = function(gz3dScene, mainContainer)
-{
-    this.gz3dScene = gz3dScene;
-    this.mainContainer = mainContainer;
-
-    this.init();
+GZ3D.MULTIVIEW_DEFAULT_CAMERA_PARAMS = {
+  fov: 60,
+  aspectRatio: 1.6,
+  near: 0.15,
+  far: 100
 };
 
-GZ3D.MultiView.prototype.init = function()
-{
-    this.views = [];
+GZ3D.MultiView = function (gz3dScene) {
+  this.gz3dScene = gz3dScene;
 
-    this.mainContainer.style.zIndex = 0;
-
-    this.mainContainer.appendChild(this.gz3dScene.renderer.domElement);
-
-    this.createRenderContainerCallback = function() {
-        var renderContainer = document.createElement('div');
-        return renderContainer;
-    };
-
-    this.createMainUserView();
-};
-
-GZ3D.MultiView.prototype.setCallbackCreateRenderContainer = function(callback)
-{
-    this.createRenderContainerCallback = callback;
-};
-
-/**
- * This creates the main view the user will interact with and should always be there.
- */
-GZ3D.MultiView.prototype.createMainUserView = function()
-{
-    var displayParams = {
-        left: '0px',
-        top: '0px',
-        width: '100%',
-        height: '100%',
-        adjustable: false
-    };
-    var cameraParams = {
-        width: 960,
-        height: 600,
-        fov: 60,
-        near: 0.15,
-        far: 100
-    };
-
-    this.mainUserView = this.createView(GZ3D.MULTIVIEW_MAINVIEW_NAME, displayParams, cameraParams);
-
-    return this.mainUserView;
+  this.renderMode = GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS;
+  if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
+    this.renderer = this.createRenderer();
+  }
+  this.views = [];
+  // create the main user view
+  this.mainUserView = this.createView(GZ3D.MULTIVIEW_MAINVIEW_NAME, GZ3D.MULTIVIEW_DEFAULT_CAMERA_PARAMS);
 };
 
 /**
@@ -7737,174 +7665,178 @@ GZ3D.MultiView.prototype.createMainUserView = function()
  * @param displayParams {left, top, width, height, zIndex, adjustable}
  * @param cameraParams {width, height, fov, near, far}
  */
-GZ3D.MultiView.prototype.createView = function(name, displayParams, cameraParams)
-{
-    if (angular.isDefined(this.getViewByName(name))) {
-        console.error('GZ3D.MultiView.createView() - a view of that name already exists (' + name + ')');
-        return undefined;
-    }
+GZ3D.MultiView.prototype.createView = function (name, cameraParams) {
+  if (angular.isDefined(this.getViewByName(name))) {
+    console.error('GZ3D.MultiView.createView() - a view of that name already exists (' + name + ')');
+    return undefined;
+  }
 
-    if (this.views.length >= this.MULTIVIEW_MAX_VIEW_COUNT) {
-        console.warn('GZ3D.MultiView.createView() - creating new view will exceed MULTIVIEW_MAX_VIEW_COUNT(' + this.MULTIVIEW_MAX_VIEW_COUNT + '). This may cause z-ordering issues.');
-    }
+  if (this.views.length >= this.MULTIVIEW_MAX_VIEW_COUNT) {
+    console.warn('GZ3D.MultiView.createView() - creating new view will exceed MULTIVIEW_MAX_VIEW_COUNT(' + this.MULTIVIEW_MAX_VIEW_COUNT + '). This may cause z-ordering issues.');
+  }
 
-    var container = this.createViewContainer(displayParams, name);
-    if (!angular.isDefined(container)) {
-        return undefined;
-    }
+  var that = this;
 
-    // camera
-    var camera = new THREE.PerspectiveCamera(
-      cameraParams.fov,
-      cameraParams.aspectRatio,
-      cameraParams.near,
-      cameraParams.far
-    );
-    camera.name = name;
+  // camera
+  var camera = new THREE.PerspectiveCamera(
+    cameraParams.fov,
+    cameraParams.aspectRatio,
+    cameraParams.near,
+    cameraParams.far
+  );
+  camera.name = name;
+  camera.up = new THREE.Vector3(0, 0, 1);  // gazebo's up vector
+  // gazebo's transform for the sensor object is different for some reason
+  // or the camera sensor looks along the x-axis by default instead of negative z-axis
+  camera.lookAt(camera.localToWorld(new THREE.Vector3(1, 0, 0)));
+  camera.updateMatrixWorld();
+  this.gz3dScene.scene.add(camera);
+
+  // camera visualization
+  var cameraHelper = new THREE.CameraHelper(camera);
+  cameraHelper.visible = false;
+  camera.cameraHelper = cameraHelper;
+  this.gz3dScene.scene.add(cameraHelper);
+  cameraHelper.update();
+
+  var view;
+  if (this.renderMode === GZ3D.RENDER_MODE.MULTIPLE_CONTEXTS) {
+    // renderer
+    var renderer = this.createRenderer();
 
     // assemble view
-    var view = {
-        name: name,
-        active: true,
-        container: container,
-        camera: camera
+    view = {
+      name: name,
+      camera: camera,
+      container: undefined,
+      renderer: renderer,
+      canvas: renderer.domElement,
+      initAspectRatio: cameraParams.aspectRatio
     };
-
-    this.views.push(view);
-    this.mainContainer.appendChild(view.container);
-
-    return view;
-};
-
-GZ3D.MultiView.prototype.createViewContainer = function(displayParams, name)
-{
-    // container div
-    var viewContainer;
-    if (name === GZ3D.MULTIVIEW_MAINVIEW_NAME) {
-        viewContainer = document.createElement('div');
-        viewContainer.className += 'render-view-container';
-    } else {
-        if (!angular.isDefined(this.createRenderContainerCallback)) {
-            console.error('GZ3D.MultiView.createViewContainer() - no callback for creating view reference container defined');
-            return undefined;
-        } else {
-            viewContainer = this.createRenderContainerCallback(displayParams.adjustable, name, displayParams.topic);
-        }
-    }
-    if (!angular.isDefined(viewContainer)) {
-        console.error('GZ3D.MultiView.createViewContainer() - could not create view container via callback');
-        return undefined;
-    }
-
-    // z-index
-    var zIndexTop = parseInt(this.mainContainer.style.zIndex, 10) + this.views.length + 1;
-    viewContainer.style.zIndex = angular.isDefined(displayParams.zIndex) ? displayParams.zIndex : zIndexTop;
-
-    // positioning
-    viewContainer.style.left = displayParams.left;
-    viewContainer.style.top = displayParams.top;
-    viewContainer.style.width = displayParams.width;
-    viewContainer.style.height = displayParams.height;
-
-    var aspectRatio = parseInt(displayParams.height, 10) / parseInt(displayParams.width, 10);
-    viewContainer.style.minHeight = Math.floor(parseInt(viewContainer.style.minWidth, 10) * aspectRatio) + 'px';
-
-    viewContainer.canvas = this.gz3dScene.renderer.context.canvas;
-    viewContainer.canvas.style.width = '100%';
-    viewContainer.canvas.style.height = '100%';
-
-    return viewContainer;
-};
-
-GZ3D.MultiView.prototype.getViewByName = function(name)
-{
-    for (var i = 0; i < this.views.length; i = i+1) {
-        if (this.views[i].name === name) {
-            return this.views[i];
-        }
-    }
-
-    return undefined;
-};
-
-GZ3D.MultiView.prototype.setViewVisibility = function(view, visible)
-{
-    view.active = visible;
-    if (view.active) {
-        view.container.style.visibility = 'visible';
-    } else {
-        view.container.style.visibility = 'hidden';
-    }
-};
-
-GZ3D.MultiView.prototype.updateCamera = function(view)
-{
-    view.camera.aspect = view.container.clientWidth / view.container.clientHeight;
-    view.camera.updateProjectionMatrix();
-};
-
-GZ3D.MultiView.prototype.getViewport = function(view)
-{
-    var viewport = {
-        x: view.container.offsetLeft,
-        y: this.mainContainer.clientHeight - view.container.clientHeight - view.container.offsetTop,
-        w: view.container.clientWidth,
-        h: view.container.clientHeight
+  } else if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
+    // assemble view
+    view = {
+      name: name,
+      camera: camera,
+      renderer: this.renderer,
+      container: undefined,
+      canvas: undefined,
+      initAspectRatio: cameraParams.aspectRatio
     };
+  }
 
-    return viewport;
+  this.views.push(view);
+
+  return view;
 };
 
-GZ3D.MultiView.prototype.setWindowSize = function(width, height)
-{
-};
-
-GZ3D.MultiView.prototype.renderViews = function()
-{
-    // sort views into rendering order
-    this.views.sort(function(a, b) {
-       return a.container.style.zIndex - b.container.style.zIndex;
-    });
-
-    for (var i = 0, l = this.views.length; i < l; i = i+1) {
-        var view = this.views[i];
-
-        if (view.active) {
-            this.renderToViewport(view,i===0);
-        }
+GZ3D.MultiView.prototype.getViewByName = function (name) {
+  for (var i = 0; i < this.views.length; i = i + 1) {
+    if (this.views[i].name === name) {
+      return this.views[i];
     }
+  }
+
+  return undefined;
 };
 
-GZ3D.MultiView.prototype.renderToViewport = function(view, firstView)
-{
-    this.updateCamera(view);  //TODO: better solution with resize callback, also adjust camera helper
+GZ3D.MultiView.prototype.isViewVisible = function (view) {
+  if (view.container) {
+      return (view.container.style.visibility === 'visible');
+  } else {
+    return false;
+  }
 
-    var webglRenderer = this.gz3dScene.renderer;
-    view.container.canvas.width = view.container.canvas.clientWidth;
-    view.container.canvas.height = view.container.canvas.clientHeight;
-
-    var viewport = this.getViewport(view);
-    webglRenderer.setViewport( viewport.x, viewport.y, viewport.w, viewport.h );
-    webglRenderer.setScissor( viewport.x, viewport.y, viewport.w, viewport.h );
-
-    this.gz3dScene.composer.render(view, firstView, viewport.w, viewport.h);
 };
 
-GZ3D.MultiView.prototype.showCameras = function(show)
-{
-    for (var i = 0; i < this.views.length; i = i+1) {
-        if (this.views[i].type === 'camera') {
-            this.setViewVisibility(this.views[i], show);
-        }
+GZ3D.MultiView.prototype.setViewContainerElement = function (view, containerElement) {
+  if (!angular.isDefined(view)) {
+    return false;
+  }
+
+  if (this.renderMode === GZ3D.RENDER_MODE.MULTIPLE_CONTEXTS) {
+    view.container = containerElement;
+    view.container.appendChild(view.renderer.domElement);
+    view.container.style.visibility = 'visible';
+  } else if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
+    view.container = containerElement;
+    view.canvas = document.createElement('canvas');
+    view.container.appendChild(view.canvas);
+    view.container.style.visibility = 'visible';
+  }
+};
+
+GZ3D.MultiView.prototype.updateView = function (view) {
+  var width = view.container.clientWidth;
+  var height = view.container.clientHeight;
+
+  view.canvas.width = width;
+  view.canvas.height = height;
+
+  view.camera.aspect = width / height;
+  view.camera.updateProjectionMatrix();
+  view.camera.cameraHelper.update();
+
+  view.renderer.setSize(width, height);
+  view.renderer.setViewport(0, 0, width, height);
+  view.renderer.setScissor(0, 0, width, height);
+};
+
+GZ3D.MultiView.prototype.renderViews = function () {
+  for (var i = 0, l = this.views.length; i < l; i = i + 1) {
+    var view = this.views[i];
+
+    if (this.isViewVisible(view)) {
+      //this.renderToIndividualCanvases(view);
+      this.updateView(view);
+      this.gz3dScene.composer.render(view);
+
+      if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
+        view.canvas.getContext('2d').drawImage(this.renderer.domElement, 0, 0);
+      }
     }
+  }
+};
+
+GZ3D.MultiView.prototype.setCameraHelperVisibility = function (view, visible) {
+  view.camera.cameraHelper.visible = visible;
+};
+
+GZ3D.MultiView.prototype.createRenderer = function () {
+  var renderer = new THREE.WebGLRenderer({antialias: false});
+  renderer.setClearColor(0xb2b2b2, 1); // Sky
+  renderer.setScissorTest(true);
+  renderer.shadowMap.enabled = false;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  return renderer;
+};
+
+GZ3D.MultiView.prototype.setBackgrounds = function (background) {
+  this.views.forEach(function(view, index, array) {
+    view.renderer.clear();
+    view.renderer.setClearColor(background, 1);
+  });
+};
+
+GZ3D.MultiView.prototype.setShadowMaps = function (enabled) {
+  this.views.forEach(function(view, index, array) {
+    view.renderer.shadowMap.enabled = enabled;
+  });
+};
+
+GZ3D.MultiView.prototype.clearRenderTargets = function (target) {
+  this.views.forEach(function(view, index, array) {
+    view.renderer.clearTarget(target);
+  });
 };
 /**
  * Radial menu for an object
  * @constructor
  */
-GZ3D.RadialMenu = function(domElement)
+GZ3D.RadialMenu = function(gz3dScene)
 {
-  this.domElement = ( domElement !== undefined ) ? domElement : document;
+  this.gz3dScene = gz3dScene;
 
   this.init();
 };
@@ -8134,7 +8066,7 @@ GZ3D.RadialMenu.prototype.getPointer = function(event)
     event = event.originalEvent;
   }
   var pointer = event.touches ? event.touches[ 0 ] : event;
-  var rect = this.domElement.getBoundingClientRect();
+  var rect = this.gz3dScene.viewManager.mainUserView.container.getBoundingClientRect();
   var posX = (pointer.clientX - rect.left);
   var posY = (pointer.clientY - rect.top);
 
@@ -8448,32 +8380,19 @@ GZ3D.Scene.prototype.init = function()
   this.manipulationMode = 'view';
   this.pointerOnMenu = false;
 
-  this.container = document.getElementById( 'container' );
-
-  this.renderer = new THREE.WebGLRenderer({antialias: false }); // antialiasing Will be handled as a post-processing pass
-  this.renderer.setClearColor(0xb2b2b2, 1); // Sky
-  this.renderer.setSize( this.container.clientWidth, this.container.clientHeight);
-  this.renderer.setScissorTest(true);
-
   // Snap to object/floor
-
   this.snapToFloor = true;
   this.snapToObject = true;
 
-  // shadows
-  this.renderer.shadowMap.enabled = false;
-  this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-
   // create views manager
-  this.viewManager = new GZ3D.MultiView(this, this.container);
+  this.viewManager = new GZ3D.MultiView(this);
 
   // lights
   this.ambient = new THREE.AmbientLight( 0x666666 );
   this.scene.add(this.ambient);
 
   // camera
-  this.camera = this.viewManager.mainUserView.camera;
+  this.camera = this.viewManager.getViewByName(GZ3D.MULTIVIEW_MAINVIEW_NAME).camera;
   this.defaultCameraPosition = new THREE.Vector3(5, 0, 1);
   this.defaultCameraLookAt = new THREE.Vector3(0.0, 0.0, 0.0);
   this.resetView();
@@ -8498,8 +8417,7 @@ GZ3D.Scene.prototype.init = function()
 
   this.showLightHelpers = false;
 
-  this.spawnModel = new GZ3D.SpawnModel(
-      this, this.getDomElement());
+  this.spawnModel = new GZ3D.SpawnModel(this);
   // Material for simple shapes being spawned (grey transparent)
   this.spawnedShapeMaterial = new THREE.MeshPhongMaterial(
       {color:0xffffff, shading: THREE.SmoothShading} );
@@ -8509,35 +8427,16 @@ GZ3D.Scene.prototype.init = function()
   var that = this;
 
   this.keyboardBindingsEnabled = true;
-  // Need to use `document` instead of getDomElement in order to get events
-  // outside the webgl div element.
-  document.addEventListener( 'mouseup',
-      function(event) {that.onPointerUp(event);}, false );
-
-  this.getDomElement().addEventListener( 'mouseup',
-      function(event) {that.onPointerUp(event);}, false );
-
-  document.addEventListener( 'keydown',
-      function(event) {that.onKeyDown(event);}, false );
-
-  this.getDomElement().addEventListener( 'mousedown',
-      function(event) {that.onPointerDown(event);}, false );
-  this.getDomElement().addEventListener( 'touchstart',
-      function(event) {that.onPointerDown(event);}, false );
-
-  this.getDomElement().addEventListener( 'touchend',
-      function(event) {that.onPointerUp(event);}, false );
 
   // Handles for translating, scaling and rotating objects
-  this.modelManipulator = new GZ3D.Manipulator(this.camera, isTouchDevice,
-      this.getDomElement());
+  this.modelManipulator = new GZ3D.Manipulator(this, isTouchDevice);
 
   this.timeDown = null;
 
   this.emitter = new EventEmitter2({ verbose: true });
 
   // Radial menu (only triggered by touch)
-  this.radialMenu = new GZ3D.RadialMenu(this.getDomElement());
+  this.radialMenu = new GZ3D.RadialMenu(this);
   this.scene.add(this.radialMenu.menu);
 
   // Bounding Box
@@ -8853,6 +8752,27 @@ GZ3D.Scene.prototype.endNaturalManipulation = function(event)
   }
 };
 
+/**
+ * attach window event callbacks
+ */
+GZ3D.Scene.prototype.attachEventListeners = function()
+{
+  if (!this.getDomElement()) {
+    console.warn('GZ3D.Scene.attachEventListeners() - user view container element not defined!');
+    return;
+  }
+
+  var that = this;
+
+  // Need to use `document` instead of getDomElement in order to get event outside the webgl div element.
+  this.getDomElement().addEventListener( 'mouseup', function(event) {that.onPointerUp(event);}, false );
+  //document.addEventListener( 'mouseup', function(event) {that.onPointerUp(event);}, false );
+  this.getDomElement().addEventListener( 'mousedown', function(event) {that.onPointerDown(event);}, false );
+  this.getDomElement().addEventListener( 'touchstart', function(event) {that.onPointerDown(event);}, false );
+  this.getDomElement().addEventListener( 'touchend', function(event) {that.onPointerUp(event);}, false );
+
+  document.addEventListener( 'keydown', function(event) {that.onKeyDown(event);}, false );
+};
 
 /**
  * Window event callback
@@ -9062,8 +8982,8 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
 GZ3D.Scene.prototype.getRayCastModel = function(pos, intersect)
 {
   var normalizedScreenCoords = new THREE.Vector2(
-    ((pos.x - this.renderer.domElement.offsetLeft) / this.container.clientWidth) * 2 - 1,
-    -((pos.y - this.renderer.domElement.offsetTop) / this.container.clientHeight) * 2 + 1
+    ((pos.x - this.viewManager.mainUserView.renderer.domElement.offsetLeft) / this.viewManager.mainUserView.container.clientWidth) * 2 - 1,
+    -((pos.y - this.viewManager.mainUserView.renderer.domElement.offsetTop) / this.viewManager.mainUserView.container.clientHeight) * 2 + 1
   );
 
   var raycaster = new THREE.Raycaster();
@@ -9155,7 +9075,7 @@ GZ3D.Scene.prototype.getRayCastModel = function(pos, intersect)
  */
 GZ3D.Scene.prototype.getDomElement = function()
 {
-  return this.container;
+  return this.viewManager.mainUserView.container;
 };
 
 /**
@@ -9200,28 +9120,6 @@ GZ3D.Scene.prototype.updateUI = function()
 
   this.modelManipulator.update();
   this.radialMenu.update();
-};
-
-/**
- * Set window size
- * @param {double} width
- * @param {double} height
- */
-GZ3D.Scene.prototype.setWindowSize = function(width, height)
-{
-  this.camera.aspect = width / height;
-  this.camera.updateProjectionMatrix();
-
-  this.renderer.setSize( width, height);
-  this.renderer.context.canvas.width = width;
-  this.renderer.context.canvas.height = height;
-
-  this.viewManager.setWindowSize(width, height);
-
-  this.needsImmediateUpdate = true;
-  this.render();
-
-  this.container.focus();
 };
 
 /**
@@ -11012,7 +10910,7 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
 };
 
 GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
-  this.renderer.shadowMap.enabled = enabled;
+  this.viewManager.setShadowMaps(enabled);
 
   var that = this;
   this.scene.traverse(function(node) {
@@ -11027,8 +10925,8 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
       }
     } else {
       if (node instanceof THREE.Light) {
-        if (node.shadow!==undefined && node.shadow.map!==undefined) {
-          that.renderer.clearTarget( node.shadow.map );
+        if (that.viewManager && node.shadow!==undefined && node.shadow.map!==undefined) {
+            that.viewManager.clearRenderTargets(node.shadow.map);
         }
       }
     }
@@ -12029,10 +11927,9 @@ GZ3D.SdfParser.prototype.loadModel = function(modelName)
  * Spawn a model into the scene
  * @constructor
  */
-GZ3D.SpawnModel = function (scene, domElement)
+GZ3D.SpawnModel = function(scene)
 {
   this.scene = scene;
-  this.domElement = (domElement !== undefined) ? domElement : document;
   this.init();
   this.obj = undefined;
   this.callback = undefined;
@@ -12059,11 +11956,18 @@ GZ3D.SpawnModel.prototype.init = function ()
  * @param {string} entity
  * @param {function} callback
  */
-GZ3D.SpawnModel.prototype.start = function (entity, callback,position,quaternion)
+GZ3D.SpawnModel.prototype.start = function (entity, callback, position, quaternion)
 {
   if (this.active)
   {
     this.finish();
+  }
+
+  if (!angular.isDefined(this.scene.getDomElement())) {
+    console.warn('SpawnModel.start() - no DOM element defined!');
+    return;
+  } else {
+    this.attachEventListeners();
   }
 
   this.callback = callback;
@@ -12112,8 +12016,8 @@ GZ3D.SpawnModel.prototype.start = function (entity, callback,position,quaternion
   this.obj.name = this.generateUniqueName(entity);
   this.obj.add(mesh);
 
-  var viewWidth = this.scene.container.clientWidth;
-  var viewHeight = this.scene.container.clientHeight;
+  var viewWidth = this.scene.getDomElement().clientWidth;
+  var viewHeight = this.scene.getDomElement().clientHeight;
 
   // temp model appears within current view
   var pos = new THREE.Vector2(viewWidth / 2, viewHeight / 2);
@@ -12135,25 +12039,6 @@ GZ3D.SpawnModel.prototype.start = function (entity, callback,position,quaternion
     }
   }
 
-  var that = this;
-
-  this.mouseDown = function (event) { that.onMouseDown(event); };
-  this.mouseUp = function (event) { that.onMouseUp(event); };
-  this.mouseMove = function (event) { that.onMouseMove(event); };
-  this.keyDown = function (event) { that.onKeyDown(event); };
-  this.keyUp = function (event) { that.onKeyUp(event); };
-  this.touchMove = function (event) { that.onTouchMove(event, true); };
-  this.touchEnd = function (event) { that.onTouchEnd(event); };
-
-  this.domElement.addEventListener('mousedown', that.mouseDown, false);
-  this.domElement.addEventListener('mouseup', that.mouseUp, false);
-  this.domElement.addEventListener('mousemove', that.mouseMove, false);
-  document.addEventListener('keydown', that.keyDown, false);
-  document.addEventListener('keyup', that.keyUp, false);
-
-  this.domElement.addEventListener('touchmove', that.touchMove, false);
-  this.domElement.addEventListener('touchend', that.touchEnd, false);
-
   if (position && quaternion)
   {
     this.scene.setPose(this.obj, position, quaternion);
@@ -12169,13 +12054,7 @@ GZ3D.SpawnModel.prototype.start = function (entity, callback,position,quaternion
  */
 GZ3D.SpawnModel.prototype.finish = function ()
 {
-  var that = this;
-
-  this.domElement.removeEventListener('mousedown', that.mouseDown, false);
-  this.domElement.removeEventListener('mouseup', that.mouseUp, false);
-  this.domElement.removeEventListener('mousemove', that.mouseMove, false);
-  document.removeEventListener('keydown', that.keyDown, false);
-  document.removeEventListener('keyup', that.keyUp, false);
+  this.detachEventListeners();
 
   this.scene.remove(this.obj);
   this.obj = undefined;
@@ -12327,6 +12206,45 @@ GZ3D.SpawnModel.prototype.generateUniqueName = function (entity)
       return entity + '_' + i;
     }
   }
+};
+
+/**
+ * Attach the event listeners for interaction
+ */
+GZ3D.SpawnModel.prototype.attachEventListeners = function()
+{
+  var that = this;
+
+  this.mouseDown = function(event) {that.onMouseDown(event);};
+  this.mouseUp = function(event) {that.onMouseUp(event);};
+  this.mouseMove = function(event) {that.onMouseMove(event);};
+  this.keyDown = function(event) {that.onKeyDown(event);};
+  this.keyUp = function (event) { that.onKeyUp(event); };
+  this.touchMove = function(event) {that.onTouchMove(event,true);};
+  this.touchEnd = function(event) {that.onTouchEnd(event);};
+
+  this.scene.getDomElement().addEventListener('mousedown', that.mouseDown, false);
+  this.scene.getDomElement().addEventListener('mouseup', that.mouseUp, false);
+  this.scene.getDomElement().addEventListener('mousemove', that.mouseMove, false);
+  this.scene.getDomElement().addEventListener('keydown', that.keyDown, false);
+  this.scene.getDomElement().addEventListener('keyup', that.keyUp, false);
+
+  this.scene.getDomElement().addEventListener('touchmove', that.touchMove, false);
+  this.scene.getDomElement().addEventListener('touchend', that.touchEnd, false);
+};
+
+/**
+ * Detach the event listeners for interaction
+ */
+GZ3D.SpawnModel.prototype.detachEventListeners = function()
+{
+  var that = this;
+
+  this.scene.getDomElement().removeEventListener('mousedown', that.mouseDown, false);
+  this.scene.getDomElement().removeEventListener('mouseup', that.mouseUp, false);
+  this.scene.getDomElement().removeEventListener('mousemove', that.mouseMove, false);
+  this.scene.getDomElement().removeEventListener('keydown', that.keyDown, false);
+  this.scene.getDomElement().removeEventListener('keyup', that.keyUp, false);
 };
 
 /**

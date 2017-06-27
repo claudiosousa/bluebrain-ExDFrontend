@@ -6,5 +6,6 @@
     this.getStreamUrls = jasmine.createSpy('getStreamUrls').and.returnValue({
       then: jasmine.createSpy('then')
     });
+    this.getStreamingUrlForTopic = jasmine.createSpy('getStreamingUrlForTopic')
   });
 }());

@@ -9,19 +9,13 @@
 /* global THREE: true */
 /* global console: false */
 
-THREE.FirstPersonControls = function(object, domElement, domElementForKeyBindings)
+THREE.FirstPersonControls = function(userView)
 {
   'use strict';
 
   var that = this;
 
-  this.object = object;
-  this.domElement = angular.isDefined(domElement) ? domElement : document;
-  this.domElementForKeyBindings = angular.isDefined(domElementForKeyBindings) ? domElementForKeyBindings : document;
-
-  if (this.domElement !== document) {
-    this.domElement.setAttribute('tabindex', -1);
-  }
+  this.userView = userView;
 
   // Set to false to disable this control
   this.enabled = true;
@@ -74,8 +68,8 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.startCameraPosition = new THREE.Vector3();
   this.cameraLookDirection = new THREE.Vector3();
 
-  this.initialPosition = this.object.position.clone();
-  this.initialRotation = this.object.quaternion.clone();
+  this.initialPosition = this.userView.camera.position.clone();
+  this.initialRotation = this.userView.camera.quaternion.clone();
 
   this.onMouseDown = function (event) {
     // HBP-NRP: The next three lines are commented since this leads to problems in chrome with respect
@@ -132,7 +126,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.onMouseWheel = function (event) {
     var delta = Math.max(-1, Math.min(1, (-event.wheelDelta || event.detail)));
-    window.firstPersonControls.object.translateZ(delta * window.firstPersonControls.mouseWheelSensitivity);
+    window.firstPersonControls.userView.camera.translateZ(delta * window.firstPersonControls.mouseWheelSensitivity);
   };
 
   this.onTouchStart = function (event) {
@@ -158,7 +152,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         // Compute the mid of both touches
         that.startTouchMid.addVectors(touch1, touch2).divideScalar(2.0);
 
-        that.startCameraPosition.copy(that.object.position);
+        that.startCameraPosition.copy(that.userView.camera.position);
         break;
     }
   };
@@ -195,10 +189,10 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         // Only strave when the change is above a threshold. This prevents unwanted movements
         if (Math.abs(touchMidDistance) >= 10) {
           var touchMidDelta = new THREE.Vector2().subVectors(touchMid, that.startTouchMid).multiplyScalar(that.touchSensitivity);
-          straveDirection.set(-touchMidDelta.x, touchMidDelta.y, 0.0).applyQuaternion(that.object.quaternion);
+          straveDirection.set(-touchMidDelta.x, touchMidDelta.y, 0.0).applyQuaternion(that.userView.camera.quaternion);
         }
 
-        that.object.position.addVectors(that.startCameraPosition, forwardDirection).add(straveDirection);
+        that.userView.camera.position.addVectors(that.startCameraPosition, forwardDirection).add(straveDirection);
 
         break;
     }
@@ -315,7 +309,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   this.fpRotate = function(rightAmount, upAmount) {
     // rotate left/right
     // rotation happens around the world up axis so up remains up (no upside-down)
-    var camera = this.object;
+    var camera = this.userView.camera;
     var q = new THREE.Quaternion();
     q.setFromAxisAngle(new THREE.Vector3(0.0, 0.0, 1.0), -rightAmount);
     camera.quaternion.multiplyQuaternions(q, camera.quaternion);
@@ -342,7 +336,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
     if (!this.freeze) {
       /* --- translation --- */
       if (this.initPosition) {
-        this.object.position.copy(this.initialPosition);
+        this.userView.camera.position.copy(this.initialPosition);
       }
 
       speed = delta * this.movementSpeed;
@@ -351,22 +345,22 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
       }
 
       if (this.moveForward) {
-        this.object.translateZ(-speed);
+        this.userView.camera.translateZ(-speed);
       }
       if (this.moveBackward) {
-        this.object.translateZ(speed);
+        this.userView.camera.translateZ(speed);
       }
       if (this.moveLeft) {
-        this.object.translateX(-speed);
+        this.userView.camera.translateX(-speed);
       }
       if (this.moveRight) {
-        this.object.translateX(speed);
+        this.userView.camera.translateX(speed);
       }
       if (this.moveUp) {
-        this.object.translateY(speed);
+        this.userView.camera.translateY(speed);
       }
       if (this.moveDown) {
-        this.object.translateY(-speed);
+        this.userView.camera.translateY(-speed);
       }
 
       /* --- rotation by means of a manipulator --- */
@@ -382,7 +376,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
         this.fpRotate(-ROTATION_SPEED_FACTOR * speed, 0.0);
       }
       if (this.initRotation) {
-        this.object.quaternion.copy(this.initialRotation);
+        this.userView.camera.quaternion.copy(this.initialRotation);
       }
 
       /* --- rotation by means of a mouse drag --- */
@@ -406,14 +400,14 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
           this.zenith = Math.PI / 2;
         }
 
-        var targetPosition = this.target, position = this.object.position;
+        var targetPosition = this.target, position = this.userView.camera.position;
 
         targetPosition.x = position.x + Math.sin(this.zenith) * Math.cos(this.azimuth);
         targetPosition.y = position.y + Math.sin(this.zenith) * Math.sin(this.azimuth);
         targetPosition.z = position.z + Math.cos(this.zenith);
 
-        this.object.lookAt(targetPosition);
-        this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.object.position);
+        this.userView.camera.lookAt(targetPosition);
+        this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.userView.camera.position);
       }
 
       /* --- rotation by means of a touch drag --- */
@@ -437,17 +431,17 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
           this.zenith = Math.PI / 2;
         }
 
-        var targetPosition = this.target, position = this.object.position;
+        var targetPosition = this.target, position = this.userView.camera.position;
 
         targetPosition.x = position.x + Math.sin(this.zenith) * Math.cos(this.azimuth);
         targetPosition.y = position.y + Math.sin(this.zenith) * Math.sin(this.azimuth);
         targetPosition.z = position.z + Math.cos(this.zenith);
 
-        this.object.lookAt(targetPosition);
-        this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.object.position);
+        this.userView.camera.lookAt(targetPosition);
+        this.cameraLookDirection = new THREE.Vector3().subVectors(targetPosition, this.userView.camera.position);
       }
 
-      this.object.updateMatrixWorld();  // I need to add this to get the camera working with the new ThreeJS version
+      this.userView.camera.updateMatrixWorld();  // I need to add this to get the camera working with the new ThreeJS version
     }
   };
 
@@ -461,7 +455,7 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
 
   this.updateSphericalAngles = function() {
     var vecForward = new THREE.Vector3();
-    vecForward.set(this.object.matrix.elements[8], this.object.matrix.elements[9], this.object.matrix.elements[10]);
+    vecForward.set(this.userView.camera.matrix.elements[8], this.userView.camera.matrix.elements[9], this.userView.camera.matrix.elements[10]);
     vecForward.normalize();
 
     this.zenith = Math.acos(-vecForward.z);
@@ -469,35 +463,39 @@ THREE.FirstPersonControls = function(object, domElement, domElementForKeyBinding
   };
 
   this.attachEventListeners = function() {
-    this.domElement.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-    this.domElement.addEventListener('mousedown', this.onMouseDown, false);
-    this.domElement.addEventListener('mousemove', this.onMouseMove, false);
-    this.domElement.addEventListener('mouseup', this.onMouseUp, false);
-    this.domElement.addEventListener('touchstart', this.onTouchStart, false);
-    this.domElement.addEventListener('touchmove', this.onTouchMove, false);
-    this.domElement.addEventListener('touchend', this.onTouchEnd, false);
+    var userViewDOM = this.userView.container;
+    this.domElementPointerBindings = userViewDOM ? userViewDOM : document;
+    this.domElementKeyboardBindings = document;
 
-    this.domElementForKeyBindings.addEventListener('keydown', this.onKeyDown, false);
-    this.domElementForKeyBindings.addEventListener('keyup', this.onKeyUp, false);
+    this.domElementPointerBindings.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+    this.domElementPointerBindings.addEventListener('mousedown', this.onMouseDown, false);
+    this.domElementPointerBindings.addEventListener('mousemove', this.onMouseMove, false);
+    this.domElementPointerBindings.addEventListener('mouseup', this.onMouseUp, false);
+    this.domElementPointerBindings.addEventListener('touchstart', this.onTouchStart, false);
+    this.domElementPointerBindings.addEventListener('touchmove', this.onTouchMove, false);
+    this.domElementPointerBindings.addEventListener('touchend', this.onTouchEnd, false);
 
-    this.domElement.addEventListener('mousewheel', this.onMouseWheel, false);
-    this.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel, false);
+    this.domElementKeyboardBindings.addEventListener('keydown', this.onKeyDown, false);
+    this.domElementKeyboardBindings.addEventListener('keyup', this.onKeyUp, false);
+
+    this.domElementPointerBindings.addEventListener('mousewheel', this.onMouseWheel, false);
+    this.domElementPointerBindings.addEventListener('DOMMouseScroll', this.onMouseWheel, false);
   };
 
   this.detachEventListeners = function() {
-    this.domElement.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-    this.domElement.removeEventListener('mousedown', this.onMouseDown, false);
-    this.domElement.removeEventListener('mousemove', this.onMouseMove, false);
-    this.domElement.removeEventListener('mouseup', this.onMouseUp, false);
-    this.domElement.removeEventListener('touchstart', this.onTouchStart, false);
-    this.domElement.removeEventListener('touchmove', this.onTouchMove, false);
-    this.domElement.removeEventListener('touchend', this.onTouchEnd, false);
+    this.domElementPointerBindings.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+    this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
+    this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
+    this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
+    this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
+    this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
+    this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
 
-    this.domElementForKeyBindings.removeEventListener('keydown', this.onKeyDown, false);
-    this.domElementForKeyBindings.removeEventListener('keyup', this.onKeyUp, false);
+    this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
+    this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
 
-    this.domElement.removeEventListener('mousewheel', this.onMouseWheel, false);
-    this.domElement.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
+    this.domElementPointerBindings.removeEventListener('mousewheel', this.onMouseWheel, false);
+    this.domElementPointerBindings.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
   };
 
 };

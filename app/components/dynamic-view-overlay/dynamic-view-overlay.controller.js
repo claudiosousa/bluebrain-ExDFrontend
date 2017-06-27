@@ -31,8 +31,32 @@
         (controller) => {
           controller.setViewContentViaChannelType(channelType);
           this.channelType = channelType;
+
+          this.applyChannelDefaults();
+          this.randomizePosition();
         }
       );
+    }
+
+    applyChannelDefaults() {
+      if (!this.channelType) {
+        return;
+      }
+
+      let overlayWrapper = this.$element[0].getElementsByClassName(this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
+      overlayWrapper.style.width = this.channelType.overlayDefaultSize.width + 'px';
+      overlayWrapper.style.height = this.channelType.overlayDefaultSize.height + 'px';
+    }
+
+    randomizePosition() {
+      let overlayWrapper = this.$element[0].getElementsByClassName(this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
+      let overlayParent = this.dynamicViewOverlayService.getOverlayParentElement()[0];
+
+      const MARGIN = .05;
+      let getRandomDimension = prop => (MARGIN + Math.random() * (1 - 2 * MARGIN)) * (overlayParent[prop] - overlayWrapper[prop]);
+
+      angular.element(overlayWrapper).css('left', getRandomDimension('clientWidth'));
+      angular.element(overlayWrapper).css('top', getRandomDimension('clientHeight'));
     }
   }
 

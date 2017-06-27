@@ -12,7 +12,8 @@
 
     static get OVERLAY_HTML() { return '<dynamic-view-overlay></dynamic-view-overlay>'; }
     get OVERLAY_PARENT_SELECTOR() { return '.editor-display'; }
-    get OVERLAY_WRAPPER_CLASS_SELECTOR() { return '.dynamic-view-overlay-wrapper'; }
+    get OVERLAY_WRAPPER_CLASS() { return 'dynamic-view-overlay-wrapper'; }
+    get DYNAMIC_VIEW_CONTAINER_CLASS() { return 'dynamic-view-container'; }
 
     constructor($compile,
                 $q,
@@ -29,14 +30,15 @@
       this.overlayIDCount = 0;
     }
 
-    createOverlay(parentElement, dynamicViewChannel) {
-      if (!angular.isDefined(parentElement)) {
-        parentElement = document.body;
+    createOverlay(dynamicViewChannel, isResizeable = true, parentElement = null) {
+      if (!angular.isDefined(parentElement) || parentElement === null) {
+        parentElement = this.getOverlayParentElement()[0];
       }
 
       // create overlay
       let scope = this.$rootScope.$new();
       let overlay = this.$compile(DynamicViewOverlayService.OVERLAY_HTML)(scope);
+
       // each overlay gets a unique ID
       let htmlID = 'dynamic-view-overlay-' + this.overlayIDCount;
       overlay[0].id = htmlID;
@@ -45,17 +47,24 @@
 
       parentElement.appendChild(overlay[0]);
 
-      this.getController(overlay, 'dynamicViewOverlay').then(
-        (controller) => controller.setDynamicViewChannel(dynamicViewChannel)
-      );
+      this.getController(overlay, 'dynamicViewOverlay').then( (controller) => {
+        controller.setDynamicViewChannel(dynamicViewChannel);
 
-      this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel, {
+        //let overlayWrapper = overlay.children('.'+this.OVERLAY_WRAPPER_CLASS)[0];
+        let overlayWrapper = overlay[0].getElementsByClassName(this.OVERLAY_WRAPPER_CLASS)[0];
+        if (overlayWrapper) {
+          // set resizeable
+          overlayWrapper.setAttribute('resizeable', isResizeable.toString());
+        }
+      });
+
+      this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel.directive, {
         category: 'Simulation-GUI',
         value: true,
       });
 
       scope.$on('$destroy', () => {
-        this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel, {
+        this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel.directive, {
           category: 'Simulation-GUI',
           value: false,
         });
@@ -69,12 +78,27 @@
       delete this.overlays[id];
     }
 
+    closeAllOverlaysOfType(type) {
+      let checkAndCloseOverlay = (controller) => {
+        if (controller.channelType && controller.channelType === type) {
+          controller.closeOverlay();
+        }
+      };
+      // check all overlays
+      for (let property in this.overlays) {
+        if (this.overlays.hasOwnProperty(property)) {
+          // get controller of overlay
+          this.getController(this.overlays[property], 'dynamicViewOverlay').then(checkAndCloseOverlay);
+        }
+      }
+    }
+
     getOverlayParentElement() {
       return angular.element(this.OVERLAY_PARENT_SELECTOR);
     }
 
     getParentOverlayWrapper(element) {
-      return element.parents(this.OVERLAY_WRAPPER_CLASS_SELECTOR)[0];
+      return element.parents('.'+this.OVERLAY_WRAPPER_CLASS)[0];
     }
 
     getController(element, controllerType) {
@@ -94,7 +118,7 @@
       return deferredController.promise;
     }
 
-    isOverlayOpen(type)
+    isOverlayOpen(channelType)
     {
       let arrayIndex = 0;
       let deferredIsOpen = this.$q.defer();
@@ -107,7 +131,7 @@
         array.forEach((overlay) => {
           this.getController(overlay, 'dynamicViewOverlay').then(
               (controller) => {
-                if (controller.channelType && controller.channelType === type) {
+                if (controller.channelType && controller.channelType === channelType) {
                   deferredIsOpen.resolve(true);
                 }
                 else if (arrayIndex === array.length - 1) {

@@ -26,6 +26,7 @@
     beforeEach(module('videoStreamServiceMock'));
     beforeEach(module('dynamicViewOverlayServiceMock'));
     beforeEach(module('clientLoggerServiceMock'));
+    beforeEach(module('gz3dViewsServiceMock'));
 
     beforeEach(inject(function(_$rootScope_, _$compile_, _editorToolbarService_, _clientLoggerService_) {
       $rootScope = _$rootScope_;

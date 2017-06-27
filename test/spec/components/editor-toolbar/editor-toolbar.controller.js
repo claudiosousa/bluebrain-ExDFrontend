@@ -23,6 +23,7 @@ describe('Controller: EditorToolbarController', function() {
       objectInspectorService,
       simulationInfo,
       editorToolbarService,
+      gz3dViewsService,
       clientLoggerService,
       NAVIGATION_MODES,
       STATE,
@@ -48,6 +49,7 @@ describe('Controller: EditorToolbarController', function() {
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('clientLoggerServiceMock'));
   beforeEach(module('dynamicViewOverlayServiceMock'));
+  beforeEach(module('gz3dViewsServiceMock'));
 
   var simulationStateObject = {
     update: jasmine.createSpy('update'),
@@ -108,6 +110,7 @@ describe('Controller: EditorToolbarController', function() {
                              _objectInspectorService_,
                              _simulationInfo_,
                              _editorToolbarService_,
+                             _gz3dViewsService_,
                              _clientLoggerService_,
                              _STATE_,
                              _NAVIGATION_MODES_,
@@ -133,6 +136,7 @@ describe('Controller: EditorToolbarController', function() {
     objectInspectorService = _objectInspectorService_;
     simulationInfo = _simulationInfo_;
     editorToolbarService = _editorToolbarService_;
+    gz3dViewsService = _gz3dViewsService_;
     clientLoggerService = _clientLoggerService_;
     STATE = _STATE_;
     NAVIGATION_MODES = _NAVIGATION_MODES_;
@@ -515,21 +519,33 @@ describe('Controller: EditorToolbarController', function() {
       expect(editorToolbarService.showSpikeTrain).toBe(true);
     });
 
-    it('should toggle the robot camera views', function() {
-      expect(editorToolbarService.showRobotView).toBe(false);
-      expect(gz3d.scene.viewManager.views[0].type).toBe('camera');
-      expect(gz3d.scene.viewManager.views[0].active).toBe(true);
-      expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('visible');
-      expect(gz3d.scene.viewManager.views[1].type).toBe('camera');
-      expect(gz3d.scene.viewManager.views[1].active).toBe(false);
-      expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('hidden');
-      environmentRenderingService.hasCameraView.and.returnValue(true);
+    it(' - robotViewButtonClickHandler()', function() {
+      spyOn(editorToolbarController, 'createDynamicOverlay');
+
+      // define mock views
+      var mockView1 = {
+        container: undefined
+      };
+      gz3dViewsService.views.push(mockView1);
+      var mockView2 = {
+        container: {}
+      };
+      gz3dViewsService.views.push(mockView2);
+      var mockView3 = {
+        container: undefined
+      };
+      gz3dViewsService.views.push(mockView3);
+
+      // test if no camera views available
+      gz3dViewsService.hasCameraView.and.returnValue(false);
       editorToolbarController.robotViewButtonClickHandler();
-      expect(editorToolbarService.showRobotView).toBe(true);
-      expect(gz3d.scene.viewManager.views[0].active).toBe(false);
-      expect(gz3d.scene.viewManager.views[0].container.style.visibility).toBe('hidden');
-      expect(gz3d.scene.viewManager.views[1].active).toBe(true);
-      expect(gz3d.scene.viewManager.views[1].container.style.visibility).toBe('visible');
+      expect(editorToolbarController.createDynamicOverlay).not.toHaveBeenCalled();
+
+      // test if camera views available
+      gz3dViewsService.hasCameraView.and.returnValue(true);
+      editorToolbarController.robotViewButtonClickHandler();
+      // 1 call for each container undefined
+      expect(editorToolbarController.createDynamicOverlay.calls.count()).toEqual(2);
     });
 
     // todo: is the test in this way really suitable ?

@@ -86,7 +86,7 @@ describe('Directive: resizeable', function () {
   describe('Using the keep aspect ratio attribute', function () {
 
     beforeEach(function () {
-      element = compile('<div resizeable keep-aspect-ratio></div>')(scope);
+      element = compile('<div resizeable keep-aspect-ratio="1.0"></div>')(scope);
       element.css({
         top:    '0px',
         left:   '0px',

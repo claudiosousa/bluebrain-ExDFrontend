@@ -1,20 +1,17 @@
 <div class="log-console-popup">
-    <!-- build:css(.tmp) components/client-logger/log-console/log-console.style.css -->
-    <link rel="stylesheet" href="components/client-logger/log-console/log-console.style.css"/>
-    <!-- endbuild -->
+  <!-- build:css(.tmp) components/client-logger/log-console/log-console.style.css -->
+  <link rel="stylesheet" href="components/client-logger/log-console/log-console.style.css"/>
+  <!-- endbuild -->
 
-    <div class="widget-popup-header">
-        <h5 class="widget-popup-title">Log console</h5>
+  <div class="log-list widget-content">
+    <span ng-if="vm.logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
+    <div class="log-line" ng-repeat="log in vm.logs">
+      <span>[{{log.time}}]</span>
+      <span>{{log.msg}}</span>
     </div>
-        <div class="log-list widget-content">
-            <span ng-if="vm.logs.length==0">Use <code>clientLogger.info(<i>String</i>)</code> in your transfer functions to log messages that will be visible here</span>
-            <div class="log-line" ng-repeat="log in vm.logs">
-                <span>[{{log.time}}]</span>
-                <span>{{log.msg}}</span>
-            </div>
 
-            <b ng-if="vm.stateService.currentState == vm.STATE.HALTED">The simulation detected an error situation and cannot be
-                recovered. Any further interaction with the simulation is disabled. Please save any data and shut down the
-                simulation.</b>
-        </div>
+    <b ng-if="vm.stateService.currentState == vm.STATE.HALTED">The simulation detected an error situation and cannot be
+      recovered. Any further interaction with the simulation is disabled. Please save any data and shut down the
+      simulation.</b>
+  </div>
 </div>

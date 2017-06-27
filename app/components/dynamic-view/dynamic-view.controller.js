@@ -18,10 +18,6 @@
 
       /* initialization */
       this.viewContainer = this.getViewContainerElement(this.$element);
-
-      if (this.$element[0].attributes['dynamic-view-component']) {
-        this.setViewContentViaChannelType(this.$element[0].attributes['dynamic-view-component'].value);
-      }
     }
 
     onDestroy() {
@@ -56,7 +52,7 @@
     }
 
     setViewContentViaChannelType(channelType) {
-      this.setViewContent('<' + channelType + '></' + channelType + '>');
+      return this.setViewContent('<' + channelType.directive + '></' + channelType.directive + '>');
     }
   }
 
@@ -70,13 +66,38 @@
     ])
 
     .constant('DYNAMIC_VIEW_CHANNELS', {
-      BRAIN_VISUALIZER: 'brainvisualizer-panel',
-      DYNAMIC_VIEW: 'dynamic-view',
-      ENVIRONMENT_RENDERING: 'environment-rendering',
-      JOINT_PLOT: 'joint-plot',
-      SPIKE_TRAIN: 'spike-train',
-      VIDEO_STREAM: 'video-streams',
-      LOG_CONSOLE: 'log-console'
+      BRAIN_VISUALIZER: {
+        name: 'Brain Visualizer',
+        directive: 'brainvisualizer-panel',
+        overlayDefaultSize: {
+          width: 500,
+          height: 500
+        }
+      },
+      ENVIRONMENT_RENDERING: {
+        name: 'Environment Rendering',
+        directive: 'environment-rendering',
+        overlayDefaultSize: {
+          width: 500,
+          height: 500
+        }
+      },
+      JOINT_PLOT: {
+        name: 'Joint Plot',
+        directive: 'joint-plot',
+        overlayDefaultSize: {
+          width: 800,
+          height: 500
+        }
+      },
+      LOG_CONSOLE: {
+        name: 'Log Console',
+        directive:  'log-console',
+        overlayDefaultSize: {
+          width: 500,
+          height: 250
+        }
+      }
     });
 
 })();

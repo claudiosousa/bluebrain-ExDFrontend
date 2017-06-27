@@ -3,18 +3,23 @@
 describe('Service: dynamicViewOverlayService', function() {
 
   var $q, $rootScope, $timeout;
-  var dynamicViewOverlayService;
+  var dynamicViewOverlayService, nrpAnalytics;
 
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayModule'));
   beforeEach(module('nrpAnalyticsMock'));
-  //beforeEach(module('dynamicViewModule'));
 
-  beforeEach(inject(function(_$q_, _$rootScope_, _$timeout_, _dynamicViewOverlayService_) {
-    $q = _$q_;
-    $rootScope = _$rootScope_;
-    $timeout = _$timeout_;
-    dynamicViewOverlayService = _dynamicViewOverlayService_;
+  beforeEach(
+    inject(function(_$q_,
+                    _$rootScope_,
+                    _$timeout_,
+                    _dynamicViewOverlayService_,
+                    _nrpAnalytics_) {
+      $q = _$q_;
+      $rootScope = _$rootScope_;
+      $timeout = _$timeout_;
+      dynamicViewOverlayService = _dynamicViewOverlayService_;
+      nrpAnalytics = _nrpAnalytics_;
   }));
 
   it(' - constructor()', function() {
@@ -22,21 +27,34 @@ describe('Service: dynamicViewOverlayService', function() {
     expect(dynamicViewOverlayService.overlayIDCount).toBe(0);
   });
 
+  it(' - OVERLAY_WRAPPER_CLASS_SELECTOR (getter)', function() {
+    expect(dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS).toBe('dynamic-view-overlay-wrapper');
+  });
+
+  it(' - DYNAMIC_VIEW_CONTAINER_CLASS (getter)', function() {
+    expect(dynamicViewOverlayService.DYNAMIC_VIEW_CONTAINER_CLASS).toBe('dynamic-view-container');
+  });
+
   it(' - createOverlay()', function() {
     var defferedOverlayController = $q.defer();
     spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
     // set up overlay controller mock
     var mockOverlayController = {
-      setDynamicViewChannel: jasmine.createSpy('setDynamicViewChannel')
+      setDynamicViewChannel: jasmine.createSpy('setDynamicViewChannel'),
+      adjustSizeToContent: jasmine.createSpy('adjustSizeToContent')
     };
 
     var idCount = 5;
     var htmlID = 'dynamic-view-overlay-' + idCount;
     dynamicViewOverlayService.overlayIDCount = idCount;
     var parentElement = document.createElement('div');
-    var channelName = 'test-channel';
+    var channel = {
+      name: 'Test Channel',
+      directive: 'test-channel'
+    };
 
-    var overlay = dynamicViewOverlayService.createOverlay(parentElement, channelName);
+    var overlay = dynamicViewOverlayService.createOverlay(channel, true, parentElement);
+
     defferedOverlayController.resolve(mockOverlayController);
     $rootScope.$digest();
 
@@ -46,15 +64,31 @@ describe('Service: dynamicViewOverlayService', function() {
     expect(dynamicViewOverlayService.overlayIDCount).toBe(idCount + 1);
 
     expect(overlay[0].parentElement).toBe(parentElement);
-    expect(mockOverlayController.setDynamicViewChannel).toHaveBeenCalledWith(channelName);
+    expect(mockOverlayController.setDynamicViewChannel).toHaveBeenCalledWith(channel);
+
+    // check on destroy
+    overlay.scope().$destroy();
+    expect(nrpAnalytics.eventTrack).toHaveBeenCalledWith(
+      'Toggle-' + channel.directive,
+      {
+        category: 'Simulation-GUI',
+        value: false,
+      }
+    );
+
     overlay.remove();
   });
 
   it(' - createOverlay(), no parentElement specified', function() {
+    var mockParent = document.createElement('div');
+    spyOn(dynamicViewOverlayService, 'getOverlayParentElement').and.returnValue(
+      [mockParent]
+    );
+
     var channelName = 'test-component';
-    var overlay = dynamicViewOverlayService.createOverlay(undefined, channelName);
+    var overlay = dynamicViewOverlayService.createOverlay(channelName);
     // should be attached to document
-    expect(overlay[0].parentElement).toBe(document.body);
+    expect(overlay[0].parentElement).toBe(mockParent);
     overlay.remove();
     //dynamicViewOverlayService.removeOverlay(overlay[0].id);
   });
@@ -72,6 +106,42 @@ describe('Service: dynamicViewOverlayService', function() {
     expect(document.getElementById).toHaveBeenCalledWith(mockID);
     expect(mockOverlayElement.remove).toHaveBeenCalled();
     expect(dynamicViewOverlayService.overlays[mockID]).not.toBeDefined();
+  });
+
+  it(' - closeAllOverlaysOfType()', function() {
+    var defferedOverlayController = $q.defer();
+    spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
+    // set up overlay controller mock
+    var channelType = 'test-channel';
+    var mockOverlayController = {
+      channelType: channelType,
+      closeOverlay: jasmine.createSpy('closeOverlay')
+    };
+    dynamicViewOverlayService.overlays['test-overlay'] = {};
+
+    dynamicViewOverlayService.closeAllOverlaysOfType(channelType);
+    expect(dynamicViewOverlayService.getController).toHaveBeenCalled();
+
+    defferedOverlayController.resolve(mockOverlayController);
+    $rootScope.$digest();
+    expect(mockOverlayController.closeOverlay).toHaveBeenCalled();
+  });
+
+  it(' - getOverlayParentElement()', function() {
+    spyOn(angular, 'element').and.callThrough();
+    dynamicViewOverlayService.getOverlayParentElement();
+    expect(angular.element).toHaveBeenCalledWith(dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR);
+  });
+
+  it(' - getParentOverlayWrapper()', function() {
+    var parentsArray = [{}, {}, {}];
+    var mockElement = {
+      parents: jasmine.createSpy('parents').and.returnValue(parentsArray)
+    };
+
+    var result = dynamicViewOverlayService.getParentOverlayWrapper(mockElement);
+    expect(mockElement.parents).toHaveBeenCalledWith('.'+dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS);
+    expect(result).toBe(parentsArray[0]);
   });
 
   describe(' - isOverlayOpen', function() {
@@ -145,12 +215,12 @@ describe('Service: dynamicViewOverlayService', function() {
     var defferedOverlayController = {};
     var idCount, htmlID;
 
-    beforeEach(function() {
-      spyOn(dynamicViewOverlayService, 'getController').and.callFake(function(overlay) {
+    beforeEach(function () {
+      spyOn(dynamicViewOverlayService, 'getController').and.callFake(function (overlay) {
         return defferedOverlayController[overlay.id].promise;
       });
 
-      for(var overlayCounter = 0; overlayCounter < 3; overlayCounter++) {
+      for (var overlayCounter = 0; overlayCounter < 3; overlayCounter++) {
         idCount = overlayCounter;
         htmlID = 'dynamic-view-overlay-' + idCount;
         defferedOverlayController[htmlID] = $q.defer();
@@ -173,17 +243,17 @@ describe('Service: dynamicViewOverlayService', function() {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
     });
 
-    it(' - return true if there is at least one element shown', function() {
+    it(' - return true if there is at least one element shown', function () {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
-      dynamicViewOverlayService.isOverlayOpen('test-channel-0').then(function(result) {
+      dynamicViewOverlayService.isOverlayOpen('test-channel-0').then(function (result) {
         expect(result).toBeTruthy();
       });
       $rootScope.$digest();
     });
 
-    it(' - return true if there is at least one element shown', function() {
+    it(' - return true if there is at least one element shown', function () {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
-      dynamicViewOverlayService.isOverlayOpen('test-channel-2').then(function(result) {
+      dynamicViewOverlayService.isOverlayOpen('test-channel-2').then(function (result) {
         expect(result).toBeTruthy();
       });
       $rootScope.$digest();

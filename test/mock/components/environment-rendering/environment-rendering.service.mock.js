@@ -6,5 +6,6 @@
     this.init = jasmine.createSpy('init');
     this.deinit = jasmine.createSpy('deinit');
     this.hasCameraView = jasmine.createSpy('hasCameraView');
+    this.sceneInitialized = jasmine.createSpy('sceneInitialized');
   });
 }());

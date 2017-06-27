@@ -43,14 +43,15 @@
         views: [
           {type: 'camera', active: true, container: {style: {visibility: 'visible'}}},
           {type: 'camera', active: false, container: {style: {visibility: 'hidden'}}}
-        ]
+        ],
+        setViewContainerElement: jasmine.createSpy('setViewContainerElement')
       },
       scene: new THREE.Scene(),
       selectEntity: jasmine.createSpy('selectEntity'),
       applyComposerSettings: jasmine.createSpy('applyComposerSettings')
     };
     this.iface = {
-      addCanDeletePredicate: angular.noop,
+      addCanDeletePredicate: jasmine.createSpy('addCanDeletePredicate'),
       setAssetProgressCallback: jasmine.createSpy('setAssetProgressCallback'),
       registerWebSocketConnectionCallback: jasmine.createSpy('registerWebSocketConnectionCallback'),
       webSocket: {

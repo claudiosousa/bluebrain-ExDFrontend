@@ -4,7 +4,7 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
-  beforeEach(module('gz3dServices'));
+  beforeEach(module('gz3dModule'));
 
   var experimentCtrl,
       scope,

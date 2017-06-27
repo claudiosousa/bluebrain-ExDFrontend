@@ -198,8 +198,8 @@ describe('Services: userNavigationService', function () {
 
     // check free camera control settings are set as default
     expect(userNavigationService.freeCameraControls).toBe(firstPersonControls);
-    expect(THREE.FirstPersonControls).toHaveBeenCalledWith(userNavigationService.userCamera, gz3d.scene.container, jasmine.any(Object));
-    expect(THREE.AvatarControls).toHaveBeenCalledWith(userNavigationService, gz3d, gz3d.scene.container, jasmine.any(Object));
+    expect(THREE.FirstPersonControls).toHaveBeenCalledWith(gz3d.scene.viewManager.mainUserView);
+    expect(THREE.AvatarControls).toHaveBeenCalledWith(userNavigationService, gz3d);
     expect(userNavigationService.avatarControls).toBe(avatarControls);
     expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
     expect(userNavigationService.navigationMode).toBe(NAVIGATION_MODES.FREE_CAMERA);

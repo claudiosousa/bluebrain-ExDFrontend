@@ -32,7 +32,7 @@ describe('Services: collab-3dsettings-service', function ()
   };
 
   beforeEach(module('exdFrontendApp'));
-  beforeEach(module('gz3dServices'));
+  beforeEach(module('gz3dModule'));
 
   // load the service to test and mock the necessary service
 

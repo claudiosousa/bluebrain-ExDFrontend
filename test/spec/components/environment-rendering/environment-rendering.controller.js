@@ -5,8 +5,9 @@
 describe('Controller: EnvironmentRenderingController', function () {
   var environmentRenderingController,
     controller,
-    scope,
-    rootScope,
+    $scope,
+    $element,
+    $rootScope,
     log,
     timeout,
     window,
@@ -23,7 +24,7 @@ describe('Controller: EnvironmentRenderingController', function () {
     userNavigationService,
     collabExperimentLockServiceMock ={},
     lockServiceMock,
-    q,
+    $q,
     callback,
     onLockChangedCallback,
     lockServiceCancelCallback,
@@ -33,7 +34,13 @@ describe('Controller: EnvironmentRenderingController', function () {
     simulationControlObject,
     nrpBackendVersionsObject,
     colorableObjectService,
-    experimentService;
+    experimentService,
+    gz3dViewsService,
+    environmentRenderingService,
+    dynamicViewOverlayService,
+    videoStreamService;
+
+  var mockAngularElement, deferredSceneInitialized, deferredView, deferredStreamingUrl;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -49,9 +56,12 @@ describe('Controller: EnvironmentRenderingController', function () {
   beforeEach(module('assetLoadingSplashMock'));
   beforeEach(module('colorableObjectServiceMock'));
   beforeEach(module('experimentServiceMock'));
+  beforeEach(module('gz3dViewsServiceMock'));
+  beforeEach(module('environmentRenderingServiceMock'));
+  beforeEach(module('dynamicViewOverlayServiceMock'));
+  beforeEach(module('videoStreamServiceMock'));
 
   beforeEach(module(function ($provide) {
-
     simulationStateObject = {
       update: jasmine.createSpy('update'),
       state: jasmine.createSpy('state')
@@ -92,6 +102,19 @@ describe('Controller: EnvironmentRenderingController', function () {
     $provide.value('experimentList',jasmine.createSpy('experimentList').and.returnValue(experimentListMock));
     $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
 
+    mockAngularElement = [
+      // the mock HTML DOM
+      {
+        getElementsByClassName: jasmine.createSpy('getElementsByClassName').and.returnValue(
+          [{}, {}]
+        ),
+        getElementsByTagName: jasmine.createSpy('getElementsByClassName').and.returnValue(
+          [{remove: jasmine.createSpy('remove')}]
+        )
+      }
+    ];
+    $provide.value('$element', mockAngularElement);
+
     simulationStateObject.update.calls.reset();
     simulationStateObject.state.calls.reset();
     simulationControlObject.simulation.calls.reset();
@@ -102,7 +125,8 @@ describe('Controller: EnvironmentRenderingController', function () {
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
-                              $rootScope,
+                              _$rootScope_,
+                              _$element_,
                               _$log_,
                               _hbpIdentityUserDirectory_,
                               _$timeout_,
@@ -119,12 +143,17 @@ describe('Controller: EnvironmentRenderingController', function () {
                               _environmentService_,
                               _experimentService_,
                               _userContextService_,
-                              _colorableObjectService_
+                              _colorableObjectService_,
+                              _gz3dViewsService_,
+                              _environmentRenderingService_,
+                              _dynamicViewOverlayService_,
+                              _videoStreamService_
                               ) {
     controller = $controller;
-    rootScope = $rootScope;
+    $rootScope = _$rootScope_;
+    $element = _$element_;
     log = _$log_;
-    scope = $rootScope.$new();
+    $scope = $rootScope.$new();
     timeout = _$timeout_;
     window = _$window_;
     window.location.reload = function () { };
@@ -137,12 +166,16 @@ describe('Controller: EnvironmentRenderingController', function () {
     STATE = _STATE_;
     gz3d = _gz3d_;
     userNavigationService = _userNavigationService_;
-    q = _$q_;
+    $q = _$q_;
     environmentService = _environmentService_;
     userContextService = _userContextService_;
     colorableObjectService = _colorableObjectService_;
+    gz3dViewsService = _gz3dViewsService_;
+    environmentRenderingService = _environmentRenderingService_;
+    dynamicViewOverlayService = _dynamicViewOverlayService_;
+    videoStreamService = _videoStreamService_;
 
-    callback = q.defer();
+    callback = $q.defer();
     lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
     lockServiceMock = {
       tryAddLock : jasmine.createSpy('tryAddLock').and.returnValue(callback.promise),
@@ -169,7 +202,7 @@ describe('Controller: EnvironmentRenderingController', function () {
       {id: 'test::id::mesh3', url: 'http://some_fake_url.com:1234/bla3.mesh', progress: 200, total: 200, done: true}
     ];
 
-    scope.activeSimulation = undefined;
+    $scope.activeSimulation = undefined;
 
     fakeSimulationData = {
       owner: '1234',
@@ -185,6 +218,14 @@ describe('Controller: EnvironmentRenderingController', function () {
     // create mock for $log
     spyOn(log, 'error');
 
+    deferredSceneInitialized = $q.defer();
+    environmentRenderingService.sceneInitialized.and.returnValue(deferredSceneInitialized.promise);
+
+    deferredView = $q.defer();
+    gz3dViewsService.assignView.and.returnValue(deferredView.promise);
+
+    deferredStreamingUrl = $q.defer();
+    videoStreamService.getStreamingUrlForTopic.and.returnValue(deferredStreamingUrl.promise);
   }));
 
   describe('(ViewMode)', function () {
@@ -192,8 +233,8 @@ describe('Controller: EnvironmentRenderingController', function () {
 
     beforeEach(function () {
       environmentRenderingController = controller('EnvironmentRenderingController', {
-        $rootScope: rootScope,
-        $scope: scope
+        $rootScope: $rootScope,
+        $scope: $scope
       });
 
       currentUserInfo1234 = {
@@ -212,6 +253,7 @@ describe('Controller: EnvironmentRenderingController', function () {
         id: '4321'
       };
 
+      spyOn(environmentRenderingController, 'onDestroy').and.callThrough();
     });
 
     it('should have editRights when owner', function () {
@@ -277,20 +319,142 @@ describe('Controller: EnvironmentRenderingController', function () {
     });
 
     it('should do nothing on $destroy when all is undefined', function() {
-      scope.assetLoadingSplashScreen = undefined;
+      $scope.assetLoadingSplashScreen = undefined;
       gz3d.iface.webSocket = undefined;
-      scope.rosConnection = undefined;
-      scope.statusListener = undefined;
+      $scope.rosConnection = undefined;
+      $scope.statusListener = undefined;
 
-      scope.$destroy();
+      $scope.$destroy();
 
-      expect(scope.splashScreen).not.toBeDefined();
-      expect(scope.assetLoadingSplashScreen).not.toBeDefined();
-      expect(scope.statusListener).not.toBeDefined();
-      expect(scope.worldStatsListener).not.toBeDefined();
-      expect(scope.rosConnection).not.toBeDefined();
+      expect($scope.splashScreen).not.toBeDefined();
+      expect($scope.assetLoadingSplashScreen).not.toBeDefined();
+      expect($scope.statusListener).not.toBeDefined();
+      expect($scope.worldStatsListener).not.toBeDefined();
+      expect($scope.rosConnection).not.toBeDefined();
       expect(gz3d.iface.webSocket).not.toBeDefined();
     });
+
+    it(' - initialization', function() {
+      var mockOverlayWrapper = {
+        setAttribute: jasmine.createSpy('setAttribute'),
+        clientWidth: 300,
+        style: {
+          width: 0,
+          height: 0
+        }
+      };
+      dynamicViewOverlayService.getParentOverlayWrapper.and.returnValue(mockOverlayWrapper);
+
+      var mockOverlayParent = [
+        {clientWidth: 300, clientHeight: 200}
+      ];
+      dynamicViewOverlayService.getOverlayParentElement.and.returnValue(mockOverlayParent);
+
+      var container = mockAngularElement[0].getElementsByClassName()[0];
+      expect(environmentRenderingController.gz3dContainerElement).toBe(container);
+      expect(environmentRenderingController.containerElement).toBe(container);
+      expect(environmentRenderingService.sceneInitialized).toHaveBeenCalled();
+
+      deferredSceneInitialized.resolve();
+      $rootScope.$digest();
+      expect(gz3dViewsService.assignView).toHaveBeenCalledWith(container);
+
+      var mockView = {
+        type: 'camera',
+        initAspectRatio: 1.6,
+        topic: 'test_topic_url'
+      };
+      deferredView.resolve(mockView);
+      $rootScope.$digest();
+      expect(environmentRenderingController.view).toBe(mockView);
+      expect(dynamicViewOverlayService.getParentOverlayWrapper).toHaveBeenCalled();
+      expect(mockOverlayWrapper.setAttribute).toHaveBeenCalledWith('keep-aspect-ratio', mockView.initAspectRatio.toString());
+
+      var expectedWidth = environmentRenderingController.INIT_WIDTH_PERCENTAGE;
+      var expectedHeight = ((environmentRenderingController.INIT_WIDTH_PERCENTAGE * mockOverlayParent[0].clientWidth) /
+        mockView.initAspectRatio) / mockOverlayParent[0].clientHeight;
+      expect(mockOverlayWrapper.style.width).toBe((expectedWidth * 100).toString() + '%');
+      expect(mockOverlayWrapper.style.height).toBe((expectedHeight * 100).toString() + '%');
+
+      expect(videoStreamService.getStreamingUrlForTopic).toHaveBeenCalledWith(mockView.topic);
+      var streamUrl = 'test_streaming_url';
+      deferredStreamingUrl.resolve(streamUrl);
+      $rootScope.$digest();
+      expect(environmentRenderingController.videoUrl).toBe(streamUrl);
+    });
+
+    it(' - $destroy', function() {
+      environmentRenderingController.view = {
+        container: {},
+        camera: {
+          cameraHelper: {
+            visible: true
+          }
+        }
+      };
+
+      $scope.$destroy();
+
+      expect(environmentRenderingController.onDestroy).toHaveBeenCalled();
+      expect(gz3dViewsService.toggleCameraHelper).toHaveBeenCalledWith(environmentRenderingController.view);
+      expect(environmentRenderingController.view.container).not.toBeDefined();
+    });
+
+    it(' - isCameraView', function() {
+      environmentRenderingController.view = {
+        type: 'camera'
+      };
+      expect(environmentRenderingController.isCameraView()).toBe(true);
+
+      environmentRenderingController.view = {
+        type: 'not-camera'
+      };
+      expect(environmentRenderingController.isCameraView()).toBe(false);
+
+      environmentRenderingController.view = undefined;
+      expect(environmentRenderingController.isCameraView()).toBe(undefined);
+    });
+
+    it(' - onClickFrustumIcon', function() {
+      var view = {};
+      environmentRenderingController.view = view;
+      environmentRenderingController.onClickFrustumIcon();
+      expect(gz3dViewsService.toggleCameraHelper).toHaveBeenCalledWith(view);
+    });
+
+    it(' - onClickCameraStream', function() {
+      environmentRenderingController.showServerStream = false;
+      environmentRenderingController.reconnectTrials = 0;
+
+      environmentRenderingController.onClickCameraStream();
+      expect(environmentRenderingController.showServerStream).toBe(true);
+      expect(environmentRenderingController.reconnectTrials).toBe(1);
+
+      environmentRenderingController.onClickCameraStream();
+      expect(environmentRenderingController.showServerStream).toBe(false);
+      expect(environmentRenderingController.reconnectTrials).toBe(2);
+    });
+
+    it(' - getVideoUrlSource', function() {
+      var testUrl = 'test_video_url';
+      var testState = 'test_state_running';
+      var reconnectTrials = 5;
+      environmentRenderingController.reconnectTrials = reconnectTrials;
+      environmentRenderingController.videoUrl = testUrl;
+      stateService.currentState = testState;
+
+      // not showing server stream, return empty string
+      environmentRenderingController.showServerStream = false;
+      var url = environmentRenderingController.getVideoUrlSource();
+      expect(url).toBe('');
+
+      // now showing server stream
+      environmentRenderingController.showServerStream = true;
+      url = environmentRenderingController.getVideoUrlSource();
+      expect(url).toBe(testUrl + '&t=' + testState + reconnectTrials);
+
+    });
+
   });
 
 });

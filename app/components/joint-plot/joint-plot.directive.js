@@ -13,14 +13,14 @@
             close:'&closeFn'
           },
           controller: 'JoinPlotController',
-          controllerAs: 'vm',
+          controllerAs: 'vm'/*,
           link: function(scope, element, attrs) {
 
             scope.onResizeBegin = () => element.addClass('resizing');
 
             // the chart needs a bit of time to adjust its size
             scope.onResizeEnd = () => $timeout(() => element.removeClass('resizing'), 200);
-          }
+          }*/
         };
       }
     ]);

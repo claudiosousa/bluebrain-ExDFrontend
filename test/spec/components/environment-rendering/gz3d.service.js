@@ -52,7 +52,7 @@ describe('testing the gz3d service', function () {
   var bbpConfig = {};
   bbpConfig.get = jasmine.createSpy('get').and.returnValue('toto');
 
-  beforeEach(module('gz3dServices'));
+  beforeEach(module('gz3dModule'));
   beforeEach(module(function ($provide) {
     $provide.value('simulationInfo', simulationInfo);
     $provide.value('bbpConfig', bbpConfig);
@@ -71,37 +71,9 @@ describe('testing the gz3d service', function () {
 
   it('checks if all the GZ3D constructors have been called', function() {
     expect(GZ3D.Scene).toHaveBeenCalled();
-    expect(SceneObject.viewManager.setCallbackCreateRenderContainer).toHaveBeenCalledWith(gz3d.createRenderContainer);
     expect(GZ3D.Gui).toHaveBeenCalledWith(SceneObject);
     expect(GZ3D.GZIface).toHaveBeenCalledWith(SceneObject, GuiObject);
     expect(GZ3D.SdfParser).toHaveBeenCalledWith(SceneObject, GuiObject , GZIfaceObject);
-  });
-
-  it('checks for the correct callback of the DIV size changes', function() {
-    rootScope.$digest();
-    gz3d.container.offsetHeight = 110;
-    rootScope.$digest();
-    expect(SceneObject.setWindowSize).toHaveBeenCalledWith(200, 110);
-    gz3d.container.offsetWidth = 210;
-    gz3d.container.offsetHeight = 100;
-    rootScope.$digest();
-    expect(SceneObject.setWindowSize).toHaveBeenCalledWith(210, 100);
-  });
-
-  it('checks if render container elements are correctly generated', function() {
-    gz3d.Initialize();
-    var testRenderContainerAdjustable = gz3d.createRenderContainer(true, 'test_rendercontainer_adjustable');
-    var testRenderContainerNotAdjustable = gz3d.createRenderContainer(false, 'test_rendercontainer_unadjustable');
-
-    expect(testRenderContainerAdjustable.getAttribute('movable')).not.toEqual(undefined);
-    expect(testRenderContainerAdjustable.getAttribute('resizeable')).not.toEqual(undefined);
-    expect(testRenderContainerAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
-    expect(testRenderContainerAdjustable.getAttribute('camera-name')).toEqual('test_rendercontainer_adjustable');
-    expect(testRenderContainerAdjustable.className).toEqual('render-view-container camera-view-window ng-scope');
-
-    expect(testRenderContainerNotAdjustable.getAttribute('keep-aspect-ratio')).not.toEqual(undefined);
-    expect(testRenderContainerNotAdjustable.getAttribute('camera-name')).toEqual('test_rendercontainer_unadjustable');
-    expect(testRenderContainerNotAdjustable.className).toEqual('render-view-container camera-view-window ng-scope');
   });
 
   it('should Initialize', function() {
@@ -109,7 +81,6 @@ describe('testing the gz3d service', function () {
     expect(gz3d.iface).toBeDefined();
     expect(gz3d.gui).toBeDefined();
     expect(gz3d.scene).toBeDefined();
-    expect(gz3d.container).toBeDefined();
   });
 
   it('should not initialize when already initialized', function() {

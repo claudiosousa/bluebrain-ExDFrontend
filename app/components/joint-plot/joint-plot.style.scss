@@ -16,20 +16,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-@import "styles/esv/pop-over-viewer.scss";
 
-$jointPlotBottom: 65px;
-$jointPlotHeight: 400px;
 $jointPlotPadding: 10px;
 
-$rgbCurveEditorMinWidth: 650px;
-$rgbCurveEditorMinHeight: 150px;
+$jointPlotMinWidth: 700px;
+$jointPlotMinHeight: 200px;
 
 .jointplot-wrapper {
   display: flex;
   height: 100%;
-  min-width: $rgbCurveEditorMinWidth;
-  min-height: $rgbCurveEditorMinHeight;
+  min-width: $jointPlotMinWidth;
+  min-height: $jointPlotMinHeight;
+  margin: $jointPlotPadding;
 
   &.resizing .linechart-wrapper{
     visibility: hidden;
@@ -48,12 +46,14 @@ $rgbCurveEditorMinHeight: 150px;
     padding-top: $jointPlotPadding;
     align-self: stretch;
   }
+
   .joint-selector {
     order: -1;
     overflow-y: auto;
     flex-basis: 230px;
     flex-shrink: 0;
   }
+
   .linechart-wrapper {
     flex-grow: 1;
     flex-shrink: 0;
@@ -65,11 +65,12 @@ $rgbCurveEditorMinHeight: 150px;
       /* the legend from n3-line-chart is ugly */
       display: none;
     }
-    .linechart{
+
+    .linechart {
       margin: 10px;
     }
 
-    .chart-legend{
+    .chart-legend {
       display: none;
     }
   }
