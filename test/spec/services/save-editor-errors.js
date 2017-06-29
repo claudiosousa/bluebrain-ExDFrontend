@@ -5,24 +5,23 @@ describe('Services: saveErrorsService', function () {
   var DIRTY_TYPE = 'dirtyType';
   var DIRTY_DATA = 'dirtyData';
 
-  var collabFolderAPIService, tempFileService, stateParams,
-    previouslySavedFile;
-  var $rootScope, $q, saveErrorsService, SAVE_FILE, environmentService;
-
-  beforeEach(module('exdFrontendApp'));
+  var collabFolderAPIService, tempFileService, stateParams, previouslySavedFile;
+  var $rootScope,  saveErrorsService, SAVE_FILE, environmentService;
+  
+   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module(function ($provide) {
-
+    /*globals $q */
     tempFileService = {
-      saveDirtyData: jasmine.createSpy('saveDirtyData').and.callFake(function () { return $q.when(); }),
+      saveDirtyData: jasmine.createSpy('saveDirtyData').and.returnValue($q.when()),
       checkSavedWork: jasmine.createSpy('checkSavedWork').and.callFake(function(){return $q.when(); }),
       removeSavedWork: jasmine.createSpy('removeSavedWork'),
     };
-
+    /*jshint camelcase: false */
     collabFolderAPIService = {
-      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').and.callFake(function () { return $q.when(CONTEXT_ID); }),
+      getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').and.callFake(function () { return $q.when('CONTEXT_ID'); }),
       getFolderFile: jasmine.createSpy('getFolderFile').and.callFake(function () {
-        return $q.when(previouslySavedFile !== undefined ? { _createdBy: 'userid' , _uuid: 'uuid'} : null);
+        return $q.when(previouslySavedFile !== undefined ? { created_by: 'userid' , uuid: 'uuid'} : null);
       }),
       uploadEntity: jasmine.createSpy('uploadEntity'),
       downloadFile: jasmine.createSpy('downloadFile').and.callFake(function () { return $q.when(previouslySavedFile); })
@@ -36,7 +35,6 @@ describe('Services: saveErrorsService', function () {
 
   beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _saveErrorsService_, _SAVE_FILE_, _environmentService_) {
     $rootScope = _$rootScope_;
-    $q = _$q_;
     saveErrorsService = _saveErrorsService_;
     SAVE_FILE = _SAVE_FILE_;
     environmentService = _environmentService_;
@@ -102,7 +100,7 @@ describe('Services: saveErrorsService', function () {
     environmentService.setPrivateExperiment(false);
     saveErrorsService.clearDirty(DIRTY_TYPE);
 
-    expect(collabFolderAPIService.getExperimentFolderId).not.toHaveBeenCalled();
+    expect(collabFolderAPIService.getFolderFile).not.toHaveBeenCalled();
   });
 
 });

@@ -31,13 +31,18 @@
 
     $scope.editorsPanelService = editorsPanelService;
     $scope.panelIsOpen = false;
-    $scope.activeTab = {};
-    $scope.activeTab.statemachine = false;
     $scope.isOwner = userContextService.isOwner();
-    $scope.activeTab.transferfunction = !($scope.activeTab.environment = $scope.isOwner);
-    $scope.activeTab.pynneditor = false;
-    $scope.activeTab.graphicalEditor = false;
-    $scope.activeTab.events = false;
+
+    $scope.tabindex = {
+      environment: 1,
+      statemachine: 2,
+      transferfunction: 3,
+      pynneditor: 4,
+      events: 5,
+      graphicalEditor: 6
+    };
+
+    $scope.activeTabIndex = $scope.isOwner? $scope.tabindex.environment :$scope.tabindex.transferfunction;
 
     $scope.controls = {};
     $scope.controls.transferfunction = {};
@@ -48,48 +53,37 @@
     $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
     $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
 
+    var isTabSelected = (...tabs) => tabs.indexOf($scope.activeTabIndex) >= 0;
+
     $scope.openCallback = function() {
       // The Panel is opened
 
       userContextService.isOwner() && autoSaveService.checkAutoSavedWork()
-      .catch(function(){
-        // auto saved data will always be the freshest data, so only load the error data if there is no autosave data or it was discarded.
-        saveErrorsService.getErrorSavedWork();
-    });
+        .catch(function() {
+          // auto saved data will always be the freshest data, so only load the error data if there is no autosave data or it was discarded.
+          saveErrorsService.getErrorSavedWork();
+        });
 
       $scope.panelIsOpen = true;
-      if($scope.activeTab.transferfunction === true ||
-        $scope.activeTab.statemachine === true ||
-        $scope.activeTab.pynneditor === true ||
-        $scope.activeTab.graphicalEditor === true) {
+      if (isTabSelected($scope.tabindex.transferfunction, $scope.tabindex.statemachine, $scope.tabindex.pynneditor, $scope.tabindex.graphicalEditor))
         gz3d.scene.controls.keyboardBindingsEnabled = false;
-      }
+
 
       $scope.refresh();
     };
 
-    $scope.refresh = function ()
-    {
-      if ($scope.panelIsOpen)
-      {
-        if ($scope.activeTab.transferfunction === true)
-        {
+    $scope.refresh = function() {
+      if ($scope.panelIsOpen) {
+        if (isTabSelected($scope.tabindex.transferfunction))
           $scope.controls.transferfunction.refresh();
-          }
-          else if ($scope.activeTab.statemachine === true)
-          {
-            $scope.controls.statemachine.refresh();
-          }
-          else if ($scope.activeTab.pynneditor === true)
-          {
-            $scope.controls.pynneditor.refresh();
-          }
-          else if ($scope.activeTab.graphicalEditor === true)
-          {
-            $scope.controls.graphicalEditor.refresh();
-          }
-        }
-      };
+        else if (isTabSelected($scope.tabindex.statemachine))
+          $scope.controls.statemachine.refresh();
+        else if (isTabSelected($scope.tabindex.pynneditor))
+          $scope.controls.pynneditor.refresh();
+        else if (isTabSelected($scope.tabindex.graphicalEditor))
+          $scope.controls.graphicalEditor.refresh();
+      }
+    };
 
       // update UI
       $scope.$on("UPDATE_PANEL_UI", function () {
@@ -139,15 +133,12 @@
       // do not work well with resizing so deselect them on resize and refresh on focus
       document.activeElement.blur();
 
-      if ($scope.activeTab.transferfunction === true) {
+      if (isTabSelected($scope.tabindex.transferfunction))
         $scope.controls.transferfunction.refresh();
-      }
-      else if ($scope.activeTab.statemachine === true) {
+      else if (isTabSelected($scope.tabindex.statemachine))
         $scope.controls.statemachine.refresh();
-      }
-      else if ($scope.activeTab.pynneditor === true) {
+      else if (isTabSelected($scope.tabindex.pynneditor))
         $scope.controls.pynneditor.refresh();
-      }
       // graphical editor is not refreshed
     };
 

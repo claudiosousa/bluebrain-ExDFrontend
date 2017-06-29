@@ -37,7 +37,7 @@
     <ul>
       <li ng-repeat="population in populations">
         <a ng-click="$parent.selectedPopulation = population">{{population.name}}</a><br/>
-        <ul collapse="population !== $parent.selectedPopulation">
+        <ul uib-collapse="population !== $parent.selectedPopulation">
           <li ng-class="{'selected' : neuron.selected, 'notSelected' : !neuron.selected}"
               ng-repeat="neuron in population.gids"
               ng-click="toggleNeuron(neuron, true)">

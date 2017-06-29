@@ -15,7 +15,7 @@ describe('Controller: EditorToolbarController', function() {
       userNavigationService,
       editorsPanelService,
       gz3d,
-      hbpDialogFactory,
+      clbConfirm,
       environmentService,
       backendInterfaceService,
       splash,
@@ -39,7 +39,6 @@ describe('Controller: EditorToolbarController', function() {
   beforeEach(module('stateServiceMock'));
   beforeEach(module('gz3dMock'));
   beforeEach(module('splashMock'));
-  beforeEach(module('hbpDialogFactoryMock'));
   beforeEach(module('backendInterfaceServiceMock'));
   beforeEach(module('objectInspectorServiceMock'));
   beforeEach(module('userNavigationServiceMock'));
@@ -75,7 +74,9 @@ describe('Controller: EditorToolbarController', function() {
       };
       return res;
     };
-
+    $provide.value('clbConfirm', { open: jasmine.createSpy('open').and.returnValue(  {
+      then: jasmine.createSpy('then')
+    })});
     $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
 
     $provide.value('simulationState', jasmine.createSpy('simulationState').and.returnValue(simulationStateObject));
@@ -102,7 +103,7 @@ describe('Controller: EditorToolbarController', function() {
                              _userNavigationService_,
                              _gz3d_,
                              _editorsPanelService_,
-                             _hbpDialogFactory_,
+                             _clbConfirm_,
                              _environmentService_,
                              _backendInterfaceService_,
                              _splash_,
@@ -128,7 +129,7 @@ describe('Controller: EditorToolbarController', function() {
     gz3d = _gz3d_;
     userNavigationService = _userNavigationService_;
     editorsPanelService = _editorsPanelService_;
-    hbpDialogFactory = _hbpDialogFactory_;
+    clbConfirm = _clbConfirm_;
     environmentService = _environmentService_;
     backendInterfaceService = _backendInterfaceService_;
     splash = _splash_;
@@ -179,14 +180,14 @@ describe('Controller: EditorToolbarController', function() {
     it('should ensure that the state is PAUSED when resetting', function() {
       editorToolbarController.resetButtonClickHandler();
 
-      hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
+      clbConfirm.open().then.calls.mostRecent().args[0]();
 
       expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
     });
 
     it('should show a popup when the reset button is pressed', function() {
       editorToolbarController.resetButtonClickHandler();
-      expect(hbpDialogFactory.confirm).toHaveBeenCalled();
+      expect(clbConfirm.open).toHaveBeenCalled();
     });
 
     it('should pass the radio button value to resetService when Collab not available', function() {
@@ -254,7 +255,7 @@ describe('Controller: EditorToolbarController', function() {
         environmentService.setPrivateExperiment(true); //Collab IS available
         splash.splashScreen = undefined;
 
-        hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
+        clbConfirm.open().then.calls.mostRecent().args[0]();
 
         $timeout.flush(100);
         expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
@@ -313,7 +314,7 @@ describe('Controller: EditorToolbarController', function() {
     it('shouldn\'t do anything if no radio button is set', function() {
       editorToolbarController.resetButtonClickHandler();
       editorToolbarController.request = { resetType: RESET_TYPE.NO_RESET };
-      hbpDialogFactory.confirm().then.calls.mostRecent().args[0]();
+      clbConfirm.open().then.calls.mostRecent().args[0]();
       expect(backendInterfaceService.reset.calls.count()).toBe(0);
     });
 

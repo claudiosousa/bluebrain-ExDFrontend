@@ -19,8 +19,8 @@
 (function () {
   'use strict';
 
-  angular.module('nrpUser', ['bbpConfig']).service('nrpUser', ['$window', '$q', 'hbpIdentityUserDirectory', 'bbpConfig',
-    function ($window, $q, hbpIdentityUserDirectory, bbpConfig) {
+  angular.module('nrpUser', ['bbpConfig']).service('nrpUser', ['$window', '$q', 'clbUser', 'bbpConfig',
+    function ($window, $q, clbUser, bbpConfig) {
       var forceuser, ownerID;
       var loadConfig = () => {
         forceuser = bbpConfig.get('localmode.forceuser', false),
@@ -29,7 +29,7 @@
 
       var getCurrentUser = function () {
         loadConfig();
-        return forceuser ? $q.when({ displayName: ownerID, id: ownerID }) : hbpIdentityUserDirectory.getCurrentUser();
+        return forceuser ? $q.when({ displayName: ownerID, id: ownerID }) : clbUser.getCurrentUser();
       };
 
       var getReservation = function() {
@@ -37,7 +37,7 @@
       };
 
       var isMemberOfClusterReservationGroup = function() {
-        return hbpIdentityUserDirectory.isGroupMember('hbp-sp10-cluster-reservation');
+        return clbUser.isGroupMember('hbp-sp10-cluster-reservation');
       };
 
       var getOwnerName = function(owner) {
@@ -45,7 +45,7 @@
         if (forceuser) {
           return $q.when(ownerID);
         }
-        return hbpIdentityUserDirectory.get([owner]).then(function (profile) {
+        return clbUser.get([owner]).then(function (profile) {
           return (profile[owner] && profile[owner].displayName) || 'Unkwown';
         });
       };
@@ -60,8 +60,8 @@
           });
         }
         return $q.all([
-          hbpIdentityUserDirectory.getCurrentUser(),
-          hbpIdentityUserDirectory.isGroupMember('hbp-sp10-user-edit-rights')
+          clbUser.getCurrentUser(),
+          clbUser.isGroupMember('hbp-sp10-user-edit-rights')
         ]).then(function (userInfo) {
           return {
             userID: userInfo[0].id,

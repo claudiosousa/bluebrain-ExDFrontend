@@ -18,11 +18,11 @@ describe('Directive: spiketrain', function() {
     $provide.value('simulationInfo', simulationInfoMock);
   }));
 
-  var scope, $rootScope, $timeout, element, editorToolbarService;
-  beforeEach(inject(function(_$rootScope_, $compile, _$timeout_,
+  var scope, $rootScope, $interval, element, editorToolbarService;
+  beforeEach(inject(function(_$rootScope_, $compile, _$interval_,
                              _editorToolbarService_) {
     $rootScope = _$rootScope_;
-    $timeout = _$timeout_;
+    $interval = _$interval_;
     $rootScope.visible = false;
     element = $compile('<spike-train ng-show="visible"></spike-train>')($rootScope);
     $rootScope.$digest();
@@ -41,9 +41,16 @@ describe('Directive: spiketrain', function() {
   it('should call controller methods when visible', function() {
     editorToolbarService.showSpikeTrain = true;
     $rootScope.$digest();
-    $timeout.flush();
+    $interval.flush(30);
 
     expect(scope.vm.startSpikeDisplay).toHaveBeenCalled();
+  });
+
+  it('should hide on close', function() {
+    editorToolbarService.showSpikeTrain = true;
+    scope.close();
+
+    expect(editorToolbarService.showSpikeTrain).toBe(false);
   });
 
   it('should clearPlot on RESET', function() {

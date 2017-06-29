@@ -20,9 +20,9 @@
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
+    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'collabFolderAPIService', 'clbUser',
       'nrpModalService', 'environmentService',
-      function ($stateParams, $q, $rootScope, collabFolderAPIService, hbpIdentityUserDirectory,
+      function ($stateParams, $q, $rootScope, collabFolderAPIService, clbUser,
         nrpModalService, environmentService) {
 
         var dirtyDataCol = {},
@@ -49,7 +49,7 @@
                       return collabFolderAPIService.uploadEntity(angular.toJson(data), file);
                     }
                     else {
-                      return collabFolderAPIService.downloadFile(file._uuid)
+                      return collabFolderAPIService.downloadFile(file.uuid)
                         .then(function(fileContent){
                           var content = angular.fromJson(fileContent);
                           content[dirtyType] = data[dirtyType];
@@ -101,14 +101,14 @@
                 return $q.reject();
               return $q.all([
                 file,
-                collabFolderAPIService.downloadFile(file._uuid).then(angular.fromJson),
-                hbpIdentityUserDirectory.get([file._createdBy])
+                collabFolderAPIService.downloadFile(file.uuid).then(angular.fromJson),
+                clbUser.get([file.created_by])
               ]);
             })
             .then(_.spread(function(file, foundFile, userInfo) {
               if (confirmBox) {
                 var localScope = $rootScope.$new();
-                localScope.username = userInfo[file._createdBy].displayName;
+                localScope.username = userInfo[file.created_by].displayName;
                 return nrpModalService.createModal({
                   templateUrl: 'views/common/restore-auto-saved.html',
                   closable: true,

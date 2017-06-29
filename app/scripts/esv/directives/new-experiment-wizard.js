@@ -24,7 +24,7 @@
             '$q',
             'collabFolderAPIService',
             'nrpModalService',
-            'hbpDialogFactory',
+            'clbErrorDialog',
             '$http',
             'newExperimentProxyService',
             'collabConfigService',
@@ -34,7 +34,7 @@
                 $q,
                 collabFolderAPIService,
                 nrpModalService,
-                hbpDialogFactory,
+                clbErrorDialog,
                 $http,
                 newExperimentProxyService,
                 collabConfigService,
@@ -245,10 +245,10 @@
 
                         $scope.createEntitiesListFromBrainFiles = function (brainFiles) {
                             return $q.all(brainFiles.results.map(function (brain) {
-                                return collabFolderAPIService.downloadFile(brain._uuid).then(function (resp) {
+                                return collabFolderAPIService.downloadFile(brain.uuid).then(function (resp) {
                                     return {
-                                        name: brain._name.split(".")[0],
-                                        id: brain._name.split(".")[0],
+                                        name: brain.name.split(".")[0],
+                                        id: brain.name.split(".")[0],
                                         description: resp.match(/^"""([^\"]*)"""/m)[1].trim() || 'Brain description'
                                     };
                                 });
@@ -258,11 +258,11 @@
                         $scope.createEntitiesListFromEntityFiles = function (files) {
 
                             var isImage = function (file) {
-                                return file._contentType !== 'application/x-config';
+                                return file.content_type !== 'application/x-config';
                             };
 
                             files.results.forEach(function (file) {
-                                file.entityId = file._name.split('.')[0];
+                                file.entityId = file.name.split('.')[0];
                             });
 
                             var images = $q.all(files.results
@@ -272,7 +272,7 @@
                                 .map(function (f) {
                                     return $q.all({
                                         id: f.entityId,
-                                        imageData: $scope.retrieveImageFileContent(f._uuid)
+                                        imageData: $scope.retrieveImageFileContent(f.uuid)
                                     });
                                 }));
 
@@ -283,7 +283,7 @@
                                 .map(function (f) {
                                     return $q.all({
                                         id: f.entityId,
-                                        config: $scope.retrieveConfigFileContent(f._uuid)
+                                        config: $scope.retrieveConfigFileContent(f.uuid)
                                     })
                                         .then(function (entity) {
                                             entity.description = entity.config.desc;
@@ -305,9 +305,9 @@
                         };
 
                         $scope.createErrorPopup = function (errorMessage) {
-                            hbpDialogFactory.alert({
-                                title: 'Error.',
-                                template: errorMessage
+                            clbErrorDialog.open({
+                                type: 'Error.',
+                                message: errorMessage
                             });
                         };
 

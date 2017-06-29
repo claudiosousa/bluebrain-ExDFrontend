@@ -16,103 +16,114 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
-(function () {
+(function() {
   'use strict';
 
   var module = angular.module('collabServices', ['ngResource', 'bbpConfig',
-    'nrpErrorHandlers', 'hbpDocumentClient', 'clb-storage']);
+    'nrpErrorHandlers', 'ui.router', 'clb-storage']);
 
-  module.factory('collabConfigService', ['$resource', 'serverError', 'bbpConfig', function ($resource, serverError, bbpConfig) {
+  module.factory('collabConfigService', ['$resource', 'serverError', 'bbpConfig', function($resource, serverError, bbpConfig) {
     var baseUrl = bbpConfig.get('api.collabContextManagement.url');
     return $resource(baseUrl + '/collab/configuration/:contextID', {}, {
       clone: {
         method: 'PUT',
-        interceptor: {responseError: serverError.displayHTTPError}
+        interceptor: { responseError: serverError.displayHTTPError }
       },
       get: {
         method: 'GET',
-        interceptor: {responseError: serverError.displayHTTPError}
+        interceptor: { responseError: serverError.displayHTTPError }
       }
     });
   }]);
 
-  module.service('collabFolderAPIService', ['$http', '$q', '$interpolate', 'collabConfigService', 'hbpFileStore','bbpConfig','$stateParams', 'clbStorage', function ($http, $q, $interpolate, collabConfigService, hbpFileStore, bbpConfig,$stateParams, clbStorage) {
-    var baseUrl = bbpConfig.get('api.document.v0');
+  module.service('collabFolderAPIService', ['$http', '$q', '$interpolate', 'collabConfigService', 'bbpConfig', '$stateParams', 'clbStorage', function($http, $q, $interpolate, collabConfigService, bbpConfig, $stateParams, clbStorage) {
+    var baseUrl = bbpConfig.get('api.document.v1');
     var collabBaseUrl = bbpConfig.get('api.collab.v0');
+    var experimentFolderIdObj = {};
 
-    //creates a file within a folder, using the name and content past in the parameters
-    this.createFolderFile = function (folderId, fileName, fileContent, blobType) {
-      if (!blobType){
-        blobType = {type: 'text/plain'};
+    //creates a file within a folder, using the name and content passed in the parameters
+    this.createFolderFile = function(folderId, fileName, fileContent, blobType) {
+      if (!blobType) {
+        blobType = { type: 'text/plain' };
       }
       var blob = new Blob([fileContent], blobType);
       blob.name = fileName;
-      return hbpFileStore.upload(blob,{
+      return clbStorage.upload(blob, {
         parent: {
-          _uuid: folderId
+          uuid: folderId
         }
       });
     };
 
     //deletes a file within a folder
-    this.deleteFile = function (folderId, fileName) {
-      return this.getFolderFile(folderId, fileName).then(function (file) {
-        if (!file) {
-          return false;
-        }
-        var url = $interpolate('{{baseUrl}}/file/{{fileId}}')({
-          baseUrl: baseUrl,
-          fileId: file._uuid
-        });
-        return $http.delete(url).then(function () {
+    this.deleteFile = function(folderId, fileName, fileEntity) {
+      if (fileEntity) {
+        return clbStorage.delete(fileEntity).then(function() {
           return true;
         });
-      });
+      }
+      else {
+        return this.getFolderFile(folderId, fileName).then(function(file) {
+          if (!file) {
+            return false;
+          }
+          return clbStorage.delete(file).then(function() {
+            return true;
+          });
+        });
+      }
     };
 
     //searches for a file name within a folder id
-    this.getFolderFile = function (folderId, fileName) {
-      var url = $interpolate('{{baseUrl}}/folder/{{folderId}}/children?filter=_name={{fileName}}')({
+    this.getFolderFile = function(folderId, fileName) {
+      var url = $interpolate('{{baseUrl}}/folder/{{folderId}}/children/?name={{fileName}}')({
         baseUrl: baseUrl,
         folderId: folderId,
         fileName: fileName
       });
-      return $http.get(url).then(function (response) {
+      return $http.get(url).then(function(response) {
         return response &&
           response.data &&
-          response.data.result &&
-          response.data.result.length &&
-          response.data.result[0];
+          response.data.results &&
+          response.data.results.length &&
+          response.data.results[0] ||
+          $q.reject('file not found');
       });
     };
 
-    this.downloadFile = function(id, customConfig){
-      return hbpFileStore.getContent(id, customConfig);
+    this.downloadFile = function(id, customConfig) {
+      return clbStorage.getContent(id, customConfig);
     };
 
     //gets the experiment folder uuid for a Collab context
-    this.getExperimentFolderId = function (contextId) {
+    this.getExperimentFolderId = function(contextId) {
       var deferred = $q.defer();
-      var collabConfig = collabConfigService.get({ contextID: contextId },
-      function () {
-        deferred.resolve(collabConfig.experimentFolderUUID);
-      },
-      function (err) {
-        deferred.reject(err);
-      });
+      if (contextId in experimentFolderIdObj) {
+        deferred.resolve(experimentFolderIdObj[contextId]);
+      }
+      else {
+        var collabConfig = collabConfigService.get({ contextID: contextId },
+          function() {
+            experimentFolderIdObj[contextId] = collabConfig.experimentFolderUUID;
+            deferred.resolve(collabConfig.experimentFolderUUID);
+          },
+          function(err) {
+            deferred.reject(err);
+          });
+      }
       return deferred.promise;
     };
 
     var entityUrl = function(entity) {
-      return baseUrl+'/'+entity._entityType.split(':')[0]+'/'+entity._uuid;
+      return baseUrl + '/' + entity.entity_type.split(':')[0] + '/' + entity.uuid;
     };
-
+    // this is still needed as the new api doesn't have a direct replace
     this.uploadEntity = function(file, entity) {
-      return $http.post(entityUrl(entity)+'/content/upload', file, angular.extend({
+      return $http.post(entityUrl(entity) + '/content/upload/', file, angular.extend({
         headers: {
-          'Content-Type': 'application/octet-stream'
+          'Content-Type': entity.content_type
         }
-      })).$promise;
+      }));
     };
 
     /**
@@ -130,14 +141,14 @@
      * @param  folderName the name of the folder under the navigational entity
      * @return a promise that contains the files under the storage folder
      **/
-    this.getFilesFromNavEntityFolder = function (navEntityName, folderName) {
+    this.getFilesFromNavEntityFolder = function(navEntityName, folderName) {
       return getCurrentCollab(this.getContextId())
         .then(function successCallback(response) {
           return getCollabNavEntities(response.data);
-        }, function () {
+        }, function() {
           return $q.reject('Could not retrieve the collab');
-        }).then(function (response) {
-          var navEntity = _.find(response.data, function (folder) {
+        }).then(function(response) {
+          var navEntity = _.find(response.data, function(folder) {
             return folder.name === navEntityName;
           });
           if (!navEntity) {
@@ -146,9 +157,9 @@
           return clbStorage.getEntity({ ctx: navEntity.context });
         })
         .then(clbStorage.getChildren)
-        .then(function (result) {
-          var folder = _.find(result.results, function (folder) {
-            return folder._name === folderName;
+        .then(function(result) {
+          var folder = _.find(result.results, function(folder) {
+            return folder.name === folderName;
           });
           if (!folder) {
             return $q.reject(folderName + " folder was not found on this collab");
@@ -168,7 +179,7 @@
      * @param  contextId the context id provided
      * @return a promise that contains the collab data
      **/
-    var getCurrentCollab = function (contextId) {
+    var getCurrentCollab = function(contextId) {
       return $http({
         method: 'GET',
         url: collabBaseUrl + '/collab/context/' + contextId + '/'
@@ -188,7 +199,7 @@
      * @param  contextId the context id provided
      * @return a promise that contains the collab data
      **/
-    var getCollabNavEntities = function (currentCollab) {
+    var getCollabNavEntities = function(currentCollab) {
       return $http({
         method: 'GET',
         url: collabBaseUrl + '/collab/' + currentCollab.collab.id + '/nav/all/'
@@ -203,9 +214,9 @@
      *
      * @return the current contextId uuid
      **/
-    this.getContextId = function () {
+    this.getContextId = function() {
       return $stateParams.ctx;
     };
   }
   ]);
-} ());
+}());

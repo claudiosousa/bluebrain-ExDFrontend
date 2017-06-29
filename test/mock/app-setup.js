@@ -11,7 +11,9 @@
         $logProvider.debugEnabled(true);
       }
     ])
-    .run(['$httpBackend', function($httpBackend) {
+    .run(['$httpBackend', '$q', function($httpBackend, $q) {
+      window.$q = $q;
+
       if (!$httpBackend.whenGET) {
         return;
       }
@@ -24,6 +26,7 @@
         });
 
       $httpBackend.whenGET(/\/api\/user\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
+      $httpBackend.whenGET(/\/api\/user\/me\/member-groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
     }]);
 
 })();

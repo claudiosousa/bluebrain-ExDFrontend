@@ -21,10 +21,10 @@
 
   angular.module('exdFrontendApp')
     .constant('SAVE_FILE', 'editor_errors.saved')
-    .service('saveErrorsService', ['$stateParams', '$q', 'collabFolderAPIService', 'hbpIdentityUserDirectory',
-      'hbpDialogFactory', 'SAVE_FILE','tempFileService', 'environmentService',
-      function ($stateParams, $q, collabFolderAPIService, hbpIdentityUserDirectory,
-        hbpDialogFactory, SAVE_FILE, tempFileService, environmentService) {
+    .service('saveErrorsService', ['$stateParams', '$q', 'collabFolderAPIService',
+      'SAVE_FILE','tempFileService', 'environmentService',
+      function ($stateParams, $q, collabFolderAPIService,
+        SAVE_FILE, tempFileService, environmentService) {
         /*
         This service can be used to save data (which contains Python errors) to an error file. e.g. TFs, SMs, Brain Editor.
         It's needed as if they are saved to the normal file, further simulations are not possible.
@@ -32,6 +32,7 @@
         var dirtyDataCol = {},
           loaded = false,
           foundCallbacks = {};
+
 
         return {
           saveDirtyData: saveDirtyData,
@@ -46,13 +47,13 @@
         }
         function clearDirty(dirtyType){
           if(!environmentService.isPrivateExperiment())
-            return $q.reject();
+              return $q.reject();
           return collabFolderAPIService.getExperimentFolderId($stateParams.ctx)
             .then(function(folderId){
               return collabFolderAPIService.getFolderFile(folderId, SAVE_FILE);
              })
              .then(function(file){
-               return collabFolderAPIService.downloadFile(file._uuid)
+               return collabFolderAPIService.downloadFile(file.uuid)
                  .then(function(fileContent){
                    var content = angular.fromJson(fileContent);
                    delete content[dirtyType];

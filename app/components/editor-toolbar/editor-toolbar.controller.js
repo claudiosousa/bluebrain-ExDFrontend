@@ -34,7 +34,7 @@
                 userNavigationService,
                 objectInspectorService,
                 nrpAnalytics,
-                hbpDialogFactory,
+                clbConfirm,
                 environmentService,
                 backendInterfaceService,
                 environmentRenderingService,
@@ -61,7 +61,7 @@
       this.environmentRenderingService = environmentRenderingService;
       this.environmentService = environmentService;
       this.gz3d = gz3d;
-      this.hbpDialogFactory = hbpDialogFactory;
+      this.clbConfirm = clbConfirm;
       this.helpTooltipService = helpTooltipService;
       this.nrpAnalytics = nrpAnalytics;
       this.objectInspectorService = objectInspectorService;
@@ -161,7 +161,7 @@
         this.request = {
           resetType: this.RESET_TYPE.NO_RESET
         };
-        hbpDialogFactory.confirm({
+        clbConfirm.open({
           'title': 'Reset Menu',
           'templateUrl': 'views/esv/reset-checklist-template.html',
           'scope': $scope
@@ -546,7 +546,7 @@
     };
 
   }
-  angular.module('editorToolbarModule', ['helpTooltipModule']).
+  angular.module('editorToolbarModule', ['helpTooltipModule', 'clb-ui-dialog']).
       controller('EditorToolbarController',
           [
             '$rootScope',
@@ -562,7 +562,7 @@
             'userNavigationService',
             'objectInspectorService',
             'nrpAnalytics',
-            'hbpDialogFactory',
+            'clbConfirm',
             'environmentService',
             'backendInterfaceService',
             'environmentRenderingService',

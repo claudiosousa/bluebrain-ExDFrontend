@@ -23,14 +23,14 @@
   angular.module('userContextModule', ['experimentModule', 'userNavigationModule', 'collabExperimentLockModule'])
 
   .factory('userContextService', [
-    '$q', '$window', 'experimentService',
-    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'hbpIdentityUserDirectory',
+    '$q', '$window',  'experimentService',
+    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'clbUser',
     'environmentService',
     function (
       $q,
       $window,
       experimentService,
-      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory,
+      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, clbUser,
       environmentService) {
 
       function UserContextService() {
@@ -48,7 +48,7 @@
 
         let getUserId = () => {
           if (!bbpConfig.get('localmode.forceuser', false))
-            return hbpIdentityUserDirectory.getCurrentUser()
+            return clbUser.getCurrentUser()
               .then(profile => profile.id);
 
           return $q.when(bbpConfig.get('localmode.ownerID'));

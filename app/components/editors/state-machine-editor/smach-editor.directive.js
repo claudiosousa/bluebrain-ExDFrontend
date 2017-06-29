@@ -32,7 +32,7 @@
     'SOURCE_TYPE',
     '$timeout',
     'simulationInfo',
-    'hbpDialogFactory',
+    'clbConfirm',
     'autoSaveService',
     'downloadFileService',
     'RESET_TYPE',
@@ -52,7 +52,7 @@
               SOURCE_TYPE,
               $timeout,
               simulationInfo,
-              hbpDialogFactory,
+              clbConfirm,
               autoSaveService,
               downloadFileService,
               RESET_TYPE,
@@ -316,7 +316,7 @@
               }
             });
             if(errors){
-              hbpDialogFactory.confirm({
+              clbConfirm.open({
                   title: "State Machine  errors.",
                   template: "There are errors inside your State Machines. Are you sure you want to save?",
                   confirmLabel: "Yes",

@@ -6,7 +6,7 @@ describe('Directive: transferFunctionEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, pythonCodeHelper, ScriptObject, simulationInfo,
-    hbpDialogFactory, downloadFileService, DEFAULT_TF_CODE, codeEditorsServices, $q, environmentService;
+    clbConfirm, clbErrorDialog, downloadFileService, DEFAULT_TF_CODE, codeEditorsServices, $q, environmentService;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -75,7 +75,8 @@ describe('Directive: transferFunctionEditor', function () {
                               _SOURCE_TYPE_,
                               _pythonCodeHelper_,
                               _simulationInfo_,
-                              _hbpDialogFactory_,
+                              _clbConfirm_,
+                              _clbErrorDialog_,
                               _downloadFileService_,
                               _DEFAULT_TF_CODE_,
                               _codeEditorsServices_,
@@ -99,7 +100,8 @@ describe('Directive: transferFunctionEditor', function () {
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
-    hbpDialogFactory = _hbpDialogFactory_;
+    clbConfirm = _clbConfirm_;
+    clbErrorDialog =_clbErrorDialog_;
     downloadFileService = _downloadFileService_;
     DEFAULT_TF_CODE = _DEFAULT_TF_CODE_;
     codeEditorsServices = _codeEditorsServices_;
@@ -341,20 +343,20 @@ describe('Directive: transferFunctionEditor', function () {
       var errorType = isolateScope.ERROR.RUNTIME;
       var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
 
-      spyOn(hbpDialogFactory, 'alert');
-      expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
+      spyOn(clbErrorDialog, 'open');
+      expect(clbErrorDialog.open).not.toHaveBeenCalled();
 
       // can't find a way to set offsetParent in phantomjs, or force element display
       // element[0].offsetParent = "toto";
       // isolateScope.onNewErrorMessageReceived(msg);
-      // expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
+      // expect(clbErrorDialog.open).not.toHaveBeenCalled();
 
       // the editor is not visible
       element[0].style.display = 'none';
       isolateScope.onNewErrorMessageReceived(msg);
-      expect(hbpDialogFactory.alert).toHaveBeenCalled();
+      expect(clbErrorDialog.open).toHaveBeenCalled();
 
-      hbpDialogFactory.alert.calls.reset();
+      clbErrorDialog.open.calls.reset();
     });
 
     it('should ignore state machine errors', function () {
@@ -596,16 +598,16 @@ describe('Directive: transferFunctionEditor', function () {
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
 
-      spyOn(hbpDialogFactory, 'alert');
+      spyOn(clbErrorDialog, 'open');
       backendInterfaceService.saveTransferFunctions.calls.argsFor(0)[3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
-      expect(hbpDialogFactory.alert).toHaveBeenCalled();
-      hbpDialogFactory.alert.calls.reset();
+      expect(clbErrorDialog.open).toHaveBeenCalled();
+      clbErrorDialog.open.calls.reset();
     });
 
     it('should correctly saveTFIntoCollabStorage when TFs contain errors', function () {
       var userResponse = $q.when();
-      spyOn(hbpDialogFactory,'confirm').and.callFake(function(){ return userResponse;});
+      spyOn(clbConfirm,'open').and.callFake(function(){ return userResponse;});
       backendInterfaceService.saveTransferFunctions.calls.reset();
       expect(backendInterfaceServiceMock.saveTransferFunctions).not.toHaveBeenCalled();
       isolateScope.transferFunctions = [{error: {errorMsg:'an error message'}}];
@@ -640,6 +642,19 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
   var $rootScope, $compile, $scope, $q, isolateScope,
     element;
 
+
+  var autoSaveServiceMock = {
+    registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
+    setDirty: jasmine.createSpy('setDirty'),
+    clearDirty: jasmine.createSpy('clearDirty')
+  };
+
+  var saveErrorsServiceMock = {
+    registerCallback: jasmine.createSpy('registerCallback'),
+    saveDirtyData: jasmine.createSpy('saveDirtyData').and.callFake(function(){return $q.when();}),
+    clearDirty: jasmine.createSpy('clearDirty')
+  };
+  
   var backendInterfaceServiceMock = {};
   backendInterfaceServiceMock.getPopulations = function () {
     isolateScope.onPopulationsReceived(shownPopulation);
@@ -668,6 +683,7 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
 
   var shownPopulation = { name: 'test2', showDetails : false};
 
+
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('currentStateMockFactory'));
@@ -676,6 +692,8 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
     $provide.value('backendInterfaceService', backendInterfaceServiceMock);
     $provide.value('documentationURLs', documentationURLsMock);
     $provide.value('roslib', roslibMock);
+    $provide.value('autoSaveService', autoSaveServiceMock);
+    $provide.value('saveErrorsService', saveErrorsServiceMock);
   }));
 
   beforeEach(inject(function (_$rootScope_,
@@ -693,7 +711,7 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
     $scope.$digest();
     isolateScope = element.isolateScope();
   }));
-
+   
   it('should refresh correctly', function() {
     var population = { name: 'test', showDetails : false};
 

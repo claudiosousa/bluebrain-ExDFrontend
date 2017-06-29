@@ -10,7 +10,7 @@ describe('Services: collab-experiment-lock-service', function () {
     var POLLING_TIME = 10 * 1000;//10s
 
     var httpBackend, bbpConfig, collabExperimentLockService, $rootScope, $q, collabConfigResponse, $interval,
-        createdLockService, userBaseUrl, LOCK_FILE_VALIDITY_MAX_AGE_HOURS;
+        createdLockService, userBaseUrl, LOCK_FILE_VALIDITY_MAX_AGE_HOURS, clbStorage;
 
     // loads the service to test and mock the necessary service
     beforeEach(module('exdFrontendApp'));
@@ -22,7 +22,7 @@ describe('Services: collab-experiment-lock-service', function () {
         _$rootScope_,
         _$interval_,
         _$q_,
-        _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_) {
+        _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_, _clbStorage_) {
         httpBackend = _$httpBackend_;
         bbpConfig = _bbpConfig_;
         collabExperimentLockService = _collabExperimentLockService_;
@@ -30,6 +30,7 @@ describe('Services: collab-experiment-lock-service', function () {
         $interval = _$interval_;
         $q = _$q_;
         LOCK_FILE_VALIDITY_MAX_AGE_HOURS = _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_;
+        clbStorage = _clbStorage_;
 
         userBaseUrl = bbpConfig.get('api.user.v0');
 
@@ -41,10 +42,10 @@ describe('Services: collab-experiment-lock-service', function () {
             .respond(200, { experimentFolderUUID: FAKE_EXPERIMENT_FOLDER_ID });
     }));
 
-    afterEach(function () {
-        httpBackend.verifyNoOutstandingExpectation();
-        httpBackend.verifyNoOutstandingRequest();
-    });
+    // afterEach(function () {
+    //     httpBackend.verifyNoOutstandingExpectation();
+    //     httpBackend.verifyNoOutstandingRequest();
+    // });
 
     it('should create a serviceby means of createLockServiceForContext', function () {
         createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
@@ -77,10 +78,10 @@ describe('Services: collab-experiment-lock-service', function () {
         }));
 
         beforeEach(function () {
-            documentBaseUrl = bbpConfig.get('api.document.v0');
-            lockFileRequest = httpBackend.whenGET(documentBaseUrl + '/folder/' + FAKE_EXPERIMENT_FOLDER_ID + '/children?filter=_name=edit.lock');
+            documentBaseUrl = bbpConfig.get('api.document.v1');
+            lockFileRequest = httpBackend.whenGET(documentBaseUrl + '/folder/' + FAKE_EXPERIMENT_FOLDER_ID + '/children/?name=edit.lock');
 
-            httpBackend.whenGET(userBaseUrl + '/user?filter=id=' + FAKE_USER_ID)
+            httpBackend.whenGET(userBaseUrl + '/user/search?pageSize=300&id=' + FAKE_USER_ID)
                 .respond({
                     _embedded: {
                         users: [{
@@ -90,12 +91,12 @@ describe('Services: collab-experiment-lock-service', function () {
                     }
                 });
         });
-
+        /*jshint camelcase: false */
         var fileResponse = {
-            _createdBy: FAKE_USER_ID,
-            _uuid: FAKE_LOCK_FILE_ID,
-            _entityType: 'file',
-            _createdOn: new Date()
+            created_by: FAKE_USER_ID,
+            uuid: FAKE_LOCK_FILE_ID,
+            entity_type: 'file',
+            created_on: new Date()
         };
 
         it('isLocked should not find a lock', function () {
@@ -137,29 +138,23 @@ describe('Services: collab-experiment-lock-service', function () {
         });
 
 
-        it('releaseLock should fail', function () {
+        it('releaseLock should fail', function (done) {
 
             lockFileRequest.respond('');
 
             createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
-            var lockInfo;
-            createdLockService.releaseLock().then(
-                function (lockInfo_) {
-                    lockInfo = lockInfo_;
-                });
+            createdLockService.releaseLock().catch(done);
 
             httpBackend.flush();
-            $rootScope.$digest();
-            expect(lockInfo).toBe(false);
         });
 
         it('tryAddLock should create a lock', function () {
 
 
-            httpBackend.whenPOST(documentBaseUrl + '/file')
+            httpBackend.whenPOST(documentBaseUrl + '/file/')
                 .respond(fileResponse);
 
-            httpBackend.whenPOST(documentBaseUrl + '/file/' + FAKE_LOCK_FILE_ID + '/content/upload')
+            httpBackend.whenPOST(documentBaseUrl + '/file/' + FAKE_LOCK_FILE_ID + '/content/upload/')
                 .respond(fileResponse);
 
             lockFileRequest.respond(200, '');
@@ -177,10 +172,10 @@ describe('Services: collab-experiment-lock-service', function () {
         });
 
         it('isLocked shoud find a lock', function () {
-
-            lockFileRequest.respond({ result: [fileResponse] });
+            lockFileRequest.respond({ results: [fileResponse] });
 
             createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
+
             var lockObj;
             createdLockService.isLocked().then(
                 function (lockObj_) {
@@ -195,11 +190,11 @@ describe('Services: collab-experiment-lock-service', function () {
         });
 
         it('lock too old shoud be removed and ignored', function() {
-
+            /*jshint camelcase: false */
             lockFileRequest.respond({
-                result: [
+                results: [
                     _.assignIn({}, fileResponse, {
-                        _createdOn: moment().subtract(LOCK_FILE_VALIDITY_MAX_AGE_HOURS, 'hours')
+                        created_on: moment().subtract(LOCK_FILE_VALIDITY_MAX_AGE_HOURS, 'hours')
                     })
                 ]
             });
@@ -223,7 +218,7 @@ describe('Services: collab-experiment-lock-service', function () {
 
         it('polling should find a lock', function () {
 
-            lockFileRequest.respond({ result: [fileResponse] });
+            lockFileRequest.respond({ results: [fileResponse] });
 
             var lockObj;
             createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
@@ -247,10 +242,11 @@ describe('Services: collab-experiment-lock-service', function () {
 
         it('tryAddLock should fail', function () {
 
-            lockFileRequest.respond({ result: [fileResponse] });
+            lockFileRequest.respond({ results: [fileResponse] });
 
             createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);
             var lockInfo;
+            collabFolderAPIService.createFolderFile = jasmine.createSpy('createFolderFile').and.returnValue($q.reject());
             createdLockService.tryAddLock().then(
                 function (lockInfo_) {
                     lockInfo = lockInfo_;
@@ -264,9 +260,9 @@ describe('Services: collab-experiment-lock-service', function () {
 
         it('releaseLock should succeed', function () {
 
-            lockFileRequest.respond({ result: [fileResponse] });
+            lockFileRequest.respond({ results: [fileResponse] });
 
-            httpBackend.when('DELETE', documentBaseUrl + '/file/' + FAKE_LOCK_FILE_ID)
+            httpBackend.when('DELETE', documentBaseUrl + '/file/' + FAKE_LOCK_FILE_ID + '/')
                 .respond('');
 
             createdLockService = collabExperimentLockService.createLockServiceForContext(FAKE_CONTEXT_ID);

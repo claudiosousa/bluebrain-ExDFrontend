@@ -6,6 +6,8 @@ describe('Services: slurminfo', function () {
 
   // load the service to test and mock the necessary service
   beforeEach(module('slurminfoService'));
+  
+  beforeEach(module('nrpErrorHandlers'));
 
   describe('Available cluster', function() {
 

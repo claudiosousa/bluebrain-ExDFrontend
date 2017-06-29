@@ -53,7 +53,8 @@
       'SIMULATION_FACTORY_CLE_ERROR',
       'SOURCE_TYPE',
       'simulationInfo',
-      'hbpDialogFactory',
+      'clbConfirm',
+      'clbErrorDialog',
       'autoSaveService',
       'DEFAULT_TF_CODE',
       'downloadFileService',
@@ -76,7 +77,8 @@
         SIMULATION_FACTORY_CLE_ERROR,
         SOURCE_TYPE,
         simulationInfo,
-        hbpDialogFactory,
+        clbConfirm,
+        clbErrorDialog,
         autoSaveService,
         DEFAULT_TF_CODE,
         downloadFileService,
@@ -178,8 +180,8 @@
             if (_.isNull(element[0].offsetParent)) {
               // the editor is currently hidden: we have to display the error in a popup
               var nrpError = {
-                title: 'Transfer function error',
-                template: msg.functionName + ':' + msg.lineNumber + ": " + msg.message,
+                type: 'TransferFunctionError',
+                message: msg.functionName + ':' + msg.lineNumber + ": " + msg.message,
                 label: 'OK'
               };
               serverError.displayError(nrpError);
@@ -393,7 +395,7 @@
             }
           });
           if (errors){
-            hbpDialogFactory.confirm({
+            clbConfirm.open({
                   title: "Transfer Function errors.",
                   template: "There are errors inside your Transfer Functions. Are you sure you want to save?",
                   confirmLabel: "Yes",
@@ -423,9 +425,9 @@
                 _.forEach(scope.transferFunctions, scope.update);
               }
             },function() { // Failure callback
-              hbpDialogFactory.alert({
-                title: "Error.",
-                template: "Error while saving transfer functions to Collab storage."
+              clbErrorDialog.open({
+                type: "BackendError.",
+                message: "Error while saving transfer functions to Collab storage."
               });
               scope.isSavingToCollab = false;
             }
@@ -438,9 +440,9 @@
             function () { // Success callback
               scope.isSavingCSVToCollab = false;
             }, function () { // Failure callback
-              hbpDialogFactory.alert({
-                title: "Error.",
-                template: "Error while saving recorded CSV files to Collab storage."
+              clbErrorDialog.open({
+                type: "BackendError.",
+                message: "Error while saving recorded CSV files to Collab storage."
               });
               scope.isSavingCSVToCollab = false;
             }

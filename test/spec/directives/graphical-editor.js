@@ -6,7 +6,7 @@ describe('Directive: graphicalEditor', function () {
     transferFunctions, element, backendInterfaceService,
     currentStateMock, roslib, stateService, STATE, documentationURLs,
     SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, TRANSFER_FUNCTION_TYPE, pythonCodeHelper,
-    ScriptObject, simulationInfo, hbpDialogFactory;
+    ScriptObject, simulationInfo;
 
 	var backendInterfaceServiceMock = {
 	  getPopulations: jasmine.createSpy('getPopulations'),
@@ -64,8 +64,7 @@ describe('Directive: graphicalEditor', function () {
                               _SOURCE_TYPE_,
                               _TRANSFER_FUNCTION_TYPE_,
                               _pythonCodeHelper_,
-                              _simulationInfo_,
-                              _hbpDialogFactory_) {
+                              _simulationInfo_) {
     simulationInfo = _simulationInfo_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
@@ -86,7 +85,6 @@ describe('Directive: graphicalEditor', function () {
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
-    hbpDialogFactory = _hbpDialogFactory_;
 
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/graphical-editor.html', '');

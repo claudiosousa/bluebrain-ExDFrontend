@@ -47,7 +47,7 @@
             <span ng-if="devMode && config.canLaunchExperiments">
               <i>Available backends:</i>
               <i  class="label-availability"
-                  tooltip="A backend VM is required to control the simulation">
+                  uib-tooltip="A backend VM is required to control the simulation">
                  {{exp.availableServers.length}}
               </i>
               <br/>
@@ -57,12 +57,12 @@
                 <option ng-repeat="server in exp.availableServers" value="{{server}}">{{server}}</option>
               </select>
               <a name="versionLink" href="" ng-click="setCollapsed(!isCollapsed); getSoftwareVersions(exp.devServer)">{{versionString}}</a>
-              <div collapse="isCollapsed" name="versionDiv">
+              <div uib-collapse="isCollapsed" name="versionDiv">
                 <div class="well well-lg pre" >{{softwareVersions}}</div>
               </div>
             <br>
             <i>Cluster availability: </i>
-            <i class="label-availability" tooltip="A cluster node is required to run the robot simulation" ng-class="clusterAvailability.free < CLUSTER_THRESHOLDS.AVAILABLE ? (clusterAvailability.free < CLUSTER_THRESHOLDS.UNAVAILABLE ? 'label-danger' : 'label-warning') : 'label-success' ">
+            <i class="label-availability" uib-tooltip="A cluster node is required to run the robot simulation" ng-class="clusterAvailability.free < CLUSTER_THRESHOLDS.AVAILABLE ? (clusterAvailability.free < CLUSTER_THRESHOLDS.UNAVAILABLE ? 'label-danger' : 'label-warning') : 'label-success' ">
               {{clusterAvailability.free}} / {{clusterAvailability.total}}
             </i>
             <br/>
@@ -70,7 +70,7 @@
             <i>Server status: </i>
              <i class="server-icon {{exp.serverStatusClass}}" title="{{exp.serverStatus}}"></i>
           </div>
-          <div collapse="!config.canCloneExperiments || (exp.id != pageState.selected) || !isCloneRequested">
+          <div uib-collapse="!config.canCloneExperiments || (exp.id != pageState.selected) || !isCloneRequested">
             <div class="list-entry-container center">
               <i class="fa fa-spinner fa-spin"></i>&nbsp;
               <i>Copying files to Collab storage...</i>
@@ -88,12 +88,12 @@
 
               <!-- No server available but the user has edit rights: launch button disabled -->
               <button ng-if="config.canLaunchExperiments && userinfo.hasEditRights && exp.availableServers.length == 0"
-                class="btn btn-default disabled enable-tooltip" tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
+                class="btn btn-default disabled enable-tooltip" uib-tooltip="Sorry, no available servers." tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch
               </button>
 
               <!-- No edit rights: launch button disabled -->
-              <button ng-if="config.canLaunchExperiments && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have sufficient rights to launch a simulation."
+              <button ng-if="config.canLaunchExperiments && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip" uib-tooltip="Sorry, you don't have sufficient rights to launch a simulation."
                 tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch
               </button>
@@ -106,7 +106,7 @@
 
               <!-- No edit rights: launch in single process button disabled -->
               <button ng-if="config.canLaunchExperiments && exp.configuration.brainProcesses > 1 && !userinfo.hasEditRights" class="btn btn-default disabled enable-tooltip"
-                tooltip="Sorry, you don't have sufficient rights to launch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
+                uib-tooltip="Sorry, you don't have sufficient rights to launch a simulation." tooltip-trigger="mouseenter" tooltip-placement="top">
                 <i class="fa fa-plus"></i> Launch in Single Process Mode
               </button>
 
@@ -126,10 +126,10 @@
               </button>
             </div>
           </div>
-          <div collapse="pageState.startingExperiment != exp.id">
-            <progressbar value="100" class="progress-striped active top-buffer"><i><b>{{progressMessage.main}}</b> {{progressMessage.sub}}</i></progressbar>
+          <div uib-collapse="pageState.startingExperiment != exp.id">
+            <uib-progressbar value="100" class="progress-striped active top-buffer"><i><b>{{progressMessage.main}}</b> {{progressMessage.sub}}</i></uib-progressbar>
           </div>
-          <div class="table-wrapper" collapse="!config.canLaunchExperiments || (pageState.selected != exp.id)||(!pageState.showJoin) || !exp.joinableServers.length">
+          <div class="table-wrapper" uib-collapse="!config.canLaunchExperiments || (pageState.selected != exp.id)||(!pageState.showJoin) || !exp.joinableServers.length">
             <table class="table table-striped">
               <thead>
                 <tr>
@@ -156,7 +156,7 @@
                       <i class="fa fa-spinner fa-spin" ng-if="simul.stopping"></i> Stop
                     </a>
                     <!-- No edit rights: stop button disabled -->
-                    <a type="button" class="btn btn-default disabled enable-tooltip" tooltip="Sorry, you don't have sufficient rights to stop the simulation." tooltip-trigger="mouseenter"
+                    <a type="button" class="btn btn-default disabled enable-tooltip" uib-tooltip="Sorry, you don't have sufficient rights to stop the simulation." tooltip-trigger="mouseenter"
                       tooltip-placement="top" ng-if="!canStopSimulation(simul)"> Stop
                   </a>
                   </td>

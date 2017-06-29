@@ -5,7 +5,7 @@ describe('Directive: environment-designer', function () {
 
   var $scope, element, stateService,
     panels, currentStateMock, gz3dMock, contextMenuState, objectInspectorService, simulationSDFWorld,
-    simulationInfo, backendInterfaceService, hbpDialogFactory, environmentService,httpBackend;
+    simulationInfo, backendInterfaceService, clbErrorDialog, environmentService, httpBackend;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -52,7 +52,7 @@ describe('Directive: environment-designer', function () {
                               _simulationSDFWorld_,
                               _simulationInfo_,
                               _backendInterfaceService_,
-                              _hbpDialogFactory_,
+                              _clbErrorDialog_,
                               _environmentService_,
                               _$httpBackend_) {
 
@@ -67,7 +67,7 @@ describe('Directive: environment-designer', function () {
     panels = _panels_;
     simulationSDFWorld = _simulationSDFWorld_;
     backendInterfaceService = _backendInterfaceService_;
-    hbpDialogFactory = _hbpDialogFactory_;
+    clbErrorDialog = _clbErrorDialog_;
     environmentService = _environmentService_;
     httpBackend = _$httpBackend_;
 
@@ -390,10 +390,10 @@ describe('Directive: environment-designer', function () {
     backendInterfaceService.saveSDF.calls.argsFor(0)[1]();
     expect($scope.isSavingToCollab).toBe(false);
     $scope.isSavingToCollab = true;
-    spyOn(hbpDialogFactory, 'alert');
+    spyOn(clbErrorDialog, 'open');
     backendInterfaceService.saveSDF.calls.argsFor(0)[2]();
     expect($scope.isSavingToCollab).toBe(false);
-    expect(hbpDialogFactory.alert).toHaveBeenCalled();
+    expect(clbErrorDialog.open).toHaveBeenCalled();
   });
 
 });

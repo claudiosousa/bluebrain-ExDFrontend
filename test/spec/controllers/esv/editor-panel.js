@@ -14,7 +14,8 @@ describe('Controller: editorPanelCtrl', function () {
       bbpConfig,
       controller,
       gz3d,
-      editorsPanelService;
+      editorsPanelService,
+      collabContextlessUrl;
 
   var baseEventHandlerMock = {
     suppressAnyKeyPress: jasmine.createSpy('suppressAnyKeyPress')
@@ -52,9 +53,6 @@ describe('Controller: editorPanelCtrl', function () {
       simulationInfo: simulationInfo
     });
 
-    // create mock for console
-    spyOn(console, 'error');
-    spyOn(console, 'log');
 
     scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
     scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
@@ -63,6 +61,11 @@ describe('Controller: editorPanelCtrl', function () {
 
     $httpBackend.whenGET(/\/me/).respond(200);
   }));
+
+  beforeEach(function () {
+      collabContextlessUrl = bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration';
+      $httpBackend.whenGET(collabContextlessUrl).respond(200, {});
+   });
 
   it('should set the panelIsOpen on the open and close callbacks', function () {
     expect(scope.panelIsOpen).toBeFalsy();
@@ -75,25 +78,25 @@ describe('Controller: editorPanelCtrl', function () {
   });
 
   it('should refresh the panel on the open callbacks', function() {
-    scope.activeTab.transferfunction = true;
+    scope.activeTabIndex = scope.tabindex.transferfunction;
     expect(scope.controls.transferfunction.refresh).not.toHaveBeenCalled();
     scope.openCallback();
     expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
     expect(scope.controls.statemachine.refresh).not.toHaveBeenCalled();
     expect(scope.controls.graphicalEditor.refresh).not.toHaveBeenCalled();
-    scope.activeTab.transferfunction = false;
-    scope.activeTab.statemachine = true;
+
+    scope.activeTabIndex = scope.tabindex.statemachine;
     scope.closeCallback();
     scope.openCallback();
     expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
     expect(scope.controls.graphicalEditor.refresh).not.toHaveBeenCalled();
-    scope.activeTab.statemachine = false;
-    scope.activeTab.pynneditor = true;
+
+    scope.activeTabIndex = scope.tabindex.pynneditor;
     scope.closeCallback();
     scope.openCallback();
     expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
-    scope.activeTab.pynneditor = false;
-    scope.activeTab.graphicalEditor = true;
+
+    scope.activeTabIndex = scope.tabindex.graphicalEditor;
     scope.closeCallback();
     scope.openCallback();
     expect(scope.controls.graphicalEditor.refresh).toHaveBeenCalled();
@@ -104,38 +107,34 @@ describe('Controller: editorPanelCtrl', function () {
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBe(true);
 
     //Test the transferfunction tab
-    scope.activeTab.transferfunction = true;
+    scope.activeTabIndex = scope.tabindex.transferfunction;
     scope.openCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
 
     scope.closeCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
-    scope.activeTab.transferfunction = false;
 
     //Test the statemachine tab
-    scope.activeTab.statemachine = true;
+    scope.activeTabIndex = scope.tabindex.statemachine;
     scope.openCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
 
     scope.closeCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
-    scope.activeTab.statemachine = false;
 
     //Test the pynn-editor tab
-    scope.activeTab.pynneditor = true;
+    scope.activeTabIndex = scope.tabindex.pynneditor;
     scope.openCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
     scope.closeCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
-    scope.activeTab.pynneditor = false;
 
     //Test the graphical-editor tab
-    scope.activeTab.graphicalEditor = true;
+    scope.activeTabIndex = scope.tabindex.graphicalEditor;
     scope.openCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
     scope.closeCallback();
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
-    scope.activeTab.graphicalEditor = false;
   });
 
   it('should disable the key bindings when the panel is open and the disableKeyBindings function is called', function () {
@@ -180,20 +179,17 @@ describe('Controller: editorPanelCtrl', function () {
     scope.onResizeEnd();
     expect(document.activeElement.blur).toHaveBeenCalled();
 
-    scope.activeTab.transferfunction = true;
+    scope.activeTabIndex = scope.tabindex.transferfunction;
     scope.onResizeEnd();
     expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
-    scope.activeTab.transferfunction = false;
 
-    scope.activeTab.statemachine = true;
+    scope.activeTabIndex = scope.tabindex.statemachine;
     scope.onResizeEnd();
     expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
-    scope.activeTab.statemachine = false;
 
-    scope.activeTab.pynneditor = true;
+    scope.activeTabIndex = scope.tabindex.pynneditor;
     scope.onResizeEnd();
     expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
-    scope.activeTab.pynneditor = false;
   });
 
   it('should watch showEditorPanel', function () {

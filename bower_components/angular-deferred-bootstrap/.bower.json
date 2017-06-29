@@ -14,6 +14,6 @@
     "commit": "2a5586cd7a83dbdbca0237056061f957ccd3ce35"
   },
   "_source": "https://github.com/philippd/bower-angular-deferred-bootstrap.git",
-  "_target": "^0.1.9",
+  "_target": "0.1.9",
   "_originalSource": "angular-deferred-bootstrap"
 }

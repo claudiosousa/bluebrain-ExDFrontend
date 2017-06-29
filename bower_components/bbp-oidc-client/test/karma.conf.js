@@ -40,6 +40,7 @@ module.exports = function(config) {
             // test support
             'components/angular-mocks/angular-mocks.js',
             'components/lodash/lodash.min.js',
+            'components/es6-promise/es6-promise.min.js',
 
             // tests
             'test/unit/*.js',

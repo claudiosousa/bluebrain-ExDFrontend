@@ -39,6 +39,6 @@
     "commit": "ed0a5f0edf6e8dd3e9e2cf45b34883a71b2d0cb2"
   },
   "_source": "ssh://bbpcode.epfl.ch/platform/JSLibAngularConfig",
-  "_target": "~0.3.0",
+  "_target": "0.3.0",
   "_originalSource": "angular-bbp-config"
 }

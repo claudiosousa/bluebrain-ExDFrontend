@@ -24,7 +24,7 @@
   // in order to notify the controller whenever an update message comes in.
 
   var module = angular.module('exdFrontendApp');
-  module.service('splash', ['$modal', function ($modal) {
+  module.service('splash', ['$uibModal', function ($uibModal) {
 
     this.showButton = false;
     this.callbackOnClose = undefined;
@@ -50,7 +50,7 @@
       this.showButton = showButton;
       this.callbackOnClose = callbackOnClose;
       if (angular.isDefined(this.modal)) { this.modal.close(); }
-      this.modal = $modal.open({
+      this.modal = $uibModal.open({
         backdrop: false,
         animation:true,
         controller: 'ModalInstanceCtrl',

@@ -120,6 +120,28 @@ angular.module('customCollabApp', [
       }
     }, true);
   }
+})
+.controller('UiStorageController', function($scope, clbUser, clbCollab, clbStorage) {
+  var vm = this;
+
+  clbCollab.list().then(function(collabs) {
+    vm.collabs = collabs.results;
+  });
+
+  $scope.$watch('vm.selectedCollabId', function(id) {
+    vm.loading = true;
+    clbStorage.getCollabHome(id || -1).then(function(collabStorage) {
+      vm.collabStorage = collabStorage;
+    }, function() {
+      vm.collabStorage = null;
+    })
+    .finally(function() {
+      vm.loading = false;
+    });
+  });
+  $scope.$on('clbAuth.changed', function(event, authInfo) {
+    vm.authInfo = authInfo;
+  });
 });
 
 // You can find a complete configuration file at:
@@ -136,7 +158,8 @@ angular.clbBootstrap('customCollabApp', {env: {
       v0: 'https://services.humanbrainproject.eu/collab/v0'
     },
     document: {
-      v0: 'https://services.humanbrainproject.eu/document/v0/api'
+      v0: 'https://services.humanbrainproject.eu/document/v0/api',
+      v1: 'https://services.humanbrainproject.eu/storage/v1/api'
     },
     user: {
       v1: 'https://services.humanbrainproject.eu/idm/v1/api',

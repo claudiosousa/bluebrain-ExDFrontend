@@ -2,7 +2,7 @@
   'use strict';
 
   describe('Directive: newExperimentWizard', function () {
-    var $httpBackend, $rootScope, $compile, nrpModalService, collabFolderAPIService, $q, scope, hbpDialogFactory, newExperimentProxyService, collabConfigService;
+    var $httpBackend, $rootScope, $compile, nrpModalService, collabFolderAPIService, $q, scope, clbErrorDialog, newExperimentProxyService, collabConfigService;
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
@@ -10,7 +10,7 @@
 
     beforeEach(inject(function (
       _$rootScope_, _$httpBackend_, _$compile_, _nrpModalService_,
-      _collabFolderAPIService_, _$q_, _hbpDialogFactory_, _newExperimentProxyService_,
+      _collabFolderAPIService_, _$q_, _clbErrorDialog_, _newExperimentProxyService_,
       _collabConfigService_
     ) {
       $httpBackend = _$httpBackend_;
@@ -19,7 +19,7 @@
       nrpModalService = _nrpModalService_;
       collabFolderAPIService = _collabFolderAPIService_;
       $q = _$q_;
-      hbpDialogFactory = _hbpDialogFactory_;
+      clbErrorDialog = _clbErrorDialog_;
       newExperimentProxyService = _newExperimentProxyService_;
       collabConfigService = _collabConfigService_;
 
@@ -420,45 +420,46 @@
     });
 
     it('should test the createErrorPopup function', function () {
-      spyOn(hbpDialogFactory, 'alert')
+      spyOn(clbErrorDialog, 'open')
         .and.callFake(function () {
           return;
         });
       scope.createErrorPopup();
-      expect(hbpDialogFactory.alert).toHaveBeenCalled();
+      expect(clbErrorDialog.open).toHaveBeenCalled();
     });
 
     it('should test the createEntitiesListFromEntityFiles function', function () {
+      /*jshint camelcase: false */
       var mockCollabStorageResponse =
         {
           results:
           [{
-            _contentType: 'application/x-config',
-            _description: '',
-            _uuid: '5626127f-eaaf-4eef-9806-d152a7894eae',
-            _entityType: 'file',
-            _name: 'icub.config'
+            content_type: 'application/x-config',
+            description: '',
+            uuid: '5626127f-eaaf-4eef-9806-d152a7894eae',
+            entity_type: 'file',
+            name: 'icub.config'
           },
           {
-            _contentType: 'image/png',
-            _description: '',
-            _uuid: '07419007-8353-45bd-9645-d1d6c3dc5e59',
-            _entityType: 'file',
-            _name: 'icub.png'
+            content_type: 'image/png',
+            description: '',
+            uuid: '07419007-8353-45bd-9645-d1d6c3dc5e59',
+            entity_type: 'file',
+            name: 'icub.png'
           },
           {
-            _contentType: 'application/x-config',
-            _description: '',
-            _uuid: '79e51141-98cf-4ece-aa1b-b766d7842d53',
-            _entityType: 'file',
-            _name: 'lauron.config'
+            content_type: 'application/x-config',
+            description: '',
+            uuid: '79e51141-98cf-4ece-aa1b-b766d7842d53',
+            entity_type: 'file',
+            name: 'lauron.config'
           },
           {
-            _contentType: 'image/png',
-            _description: '',
-            _uuid: '4f541ef0-84f7-4509-9745-b10eee176205',
-            _entityType: 'file',
-            _name: 'lauron.png'
+            content_type: 'image/png',
+            description: '',
+            uuid: '4f541ef0-84f7-4509-9745-b10eee176205',
+            entity_type: 'file',
+            name: 'lauron.png'
           }]
         };
       spyOn(scope, 'retrieveImageFileContent')
@@ -525,8 +526,8 @@
       var files = {
         results: [
           {
-            _name: 'fakeName',
-            _uuid: 'fakeuuid'
+            name: 'fakeName',
+            uuid: 'fakeuuid'
           }]
       };
       var result = scope.createEntitiesListFromBrainFiles(files);

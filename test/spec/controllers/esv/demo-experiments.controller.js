@@ -67,7 +67,7 @@
 
   describe('Controller: demoExperimentsController', function () {
     var $controller, $httpBackend, $rootScope,$timeout, $templateCache, $compile, $stateParams, $interval, environmentService,
-      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, hbpDialogFactory, nrpBackendVersions, nrpFrontendVersion,collabConfigService;
+      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, nrpBackendVersions, nrpFrontendVersion,collabConfigService;
 
     var serverErrorMock = {
       displayHTTPError: jasmine.createSpy('displayHTTPError').and.callFake(function() { return $q.reject(); })
@@ -101,7 +101,7 @@
 
     beforeEach(inject(function (
       _$controller_, _$rootScope_, _$timeout_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
-      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _hbpDialogFactory_,
+      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_,
        _nrpBackendVersions_, _nrpFrontendVersion_, _collabConfigService_){
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
@@ -122,7 +122,6 @@
       collabFolderAPIService = _collabFolderAPIService_;
       $q = _$q_;
       collabExperimentLockService = _collabExperimentLockService_;
-      hbpDialogFactory = _hbpDialogFactory_;
       environmentService = _environmentService_;
       nrpBackendVersions = _nrpBackendVersions_;
       nrpFrontendVersion = _nrpFrontendVersion_;
@@ -145,7 +144,7 @@
         spyOn($location, 'search').and.returnValue({ dev: true });
       }
 
-      $httpBackend.whenGET(oidcUrl + '/user?filter=id=' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
+      $httpBackend.whenGET(oidcUrl + '/user/search?pageSize=300&id=' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
 
       environmentService.setPrivateExperiment(pageOptions.collab);
 

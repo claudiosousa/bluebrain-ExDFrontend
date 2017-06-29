@@ -20,8 +20,8 @@
 (function() {
     'use strict';
     angular.module('exdFrontendApp')
-        .directive('simulationTimeoutExtender', ['hbpDialogFactory', 'backendInterfaceService',
-            function(hbpDialogFactory, backendInterfaceService) {
+        .directive('simulationTimeoutExtender', ['clbErrorDialog', 'clbConfirm', 'backendInterfaceService',
+            function(clbErrorDialog, clbConfirm, backendInterfaceService) {
                 return {
                     restrict: 'E',
                     scope: {
@@ -39,7 +39,7 @@
                         }, function(extend) {
                             if (extend && !timeoutExtendRefused && !popupIsOpen) {
                                 popupIsOpen = true;
-                                return hbpDialogFactory.confirm({
+                                return clbConfirm.open({
                                     title: 'Your simulation will soon reach it\'s timeout.',
                                     confirmLabel: 'Yes',
                                     cancelLabel: 'No',
@@ -53,9 +53,9 @@
                                             timeoutExtendRefused = true;
 
                                             if (err && err.status === 402) {
-                                                hbpDialogFactory.alert({
-                                                    title: 'Error.',
-                                                    template: 'Your cluster job allocation cannot be extended further'
+                                                clbErrorDialog.open({
+                                                    type: 'AllocationError.',
+                                                    message: 'Your cluster job allocation cannot be extended further'
                                                 });
                                             }
                                         });

@@ -44,5 +44,11 @@
 
       expect(element.hasClass('toolbar-help-highlighted')).toBe(true);
     });
+
+    it('destroy', function() {
+      element[0].removeEventListener = jasmine.createSpy('removeEventListener');
+      element.scope().$destroy();
+      expect(element[0].removeEventListener).toHaveBeenCalled();
+    });
   });
 }());

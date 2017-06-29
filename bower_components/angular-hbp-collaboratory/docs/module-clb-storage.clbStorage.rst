@@ -33,7 +33,7 @@ Get an entity (e.g.: a project, a file or a folder) using a locator. The
 only accepted locator at this time is the entity UUID.
 
 - the entity UUID
-- an entity representation with ``{_uuid: ENTITY_UUID}``
+- an entity representation with ``{uuid: ENTITY_UUID}``
 - the entity related context ``{ctx: CONTEXT_UUID}``
 - the entity collab ID ``{collab: COLLAB_ID}``
 - the entity absolute path
@@ -118,6 +118,20 @@ Retrieve the key to lookup for on entities given the ctx
     :param string ctx: application context UUID
     :return string: name of the entity attribute that should be used
     
+.. _module-clb-storage.clbStorage.getMetadata:
+
+
+Function: ``getMetadata``
+=========================
+
+Return the metadata of the provided entity.
+
+.. js:function:: getMetadata(entity)
+
+    
+    :param object entity: Entity Descriptor
+    :return Promise: Resolves to an object containing all the entity metadata
+    
 .. _module-clb-storage.clbStorage.addMetadata:
 
 
@@ -167,6 +181,22 @@ Create a new entity.
     :param object options: Extend the entity descriptor with those data
     :return Promise: Resolve once done
     
+.. _module-clb-storage.clbStorage.updateEntity:
+
+
+Function: ``updateEntity``
+==========================
+
+Update an existing entity.
+
+.. js:function:: updateEntity([entity][, options.uuid][, options.entity_type])
+
+    
+    :param object entity: The entity to be updated
+    :param string options.uuid: Entity uuid - required
+    :param string options.entity_type: The entity type - required
+    :return Promise: Resolve once done
+    
 .. _module-clb-storage.clbStorage.copy:
 
 
@@ -190,10 +220,10 @@ Function: ``getContent``
 
 Retrieves the content of a file given its id.
 
-.. js:function:: getContent(id[, customConfig])
+.. js:function:: getContent(entity[, customConfig])
 
     
-    :param string id: FileEntity UUID
+    :param object entity: can be either a FileEntity or a UUID (string)
     :param object customConfig: contains extra configuration
     :return Promise: The raw content
     
@@ -219,6 +249,20 @@ flags corresponding the user access:
     :param module:clb-storage.EntityDescriptor entity: The entity to retrieve user access for
     :return object: Contains ``{boolean} canRead``, ``{boolean} canWrite``, ``{boolean} canManage``
     
+.. _module-clb-storage.clbStorage.getProjects:
+
+
+Function: ``getProjects``
+=========================
+
+Retrieves all the projects the user has read access to.
+
+.. js:function:: getProjects(options)
+
+    
+    :param object options: Options to make the query.
+    :return Promise: When fulfilled, return a paginated result set. You can also access it immediately using ``promise.instance``
+    
 .. _module-clb-storage.clbStorage.getChildren:
 
 
@@ -231,18 +275,17 @@ The returned promise will be resolved with the
 list of fetched children and a flag indicating if more results are available
 in the queried direction.
 
-.. js:function:: getChildren(parent[, options][, options.accept][, options.acceptLink][, options.sort][, options.filter][, options.until][, options.from][, options.pageSize])
+.. js:function:: getChildren(parent[, options][, options.accept][, options.sort][, options.page][, options.pageSize][, options.resolveUserId][, options.hpc])
 
     
     :param module:clb-storage.EntityDescriptor parent: The parent entity
     :param object options: Options to make the query
-    :param array/string options.accept: Array of accepted _entityType
-    :param boolean|array/string options.acceptLink: ``true`` or an array of accepted linked _entityType
+    :param string options.accept: Accepted entity_type ('file' or 'folder')
     :param string options.sort: Property to sort on
-    :param string options.filter: The result based on Acls. Values: ``read`` (default), ``write``
-    :param UUID options.until: Fetch results until the given id (exclusive with from)
-    :param UUID options.from: Fetch results from the given id (exclusive with until)
+    :param int options.page: The number of the page to return.
     :param int options.pageSize: The number of results per page. Default is provided by the service. Set to 0 to fetch all the records.
+    :param boolean options.resolveUserId: if true, resolve user ids to user names (default: false)
+    :param boolean options.hpc: if true, the result will contain only the HPC projects/sites (default: false)
     :return Promise: When fulfilled, return a paginated result set. You can also access it immediately using ``promise.instance``
     
 .. _module-clb-storage.clbStorage.upload:
@@ -294,8 +337,8 @@ Member: ``setContextMetadata``: the function links the contextId with the doc br
 by setting a specific metadata on the entity.
 
 Entity object in input must contain the following properties:
-- _entityType
-- _uuid
+- entity_type
+- uuid
 
 In case of error, the promise is rejected with a `HbpError` instance.
 
@@ -305,8 +348,8 @@ Member: ``deleteContextMetadata``: the function unlink the contextId from the en
 by deleting the context metadata.
 
 Entity object in input must contain the following properties:
-- _entityType
-- _uuid
+- entity_type
+- uuid
 
 In case of error, the promise is rejected with a `HbpError` instance.
 
@@ -316,8 +359,8 @@ Member: ``updateContextMetadata``: the function delete the contextId from the `o
 it as `newEntity` metadata.
 
 Entity objects in input must contain the following properties:
-- _entityType
-- _uuid
+- entity_type
+- uuid
 
 In case of error, the promise is rejected with a `HbpError` instance.
 

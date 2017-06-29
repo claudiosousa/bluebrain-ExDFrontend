@@ -129,13 +129,13 @@ describe('Directive: resizeable', function () {
       var mouseDownPos = {x: 0, y: 0};
       var mouseMoveDelta = {x: 400, y: 0};
 
-      var expectedWidth = 96.7;
-      var expectedHeight = 96.7;
+      var expectedWidth = 97.7;
+      var expectedHeight = 97.7;
 
       resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
 
-      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 1);
-      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
+      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 0);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 0);
     });
 
   });

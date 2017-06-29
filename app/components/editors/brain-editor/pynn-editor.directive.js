@@ -24,7 +24,8 @@
     '$rootScope',
     'backendInterfaceService',
     'documentationURLs',
-    'hbpDialogFactory',
+    'clbErrorDialog',
+    'clbConfirm',
     'simulationInfo',
     'STATE',
     'stateService',
@@ -35,7 +36,7 @@
     'downloadFileService',
     'userContextService',
     function ($timeout, $rootScope,backendInterfaceService, documentationURLs,
-    hbpDialogFactory, simulationInfo, STATE, stateService, autoSaveService,
+    clbErrorDialog, clbConfirm, simulationInfo, STATE, stateService, autoSaveService,
     RESET_TYPE, codeEditorsServices, environmentService, downloadFileService, userContextService) {
       var DIRTY_TYPE = 'BRAIN';
 
@@ -207,7 +208,7 @@
                     scope.loading = false;
                     scope.clearError();
                     if (result.data.handle_population_change) {
-                      hbpDialogFactory.confirm({
+                      clbConfirm.open({
                         title: 'Confirm changing neural network',
                         confirmLabel: 'Yes',
                         cancelLabel: 'Cancel',
@@ -221,7 +222,7 @@
                         result.data.error_line,
                         result.data.error_column
                       );
-                      hbpDialogFactory.alert({title: 'Error.', template: result.data.error_message});
+                      clbErrorDialog.open({type: 'Error.', message: result.data.error_message});
                     }
                   });
               });
@@ -239,9 +240,9 @@
                 autoSaveService.clearDirty(DIRTY_TYPE);
 
               },function() { // Failure callback
-                hbpDialogFactory.alert({
-                  title: "Error.",
-                  template: "Error while saving pyNN script to Collab storage."
+                clbErrorDialog.open({
+                  type: "BackendError.",
+                  message: "Error while saving pyNN script to Collab storage."
                 });
                 scope.isSavingToCollab = false;
               }

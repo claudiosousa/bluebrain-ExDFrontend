@@ -3,7 +3,7 @@
 var TestDataGenerator = window.TestDataGenerator;
 
 describe('Services: server-info-service', function () {
-  var hbpIdentityUserDirectory,
+  var clbUser,
       bbpStubFactory,
       simulationControl,
       simulationState,
@@ -18,12 +18,12 @@ describe('Services: server-info-service', function () {
 
   var httpBackend, simulations, returnSimulations, experimentTemplates;
 
-  beforeEach(inject(function (_$httpBackend_, $rootScope, $timeout,_hbpIdentityUserDirectory_, _bbpStubFactory_,
+  beforeEach(inject(function (_$httpBackend_, $rootScope, $timeout, _clbUser_, _bbpStubFactory_,
       _simulationControl_, _simulationState_, _simulationGenerator_,
       _objectControl_, _STATE_) {
     httpBackend = _$httpBackend_;
     scope = $rootScope.$new();
-    hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
+    clbUser = _clbUser_;
     bbpStubFactory = _bbpStubFactory_;
     simulationControl = _simulationControl_;
     simulationState = _simulationState_;
@@ -69,7 +69,7 @@ describe('Services: server-info-service', function () {
     var userInfo4321 = {
       displayName: 'John Dont'
     };
-    spyOn(hbpIdentityUserDirectory, 'get').and.callFake(function(ownerID) {
+    spyOn(clbUser, 'get').and.callFake(function(ownerID) {
       var returnedPromise;
       switch(ownerID[0]) {
         case 'default-owner':

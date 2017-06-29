@@ -26,7 +26,7 @@
     "tag": "1.1.1",
     "commit": "116f763d05b00b54703ecece27bfdbe82ece450e"
   },
-  "_source": "git://github.com/ron-liu/xml2json.git",
-  "_target": "*",
+  "_source": "https://github.com/ron-liu/xml2json.git",
+  "_target": "1.1.1",
   "_originalSource": "xml2json"
 }

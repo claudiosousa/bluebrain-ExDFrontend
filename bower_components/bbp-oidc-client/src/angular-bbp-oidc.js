@@ -32,7 +32,7 @@
             };
 
             this.ensureToken = function(value) {
-                client.setEnsureToken(!!value);
+                return client.setEnsureToken(!!value);
             };
 
             this.logout = function($q) {
@@ -47,7 +47,8 @@
                     logout: this.logout($q),
                     token: client.getToken,
                     alwaysPromptLogin: this.alwaysPromptLogin,
-                    ensureToken: this.ensureToken
+                    ensureToken: this.ensureToken,
+                    wipeToken: client.wipeToken
                 };
             }];
         })

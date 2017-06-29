@@ -18,7 +18,7 @@
 
                     <label>
 
-                    <input type="radio" ng-model="vm.request.resetType" ng-value="{{vm.RESET_TYPE.RESET_FULL}}" tooltip="Reset also the simulation timeout."
+                    <input type="radio" ng-model="vm.request.resetType" ng-value="{{vm.RESET_TYPE.RESET_FULL}}" uib-tooltip="Reset also the simulation timeout."
                         tooltip-trigger="mouseenter" tooltip-placement="top">
                     </input>
 
@@ -48,7 +48,7 @@
                     <label>
 
                     <input ng-model="vm.request.resetType" ng-value="{{vm.RESET_TYPE.RESET_BRAIN}}" type="radio"
-                            tooltip="{{vm.environmnetService.isPrivateExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
+                            uib-tooltip="{{vm.environmnetService.isPrivateExperiment?'Reset the brain to the last saved state':'Reset the brain to the status it was at the beginning of the simulation'}}"
                             tooltip-trigger="mouseenter" tooltip-placement="top">
                     </input>
                         Reset the Neural Network
@@ -64,7 +64,7 @@
                 <label>
 
                 <input ng-model="vm.request.resetType" ng-value="{{vm.RESET_TYPE.RESET_WORLD}}" type="radio"
-                        tooltip="{{vm.environmnetService.isPrivateExperiment?'Reset Environment Poses to the last saved state':'Reset the poses of models to the original state'}}" tooltip-trigger="mouseenter" tooltip-placement="top">
+                        uib-tooltip="{{vm.environmnetService.isPrivateExperiment?'Reset Environment Poses to the last saved state':'Reset the poses of models to the original state'}}" tooltip-trigger="mouseenter" tooltip-placement="top">
                 </input>
                 Reset Environment Poses
                 </label>
@@ -78,7 +78,7 @@
             <li>
                 <label>
                 <input ng-model="vm.request.resetType" ng-value="{{vm.RESET_TYPE.RESET_ROBOT_POSE}}" type="radio"
-                       tooltip="Reset Robot to the original position and rotation." tooltip-trigger="mouseenter" tooltip-placement="top">
+                       uib-tooltip="Reset Robot to the original position and rotation." tooltip-trigger="mouseenter" tooltip-placement="top">
                 </input>
                   Reset Robot Frame
                 </label>

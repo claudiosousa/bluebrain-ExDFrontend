@@ -17,6 +17,25 @@
 	 * CryptoJS core components.
 	 */
 	var CryptoJS = CryptoJS || (function (Math, undefined) {
+	    /*
+	     * Local polyfil of Object.create
+	     */
+	    var create = Object.create || (function () {
+	        function F() {};
+
+	        return function (obj) {
+	            var subtype;
+
+	            F.prototype = obj;
+
+	            subtype = new F();
+
+	            F.prototype = null;
+
+	            return subtype;
+	        };
+	    }())
+
 	    /**
 	     * CryptoJS namespace.
 	     */
@@ -31,7 +50,7 @@
 	     * Base object for prototypal inheritance.
 	     */
 	    var Base = C_lib.Base = (function () {
-	        function F() {}
+
 
 	        return {
 	            /**
@@ -54,8 +73,7 @@
 	             */
 	            extend: function (overrides) {
 	                // Spawn
-	                F.prototype = this;
-	                var subtype = new F();
+	                var subtype = create(this);
 
 	                // Augment
 	                if (overrides) {
@@ -63,7 +81,7 @@
 	                }
 
 	                // Create default initializer
-	                if (!subtype.hasOwnProperty('init')) {
+	                if (!subtype.hasOwnProperty('init') || this.init === subtype.init) {
 	                    subtype.init = function () {
 	                        subtype.$super.init.apply(this, arguments);
 	                    };
@@ -1333,34 +1351,45 @@
 	            // Shortcuts
 	            var base64StrLength = base64Str.length;
 	            var map = this._map;
+	            var reverseMap = this._reverseMap;
+
+	            if (!reverseMap) {
+	                    reverseMap = this._reverseMap = [];
+	                    for (var j = 0; j < map.length; j++) {
+	                        reverseMap[map.charCodeAt(j)] = j;
+	                    }
+	            }
 
 	            // Ignore padding
 	            var paddingChar = map.charAt(64);
 	            if (paddingChar) {
 	                var paddingIndex = base64Str.indexOf(paddingChar);
-	                if (paddingIndex != -1) {
+	                if (paddingIndex !== -1) {
 	                    base64StrLength = paddingIndex;
 	                }
 	            }
 
 	            // Convert
-	            var words = [];
-	            var nBytes = 0;
-	            for (var i = 0; i < base64StrLength; i++) {
-	                if (i % 4) {
-	                    var bits1 = map.indexOf(base64Str.charAt(i - 1)) << ((i % 4) * 2);
-	                    var bits2 = map.indexOf(base64Str.charAt(i)) >>> (6 - (i % 4) * 2);
-	                    var bitsCombined = bits1 | bits2;
-	                    words[nBytes >>> 2] |= (bitsCombined) << (24 - (nBytes % 4) * 8);
-	                    nBytes++;
-	                }
-	            }
+	            return parseLoop(base64Str, base64StrLength, reverseMap);
 
-	            return WordArray.create(words, nBytes);
 	        },
 
 	        _map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 	    };
+
+	    function parseLoop(base64Str, base64StrLength, reverseMap) {
+	      var words = [];
+	      var nBytes = 0;
+	      for (var i = 0; i < base64StrLength; i++) {
+	          if (i % 4) {
+	              var bits1 = reverseMap[base64Str.charCodeAt(i - 1)] << ((i % 4) * 2);
+	              var bits2 = reverseMap[base64Str.charCodeAt(i)] >>> (6 - (i % 4) * 2);
+	              words[nBytes >>> 2] |= (bits1 | bits2) << (24 - (nBytes % 4) * 8);
+	              nBytes++;
+	          }
+	      }
+	      return WordArray.create(words, nBytes);
+	    }
 	}());
 
 
@@ -5115,7 +5144,7 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
 
 })(window, window.jQuery);
 
-/* global jso_configure, jso_ensureTokens, jso_getToken, jso_wipe */
+/* global Promise, jso_configure, jso_ensureTokens, jso_getToken, jso_wipe */
 (function(exp){
     'use strict';
 
@@ -5164,6 +5193,7 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
         this.ensureTokens = function() {
             var scopesToEnsure = {};
             scopesToEnsure[provider] = scopes;
+            // returns true when a token is found, triggers the redirect otherwise
             return jso_ensureTokens(scopesToEnsure);
         };
 
@@ -5217,16 +5247,21 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
         var opts = deepExtend(defaultOpts, options);
 
         function init() {
-            jso = new JsoWrapper(opts);
-            jso.configure();
+            return new Promise(function(resolve, reject) {
+                jso = new JsoWrapper(opts);
+                jso.configure();
 
-            // This check has to occurs every time.
-            if (opts.ensureToken) {
-                if(!jso.getToken()) {
-                    // if there's no token, check if the session with oidc is still active
-                    getTokenOrLogout();
+                // This check has to occurs every time.
+                if (opts.ensureToken) {
+                    if(!jso.getToken()) {
+                        // if there's no token, check if the session with oidc is still active
+                        getTokenOrLogout();
+                        return; // do not reject either, a redirect is expected soon...
+                    }
                 }
-            }
+                // no redirect, good
+                resolve();
+            });
         }
 
         function login() {
@@ -5325,11 +5360,16 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
                 }
             },
             setEnsureToken: function(value) {
-                var newVal = !!value;
-                if(opts.ensureToken !== newVal) {
-                    opts.ensureToken = newVal;
-                    init();
-                }
+                return new Promise(function(resolve, reject) {
+                    var newVal = !!value;
+                    if(opts.ensureToken !== newVal) {
+                        opts.ensureToken = newVal;
+                        resolve(init());
+                    } else if(jso.getToken()) {
+                        resolve(true);
+                    }
+                    // if not changed and no token found: redirect in progress
+                });
             },
             isEnsureToken: function() {
                 return opts.ensureToken;
@@ -5380,7 +5420,7 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
             };
 
             this.ensureToken = function(value) {
-                client.setEnsureToken(!!value);
+                return client.setEnsureToken(!!value);
             };
 
             this.logout = function($q) {
@@ -5395,7 +5435,8 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
                     logout: this.logout($q),
                     token: client.getToken,
                     alwaysPromptLogin: this.alwaysPromptLogin,
-                    ensureToken: this.ensureToken
+                    ensureToken: this.ensureToken,
+                    wipeToken: client.wipeToken
                 };
             }];
         })
@@ -5431,3 +5472,56 @@ if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJ
             };
         }]);
 }());
+
+angular.module('bbpOidcClient')
+.directive('hbpOidcSessionWatcher',
+  ['$window', '$sce', '$rootScope', 'bbpConfig', 'bbpOidcSession',
+  function($window, $sce, $rootScope, bbpConfig, bbpOidcSession) {
+  'use strict';
+
+  return {
+    restrict: 'E',
+    template: '<iframe id="hbp_oidc_frame" ng-src="{{oidcSessionPage}}" width="1" height="1" style="display: none"></iframe>',
+    link: function(scope, element) {
+      var sessionPageUrl = bbpConfig.get('auth.url') + '/session-page';
+      scope.oidcSessionPage = $sce.trustAsResourceUrl(sessionPageUrl);
+
+      $rootScope.$on('$stateChangeStart', function(evt) {
+        var token = bbpOidcSession.token();
+        if(token) {
+          validateToken(token);
+        }
+      });
+
+      /**
+       * it sends a message to the oidc iframe with the current token to validate
+       * against the current OIDC session.
+       */
+      function validateToken(token) {
+        var msg = JSON.stringify({
+          token: token
+        });
+        var iframe = element[0].querySelector('#hbp_oidc_frame');
+        $(iframe).on('load', function() {
+          iframe.contentWindow.postMessage(msg, '*');
+        });
+      }
+
+      /**
+       * waits for reply from oidc iframe.
+       * The oidc ifram returns a boolean telling if the logged in user
+       * is the same of the one linked to the token. 
+       */
+      function receiveMessage(event) {
+        if(event.origin.match(/^https:\/\/services(-dev)?.humanbrainproject.eu$/)) {
+          if(event.data === false) {
+            bbpOidcSession.wipeToken();
+            $window.location.reload(true);
+          }
+        }
+      }
+
+      $window.addEventListener('message', receiveMessage, false);
+    }
+  };
+}]);

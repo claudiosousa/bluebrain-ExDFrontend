@@ -8,37 +8,36 @@
     <h5 class="editor-panel-title">Editors</h5>
   </div>
   <div class="editor-panel-content">
-    <tabset style="height:100%; display: flex; flex-direction: column;">
-      <tab heading="Environment" active="activeTab.environment"
-          disabled="!isOwner">
- <environment-designer  style="height: 100%;"  />
-
-      </tab>
-      <tab  heading="Transfer Functions" active="activeTab.transferfunction"
+    <uib-tabset style="height:100%; display: flex; flex-direction: column;" active="activeTabIndex">
+      <uib-tab heading="Environment" index="tabindex.environment"
+      disable="!isOwner">
+        <environment-designer  style="height: 100%;"  />
+      </uib-tab>
+      <uib-tab heading="Transfer Functions" index="tabindex.transferfunction"
            select="disableKeyBindings(); controls.transferfunction.refresh()"
            deselect="reenableKeyBindings()">
         <transfer-function-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
                                   control="controls.transferfunction"/>
-      </tab>
-      <tab heading="State Machine (SMACH)" active="activeTab.statemachine"
+      </uib-tab>
+      <uib-tab heading="State Machine (SMACH)" index="tabindex.statemachine"
            select="disableKeyBindings(); controls.statemachine.refresh()"
            deselect="reenableKeyBindings()">
         <smach-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
                       control="controls.statemachine"/>
-      </tab>
-      <tab heading="Brain Editor" active="activeTab.pynneditor"
+      </uib-tab>
+      <uib-tab heading="Brain Editor" index="tabindex.pynneditor"
            select="disableKeyBindings(); controls.pynneditor.refresh()"
            deselect="reenableKeyBindings()">
         <pynn-editor control="controls.pynneditor"/>
-      </tab>
-	  <tab heading="TF Graphical Editor" active="activeTab.graphicalEditor"
+      </uib-tab>
+	  <uib-tab heading="TF Graphical Editor" index="tabindex.graphicalEditor"
            select="disableKeyBindings(); controls.graphicalEditor.refresh()"
-           disabled="!isOwner"
+           disable="!isOwner"
            deselect="reenableKeyBindings()">
-        <graphical-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
+        <graphical-editor topic="{{cleErrorTopic}}"  server="{{rosbridgeWebsocketUrl}}"
                           control="controls.graphicalEditor"/>
-      </tab>
-    </tabset>
+      </uib-tab>
+    </uib-tabset>
   </div>
   <button type="button" class="button-close" data-ng-click="editorsPanelService.toggleEditors()">×</button>
 </div>

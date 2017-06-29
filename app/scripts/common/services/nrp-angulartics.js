@@ -21,10 +21,10 @@
   /* global console: false */
   /* global moment: false */
   var module = angular.module('nrpAngulartics', [
-    'hbpCommon',
     'nrpUser',
     'angulartics',
-    'angulartics.google.analytics']);
+    'angulartics.google.analytics',
+    'clb-identity']);
 
   module.factory('nrpAnalytics', [
     '$analytics',

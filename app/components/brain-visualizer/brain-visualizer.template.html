@@ -18,7 +18,7 @@
                 Shape
             </div>
 
-            <div ng-repeat="shape in shapes" style="padding-bottom:1px">
+            <div ng-repeat="shape in shapes track by $index" style="padding-bottom:1px">
 
             <label class="esv-brainvisualizer-radio-label" >
                 <input class="esv-brainvisualizer-radio" type="radio"
@@ -34,7 +34,7 @@
                 Distribution
             </div>
 
-            <div ng-repeat="dist in distributions" style="padding-bottom:1px">
+            <div ng-repeat="dist in distributions track by $index" style="padding-bottom:1px">
 
             <label class="esv-brainvisualizer-radio-label" >
                 <input class="esv-brainvisualizer-radio" type="radio"
@@ -50,7 +50,7 @@
                 Display
             </div>
 
-            <div ng-repeat="display in displays" style="padding-bottom:1px">
+            <div ng-repeat="display in displays track by $index" style="padding-bottom:1px">
 
             <label class="esv-brainvisualizer-radio-label" >
                 <input class="esv-brainvisualizer-radio" type="radio"

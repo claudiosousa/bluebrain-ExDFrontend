@@ -2,19 +2,19 @@
 
 describe('Services: experimentsFactory', function () {
   var $q, experimentProxyService, collabFolderAPIService, experimentsFactory, scope, $interval,
-    hbpDialogFactory, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, slurminfoService, environmentService;
+    clbErrorDialog, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, slurminfoService, environmentService;
 
   beforeEach(module('experimentServices'));
   beforeEach(module('exdFrontendApp'));
   beforeEach(inject(function (_$q_, _experimentProxyService_, _collabFolderAPIService_, _experimentsFactory_, _$rootScope_, _$httpBackend_, _$interval_,
-    _hbpDialogFactory_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_, _slurminfoService_, _environmentService_) {
+    _clbErrorDialog_, _FAIL_ON_SELECTED_SERVER_ERROR_, _FAIL_ON_ALL_SERVERS_ERROR_, _slurminfoService_, _environmentService_) {
     $q = _$q_;
     experimentProxyService = _experimentProxyService_;
     collabFolderAPIService = _collabFolderAPIService_;
     experimentsFactory = _experimentsFactory_;
     scope = _$rootScope_;
     $interval = _$interval_;
-    hbpDialogFactory = _hbpDialogFactory_;
+    clbErrorDialog = _clbErrorDialog_;
     FAIL_ON_SELECTED_SERVER_ERROR = _FAIL_ON_SELECTED_SERVER_ERROR_;
     FAIL_ON_ALL_SERVERS_ERROR = _FAIL_ON_ALL_SERVERS_ERROR_;
     slurminfoService =_slurminfoService_;
@@ -42,7 +42,7 @@ describe('Services: experimentsFactory', function () {
   it('image should come from collab storage', function() {
     var experiments = [{joinableServers:[], configuration: {thumbnail: 'fake.png'}}];
     spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
-    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({uuid: 'fakeUUID'}));
 
     var imageData = 'data:image/png;base64,fakeContent';
     var blob = new Blob([imageData],{type : 'image/png'});
@@ -86,7 +86,7 @@ describe('Services: experimentsFactory', function () {
     var image = {'experimentid' : 'fakeImage'};
     spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
     spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({uuid: 'fakeUUID'}));
     spyOn(experimentProxyService, 'getImages').and.returnValue($q.when(image));
     spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(null));
 
@@ -105,7 +105,7 @@ describe('Services: experimentsFactory', function () {
   it('experiment name and description should come from collab storage', function() {
     spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
     spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({uuid: 'fakeUUID'}));
     spyOn(experimentProxyService, 'getImages');
     var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout><thumbnail>fake.png</thumbnail></ns1:ExD>';
     spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(xml));
@@ -126,7 +126,7 @@ describe('Services: experimentsFactory', function () {
   it('experiment xml should be stored', function() {
     spyOn(experimentProxyService, 'getJoinableServers').and.returnValue($q.when([]));
     spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({uuid: 'fakeUUID'}));
     spyOn(experimentProxyService, 'getImages');
     var xml = '<?xml version="1.0" ?><ns1:ExD xmlns:ns1="http://schemas.humanbrainproject.eu/SP10/2014/ExDConfig"><ns1:name>newName</ns1:name><ns1:description>newDescription</ns1:description><ns1:timeout>100</ns1:timeout><thumbnail>fake.png</thumbnail></ns1:ExD>';
     spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(xml));
@@ -136,7 +136,7 @@ describe('Services: experimentsFactory', function () {
     scope.$apply();
 
     exp.experiments.then(function(){
-      expect(exp.getCollabExperimentXML()).toBe(xml);
+      expect(exp.getCollabExperimentFile()[0]).toBe(xml);
     });
     scope.$apply();
   });
@@ -154,7 +154,7 @@ describe('Services: experimentsFactory', function () {
       }
     });
     spyOn(experimentProxyService, 'getAvailableServers').and.returnValue($q.when([]));
-    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({_uuid: 'fakeUUID'}));
+    spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({uuid: 'fakeUUID'}));
     spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(''));
     environmentService.setPrivateExperiment(true);
     var exp = experimentsFactory.createExperimentsService('context_id', 'experimentid', 'folder_id');
@@ -175,13 +175,13 @@ describe('Services: experimentsFactory', function () {
     var exp = experimentsFactory.createExperimentsService();
     exp.initialize();
     scope.$apply();
-    spyOn(hbpDialogFactory, 'alert');
+    spyOn(clbErrorDialog, 'open');
     exp.experiments
       .then(function (experiments) {
         return exp.startExperiment(experiments[0]);
       })
       .catch(function () {
-        expect(hbpDialogFactory.alert).toHaveBeenCalledWith(expectedError);
+        expect(clbErrorDialog.open).toHaveBeenCalledWith(expectedError);
       });
     scope.$apply();
 

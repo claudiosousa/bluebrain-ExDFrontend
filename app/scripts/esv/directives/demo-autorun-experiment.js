@@ -21,12 +21,12 @@
 {
     'use strict';
     angular.module('exdFrontendApp')
-        .directive('demoAutorunExperiment', ['hbpDialogFactory', 'backendInterfaceService',
+        .directive('demoAutorunExperiment', ['backendInterfaceService',
             'bbpConfig', '$timeout', '$window',
             'userContextService', '$location',
             'experimentsFactory', 'environmentService', 'STATE', 'stateService','simulationInfo',
 
-            function (hbpDialogFactory, backendInterfaceService, bbpConfig, $timeout, $window, userContextService, $location, experimentsFactory, environmentService,
+            function (backendInterfaceService, bbpConfig, $timeout, $window, userContextService, $location, experimentsFactory, environmentService,
                 STATE, stateService,simulationInfo)
             {
                 return {

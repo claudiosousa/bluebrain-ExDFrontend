@@ -63,7 +63,7 @@
                       {
                         if (fileData)
                         {
-                          return collabFolderAPIService.downloadFile(fileData._uuid)
+                          return collabFolderAPIService.downloadFile(fileData.uuid)
                             .then(function (fileContent)
                             {
                               if (fileContent)

@@ -7,11 +7,12 @@ describe('Services: userNavigationService', function () {
   var userNavigationService;
   var NAVIGATION_MODES, STATE;
 
-  var gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
-  var hbpIdentityUserDirectory, userProfile, hbpIdentityUserDirectoryPromise, simulationInfo, roslib, stateService;
+  var $rootScope, gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
+  var clbUser, simulationInfo, userProfile, roslib, stateService;
 
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('userNavigationModule'));
+  beforeEach(module('clbUserMock'));
 
   // provide mock objects
   beforeEach(module(function ($provide) {
@@ -93,25 +94,11 @@ describe('Services: userNavigationService', function () {
     };
     $provide.value('firstPersonControls', firstPersonControlsMock);
 
-    // hbpIdentityUserDirectory mock
-    var userProfileMock = {
+    // clbUser mock
+    userProfile = {
       id: 'mock_id',
       displayName: 'mock_displayname'
     };
-    $provide.value('userProfile', userProfileMock);
-
-    var hbpIdentityUserDirectoryPromiseMock = {
-      //then: jasmine.createSpy('then').and.returnValue({ then: jasmine.createSpy('then')})};
-      then: jasmine.createSpy('then').and.callFake(function (callback) {
-        callback(userProfileMock);
-      })
-    };
-    $provide.value('hbpIdentityUserDirectoryPromise', hbpIdentityUserDirectoryPromiseMock);
-
-    var hbpIdentityUserDirectoryMock = {
-      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(hbpIdentityUserDirectoryPromiseMock)
-    };
-    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
 
     var roslibMock = {};
     $provide.value('roslib', roslibMock);
@@ -127,22 +114,21 @@ describe('Services: userNavigationService', function () {
     module('exdFrontendApp.Constants');
 
     // inject service for testing.
-    inject(function (_userNavigationService_, _NAVIGATION_MODES_, _STATE_, _gz3d_, _camera_, _avatar_, _avatarControls_,
-                     _firstPersonControls_,_lookatRobotControls_, _userProfile_, _hbpIdentityUserDirectory_,
-                     _hbpIdentityUserDirectoryPromise_, _simulationInfo_, _roslib_, _stateService_) {
+    inject(function (_$rootScope_, _userNavigationService_, _NAVIGATION_MODES_, _STATE_, _gz3d_, _camera_, _avatar_, _avatarControls_,
+                     _firstPersonControls_,_lookatRobotControls_, _clbUser_,
+                     _simulationInfo_, _roslib_, _stateService_) {
       userNavigationService = _userNavigationService_;
       NAVIGATION_MODES = _NAVIGATION_MODES_;
       STATE = _STATE_;
       gz3d = _gz3d_;
-      hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
+      clbUser = _clbUser_;
+      $rootScope = _$rootScope_;
 
       camera = _camera_;
       avatar = _avatar_;
       avatarControls = _avatarControls_;
       firstPersonControls = _firstPersonControls_;
       lookatRobotControls = _lookatRobotControls_;
-      userProfile = _userProfile_;
-      hbpIdentityUserDirectoryPromise = _hbpIdentityUserDirectoryPromise_;
       simulationInfo = _simulationInfo_;
       roslib = _roslib_;
       stateService = _stateService_;
@@ -180,7 +166,7 @@ describe('Services: userNavigationService', function () {
     console.info(stateService.currentSate);
 
     userNavigationService.init();
-
+    $rootScope.$digest();
     expect(userNavigationService.rosbridgeWebsocketUrl).toBe(simulationInfo.serverConfig.rosbridge.websocket);
     expect(userNavigationService.roslib).toBe(roslib);
 
@@ -188,11 +174,10 @@ describe('Services: userNavigationService', function () {
 
     expect(gz3d.iface.modelInfoTopic.subscribe).toHaveBeenCalledWith(jasmine.any(Function));
 
-    expect(hbpIdentityUserDirectory.getCurrentUser).toHaveBeenCalled();
-    expect(hbpIdentityUserDirectoryPromise.then).toHaveBeenCalledWith(jasmine.any(Function));
-    expect(userNavigationService.setUserData).toHaveBeenCalledWith(userProfile);
-    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + userProfile.id);
-    expect(userNavigationService.userDisplayName).toBe(userProfile.displayName);
+    expect(clbUser.getCurrentUser).toHaveBeenCalled();
+    expect(userNavigationService.setUserData).toHaveBeenCalledWith(clbUser.currentUser);
+    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + clbUser.currentUser.id);
+    expect(userNavigationService.userDisplayName).toBe(clbUser.currentUser.displayName);
 
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
 

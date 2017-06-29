@@ -10,17 +10,18 @@ describe('Services: tempFileService', function () {
     previouslySavedFile,
     createFileResponse,
     environmentService;
-  var $rootScope, $q, tempFileService;
+  var $rootScope, tempFileService, $q;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
-  beforeEach(module('hbpIdentityUserDirectoryMock'));
+  beforeEach(module('clbUserMock'));
 
   beforeEach(module(function ($provide) {
     collabFolderAPIService = {
       getExperimentFolderId: jasmine.createSpy('getExperimentFolderId').and.callFake(function () { return $q.when(CONTEXT_ID); }),
       getFolderFile: jasmine.createSpy('getFolderFile').and.callFake(function () {
-        return $q.when(previouslySavedFile !== undefined ? { _createdBy: 'userid' } : null);
+        /*jshint camelcase: false */
+        return $q.when(previouslySavedFile !== undefined ? { created_by: 'userid' } : null);
       }),
       createFolderFile: jasmine.createSpy('createFolderFile').and.callFake(function () { return createFileResponse; }),
       uploadEntity: jasmine.createSpy('uploadEntity'),
@@ -38,9 +39,10 @@ describe('Services: tempFileService', function () {
     $provide.value('$stateParams', stateParams);
   }));
 
-  beforeEach(inject(function ($httpBackend, _$rootScope_, _$q_, _tempFileService_, _environmentService_) {
+  beforeEach(inject(function($httpBackend, _$rootScope_, _$q_, _tempFileService_, _environmentService_) {
     $rootScope = _$rootScope_;
     $q = _$q_;
+
     tempFileService = _tempFileService_;
     environmentService = _environmentService_;
     environmentService.setPrivateExperiment(true);

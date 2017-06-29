@@ -15,7 +15,6 @@
     beforeEach(module('stateServiceMock'));
     beforeEach(module('gz3dMock'));
     beforeEach(module('splashMock'));
-    beforeEach(module('hbpDialogFactoryMock'));
     beforeEach(module('backendInterfaceServiceMock'));
     beforeEach(module('objectInspectorServiceMock'));
     beforeEach(module('userNavigationServiceMock'));

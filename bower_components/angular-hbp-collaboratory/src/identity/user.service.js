@@ -178,7 +178,9 @@ function clbUser(
       deferred.resolve(single ? response[ids[0]] : response);
     } else {
       // Get the list of URLs to call
-      var userBaseUrl = '/search?id=';
+      // no need to handle more that 300 results because the URL will be split in chunks
+      // of 2000 char each (and every ID is at least 6 char long + '&id=' + baseUrl).
+      var userBaseUrl = '/search?pageSize=300&id=';
       splitInURl(uncachedUser, userUrl + userBaseUrl, urls, 'id');
 
       // Async calls and combination of result
@@ -506,6 +508,13 @@ function clbUser(
     var opt = angular.extend({
       sort: 'familyName'
     }, options);
+
+    var loadAll = false;
+    if (opt.pageSize === 0) {
+      loadAll = true;
+      opt.pageSize = 1000; // sooner or later will be all loaded, better saving on requests count
+    }
+
     var endpoint = userUrl;
 
     // append filter part to endpoint
@@ -527,13 +536,11 @@ function clbUser(
 
     var pageOptions = paginationOptions('users', opt.factory);
     var params = clbIdentityUtil.queryParams(opt);
-
     var result = clbResultSet.get(clbAuthHttp.get(endpoint, {
       params: params
     }), pageOptions);
 
-    // if pageSize=0 load everything
-    return (opt.pageSize === 0) ? result.instance.all() : result;
+    return (loadAll) ? result.instance.all() : result;
   }
 
   /**

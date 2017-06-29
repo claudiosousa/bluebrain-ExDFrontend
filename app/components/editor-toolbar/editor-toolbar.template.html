@@ -178,7 +178,7 @@
                  ng-class="{'disabled-image-with-events': !vm.gz3dViewsService.hasCameraView()}"
                  ng-click="vm.robotViewButtonClickHandler()"
                  help-tooltip="ROBOT_VIEW"
-                 tooltip="No camera is available"
+                 uib-tooltip="No camera is available"
                  tooltip-trigger="mouseenter"
                  tooltip-enable="!vm.gz3dViewsService.hasCameraView()"
                  ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
@@ -225,7 +225,7 @@
                                           (vm.stateService.currentState === vm.STATE.FAILED)}"
                  ng-click="vm.codeEditorButtonClickHandler()"
                  help-tooltip="CODE_EDITOR"
-                 tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}."
+                 uib-tooltip="Sorry, you cannot edit at the moment as {{userEditing}} started editing {{timeEditStarted}}."
                  tooltip-trigger="mouseenter"
                  tooltip-enable="vm.userContextService.editIsDisabled"
                  v-busy="vm.editorsPanelService.loadingEditPanel"
@@ -254,7 +254,7 @@
                               'disabled-image-with-events': !vm.editorToolbarService.videoStreamsAvailable}"
                  ng-click="vm.videoStreamsToggle()"
                  help-tooltip="SERVER_VIDEO_STREAM"
-                 tooltip="No video stream available"
+                 uib-tooltip="No video stream available"
                  tooltip-trigger="mouseenter"
                  tooltip-enable="!vm.editorToolbarService.videoStreamsAvailable">
                 <img src="img/esv/videostream_icon.png" width=31 height=31>

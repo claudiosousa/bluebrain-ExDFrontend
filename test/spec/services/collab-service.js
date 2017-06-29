@@ -39,23 +39,22 @@ describe('Services: collab-service', function () {
 
 
 describe('Services: collab-folder-api-service', function () {
-  var httpBackend, bbpConfig, collabConfigService, collabFolderAPIService, hbpFileStore, $q, scope;
+  var httpBackend, bbpConfig, collabConfigService, collabFolderAPIService, clbStorage, $q, scope;
   var baseUrl;
   var matchAllRegex = new RegExp('.*');
-  var fakeGETData = {experimentID: 'FakeExperimentID', result:[true], experimentFolderUUID: 'FakeExperimentFolderUUID'};
+  var fakeGETData = {experimentID: 'FakeExperimentID', results:[true], experimentFolderUUID: 'FakeExperimentFolderUUID'};
   var fakePOSTData = {code: 200, message: 'Success', _entityType: 'testEntity'};
 
   // load the service to test and mock the necessary service
   beforeEach(module('collabServices'));
-  beforeEach(module('hbpDocumentClient.core'));
   beforeEach(module('hbpCollaboratoryCore'));
 
-  beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _collabConfigService_, _collabFolderAPIService_, _hbpFileStore_, _$q_, _$rootScope_) {
+  beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _collabConfigService_, _collabFolderAPIService_, _clbStorage_, _$q_, _$rootScope_) {
     httpBackend = _$httpBackend_;
     bbpConfig = _bbpConfig_;
     collabConfigService = _collabConfigService_;
     collabFolderAPIService = _collabFolderAPIService_;
-    hbpFileStore = _hbpFileStore_;
+    clbStorage = _clbStorage_;
     $q = _$q_;
     scope = _$rootScope_.$new();
 
@@ -77,28 +76,28 @@ describe('Services: collab-folder-api-service', function () {
     scope.$apply();
   });
 
-  it('test createFolderFile calls hbpFileStore with correct paramters', function() {
-    spyOn(hbpFileStore, 'upload');
+  it('test createFolderFile calls clbStorage with correct paramters', function() {
+    spyOn(clbStorage, 'upload');
     collabFolderAPIService.createFolderFile('FakeFolderId', 'FileName', 'fileContent');
     var blob = new Blob(['fileContent'], {type: 'text/plain'});
     blob.name = 'FileName';
-    expect(hbpFileStore.upload).toHaveBeenCalledWith(blob, {parent: {_uuid: 'FakeFolderId'}});
+    expect(clbStorage.upload).toHaveBeenCalledWith(blob, {parent: {uuid: 'FakeFolderId'}});
   });
 
   it('test deleteFile works when everything goes normally', function() {
     spyOn(collabFolderAPIService, 'getFolderFile').and.callFake(function(){
       var deferred = $q.defer();
-      deferred.resolve({'_uuid':'123'});
+      deferred.resolve({'uuid':'123'});
       return deferred.promise;
     });
+    spyOn(clbStorage, 'delete').and.returnValue($q.when(true));
     var returnValue = collabFolderAPIService.deleteFile('FakeFolderId', 'FileName');
-    httpBackend.expectDELETE(baseUrl+'/file/123');
-    httpBackend.flush();
+    scope.$apply();
     expect(collabFolderAPIService.getFolderFile).toHaveBeenCalledWith('FakeFolderId', 'FileName');
+    expect(clbStorage.delete).toHaveBeenCalledWith({'uuid':'123'});
     returnValue.then(function(value){
       expect(value).toBe(true);
     });
-    scope.$apply();
   });
 
   it('test deleteFile handles when a file cannont be deleted', function() {
@@ -107,17 +106,19 @@ describe('Services: collab-folder-api-service', function () {
       deferred.resolve(null);
       return deferred.promise;
     });
+    spyOn(clbStorage, 'delete').and.returnValue($q.reject());
     var returnValue = collabFolderAPIService.deleteFile('FakeFolderId', 'FileName');
+    scope.$apply();
     expect(collabFolderAPIService.getFolderFile).toHaveBeenCalledWith('FakeFolderId', 'FileName');
+    expect(clbStorage.delete).not.toHaveBeenCalled();
     returnValue.then(function(value){
       expect(value).toBe(false);
     });
-    scope.$apply();
   });
 
   it('test getFolderFile', function() {
     var returnValue = collabFolderAPIService.getFolderFile('FakeFolderId', 'FileName');
-    httpBackend.expectGET(baseUrl+'/folder/FakeFolderId/children?filter=_name=FileName');
+    httpBackend.expectGET(baseUrl+'/folder/FakeFolderId/children/?name=FileName');
     httpBackend.flush();
     returnValue.then(function(value){
       expect(value).toBe(true);
@@ -135,14 +136,14 @@ describe('Services: collab-folder-api-service', function () {
     scope.$apply();
   });
 
-  it('test downloadFile calls hbpFileStore with expected parameters', function() {
-    spyOn(hbpFileStore, 'getContent');
+  it('test downloadFile calls clbStorage with expected parameters', function() {
+    spyOn(clbStorage, 'getContent');
     collabFolderAPIService.downloadFile('FakeFolderId');
-    expect(hbpFileStore.getContent).toHaveBeenCalledWith('FakeFolderId', undefined);
-    hbpFileStore.getContent.calls.reset();
+    expect(clbStorage.getContent).toHaveBeenCalledWith('FakeFolderId', undefined);
+    clbStorage.getContent.calls.reset();
     // test with some custom config
     collabFolderAPIService.downloadFile('FakeFolderId', {responseType: 'blob'});
-    expect(hbpFileStore.getContent).toHaveBeenCalledWith('FakeFolderId', {responseType: 'blob'});
+    expect(clbStorage.getContent).toHaveBeenCalledWith('FakeFolderId', {responseType: 'blob'});
   });
 
   it('test getExperimentFolderId', function() {
@@ -163,19 +164,18 @@ describe('Services: collab-folder-api-service', function () {
 });
 
 describe('Services: collab-folder-api-service', function () {
-  var httpBackend, bbpConfig, collabConfigService, collabFolderAPIService, hbpFileStore, $q, scope, clbStorage;
+  var httpBackend, bbpConfig, collabConfigService, collabFolderAPIService, $q, scope, clbStorage;
 
   beforeEach(module('collabServices'));
-  beforeEach(module('hbpDocumentClient.core'));
+  //beforeEach(module('hbpDocumentClient.core'));
   beforeEach(module('hbpCollaboratoryCore'));
 
   beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _collabConfigService_,
-    _collabFolderAPIService_, _hbpFileStore_, _$q_, _$rootScope_, _clbStorage_) {
+    _collabFolderAPIService_, _$q_, _$rootScope_, _clbStorage_) {
     httpBackend = _$httpBackend_;
     bbpConfig = _bbpConfig_;
     collabConfigService = _collabConfigService_;
     collabFolderAPIService = _collabFolderAPIService_;
-    hbpFileStore = _hbpFileStore_;
     $q = _$q_;
     scope = _$rootScope_.$new();
     clbStorage = _clbStorage_;
@@ -212,18 +212,19 @@ describe('Services: collab-folder-api-service', function () {
       ]
     );
     spyOn(clbStorage, 'getEntity').and.callFake(function () {
+      /*jshint camelcase: false */
       return {
-        _uuid: '04bc38c7-f30b-4c1c-976d-830ffa4b7d27',
-        _entityType: 'project',
-        _name: 'Dev servers test'
+        uuid: '04bc38c7-f30b-4c1c-976d-830ffa4b7d27',
+        entity_type: 'project',
+        name: 'Dev servers test'
       };
     });
     spyOn(clbStorage, 'getChildren').and.callFake(function () {
       return {
         results:
         [
-          { _name: 'robots' },
-          { _name: 'Environments' }
+          { name: 'robots' },
+          { name: 'Environments' }
         ]
       };
     });
@@ -233,7 +234,6 @@ describe('Services: collab-folder-api-service', function () {
   }));
 
   it('should test getFilesFromNavEntityFolder successfuly retrieves the files', function () {
-
     collabFolderAPIService.getFilesFromNavEntityFolder('Storage', 'robots');
     httpBackend.flush();
     expect(collabFolderAPIService.getContextId).toHaveBeenCalled();

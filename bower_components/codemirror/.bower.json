@@ -17,7 +17,7 @@
     "mode/*/*test.js",
     "mode/*/*.html"
   ],
-  "homepage": "https://github.com/marijnh/CodeMirror",
+  "homepage": "https://github.com/components/codemirror",
   "version": "5.8.0",
   "_release": "5.8.0",
   "_resolution": {
@@ -25,7 +25,8 @@
     "tag": "5.8.0",
     "commit": "300e65942c0f93f37f80cab26f6b79bc0ad7001b"
   },
-  "_source": "git://github.com/marijnh/CodeMirror.git",
-  "_target": "^5.0",
-  "_originalSource": "codemirror"
+  "_source": "https://github.com/components/codemirror.git",
+  "_target": "5.8",
+  "_originalSource": "codemirror",
+  "_direct": true
 }

@@ -19,7 +19,7 @@ describe('Directive: pynnEditor', function () {
     pythonCodeHelper,
     ScriptObject,
     $timeout,
-    hbpDialogFactory,
+    clbErrorDialog,
     codeEditorsServices;
 
   var backendInterfaceServiceMock = {
@@ -106,7 +106,7 @@ describe('Directive: pynnEditor', function () {
                               $templateCache,
                               _pythonCodeHelper_,
                               _$timeout_,
-                              _hbpDialogFactory_,
+                              _clbErrorDialog_,
                               _codeEditorsServices_,
                               simulationInfo) {
 
@@ -117,7 +117,7 @@ describe('Directive: pynnEditor', function () {
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
     $timeout = _$timeout_;
-    hbpDialogFactory = _hbpDialogFactory_;
+    clbErrorDialog = _clbErrorDialog_;
     codeEditorsServices = _codeEditorsServices_;
     simulationInfoMock = simulationInfo;
 
@@ -258,10 +258,10 @@ describe('Directive: pynnEditor', function () {
       backendInterfaceService.saveBrain.calls.argsFor(0)[3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
-      spyOn(hbpDialogFactory, 'alert');
+      spyOn(clbErrorDialog, 'open');
       backendInterfaceService.saveBrain.calls.argsFor(0)[4]();
       expect(isolateScope.isSavingToCollab).toBe(false);
-      expect(hbpDialogFactory.alert).toHaveBeenCalled();
+      expect(clbErrorDialog.open).toHaveBeenCalled();
     });
 
     it('should be able to repeat the same test twice', function () {

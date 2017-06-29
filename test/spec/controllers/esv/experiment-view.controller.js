@@ -72,7 +72,6 @@ describe('Controller: ExperimentViewController', function () {
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _$log_,
-                              _hbpIdentityUserDirectory_,
                               _$timeout_,
                               _$window_,
                               _simulationInfo_,

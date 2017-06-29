@@ -128,7 +128,6 @@ describe('Controller: EnvironmentRenderingController', function () {
                               _$rootScope_,
                               _$element_,
                               _$log_,
-                              _hbpIdentityUserDirectory_,
                               _$timeout_,
                               _$window_,
                               _simulationInfo_,

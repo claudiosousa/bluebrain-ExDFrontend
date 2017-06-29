@@ -28,21 +28,21 @@
   angular.module('experimentServices')
     .constant('SERVER_POLL_INTERVAL', 10 * 1000)
     .constant('FAIL_ON_ALL_SERVERS_ERROR', {
-      title: 'No server is currently available',
-      template: 'No server can handle your simulation at the moment. Please try again later'
+      type: 'ServerError',
+      message: 'No server can handle your simulation at the moment. Please try again later'
     })
     .constant('FAIL_ON_SELECTED_SERVER_ERROR', {
-      title: 'The selected server is currently not available',
-      template: 'The selected server cannot handle your simulation at the moment. Please try again later'
+      type: 'ServerError',
+      message: 'The selected server cannot handle your simulation at the moment. Please try again later'
     })
     .factory('experimentsFactory',
     ['$q', '$interval', '$log',
       'experimentProxyService', 'bbpConfig', 'uptimeFilter', 'slurminfoService',
-      'hbpIdentityUserDirectory', 'experimentSimulationService', 'hbpDialogFactory',
+      'clbUser', 'experimentSimulationService', 'clbErrorDialog',
       'SERVER_POLL_INTERVAL', 'collabFolderAPIService', 'nrpUser',
       'environmentService', 'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS',
       function ($q, $interval, $log, experimentProxyService, bbpConfig, uptimeFilter, slurminfoService,
-        hbpIdentityUserDirectory, experimentSimulationService, hbpDialogFactory, SERVER_POLL_INTERVAL, 
+        clbUser, experimentSimulationService, clbErrorDialog, SERVER_POLL_INTERVAL, 
         collabFolderAPIService, nrpUser, environmentService, 
         FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS) {
         var localmode = {
@@ -63,7 +63,7 @@
             initialize: initialize,
             startExperiment: startExperiment,
             stopExperiment: stopExperiment,
-            getCollabExperimentXML: getCollabExperimentXML,
+            getCollabExperimentFile: getCollabExperimentFile,
             experiments: null,
             clusterAvailability: $q.when({ free: 'N/A', total: 'N/A'}) // Default for local mode
           };
@@ -164,17 +164,17 @@
             if (environmentService.isPrivateExperiment() && experimentId && experimentFolderUUID){
               collabFolderAPIService.getFolderFile(experimentFolderUUID, fileName)
               .then(function(fileData){
-                if (!fileData || !fileData._uuid){
+                if (!fileData || !fileData.uuid){
                   promise.reject();
                 }
                 else {
-                  collabFolderAPIService.downloadFile(fileData._uuid, downloadHeaders)
+                  collabFolderAPIService.downloadFile(fileData.uuid, downloadHeaders)
                   .then(function(fileContent){
                     if (!fileContent){
                       promise.reject();
                     }
                     else {
-                      promise.resolve(fileContent);
+                      promise.resolve([fileContent, fileData]);
                     }
                   });
                 }
@@ -189,7 +189,8 @@
           function loadCollabImage(experiment){
             return getExperimentDetailsFromCollab(experiment.configuration.thumbnail,
                                                   {"responseType": "blob"})
-            .then(function(imageContent){
+            .then(function(response){
+              var imageContent = response[0];
               var reader = new FileReader();
               var promise = $q.defer();
               reader.addEventListener('loadend', function(e) {
@@ -202,13 +203,14 @@
               return $q.reject();
             });
           }
-          function getCollabExperimentXML(){
-            return experimentXML;
+          function getCollabExperimentFile(){
+            return experimentFile;
           }
-          var experimentXML;
+          var experimentFile;
           function loadExperimentDetails(){
             return getExperimentDetailsFromCollab("experiment_configuration.exc")
-            .then(function(fileContent){
+            .then(function(response){
+              var fileContent = response[0];
               var xml = $.parseXML(fileContent);
               var thumbnail = xml.getElementsByTagNameNS("*", "thumbnail")[0];
               var thumbnailContent = "No text content for thumbnail";
@@ -219,7 +221,7 @@
               }
 
               // save the filecontent so it can be accessed again.
-              experimentXML = fileContent;
+              experimentFile = response;
               return $q.resolve({ name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
                                   desc: xml.getElementsByTagNameNS("*", "description")[0].textContent,
                                   thumbnail: thumbnailContent,
@@ -245,7 +247,7 @@
             return experimentSimulationService.startNewExperiment(experiment, launchSingleMode, reservation)
               .catch(function (fatalErrorWasShown) {
                 if (!fatalErrorWasShown) {
-                  hbpDialogFactory.alert(experiment.devServer ? FAIL_ON_SELECTED_SERVER_ERROR: FAIL_ON_ALL_SERVERS_ERROR);
+                  clbErrorDialog.open(experiment.devServer ? FAIL_ON_SELECTED_SERVER_ERROR: FAIL_ON_ALL_SERVERS_ERROR);
                 }
                 return $q.reject(fatalErrorWasShown);
               });

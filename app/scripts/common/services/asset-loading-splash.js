@@ -26,7 +26,7 @@
   // in order to notify the controller whenever an update message comes in.
 
   var module = angular.module('exdFrontendApp');
-  module.service('assetLoadingSplash', ['$modal', function ($modal) {
+  module.service('assetLoadingSplash', ['$uibModal', function ($uibModal) {
     var myModal;
     var progressObserver;
 
@@ -47,7 +47,7 @@
     var open = function (callbackOnClose) {
       this.callbackOnClose = callbackOnClose;
       if (angular.isDefined(myModal)){ myModal.close(); }
-      myModal = $modal.open( {
+      myModal = $uibModal.open( {
         backdrop: false,
         controller: 'AssetLoadingSplashCtrl',
         templateUrl: 'views/splash/asset-loading-splash.html',

@@ -1,5 +1,6 @@
 {
   "name": "angular.panels",
+  "version": "1.0.3",
   "description": "Pure AngularJS based SidePanels (no jQuery)",
   "main": [
     "./dist/angular.panels.min.js",
@@ -16,14 +17,13 @@
     "package.json",
     ".gitignore"
   ],
-  "_release": "fb581921f6",
+  "_release": "1.0.3",
   "_resolution": {
-    "type": "branch",
-    "branch": "master",
+    "type": "version",
+    "tag": "1.0.3",
     "commit": "fb581921f614fd4ba93cf69523efe14b8a553341"
   },
-  "_source": "git://github.com/eu81273/angular.panels.git",
+  "_source": "https://github.com/eu81273/angular.panels.git",
   "_target": "*",
-  "_originalSource": "angular.panels",
-  "_direct": true
+  "_originalSource": "angular.panels"
 }

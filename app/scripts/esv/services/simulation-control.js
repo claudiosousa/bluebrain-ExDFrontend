@@ -32,7 +32,7 @@
     'nrpErrorHandlers',
     'nrpAngulartics',
     'bbpConfig',
-    'hbpCommon']);
+    'ui.router']);
 
   module.factory('simulationControl', ['$resource', 'serverError', function ($resource, serverError) {
     return function (baseUrl) {

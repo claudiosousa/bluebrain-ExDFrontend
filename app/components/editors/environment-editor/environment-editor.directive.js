@@ -43,7 +43,7 @@
       'contextMenuState',
       'objectInspectorService',
       'backendInterfaceService',
-      'hbpDialogFactory',
+      'clbErrorDialog',
       'isNotARobotPredicate',
       'downloadFileService',
       'environmentService',
@@ -60,7 +60,7 @@
         contextMenuState,
         objectInspectorService,
         backendInterfaceService,
-        hbpDialogFactory,
+        clbErrorDialog,
         isNotARobotPredicate,
         downloadFileService,
         environmentService,
@@ -271,10 +271,10 @@
                 function () { // Success callback
                   scope.isSavingToCollab = false;
                 }, function () { // Failure callback
-                  hbpDialogFactory.alert(
+                  clbErrorDialog.open(
                     {
-                      title: "Error.",
-                      template: "Error while saving SDF to Collab storage."
+                      type: "BackendError.",
+                      message: "Error while saving SDF to Collab storage."
                     });
                   scope.isSavingToCollab = false;
                 }

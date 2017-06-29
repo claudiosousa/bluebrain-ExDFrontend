@@ -44,7 +44,6 @@
       'SOURCE_TYPE',
       'TRANSFER_FUNCTION_TYPE',
       'simulationInfo',
-      'hbpDialogFactory',
       'codeEditorsServices',
       '$q',
       function ($log,
@@ -60,7 +59,6 @@
                 SOURCE_TYPE,
                 TRANSFER_FUNCTION_TYPE,
                 simulationInfo,
-                hbpDialogFactory,
                 codeEditorsServices,
                 $q) {
         return {

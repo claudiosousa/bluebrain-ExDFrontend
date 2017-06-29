@@ -1,4 +1,4 @@
-/* global jso_configure, jso_ensureTokens, jso_getToken, jso_wipe */
+/* global Promise, jso_configure, jso_ensureTokens, jso_getToken, jso_wipe */
 (function(exp){
     'use strict';
 
@@ -47,6 +47,7 @@
         this.ensureTokens = function() {
             var scopesToEnsure = {};
             scopesToEnsure[provider] = scopes;
+            // returns true when a token is found, triggers the redirect otherwise
             return jso_ensureTokens(scopesToEnsure);
         };
 
@@ -100,16 +101,21 @@
         var opts = deepExtend(defaultOpts, options);
 
         function init() {
-            jso = new JsoWrapper(opts);
-            jso.configure();
+            return new Promise(function(resolve, reject) {
+                jso = new JsoWrapper(opts);
+                jso.configure();
 
-            // This check has to occurs every time.
-            if (opts.ensureToken) {
-                if(!jso.getToken()) {
-                    // if there's no token, check if the session with oidc is still active
-                    getTokenOrLogout();
+                // This check has to occurs every time.
+                if (opts.ensureToken) {
+                    if(!jso.getToken()) {
+                        // if there's no token, check if the session with oidc is still active
+                        getTokenOrLogout();
+                        return; // do not reject either, a redirect is expected soon...
+                    }
                 }
-            }
+                // no redirect, good
+                resolve();
+            });
         }
 
         function login() {
@@ -208,11 +214,16 @@
                 }
             },
             setEnsureToken: function(value) {
-                var newVal = !!value;
-                if(opts.ensureToken !== newVal) {
-                    opts.ensureToken = newVal;
-                    init();
-                }
+                return new Promise(function(resolve, reject) {
+                    var newVal = !!value;
+                    if(opts.ensureToken !== newVal) {
+                        opts.ensureToken = newVal;
+                        resolve(init());
+                    } else if(jso.getToken()) {
+                        resolve(true);
+                    }
+                    // if not changed and no token found: redirect in progress
+                });
             },
             isEnsureToken: function() {
                 return opts.ensureToken;

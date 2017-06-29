@@ -20,7 +20,7 @@
     'use strict';
 
     angular.module('exdFrontendApp')
-        .service('nrpModalService', ['$modal', function ($modal) {
+        .service('nrpModalService', ['$uibModal', function ($uibModal) {
             var modal;
             return {
                 createModal: createModal,
@@ -29,8 +29,8 @@
 
             /**
              * Creates a modal (UI dialog) object on top of the current view
-             * The templateUrl object must hold the html template Url itself, 
-             * the scope, the closable option and, optionally, parameters 
+             * The templateUrl object must hold the html template Url itself,
+             * the scope, the closable option and, optionally, parameters
              * for the size and the css styling class. Example usage:
              *
              *  var templateUrl = {
@@ -48,7 +48,7 @@
             function createModal(templateUrl) {
                 if (angular.isDefined(modal)) { modal.close(); }
 
-                modal = $modal.open({
+                modal = $uibModal.open({
                     templateUrl: templateUrl.templateUrl,
                     show: true,
                     backdrop: 'static',

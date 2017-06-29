@@ -6,7 +6,7 @@ describe('Services: userContextService', function() {
   var userContextService;
 
   var $rootScope, $scope, $window, $q;
-  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, hbpIdentityUserDirectory,
+  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, clbUser,
     environmentService;
 
   var remoteProfileMock, lockServiceMock, cancelLockServiceMock;
@@ -22,7 +22,7 @@ describe('Services: userContextService', function() {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('userContextModule'));
-
+  beforeEach(module('clbUserMock'));
 
 
   // provide mock objects
@@ -56,19 +56,10 @@ describe('Services: userContextService', function() {
     // bbpConfig
     $provide.value('bbpConfig', window.bbpConfig);
 
-    // hbpIdentityUserDirectory
+    // clbUser
     remoteProfileMock = {
       id: 'remote_user_id'
     };
-
-    var hbpIdentityUserDirectoryMock = {
-      getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue({
-        then: jasmine.createSpy('then').and.callFake(function(fn) {
-          fn(remoteProfileMock);
-        })
-      })
-    };
-    $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
   }));
 
 
@@ -76,7 +67,7 @@ describe('Services: userContextService', function() {
   // inject dependencies
   beforeEach(function() {
     inject(function(_$rootScope_, _$window_, _$q_, $httpBackend, _userContextService_, _userNavigationService_,
-      _collabExperimentLockService_, _simulationInfo_, _bbpConfig_, _hbpIdentityUserDirectory_,
+      _collabExperimentLockService_, _simulationInfo_, _bbpConfig_,  _clbUser_,
       _environmentService_, _experimentService_) {
       userContextService = _userContextService_;
       experimentService = _experimentService_;
@@ -88,7 +79,7 @@ describe('Services: userContextService', function() {
       collabExperimentLockService = _collabExperimentLockService_;
       simulationInfo = _simulationInfo_;
       bbpConfig = _bbpConfig_;
-      hbpIdentityUserDirectory = _hbpIdentityUserDirectory_;
+      clbUser = _clbUser_;
       environmentService = _environmentService_;
       httpBackend = $httpBackend;
 

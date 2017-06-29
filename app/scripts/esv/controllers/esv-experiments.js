@@ -28,7 +28,7 @@
       'collabConfigService',
       '$window',
       'CLUSTER_THRESHOLDS',
-      'hbpDialogFactory',
+      'clbErrorDialog',
       'collabFolderAPIService',
       'collabExperimentLockService',
       'nrpUser',
@@ -47,7 +47,7 @@
         collabConfigService,
         $window,
         CLUSTER_THRESHOLDS,
-        hbpDialogFactory,
+        clbErrorDialog,
         collabFolderAPIService,
         collabExperimentLockService,
         nrpUser,
@@ -72,6 +72,7 @@
         $scope.editing = {};
         $scope.editing[$scope.descID]= false;
         $scope.editing[$scope.nameID]= false;
+        var editLockEntity;
         let lockService;
         if (environmentService.isPrivateExperiment() && userContextService.isOwner()){
           lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
@@ -131,9 +132,11 @@
               lockService.tryAddLock()
                 .then(function(result) {
                   if (!result.success && result.lock && result.lock.lockInfo.user.id !== $scope.userinfo.userID) {
-                    hbpDialogFactory.alert({
-                      title: "Error",
-                      template: "Sorry you cannot edit at this time. Only one user can edit at a time and " + result.lock.lockInfo.user.displayName + " started editing " + moment(new Date(result.lock.lockInfo.date)).fromNow() + ". Please try again later."
+                    // save uuid
+                    editLockEntity = result.lock.lockInfo.entity;
+                    clbErrorDialog.open({
+                      type: "AlreadyEditingError",
+                      message: "Sorry you cannot edit at this time. Only one user can edit at a time and " + result.lock.lockInfo.user.displayName + " started editing " + moment(new Date(result.lock.lockInfo.date)).fromNow() + ". Please try again later."
                     });
                   }
                   else {
@@ -145,9 +148,9 @@
                   }
                 })
                 .catch(function(){
-                  hbpDialogFactory.alert({
-                    title: "Error",
-                    template: "There was an error in opening the edit feature, please try again later."
+                  clbErrorDialog.open({
+                    type: "CollabError",
+                    message: "There was an error in opening the edit feature, please try again later."
                   });
                 })
                 .finally(function(){
@@ -157,11 +160,11 @@
           };
 
           $scope.stopEditingExperimentDetails = function(editingKey){
-            lockService && lockService.releaseLock()
+            lockService && lockService.releaseLock(editLockEntity)
               .catch(function () {
-                hbpDialogFactory.alert({
-                  title: "Error",
-                  template: "The edit lock could not be released. Please remove it manually from the Storage area."
+                clbErrorDialog.open({
+                  type: "CollabError",
+                  message: "The edit lock could not be released. Please remove it manually from the Storage area."
                 });
               });
             $scope.formInfo.name = $scope.experiments[0].configuration.name;
@@ -170,16 +173,16 @@
           };
           var shouldSave = function(input, originalValue, editingKey){
             if (!input || input.trim().length === 0){
-              hbpDialogFactory.alert({
-                title: "Error",
-                template: "Name/Description of an experiment cannot be empty."
+              clbErrorDialog.open({
+                type: "InputError",
+                message: "Name/Description of an experiment cannot be empty."
               });
               return false;
             }
             if ($scope.containsTags(input)){
-              hbpDialogFactory.alert({
-                title: "Error",
-                template: "Name/Description of an experiment cannot contain an HTML tag."
+              clbErrorDialog.open({
+                type: "InputError",
+                message: "Name/Description of an experiment cannot contain an HTML tag."
               });
               return false;
             }
@@ -198,32 +201,33 @@
               return;
             }
             $scope.isSavingToCollab = true;
-            var xml = experimentsService.getCollabExperimentXML();
-            if (!xml){
-              hbpDialogFactory.alert({
-                title: "Error",
-                template: "Something went wrong when retrieving the experiment_configuration.exc file from the collab storage. Please check the file exists and is not empty."
+            var experimentFile = experimentsService.getCollabExperimentFile();
+
+            if (!experimentFile || !experimentFile[0]){
+              clbErrorDialog.open({
+                type: "Error",
+                message: "Something went wrong when retrieving the experiment_configuration.exc file from the collab storage. Please check the file exists and is not empty."
               });
               $scope.isSavingToCollab = false;
               return;
             }
+            var xml = experimentFile[0];
             xml = xml.replace(originalValue, newDetails);
-            collabFolderAPIService.deleteFile(experimentFolderUUID, "experiment_configuration.exc").then(function(){
-             collabFolderAPIService.createFolderFile(experimentFolderUUID, "experiment_configuration.exc", xml, {type: 'application/hbp-neurorobotics+xml'}).then(function(){
-               $scope.isSavingToCollab = false;
-               if (editingKey === $scope.nameID){
-                 experiment.configuration.name = newDetails;
+            collabFolderAPIService.uploadEntity(xml, experimentFile[1]).then(function(response){
+              $scope.isSavingToCollab = false;
+
+              if (editingKey === $scope.nameID){
+                experiment.configuration.name = newDetails;
                }
                else {
                  experiment.configuration.description = newDetails;
                }
                $scope.stopEditingExperimentDetails(editingKey);
-              }, function(){
-                $scope.isSavingToCollab = false;
-                hbpDialogFactory.alert({
-                  title: "Error.",
-                  template: "Error while saving updated experiment details to Collab storage."
-                });
+            }, function(){
+              $scope.isSavingToCollab = false;
+              clbErrorDialog.open({
+                type: "CollabSaveError",
+                message: "Error while saving updated experiment details to Collab storage."
               });
             });
           };

@@ -16,7 +16,7 @@ describe('Services: nrp-error-handlers', function () {
     var result = nrpErrorService.httpError(response);
     expect(result.title).toEqual(type);
     expect(result.label).toEqual('OK');
-    expect(result.template).toEqual(error);
+    expect(result.message).toEqual(error);
   });
 
   it('should translate ngninx nrp errors properly', function() {
@@ -35,18 +35,18 @@ describe('Services: nrp-error-handlers', function () {
         '</body>' +
         '</html>' + 'some text after';
     var result = nrpErrorService.httpError(response);
-    expect(result.template).toBe(htmlTitle + ' (' + nginxString + ').');
+    expect(result.message).toBe(htmlTitle + ' (' + nginxString + ').');
 
     response.data.message = 'some text before' + '<html></html>';
     result = nrpErrorService.httpError(response);
-    expect(result.template).toBe(response.data.message);
+    expect(result.message).toBe(response.data.message);
   });
 
   it('should display non formatted nrp errors as is (default behaviour)', function() {
     var response = {data: {message : 'defined error', type: 'defined type'}};
     response.data.message = 'some text before' + '<html></html>' + 'some text after';
     var result = nrpErrorService.httpError(response);
-    expect(result.template).toBe(response.data.message);
+    expect(result.message).toBe(response.data.message);
   });
 
   it('should translate non nrp errors properly', function() {
@@ -55,7 +55,7 @@ describe('Services: nrp-error-handlers', function () {
     var result = nrpErrorService.httpError(response);
     expect(result.title).toEqual('Error');
     expect(result.label).toEqual('OK');
-    expect(result.template).toEqual(error);
+    expect(result.message).toEqual(error);
   });
 
   it('should translate 400 errors properly', function() {
@@ -63,7 +63,7 @@ describe('Services: nrp-error-handlers', function () {
     var result = nrpErrorService.httpError(response);
     expect(result.title).toEqual('Error');
     expect(result.label).toEqual('OK');
-    expect(result.template).toEqual('The request could not be understood by the server');
+    expect(result.message).toEqual('The request could not be understood by the server');
   });
 
   it('should translate errors for which response.data is an HTML string properly (e.g., ngninx\'s 502 Bad Gateway Error)', function() {
@@ -82,7 +82,7 @@ describe('Services: nrp-error-handlers', function () {
     var result = nrpErrorService.httpError(response);
     expect(result.title).toEqual('Error');
     expect(result.label).toEqual('OK');
-    expect(result.template).toEqual(htmlTitle + ' (' +  'nginx/2.4.2' + ').');
+    expect(result.message).toEqual(htmlTitle + ' (' +  'nginx/2.4.2' + ').');
   });
 
   it('should extract the title content correctly (getHtmlTitle)', function() {
@@ -133,16 +133,16 @@ describe('Services: nrp-error-handlers', function () {
 
 describe('Services: nrp-error-handlers', function () {
   var serverError;
-  var hbpDialogFactory, nrpErrorService, NO_CLUSTER_AVAILABLE_ERR_MSG;
+  var clbErrorDialog, nrpErrorService, NO_CLUSTER_AVAILABLE_ERR_MSG;
 
   beforeEach(module('nrpErrorHandlers'));
-  beforeEach(inject(function(_serverError_,_hbpDialogFactory_, _nrpErrorService_, _NO_CLUSTER_AVAILABLE_ERR_MSG_){
+  beforeEach(inject(function(_serverError_,_clbErrorDialog_, _nrpErrorService_, _NO_CLUSTER_AVAILABLE_ERR_MSG_){
     serverError = _serverError_;
-    hbpDialogFactory =  _hbpDialogFactory_;
+    clbErrorDialog =  _clbErrorDialog_;
     nrpErrorService = _nrpErrorService_;
     NO_CLUSTER_AVAILABLE_ERR_MSG = _NO_CLUSTER_AVAILABLE_ERR_MSG_;
-    spyOn(hbpDialogFactory, 'alert');
-    spyOn(nrpErrorService, 'httpError').and.returnValue({'template': 'error template'});
+    spyOn(clbErrorDialog, 'open');
+    spyOn(nrpErrorService, 'httpError').and.returnValue({'message': 'error template'});
   }));
 
   it('should filter in errors without response', function() {
@@ -175,25 +175,25 @@ describe('Services: nrp-error-handlers', function () {
     expect(serverError.filter(response)).toBe(false);
   });
 
-  it('should call once nrpErrorService.httpError and hbpDialogFactory.alert', function() {
+  it('should call once nrpErrorService.httpError and clbErrorDialog.open', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response);
-    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
+    expect(clbErrorDialog.open.calls.count()).toBe(1);
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
     expect(nrpErrorService.httpError.calls.count()).toBe(1);
   });
 
-  it('should call neither nrpErrorService.httpError nor hbpDialogFactory.alert', function() {
+  it('should call neither nrpErrorService.httpError nor clbErrorDialog.open', function() {
     var response = { data: { code: 0, message: 'Server Unavailable', type: 'innocuous'}, status: 0 };
     serverError.displayHTTPError(response);
-    expect(hbpDialogFactory.alert).not.toHaveBeenCalled();
+    expect(clbErrorDialog.open).not.toHaveBeenCalled();
   });
 
   it('should show a user friendly error message to the user', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response);
-    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
-    expect(hbpDialogFactory.alert.calls.mostRecent().args[0].template).not.toEqual('error template');
+    expect(clbErrorDialog.open.calls.count()).toBe(1);
+    expect(clbErrorDialog.open.calls.mostRecent().args[0].message).not.toEqual('error template');
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
     expect(nrpErrorService.httpError.calls.count()).toBe(1);
   });
@@ -201,8 +201,9 @@ describe('Services: nrp-error-handlers', function () {
   it('should show the actual error message to the user', function() {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response, true);
-    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
-    expect(hbpDialogFactory.alert.calls.mostRecent().args[0].template).toBe('error template');
+    expect(clbErrorDialog.open.calls.count()).toBe(1);
+    
+    expect(clbErrorDialog.open.calls.mostRecent().args[0].message).toBe('error template');
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
     expect(nrpErrorService.httpError.calls.count()).toBe(1);
   });
@@ -210,7 +211,7 @@ describe('Services: nrp-error-handlers', function () {
   it('should show a specific error when cluster resources aren\'t available', function() {
     var response = { data: {message:'Internal server error: service [/ros_cle_simulation/create_new_simulation] responded with an error: error processing request: No resources available on the cluster. Try again later.',type:'General error'} };
     serverError.displayHTTPError(response, true);
-    expect(hbpDialogFactory.alert.calls.count()).toBe(1);
-    expect(hbpDialogFactory.alert.calls.mostRecent().args[0].template).toBe(NO_CLUSTER_AVAILABLE_ERR_MSG);
+    expect(clbErrorDialog.open.calls.count()).toBe(1);
+    expect(clbErrorDialog.open.calls.mostRecent().args[0].message).toBe(NO_CLUSTER_AVAILABLE_ERR_MSG);
   });
 });

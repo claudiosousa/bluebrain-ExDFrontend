@@ -20,11 +20,11 @@
     // Load the service and the (mocked) service it depends upon
     beforeEach(module('exdFrontendApp'));
     beforeEach(module(function ($provide) {
-      $provide.value('$modal', modalMock);
+      $provide.value('$uibModal', modalMock);
     }));
-    beforeEach(inject(function (_assetLoadingSplash_, _$modal_) {
+    beforeEach(inject(function (_assetLoadingSplash_, _$uibModal_) {
       assetLoadingSplash = _assetLoadingSplash_;
-      modal = _$modal_;
+      modal = _$uibModal_;
 
       modalInstance = {};
       modalInstance.close = jasmine.createSpy('close');

@@ -7,12 +7,12 @@ describe('Directive: rosReconnecting', function() {
     var $rootScope, $timeout, $q, element, onReconnectingCallback, RECONNECTING_TIMEOUT_MS,
         unsubscribeRos = jasmine.createSpy('unsubscribeRos');
 
-    var hbpDialogFactorMock = {
-        alert: jasmine.createSpy('hbpDialogFactor_alert').and.callFake(function() { return $q.resolve(); })
+    var clbErrorDialogMock = {
+        open: jasmine.createSpy('clbErrorDialog_open').and.callFake(function() { return $q.resolve(); })
     };
 
     beforeEach(module(function($provide) {
-        $provide.value('hbpDialogFactory', hbpDialogFactorMock);
+        $provide.value('clbErrorDialog', clbErrorDialogMock);
     }));
 
     beforeEach(inject(function(_$rootScope_, $httpBackend, $compile, _$timeout_, _$q_, _RECONNECTING_TIMEOUT_MS_) {
@@ -56,7 +56,7 @@ describe('Directive: rosReconnecting', function() {
         $rootScope.$digest();
 
         expect(unsubscribeRos).toHaveBeenCalled();
-        expect(hbpDialogFactorMock.alert).toHaveBeenCalled();
+        expect(clbErrorDialogMock.open).toHaveBeenCalled();
         expect($rootScope.exit).toHaveBeenCalled();
     });
 

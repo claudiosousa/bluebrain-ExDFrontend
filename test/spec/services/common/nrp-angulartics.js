@@ -9,7 +9,7 @@
     var promiseMock;
     var userMock;
     var originalMoment;
-    var hbpIdentityUserDirectoryMock = {
+ var nrpUserMock = {
       getCurrentUser: function() {
         return {
           then: promiseMock
@@ -30,7 +30,7 @@
       userMock = { displayName : 'elvis-presse-les' };
 
       $provide.value('$analytics', analyticsMock);
-      $provide.value('hbpIdentityUserDirectory', hbpIdentityUserDirectoryMock);
+      $provide.value('nrpUser', nrpUserMock);
     }));
 
     var nrpAnalytics;

@@ -21,7 +21,7 @@ describe('Directive: smachEditor', function () {
     SIMULATION_FACTORY_CLE_ERROR,
     SOURCE_TYPE,
     codeEditorsServices,
-    hbpDialogFactory,
+    clbConfirm,
     environmentService,
     $q;
 
@@ -88,7 +88,7 @@ describe('Directive: smachEditor', function () {
                               _SIMULATION_FACTORY_CLE_ERROR_,
                               _SOURCE_TYPE_,
                               _codeEditorsServices_,
-                              _hbpDialogFactory_,
+                              _clbConfirm_,
                               _$q_,
                               _environmentService_) {
     $rootScope = _$rootScope_;
@@ -104,7 +104,7 @@ describe('Directive: smachEditor', function () {
     $timeout = _$timeout_;
     simulationInfo = _simulationInfo_;
     codeEditorsServices = _codeEditorsServices_;
-    hbpDialogFactory = _hbpDialogFactory_;
+    clbConfirm = _clbConfirm_;
     $q = _$q_;
     environmentService = _environmentService_;
 
@@ -231,7 +231,7 @@ describe('Directive: smachEditor', function () {
 
     it('should save error file when SMs contain errors', function () {
       var userResponse = $q.when();
-      spyOn(hbpDialogFactory,'confirm').and.callFake(function(){ return userResponse;});
+      spyOn(clbConfirm, 'open').and.callFake(function(){ return userResponse;});
       backendInterfaceService.saveStateMachines.calls.reset();
       expect(backendInterfaceServiceMock.saveStateMachines).not.toHaveBeenCalled();
       isolateScope.stateMachines = [{id: '1', code: 'code', error: {errorMsg:'an error message'}}];

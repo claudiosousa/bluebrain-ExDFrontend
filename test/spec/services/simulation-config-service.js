@@ -67,7 +67,7 @@ describe('Services: simulation-config-service', function ()
       }
       else
       {
-        callback({ _uuid: 'mockeduuid' });
+        callback({ uuid: 'mockeduuid' });
       }
     };
     return res;

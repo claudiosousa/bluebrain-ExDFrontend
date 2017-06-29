@@ -7,8 +7,6 @@
     "angular-animate": "1.4.14",
     "angular-bbp-config": "0.3.0",
     "angular-cookies": "1.4.14",
-    "angular-hbp-common": "2.3.0",
-    "angular-hbp-document-client": "0.5.7",
     "angular-resource": "1.4.14",
     "angular-sanitize": "1.4.14",
     "angular-toArrayFilter": "*",
@@ -32,10 +30,10 @@
     "angulartics-google-analytics": "0.4.0",
     "brainvisualizer": "git+ssh://bbpcode.epfl.ch/neurorobotics/brainvisualizer",
     "moment": "2.17.1",
-    "angular-hbp-collaboratory": "0.5.0",
+    "angular-hbp-collaboratory": "1.0.5",
     "angular-uuid4": "0.3.1",
     "angular-deferred-bootstrap": "0.1.9",
-    "angular-moment": "1.4.14",
+    "angular-moment": "1.0.1",
     "hello": "1.14.0"
   },
   "overrides": {
@@ -109,6 +107,9 @@
       "dependencies": {
         "bootstrap-sass-official": "0.12.1"
       }
+    },
+    "stats.js": {
+      "main": "build/stats.min.js"
     }
   },
   "devDependencies": {
@@ -125,6 +126,7 @@
     "bootstrap-sass-official": "3.3.6",
     "lodash": "4.17.4",
     "angulartics": "^1.2.1",
-    "hbp-collaboratory-theme": "0.1.0"
+    "hbp-collaboratory-theme": "0.1.0",
+    "angular-moment": "1.0.1"
   }
 }

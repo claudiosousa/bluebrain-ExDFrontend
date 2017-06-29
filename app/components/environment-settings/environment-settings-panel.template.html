@@ -8,7 +8,7 @@
     <h5 class="environment-settings-panel-title">3D Environment Settings</h5>
   </div>
 
-  <div class="environment-settings-panel-bottom" ng-hide="activeTab.master">
+  <div class="environment-settings-panel-bottom" ng-hide="activeTabIndex === tabindex.master">
 
   <div class="environment-settings-panel-bottom_buttons">
 
@@ -34,24 +34,23 @@
 
   <div class="environment-settings-panel-content">
 
-    <tabset>
-      <tab heading="Master" active="activeTab.master">
+    <uib-tabset active="activeTabIndex">
+      <uib-tab heading="Master" index="tabindex.master">
         <environment-settings-master></environment-settings-master>
-      </tab>
+      </uib-tab>
 
-      <tab heading="Quality" active="activeTab.quality">
+      <uib-tab heading="Quality" index="tabindex.quality">
         <environment-settings-quality></environment-settings-quality>
-      </tab>
+      </uib-tab>
 
-      <tab heading="Environment" active="activeTab.environment">
+      <uib-tab heading="Environment" index="tabindex.environment">
         <environment-settings-environment></environment-settings-environment>
-        </tab>
+        </uib-tab>
 
-      <tab heading="Color Correction" active="activeTab.color">
+      <uib-tab heading="Color Correction" index="tabindex.color">
         <environment-settings-colors></environment-settings-colors>
-      </tab>
-    </tabset>
-
+      </uib-tab>
+    </uib-tabset>
 
   </div>
 

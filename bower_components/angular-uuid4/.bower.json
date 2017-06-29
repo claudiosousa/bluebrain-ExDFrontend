@@ -27,6 +27,6 @@
     "commit": "a7e960b538b5f3d96b9b77b933812281629ac084"
   },
   "_source": "https://github.com/monicao/angular-uuid4.git",
-  "_target": "^0.3.1",
+  "_target": "0.3.1",
   "_originalSource": "angular-uuid4"
 }

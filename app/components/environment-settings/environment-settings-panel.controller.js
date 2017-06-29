@@ -27,11 +27,14 @@
 
     $scope.editorToolbarService = editorToolbarService;
     $scope.panelIsOpen = false;
-    $scope.activeTab = {};
-    $scope.activeTab.master = true;
-    $scope.activeTab.quality = false;
-    $scope.activeTab.color = false;
-    $scope.activeTab.environment = false;
+    $scope.tabindex = {
+      master: 1,
+      quality:2,
+      color: 3,
+      environment: 4
+    };
+
+    $scope.activeTabIndex = $scope.tabindex.master;
 
     $scope.openCallback = function() {
       // The Panel is opened
