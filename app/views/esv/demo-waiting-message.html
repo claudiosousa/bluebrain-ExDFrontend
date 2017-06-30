@@ -1,0 +1,20 @@
+<!-- build:css(.tmp) styles/esv/demo-waiting-message.css -->
+<link rel="stylesheet" href="styles/esv/demo-waiting-message.css"/>
+<!-- endbuild -->
+
+ <div  class="demo-mode-loading-box" ng-if="vm.userContextService.demoWaitingForNextSimulation">
+    <img class="demo-mode-loading-image" src="img/demo/title.jpg">
+
+    <div class="demo-mode-loading-bottom-box">
+
+      <div class="demo-mode-loading-spinner-box">
+      <span class="fa fa-spinner fa-2x demo-mode-loading-spinner" ng-class="{'fa-spin': true}"></span>
+      </div>
+
+      <div class="demo-mode-loading-caption">
+      Please wait while the next experiment is being launched...
+      </div>
+
+    </div>
+
+</div>

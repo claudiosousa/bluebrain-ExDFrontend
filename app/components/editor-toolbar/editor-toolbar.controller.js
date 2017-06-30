@@ -47,7 +47,8 @@
                 STATE,
                 NAVIGATION_MODES,
                 EDIT_MODE,
-                RESET_TYPE) {
+                RESET_TYPE,
+                bbpConfig) {
       this.backendInterfaceService = backendInterfaceService;
       this.contextMenuState = contextMenuState;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
@@ -66,6 +67,7 @@
       this.userContextService = userContextService;
       this.userNavigationService = userNavigationService;
       this.videoStreamService = videoStreamService;
+      this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
 
       this.EDIT_MODE = EDIT_MODE;
       this.NAVIGATION_MODES = NAVIGATION_MODES;
@@ -187,41 +189,44 @@
         var stateStopFailed = this.stateService.currentState === this.STATE.STOPPED ||
             this.stateService.currentState === this.STATE.FAILED;
 
-        //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
-        //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
-        /* splashScreen == null means it has been already closed and should not be reopened */
-        if (this.splash.splashScreen !== null &&
-            !this.environmentRenderingService.sceneLoading &&
-            (angular.isDefined(message.state) ||
-            (stateStopFailed ||
-            (angular.isDefined(message.progress.subtask) &&
-            message.progress.subtask.length > 0 )))) {
-          this.splash.splashScreen = this.splash.splashScreen || this.splash.open(
-                  !message.progress.block_ui,
-                  (stateStopFailed ? (() => this.exit() ) : undefined));
-        }
-        if (angular.isDefined(message.progress.done) &&
-            message.progress.done) {
-          this.splash.spin = false;
-          this.splash.setMessage({headline: 'Finished'});
-          /* if splash is a blocking modal (no button), then close it*/
-          /* (else it is closed by the user on button click) */
-          if (!this.splash.showButton) {
-            // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
-            // so we don't have to close the websocket, just the splash screen.
-            this.splash.close();
-            this.splash.splashScreen = undefined;
-          } else {
-            // the modal is non blocking (i.e. w/ button) ->
-            // we are closing the simulation thus we have to
-            // cleanly close ros websocket and stop window
-            this.onSimulationDone();
+        if (!this.demoMode || !stateStopFailed)   // In demo mode, we don't show the end splash screen,
+        {                                         // since everything is handled from the demo-autorun-experiment directive
+          //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
+          //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
+          /* splashScreen == null means it has been already closed and should not be reopened */
+          if (this.splash.splashScreen !== null &&
+              !this.environmentRenderingService.sceneLoading &&
+              (angular.isDefined(message.state) ||
+              (stateStopFailed ||
+              (angular.isDefined(message.progress.subtask) &&
+              message.progress.subtask.length > 0 )))) {
+            this.splash.splashScreen = this.splash.splashScreen || this.splash.open(
+                    !message.progress.block_ui,
+                    (stateStopFailed ? (() => this.exit() ) : undefined));
           }
-        } else {
-          this.splash.setMessage({
-            headline: message.progress.task,
-            subHeadline: message.progress.subtask
-          });
+          if (angular.isDefined(message.progress.done) &&
+              message.progress.done) {
+            this.splash.spin = false;
+            this.splash.setMessage({headline: 'Finished'});
+            /* if splash is a blocking modal (no button), then close it*/
+            /* (else it is closed by the user on button click) */
+            if (!this.splash.showButton) {
+              // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
+              // so we don't have to close the websocket, just the splash screen.
+              this.splash.close();
+              this.splash.splashScreen = undefined;
+            } else {
+              // the modal is non blocking (i.e. w/ button) ->
+              // we are closing the simulation thus we have to
+              // cleanly close ros websocket and stop window
+              this.onSimulationDone();
+            }
+          } else {
+            this.splash.setMessage({
+              headline: message.progress.task,
+              subHeadline: message.progress.subtask
+            });
+          }
         }
       }
       /* Time messages */
@@ -572,6 +577,7 @@
             'NAVIGATION_MODES',
             'EDIT_MODE',
             'RESET_TYPE',
+            'bbpConfig',
             (...args) => new EditorToolbarController(...args)]);
 
 })();

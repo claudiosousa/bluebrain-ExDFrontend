@@ -48,17 +48,17 @@
       this.joiningExperiment = false;
       this.timeout = timeout;
       this.location = location;
+      this.stopWatching = false;
       this.environmentService = environmentService;
-      this.experimentsService = experimentsFactory.createExperimentsService();
-      this.experimentsService.initialize();
-      this.experimentsService.experiments.then((experiments) =>
-      {
-        this.experiments = experiments;
-      });
+      this.experimentsFactory = experimentsFactory;
 
       scope.$on('$destroy', () =>
       {
-        this.experimentsService.destroy();
+        this.stopWatching = true;
+        if (this.experimentsService)
+        {
+          this.experimentsService.destroy();
+        }
       });
     }
 
@@ -88,20 +88,36 @@
         }
       }
 
-      this.timeout(() =>
+      if (!this.stopWatching)
       {
-        this.tryJoiningExperiment();
-      }, 1000);
+        this.timeout(() =>
+        {
+          this.tryJoiningExperiment();
+        }, 1000);
+      }
     }
 
     launchExperiment()
     {
       this.joiningExperiment = true;
+      if (!this.experimentsService)
+      {
+        this.experimentsService = this.experimentsFactory.createExperimentsService();
+        this.experimentsService.initialize();
+        this.experimentsService.experiments.then((experiments) =>
+        {
+          this.experiments = experiments;
+        });
+      }
+
       this.tryJoiningExperiment();
     }
 
     cancelLaunch()
     {
+      this.experimentsService.destroy();
+      this.experimentsService = undefined;
+
       this.joiningExperiment = false;
     }
   }
