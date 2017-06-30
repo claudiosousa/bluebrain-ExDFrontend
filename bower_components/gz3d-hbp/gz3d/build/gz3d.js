@@ -1580,22 +1580,7 @@ var lastOpenMenu = {mainMenu: 'mainMenu', insertMenu: 'insertMenu',
 
 var tabColors = {selected: 'rgb(34, 170, 221)', unselected: 'rgb(42, 42, 42)'};
 
-var modelList =
-  [
-    {path:'virtual_room', title:'Virtual Room Objects',
-    examplePath1:'library_model',  examplePath2:'hosta_potted_plant',  examplePath3:'vr_lamp', models:
-    [
-      {modelPath:'library_model', modelTitle:'Library'},
-      {modelPath:'hosta_potted_plant', modelTitle:'Hosta Plant'},
-      {modelPath:'vr_lamp', modelTitle:'Stand Lamp'},
-      {modelPath:'vr_screen', modelTitle:'Virtual Screen'},
-      {modelPath:'viz_poster', modelTitle:'Poster 1'},
-      {modelPath:'viz_poster_2', modelTitle:'Poster 2'},
-      {modelPath:'nrp_panel', modelTitle:'HBP/NRP Panel'},
-      {modelPath:'concretewall1', modelTitle:'Concrete Wall 1'},
-      {modelPath:'future_lamp', modelTitle:'Future Lamp'},
-    ]}
-  ];
+var modelList = [];
 
 $(function()
 {
@@ -2134,10 +2119,8 @@ gzangular.controller('treeControl', ['$scope', function($scope)
 }]);
 
 // Insert menu
-gzangular.controller('insertControl', ['$scope', function($scope)
+gzangular.controller('insertControl', ['$scope', '$http', function ($scope, $http)
 {
-  $scope.categories = modelList;
-
   $scope.spawnEntity = function(path)
   {
     guiEvents.emit('spawn_entity_start', path);
@@ -2147,6 +2130,11 @@ gzangular.controller('insertControl', ['$scope', function($scope)
   {
     guiEvents.emit('openTab', tab, 'insertMenu');
   };
+
+  $http.get('./model_library.json').then(function (res)
+  {
+    modelList = res.data;
+  });
 }]);
 
 

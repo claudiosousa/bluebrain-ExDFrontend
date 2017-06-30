@@ -46,6 +46,7 @@
       'isNotARobotPredicate',
       'downloadFileService',
       'environmentService',
+      '$http',
       function ($document,
         STATE,
         EDIT_MODE,
@@ -61,7 +62,8 @@
         hbpDialogFactory,
         isNotARobotPredicate,
         downloadFileService,
-        environmentService) {
+        environmentService,
+        $http) {
         return {
           templateUrl: 'components/editors/environment-editor/environment-editor.template.html',
           restrict: 'E',
@@ -76,6 +78,50 @@
             scope.gz3d = gz3d;
             scope.isPrivateExperiment = environmentService.isPrivateExperiment();
             scope.isSavingToCollab = false;
+            scope.categories = [];
+
+            scope.updateVisibleModels = function ()
+            {
+              scope.visibleModels = [];
+
+              for (var i = 0; i < scope.categories.length; i++)
+              {
+                var cat = scope.categories[i];
+
+                if (cat.visible)
+                {
+                  for (var j = 0; j < cat.models.length; j++)
+                  {
+                    cat.models[j].color = cat.color['default'];
+                    scope.visibleModels.push(cat.models[j]);
+                  }
+                }
+              }
+            };
+
+            scope.toggleVisibleCategory = function (category)
+            {
+              category.visible = !category.visible;
+              scope.updateVisibleModels();
+            };
+
+            $http.get('./model_library.json').then(function (res)
+            {
+              scope.categories = res.data;
+
+              for (var i = 0; i < scope.categories.length; i++)
+              {
+                scope.categories[i].visible = i === 0;
+                scope.categories[i].colorMode = 'default';
+                scope.categories[i].color = {};
+                scope.categories[i].color.default = ('hsl(' + (10 +(i / (scope.categories.length + 1)) * 360.0) + ',90%,80%)');
+                scope.categories[i].color.mouseover = ('hsl(' + (10 +(i / (scope.categories.length + 1)) * 360.0) + ',80%,90%)');    // Mouse over
+                scope.categories[i].color.mousedown = ('hsl(' + (10 +(i / (scope.categories.length + 1)) * 360.0) + ',100%,70%)');    // Mouse down
+              }
+
+              scope.updateVisibleModels();
+            });
+
 
             scope.setEditMode = function (mode) {
               var setMode = function (m) {
