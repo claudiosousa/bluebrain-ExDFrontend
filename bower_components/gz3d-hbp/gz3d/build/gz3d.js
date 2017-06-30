@@ -330,6 +330,107 @@ GZ3D.AnimatedModel.prototype.updateJoint = function(robotName, jointName, jointV
   }
 };
 
+
+GZ3D.VisualMuscleModel = function(scene, robotName) {
+  this.scene = scene;
+  this.cylinderShapes = {};
+  this.robotName = robotName;
+};
+
+// Helper function for creating a cylinder mesh between two given points
+GZ3D.VisualMuscleModel.prototype.cylinderMesh = function(pointX, pointY, radius, material) {
+  var direction = new THREE.Vector3().subVectors(pointY, pointX);
+  var orientation = new THREE.Matrix4();
+  orientation.lookAt(pointX, pointY, new THREE.Object3D().up);
+  var rotation_matrix = new THREE.Matrix4();
+
+  rotation_matrix.set(1, 0, 0, 0,
+    0, 0, 1, 0,
+    0, -1, 0, 0,
+    0, 0, 0, 1);
+
+  orientation.multiply(rotation_matrix);
+  var edgeGeometry = new THREE.CylinderGeometry(radius, radius, direction.length(), 8, 1);
+  var edge = new THREE.Mesh(edgeGeometry, material);
+  edge.applyMatrix(orientation);
+  // position based on midpoints - there may be a better solution than this
+  edge.position.x = (pointY.x + pointX.x) / 2;
+  edge.position.y = (pointY.y + pointX.y) / 2;
+  edge.position.z = (pointY.z + pointX.z) / 2;
+
+  return edge;
+};
+
+GZ3D.VisualMuscleModel.prototype.updateVisualization = function(message) {
+  if (message.robot_name === this.robotName) {
+    for (var k = 0; k < message.muscle.length; ++k) {
+      var cylinder = null;
+      var cq = 0;
+      var cylinderEndPoint_1 = null;
+      var cylinderEndPoint_2 = null;
+      var radius = message.muscle[k].length * 0.05;
+      var activation = message.muscle[k].activation;
+      var color = new THREE.Color(activation, 0.0, 1.0-activation);
+
+      if (!(message.muscle[k].name in this.cylinderShapes)) {
+        this.cylinderShapes[message.muscle[k].name] = {};
+        for (cq = 0; cq < message.muscle[k].pathPoint.length - 1; ++cq) {
+          cylinderEndPoint_1 = new THREE.Vector3(message.muscle[k].pathPoint[cq].x, message.muscle[k].pathPoint[cq].y, message.muscle[k].pathPoint[cq].z);
+          cylinderEndPoint_2 = new THREE.Vector3(message.muscle[k].pathPoint[cq + 1].x, message.muscle[k].pathPoint[cq + 1].y, message.muscle[k].pathPoint[cq + 1].z);
+
+          cylinder = this.cylinderMesh(cylinderEndPoint_1, cylinderEndPoint_2, radius, new THREE.MeshLambertMaterial({
+            color: color,
+            wireframe: false,
+            shading: THREE.FlatShading
+          }));
+          this.scene.add(cylinder);
+
+          this.cylinderShapes[message.muscle[k].name][cq] = cylinder;
+        }
+      }
+      else {
+        for (cq = 0; cq < message.muscle[k].pathPoint.length - 1; ++cq) {
+          cylinderEndPoint_1 = new THREE.Vector3(message.muscle[k].pathPoint[cq].x, message.muscle[k].pathPoint[cq].y, message.muscle[k].pathPoint[cq].z);
+          cylinderEndPoint_2 = new THREE.Vector3(message.muscle[k].pathPoint[cq + 1].x, message.muscle[k].pathPoint[cq + 1].y, message.muscle[k].pathPoint[cq + 1].z);
+          cylinder = this.cylinderShapes[message.muscle[k].name][cq];
+
+          var cylinder_direction = new THREE.Vector3().subVectors(cylinderEndPoint_2, cylinderEndPoint_1);
+          cylinder.geometry.height = cylinder_direction.length();
+          cylinder.geometry.radiusTop = radius;
+          cylinder.geometry.radiusBottom = radius;
+          cylinder.material.color = color;
+
+          // Reset to default position
+          cylinder.position.set(0, 0, 0);
+          cylinder.scale.set(1, 1, 1);
+          cylinder.rotation.set(0, 0, 0);
+          cylinder.updateMatrix();
+
+          // Then update to new muscle path
+          var cylinder_orientation = new THREE.Matrix4();
+          cylinder_orientation.lookAt(cylinderEndPoint_1, cylinderEndPoint_2, new THREE.Object3D().up);
+          var cylinder_rotation_matrix = new THREE.Matrix4();
+
+          cylinder_rotation_matrix.set(1, 0, 0, 0,
+            0, 0, 1, 0,
+            0, -1, 0, 0,
+            0, 0, 0, 1);
+
+          cylinder_orientation.multiply(cylinder_rotation_matrix);
+          cylinder.applyMatrix(cylinder_orientation);
+
+          cylinder.position.x = (cylinderEndPoint_2.x + cylinderEndPoint_1.x) / 2;
+          cylinder.position.y = (cylinderEndPoint_2.y + cylinderEndPoint_1.y) / 2;
+          cylinder.position.z = (cylinderEndPoint_2.z + cylinderEndPoint_1.z) / 2;
+
+          cylinder.updateMatrix();
+          cylinder.geometry.verticesNeedUpdate = true;
+        }
+      }
+    }
+  }
+};
+
 /**
  * Object auto align helper
  * @constructor
@@ -4215,6 +4316,9 @@ GZ3D.GZIface = function(scene, gui)
   // Stores AnimatedModel instances
   this.animatedModels = {};
 
+  // Stores muscle visualization geometries
+  this.muscleVisuzalizations = {};
+
   GZ3D.assetProgressData = {};
   GZ3D.assetProgressData.assets = [];
   GZ3D.assetProgressData.prepared = false;
@@ -4449,10 +4553,32 @@ GZ3D.GZIface.prototype.onConnected = function()
     messageType : 'request',
   });
 
-  var requestUpdate = function(message)
-  {
-    if (message.request === 'entity_delete')
-    {
+  // ROS topic subscription for muscle system visualization messages
+  // Requires gzserver version with OpenSim support, and OpenSim as active physics engine (gzserver -e opensim)
+  console.debug('Subscribing to muscle visualization topic (gzbridge)');
+  this.muscleVisualizationSubscriber = new ROSLIB.Topic({
+    ros: this.webSocket,
+    name: '~/muscles',
+    message_type: 'muscles',
+    throttle_rate: 1.0 / 20.0 * 1000.0,
+  });
+
+  // function for updating clien system visualization
+  var updateMuscleVisualization = function (message) {
+    if (!(message.robot_name in this.muscleVisuzalizations)) {
+      this.muscleVisuzalizations[message.robot_name] = new GZ3D.VisualMuscleModel(this.scene, message.robot_name);
+    }
+
+    if (message.robot_name in this.muscleVisuzalizations) {
+      this.muscleVisuzalizations[message.robot_name].updateVisualization(message);
+    }
+  };
+
+  // Subscription to joint update topic
+  this.muscleVisualizationSubscriber.subscribe(updateMuscleVisualization.bind(this));
+
+  var requestUpdate = function (message) {
+    if (message.request === 'entity_delete') {
       var entity = this.scene.getByName(message.data);
       if (entity)
       {
