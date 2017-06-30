@@ -122,6 +122,17 @@ $objectInspectorMinHeight: 40px;
   cursor: pointer;
 }
 
+.oi-input-field-caption {
+    display: inline;
+    margin-left: 26px;
+
+}
+
+.oi-input-field {
+    max-width: 60px;
+    margin-left: 10px;
+}
+
 .vec3-num-input-list {
   list-style-type: none;
   margin-left: 5%;

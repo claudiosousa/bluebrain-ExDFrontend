@@ -23,6 +23,7 @@
   angular.module('exdFrontendApp.Constants')
     .constant('EDIT_MODE', {
       VIEW: 'view',
+      NATURAL: 'natural',
       TRANSLATE: 'translate',
       ROTATE: 'rotate',
       SCALE: 'scale'
@@ -199,6 +200,12 @@
               contextMenuState.toggleContextMenu(false);
             };
 
+
+            scope.duplicateModel = function () {
+              gz3d.gui.guiEvents.emit('duplicate_entity');
+              contextMenuState.toggleContextMenu(false);
+            };
+
             // Edit and Delete object context Menu item
             contextMenuState.pushItemGroup(
               {
@@ -215,6 +222,15 @@
                     visible: false
                   },
                   {
+                    text: 'Duplicate',
+                    callback: function (event) {
+
+                      scope.duplicateModel();
+                      event.stopPropagation();
+                    },
+                    visible: false
+                  },
+                  {
                     text: 'Delete',
                     callback: function (event) {
                       scope.deleteModel();
@@ -225,7 +241,7 @@
                 ],
 
                 hide: function () {
-                  this.visible = this.items[0].visible = this.items[1].visible = false;
+                  this.visible = this.items[0].visible = this.items[1].visible = this.items[2].visible = false;
                 },
 
                 show: function (model) {
@@ -233,7 +249,8 @@
                   var canDelete = isNotARobotPredicate(model);
 
                   this.visible = this.items[0].visible = true;
-                  this.items[1].visible = canDelete;
+                  this.items[1].visible = canDelete && gz3d.gui.canModelBeDuplicated(model.name);
+                  this.items[2].visible = canDelete;
 
                   return true;
                 }

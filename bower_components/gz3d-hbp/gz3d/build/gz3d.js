@@ -331,6 +331,562 @@ GZ3D.AnimatedModel.prototype.updateJoint = function(robotName, jointName, jointV
 };
 
 /**
+ * Object auto align helper
+ * @constructor
+ */
+GZ3D.AutoAlignModel = function (scene)
+{
+  this.scene = scene;
+  this.init();
+  this.obj = undefined;
+  this.needsAlignOnFloor = false;
+  this.disableSnap = false;
+};
+
+/**
+ * Constants
+ */
+
+
+GZ3D.AutoAlignModel.HorizontalObjectSnapDist = 0.06;
+GZ3D.AutoAlignModel.HorizontalAutoAlignSnapDist = 0.1;
+GZ3D.AutoAlignModel.HorizontalInnerBorder = 0.05;
+GZ3D.AutoAlignModel.VerticalInnerBorder = 0.05;
+GZ3D.AutoAlignModel.VerticalAutoAlignSnapDist = 0.15;
+
+
+/**
+ * Initialize AutoAlignModel
+ */
+
+GZ3D.AutoAlignModel.prototype.init = function ()
+{
+  this.plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+  this.ray = new THREE.Ray();
+  this.obj = null;
+};
+
+/**
+ * Align on the bottom of the mesh.
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.alignOnMeshBase = function ()
+{
+  if (!this.needsAlignOnFloor && this.obj)
+  {
+    var bbox = new THREE.Box3().setFromObject(this.obj);
+    if (Math.abs(bbox.min.x) !== Infinity)
+    {
+      this.needsAlignOnFloor = false;
+      var point = this.obj.position.clone();
+
+      if (this.scene.snapToFloor && !this.disableSnap)
+      {
+        point.z = this.findBestZ(point.z - bbox.min.z);
+      }
+      else
+      {
+        point.z -= bbox.min.z;
+      }
+
+      this.scene.setPose(this.obj, point, this.obj.quaternion);
+    }
+    else
+    {
+      var that = this;
+
+      setTimeout(function () { that.alignOnMeshBase(); }, 0.1);
+    }
+  }
+};
+
+/**
+ * Return true, if an object should be ignored by snap
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.autoAlignIgnoreObject = function (meshobj)
+{
+  if (meshobj.name.indexOf('_lightHelper') >= 0 || meshobj.name === 'grid' || meshobj.name === 'boundingBox' ||
+    (meshobj instanceof THREE.Light))
+  {
+    return true;
+  }
+
+  while (meshobj)
+  {
+    if (meshobj === this.obj)
+    {
+      return true;
+    }
+    meshobj = meshobj.parent;
+  }
+
+  return false;
+};
+
+/**
+ * Find lower Z of ray cast
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.raycastToLowerZ = function (point, vector)
+{
+  var raycaster = new THREE.Raycaster();
+  var objects, i, oneFound = false, idesc;
+  var lowerZ = 1000;
+  var lowerObject;
+
+  raycaster.set(point, vector);
+  objects = raycaster.intersectObjects(this.scene.scene.children, true);
+
+  for (i = 0; i < objects.length; i++)
+  {
+    idesc = objects[i];
+    if (!this.autoAlignIgnoreObject(idesc.object))
+    {
+      if (!oneFound || lowerZ < idesc.point.z)
+      {
+        lowerZ = idesc.point.z;
+        lowerObject = idesc.object;
+      }
+
+      oneFound = true;
+    }
+  }
+
+  if (!oneFound)
+  {
+    return undefined;
+  }
+
+  return { 'lowerZ': lowerZ, 'lowerObject': lowerObject };
+};
+
+/**
+ * Generate a snap box aligned on a face of the bounding box.
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.snapToObjectGenInnerFaceCube = function (bbox, faceIndex, snapsize)
+{
+  var innerCube = new THREE.Box3();
+
+  innerCube.min.z = bbox.min.z + (bbox.max.z - bbox.min.z) * GZ3D.AutoAlignModel.VerticalInnerBorder;
+  innerCube.max.z = bbox.max.z - (bbox.max.z - bbox.min.z) * GZ3D.AutoAlignModel.VerticalInnerBorder;
+
+  switch (faceIndex)
+  {
+    case 0:
+      innerCube.min.x = bbox.min.x - snapsize;
+      innerCube.max.x = bbox.min.x + snapsize;
+      innerCube.min.y = bbox.min.y + (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.max.y = bbox.max.y - (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      break;
+
+    case 1:
+      innerCube.min.x = bbox.max.x - snapsize;
+      innerCube.max.x = bbox.max.x + snapsize;
+      innerCube.min.y = bbox.min.y + (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.max.y = bbox.max.y - (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      break;
+
+    case 2:
+      innerCube.min.y = bbox.min.y - snapsize;
+      innerCube.max.y = bbox.min.y + snapsize;
+      innerCube.min.x = bbox.min.x + (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.max.x = bbox.max.x - (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      break;
+
+    case 3:
+      innerCube.min.y = bbox.max.y - snapsize;
+      innerCube.max.y = bbox.max.y + snapsize;
+      innerCube.min.x = bbox.min.x + (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.max.x = bbox.max.x - (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      break;
+  }
+
+  return innerCube;
+
+};
+
+/**
+ * Compute the gravity of a face of a bounding box
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.gravityPointOfFace = function (bbox, faceIndex)
+{
+  switch (faceIndex)
+  {
+    case 0: return new THREE.Vector3(bbox.min.x, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, bbox.min.z + (bbox.max.z - bbox.min.z) * 0.5);
+    case 1: return new THREE.Vector3(bbox.max.x, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, bbox.min.z + (bbox.max.z - bbox.min.z) * 0.5);
+    case 2: return new THREE.Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y, bbox.min.z + (bbox.max.z - bbox.min.z) * 0.5);
+    case 3: return new THREE.Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.max.y, bbox.min.z + (bbox.max.z - bbox.min.z) * 0.5);
+    case 4: return new THREE.Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, bbox.max.z);
+    case 5: return new THREE.Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5, bbox.min.z);
+  }
+};
+
+/**
+ * Snap to the center of a face (horizontally only)
+ */
+
+GZ3D.AutoAlignModel.prototype.snapToObjectCenterOnSurface = function (position, bbox, snap2obj, faceIndex)
+{
+  var pt1, pt2;
+  var faceIndex2;
+
+  switch (faceIndex)
+  {
+    case 0: faceIndex2 = 1; break;
+    case 1: faceIndex2 = 0; break;
+    case 2: faceIndex2 = 3; break;
+    case 3: faceIndex2 = 2; break;
+  }
+
+  pt1 = this.gravityPointOfFace(snap2obj, faceIndex);
+  pt2 = this.gravityPointOfFace(bbox, faceIndex2);
+
+  var vx = pt2.x - pt1.x;
+  var vy = pt2.y - pt1.y;
+  var minDist = GZ3D.AutoAlignModel.HorizontalAutoAlignSnapDist;
+
+  if ((vx * vx + vy * vy) < (minDist * minDist))
+  {
+    if (faceIndex <= 1)
+    {
+      position.y = (pt1.y - (bbox.max.y - this.obj.position.y)) + (bbox.max.y - bbox.min.y) * 0.5;
+    }
+    else
+    {
+      position.x = (pt1.x - (bbox.max.x - this.obj.position.x)) + (bbox.max.x - bbox.min.x) * 0.5;
+    }
+
+    position.z = snap2obj.min.z - (bbox.min.z - this.obj.position.z);
+
+  }
+
+  return position;
+};
+
+/**
+ * Snap to object horizontally
+ */
+
+GZ3D.AutoAlignModel.prototype.snapToObject = function (position)
+{
+  var minimalSnapDistance = GZ3D.AutoAlignModel.HorizontalObjectSnapDist;
+  if (this.obj && !this.needsAlignOnFloor)
+  {
+    var bbox = new THREE.Box3();
+
+    bbox.setFromObject(this.obj);
+
+    if (Math.abs(bbox.min.x) !== Infinity)
+    {
+      var innerFaceCubes = [this.snapToObjectGenInnerFaceCube(bbox, 1, minimalSnapDistance),
+        this.snapToObjectGenInnerFaceCube(bbox, 0, minimalSnapDistance),
+        this.snapToObjectGenInnerFaceCube(bbox, 3, minimalSnapDistance),
+        this.snapToObjectGenInnerFaceCube(bbox, 2, minimalSnapDistance)];
+
+      var that = this;
+      var snapFound = false;
+
+      this.scene.scene.traverse(function (snap2obj)
+      {
+        if (!snapFound &&
+          snap2obj.visible &&
+          snap2obj instanceof THREE.Mesh &&
+          !that.autoAlignIgnoreObject(snap2obj))
+        {
+          var snap2bbox = new THREE.Box3();
+
+          snap2bbox.setFromObject(snap2obj);
+          if (Math.abs(snap2bbox.min.x) !== Infinity)
+          {
+            for (var j = 0; j < 4; j++)
+            {
+              var fc = that.snapToObjectGenInnerFaceCube(snap2bbox, j, minimalSnapDistance);
+
+              if (fc.intersectsBox(innerFaceCubes[j]))
+              {
+                snapFound = true;
+
+                switch (j)
+                {
+                  case 0: position.x = snap2bbox.min.x - (bbox.max.x - that.obj.position.x); break;
+                  case 1: position.x = snap2bbox.max.x - (bbox.min.x - that.obj.position.x); break;
+                  case 2: position.y = snap2bbox.min.y - (bbox.max.y - that.obj.position.y); break;
+                  case 3: position.y = snap2bbox.max.y - (bbox.min.y - that.obj.position.y); break;
+                }
+
+                that.obj.position.copy(position);
+                bbox.setFromObject(that.obj);
+                position = that.snapToObjectCenterOnSurface(position, bbox, snap2bbox, j);
+                break;
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  return position;
+};
+
+/**
+ * Align on the floor and auto-center if required
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.alignOnShapeBelow = function (position)
+{
+  var resInfo = this.findBestSurfaceToAlignZ(position.z);
+  if (resInfo)
+  {
+    position.z = resInfo.lowerZ;
+
+    var bbox = new THREE.Box3().setFromObject(this.obj);
+    if (Math.abs(bbox.min.x) !== Infinity)
+    {
+      var centerbbox = new THREE.Box3().setFromObject(resInfo.lowerObject);
+      if (Math.abs(centerbbox.min.x) !== Infinity)
+      {
+        var pt1 = this.gravityPointOfFace(centerbbox, 4);
+        var pt2 = this.gravityPointOfFace(bbox, 5);
+        var vx = pt2.x - pt1.x;
+        var vy = pt2.y - pt1.y;
+        var minDist = GZ3D.AutoAlignModel.VerticalAutoAlignSnapDist;
+
+        if ((vx * vx + vy * vy) < (minDist * minDist))
+        {
+          position.x = (pt1.x - (bbox.max.x - this.obj.position.x)) + (bbox.max.x - bbox.min.x) * 0.5;
+          position.y = (pt1.y - (bbox.max.y - this.obj.position.y)) + (bbox.max.y - bbox.min.y) * 0.5;
+        }
+      }
+    }
+  }
+
+  return position;
+};
+
+/**
+ * Find the best Z value/object for auto-align object
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.findBestSurfaceToAlignZ = function (fromZ)
+{
+  var bbox = new THREE.Box3().setFromObject(this.obj);
+  if (Math.abs(bbox.min.x) !== Infinity)
+  {
+    var point = this.obj.position.clone();
+    var gpoint = point.clone();
+    var lowerZ;
+    var raycastResult;
+
+    point.z = fromZ;
+    gpoint.z = fromZ + (bbox.max.z - bbox.min.z) * 0.5;
+
+    raycastResult = this.raycastToLowerZ(gpoint, new THREE.Vector3(0, 0, 1));
+    if (raycastResult !== undefined)
+    {
+      point.z = raycastResult.lowerZ - 0.01;
+    }
+    else
+    {
+      point.z += 50.0;
+    }
+
+    raycastResult = this.raycastToLowerZ(point, new THREE.Vector3(0, 0, -1));
+    if (raycastResult !== undefined)
+    {
+      raycastResult.lowerZ = raycastResult.lowerZ - (bbox.min.z - this.obj.position.z);
+      return raycastResult;
+    }
+
+  }
+
+  return undefined;
+};
+
+/**
+ * Find the best possible Z value so the mesh is not under the ground, when we add it.
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.findBestZ = function (fromZ)
+{
+  if (this.obj && !this.needsAlignOnFloor)
+  {
+    var resInfo = this.findBestSurfaceToAlignZ(fromZ);
+    if (resInfo)
+    {
+      return resInfo.lowerZ;
+    }
+
+    return this.obj.position.z;
+  }
+
+  return 0;
+};
+
+
+/**
+ * Start aligning model.
+ */
+
+GZ3D.AutoAlignModel.prototype.start = function (objectToAlign)
+{
+  this.obj = objectToAlign;
+  this.disableSnap = false;
+
+};
+
+/**
+ * Finish aligning
+ */
+
+GZ3D.AutoAlignModel.prototype.finish = function ()
+{
+  var that = this;
+
+  this.obj = undefined;
+  this.needsAlignOnFloor = false;
+};
+
+
+/**
+ * Move and align model
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
+{
+  var raycaster = new THREE.Raycaster();
+  var point, i;
+  var higherZ = -1000;
+
+  var viewWidth = this.scene.container.clientWidth;
+  var viewHeight = this.scene.container.clientHeight;
+
+  if (this.scene.snapToFloor && !this.disableSnap)
+  {
+    raycaster.setFromCamera(new THREE.Vector2((positionX / viewWidth) * 2 - 1,
+      -(positionY / viewHeight) * 2 + 1), this.scene.camera);
+
+    var objects = raycaster.intersectObjects(this.scene.scene.children, true);
+
+    for (i = 0; i < objects.length; i++)
+    {
+      var idesc = objects[i];
+
+      if (!this.autoAlignIgnoreObject(idesc.object))
+      {
+        if (idesc.point.z > higherZ || !point)
+        {
+          higherZ = idesc.point.z;
+          point = idesc.point.clone();
+        }
+      }
+    }
+  }
+
+  if (!point)
+  {
+    var vector = new THREE.Vector3((positionX / viewWidth) * 2 - 1,
+      -(positionY / viewHeight) * 2 + 1, 0.5);
+
+    vector.unproject(this.scene.camera);
+
+    var camv = this.scene.camera.position.clone();
+    camv.z -= this.obj.position.z;
+
+    this.ray.set(camv,
+      vector.sub(this.scene.camera.position).normalize());
+    point = this.ray.intersectPlane(this.plane);
+  }
+
+  if (point)
+  {
+    if (!this.disableSnap)
+    {
+      var snapDist = this.scene.modelManipulator.snapDist;
+      if (snapDist)
+      {
+        point.x = Math.round(point.x / snapDist) * snapDist;
+        point.y = Math.round(point.y / snapDist) * snapDist;
+      }
+    }
+
+    if (this.scene.snapToFloor && !this.disableSnap)
+    {
+      this.obj.position.copy(point);
+      point = this.alignOnShapeBelow(point);
+    }
+    else
+    {
+      point.z = this.obj.position.z;
+    }
+
+    if (this.scene.snapToObject && !this.disableSnap)
+    {
+      this.obj.position.copy(point);
+      point = this.snapToObject(point);
+    }
+
+    this.scene.setPose(this.obj, point, this.obj.quaternion);
+  }
+};
+
+/**
+ * Rotate 90 deg.
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.quickRotate = function ()
+{
+  if (this.obj)
+  {
+    var q = this.obj.quaternion.clone();
+    var qr = new THREE.Quaternion();
+
+    qr.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+    q.multiply(qr);
+
+    this.scene.setPose(this.obj, this.obj.position, q);
+  }
+};
+
+/**
+ * Keyboard shortcuts
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.onKeyUp = function (event)
+{
+  if (event.key === 'Shift')
+  {
+    this.disableSnap = false;
+  }
+};
+
+GZ3D.AutoAlignModel.prototype.onKeyDown = function (event)
+{
+  if (event.keyCode === 32) // Quick rotation
+  {
+    this.quickRotate();
+  }
+
+  if (event.key === 'Shift')
+  {
+    this.disableSnap = true;
+  }
+};
+/**
  * Bloom shader
  *
  * This is basically the THREE.UnrealBloomPass shader (that can be found in ThreeJS examples) with some minor changes.
@@ -2586,6 +3142,35 @@ GZ3D.Gui.prototype.init = function()
       }
   );
 
+  guiEvents.on('duplicate_entity', function ()
+      {
+        var modelEntity = that.scene.selectedEntity;
+        if (that.scene.selectedEntity)
+        {
+          var entity = GZ3D.Gui.findBaseModelName(modelEntity.name);
+          if (entity)
+          {
+            // manually trigger view mode
+            that.scene.setManipulationMode('view');
+            $('#view-mode').prop('checked', true);
+            $('input[type="radio"]').checkboxradio('refresh');
+
+            var name = getNameFromPath(entity);
+
+            that.spawnState = 'START';
+            that.scene.spawnModel.start(entity, function (obj)
+            {
+              that.emitter.emit('entityCreated', obj, entity);
+            },modelEntity.position,modelEntity.quaternion);
+
+            guiEvents.emit('notification_popup',
+              'Place ' + name + ' at the desired position');
+
+          }
+        }
+      }
+  );
+
   guiEvents.on('pointerOnMenu', function ()
       {
         that.scene.pointerOnMenu = true;
@@ -3228,6 +3813,68 @@ GZ3D.Gui.prototype.setLightStats = function(stats, action)
 
   this.updateStats();
 };
+
+
+/**
+ * Can model be duplicated ?
+ * @param {} instanceName
+ * @returns string
+ */
+GZ3D.Gui.findBaseModelName = function (modelName)
+{
+  var basicObjects = ['box', 'sphere', 'cylinder', 'pointlight', 'pointlight', 'spotlight', 'directionallight'];
+  var i, j, k;
+
+  for (k = 0; k < 2; k++)
+  {
+    if (k > 0)
+    {
+      var idx = modelName.lastIndexOf('_');
+      if (idx > 0)
+      {
+        modelName = modelName.substring(0, idx);
+      }
+    }
+
+    for (i = 0; i < modelList.length; ++i)
+    {
+      for (j = 0; j < modelList[i].models.length; ++j)
+      {
+        if (modelName === modelList[i].models[j].modelPath)
+        {
+          return modelName;
+        }
+      }
+    }
+
+    for (j = 0; j < basicObjects.length; ++j)
+    {
+      if (modelName === basicObjects[j])
+      {
+        return modelName;
+      }
+    }
+
+  }
+
+  return undefined;
+};
+
+/**
+ * Can model be duplicated ?
+ * @param {} instanceName
+ * @returns string
+ */
+GZ3D.Gui.prototype.canModelBeDuplicated = function(modelName)
+{
+  if (this.scene.spawnModel.active)
+  {
+    return false;
+  }
+
+  return GZ3D.Gui.findBaseModelName(modelName)!==undefined;
+};
+
 
 /**
  * Find thumbnail
@@ -4100,14 +4747,17 @@ GZ3D.GZIface.prototype.onConnected = function()
 
   var publishEntityModify = function (entity)
   {
-    var lightObj = entity.children[0];
-    if (lightObj && lightObj instanceof THREE.Light)
+    if (entity)
     {
-      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, undefined));
-    }
-    else
-    {
-      that.modelModifyTopic.publish(createEntityModifyMessage(entity));
+      var lightObj = entity.children?entity.children[0]:null;
+      if (lightObj && lightObj instanceof THREE.Light)
+      {
+        that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, undefined));
+      }
+      else
+      {
+        that.modelModifyTopic.publish(createEntityModifyMessage(entity));
+      }
     }
   };
 
@@ -7798,16 +8448,22 @@ GZ3D.Scene.prototype.init = function()
   this.manipulationMode = 'view';
   this.pointerOnMenu = false;
 
+  this.container = document.getElementById( 'container' );
+
   this.renderer = new THREE.WebGLRenderer({antialias: false }); // antialiasing Will be handled as a post-processing pass
   this.renderer.setClearColor(0xb2b2b2, 1); // Sky
-  this.renderer.setSize( window.innerWidth, window.innerHeight);
+  this.renderer.setSize( this.container.clientWidth, this.container.clientHeight);
   this.renderer.setScissorTest(true);
+
+  // Snap to object/floor
+
+  this.snapToFloor = true;
+  this.snapToObject = true;
 
   // shadows
   this.renderer.shadowMap.enabled = false;
   this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  this.container = document.getElementById( 'container' );
 
   // create views manager
   this.viewManager = new GZ3D.MultiView(this, this.container);
@@ -8099,6 +8755,106 @@ GZ3D.Scene.prototype.setSDFParser = function(sdfParser)
 };
 
 /**
+ * Begin natural manipulation of model
+ * @param {} event - mousedown or touchdown events
+ */
+
+GZ3D.Scene.prototype.beginNaturalManipulation = function(event)
+{
+    this.naturalAutoAlignMode = null;
+
+    if (event.ctrlKey)
+    {
+      return;
+    }
+
+    // check for model selection
+    var mainPointer = true;
+    var pos;
+    if (event.touches)
+    {
+      if (event.touches.length === 1)
+      {
+        pos = new THREE.Vector2(
+            event.touches[0].clientX, event.touches[0].clientY);
+      }
+      else
+      {
+        return;
+      }
+    }
+    else
+    {
+      pos = new THREE.Vector2(event.clientX, event.clientY);
+      if (event.button !== 0)
+      {
+        mainPointer = false;
+      }
+    }
+
+    var intersect = new THREE.Vector3();
+    var model = this.getRayCastModel(pos, intersect);
+
+    // Cancel in case of multitouch
+    if (event.touches && event.touches.length !== 1 || !mainPointer)
+    {
+      return;
+    }
+
+    if (model)
+    {
+      if (model.name === 'plane')
+      {
+        return;
+      }
+      // Attach manipulator to model
+      else if (model.name !== '')
+      {
+        if (mainPointer && model.parent === this.scene)
+        {
+          this.selectEntity(model);
+        }
+      }
+      else
+      {
+        return;
+      }
+
+      this.naturalAutoAlignMode = new GZ3D.AutoAlignModel(this);
+      this.naturalAutoAlignMode.start(model);
+    }
+
+};
+
+/**
+ * Update natural manipulation of model
+ * @param {} event - mousedown or touchdown events
+ */
+
+GZ3D.Scene.prototype.updateMoveNaturalManipulation = function(positionX,positionY)
+{
+  if (this.naturalAutoAlignMode)
+  {
+    this.naturalAutoAlignMode.moveAlignModel(positionX,positionY);
+  }
+};
+
+/**
+ * End natural manipulation of model
+ * @param {} event - mousedown or touchdown events
+ */
+
+GZ3D.Scene.prototype.endNaturalManipulation = function(event)
+{
+  if (this.naturalAutoAlignMode)
+  {
+    this.naturalAutoAlignMode.finish();
+    this.naturalAutoAlignMode = null;
+  }
+};
+
+
+/**
  * Window event callback
  * @param {} event - mousedown or touchdown events
  */
@@ -8113,6 +8869,15 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
   if (this.spawnModel.active)
   {
     return;
+  }
+
+  if (this.manipulationMode==='natural')
+  {
+    this.beginNaturalManipulation(event);
+    if (this.naturalAutoAlignMode)
+    {
+      return;
+    }
   }
 
   this.timeDown = new Date().getTime();
@@ -8130,8 +8895,14 @@ GZ3D.Scene.prototype.onPointerUp = function(event)
 
   event.preventDefault();
 
+  if (this.naturalAutoAlignMode)
+  {
+    this.endNaturalManipulation();
+    return;
+  }
+
   var millisecs = new Date().getTime();
-  if (millisecs - this.timeDown < 150)
+  if (millisecs - this.timeDown < 300)
   {
     // check for model selection
     var mainPointer = true;
@@ -8291,8 +9062,8 @@ GZ3D.Scene.prototype.onKeyDown = function(event)
 GZ3D.Scene.prototype.getRayCastModel = function(pos, intersect)
 {
   var normalizedScreenCoords = new THREE.Vector2(
-    ((pos.x - this.renderer.domElement.offsetLeft) / window.innerWidth) * 2 - 1,
-    -((pos.y - this.renderer.domElement.offsetTop) / window.innerHeight) * 2 + 1
+    ((pos.x - this.renderer.domElement.offsetLeft) / this.container.clientWidth) * 2 - 1,
+    -((pos.y - this.renderer.domElement.offsetTop) / this.container.clientHeight) * 2 + 1
   );
 
   var raycaster = new THREE.Raycaster();
@@ -8414,7 +9185,8 @@ GZ3D.Scene.prototype.updateUI = function()
     if (this.modelManipulator.hovered ||
       this.radialMenu.showing ||
       this.pointerOnMenu ||
-      this.spawnModel.active)
+      this.spawnModel.active ||
+      this.naturalAutoAlignMode)
     {
       this.controls.enabled = false;
       this.controls.update();
@@ -9584,7 +10356,7 @@ GZ3D.Scene.prototype.setManipulationMode = function(mode)
 {
   this.manipulationMode = mode;
 
-  if (mode === 'view')
+  if (mode === 'view' || mode==='natural')
   {
     if (this.modelManipulator.object)
     {
@@ -9594,12 +10366,7 @@ GZ3D.Scene.prototype.setManipulationMode = function(mode)
   }
   else
   {
-    // Toggle manipulation space (world / local)
-    if (this.modelManipulator.mode === this.manipulationMode)
-    {
-      this.modelManipulator.space =
-        (this.modelManipulator.space === 'world') ? 'local' : 'world';
-    }
+
     this.modelManipulator.mode = this.manipulationMode;
     this.modelManipulator.setMode(this.modelManipulator.mode);
     // model was selected during view mode
@@ -9966,7 +10733,7 @@ GZ3D.Scene.prototype.selectEntity = function(object)
         this.scene.remove(this.modelManipulator.gizmo);
         this.manipulationMode = 'view';
       }
-      else
+      else if (this.manipulationMode!=='natural')
       {
         this.attachManipulator(object, this.manipulationMode);
       }
@@ -11262,10 +12029,10 @@ GZ3D.SdfParser.prototype.loadModel = function(modelName)
  * Spawn a model into the scene
  * @constructor
  */
-GZ3D.SpawnModel = function(scene, domElement)
+GZ3D.SpawnModel = function (scene, domElement)
 {
   this.scene = scene;
-  this.domElement = ( domElement !== undefined ) ? domElement : document;
+  this.domElement = (domElement !== undefined) ? domElement : document;
   this.init();
   this.obj = undefined;
   this.callback = undefined;
@@ -11275,14 +12042,16 @@ GZ3D.SpawnModel = function(scene, domElement)
 /**
  * Initialize SpawnModel
  */
-GZ3D.SpawnModel.prototype.init = function()
+
+GZ3D.SpawnModel.prototype.init = function ()
 {
   this.plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
   this.ray = new THREE.Ray();
   this.obj = null;
   this.active = false;
-  this.snapDist = null;
+  this.autoAlignModel = new GZ3D.AutoAlignModel(this.scene);
 };
+
 
 /**
  * Start spawning an entity. Only simple shapes supported so far.
@@ -11290,7 +12059,7 @@ GZ3D.SpawnModel.prototype.init = function()
  * @param {string} entity
  * @param {function} callback
  */
-GZ3D.SpawnModel.prototype.start = function(entity, callback)
+GZ3D.SpawnModel.prototype.start = function (entity, callback,position,quaternion)
 {
   if (this.active)
   {
@@ -11301,6 +12070,10 @@ GZ3D.SpawnModel.prototype.start = function(entity, callback)
 
   this.obj = new THREE.Object3D();
   var mesh;
+  var zoffset = 0.5;
+
+   this.autoAlignModel.start(this.obj);
+
   if (entity === 'box')
   {
     mesh = this.scene.createBox(1, 1, 1);
@@ -11332,19 +12105,24 @@ GZ3D.SpawnModel.prototype.start = function(entity, callback)
   {
     mesh = this.sdfParser.loadSDF(entity);
     //TODO: add transparency to the object
+    zoffset = 0;
+    this.autoAlignModel.alignOnMeshBase();
   }
 
   this.obj.name = this.generateUniqueName(entity);
   this.obj.add(mesh);
 
+  var viewWidth = this.scene.container.clientWidth;
+  var viewHeight = this.scene.container.clientHeight;
+
   // temp model appears within current view
-  var pos = new THREE.Vector2(window.window.innerWidth/2, window.innerHeight/2);
+  var pos = new THREE.Vector2(viewWidth / 2, viewHeight / 2);
   var intersect = new THREE.Vector3();
   this.scene.getRayCastModel(pos, intersect);
 
   this.obj.position.x = intersect.x;
   this.obj.position.y = intersect.y;
-  this.obj.position.z += 0.5;
+  this.obj.position.z += zoffset;
   this.scene.add(this.obj);
   // For the inserted light to have effect
   var allObjects = [];
@@ -11359,20 +12137,27 @@ GZ3D.SpawnModel.prototype.start = function(entity, callback)
 
   var that = this;
 
-  this.mouseDown = function(event) {that.onMouseDown(event);};
-  this.mouseUp = function(event) {that.onMouseUp(event);};
-  this.mouseMove = function(event) {that.onMouseMove(event);};
-  this.keyDown = function(event) {that.onKeyDown(event);};
-  this.touchMove = function(event) {that.onTouchMove(event,true);};
-  this.touchEnd = function(event) {that.onTouchEnd(event);};
+  this.mouseDown = function (event) { that.onMouseDown(event); };
+  this.mouseUp = function (event) { that.onMouseUp(event); };
+  this.mouseMove = function (event) { that.onMouseMove(event); };
+  this.keyDown = function (event) { that.onKeyDown(event); };
+  this.keyUp = function (event) { that.onKeyUp(event); };
+  this.touchMove = function (event) { that.onTouchMove(event, true); };
+  this.touchEnd = function (event) { that.onTouchEnd(event); };
 
   this.domElement.addEventListener('mousedown', that.mouseDown, false);
-  this.domElement.addEventListener( 'mouseup', that.mouseUp, false);
-  this.domElement.addEventListener( 'mousemove', that.mouseMove, false);
-  document.addEventListener( 'keydown', that.keyDown, false);
+  this.domElement.addEventListener('mouseup', that.mouseUp, false);
+  this.domElement.addEventListener('mousemove', that.mouseMove, false);
+  document.addEventListener('keydown', that.keyDown, false);
+  document.addEventListener('keyup', that.keyUp, false);
 
-  this.domElement.addEventListener( 'touchmove', that.touchMove, false);
-  this.domElement.addEventListener( 'touchend', that.touchEnd, false);
+  this.domElement.addEventListener('touchmove', that.touchMove, false);
+  this.domElement.addEventListener('touchend', that.touchEnd, false);
+
+  if (position && quaternion)
+  {
+    this.scene.setPose(this.obj, position, quaternion);
+  }
 
   this.active = true;
 
@@ -11382,25 +12167,29 @@ GZ3D.SpawnModel.prototype.start = function(entity, callback)
  * Finish spawning an entity: re-enable camera controls,
  * remove listeners, remove temp object
  */
-GZ3D.SpawnModel.prototype.finish = function()
+GZ3D.SpawnModel.prototype.finish = function ()
 {
   var that = this;
 
-  this.domElement.removeEventListener( 'mousedown', that.mouseDown, false);
-  this.domElement.removeEventListener( 'mouseup', that.mouseUp, false);
-  this.domElement.removeEventListener( 'mousemove', that.mouseMove, false);
-  document.removeEventListener( 'keydown', that.keyDown, false);
+  this.domElement.removeEventListener('mousedown', that.mouseDown, false);
+  this.domElement.removeEventListener('mouseup', that.mouseUp, false);
+  this.domElement.removeEventListener('mousemove', that.mouseMove, false);
+  document.removeEventListener('keydown', that.keyDown, false);
+  document.removeEventListener('keyup', that.keyUp, false);
 
   this.scene.remove(this.obj);
   this.obj = undefined;
   this.active = false;
+
+  this.autoAlignModel.finish();
+
 };
 
 /**
  * Window event callback
  * @param {} event - not yet
  */
-GZ3D.SpawnModel.prototype.onMouseDown = function(event)
+GZ3D.SpawnModel.prototype.onMouseDown = function (event)
 {
   // Does this ever get called?
   // Change like this:
@@ -11413,7 +12202,7 @@ GZ3D.SpawnModel.prototype.onMouseDown = function(event)
  * Window event callback
  * @param {} event - mousemove events
  */
-GZ3D.SpawnModel.prototype.onMouseMove = function(event)
+GZ3D.SpawnModel.prototype.onMouseMove = function (event)
 {
   if (!this.active)
   {
@@ -11422,14 +12211,14 @@ GZ3D.SpawnModel.prototype.onMouseMove = function(event)
 
   event.preventDefault();
 
-  this.moveSpawnedModel(event.clientX,event.clientY);
+  this.moveSpawnedModel(event.clientX, event.clientY);
 };
 
 /**
  * Window event callback
  * @param {} event - touchmove events
  */
-GZ3D.SpawnModel.prototype.onTouchMove = function(event,originalEvent)
+GZ3D.SpawnModel.prototype.onTouchMove = function (event, originalEvent)
 {
   if (!this.active)
   {
@@ -11450,7 +12239,7 @@ GZ3D.SpawnModel.prototype.onTouchMove = function(event,originalEvent)
 
   if (e.touches.length === 1)
   {
-    this.moveSpawnedModel(e.touches[ 0 ].pageX,e.touches[ 0 ].pageY);
+    this.moveSpawnedModel(e.touches[0].pageX, e.touches[0].pageY);
   }
 };
 
@@ -11458,7 +12247,7 @@ GZ3D.SpawnModel.prototype.onTouchMove = function(event,originalEvent)
  * Window event callback
  * @param {} event - touchend events
  */
-GZ3D.SpawnModel.prototype.onTouchEnd = function()
+GZ3D.SpawnModel.prototype.onTouchEnd = function ()
 {
   if (!this.active)
   {
@@ -11473,7 +12262,7 @@ GZ3D.SpawnModel.prototype.onTouchEnd = function()
  * Window event callback
  * @param {} event - mousedown events
  */
-GZ3D.SpawnModel.prototype.onMouseUp = function(event)
+GZ3D.SpawnModel.prototype.onMouseUp = function (event)
 {
   if (!this.active)
   {
@@ -11486,13 +12275,26 @@ GZ3D.SpawnModel.prototype.onMouseUp = function(event)
 
 /**
  * Window event callback
+ * @param {} event - keyup events
+ */
+GZ3D.SpawnModel.prototype.onKeyUp = function (event)
+{
+  this.autoAlignModel.onKeyUp(event);
+};
+
+/**
+ * Window event callback
  * @param {} event - keydown events
  */
-GZ3D.SpawnModel.prototype.onKeyDown = function(event)
+GZ3D.SpawnModel.prototype.onKeyDown = function (event)
 {
-  if ( event.keyCode === 27 ) // Esc
+  if (event.keyCode === 27) // Esc
   {
     this.finish();
+  }
+  else
+  {
+    this.autoAlignModel.onKeyDown(event);
   }
 };
 
@@ -11501,45 +12303,28 @@ GZ3D.SpawnModel.prototype.onKeyDown = function(event)
  * @param {integer} positionX - Horizontal position on the canvas
  * @param {integer} positionY - Vertical position on the canvas
  */
-GZ3D.SpawnModel.prototype.moveSpawnedModel = function(positionX, positionY)
+GZ3D.SpawnModel.prototype.moveSpawnedModel = function (positionX, positionY)
 {
-  var vector = new THREE.Vector3( (positionX / window.innerWidth) * 2 - 1,
-        -(positionY / window.innerHeight) * 2 + 1, 0.5);
-  vector.unproject(this.scene.camera);
-  this.ray.set(this.scene.camera.position,
-      vector.sub(this.scene.camera.position).normalize());
-  var point = this.ray.intersectPlane(this.plane);
+  this.autoAlignModel.moveAlignModel(positionX,positionY);
 
-  if (point)
-  {
-    point.z = this.obj.position.z;
-
-    if (this.snapDist)
-    {
-      point.x = Math.round(point.x / this.snapDist) * this.snapDist;
-      point.y = Math.round(point.y / this.snapDist) * this.snapDist;
-    }
-
-    this.scene.setPose(this.obj, point, new THREE.Quaternion());
-  }
 };
 
 /**
  * Generate unique name for spawned entity
  * @param {string} entity - entity type
  */
-GZ3D.SpawnModel.prototype.generateUniqueName = function(entity)
+GZ3D.SpawnModel.prototype.generateUniqueName = function (entity)
 {
   var i = 0;
   while (i < 1000)
   {
-    if (this.scene.getByName(entity+'_'+i))
+    if (this.scene.getByName(entity + '_' + i))
     {
       ++i;
     }
     else
     {
-      return entity+'_'+i;
+      return entity + '_' + i;
     }
   }
 };
