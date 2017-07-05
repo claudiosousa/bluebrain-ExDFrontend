@@ -1,13 +1,13 @@
 'use strict';
-describe('Services: nrp-browser-detection', function () {
+describe('Services: browser-support', function () {
   var browserSupport, $window;
   var windowMock = { navigator: { userAgent: ' ' } };
-  beforeEach(module('nrpBrowserDetection', function ($provide) {
+  beforeEach(module('browserSupport', function ($provide) {
     $provide.value('$window', windowMock);
   }));
-  
+
   var supportedBrowserVersions = {
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36' : 
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36' :
         { browserName: 'Chrome', version: '41'},
       'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0' :
         { browserName: 'Firefox', version: '36'},
@@ -41,7 +41,7 @@ describe('Services: nrp-browser-detection', function () {
 
   describe('Function: getBrowserVersion', function() {
     angular.forEach(testSet, function(value, key) {
-      var expectedVersion; 
+      var expectedVersion;
       if (value.browserName !== 'unknown' ) {
         expectedVersion = value.browserName + ' ' + value.version;
       } else {
@@ -53,7 +53,7 @@ describe('Services: nrp-browser-detection', function () {
       });
     });
   });
-  
+
   describe('Function: isSupportedBrowser', function() {
     angular.forEach(supportedBrowserVersions, function(value, key) {
       var browserVersion = value.browserName + ' ' + value.version;
@@ -62,7 +62,7 @@ describe('Services: nrp-browser-detection', function () {
         expect(browserSupport.isSupported()).toBe(true);
       });
     });
-    
+
     angular.forEach(unsupportedBrowserVersions, function(value, key) {
       var browserVersion = value.browserName + ' ' + value.version;
       it('should return false for ' + browserVersion, function() {

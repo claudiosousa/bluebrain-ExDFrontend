@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   /**
@@ -77,7 +77,7 @@
       'ngFileUpload',
       'environmentServiceModule',
       'experimentServices',
-      'nrpBrowserDetection',
+      'browserSupport',
       'vButton',
       'nrpUser',
       'editorToolbarModule',
@@ -96,56 +96,58 @@
       'showOnTop',
       'clientLoggerModule',
       'environmentRenderingModule',
-      'storageServer'])
+      'storageServer',
+      'clusterReservation',
+      'demoCarousel'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
-      function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
-      // Configuring routes using `angular-ui-router` states.
-      // (See https://github.com/angular-ui/ui-router/wiki)
+      function($stateProvider, $urlRouterProvider, environmentServiceProvider) {
+        // Configuring routes using `angular-ui-router` states.
+        // (See https://github.com/angular-ui/ui-router/wiki)
 
-      var homeState = {
-        name: 'home',
-        url: '/',
-        templateUrl: 'views/common/home.html',
-        controller: 'MainCtrl'
-      };
+        var homeState = {
+          name: 'home',
+          url: '/',
+          templateUrl: 'views/common/home.html',
+          controller: 'MainCtrl'
+        };
 
-      var experimentViewState = {
-        name: 'experiment-view',
-        url: '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
-        templateUrl: 'views/esv/experiment-view.html',
-        controller: 'experimentViewController',
-        controllerAs: 'vm',
-        onEnter: ['$document', function ($document) {
-          $document.find('body').addClass('experiment-view-route');
-        }],
-        onExit: ['$document', function ($document) {
-          $document.find('body').removeClass('experiment-view-route');
-        }],
-        resolve: {
-          setCollabState: ['environmentService', '$stateParams', function(environmentService, $stateParams){
-            return environmentService.setPrivateExperiment($stateParams.privateExperiment === 'true');
+        var experimentViewState = {
+          name: 'experiment-view',
+          url: '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
+          templateUrl: 'views/esv/experiment-view.html',
+          controller: 'experimentViewController',
+          controllerAs: 'vm',
+          onEnter: ['$document', function($document) {
+            $document.find('body').addClass('experiment-view-route');
           }],
-          siminfo: ['simulationInfo', '$stateParams', function (simulationInfo, $stateParams) {
-            return simulationInfo.initialize(
-              $stateParams.serverID, $stateParams.experimentID, $stateParams.simulationID, $stateParams.ctx);
+          onExit: ['$document', function($document) {
+            $document.find('body').removeClass('experiment-view-route');
           }],
-          initUserContextService: ['userContextService', function(userContextService) { return userContextService.initialized; }]
-        }
-      };
+          resolve: {
+            setCollabState: ['environmentService', '$stateParams', function(environmentService, $stateParams) {
+              return environmentService.setPrivateExperiment($stateParams.privateExperiment === 'true');
+            }],
+            siminfo: ['simulationInfo', '$stateParams', function(simulationInfo, $stateParams) {
+              return simulationInfo.initialize(
+                $stateParams.serverID, $stateParams.experimentID, $stateParams.simulationID, $stateParams.ctx);
+            }],
+            initUserContextService: ['userContextService', function(userContextService) { return userContextService.initialized; }]
+          }
+        };
 
-      var esvWebState = {
-        name: 'esv-web',
-        url: '/esv-web?ctx',
-        templateUrl: 'views/esv/esv-experiments.html',
-        controller: 'esvExperimentsCtrl',
-        resolve: {
-          oidcToken: ['oidcClientService', function (oidcClientService) {
-            return oidcClientService.ensureSession();
-          }],
-          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
-        },
-      };
+        var esvWebState = {
+          name: 'esv-web',
+          url: '/esv-web?ctx',
+          templateUrl: 'views/esv/esv-experiments.html',
+          controller: 'esvExperimentsCtrl',
+          resolve: {
+            oidcToken: ['oidcClientService', function(oidcClientService) {
+              return oidcClientService.ensureSession();
+            }],
+            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
+          },
+        };
 
       var esvWegStateDebug = {
         name: 'esv-webdebug',
@@ -161,43 +163,43 @@
       };
 
 
-      var esvDemoIntroState = {
-        name: 'esv-demo',
-        url: '/esv-demo',
-        templateUrl: 'views/esv/demo-experiments.html',
-        controller: 'demoExperimentsController',
-        resolve: {
-          oidcToken: ['oidcClientService', function (oidcClientService) {
-            return oidcClientService.ensureSession();
-          }],
-          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
-        },
-      };
+        var esvDemoIntroState = {
+          name: 'esv-demo',
+          url: '/esv-demo',
+          templateUrl: 'views/esv/demo-experiments.html',
+          controller: 'demoExperimentsController',
+          resolve: {
+            oidcToken: ['oidcClientService', function(oidcClientService) {
+              return oidcClientService.ensureSession();
+            }],
+            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
+          },
+        };
 
-      var esvPrivateState = {
-        name: 'esv-private',
-        url: '/esv-private?ctx',
-        templateUrl: 'views/esv/esv-experiments.html',
-        controller: 'esvExperimentsCtrl',
-        resolve: {
-          oidcToken: ['oidcClientService', function (oidcClientService) {
-            return oidcClientService.ensureSession();
-          }],
-          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(true); }]
-        }
-      };
+        var esvPrivateState = {
+          name: 'esv-private',
+          url: '/esv-private?ctx',
+          templateUrl: 'views/esv/esv-experiments.html',
+          controller: 'esvExperimentsCtrl',
+          resolve: {
+            oidcToken: ['oidcClientService', function(oidcClientService) {
+              return oidcClientService.ensureSession();
+            }],
+            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(true); }]
+          }
+        };
 
-      var supportState = {
-        name: 'support',
-        url: '/support',
-        templateUrl: 'views/common/support.html'
-      };
+        var supportState = {
+          name: 'support',
+          url: '/support',
+          templateUrl: 'views/common/support.html'
+        };
 
-      var newCollabOverviewState = {
-        name: 'create-collab-overview',
-        url: '/create-collab-overview',
-        templateUrl: 'views/common/create-collab-overview.html'
-      };
+        var newCollabOverviewState = {
+          name: 'create-collab-overview',
+          url: '/create-collab-overview',
+          templateUrl: 'views/common/create-collab-overview.html'
+        };
 
       if (window.bbpConfig.demomode && window.bbpConfig.demomode.demoCarousel)
       {
@@ -207,24 +209,24 @@
         esvPrivateState.templateUrl = 'views/esv/demo-experiments.html';
       }
 
-      var home = $stateProvider.state(homeState);
-      home.state(esvWebState);
-      home.state(esvDemoIntroState);
-      home.state(esvPrivateState);
-      home.state(experimentViewState);
-      home.state(supportState);
-      home.state(newCollabOverviewState);
+        var home = $stateProvider.state(homeState);
+        home.state(esvWebState);
+        home.state(esvDemoIntroState);
+        home.state(esvPrivateState);
+        home.state(experimentViewState);
+        home.state(supportState);
+        home.state(newCollabOverviewState);
 
       home.state(esvWegStateDebug);
 
 
 
-      // Provide a default route.
-      // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
-      $urlRouterProvider.otherwise('/');
+        // Provide a default route.
+        // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
+        $urlRouterProvider.otherwise('/');
 
-      environmentServiceProvider.$get().initialize();
-    }])
+        environmentServiceProvider.$get().initialize();
+      }])
     .config(['$compileProvider', '$logProvider', 'environmentServiceProvider',
       function($compileProvider, $logProvider, environmentServiceProvider) {
         if (environmentServiceProvider.$get().isDevMode())
@@ -237,15 +239,15 @@
         return;
       window.console.debug = $log.debug;
     }])
-    .factory('timeoutHttpInterceptor', function () {
+    .factory('timeoutHttpInterceptor', function() {
       // Here we specify a global http request timeout value for all requests, for all browsers
       return {
-        request: function (config) {
+        request: function(config) {
           // config.timeout = 120 * 1000; //request timeout in milliseconds
           return config;
         }
       };
-    }).config(['$httpProvider', function ($httpProvider) {
+    }).config(['$httpProvider', function($httpProvider) {
       $httpProvider.interceptors.push('timeoutHttpInterceptor');
     }])
     .run(['$rootScope', '$location', function($rootScope, $location) {
@@ -271,25 +273,14 @@
         }
       }
     }])
-    .run(['$rootScope', 'nrpUser', function($rootScope, nrpUser){
-      // Basic Users are invited to join the Demo Carousel
-      var DEMO_MACHINE = '52.58.114.201';
-
-      $rootScope.demoCarouselUrl = 'http://' + DEMO_MACHINE+ ':9000/#/esv-demo';
-
-      nrpUser.getCurrentUserInfo().then(function(response){
-        $rootScope.displayWatchDemosButton = !response.hasEditRights;
-      });
-
-    }])
     .run(['storageServer', '$location', function(storageServer, $location) {
       // storageServer.getExperiments();
     }]);
 
   // load the configuration used by bbpConfig
   // and then bootstrap the application.
-  angular.bootstrap().invoke(['$http', function ($http) {
-    var boot = function () {
+  angular.bootstrap().invoke(['$http', function($http) {
+    var boot = function() {
 
       // Google Analytics
       if (angular.isDefined(window.bbpConfig.environment)) {
@@ -308,7 +299,7 @@
         }
       }
 
-      angular.element(document).ready(function () {
+      angular.element(document).ready(function() {
         angular.bootstrap(document, ['exdFrontendApp'], { strictDi: true });
       });
     };
@@ -316,7 +307,7 @@
     if (window.bbpConfig) {
       boot();
     } else {
-      $http.get('./config.json').then(function (res) {
+      $http.get('./config.json').then(function(res) {
         window.bbpConfig = res.data;
       }).then(boot);
     }
@@ -326,7 +317,7 @@
   // use it to define its own constants.
   angular.module('exdFrontendApp.Constants', []);
 
-} ());
+}());
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately
 // chose to redeclare them as empty and not to include JQuery mobile. The
@@ -336,13 +327,13 @@
 // our case.
 
 /* global $: false */
-$.fn.buttonMarkup = function () {
+$.fn.buttonMarkup = function() {
 };
-$.fn.popup = function () {
+$.fn.popup = function() {
 };
-$.fn.checkboxradio = function () {
+$.fn.checkboxradio = function() {
 };
-$.fn.touchstart = function () {
+$.fn.touchstart = function() {
 };
-$.fn.touchend = function () {
+$.fn.touchend = function() {
 };
