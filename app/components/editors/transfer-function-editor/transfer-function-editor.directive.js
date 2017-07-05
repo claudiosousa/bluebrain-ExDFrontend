@@ -452,7 +452,7 @@
         function applyTranfertFunctions(tfs) {
           return ensurePauseStateAndExecute(function(cb) {
             // Removes all TFs
-            return $q.all(_.map(scope.transferFunctions, scope.delete))
+            return scope.delete(scope.transferFunctions)
               .then(function() {
                 // Upload new TFs to back-end
                 scope.transferFunctions = tfs;
