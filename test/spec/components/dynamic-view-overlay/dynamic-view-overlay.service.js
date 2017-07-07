@@ -5,6 +5,17 @@ describe('Service: dynamicViewOverlayService', function() {
   var $q, $rootScope, $timeout;
   var dynamicViewOverlayService, nrpAnalytics;
 
+  var TEST_DUMMY = {
+    name: 'TEST',
+    directive: 'test',
+    isResizeable: false, // default true
+    allowMultipleViews: false, // default true
+  };
+  var TEST_DUMMY_MULTI_VIEW = {
+    name: 'TEST',
+    directive: 'test',
+  };
+
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayModule'));
   beforeEach(module('nrpAnalyticsMock'));
@@ -142,6 +153,64 @@ describe('Service: dynamicViewOverlayService', function() {
     var result = dynamicViewOverlayService.getParentOverlayWrapper(mockElement);
     expect(mockElement.parents).toHaveBeenCalledWith('.'+dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS);
     expect(result).toBe(parentsArray[0]);
+  });
+
+  it('should create a dynamic overlay for the given component', function() {
+    spyOn(dynamicViewOverlayService, 'createOverlay');
+    // fake no view open
+    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+      {
+        then: jasmine.createSpy('then').and.callFake(function(fn) {
+          return fn(false);
+        })
+      }
+    );
+
+    dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY);
+
+    expect(dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
+  });
+
+  it('should not create a dynamic overlay for the given component if it is already created', function() {
+    spyOn(dynamicViewOverlayService, 'createOverlay');
+
+    // fake view open
+    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
+        then: jasmine.createSpy('then').and.callFake(function(fn) {
+          return fn(true);
+        })
+      }
+    );
+
+    // no new view should be created, as we already have one
+    dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY);
+    expect(dynamicViewOverlayService.createOverlay).not.toHaveBeenCalledWith(TEST_DUMMY);
+  });
+
+  it('should create multiple instances of a dynamic view', function() {
+    spyOn(dynamicViewOverlayService, 'createOverlay');
+    // fake no view open
+    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+      {
+        then: jasmine.createSpy('then').and.callFake(function(fn) {
+          return fn(false);
+        })
+      }
+    );
+
+    dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY_MULTI_VIEW);
+    expect(dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(1);
+
+    // although a view is open, a new one should be created
+    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+      {
+        then: jasmine.createSpy('then').and.callFake(function(fn) {
+          return fn(true);
+        })
+      }
+    );
+    dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY_MULTI_VIEW);
+    expect(dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(2);
   });
 
   describe(' - isOverlayOpen', function() {

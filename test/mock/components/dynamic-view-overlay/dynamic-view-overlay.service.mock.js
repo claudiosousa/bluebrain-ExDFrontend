@@ -14,6 +14,10 @@
     });
     this.getParentOverlayWrapper = jasmine.createSpy('getParentOverlayWrapper');
     this.getOverlayParentElement = jasmine.createSpy('getOverlayParentElement');
+    this.closeAllOverlaysOfType = jasmine.createSpy('closeAllOverlaysOfType');
+    this.createDynamicOverlay = jasmine.createSpy('createDynamicOverlay').and.returnValue({
+      then: jasmine.createSpy('then').and.callFake(function(fn) {fn();})
+    });
   })
 
   .constant('DYNAMIC_VIEW_CHANNELS', {

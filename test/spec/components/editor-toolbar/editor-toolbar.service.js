@@ -28,5 +28,23 @@ describe('Service: EditorToolbar', function() {
       editorToolbarService.showEnvironmentSettingsPanel = false;
       expect(editorToolbarService.isEnvironmentSettingsPanelActive).toBeFalsy();
     });
+
+    it('Toggle Log Console should create console overlay if none is open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(false);
+      })});
+      editorToolbarService.toggleLogConsole();
+      expect(editorToolbarService.isLogConsoleActive).toBe(true);
+      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE, true);
+    });
+
+    it('Toggle Log Console should be closed if already open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(true);
+      })});
+      editorToolbarService.toggleLogConsole();
+      expect(editorToolbarService.isLogConsoleActive).toBe(false);
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
+    });
   });
 });

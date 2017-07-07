@@ -96,6 +96,16 @@
       return overlay;
     }
 
+    createDynamicOverlay(channel, showOnlyOneInstance = false) {
+      this.isOverlayOpen(channel).then(
+        overlayOpen => {
+          // create a new view, only if multiple instances are possible or the view is not open
+          if (!showOnlyOneInstance || !overlayOpen) {
+            this.createOverlay(channel, true);
+          }
+        });
+    };
+
     removeOverlay(id) {
       document.getElementById(id).remove();
       delete this.overlays[id];
