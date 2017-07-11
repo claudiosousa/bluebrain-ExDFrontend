@@ -245,7 +245,7 @@ describe('Service: dynamicViewOverlayService', function() {
 
       // Test the stuff
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(1);
-    dynamicViewOverlayService.isOverlayOpen('test-channel').then(function(result) {
+      dynamicViewOverlayService.isOverlayOpen('test-channel').then(function(result) {
       expect(result).toBeTruthy();
     });
       $rootScope.$digest();

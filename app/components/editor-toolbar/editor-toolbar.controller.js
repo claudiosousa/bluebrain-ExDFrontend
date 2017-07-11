@@ -454,14 +454,6 @@
       }
     };
 
-    toggleBrainvisualizer() {
-      this.editorToolbarService.showBrainvisualizerPanel = !this.editorToolbarService.isBrainVisualizerActive;
-      this.nrpAnalytics.eventTrack('Toggle-brainvisualizer-panel', {
-        category: 'Simulation-GUI',
-        value: this.editorToolbarService.isBrainVisualizerActive
-      });
-    }
-
     // robot view
     robotViewButtonClickHandler() {
       if (!this.gz3dViewsService.hasCameraView()) {

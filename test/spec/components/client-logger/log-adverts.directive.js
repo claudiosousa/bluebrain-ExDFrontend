@@ -4,7 +4,6 @@ describe('Directive: logAdverts', function() {
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('clientLoggerModule'));
-    beforeEach(module('editorToolbarServiceMock'));
     beforeEach(module('exd.templates')); // import html template
 
     var $rootScope,

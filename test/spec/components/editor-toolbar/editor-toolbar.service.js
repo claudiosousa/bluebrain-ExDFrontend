@@ -35,7 +35,7 @@ describe('Service: EditorToolbar', function() {
       })});
       editorToolbarService.toggleLogConsole();
       expect(editorToolbarService.isLogConsoleActive).toBe(true);
-      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE, true);
+      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
     });
 
     it('Toggle Log Console should be closed if already open', function() {

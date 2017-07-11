@@ -30,7 +30,8 @@
         return {
           templateUrl: 'components/brain-visualizer/brain-visualizer-panel.template.html',
           restrict: 'E',
-          scope: true  // create a child scope for the directive and inherits the parent scope properties
+          scope: true,  // create a child scope for the directive and inherits the parent scope properties
+          controller: 'brainvisualizerPanelCtrl',
         };
       }
     ]);

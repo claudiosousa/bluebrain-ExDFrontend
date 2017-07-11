@@ -31,12 +31,10 @@
       'backendInterfaceService',
       'RESET_TYPE',
       'spikeListenerService',
-      'editorToolbarService',
       function (simulationConfigService,
                 backendInterfaceService,
                 RESET_TYPE,
-                spikeListenerService,
-                editorToolbarService)
+                spikeListenerService)
       {
         return {
           templateUrl: 'components/brain-visualizer/brain-visualizer.template.html',
@@ -48,7 +46,6 @@
           {
             var brain3D;
             var brainContainer = element.find('.esv-brainvisualizer-main');
-            var parentScope = scope.$parent;
 
             scope.initializing = true;
             scope.minMaxClippingSliderValue = 0;
@@ -162,38 +159,19 @@
               brain3D.updatePopulationVisibility();
             };
 
-            parentScope.$watch('editorToolbarService.showBrainvisualizerPanel', function ()
+            scope.initWithFile();
+
+            var onNewSpikesMessageReceived = function (message)
             {
-              var visible = editorToolbarService.showBrainvisualizerPanel;
-
-              if (visible && !brain3D)
-              {
-                scope.initWithFile();
-              }
-              else if (brain3D)
-              {
-                brain3D.setPaused(!visible);
-                brain3D.flushPendingSpikes();
-              }
-
-              if (!visible)
-              {
-                spikeListenerService.stopListening(scope.onNewSpikesMessageReceived);
-              }
-              else if (scope.spikeScaler>0)
-              {
-                  spikeListenerService.startListening(scope.onNewSpikesMessageReceived);
-              }
-
-            });
-
-            scope.onNewSpikesMessageReceived = function (message)
-            {
-              if (brain3D)
-              {
-                brain3D.displaySpikes(message.spikes);
-              }
+              brain3D.displaySpikes(message.spikes);
             };
+
+            if (scope.spikeScaler>0)
+            {
+                spikeListenerService.startListening(onNewSpikesMessageReceived);
+            }
+
+
 
             scope.updateSpikeScaler = function()
             {
@@ -201,11 +179,11 @@
               {
                 if (scope.spikeScaler>0)
                 {
-                  spikeListenerService.startListening(scope.onNewSpikesMessageReceived);
+                  spikeListenerService.startListening(onNewSpikesMessageReceived);
                 }
                 else
                 {
-                  spikeListenerService.stopListening(scope.onNewSpikesMessageReceived);
+                  spikeListenerService.stopListening(onNewSpikesMessageReceived);
                   if (brain3D)
                   {
                     brain3D.flushPendingSpikes();
@@ -269,12 +247,9 @@
             // Clean up on leaving
             scope.$on('$destroy', function ()
             {
-              if (brain3D !== undefined)
-              {
-                brain3D.terminate();
-              }
+              brain3D.terminate();
 
-              spikeListenerService.stopListening(scope.onNewSpikesMessageReceived);
+              spikeListenerService.stopListening(onNewSpikesMessageReceived);
             });
           }
         };

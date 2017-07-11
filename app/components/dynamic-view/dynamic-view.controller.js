@@ -93,10 +93,11 @@
         name: 'Brain Visualizer',
         directive: 'brainvisualizer-panel',
         overlayDefaultSize: {
-          width: 500,
-          height: 500
+          width: 950,
+          height: 700
         },
         isResizeable: true,
+        allowMultipleViews: false,
       },
       ENVIRONMENT_RENDERING: {
         name: 'Environment Rendering',

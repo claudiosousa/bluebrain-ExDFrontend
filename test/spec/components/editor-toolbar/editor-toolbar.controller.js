@@ -671,15 +671,27 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should enable display of the brainvisualizer panel', function() {
-      editorToolbarService.showBrainvisualizerPanel = false;
-      editorToolbarController.toggleBrainvisualizer();
-      expect(editorToolbarService.showBrainvisualizerPanel).toBeTruthy();
+      dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+        {
+          then: jasmine.createSpy('then').and.callFake(function(fn) {
+            fn(false);
+          })
+        });
+      editorToolbarService.toggleBrainvisualizer();
+      expect(editorToolbarService.isBrainVisualizerActive).toBeTruthy();
+      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
     });
 
-    it('should open of the brainvisualizer panel', function() {
-      editorToolbarService.showBrainvisualizerPanel = false;
-      editorToolbarController.toggleBrainvisualizer();
-      expect(editorToolbarService.showBrainvisualizerPanel).toBe(true);
+    it('should close of the brainvisualizer panel', function() {
+      dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
+        {
+          then: jasmine.createSpy('then').and.callFake(function(fn) {
+            fn(true);
+          })
+        });
+      editorToolbarService.toggleBrainvisualizer();
+      expect(editorToolbarService.isBrainVisualizerActive).toBeFalsy();
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
     });
   });
 

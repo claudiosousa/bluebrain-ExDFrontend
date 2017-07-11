@@ -24,59 +24,20 @@
 (function () {
   'use strict';
 
-  angular.module('exdFrontendApp').controller('brainvisualizerPanelCtrl',
-    ['$rootScope',
-      '$scope',
-      'simulationInfo',
-      'bbpConfig',
-      'gz3d',
-      'baseEventHandler',
-      'editorToolbarService',
+  angular.module('exdFrontendApp').controller('brainvisualizerPanelCtrl', [
+    '$rootScope',
+    '$scope',
+    'simulationInfo',
+    'editorToolbarService',
     function ($rootScope,
               $scope,
               simulationInfo,
-              bbpConfig,
-              gz3d,
-              baseEventHandler,
               editorToolbarService) {
+    
+      $scope.simulationID = simulationInfo.simulationID;
+      $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
-    var serverConfig = simulationInfo.serverConfig;
-    $scope.simulationID = simulationInfo.simulationID;
-    $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
-    $scope.editorToolbarService = editorToolbarService; // TODO: remove this from scope and use it as viewmodel via its directive
+      $scope.$on('$destroy', () => editorToolbarService.showBrainvisualizerPanel = false);
 
-    $scope.panelIsOpen = false;
-
-    $scope.openCallback = function() {
-      // The Panel is opened
-      $scope.panelIsOpen = true;
-    };
-
-    $scope.closeCallback = function() {
-      // The Panel is closed
-      $scope.panelIsOpen = false;
-    };
-
-    // clean up on leaving
-    $scope.$on("$destroy", function() {
-      // prevent calling the select functions of the tabs
-      $scope.showBrainvisualizerPanel = false;
-    });
-
-    $scope.$watch('editorToolbarService.showBrainvisualizerPanel', function() {
-      if (editorToolbarService.isBrainVisualizerActive) {
-        $scope.openCallback();
-      } else {
-        $scope.closeCallback();
-      }
-    });
-
-    $scope.suppressKeyPress = function(event) {
-      baseEventHandler.suppressAnyKeyPress(event);
-    };
-
-    $scope.closePanel = function() {
-      editorToolbarService.closeBrainVisualizer();
-    };
-  }]);
+    }]);
 }());

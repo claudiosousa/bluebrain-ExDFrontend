@@ -29,18 +29,12 @@
     constructor(dynamicViewOverlayService, DYNAMIC_VIEW_CHANNELS) {
       this.showBrainvisualizerPanel = false;
       this.showLogConsole = false;
-      this.missedConsoleLogs = 0;
       this.showEnvironmentSettingsPanel = false;
       this.showSpikeTrain = false;
-      this.showRobotView = false;
       this.showNavigationModeMenu = false;
       this.videoStreamsAvailable = false;
       this.dynamicViewOverlayService = dynamicViewOverlayService;
       this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
-    }
-
-    closeBrainVisualizer() {
-      this.showBrainvisualizerPanel = false;
     }
 
     get isBrainVisualizerActive()
@@ -74,7 +68,18 @@
         if(state) {
           this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
         } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE, true);
+          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
+        }
+      });
+    }
+
+    toggleBrainvisualizer() {
+      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER).then(state => {
+        this.showBrainvisualizerPanel = !state;
+        if(state) {
+          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
+        } else {
+          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
         }
       });
     }

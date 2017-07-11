@@ -10,18 +10,15 @@ describe('Directive: logConsole', function() {
         element,
         childScope,
         clientLoggerServiceMock,
-        editorToolbarService,
         clientLoggerController,
         LOG_TYPE;
 
-    beforeEach(module('editorToolbarServiceMock'));
     beforeEach(module('clientLoggerServiceMock'));
 
     describe(' - test without missed logs', function() {
-        beforeEach(inject(function(_$rootScope_, _$timeout_, $compile, _editorToolbarService_, _clientLoggerService_, _LOG_TYPE_) {
+        beforeEach(inject(function(_$rootScope_, _$timeout_, $compile, _clientLoggerService_, _LOG_TYPE_) {
             $rootScope = _$rootScope_;
             $timeout = _$timeout_;
-            editorToolbarService = _editorToolbarService_;
             clientLoggerServiceMock = _clientLoggerService_;
             LOG_TYPE = _LOG_TYPE_;
 
