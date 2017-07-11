@@ -1,26 +1,20 @@
-<div  movable movable-anchor=".widget-popup-header" randomize-initial-position class="widget-popup video-streams-popup" resizeable="true">
+<div class="video-streams-popup">
     <!-- build:css(.tmp) styles/esv/video-streams.css -->
     <link rel="stylesheet" href="styles/esv/video-streams.css" />
     <!-- endbuild -->
 
-    <div class="widget-popup-header">
-        <h5 class="widget-popup-title">Video stream viewer</h5>
-    </div>
-    <button type="button" class="widget-popup-close" ng-click="toggleVisibility()">×</button>
-    <div class="widget-popup-content">
-        <div class="video-streams-chooser">
-            Video stream:
-            <select ng-model="url" ng-change="showVideoStream(url)">
+    <div class="video-streams-chooser">
+        Video stream:
+        <select ng-model="url" ng-change="showVideoStream(url)">
                 <option value=""></option>
                 <option ng-repeat="stream in videoStreams" value="{{stream.fullUrl}}">{{stream.url}}</option>
             </select>
+    </div>
+    <div class="video-streams-image" ng-show="videoUrl">
+        <div class="video-streams-unavailable">
+            <span ng-hide="stateService.currentState === STATE.STARTED">Start the simulation to start streaming camera image</span>
+            <span ng-show="stateService.currentState === STATE.STARTED">Connecting...</span>
         </div>
-        <div class="video-streams-image" ng-show="videoUrl">
-            <div class="video-streams-unavailable">
-                <span ng-hide="stateService.currentState === STATE.STARTED">Start the simulation to start streaming camera image</span>
-                <span ng-show="stateService.currentState === STATE.STARTED">Connecting...</span>
-            </div>
-            <img ng-src="{{videoUrl}}"></img>
-        </div>
+        <img ng-src="{{videoUrl}}"></img>
     </div>
 </div>

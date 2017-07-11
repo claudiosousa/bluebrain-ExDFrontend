@@ -177,11 +177,6 @@
           );
         });
       };
-
-      this.openVideoStream = function() {
-        // TODO: use a service for that?
-        $rootScope.$emit('openVideoStream');
-      };
     }
 
     /**
@@ -524,14 +519,14 @@
     }
 
     /**
-     * Toogle the video stream widget visibility
-     */
+    * Toogle the video stream widget visibility
+    */
     videoStreamsToggle() {
       if (!this.editorToolbarService.videoStreamsAvailable) {
         return;
       }
 
-      this.openVideoStream();
+      this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.STREAM_VIEWER);
     };
 
     environmentSettingsClickHandler() {

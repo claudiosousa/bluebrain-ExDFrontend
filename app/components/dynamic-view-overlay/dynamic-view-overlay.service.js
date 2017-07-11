@@ -61,7 +61,7 @@
       // create overlay
       let scope = this.$rootScope.$new();
       let overlay = this.$compile(DynamicViewOverlayService.OVERLAY_HTML)(scope);
-
+      overlay.hide();
       // each overlay gets a unique ID
       let htmlID = 'dynamic-view-overlay-' + this.overlayIDCount;
       overlay[0].id = htmlID;
@@ -81,7 +81,9 @@
             overlayWrapper.setAttribute('resizeable', dynamicViewChannel.isResizeable.toString());
           }
         }
+        overlay.show();
       });
+
 
       this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel.directive, {
         category: 'Simulation-GUI',
