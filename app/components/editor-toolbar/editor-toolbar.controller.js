@@ -184,9 +184,23 @@
       };
     }
 
+    /**
+     * Notify the widgets the reset events occurred on the backend side, e.g., from VirtualCoach
+     * Hide the editor if visible, reset the UI
+     */
+    resetOccuredOnServer(){
+      if (this.editorsPanelService.showEditorPanel) {
+        this.editorsPanelService.toggleEditors();
+      }
+      // Close opened object inspectors. ResetType is 1
+      this.notifyResetToWidgets(1);
+      this.updatePanelUI();
+      this.gz3d.scene.resetView();
+    }
+
     /* status messages are listened to here. A splash screen is opened to display progress messages. */
     /* This is the case when closing or resetting a simulation/environment for example.
-     /* Loading is taken take of by a progressbar somewhere else. */
+    /* Loading is taken take of by a progressbar somewhere else. */
     /* Timeout messages are displayed in the toolbar. */
     messageCallback(message) {
       // prevent this analytics event from sent multiple time
@@ -226,6 +240,7 @@
             if (!this.splash.showButton) {
               // blocking modal -> we using the splash for some in-simulation action (e.g. resetting),
               // so we don't have to close the websocket, just the splash screen.
+              this.resetOccuredOnServer();
               this.splash.close();
               this.splash.splashScreen = undefined;
             } else {
