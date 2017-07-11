@@ -80,7 +80,7 @@ describe('Services: backendInterfaceService', function () {
   it('should call the success callback when the setTransferFunction PUT request succeeds', function () {
     $httpBackend.whenPUT(urlRegex).respond(200);
     var callback = jasmine.createSpy('callback');
-    backendInterfaceService.setTransferFunction('transferFunctionName', {}, callback);
+    backendInterfaceService.editTransferFunction('transferFunctionName', {}, callback);
     $httpBackend.flush();
     expect(callback).toHaveBeenCalled();
   });
@@ -88,7 +88,7 @@ describe('Services: backendInterfaceService', function () {
   it('should call the failure callback when the setTransferFunction PUT request fails', function () {
     $httpBackend.whenPUT(urlRegex).respond(500);
     var callback = jasmine.createSpy('callback');
-    backendInterfaceService.setTransferFunction('transferFunctionName', {}, function(){}, callback);
+    backendInterfaceService.editTransferFunction('transferFunctionName', {}, function(){}, callback);
     $httpBackend.flush();
     expect(callback).toHaveBeenCalled();
   });

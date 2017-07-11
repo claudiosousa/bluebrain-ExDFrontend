@@ -70,9 +70,13 @@
               method: 'GET',
               interceptor: {responseError: serverError.displayHTTPError}
             },
-            patch: {
+            edit: {
               method: 'PUT',
               url: backendBaseUrl + '/simulation/:sim_id/transfer-functions/:transfer_function_name'
+            },
+            add: {
+              method: 'POST',
+              url: backendBaseUrl + '/simulation/:sim_id/transfer-functions'
             },
             delete: {
               method: 'DELETE',
@@ -330,11 +334,21 @@
               }
             );
           },
-          setTransferFunction: function (name, data, successCallback, errorCallback) {
-            resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).patch(
+          editTransferFunction: function (name, data, successCallback, errorCallback) {
+            resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).edit(
               {
                 sim_id: simulationInfo.simulationID,
                 transfer_function_name: name
+              },
+              data,
+              successCallback,
+              errorCallback
+            );
+          },
+          addTransferFunction: function(data, successCallback, errorCallback) {
+            resourceTransferFunctionSimulation(simulationInfo.serverBaseUrl).add(
+              {
+                sim_id: simulationInfo.simulationID
               },
               data,
               successCallback,

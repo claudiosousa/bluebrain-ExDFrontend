@@ -266,35 +266,40 @@
           delete transferFunction.error[scope.ERROR.NO_OR_MULTIPLE_NAMES];
         };
 
-        scope.update = function(transferFunction) {
-          let homonymousTf = scope.transferFunctions
-            .filter(tf => tf.name === transferFunction.name && tf !== transferFunction);
-
-          if (homonymousTf.length) {
-            serverError.displayError({
-              title: 'Transfer function error',
-              template: `Name '${transferFunction.name}' is used by a different transfer function`,
-              label: 'OK'
-            });
-            return;
-          }
+        scope.update = function(transferFunction, new_tf) {
 
           return ensurePauseStateAndExecute(function(cb) {
             cleanError(transferFunction, scope.ERROR.RUNTIME);
             delete transferFunction.error[scope.ERROR.LOADING];
-            backendInterfaceService.setTransferFunction(transferFunction.id, transferFunction.code,
-              function(){
-                transferFunction.dirty = false;
-                transferFunction.local = false;
-                transferFunction.id = pythonCodeHelper.getFunctionName(transferFunction.code);
-                scope.cleanCompileError(transferFunction);
-                cb();
-              },
-              function(data) {
-                serverError.displayHTTPError(data);
-                cb();
-              }
-            );
+            if (new_tf) {
+              backendInterfaceService.addTransferFunction(transferFunction.code,
+                function(){
+                  transferFunction.dirty = false;
+                  transferFunction.local = false;
+                  transferFunction.id = pythonCodeHelper.getFunctionName(transferFunction.code);
+                  scope.cleanCompileError(transferFunction);
+                  cb();
+                },
+                function(data) {
+                  serverError.displayHTTPError(data);
+                  cb();
+                }
+              );
+            } else {
+              backendInterfaceService.editTransferFunction(transferFunction.id, transferFunction.code,
+                function(){
+                  transferFunction.dirty = false;
+                  transferFunction.local = false;
+                  transferFunction.id = pythonCodeHelper.getFunctionName(transferFunction.code);
+                  scope.cleanCompileError(transferFunction);
+                  cb();
+                },
+                function(data) {
+                  serverError.displayHTTPError(data);
+                  cb();
+                }
+              );
+            }
           });
         };
 
@@ -341,7 +346,8 @@
             scope.transferFunctions.unshift(transferFunction);
           }
           addedTransferFunctionCount = addedTransferFunctionCount + 1;
-          scope.update(transferFunction);
+
+          scope.update(transferFunction, true);
           scope.collabDirty = environmentService.isPrivateExperiment();
           autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
         };
@@ -449,7 +455,21 @@
           );
         };
 
-        function applyTranfertFunctions(tfs) {
+        function applyTransferFunctions(tfs) {
+          var deferred = $q.defer();
+          // Make sure uploaded file doesn't contain duplicate definition names
+          var tf_names = tfs.map( function(tf) {
+            var tf_name = pythonCodeHelper.getFunctionName(tf.code);
+            return tf_name;
+          });
+          if (new Set(tf_names).size !== tf_names.length) {
+            serverError.displayError({
+              title: 'Duplicate definition names',
+              template: `Uploaded Transfer Function file contains duplicate definition names. Fix file locally and upload again`,
+              label: 'OK'
+            });
+            return deferred.promise;
+          }
           return ensurePauseStateAndExecute(function(cb) {
             // Removes all TFs
             return scope.delete(scope.transferFunctions)
@@ -460,7 +480,7 @@
                   scope.onTransferFunctionChange(tf);
                   tf.id = tf.name;
                   tf.local = true;
-                  return scope.update(tf);
+                  return scope.update(tf, true);
                 }));
               })
               .then(cb);
@@ -472,7 +492,7 @@
             var deferred = $q.defer();
             var textReader = new FileReader();
             textReader.onload = function(e) {
-              applyTranfertFunctions(splitCodeFile(e.target.result))
+              applyTransferFunctions(splitCodeFile(e.target.result))
                 .then(deferred.resolve);
             };
             textReader.readAsText(file);
@@ -488,7 +508,7 @@
           scope.collabDirty = true;
           if (applyChanges)
             loadTFs().then(function() {
-              applyTranfertFunctions(autoSaved);
+              applyTransferFunctions(autoSaved);
             });
           else
             scope.transferFunctions = autoSaved;

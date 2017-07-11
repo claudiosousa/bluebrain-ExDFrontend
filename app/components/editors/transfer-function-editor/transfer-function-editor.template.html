@@ -77,7 +77,7 @@
     <button type="button" class="btn btn-default btn-md"
       owner-only
       ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
-      ng-click="update(transferFunction)"
+      ng-click="update(transferFunction, false)"
       v-busy="transferFunction.dirty && stateService.statePending"
       v-busy-label="Applying changes"
       v-pressable>
