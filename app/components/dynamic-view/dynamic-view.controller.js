@@ -137,6 +137,17 @@
           width: 500,
           height: 400
         }
+      },
+      SPIKE_TRAIN: {
+        name: 'Spike-Train',
+        directive:  'spike-train',
+        allowMultipleViews: false, // default true
+        overlayDefaultSize: {
+          width: 800,
+          height: 250,
+          minWidth: 700,
+          minHeight: 200
+        }
       }
     });
 

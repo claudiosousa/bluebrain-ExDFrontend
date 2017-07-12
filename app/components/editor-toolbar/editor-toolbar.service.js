@@ -83,6 +83,17 @@
         }
       });
     }
+
+    toggleSpikeTrain() {
+      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN).then(state => {
+        this.showSpikeTrain = !state;
+        if(state) {
+          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
+        } else {
+          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
+        }
+      });
+    }
   }
 
   angular.module('editorToolbarModule')

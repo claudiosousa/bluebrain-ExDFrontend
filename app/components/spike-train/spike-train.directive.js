@@ -25,9 +25,8 @@
   'use strict';
 
   angular.module('spikeTrainModule')
-    .directive('spikeTrain', ['$interval', 'editorToolbarService', 'RESET_TYPE',
-    ($interval, editorToolbarService, RESET_TYPE) => {
-
+    .directive('spikeTrain', [
+      () => {
       return {
         templateUrl: 'components/spike-train/spike-train.template.html',
         restrict: 'E',
@@ -36,57 +35,7 @@
           close: '&closeFn'
         },
         controller: 'SpikeTrainController',
-        controllerAs: 'vm',
-        link: function(scope, element, attrs) {
-
-          scope.editorToolbarService = editorToolbarService;
-          const canvas = scope.vm.drawingCanvas = element.find('canvas')[0];
-
-          /**
-           * Returns whether the size could been calculated
-           */
-          let calculateCanvas = () => {
-            const parent = canvas.parentNode;
-            if (!parent.clientHeight)
-              return false;
-
-            canvas.setAttribute('height', parent.clientHeight - 6);//margin to avoid parasite scrollbar
-            canvas.setAttribute('width', parent.clientWidth);
-
-            scope.vm.calculateCanvasSize();
-            scope.vm.redraw();
-            return true;
-          };
-
-          scope.onResizeEnd = calculateCanvas;
-
-          //ensures that redraw only happens after window resizing stoped for some time
-          angular.element(window).on('resize.spiketrain', _.debounce(scope.onResizeEnd, 300));
-
-          scope.$watch('editorToolbarService.showSpikeTrain', visible => {
-            if (visible) {
-              scope.vm.startSpikeDisplay();
-              //will try to render the canvas until it is visible
-              let checkForVisibility = $interval(() => calculateCanvas() && $interval.cancel(checkForVisibility), 30);
-            } else
-              scope.vm.stopSpikeDisplay();
-          });
-
-          scope.$on('RESET', (event, resetType) => {
-            if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
-              scope.vm.clearPlot();
-          });
-
-          scope.$on('$destroy', () => {
-            scope.vm.stopSpikeDisplay();
-            angular.element(window).off('resize.spiketrain');
-          });
-
-          scope.close = () =>
-          {
-            editorToolbarService.showSpikeTrain = false;
-          };
-        }
+        controllerAs: 'vm'
       };
     }]);
 }());

@@ -1,44 +1,104 @@
 'use strict';
 
-describe('Directive: spiketrain', function() {
+describe('Controller: spiketrain', function() {
 
   beforeEach(module('spikeTrainModule'));
   beforeEach(module('exd.templates')); // import html template
+  beforeEach(module('exdFrontendApp.Constants'));
 
   beforeEach(module('simulationInfoMock'));
+  beforeEach(module('editorToolbarServiceMock'));
+  beforeEach(module('spikeListenerServiceMock'));
 
-  var spikeListenerServiceMock = {
-    startListening: jasmine.createSpy('startListening'),
-    stopListening: jasmine.createSpy('stopListening')
-  };
+  var $element, $rootScope, $scope, $timeout;
+  var mockAngularElement;
+  var spikeController, canvas, canvasParent, SPIKE_TIMELABEL_SPACE = 0;
+  var editorToolbarService, spikeListenerService;
 
-  var spikeController, canvas,
-    SPIKE_TIMELABEL_SPACE = 0;
-  beforeEach(inject(function(_$rootScope_, $controller, $filter) {
+  beforeEach(module(function ($provide) {
+    canvas = document.createElement('canvas');
+    canvasParent = document.createElement('div');
+    canvasParent.appendChild(canvas);
+
+    mockAngularElement = [
+      // the mock HTML DOM
+      {
+        getElementsByClassName: jasmine.createSpy('getElementsByClassName').and.returnValue(
+          [{}, {}]
+        ),
+        getElementsByTagName: jasmine.createSpy('getElementsByClassName').and.returnValue(
+          [{remove: jasmine.createSpy('remove')}]
+        )
+      }
+    ];
+    mockAngularElement.find = jasmine.createSpy('find').and.returnValue([canvas]);
+    $provide.value('$element', mockAngularElement);
+  }));
+
+  beforeEach(inject(function(_$element_,
+                             _$rootScope_,
+                             $controller,
+                             $filter,
+                             _$timeout_,
+                             _RESET_TYPE_,
+                             _editorToolbarService_,
+                             _spikeListenerService_) {
+    $element = _$element_;
+    $rootScope = _$rootScope_;
+    $scope = $rootScope.$new();
+    $timeout = _$timeout_;
+    editorToolbarService = _editorToolbarService_;
+    spikeListenerService = _spikeListenerService_;
+
     spikeController = $controller('SpikeTrainController', {
       $filter: $filter,
-      spikeListenerService: spikeListenerServiceMock,
+      $scope: $scope,
+      spikeListenerService: spikeListenerService,
       SPIKE_TIMELABEL_SPACE: SPIKE_TIMELABEL_SPACE
     });
     var parent = document.createElement('div');
-    canvas = document.createElement('canvas');
     parent.appendChild(canvas);
-    spikeController.drawingCanvas = canvas;
   }));
 
   beforeEach(function() {
     spyOn(spikeController, 'drawSeparator').and.callThrough();
     spyOn(spikeController, 'plotMessage').and.callThrough();
+    spyOn(spikeController, 'clearPlot').and.callThrough();
+    spyOn(spikeController, 'startSpikeDisplay').and.callThrough();
+    spyOn(spikeController, 'stopSpikeDisplay').and.callThrough();
+    spyOn(spikeController, 'redraw').and.callThrough();
+  });
+
+  it('should call controller methods when created', function() {
+    expect(spikeController.canvas).toBeDefined();
+
+    spyOn($scope, '$watch').and.callThrough();
+    $timeout.flush();
+    expect($scope.$watch).toHaveBeenCalled();
+  });
+
+  it('should stop and hide on close', function() {
+    editorToolbarService.showSpikeTrain = true;
+    $scope.$destroy();
+
+    expect(editorToolbarService.showSpikeTrain).toBe(false);
+    expect(spikeController.stopSpikeDisplay).toHaveBeenCalled();
+  });
+
+  it('should clearPlot on RESET', function() {
+    $scope.$emit('RESET');
+    $scope.$digest();
+    expect(spikeController.clearPlot).toHaveBeenCalled();
   });
 
   it('should call startListening when startSpikeDisplay ', function() {
     spikeController.startSpikeDisplay();
-    expect(spikeListenerServiceMock.startListening).toHaveBeenCalled();
+    expect(spikeListenerService.startListening).toHaveBeenCalled();
   });
 
   it('should call stopListening when stopSpikeDisplay ', function() {
     spikeController.stopSpikeDisplay();
-    expect(spikeListenerServiceMock.stopListening).toHaveBeenCalled();
+    expect(spikeListenerService.stopListening).toHaveBeenCalled();
   });
 
   it('should empty message on clear plot ', function() {
@@ -48,7 +108,6 @@ describe('Directive: spiketrain', function() {
   });
 
   it('should add separator the nth time it is open', function() {
-    spikeController.startSpikeDisplay();
     expect(spikeController.messages.length).toBe(0);
 
     spikeController.startSpikeDisplay();
@@ -57,9 +116,8 @@ describe('Directive: spiketrain', function() {
   });
 
   it('should add plot new message and queue it', function() {
-    spikeController.startSpikeDisplay();
     var msg = {};
-    spikeListenerServiceMock.startListening.calls.mostRecent().args[0](msg);
+    spikeListenerService.startListening.calls.mostRecent().args[0](msg);
     expect(spikeController.messages.length).toBe(1);
     expect(spikeController.messages[0]).toBe(msg);
     expect(spikeController.plotMessage).toHaveBeenCalled();
@@ -113,8 +171,6 @@ describe('Directive: spiketrain', function() {
   it('should plot separator', function() {
     spyOn(spikeController, 'calculateCanvasSize');
     spikeController.visibleWidth = 300;
-
-    spikeController.startSpikeDisplay(); //first time visible
     expect(spikeController.messages.length).toBe(0);
 
     spikeController.startSpikeDisplay();  //second  time visible
@@ -143,7 +199,7 @@ describe('Directive: spiketrain', function() {
       width: 300,
       height: 200,
       parentNode: {
-        clientWidth: 200
+        offsetWidth: 200
       },
       setAttribute: jasmine.createSpy('setAttribute')
     };
@@ -151,6 +207,28 @@ describe('Directive: spiketrain', function() {
     var res = spikeController.calculateCanvasSize();
     expect(res).toBe(false);
     expect(spikeController.canvas.setAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should execute calculateCanvas() correctly', function() {
+    spyOn(spikeController, 'calculateCanvasSize').and.callThrough();
+    var mockCanvas = {
+      parentNode: {
+        offsetWidth: 500,
+        offsetHeight: 300
+      },
+      setAttribute: jasmine.createSpy('setAttribute')
+    };
+    spikeController.canvas = mockCanvas;
+
+    var result = spikeController.calculateCanvas();
+
+    expect(mockCanvas.setAttribute).toHaveBeenCalledWith('width', mockCanvas.parentNode.offsetWidth);
+    expect(mockCanvas.setAttribute).toHaveBeenCalledWith('height', mockCanvas.parentNode.offsetHeight - 10);
+
+    expect(spikeController.calculateCanvasSize).toHaveBeenCalled();
+    expect(spikeController.redraw).toHaveBeenCalled();
+
+    expect(result).toBe(true);
   });
 
 });

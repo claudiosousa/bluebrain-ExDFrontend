@@ -71,10 +71,16 @@
       }
 
       if(this.channelType.overlayDefaultSize && DynamicViewOverlayController.isResizeable(this.channelType)) {
-        let overlayWrapper = this.$element[0].getElementsByClassName(
-          this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
-          overlayWrapper.style.width = this.channelType.overlayDefaultSize.width + 'px';
-          overlayWrapper.style.height = this.channelType.overlayDefaultSize.height + 'px';
+        let overlayWrapper = this.$element[0].getElementsByClassName(this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
+        overlayWrapper.style.width = this.channelType.overlayDefaultSize.width + 'px';
+        overlayWrapper.style.height = this.channelType.overlayDefaultSize.height + 'px';
+
+        if (this.channelType.overlayDefaultSize.minWidth) {
+          overlayWrapper.style.minWidth = this.channelType.overlayDefaultSize.minWidth + 'px';
+        }
+        if (this.channelType.overlayDefaultSize.minHeight) {
+          overlayWrapper.style.minHeight = this.channelType.overlayDefaultSize.minHeight + 'px';
+        }
       }
     }
 

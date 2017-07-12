@@ -36,19 +36,70 @@
       this.canvasCtx = this.canvas.getContext('2d');
     }
 
-    constructor($filter, spikeListenerService, SPIKE_TIMELABEL_SPACE) {
+    constructor($element,
+                $filter,
+                $scope,
+                $timeout,
+                RESET_TYPE,
+                SPIKE_TIMELABEL_SPACE,
+                spikeListenerService,
+                editorToolbarService) {
       this.SEPARATOR_MSG = Symbol('sep');
 
       this.$filter = $filter;
       this.spikeListenerService = spikeListenerService;
       this.SPIKE_TIMELABEL_SPACE = SPIKE_TIMELABEL_SPACE;
+      this.editorToolbarService = editorToolbarService;
 
       this.firstRun = true;
       this.messages = [];
       this.neuronCount = 0;
 
       this.onNewSpikesMessage = (msg) => this.newSpikesMessage(msg);
+
+      this.drawingCanvas = $element.find('canvas')[0];
+
+      this.startSpikeDisplay();
+
+      // only start watching for size changes after a little timeout
+      // the flood of size changes during compilation will cause angular to throw digest errors when watched
+      $timeout(
+        () => {
+          $scope.$watch(
+            () => { return [this.canvas.parentNode.offsetWidth, this.canvas.parentNode.offsetHeight].join('x'); },
+            () => { this.calculateCanvas(); }
+          );
+        },
+        200
+      );
+
+      $scope.$on('RESET', (event, resetType) => {
+        if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
+          this.clearPlot();
+      });
+
+      $scope.$on('$destroy', () => {
+        this.editorToolbarService.showSpikeTrain = false;
+        this.stopSpikeDisplay();
+        angular.element(window).off('resize.spiketrain');
+      });
     }
+
+    /**
+     * Returns whether the size could been calculated
+     */
+    calculateCanvas() {
+      const parent = this.canvas.parentNode;
+      if (!parent.offsetWidth || !parent.offsetHeight)
+        return false;
+
+      this.canvas.setAttribute('height', parent.offsetHeight - 10);  //margin to avoid parasite scrollbar
+      this.canvas.setAttribute('width', parent.offsetWidth);
+
+      this.calculateCanvasSize();
+      this.redraw();
+      return true;
+    };
 
     clearPlot() {
       this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -163,15 +214,15 @@
     }
 
     calculateCanvasSize() {
-      this.visibleWidth = this.canvas.parentNode.clientWidth;
-      const width = this.visibleWidth + 40;//40px for off screen buffer
+      this.visibleWidth = this.canvas.parentNode.offsetWidth;
+      const width = this.visibleWidth + 40;  //40px for off screen buffer
       const minHeight = this.neuronCount * SpikeTrainController.MIN_NEURON_HEIGHT + 2 * this.SPIKE_TIMELABEL_SPACE;
       if (width <= this.canvas.width && minHeight <= this.canvas.height)
-        return false; //no canvas size change
+        return false;  //no canvas size change
 
       this.canvas.setAttribute('height', Math.max(this.canvas.height, minHeight));
       this.canvas.setAttribute('width', width);
-      return true;// canvas size changed
+      return true;  // canvas size changed
     }
 
     redraw() {
@@ -182,7 +233,15 @@
   angular
     .module('spikeTrainModule', ['spikeListenerModule', 'exdFrontendApp.Constants'])
     .constant('SPIKE_TIMELABEL_SPACE', 15)// Vertical space in the canvas reserved for the time label
-    .controller('SpikeTrainController', ['$filter', 'spikeListenerService', 'SPIKE_TIMELABEL_SPACE',
+    .controller('SpikeTrainController', [
+      '$element',
+      '$filter',
+      '$scope',
+      '$timeout',
+      'RESET_TYPE',
+      'SPIKE_TIMELABEL_SPACE',
+      'spikeListenerService',
+      'editorToolbarService',
       (...args) => new SpikeTrainController(...args)]);
 
 })();
