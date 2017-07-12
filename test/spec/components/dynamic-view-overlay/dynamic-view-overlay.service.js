@@ -64,7 +64,7 @@ describe('Service: dynamicViewOverlayService', function() {
       directive: 'test-channel'
     };
 
-    var overlay = dynamicViewOverlayService.createOverlay(channel, true, parentElement);
+    var overlay = dynamicViewOverlayService.createOverlay(channel, parentElement);
 
     defferedOverlayController.resolve(mockOverlayController);
     $rootScope.$digest();

@@ -31,11 +31,9 @@ $overlayHeaderHeight: 50px;
   flex-direction: column;
   position: absolute;
 
-  min-width: 400px;
-  min-height: 200px;
+  min-width: 200px;
+  min-height: 100px;
 
-  width: 30%;
-  height: 20%;
 
   border-radius: 8px;
   border-color: black;
@@ -60,6 +58,8 @@ $overlayHeaderHeight: 50px;
     }
 
     .titlebar-button-close {
+      min-width: 25px;
+      min-height: 25px;
       margin: 10px;
       align-self: center;
     }

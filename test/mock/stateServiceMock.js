@@ -6,7 +6,9 @@
 
     var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
     var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
-    var ensureStateBeforeExecutingSpy = jasmine.createSpy('ensureStateBeforeExecuting');
+    var ensureStateBeforeExecutingSpy = jasmine.createSpy('ensureStateBeforeExecuting').and.callFake(function(STATE, fn) {
+      fn();
+    });
     var getThenSpy = jasmine.createSpy('then');
     var setThenSpy = jasmine.createSpy('then');
     var setCatchSpy = jasmine.createSpy('catch');

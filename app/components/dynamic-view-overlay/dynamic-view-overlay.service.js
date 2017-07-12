@@ -53,7 +53,7 @@
       this.overlayIDCount = 0;
     }
 
-    createOverlay(dynamicViewChannel, isResizeable = true, parentElement = null) {
+    createOverlay(dynamicViewChannel, parentElement = null) {
       if (!angular.isDefined(parentElement) || parentElement === null) {
         parentElement = this.getOverlayParentElement()[0];
       }
@@ -77,7 +77,9 @@
         let overlayWrapper = overlay[0].getElementsByClassName(this.OVERLAY_WRAPPER_CLASS)[0];
         if (overlayWrapper) {
           // set resizeable
-          overlayWrapper.setAttribute('resizeable', isResizeable.toString());
+          if (typeof(dynamicViewChannel.isResizeable) !== 'undefined') {
+            overlayWrapper.setAttribute('resizeable', dynamicViewChannel.isResizeable.toString());
+          }
         }
       });
 
@@ -96,14 +98,26 @@
       return overlay;
     }
 
-    createDynamicOverlay(channel, showOnlyOneInstance = false) {
+    // TODO: Shall we merge the two create functions, or just make it clear when to use which?
+    createDynamicOverlay(channel) {
+      let deferedContinue = this.$q.defer();
       this.isOverlayOpen(channel).then(
         overlayOpen => {
           // create a new view, only if multiple instances are possible or the view is not open
-          if (!showOnlyOneInstance || !overlayOpen) {
-            this.createOverlay(channel, true);
+          if (!(channel.allowMultipleViews !== undefined && !channel.allowMultipleViews) || !overlayOpen) {
+            this.createOverlay(channel);
           }
+          this.isOverlayOpen(channel).then(function(open) {
+              if (open) {
+                deferedContinue.resolve('overlay initialized');
+              }
+              else {
+                deferedContinue.reject('overlay not found');
+              }
+            }
+          );
         });
+      return deferedContinue.promise;
     };
 
     removeOverlay(id) {
@@ -177,8 +191,7 @@
       return deferredIsOpen.promise;
     }
   }
-
-
+  
   angular.module('dynamicViewOverlayModule')
     .factory('dynamicViewOverlayService', [
       '$compile',

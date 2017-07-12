@@ -166,7 +166,7 @@
 
             <!-- toggle jointPlot -->
             <div class="hbp-toolbar-action ng-hide"
-                 ng-click="vm.createDynamicOverlay(vm.DYNAMIC_VIEW_CHANNELS.JOINT_PLOT)"
+                 ng-click="vm.dynamicViewOverlayService.createDynamicOverlay(vm.DYNAMIC_VIEW_CHANNELS.JOINT_PLOT)"
                  help-tooltip="JOINT_PLOT"
                  ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED) || (vm.stateService.currentState === vm.STATE.INITIALIZED)">
                 <img src="img/esv/jointplot_logo.png">
@@ -260,7 +260,6 @@
                 <img src="img/esv/videostream_icon.png" width=31 height=31>
             </div>
             <!-- video streams icon -->
-        </div>
 
             <!-- log console icon -->
             <div class="hbp-toolbar-action hide-overflow"
@@ -275,6 +274,7 @@
                 </div>
             </div>
             <!-- log console icon -->
+        </div>
 
         <!-- owner information -->
         <div ng-if="vm.userContextService.isOwner() === false"

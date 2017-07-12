@@ -234,7 +234,7 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
-      expect(objectInspectorService.toggleView).toHaveBeenCalled();
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
       expect(gz3d.scene.selectEntity).toHaveBeenCalled();
     });
 
@@ -345,7 +345,7 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.resetGUI();
       expect(gz3d.scene.resetView).toHaveBeenCalled();
       expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(null);
-      expect(objectInspectorService.toggleView).toHaveBeenCalledWith(false);
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
     });
 
     it('should call resetView() when "Reset Camera view" checkbox is checked', function() {

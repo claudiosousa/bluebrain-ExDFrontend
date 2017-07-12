@@ -283,7 +283,7 @@
       this.gz3d.scene.resetView(); //update the default camera position, if defined
       if (this.objectInspectorService !== null) {
         this.gz3d.scene.selectEntity(null);
-        this.objectInspectorService.toggleView(false);
+        this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
       }
     }
 
@@ -554,7 +554,6 @@
         value: this.editorToolbarService.isSpikeTrainActive
       });
     };
-
   }
   angular.module('editorToolbarModule', ['helpTooltipModule', 'clb-ui-dialog']).
       controller('EditorToolbarController',

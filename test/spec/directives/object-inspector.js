@@ -3,14 +3,21 @@
 describe('Directive: object-inspector', function () {
 
   var $rootScope, $compile, $scope, $document;
-  var objectInspectorElement, objectInspectorService;
+  var objectInspectorElement;
+  var gz3d;
+  var elementScope;
+  var dynamicViewOverlayService;
+  var overlayWrapperMock;
 
   var baseEventHandlerMock = {
     suppressAnyKeyPress: jasmine.createSpy('suppressAnyKeyPress')
   };
 
+  beforeEach(module('objectInspectorModule'));
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
+  beforeEach(module('gz3dMock'));
+  beforeEach(module('dynamicViewOverlayServiceMock'));
   beforeEach(module(function ($provide) {
     $provide.value('baseEventHandler', baseEventHandlerMock);
   }));
@@ -18,30 +25,48 @@ describe('Directive: object-inspector', function () {
   beforeEach(inject(function (_$rootScope_,
                               _$compile_,
                               _$document_,
-                              _objectInspectorService_) {
+                              _gz3d_,
+                              _dynamicViewOverlayService_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $document = _$document_;
-    objectInspectorService = _objectInspectorService_;
-    $scope = $rootScope.$new();
-    objectInspectorElement = $compile('<object-inspector />')($scope);
-    $scope.$digest();
+    gz3d = _gz3d_;
+    dynamicViewOverlayService = _dynamicViewOverlayService_;
+
+    spyOn(gz3d.gui.guiEvents, 'on').and.callThrough();
+    spyOn(gz3d.gui.guiEvents, 'removeListener').and.callThrough();
+    overlayWrapperMock = {
+      style: {
+        minWidth: '',
+        minHeight: '',
+        width: '',
+        height: ''
+      }
+    };
+    dynamicViewOverlayService.getParentOverlayWrapper.and.returnValue(overlayWrapperMock);
+    spyOn(angular, 'isDefined').and.returnValue(true);
+
   }));
 
-  it('should produce an element that is movable and resizeable', function () {
-    expect(objectInspectorElement.prop('outerHTML')).toContain('movable');
+  beforeEach(function() {
+    $scope = $rootScope.$new();
+    objectInspectorElement = $compile('<object-inspector></object-inspector>')($scope);
+    $scope.$digest();
+
+    elementScope = $scope.$$childTail;
+
   });
 
-
-  it('should hide objectInspectorService when closing', function () {
-    objectInspectorService.isShown = true;
-    $scope.$destroy();
-    expect(objectInspectorService.isShown).toBe(false);
-  });
-
-  it('should call baseEventHandler.suppressAnyKeyPress on suppressKeyPress', function () {
-    $scope.$$childTail.suppressKeyPress();
+  it('should call baseEventHandler.suppressAnyKeyPress on suppressKeyPress', function() {
+    elementScope.suppressKeyPress();
     expect(baseEventHandlerMock.suppressAnyKeyPress).toHaveBeenCalled();
   });
 
+  it('should register guiEvents has to be removed on destroy', function() {
+    expect(gz3d.gui.guiEvents.on).toHaveBeenCalledTimes(2);
+
+    $scope.$broadcast('$destroy');
+    $scope.$digest();
+    expect(gz3d.gui.guiEvents.removeListener).toHaveBeenCalledTimes(2);
+  });
 });

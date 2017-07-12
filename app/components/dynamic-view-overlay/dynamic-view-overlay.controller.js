@@ -61,17 +61,29 @@
       );
     }
 
+    static isResizeable(channelType) {
+      return typeof(channelType.isResizeable) === 'undefined' || (typeof(channelType.isResizeable) !== 'undefined' && channelType.isResizeable);
+    }
+
     applyChannelDefaults() {
       if (!this.channelType) {
         return;
       }
 
-      let overlayWrapper = this.$element[0].getElementsByClassName(this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
-      overlayWrapper.style.width = this.channelType.overlayDefaultSize.width + 'px';
-      overlayWrapper.style.height = this.channelType.overlayDefaultSize.height + 'px';
+      if(this.channelType.overlayDefaultSize && DynamicViewOverlayController.isResizeable(this.channelType)) {
+        let overlayWrapper = this.$element[0].getElementsByClassName(
+          this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
+          overlayWrapper.style.width = this.channelType.overlayDefaultSize.width + 'px';
+          overlayWrapper.style.height = this.channelType.overlayDefaultSize.height + 'px';
+      }
     }
 
     randomizePosition() {
+      // do not randomize position if view is not resizeable, otherwise it seems to be placed to close to borders
+      if (!DynamicViewOverlayController.isResizeable(this.channelType)) {
+        return;
+      }
+
       let overlayWrapper = this.$element[0].getElementsByClassName(this.dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS)[0];
       let overlayParent = this.dynamicViewOverlayService.getOverlayParentElement()[0];
 

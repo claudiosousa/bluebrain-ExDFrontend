@@ -27,20 +27,18 @@
   angular.module('objectInspectorModule', [])
     .directive('objectInspector', [
       'OBJECT_VIEW_MODE',
-      'objectInspectorService', 'baseEventHandler',
+      '$timeout',
+      'dynamicViewOverlayService',
+      'objectInspectorService',
+      'baseEventHandler',
       'gz3d',
       'EDIT_MODE',
-      function (OBJECT_VIEW_MODE, objectInspectorService, baseEventHandler, gz3d, EDIT_MODE) {
+      function (OBJECT_VIEW_MODE, $timeout, dynamicViewOverlayService, objectInspectorService, baseEventHandler, gz3d, EDIT_MODE) {
         return {
           templateUrl: 'components/object-inspector/object-inspector.template.html',
           restrict: 'E',
           scope: true,
           link: function (scope, element, attrs) {
-            scope.$on("$destroy", function() {
-              // remove the callback
-              objectInspectorService.isShown = false;
-            });
-
             scope.minimized = false;
             scope.collapsedTransform = false;
             scope.collapsedVisuals = false;
@@ -53,6 +51,24 @@
             scope.suppressKeyPress = function(event) {
               baseEventHandler.suppressAnyKeyPress(event);
             };
+            objectInspectorService.update();
+
+            const setTreeSelected = function () {
+              $timeout(objectInspectorService.update, 0);//force scope.$apply
+            };
+            gz3d.gui.guiEvents.on('setTreeSelected', setTreeSelected);
+
+            const deleteEntity = function () {
+              $timeout(objectInspectorService.update, 0);//force scope.$apply
+            };
+            gz3d.gui.guiEvents.on('delete_entity', deleteEntity);
+
+            scope.$on("$destroy", function() {
+              // remove the callback
+              objectInspectorService.setManipulationMode(EDIT_MODE.VIEW);
+              gz3d.gui.guiEvents.removeListener('setTreeSelected', setTreeSelected);
+              gz3d.gui.guiEvents.removeListener('delete_entity', deleteEntity);
+            });
           }
         };
       }]);

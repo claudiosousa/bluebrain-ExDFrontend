@@ -27,40 +27,19 @@ $objectInspectorMinWidth: 280px;
 $objectInspectorMinHeight: 40px;
 
 .object-inspector-widget {
-  @extend .pop-over-viewer;
-
   display: flex;
   flex-direction: column;
-  top: 2%;
-  left: unset;
 
-  right: 2%;
-  width: 5%;
-  height: auto;
-  min-width: $objectInspectorMinWidth;
-  min-height: $objectInspectorMinHeight;
-
-  background: white;
+  margin: 0px 0px 5px 5px;
+  width: $objectInspectorMinWidth;
 }
 
 #header {
   display: flex;
   flex-direction: row;
+  width: 100%;
   justify-content: flex-end;
-  align-items: center;
-  margin: 5px;
-
-  #window-label {
-    flex-basis: 80%;
-    padding-left: 5px;
-    margin-right: 5px;
-
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border: 1px solid #e1e1e1;
-    background: #f8f8f8;
-  }
+  //align-items: center;
 
   #window-buttons {
     user-select: none;
@@ -72,7 +51,7 @@ $objectInspectorMinHeight: 40px;
 
 #minimal-view {
   width: 100%;
-  padding: 5px;
+  padding: 5px 0px 0px 5px;
   margin: 0px;
 }
 
@@ -86,7 +65,8 @@ $objectInspectorMinHeight: 40px;
   position: relative;
   list-style-type: none;
   width: 100%;
-  padding: 0px;
+  padding-left: 0px;
+  padding-right: 10px;
 
   .section-item {
     display: block;
@@ -203,16 +183,13 @@ $objectInspectorMinHeight: 40px;
   margin-right: 5px;
 }
 
-.button-close {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-}
-
 .button-minimize {
-  position: absolute;
-  left: 5px;
-  top: 5px;
+  min-width: 25px;
+  min-height: 25px;
+  padding: 5px;
+  margin-right: 10px;
+  align-self: center;
+  font-size: 10px;
 }
 
 .btn-rounded {
