@@ -95,7 +95,8 @@
       'videoStreamModule',
       'showOnTop',
       'clientLoggerModule',
-      'environmentRenderingModule'])
+      'environmentRenderingModule',
+      'storageServer'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function ($stateProvider, $urlRouterProvider, environmentServiceProvider) {
@@ -280,6 +281,9 @@
         $rootScope.displayWatchDemosButton = !response.hasEditRights;
       });
 
+    }])
+    .run(['storageServer', '$location', function(storageServer, $location) {
+      // storageServer.getExperiments();
     }]);
 
   // load the configuration used by bbpConfig

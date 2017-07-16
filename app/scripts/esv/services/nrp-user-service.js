@@ -42,7 +42,8 @@
       };
 
       var isMemberOfClusterReservationGroup = function() {
-        return clbUser.isGroupMember('hbp-sp10-cluster-reservation');
+        loadConfig();
+        return forceuser ? $q.resolve(false) : clbUser.isGroupMember('hbp-sp10-cluster-reservation');
       };
 
       var getOwnerName = function(owner) {
