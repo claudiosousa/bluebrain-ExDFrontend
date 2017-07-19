@@ -472,7 +472,7 @@
       this.gz3dViewsService.views.forEach(
         (view, index, array) => {
           if (view.container === undefined) {
-            this.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
+            this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
           }
         }
       );
@@ -553,16 +553,6 @@
         category: 'Simulation-GUI',
         value: this.editorToolbarService.isSpikeTrainActive
       });
-    };
-
-    createDynamicOverlay(channel, showOnlyOneInstance = false) {
-      this.dynamicViewOverlayService.isOverlayOpen(channel).then(
-          overlayOpen => {
-            // create a new view, only if multiple instances are possible or the view is not open
-            if (!showOnlyOneInstance || !overlayOpen) {
-              this.dynamicViewOverlayService.createOverlay(channel, true);
-            }
-          });
     };
 
   }

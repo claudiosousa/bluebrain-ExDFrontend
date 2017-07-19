@@ -33,7 +33,7 @@
   class LogConsoleController
   {
 
-    constructor($scope, $timeout, $element, stateService, clientLoggerService, STATE,
+    constructor($scope, $timeout, $element, stateService, clientLoggerService, editorToolbarService, STATE,
                 LOG_TYPE) {
       this.logs = [];
       this.stateService = stateService;
@@ -83,6 +83,7 @@
 
       $scope.$on('$destroy', function() {
         logSubscription.unsubscribe();
+        editorToolbarService.showLogConsole = false;
       });
     }
   }
@@ -93,6 +94,7 @@
     '$element',
     'stateService',
     'clientLoggerService',
+    'editorToolbarService',
     'STATE',
     'LOG_TYPE',
     (...args) => new LogConsoleController(...args)

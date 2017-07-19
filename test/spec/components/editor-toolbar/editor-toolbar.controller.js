@@ -25,6 +25,8 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarService,
       gz3dViewsService,
       clientLoggerService,
+      dynamicViewOverlayService,
+      DYNAMIC_VIEW_CHANNELS,
       NAVIGATION_MODES,
       STATE,
       EDIT_MODE,
@@ -113,6 +115,8 @@ describe('Controller: EditorToolbarController', function() {
                              _editorToolbarService_,
                              _gz3dViewsService_,
                              _clientLoggerService_,
+                             _dynamicViewOverlayService_,
+                             _DYNAMIC_VIEW_CHANNELS_,
                              _STATE_,
                              _NAVIGATION_MODES_,
                              _EDIT_MODE_,
@@ -139,6 +143,8 @@ describe('Controller: EditorToolbarController', function() {
     editorToolbarService = _editorToolbarService_;
     gz3dViewsService = _gz3dViewsService_;
     clientLoggerService = _clientLoggerService_;
+    dynamicViewOverlayService = _dynamicViewOverlayService_;
+    DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
     STATE = _STATE_;
     NAVIGATION_MODES = _NAVIGATION_MODES_;
     EDIT_MODE = _EDIT_MODE_;
@@ -521,8 +527,6 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it(' - robotViewButtonClickHandler()', function() {
-      spyOn(editorToolbarController, 'createDynamicOverlay');
-
       // define mock views
       var mockView1 = {
         container: undefined
@@ -540,13 +544,13 @@ describe('Controller: EditorToolbarController', function() {
       // test if no camera views available
       gz3dViewsService.hasCameraView.and.returnValue(false);
       editorToolbarController.robotViewButtonClickHandler();
-      expect(editorToolbarController.createDynamicOverlay).not.toHaveBeenCalled();
+      expect(dynamicViewOverlayService.createDynamicOverlay).not.toHaveBeenCalled();
 
       // test if camera views available
       gz3dViewsService.hasCameraView.and.returnValue(true);
       editorToolbarController.robotViewButtonClickHandler();
       // 1 call for each container undefined
-      expect(editorToolbarController.createDynamicOverlay.calls.count()).toEqual(2);
+      expect(dynamicViewOverlayService.createDynamicOverlay.calls.count()).toEqual(2);
     });
 
     // todo: is the test in this way really suitable ?
@@ -615,78 +619,6 @@ describe('Controller: EditorToolbarController', function() {
     it('disable rebirth if state is stopped', function() {
       editorToolbarController.onStateChanged(STATE.HALTED);
       expect(gz3d.iface.webSocket.disableRebirth).not.toHaveBeenCalled();
-    });
-
-    it('should create a dynamic overlay for the given component', function() {
-      expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
-      // fake no view open
-      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-          {
-            then: jasmine.createSpy('then').and.callFake(function(fn) {
-              return fn(false);
-            })
-          }
-      );
-
-      editorToolbarController.createDynamicOverlay('test');
-
-      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
-    });
-
-    it('should not create a dynamic overlay for the given component if it is already created', function() {
-      expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
-
-      // fake no view open
-      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
-            then: jasmine.createSpy('then').and.callFake(function(fn) {
-              return fn(false);
-            })
-          }
-      );
-
-      var onlySingleInstance = true;
-      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
-      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(1);
-
-      //  change status to open
-      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
-            then: jasmine.createSpy('then').and.callFake(function(fn) {
-              return fn(true);
-            })
-          }
-      );
-
-      // no new view should be created, as we already have one
-      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
-      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(1); // <==> not.beenCalled
-    });
-
-    it('should create multiple instances of a dynamic view', function() {
-      expect(editorToolbarController.dynamicViewOverlayService).toBeDefined();
-
-      // fake no view open
-      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-          {
-            then: jasmine.createSpy('then').and.callFake(function(fn) {
-              return fn(false);
-            })
-          }
-      );
-
-      var onlySingleInstance = false;
-      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
-      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
-
-      // although a view is open, a new one should be created
-      editorToolbarController.dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-          {
-            then: jasmine.createSpy('then').and.callFake(function(fn) {
-              return fn(true);
-            })
-          }
-      );
-      editorToolbarController.createDynamicOverlay('test', onlySingleInstance);
-      expect(editorToolbarController.dynamicViewOverlayService.createOverlay).toHaveBeenCalled();
     });
 
     it('should clean up on destroy', function() {

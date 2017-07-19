@@ -265,7 +265,7 @@
             <!-- log console icon -->
             <div class="hbp-toolbar-action hide-overflow"
                  ng-class="{'active': vm.editorToolbarService.isLogConsoleActive}"
-                 ng-click="vm.createDynamicOverlay(vm.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE)"
+                 ng-click="vm.editorToolbarService.toggleLogConsole()"
                  help-tooltip="LOG_CONSOLE">
                 <i class="fa fa-terminal fa-2x vertcenter"></i>
                 <div ng-if="vm.clientLoggerService.missedConsoleLogs"
