@@ -179,14 +179,20 @@
           if (keepErrorMessage) {
             nrpError.message = response.human_readable;
           }
-          if (errorSource && errorSource.message) {
-            if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
-              /// failure is presumably a Xvfb_Xvn_Error
-              nrpError.message = "Job allocation failed. Please try again.";
+          if (errorSource){
+            nrpError.type = errorSource.type;
+            if (errorSource.data){
+              nrpError.data = errorSource.data;
             }
-            if (errorSource.message.toLowerCase().indexOf('no resources available') !== -1) {
-              /// failure is presumably a lack of available resources on the cluster
-              nrpError.message = NO_CLUSTER_AVAILABLE_ERR_MSG;
+            if (errorSource.message) {
+              if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
+                /// failure is presumably a Xvfb_Xvn_Error
+                nrpError.message = "Job allocation failed. Please try again.";
+              }
+              if (errorSource.message.toLowerCase().indexOf('no resources available') !== -1) {
+                /// failure is presumably a lack of available resources on the cluster
+                nrpError.message = NO_CLUSTER_AVAILABLE_ERR_MSG;
+              }
             }
           }
 
