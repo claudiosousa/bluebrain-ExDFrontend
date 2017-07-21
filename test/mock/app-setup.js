@@ -26,6 +26,7 @@
         });
 
       $httpBackend.whenGET(/\/api\/user\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
+      $httpBackend.whenGET(/\/api\/user\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
       $httpBackend.whenGET(/\/api\/user\/me\/member-groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
     }]);
 

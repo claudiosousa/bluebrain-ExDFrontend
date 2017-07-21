@@ -64,6 +64,7 @@
         let url = err.data;
         if (!absoluteUrl.test(url))
           url = `${this.PROXY_URL}${url}`;
+        localStorage.removeItem(this.STORAGE_KEY);
         this.$window.location.href = `${url}&client_id=${this.CLIENT_ID}&redirect_uri=${encodeURIComponent(location.href)}`;
       } else
         throw err;

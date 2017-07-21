@@ -13,7 +13,9 @@
     <hr class="list-separator">
     <new-experiment-wizard ng-show="experiments.length > 1 && isCollabExperiment && devMode"></new-experiment-wizard>
     <div ng-repeat="exp in experiments | filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
-      class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="selectExperiment(exp);">
+      class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false" ng-click="selectExperiment(exp);"
+      editable-experiment
+      experiment-details>
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == pageState.selected) || isHovered}">
         <div class="list-entry-left" ng-class="{selected: exp.id == pageState.selected}">
           <img ng-src="data:image/png;base64,{{exp.imageData}}" />
@@ -24,7 +26,7 @@
               <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isPrivateExperiment && (!editing[nameID] && !editing[descID]) && !config.canCloneExperiments" id="edit-button"  v-busy="loadingEdit" ng-click="editExperiment(nameID);"></a>
             </div>
             <form ng-show="editing[nameID] && isPrivateExperiment && !loadingEdit">
-              <input type="text" id="{{nameID}}" value="{{exp.configuration.name}}" size="{{exp.configuration.name.length}}" ng-model="formInfo.name" ng-blur="saveExperimentDetails(formInfo.name, nameID);" ng-required/>
+              <input type="text" id="{{nameID}}" value="{{exp.configuration.name}}" size="{{exp.configuration.name.length}}" ng-model="exp.configuration.name" ng-blur="saveExperimentDetails(exp.configuration.name, nameID);" ng-required/>
               <a style="font-size:15px;" href="javascript:void(0);" ng-show="isSavingToCollab" v-busy="isSavingToCollab"></a>
               </br/>
             </form>
@@ -35,7 +37,7 @@
               <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isPrivateExperiment && (!editing[nameID] && !editing[descID])" v-busy="loadingEdit" ng-click="editExperiment(descID);"></a>
             </div>
             <form ng-show="editing[descID] && isPrivateExperiment && !loadingEdit">
-              <textarea rows="4" cols="50" id="{{descID}}" ng-model="formInfo.desc" ng-blur="saveExperimentDetails(formInfo.desc, descID);"></textarea>
+              <textarea rows="4" cols="50" id="{{descID}}" ng-model="exp.configuration.description" ng-blur="saveExperimentDetails(exp.configuration.description, descID);"></textarea>
               <a style="font-size:15px;" href="javascript:void(0);" ng-show="isSavingToCollab" v-busy="isSavingToCollab"></a>
             </form>
           <div ng-if="exp.id != pageState.selected">{{exp.configuration.description | limitTo: 200}}...</div>
@@ -56,7 +58,7 @@
                 <option value="">All servers</option>
                 <option ng-repeat="server in exp.availableServers" value="{{server}}">{{server}}</option>
               </select>
-              <a name="versionLink" href="" ng-click="setCollapsed(!isCollapsed); getSoftwareVersions(exp.devServer)">{{versionString}}</a>
+              <a name="versionLink" href="" ng-click="setCollapsed(!isCollapsed); getSoftwareVersions(exp.devServer)">{{isCollapsed  ? 'Show versions' : 'Hide versions'}}</a>
               <div uib-collapse="isCollapsed" name="versionDiv">
                 <div class="well well-lg pre" >{{softwareVersions}}</div>
               </div>

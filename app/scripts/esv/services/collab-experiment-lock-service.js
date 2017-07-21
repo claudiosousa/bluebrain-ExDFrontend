@@ -102,7 +102,7 @@
               };
 
               //releases the edition lock
-              var releaseLock = function () {
+              var releaseLock = function (editLockEntity) {
                 if (editLockEntity){
                   return collabFolderAPIService.deleteFile(undefined, undefined, editLockEntity);
                 }

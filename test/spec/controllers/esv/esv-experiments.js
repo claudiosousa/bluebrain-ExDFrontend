@@ -1,4 +1,4 @@
-(function () {
+(function() {
   'use strict';
 
   var ctx = 'context_id';
@@ -44,7 +44,7 @@
         joinableServers: []
       }
     },
-    collabExperimentResponse: { contextID: ctx, experimentID: experimentID, experimentFolderUUID: experimentFolderUUID},
+    collabExperimentResponse: { contextID: ctx, experimentID: experimentID, experimentFolderUUID: experimentFolderUUID },
     server: {
       gzweb: {
         assets: 'http://localhost:8040',
@@ -65,32 +65,26 @@
     }
   };
 
-  describe('Controller: esvExperimentsCtrl', function () {
-    var $controller, $httpBackend, $rootScope,$timeout, $templateCache, $compile, $stateParams, $interval, environmentService,
-      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, collabExperimentLockService, clbErrorDialog, nrpBackendVersions, nrpFrontendVersion,collabConfigService;
+  describe('Controller: esvExperimentsCtrl', function() {
+    var $controller, $httpBackend, $rootScope, $timeout, $templateCache, $compile, $stateParams, $interval, environmentService,
+      $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, collabFolderAPIService, $q, clbErrorDialog, collabConfigService;
 
     var serverErrorMock = {
       displayHTTPError: jasmine.createSpy('displayHTTPError').and.callFake(function() { return $q.reject(); })
     };
-   var nrpBackendVersionsObject = {
-     get: jasmine.createSpy('get')
-   };
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('userContextServiceMock'));
     beforeEach(module('exd.templates'));
 
-    beforeEach(module(function ($provide) {
-      $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
-      $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
+    beforeEach(module(function($provide) {
       $provide.value('serverError', serverErrorMock);
 
       $provide.value('simulationConfigService',
         {
           initConfigFiles: jasmine.createSpy('initConfigFiles').and.returnValue(
             {
-              then: function (f)
-              {
+              then: function(f) {
                 f();
                 return { catch: jasmine.createSpy('catch') };
               }
@@ -101,10 +95,10 @@
 
     }));
 
-    beforeEach(inject(function (
+    beforeEach(inject(function(
       _$controller_, _$rootScope_, _$timeout_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
-      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _collabExperimentLockService_, _clbErrorDialog_,
-       _nrpBackendVersions_, _nrpFrontendVersion_, _collabConfigService_){
+      _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _collabFolderAPIService_, _$q_, _clbErrorDialog_,
+      _collabConfigService_) {
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
@@ -123,15 +117,12 @@
       $window = _$window_;
       collabFolderAPIService = _collabFolderAPIService_;
       $q = _$q_;
-      collabExperimentLockService = _collabExperimentLockService_;
       clbErrorDialog = _clbErrorDialog_;
       environmentService = _environmentService_;
-      nrpBackendVersions = _nrpBackendVersions_;
-      nrpFrontendVersion = _nrpFrontendVersion_;
       collabConfigService = _collabConfigService_;
     }));
 
-    afterEach(function () {
+    afterEach(function() {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
     });
@@ -172,7 +163,7 @@
       return page;
     }
 
-    it('should show only mature experiments in normal mode', function () {
+    it('should show only mature experiments in normal mode', function() {
       var page = renderEsvWebPage();
       var experiments = page.find('.experiment-box');
       expect(experiments.length).toBe(1);
@@ -180,13 +171,13 @@
       expect(expTitle.trim()).toBe(defaultPageOptions.experiments.matureExperiment.configuration.name);
     });
 
-    it('should show all experiments in dev mode', function () {
+    it('should show all experiments in dev mode', function() {
       var page = renderEsvWebPage({ dev: true });
       var experiments = page.find('.experiment-box');
       expect(experiments.length).toBe(2);
     });
 
-    it('should not allow to chose backend when in dev mode', function () {
+    it('should not allow to chose backend when in dev mode', function() {
       var page = renderEsvWebPage();
       //select first experiement
       page.find('.experiment-box').first().click();
@@ -195,7 +186,7 @@
       expect(selectServer.length).toBe(0);
     });
 
-    it('should allow to chose backend when in dev mode', function () {
+    it('should allow to chose backend when in dev mode', function() {
       var page = renderEsvWebPage({ dev: true });
       //select first experiment
       page.find('.experiment-box').first().click();
@@ -204,7 +195,7 @@
       expect(selectServer.length).toBe(1);
     });
 
-   it('should show version numbers in dev mode', function () {
+    it('should show version numbers in dev mode', function() {
       var page = renderEsvWebPage({ dev: true });
       //select first experiment
       page.find('.experiment-box').first().click();
@@ -213,7 +204,7 @@
       expect(versionLink.length).toBe(1);
     });
 
-    it('should not show version numbers in dev mode', function () {
+    it('should not show version numbers in dev mode', function() {
       var page = renderEsvWebPage();
       //select first experiment
       page.find('.experiment-box').first().click();
@@ -221,55 +212,14 @@
       var versionLink = page.find('a[name="versionLink"]');
       expect(versionLink.length).toBe(0);
     });
-    it('setCollapsed should set the new state correctly', function() {
-      renderEsvWebPage();
-      //by default isCollapsed should be set to true
-      expect($rootScope.isCollapsed).toBe(true);
-      expect($rootScope.versionString).toBe('Show versions');
 
-      $rootScope.setCollapsed(false);
-      expect($rootScope.isCollapsed).toBe(false);
-      expect($rootScope.versionString).toBe('Hide versions');
-
-      $rootScope.setCollapsed(true);
-      expect($rootScope.isCollapsed).toBe(true);
-      expect($rootScope.versionString).toBe('Show versions');
-
-    });
-
-   it('should set scope.softwareVersions with Frontend version when backend returns error ', function() {
-      renderEsvWebPage();
-      $rootScope.setCollapsed(false);
-      $httpBackend.whenGET(proxyUrl + '/server/normalServer').respond(500, 'Error');
-      $rootScope.getSoftwareVersions('normalServer');
-      $httpBackend.flush();
-      var frontendData = {'toString': 'Frontend: 0.0.1\n' };
-      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
-      expect($rootScope.softwareVersions).toBe(frontendData.toString);
-    });
-
-    it('should set scope.softwareVersions when backend returns normally', function() {
-      renderEsvWebPage();
-      $rootScope.setCollapsed(false);
-      $httpBackend.whenGET(proxyUrl + '/server/normalServer').respond(200, defaultPageOptions.server);
-      $rootScope.getSoftwareVersions('normalServer');
-      $httpBackend.flush();
-      var frontendData = {'toString': 'Frontend: 0.0.1\n' };
-      var backendObj = {};
-      backendObj.toJSON = function(){return backendObj.data;};
-      backendObj.toString = 'Backend:\nhbp_nrp_cle: 0.0.5.dev0\nhbp_nrp_backend: 0.0.4\n';
-      nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
-      nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendObj);
-      expect($rootScope.softwareVersions).toBe(frontendData.toString+backendObj.toString);
-    });
-
-    it('should show experiments sorted by name', function () {
+    it('should show experiments sorted by name', function() {
       var page = renderEsvWebPage({ dev: true });
-      var experimentTitles = page.find('.experiment-box .title-line > .h4').toArray().map(function (elem) {
+      var experimentTitles = page.find('.experiment-box .title-line > .h4').toArray().map(function(elem) {
         return elem.textContent.trim();
       });
 
-      var sortedExperimentNames = _.map(defaultPageOptions.experiments, function (val) { return val.configuration.name; }).sort();
+      var sortedExperimentNames = _.map(defaultPageOptions.experiments, function(val) { return val.configuration.name; }).sort();
       expect(experimentTitles).toEqual(sortedExperimentNames);
     });
 
@@ -289,19 +239,19 @@
       checkButtonVisibility(page, 'CloneNewExperiment', options.cloneNew);
     }
 
-    it('should allow launching when available servers', function () {
+    it('should allow launching when available servers', function() {
       var page = renderEsvWebPage({ dev: true });
       page.find('.experiment-box').last().click();
       checkButtonVisibility(page, 'Launch', 1);
     });
 
-    it('should NOT allow launching when NO available server', function () {
+    it('should NOT allow launching when NO available server', function() {
       var page = renderEsvWebPage({ dev: true });
       page.find('.experiment-box').first().click();
       checkButtonVisibility(page, 'Launch', 0);
     });
 
-    it('should trigger the right requests when launching an experiment', function () {
+    it('should trigger the right requests when launching an experiment', function() {
       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
 
@@ -334,8 +284,8 @@
       expect($location.path.calls.mostRecent().args).toEqual(expectedLocation);
     });
 
-    it('should reset startingExperiment when failing to launch an experiment', function () {
-       var page = renderEsvWebPage();
+    it('should reset startingExperiment when failing to launch an experiment', function() {
+      var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
 
       //get server config
@@ -360,7 +310,7 @@
 
     });
 
-    it('should trigger the right requests when stopping a simulation', function () {
+    it('should trigger the right requests when stopping a simulation', function() {
       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
       var simulationUrl = defaultPageOptions.server.gzweb['nrp-services'] + '/simulation/' + defaultPageOptions.startExperiment.simulationID + '/state';
@@ -375,7 +325,7 @@
       $httpBackend.flush();
     });
 
-    it('should change path when joining a simulation', function () {
+    it('should change path when joining a simulation', function() {
       var page = renderEsvWebPage();
       page.find('.experiment-box').first().click();
 
@@ -387,7 +337,7 @@
       expect($location.path.calls.mostRecent().args).toEqual(expectedLocation);
     });
 
-    it('should requery experiements after SERVER_POLL_INTERVAL', function () {
+    it('should requery experiements after SERVER_POLL_INTERVAL', function() {
       renderEsvWebPage();
       $httpBackend.expectGET(proxyUrl + '/experiments').respond(200, defaultPageOptions.experiments);
       $interval.flush(SERVER_POLL_INTERVAL);
@@ -395,10 +345,10 @@
     });
 
 
-    it('should destroy the experimentsService on scope destroy', function () {
+    it('should destroy the experimentsService on scope destroy', function() {
       var experimentsService;
       var createExperimentsService = experimentsFactory.createExperimentsService;
-      spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
+      spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function() {
         experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
         return experimentsService;
       });
@@ -410,21 +360,21 @@
       expect(experimentsService.destroy).toHaveBeenCalled();
     });
 
-    describe('esvExperimentsCtrl without a context id', function () {
+    describe('esvExperimentsCtrl without a context id', function() {
 
-      it('should show the right buttons', function () {
+      it('should show the right buttons', function() {
         var page = renderEsvWebPage();
         page.find('.experiment-box').first().click();
 
         checkButtonsVisibility(page, { launch: 1, clone: 0 });
       });
 
-      it('should show the right buttons when editing right', function () {
+      it('should show the right buttons when editing right', function() {
         var page = renderEsvWebPage();
         page.find('.experiment-box').first().click();
         var angularElement = angular.element;
         var uploadElement;
-        spyOn(angular, 'element').and.callFake(function (e) {
+        spyOn(angular, 'element').and.callFake(function(e) {
           uploadElement = angularElement(e);
           return uploadElement;
         });
@@ -432,41 +382,41 @@
     });
 
 
-    describe('Collab experiments', function () {
+    describe('Collab experiments', function() {
       var collabContextlessUrl, collabContextUrl;
 
-      beforeEach(function () {
+      beforeEach(function() {
         collabContextlessUrl = bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration';
         collabContextUrl = collabContextlessUrl + '/' + ctx;
         $stateParams.ctx = ctx;
       });
 
-      it('should set experiments to error when collab fails', function () {
+      it('should set experiments to error when collab fails', function() {
         $httpBackend.whenGET(collabContextUrl).respond(502, {});
-        renderEsvWebPage({collab:true});
+        renderEsvWebPage({ collab: true });
         expect($rootScope.experiments).toEqual([{ error: { name: 'Internal Error', description: 'Database unavailable' } }]);
         expect(serverErrorMock.displayHTTPError).toHaveBeenCalled();
       });
 
-      describe('yet to clone', function () {
+      describe('yet to clone', function() {
 
-        beforeEach(function () {
+        beforeEach(function() {
           $httpBackend.whenGET(collabContextUrl).respond(200, {});
         });
 
-        it('should only show the clone button', function () {
-          var page = renderEsvWebPage({collab:true});
+        it('should only show the clone button', function() {
+          var page = renderEsvWebPage({ collab: true });
           page.find('.experiment-box').last().click();
           checkButtonsVisibility(page, { launch: 0, clone: 1 });
         });
 
-        it('should only show the correct new experiment buttons', function () {
-          var page = renderEsvWebPage({collab:true,dev:true});
+        it('should only show the correct new experiment buttons', function() {
+          var page = renderEsvWebPage({ collab: true, dev: true });
           page.find('.experiment-box').first().click();
-          checkNewExperimentButtonsVisibility(page, { environment: 1, robot: 1, brain: 1,cloneNew:1 });
+          checkNewExperimentButtonsVisibility(page, { environment: 1, robot: 1, brain: 1, cloneNew: 1 });
         });
 
-        it('should trigger PUT request on clone click', function () {
+        it('should trigger PUT request on clone click', function() {
           var page = renderEsvWebPage();
           page.find('.experiment-box').last().click();
           spyOn($window.location, 'reload');
@@ -474,7 +424,7 @@
           page.find('[analytics-event="Clone"]').click();
         });
 
-        it('should trigger reload after clone', function () {
+        it('should trigger reload after clone', function() {
           renderEsvWebPage();
           spyOn($window.location, 'reload');
           spyOn(collabConfigService, 'clone');
@@ -485,306 +435,42 @@
       });
 
 
-      describe('with cloned experiment', function () {
+      describe('with cloned experiment', function() {
 
-        var lockMock;
 
-        beforeEach(function () {
+        beforeEach(function() {
           $httpBackend.whenGET(new RegExp(proxyUrl + '/joinableServers/')).respond(200, []);
           $httpBackend.whenGET(new RegExp(proxyUrl + '/availableServers/')).respond(200, matureExperiment.availableServers);
-          spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({uuid: 'fakeUUID'}));
+          spyOn(collabFolderAPIService, 'getFolderFile').and.returnValue($q.when({ uuid: 'fakeUUID' }));
           spyOn(collabFolderAPIService, 'downloadFile').and.returnValue($q.when(''));
-          lockMock = jasmine.createSpyObj('lockMock', ['tryAddLock', 'onLockChanged', 'releaseLock']);
         });
 
-        it('should select first experiment if only one experiment is shown', function () {
+        it('should select first experiment if only one experiment is shown', function() {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           renderEsvWebPage({ experiments: { matureExperiment: matureExperiment } });
           expect($rootScope.pageState.selected).toBeDefined($rootScope.experiments[0].id);
         });
 
-        it('should not select an experiment if multiple experiments are shown', function () {
+        it('should not select an experiment if multiple experiments are shown', function() {
           $httpBackend.whenGET(collabContextUrl).respond(200, {});
           renderEsvWebPage();
           expect($rootScope.pageState.selected).toBeUndefined();
         });
 
-        it('should only show the launch button when the experiment exists in collab', function () {
+        it('should only show the launch button when the experiment exists in collab', function() {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var page = renderEsvWebPage({collab:true});
+          var page = renderEsvWebPage({ collab: true });
           page.find('.experiment-box').first().click();
           checkButtonsVisibility(page, { launch: 1, clone: 0 });
         });
 
-        it('should show edit button', function () {
+        it('should show edit button', function() {
           $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
           var page = renderEsvWebPage();
           var editButton = page.find('[name=edit-button]').first();
           expect(editButton.length).toBe(1);
         });
-
-        it('test editExperiment when it is not a collab experiment', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var testUser = 'testUserID';
-          lockMock.tryAddLock.and.callFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage();
-          environmentService.setPrivateExperiment(false);
-          $rootScope.editing.nameID = false;
-
-          $rootScope.editExperiment('nameID');
-          expect($rootScope.editing.nameID).toBe(false);
-          expect(lockMock.tryAddLock).not.toHaveBeenCalled();
-        });
-
-        it('test editExperiment when everything goes normally', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var testUser = 'testUserID';
-          lockMock.tryAddLock.and.callFake(function(){return $q.when({success: true, lock: {lockInfo:{user:{id: testUser}}}});});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage({collab:true});
-          $rootScope.userinfo.userID = testUser;
-          environmentService.setPrivateExperiment(true);
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.editing.nameID = false;
-
-          $rootScope.editExperiment('nameID');
-          $rootScope.$digest();
-          expect($rootScope.editing.nameID).toBe(true);
-          expect(lockMock.tryAddLock).toHaveBeenCalled();
-          expect(clbErrorDialog.open).not.toHaveBeenCalled();
-        });
-
-        it('test editExperiment when someone else is the owner of the edit lock', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var testUser = 'testUserID';
-          lockMock.tryAddLock.and.callFake(function(){return $q.when({success: false, lock: {lockInfo:{user:{id: testUser}}}});});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage({collab:true});
-          environmentService.setPrivateExperiment(true);
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.userinfo.userID = 'a different user';
-          $rootScope.editing.nameID = false;
-
-          $rootScope.editExperiment('nameID');
-          $rootScope.$digest();
-          expect($rootScope.editing.nameID).toBe(false);
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-        });
-
-        it('test editExperiment when an error came from the lock service', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          lockMock.tryAddLock.and.callFake(function(){return $q.reject(new Error());});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage({collab:true});
-          $rootScope.isPrivateExperiment = true;
-          $rootScope.editing.nameID = false;
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.userinfo.userID = 'a different user';
-
-          $rootScope.editExperiment('nameID');
-          $rootScope.$digest();
-          expect($rootScope.editing.nameID).toBe(false);
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-        });
-
-        it('test stopEditingExperimentDetails', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          lockMock.releaseLock.and.callFake(function(){return $q.when('');});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage({collab:true});
-          $rootScope.editing.nameID = true;
-          spyOn(clbErrorDialog, 'open');
-
-          $rootScope.stopEditingExperimentDetails('nameID');
-          expect($rootScope.editing.nameID).toBe(false);
-          expect(lockMock.releaseLock).toHaveBeenCalled();
-          expect(clbErrorDialog.open).not.toHaveBeenCalled();
-        });
-
-        it('test stopEditingExperimentDetails deal with lock exceptions', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          lockMock.releaseLock.and.callFake(function(){ return $q.reject(new Error());});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage({collab:true});
-          $rootScope.editing.nameID = true;
-          spyOn(clbErrorDialog, 'open');
-
-          $rootScope.stopEditingExperimentDetails('nameID');
-          $rootScope.$digest();
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-          expect($rootScope.editing.nameID).toBe(false);
-        });
-
-        it('test saveExperimentDetails when description is empty', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          lockMock.releaseLock.and.callFake(function(){ return $q.reject(new Error());});
-          spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
-          renderEsvWebPage({collab:true});
-          spyOn(collabFolderAPIService, 'uploadEntity');
-          spyOn(clbErrorDialog, 'open');
-
-          $rootScope.saveExperimentDetails('    ');
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-          expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
-        });
-
-        it('test saveExperimentDetails gives error when tags are in the user input', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          renderEsvWebPage({collab:true});
-          spyOn(collabFolderAPIService, 'uploadEntity');
-          spyOn(clbErrorDialog, 'open');
-
-          $rootScope.saveExperimentDetails('<tag>dkhfdf</tag>');
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-          expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
-        });
-
-        it('test saveExperimentDetails gives error when no xml is retrived from collab', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var experimentsService;
-          var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
-            experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
-            return experimentsService;
-          });
-          renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentFile').and.returnValue('');
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.formInfo = {name:'NewName', desc:'newDesc'};
-
-          $rootScope.saveExperimentDetails('newName', 'nameID');
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-          expect(experimentsService.getCollabExperimentFile).toHaveBeenCalled();
-        });
-
-        it('test saveExperimentDetails doesnt bother to save if name hasnt changed', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var experimentsService;
-          var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
-            experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
-            return experimentsService;
-          });
-          renderEsvWebPage({collab:true});
-          $rootScope.experiments=[{'configuration':{'name':'newName'}}];
-          spyOn(experimentsService, 'getCollabExperimentFile').and.returnValue(['xml', {'entity_type': 'file'}]);
-          spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue($q.when(''));
-          spyOn($rootScope, 'stopEditingExperimentDetails');
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.formInfo = {name:'newName', desc:'newDesc'};
-
-          $rootScope.saveExperimentDetails('newName', 'nameID');
-          expect(clbErrorDialog.open).not.toHaveBeenCalled();
-          expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
-          expect($rootScope.stopEditingExperimentDetails).toHaveBeenCalled();
-          expect($rootScope.isSavingToCollab).toBe(false);
-        });
-
-        it('test saveExperimentDetails doesnt bother to save if description hasnt changed', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var experimentsService;
-          var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
-            experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
-            return experimentsService;
-          });
-          renderEsvWebPage({collab:true});
-          $rootScope.experiments=[{'configuration':{'description':'newDesc'}}];
-          spyOn(experimentsService, 'getCollabExperimentFile').and.returnValue(['xml', {'entity_type': 'file'}]);
-          spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue($q.when(''));
-          spyOn($rootScope, 'stopEditingExperimentDetails');
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.formInfo = {name:'newName', desc:'newDesc'};
-
-          $rootScope.saveExperimentDetails('newDesc', 'descID');
-          expect(clbErrorDialog.open).not.toHaveBeenCalled();
-          expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
-          expect($rootScope.stopEditingExperimentDetails).toHaveBeenCalled();
-          expect($rootScope.isSavingToCollab).toBe(false);
-        });
-
-        it('test saveExperimentDetails when everything goes well saving name', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var experimentsService;
-          var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
-            experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
-            return experimentsService;
-          });
-          renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentFile').and.returnValue(['xml', {'entity_type': 'file'}]);
-          spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue($q.when(''));
-          spyOn($rootScope, 'stopEditingExperimentDetails');
-          $rootScope.editing.nameID = true;
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.formInfo = {name:'newName'};
-
-          $rootScope.saveExperimentDetails('newName', 'nameID');
-          $rootScope.$digest();
-          expect(clbErrorDialog.open).not.toHaveBeenCalled();
-          expect($rootScope.stopEditingExperimentDetails).toHaveBeenCalled();
-          expect($rootScope.isSavingToCollab).toBe(false);
-          expect($rootScope.experiments[0].configuration.name).toBe('newName');
-        });
-
-        it('test saveExperimentDetails when everything goes well saving description', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var experimentsService;
-          var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
-            experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
-            return experimentsService;
-          });
-          renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentFile').and.returnValue(['xml', {'entity_type': 'file'}]);
-          spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue($q.when(''));
-          spyOn($rootScope, 'stopEditingExperimentDetails');
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.formInfo = {desc:'newDesc'};
-
-          $rootScope.saveExperimentDetails('newDesc', 'descID');
-          $rootScope.$digest();
-          expect(clbErrorDialog.open).not.toHaveBeenCalled();
-          expect($rootScope.stopEditingExperimentDetails).toHaveBeenCalled();
-          expect($rootScope.isSavingToCollab).toBe(false);
-          expect($rootScope.experiments[0].configuration.description).toBe('newDesc');
-        });
-        it('test saveExperimentDetails when there is an error saving the new details to the collab', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          var experimentsService;
-          var createExperimentsService = experimentsFactory.createExperimentsService;
-          spyOn(experimentsFactory, 'createExperimentsService').and.callFake(function () {
-            experimentsService = createExperimentsService.apply(experimentsFactory, arguments);
-            return experimentsService;
-          });
-          renderEsvWebPage({collab:true});
-          spyOn(experimentsService, 'getCollabExperimentFile').and.returnValue(['xml', {'entity_type': 'file'}]);
-          spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue($q.reject(''));
-          spyOn($rootScope, 'stopEditingExperimentDetails');
-          $rootScope.editing.nameID = true;
-          spyOn(clbErrorDialog, 'open');
-          $rootScope.formInfo = {name:'newName', desc:'newDesc'};
-
-          $rootScope.saveExperimentDetails('newName', 'nameID');
-          $rootScope.$digest();
-          expect(clbErrorDialog.open).toHaveBeenCalled();
-          expect($rootScope.stopEditingExperimentDetails).not.toHaveBeenCalled();
-          expect($rootScope.isSavingToCollab).toBe(false);
-          expect($rootScope.experiments[0].configuration.name).not.toBe('newName');
-        });
-
-        it('test containsTags', function () {
-          $httpBackend.whenGET(collabContextUrl).respond(200, defaultPageOptions.collabExperimentResponse);
-          renderEsvWebPage();
-          expect($rootScope.containsTags('some text')).toBe(false);
-          expect($rootScope.containsTags(' 2 < 3')).toBe(false);
-          expect($rootScope.containsTags('<hello')).toBe(true);
-          expect($rootScope.containsTags('<hello>')).toBe(true);
-        });
       });
-
     });
-
   });
 })();

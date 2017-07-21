@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Directive: resizeable', function () {
+describe('Directive: resizeable', function() {
 
   var scope, compile, element, elementDOM, document, window, resizeDiv;
   var mockedMouseDownEventStopPropagation;
@@ -11,7 +11,7 @@ describe('Directive: resizeable', function () {
   // So in principal this test should also work with non zero values, but due to phantomjs it does not.
 
   beforeEach(module('exdFrontendApp'));
-  beforeEach(inject(function ($rootScope, $compile, $document, $window) {
+  beforeEach(inject(function($rootScope, $compile, $document, $window) {
     scope = $rootScope.$new();
     compile = $compile;
     document = $document;
@@ -22,14 +22,14 @@ describe('Directive: resizeable', function () {
     mockedMouseDownEventStopPropagation = jasmine.createSpy('stopPropagation');
   }));
 
-  describe('Resizing divs with the aspect ratio not taken into consideration', function () {
+  describe('Resizing divs with the aspect ratio not taken into consideration', function() {
 
-    beforeEach(function () {
+    beforeEach(function() {
       element = compile('<div resizeable></div>')(scope);
       element.css({
-        top:    '100px',
-        left:   '100px',
-        width:  '100px',
+        top: '100px',
+        left: '100px',
+        width: '100px',
         height: '100px'
       });
 
@@ -39,36 +39,36 @@ describe('Directive: resizeable', function () {
       scope.$digest();
     });
 
-    it('should replace the element with the appropriate content', function () {
+    it('should replace the element with the appropriate content', function() {
       // Compile a piece of HTML containing the directive
       expect(element.attr('resizeable')).toBeDefined();
     });
 
-    it('should check for the default window height and width', function () {
+    it('should check for the default window height and width', function() {
       // Default height and width
       expect(window.innerHeight).toBe(startHeight);
       expect(window.innerWidth).toBe(startWidth);
     });
 
-    it('should call the onResizeEnd method', function () {
-      resizeElement(resizeDiv, {x: 0, y: 0}, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+    it('should call the onResizeEnd method', function() {
+      resizeElement(resizeDiv, { x: 0, y: 0 }, { dx: randomInt(1, 10), dy: randomInt(1, 10) });
       expect(scope.onResizeEnd).toHaveBeenCalled();
     });
 
-    it('should stop event propagation on the mousedown event', function () {
-      resizeElement(resizeDiv, {x: 0, y: 0}, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+    it('should stop event propagation on the mousedown event', function() {
+      resizeElement(resizeDiv, { x: 0, y: 0 }, { dx: randomInt(1, 10), dy: randomInt(1, 10) });
       expect(mockedMouseDownEventStopPropagation).toHaveBeenCalled();
     });
 
-    it('should trigger onResizeBegin if existing when mousedown event occurs', function () {
+    it('should trigger onResizeBegin if existing when mousedown event occurs', function() {
       scope.onResizeBegin = jasmine.createSpy('onResizeBegin');
-      resizeElement(resizeDiv, {x: 0, y: 0}, {dx: randomInt(1, 10), dy: randomInt(1, 10)});
+      resizeElement(resizeDiv, { x: 0, y: 0 }, { dx: randomInt(1, 10), dy: randomInt(1, 10) });
       expect(scope.onResizeBegin).toHaveBeenCalled();
     });
 
-    it('should handle the resize correctly', function () {
-      var mouseDownPos = {x: 0, y: 0};
-      var mouseMoveDelta = {x: 50, y: 50};
+    it('should handle the resize correctly', function() {
+      var mouseDownPos = { x: 0, y: 0 };
+      var mouseMoveDelta = { x: 50, y: 50 };
 
       var initWidth = parseInt(elementDOM.style.width, 10);
       var initHeight = parseInt(elementDOM.style.height, 10);
@@ -83,14 +83,14 @@ describe('Directive: resizeable', function () {
     });
   });
 
-  describe('Using the keep aspect ratio attribute', function () {
+  describe('Using the keep aspect ratio attribute', function() {
 
-    beforeEach(function () {
+    beforeEach(function() {
       element = compile('<div resizeable keep-aspect-ratio="1.0"></div>')(scope);
       element.css({
-        top:    '0px',
-        left:   '0px',
-        width:  '100px',
+        top: '0px',
+        left: '0px',
+        width: '100px',
         height: '100px'
       });
 
@@ -100,20 +100,20 @@ describe('Directive: resizeable', function () {
       scope.$digest();
     });
 
-    it('it should handle the resize correctly', function () {
+    it('it should handle the resize correctly', function() {
       var initWidth = parseInt(elementDOM.style.width, 10);
       var initHeight = parseInt(elementDOM.style.height, 10);
 
-      var mouseDownPos = {x: 0, y: 0};
-      var mouseMoveDelta = {x: Math.ceil(initWidth*0.1), y: Math.ceil(initHeight*0.1)};
+      var mouseDownPos = { x: 0, y: 0 };
+      var mouseMoveDelta = { x: Math.ceil(initWidth * 0.1), y: Math.ceil(initHeight * 0.1) };
 
       var multiplierWidth = 1.0;
       var multiplierHeight = 1.0;
 
-      if(window.innerWidth > window.innerHeight) {
-        multiplierWidth = window.innerWidth/window.innerHeight;
+      if (window.innerWidth > window.innerHeight) {
+        multiplierWidth = window.innerWidth / window.innerHeight;
       } else {
-        multiplierHeight = window.innerHeight/window.innerWidth;
+        multiplierHeight = window.innerHeight / window.innerWidth;
       }
 
       var expectedWidth = (((initWidth + mouseMoveDelta.x) * multiplierWidth) / window.innerWidth) * 100;
@@ -125,17 +125,17 @@ describe('Directive: resizeable', function () {
       expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
     });
 
-    it('it should respect the maximum height', function () {
-      var mouseDownPos = {x: 0, y: 0};
-      var mouseMoveDelta = {x: 400, y: 0};
+    it('it should respect the maximum height', function() {
+      var mouseDownPos = { x: 0, y: 0 };
+      var mouseMoveDelta = { x: 400, y: 0 };
 
       var expectedWidth = 97.7;
       var expectedHeight = 97.7;
 
       resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
 
-      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 0);
-      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 0);
+      expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, -1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, -1);
     });
 
   });
