@@ -32,31 +32,26 @@
 
   <!-- Google analytics -->
   <script>
-     // Get analytics only for production/staging/development servers
-     var hostname = document.location.hostname;
-       (function (i, s, o, g, r, a, m) {
-         i['GoogleAnalyticsObject'] = r;
-         i[r] = i[r] || function () {
-           (i[r].q = i[r].q || []).push(arguments)
-         }, i[r].l = 1 * new Date();
-         a = s.createElement(o),
-         m = s.getElementsByTagName(o)[0];
-         a.async = 1;
-         a.src = g;
-         m.parentNode.insertBefore(a, m)
-       })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-    </script>
+    // Get analytics only for production/staging/development servers
+    var hostname = document.location.hostname;
+    (function(i, s, o, g, r, a, m) {
+      i['GoogleAnalyticsObject'] = r;
+      i[r] = i[r] || function() {
+        (i[r].q = i[r].q || []).push(arguments)
+      }, i[r].l = 1 * new Date();
+      a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0];
+      a.async = 1;
+      a.src = g;
+      m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+  </script>
 
-  <!-- Basic Users are invited to join the Demo Carousel -->
-  <div class="alert alert-info no-margin" ng-show="displayWatchDemosButton">
-    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-    <b>Getting started?</b> Follow our guided tour to see running simulations
-    <a ng-href="{{demoCarouselUrl}}">
-      <button type="button" class="btn btn-primary">
-          <i class="glyphicon"></i><span>Watch demos</span>
-      </button>
-    </a>
-  </div>
+  <browser-support-alert></browser-support-alert>
+
+  <cluster-reservation-alert></cluster-reservation-alert>
+
+  <demo-carousel-alert></demo-carousel-alert>
 
   <!-- Add your site or application content here -->
   <div ui-view></div>
@@ -149,7 +144,6 @@
   <script src="scripts/common/filters/string-list-filters.js"></script>
   <script src="scripts/common/services/show-on-top.service.js"></script>
   <script src="scripts/common/services/nrp-error-handlers.js"></script>
-  <script src="scripts/common/services/nrp-browser-detection.js"></script>
   <script src="scripts/common/services/splash.js"></script>
   <script src="scripts/common/services/asset-loading-splash.js"></script>
   <script src="scripts/common/services/storage-server.js"></script>
@@ -207,6 +201,10 @@
   <script src="components/brain-visualizer/brain-visualizer.directive.js"></script>
   <script src="components/brain-visualizer/brain-visualizer-panel.controller.js"></script>
   <script src="components/brain-visualizer/brain-visualizer-panel.directive.js"></script>
+  <script src="components/alerts/browser-support/browser-support.directive.js"></script>
+  <script src="components/alerts/browser-support/browser-support.service.js"></script>
+  <script src="components/alerts/cluster-reservation/cluster-reservation.directive.js"></script>
+  <script src="components/alerts/demo-carousel/demo-carousel.directive.js"></script>
   <script src="components/dynamic-view/dynamic-view.controller.js"></script>
   <script src="components/client-logger/client-logger.service.js"></script>
   <script src="components/client-logger/log-adverts/log-adverts.directive.js"></script>
