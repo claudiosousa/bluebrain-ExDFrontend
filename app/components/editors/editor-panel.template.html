@@ -11,7 +11,7 @@
     <uib-tabset style="height:100%; display: flex; flex-direction: column;" active="activeTabIndex">
       <uib-tab heading="Environment" index="tabindex.environment"
       disable="!isOwner">
-        <environment-designer  style="height: 100%;"  />
+        <environment-designer />
       </uib-tab>
       <uib-tab heading="Transfer Functions" index="tabindex.transferfunction"
            select="disableKeyBindings(); controls.transferfunction.refresh()"
@@ -26,9 +26,9 @@
                       control="controls.statemachine"/>
       </uib-tab>
       <uib-tab heading="Brain Editor" index="tabindex.pynneditor"
-           select="disableKeyBindings(); controls.pynneditor.refresh()"
+           select="disableKeyBindings();"
            deselect="reenableKeyBindings()">
-        <pynn-editor control="controls.pynneditor"/>
+        <pynn-editor />
       </uib-tab>
 	  <uib-tab heading="TF Graphical Editor" index="tabindex.graphicalEditor"
            select="disableKeyBindings(); controls.graphicalEditor.refresh()"

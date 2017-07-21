@@ -10,6 +10,7 @@ describe('Service: EditorToolbar', function() {
   beforeEach(module('dynamicViewModule'));
 
   beforeEach(module('dynamicViewOverlayServiceMock'));
+  beforeEach(module('editorsPanelServiceMock'));
 
   beforeEach(inject(function(_editorToolbarService_, _dynamicViewOverlayService_, _DYNAMIC_VIEW_CHANNELS_) {
     editorToolbarService = _editorToolbarService_;

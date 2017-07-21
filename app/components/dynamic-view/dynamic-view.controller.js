@@ -148,6 +148,17 @@
           minWidth: 700,
           minHeight: 200
         }
+      },
+      PYNN_EDITOR: {
+        name: 'PyNN Editor',
+        directive:  'pynn-editor',
+        allowMultipleViews: false, // default true
+        overlayDefaultSize: {
+          width: 800,
+          height: 500,
+          minWidth: 700,
+          minHeight: 300
+        }
       }
     });
 

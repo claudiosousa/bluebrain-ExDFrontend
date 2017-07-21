@@ -26,14 +26,17 @@
 
   class EditorToolbarService {
 
-    constructor(dynamicViewOverlayService, DYNAMIC_VIEW_CHANNELS) {
+    constructor(dynamicViewOverlayService, editorsPanelService, DYNAMIC_VIEW_CHANNELS) {
       this.showBrainvisualizerPanel = false;
       this.showLogConsole = false;
       this.showEnvironmentSettingsPanel = false;
       this.showSpikeTrain = false;
       this.showNavigationModeMenu = false;
       this.videoStreamsAvailable = false;
+      this.showPynnEditor = false;
+
       this.dynamicViewOverlayService = dynamicViewOverlayService;
+      this.editorsPanelService = editorsPanelService;
       this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
     }
 
@@ -60,6 +63,11 @@
     get isNavigationModeMenuActive()
     {
       return this.showNavigationModeMenu;
+    }
+
+    get isPynnEditorActive()
+    {
+      return (this.showPynnEditor);
     }
 
     toggleLogConsole() {
@@ -94,10 +102,21 @@
         }
       });
     }
+
+    togglePynnEditor() {
+      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR).then(state => {
+        this.showPynnEditor = !state;
+        if(state) {
+          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR);
+        } else {
+          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR);
+        }
+      });
+    }
   }
 
   angular.module('editorToolbarModule')
-  .service('editorToolbarService', ['dynamicViewOverlayService', 'DYNAMIC_VIEW_CHANNELS',
+  .service('editorToolbarService', ['dynamicViewOverlayService', 'editorsPanelService', 'DYNAMIC_VIEW_CHANNELS',
     (...args) => new EditorToolbarService(...args)]);
 
 }());

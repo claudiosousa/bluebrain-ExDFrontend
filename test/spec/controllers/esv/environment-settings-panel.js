@@ -6,6 +6,8 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('gz3dModule'));
 
+  beforeEach(module('simulationInfoMock'));
+
   var experimentCtrl,
       scope,
       rootScope,
@@ -24,29 +26,31 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
     $provide.value('baseEventHandler', baseEventHandlerMock);
   }));
 
-  beforeEach(module(function ($provide) {
+  /*beforeEach(module(function ($provide) {
     $provide.value('simulationInfo', simulationInfo);
-  }));
+  }));*/
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller,
                               $rootScope,
                               _bbpConfig_,
                               _gz3d_,
-                              _editorToolbarService_) {
+                              _editorToolbarService_,
+                              _simulationInfo_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
     bbpConfig = _bbpConfig_;
     gz3d = _gz3d_;
     editorToolbarService = _editorToolbarService_;
+    simulationInfo = _simulationInfo_;
 
     // Mock the scene controls object
     gz3d.scene = {};
     gz3d.scene.controls = {};
     gz3d.scene.controls.keyboardBindingsEnabled = true;
 
-    simulationInfo = {
+    /*simulationInfo = {
       mode : undefined,
       serverID : 'bbpce016',
       simulationID : 'mocked_simulation_id',
@@ -58,7 +62,7 @@ describe('Controller: environmentSettingsPanelCtrl', function () {
           }
         }
       }
-    };
+    };*/
 
     experimentCtrl = $controller('environmentSettingsPanelCtrl', {
       $rootScope: rootScope,

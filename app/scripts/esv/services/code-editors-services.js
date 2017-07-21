@@ -33,6 +33,7 @@
         return {
           getDefaultEditorOptions: getDefaultEditorOptions,
           getEditor: getEditor,
+          getEditorChild: getEditorChild,
           refreshEditor: refreshEditor,
           refreshAllEditors: refreshAllEditors,
           resetEditor: resetEditor,
@@ -55,6 +56,11 @@
 
         function getEditor(id) {
           var codeMirrorDiv = document.getElementById(id).firstChild;
+          return codeMirrorDiv.CodeMirror;
+        }
+
+        function getEditorChild(id, parent) {
+          var codeMirrorDiv = parent.querySelector('#' + id).firstChild;
           return codeMirrorDiv.CodeMirror;
         }
 

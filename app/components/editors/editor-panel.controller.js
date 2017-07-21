@@ -52,7 +52,7 @@
     $scope.controls = {};
     $scope.controls.transferfunction = {};
     $scope.controls.statemachine = {};
-    $scope.controls.pynneditor = {};
+    //$scope.controls.pynneditor = {};
     $scope.controls.graphicalEditor = {};
 
     $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
@@ -83,8 +83,6 @@
           $scope.controls.transferfunction.refresh();
         else if (isTabSelected($scope.tabindex.statemachine))
           $scope.controls.statemachine.refresh();
-        else if (isTabSelected($scope.tabindex.pynneditor))
-          $scope.controls.pynneditor.refresh();
         else if (isTabSelected($scope.tabindex.graphicalEditor))
           $scope.controls.graphicalEditor.refresh();
       }
@@ -142,8 +140,8 @@
         $scope.controls.transferfunction.refresh();
       else if (isTabSelected($scope.tabindex.statemachine))
         $scope.controls.statemachine.refresh();
-      else if (isTabSelected($scope.tabindex.pynneditor))
-        $scope.controls.pynneditor.refresh();
+      //else if (isTabSelected($scope.tabindex.pynneditor))
+        //$scope.controls.pynneditor.refresh();
       // graphical editor is not refreshed
     };
 

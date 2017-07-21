@@ -33,7 +33,7 @@
               $scope,
               simulationInfo,
               editorToolbarService) {
-    
+
       $scope.simulationID = simulationInfo.simulationID;
       $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 

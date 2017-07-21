@@ -56,7 +56,6 @@ describe('Controller: editorPanelCtrl', function () {
 
     scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
     scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
-    scope.controls.pynneditor.refresh = jasmine.createSpy('refresh');
     scope.controls.graphicalEditor.refresh = jasmine.createSpy('refresh');
 
     $httpBackend.whenGET(/\/me/).respond(200);
@@ -94,7 +93,6 @@ describe('Controller: editorPanelCtrl', function () {
     scope.activeTabIndex = scope.tabindex.pynneditor;
     scope.closeCallback();
     scope.openCallback();
-    expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
 
     scope.activeTabIndex = scope.tabindex.graphicalEditor;
     scope.closeCallback();
@@ -186,10 +184,6 @@ describe('Controller: editorPanelCtrl', function () {
     scope.activeTabIndex = scope.tabindex.statemachine;
     scope.onResizeEnd();
     expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
-
-    scope.activeTabIndex = scope.tabindex.pynneditor;
-    scope.onResizeEnd();
-    expect(scope.controls.pynneditor.refresh).toHaveBeenCalled();
   });
 
   it('should watch showEditorPanel', function () {

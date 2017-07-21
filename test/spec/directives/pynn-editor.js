@@ -15,6 +15,7 @@ describe('Directive: pynnEditor', function () {
     $scope,
     isolateScope,
     element,
+    RESET_TYPE,
     backendInterfaceService,
     pythonCodeHelper,
     ScriptObject,
@@ -102,6 +103,7 @@ describe('Directive: pynnEditor', function () {
   beforeEach(inject(function (_$rootScope_,
                               _$httpBackend_,
                               _$compile_,
+                              _RESET_TYPE_,
                               _backendInterfaceService_,
                               $templateCache,
                               _pythonCodeHelper_,
@@ -113,6 +115,7 @@ describe('Directive: pynnEditor', function () {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
+    RESET_TYPE = _RESET_TYPE_;
     backendInterfaceService = _backendInterfaceService_;
     pythonCodeHelper = _pythonCodeHelper_;
     ScriptObject = pythonCodeHelper.ScriptObject;
@@ -184,7 +187,7 @@ describe('Directive: pynnEditor', function () {
     it('should handle the retrieved populations and pynn script properly', function () {
       // Mock getBrain Callback with data as return value
       backendInterfaceService.getBrain.and.callFake(function(f) { f(data); });
-      $scope.control.refresh();
+      isolateScope.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toEqual(expected_script);
       console.log(JSON.stringify(isolateScope.populations, null, '\t'));
@@ -195,7 +198,7 @@ describe('Directive: pynnEditor', function () {
     it('should not load a h5 brain', function () {
       // Mock getBrain Callback with data2 as return value
       backendInterfaceService.getBrain.and.callFake(function(f) { f(data2); });
-      $scope.control.refresh();
+      isolateScope.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
       expect(isolateScope.pynnScript).toBeUndefined();
     });
@@ -290,8 +293,19 @@ describe('Directive: pynnEditor', function () {
     });
 
     it('should not issue any getBrain request after a $destroy event of the parent scope', function() {
+      $timeout.flush();
+      spyOn(isolateScope, 'resetListenerUnbindHandler').and.callThrough();
+      spyOn(isolateScope, 'unbindWatcherResize').and.callThrough();
+      spyOn(isolateScope, 'unbindListenerUpdatePanelUI').and.callThrough();
+      spyOn(isolateScope, 'refresh').and.callThrough();
+
       isolateScope.$parent.$destroy();
-      expect(isolateScope.control.refresh).toBeUndefined();
+      expect(isolateScope.resetListenerUnbindHandler).toHaveBeenCalled();
+      expect(isolateScope.unbindWatcherResize).toHaveBeenCalled();
+      expect(isolateScope.unbindListenerUpdatePanelUI).toHaveBeenCalled();
+
+      isolateScope.$broadcast('UPDATE_PANEL_UI');
+      expect(isolateScope.refresh).not.toHaveBeenCalled();
     });
   });
 
@@ -339,6 +353,36 @@ describe('Directive: pynnEditor', function () {
       isolateScope.clearError();
       isolateScope.markError('', 0, 0);
       expect(isolateScope.lineHandle).toBeUndefined();
+    });
+
+    it('should refresh codemirror when collabDirty or localDirty flags are set', function () {
+      spyOn(codeEditorsServices, 'refreshEditor').and.callThrough();
+
+      isolateScope.collabDirty = true;
+      isolateScope.localDirty = false;
+      isolateScope.refresh();
+      $timeout.flush();
+      expect(codeEditorsServices.refreshEditor).toHaveBeenCalled();
+
+      isolateScope.collabDirty = false;
+      isolateScope.localDirty = true;
+      isolateScope.refresh();
+      $timeout.flush();
+      expect(codeEditorsServices.refreshEditor).toHaveBeenCalled();
+    });
+
+    it('should refresh on event UPDATE_PANEL_UI', function () {
+      spyOn(isolateScope, 'refresh').and.callThrough();
+      isolateScope.$broadcast('UPDATE_PANEL_UI');
+      expect(isolateScope.refresh).toHaveBeenCalled();
+    });
+
+    it('should set dirty flags on event RESET', function () {
+      isolateScope.collabDirty = true;
+      isolateScope.localDirty = true;
+      isolateScope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
+      expect(isolateScope.collabDirty).toBe(false);
+      expect(isolateScope.localDirty).toBe(false);
     });
   });
 
