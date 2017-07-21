@@ -6,6 +6,16 @@ describe('Controller: DynamicViewOverlayController', function() {
   var element, overlayController, dynamicViewController;
   var dynamicViewOverlayService;
 
+  var TEST_DUMMY = {
+    name: 'TEST',
+    directive: 'test',
+    overlayDefaultSize: {
+      width: 500,
+      height: 500
+    },
+    isResizeable: false,
+    allowMultipleViews: false, // default true
+  };
   beforeEach(module('dynamicViewOverlayModule'));
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayServiceMock'));
@@ -62,18 +72,23 @@ describe('Controller: DynamicViewOverlayController', function() {
 
     var deferredController = $q.defer();
     dynamicViewOverlayService.getController.and.returnValue(deferredController.promise);
-    var channel = {
-      directive: 'test-channel'
-    };
 
-    overlayController.setDynamicViewChannel(channel);
+    overlayController.setDynamicViewChannel(TEST_DUMMY);
     deferredController.resolve(dynamicViewController);
     $scope.$digest();
 
-    expect(dynamicViewController.setViewContentViaChannelType).toHaveBeenCalledWith(channel);
-    expect(overlayController.channelType).toBe(channel);
+    expect(dynamicViewController.setViewContentViaChannelType).toHaveBeenCalledWith(TEST_DUMMY);
+    expect(overlayController.channelType).toBe(TEST_DUMMY);
     expect(overlayController.applyChannelDefaults).toHaveBeenCalled();
     expect(overlayController.randomizePosition).toHaveBeenCalled();
   });
 
+  it(' - applyChannelDefaults() skipp if no channel defined', function() {
+    spyOn(element[0], 'getElementsByClassName');
+    var previewsElement = element;
+    overlayController.channelType = undefined;
+    overlayController.applyChannelDefaults();
+    expect(previewsElement).toBe(element);
+    expect(element[0].getElementsByClassName).not.toHaveBeenCalled();
+  });
 });

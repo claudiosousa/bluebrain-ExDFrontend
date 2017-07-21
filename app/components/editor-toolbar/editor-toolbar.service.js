@@ -63,11 +63,6 @@
       return this.showSpikeTrain;
     }
 
-    get isRobotCameraViewActive()
-    {
-      return this.showRobotView;
-    }
-
     get isNavigationModeMenuActive()
     {
       return this.showNavigationModeMenu;

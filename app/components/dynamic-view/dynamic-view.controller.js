@@ -95,7 +95,8 @@
         overlayDefaultSize: {
           width: 500,
           height: 500
-        }
+        },
+        isResizeable: true,
       },
       ENVIRONMENT_RENDERING: {
         name: 'Environment Rendering',
@@ -116,10 +117,17 @@
       LOG_CONSOLE: {
         name: 'Log Console',
         directive:  'log-console',
+        allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 500,
           height: 250
         }
+      },
+      OBJECT_INSPECTOR: {
+        name: 'Object Inspector',
+        directive:  'object-inspector',
+        isResizeable: false, // default true
+        allowMultipleViews: false, // default true
       }
     });
 

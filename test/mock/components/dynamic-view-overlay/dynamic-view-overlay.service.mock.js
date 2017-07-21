@@ -21,13 +21,45 @@
   })
 
   .constant('DYNAMIC_VIEW_CHANNELS', {
-    BRAIN_VISUALIZER: 'brainvisualizer-panel',
-    DYNAMIC_VIEW: 'dynamic-view',
-    ENVIRONMENT_RENDERING: 'environment-rendering',
-    JOINT_PLOT: 'joint-plot',
-    SPIKE_TRAIN: 'spike-train',
-    VIDEO_STREAM: 'video-streams',
-    LOG_CONSOLE: 'log-console'
+    BRAIN_VISUALIZER: {
+      name: 'Brain Visualizer',
+      directive: 'brainvisualizer-panel',
+      overlayDefaultSize: {
+        width: 500,
+        height: 500
+      },
+      isResizeable: true,
+    },
+    ENVIRONMENT_RENDERING: {
+      name: 'Environment Rendering',
+      directive: 'environment-rendering',
+      overlayDefaultSize: {
+        width: 500,
+        height: 500
+      }
+    },
+    JOINT_PLOT: {
+      name: 'Joint Plot',
+      directive: 'joint-plot',
+      overlayDefaultSize: {
+        width: 800,
+        height: 500
+      }
+    },
+    LOG_CONSOLE: {
+      name: 'Log Console',
+      directive: 'log-console',
+      overlayDefaultSize: {
+        width: 500,
+        height: 250
+      }
+    },
+    OBJECT_INSPECTOR: {
+      name: 'Object Inspector',
+      directive: 'object-inspector',
+      isResizeable: false, // default true
+      allowMultipleViews: false, // default true
+    },
   });
 
 }());

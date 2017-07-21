@@ -37,8 +37,8 @@
     })
 
     .factory('objectInspectorService', [
-      '$timeout', 'EDIT_MODE', 'STATE', 'OBJECT_VIEW_MODE', 'gz3d', 'stateService', 'colorableObjectService', 'simulationInfo',
-      function ($timeout, EDIT_MODE, STATE, OBJECT_VIEW_MODE, gz3d, stateService, colorableObjectService, simulationInfo) {
+      '$timeout', 'EDIT_MODE', 'STATE', 'OBJECT_VIEW_MODE', 'DYNAMIC_VIEW_CHANNELS', 'gz3d', 'stateService', 'colorableObjectService', 'simulationInfo',
+      function ($timeout, EDIT_MODE, STATE, OBJECT_VIEW_MODE, DYNAMIC_VIEW_CHANNELS, gz3d, stateService, colorableObjectService, simulationInfo) {
 
         //var objectInspectorService = {
         function ObjectInspectorService() {
@@ -47,7 +47,6 @@
           var TRANSFORM_TYPES = GZ3D.TRANSFORM_TYPE_NAME_PREFIX;
 
           //whether the object editor should be displayed
-          this.isShown = false;
           this.selectedObject =  undefined;
           this.translation = new THREE.Vector3(0, 0, 0);
           this.scaling = new THREE.Vector3(1, 1, 1);
@@ -72,25 +71,6 @@
             else {
               return false;
             }
-          };
-
-          this.toggleView = function (show) {
-            var showing;
-            if (angular.isUndefined(show)) {
-              showing = !this.isShown;
-            } else {
-              showing = show;
-            }
-
-            if (showing) {
-              this.registerGuiEvents();
-              this.update();
-            } else {
-              // switch back to view mode on close
-              this.setManipulationMode(EDIT_MODE.VIEW);
-            }
-
-            this.isShown = showing;
           };
 
           this.updateScale = function (newValue, newValueAxis) {
@@ -496,25 +476,6 @@
             } else {
               that.showCollision = that.selectedObject.showCollision;
             }
-          };
-
-          this.guiEventsRegistered = false;
-          this.registerGuiEvents = function () {
-            if (this.guiEventsRegistered) {
-              return;
-            }
-
-            this.guiEventsRegistered = true;
-
-            gz3d.gui.guiEvents.on('setTreeSelected', function () {
-              if (that.isShown) {
-                $timeout(that.update, 0);//force scope.$apply
-              }
-            });
-
-            gz3d.gui.guiEvents.on('delete_entity', function () {
-              $timeout(that.update, 0);//force scope.$apply
-            });
           };
 
           // update inspector from object

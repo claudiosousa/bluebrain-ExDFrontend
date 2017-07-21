@@ -68,6 +68,7 @@ describe('Directive: logConsole', function() {
             LOG_TYPE = _LOG_TYPE_;
 
             var logs = [];
+            logs.push({level: LOG_TYPE.ADVERTS, time: '12:00:10', message: 'advert'});
             logs.push({level: LOG_TYPE.INFO, time: '12:00:13', message: 'test1'});
             logs.push({level: LOG_TYPE.INFO, time: '12:00:13', message: 'test2'});
             logs.push({level: LOG_TYPE.INFO, time: '12:01:12', message: 'test3'});
@@ -80,9 +81,38 @@ describe('Directive: logConsole', function() {
         }));
 
         it('should respect missed message collected by editor toolbar', function() {
+            $timeout.flush();
             expect(clientLoggerController.logs.length).toBe(3);
             expect(clientLoggerController.logs[0].time).toBe('12:00:13');
             expect(clientLoggerController.logs[0].msg).toBe('test1');
         });
+
     });
+
+  describe(' - test with previously missed logs', function() {
+
+    beforeEach(inject(function(_$rootScope_, _$timeout_, $compile, _clientLoggerService_, _LOG_TYPE_) {
+      $rootScope = _$rootScope_;
+      $timeout = _$timeout_;
+      clientLoggerServiceMock = _clientLoggerService_;
+      LOG_TYPE = _LOG_TYPE_;
+
+      var logs = [];
+      for(var i = 0; i < 105; i++) {
+        logs.push({level: LOG_TYPE.INFO, time: '12:00:00', message: 'test'});
+      }
+      clientLoggerServiceMock.getLogHistory = logs;
+
+      element = $compile('<log-console></log-console>')($rootScope);
+      $rootScope.$digest();
+      childScope = element.isolateScope();
+      clientLoggerController = childScope.vm;
+    }));
+
+    it('should use not more than MAX_VISIBLE_LOGS', function() {
+      clientLoggerController.newMessageReceived('myMessage');
+      $timeout.flush();
+      expect(clientLoggerController.logs.length).toBe(100);
+    });
+  });
 });

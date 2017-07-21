@@ -46,12 +46,13 @@
       'stateService',
       'simulationInfo',
       'contextMenuState',
-      'objectInspectorService',
       'backendInterfaceService',
       'clbErrorDialog',
       'isNotARobotPredicate',
       'downloadFileService',
       'environmentService',
+      'dynamicViewOverlayService',
+      'DYNAMIC_VIEW_CHANNELS',
       '$http',
       function ($document,
         STATE,
@@ -63,12 +64,13 @@
         stateService,
         simulationInfo,
         contextMenuState,
-        objectInspectorService,
         backendInterfaceService,
         clbErrorDialog,
         isNotARobotPredicate,
         downloadFileService,
         environmentService,
+        dynamicViewOverlayService,
+        DYNAMIC_VIEW_CHANNELS,
         $http) {
         return {
           templateUrl: 'components/editors/environment-editor/environment-editor.template.html',
@@ -165,7 +167,7 @@
 
               if (obj) {
                 scope.gz3d.scene.selectEntity(obj);
-                objectInspectorService.toggleView(true);
+                dynamicViewOverlayService.createDynamicOverlay(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
               }
             };
 
@@ -220,7 +222,7 @@
                   {
                     text: 'Inspect',
                     callback: function (event) {
-                      objectInspectorService.toggleView(true);
+                      dynamicViewOverlayService.createDynamicOverlay(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
                       contextMenuState.toggleContextMenu(false);
                       event.stopPropagation();
                     },

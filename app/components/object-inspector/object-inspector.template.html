@@ -2,21 +2,12 @@
 <link rel="stylesheet" href="components/object-inspector/object-inspector.style.css" />
 <!-- endbuild -->
 
-<div show-on-top class="object-inspector-widget ng-hide" movable movable-anchor=".object-inspector-header" ng-show="objectInspectorService.isShown">
+<div class="object-inspector-widget">
   <div id="header" class="object-inspector-header">
-    <!-- window label -->
-    <h7 id="window-label">Object Inspector</h7>
-    <!-- window buttons -->
-    <ol id="window-buttons" class="inline-list">
       <!-- minimize button -->
-      <button type="button" class="btn btn-xs" ng-click="minimized = !minimized">
+    <button type="button" class="button-minimize" ng-click="minimized = !minimized">
         <i ng-class="{'fa fa-plus': minimized, 'fa fa-minus': !minimized}" aria-hidden="true"></i>
       </button>
-      <!-- close button -->
-      <button type="button" class="btn btn-xs" data-ng-click="objectInspectorService.toggleView(false)">
-        <i class="fa fa-times" aria-hidden="true"></i>
-      </button>
-    </ol>
   </div>
   <!-- sections of the object inspector -->
   <div id="sections" ng-show="!minimized">
@@ -46,20 +37,20 @@
 
               <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.position">
                 <button type="button" class="btn btn-xs btn-rounded" ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
-                  ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
+                        ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
                   <i class="fa fa-arrows" aria-hidden="true"></i>
                 </button>
               </li>
               <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.scale">
                 <button type="button" class="btn btn-xs btn-rounded" ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.SCALE}"
-                  ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.SCALE) ? EDIT_MODE.VIEW : EDIT_MODE.SCALE)"
-                  ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()">
+                        ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.SCALE) ? EDIT_MODE.VIEW : EDIT_MODE.SCALE)"
+                        ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()">
                   <i class="fa fa-expand" aria-hidden="true"></i>
                 </button>
               </li>
               <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.rotation">
                 <button type="button" class="btn btn-xs btn-rounded" ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
-                  ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
+                        ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
                   <i class="fa fa-repeat" aria-hidden="true"></i>
                 </button>
               </li>
@@ -109,17 +100,17 @@
               <li class="vec3-num-input-item">
                 <input interactive id="oi-scale-x" type="number" name="scale-x" class="vec3-num-input" ng-model="objectInspectorService.scaling.x"
                   ng-change="objectInspectorService.onScaleChange('x')" ng-keydown="suppressKeyPress($event)" ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
-                  style="{{objectInspectorService.selectedStyle['SX']}}">
+                       style="{{objectInspectorService.selectedStyle['SX']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-scale-y" type="number" name="scale-y" class="vec3-num-input" ng-model="objectInspectorService.scaling.y"
                   ng-change="objectInspectorService.onScaleChange('y')" ng-keydown="suppressKeyPress($event)" ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
-                  style="{{objectInspectorService.selectedStyle['SY']}}">
+                       style="{{objectInspectorService.selectedStyle['SY']}}">
               </li>
               <li class="vec3-num-input-item">
                 <input interactive id="oi-scale-z" type="number" name="scale-z" class="vec3-num-input" ng-model="objectInspectorService.scaling.z"
                   ng-change="objectInspectorService.onScaleChange('z')" ng-keydown="suppressKeyPress($event)" ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()"
-                  style="{{objectInspectorService.selectedStyle['SZ']}}">
+                       style="{{objectInspectorService.selectedStyle['SZ']}}">
               </li>
             </ol>
           </li>
@@ -135,7 +126,7 @@
                 <input id="oi-space-world" type="radio" name="space-world" class="input-radio-checkbox" ng-click="objectInspectorService.setSpaceMode('world')">                World
               </li>
             </ul>
-          </li>
+              </li>
 
           <!-- sub-section - snap to grid, collapsible -->
           <li class="sub-section-item" ng-show="!collapsedTransform">
@@ -184,7 +175,7 @@
           <!-- sub-section - material, collapsible -->
           <li class="sub-section-item" ng-show="!collapsedVisuals && objectInspectorService.hasColorableVisual">
             <h6>Material</h6>
-            <materials-chooser on-select="objectInspectorService.selectMaterial(material)" />
+            <materials-chooser on-select="objectInspectorService.selectMaterial(material)"/>
           </li>
           <!-- sub-section - collisions, collapsible -->
           <li class="sub-section-item" ng-show="!collapsedVisuals">
@@ -205,20 +196,20 @@
     <ol class="inline-list">
       <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.position">
         <button type="button" class="btn btn-sm btn-rounded" ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE}"
-          ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
+                ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.TRANSLATE) ? EDIT_MODE.VIEW : EDIT_MODE.TRANSLATE)">
           <i class="fa fa-lg fa-arrows" aria-hidden="true"></i>
         </button>
       </li>
       <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.scale">
         <button type="button" class="btn btn-sm btn-rounded" ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.SCALE}"
-          ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.SCALE) ? EDIT_MODE.VIEW : EDIT_MODE.SCALE)"
-          ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()">
+                ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.SCALE) ? EDIT_MODE.VIEW : EDIT_MODE.SCALE)"
+                ng-disabled="!objectInspectorService.isSelectedObjectSimpleShape()">
           <i class="fa fa-lg fa-expand" aria-hidden="true"></i>
         </button>
       </li>
       <li class="inline-listitem" ng-show="objectInspectorService.selectedObject.rotation">
         <button type="button" class="btn btn-sm btn-rounded" ng-class="{active:gz3d.scene.manipulationMode === EDIT_MODE.ROTATE}"
-          ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
+                ng-click="objectInspectorService.setManipulationMode((gz3d.scene.manipulationMode === EDIT_MODE.ROTATE) ? EDIT_MODE.VIEW : EDIT_MODE.ROTATE)">
           <i class="fa fa-lg fa-repeat" aria-hidden="true"></i>
         </button>
       </li>

@@ -9,7 +9,7 @@
 
     beforeEach(module('editorToolbarModule'));
     beforeEach(module('exd.templates')); // import html template
-    beforeEach(module('contextMenuStateServiceMock'));
+    beforeEach(module('contextMenuStateMock'));
     beforeEach(module('dynamicViewModule'));
 
     beforeEach(module('stateServiceMock'));

@@ -4,24 +4,20 @@ describe('Directive: environment-designer', function () {
 
 
   var $scope, element, stateService,
-    panels, currentStateMock, gz3dMock, contextMenuState, objectInspectorService, simulationSDFWorld,
-    simulationInfo, backendInterfaceService, clbErrorDialog, environmentService, httpBackend;
+    panels, contextMenuState, objectInspectorService, simulationSDFWorld,
+    simulationInfo, backendInterfaceService, clbErrorDialog, environmentService,
+      dynamicViewOverlayService, DYNAMIC_VIEW_CHANNELS, httpBackend;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('currentStateMockFactory'));
   beforeEach(module('simulationInfoMock'));
+  beforeEach(module('stateServiceMock'));
+  beforeEach(module('dynamicViewOverlayServiceMock'));
+  beforeEach(module('contextMenuStateMock'));
+  beforeEach(module('gz3dMock'));
   beforeEach(module(function ($provide) {
-    $provide.value('stateService', currentStateMock);
-    $provide.value('gz3d', gz3dMock);
     $provide.value('simulationSDFWorld', jasmine.createSpy('simulationSDFWorld').and.callThrough());
-    $provide.value('contextMenuState', {
-      toggleContextMenu: jasmine.createSpy('toggleContextMenu'),
-      pushItemGroup: jasmine.createSpy('pushItemGroup')
-    });
-    $provide.value('objectInspectorService', {
-      toggleView: jasmine.createSpy('toggleView')
-    });
     $provide.value('bbpConfig', {
       get: jasmine.createSpy('get').and.returnValue(
         {
@@ -44,6 +40,7 @@ describe('Directive: environment-designer', function () {
                               $document,
                               EDIT_MODE,
                               STATE,
+                              _DYNAMIC_VIEW_CHANNELS_,
                               _currentStateMockFactory_,
                               _stateService_,
                               _contextMenuState_,
@@ -54,14 +51,15 @@ describe('Directive: environment-designer', function () {
                               _backendInterfaceService_,
                               _clbErrorDialog_,
                               _environmentService_,
+                              _dynamicViewOverlayService_,
                               _$httpBackend_) {
 
     $scope = $rootScope.$new();
     $scope.EDIT_MODE = EDIT_MODE;
     $scope.STATE = STATE;
+    DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
     contextMenuState = _contextMenuState_;
     objectInspectorService = _objectInspectorService_;
-    currentStateMock = _currentStateMockFactory_.get().stateService;
     stateService = _stateService_;
     simulationInfo = _simulationInfo_;
     panels = _panels_;
@@ -69,6 +67,7 @@ describe('Directive: environment-designer', function () {
     backendInterfaceService = _backendInterfaceService_;
     clbErrorDialog = _clbErrorDialog_;
     environmentService = _environmentService_;
+    dynamicViewOverlayService = _dynamicViewOverlayService_;
     httpBackend = _$httpBackend_;
 
 
@@ -123,36 +122,6 @@ describe('Directive: environment-designer', function () {
     $scope.$digest();
 
     httpBackend.flush();
-
-    var sceneMock = {
-      setManipulationMode: jasmine.createSpy('setManipulationMode').
-      and.callFake(function (m) {
-        this.manipulationMode = m;
-      }),
-      manipulationMode: undefined,
-      selectedEntity:{},
-      selectEntity: jasmine.createSpy('selectEntity').
-      and.callFake(function (obj) {
-        this.selectedEntity = obj;
-      }),
-      getByName: jasmine.createSpy('getByName').
-      and.callFake(function (name) {
-
-        var obj = {};
-        obj.name = name;
-        return this.selectedEntity;
-      })
-    };
-
-
-
-    /*jshint camelcase: false */
-    gz3dMock = {
-      iface: {gui: {emitter:{_events: {entityCreated: jasmine.createSpy('entityCreated')}}}},
-      gui: {canModelBeDuplicated:function(){return true;}, emitter: {emit: jasmine.createSpy('emit')}, guiEvents: {emit: jasmine.createSpy('emit'), _events: {notification_popup: jasmine.createSpy('notification_popup')}}},
-      scene: sceneMock,
-      toggleScreenChangeMenu: jasmine.createSpy('toggleScreenChangeMenu')
-    };
   }));
 
   it('should initialize scope variables correctly', function () {
@@ -175,7 +144,6 @@ describe('Directive: environment-designer', function () {
     $scope.setEditMode($scope.EDIT_MODE.TRANSLATE);
     expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalled();
     expect($scope.gz3d.scene.setManipulationMode).toHaveBeenCalledWith($scope.EDIT_MODE.TRANSLATE);
-    expect($scope.gz3d.scene.manipulationMode).toBe($scope.EDIT_MODE.TRANSLATE);
   });
 
   it('should call correctly contextMenuState.pushItemGroup', function () {
@@ -205,7 +173,7 @@ describe('Directive: environment-designer', function () {
     var eventMock = {stopPropagation: jasmine.createSpy('stopPropagation')};
     // check call to edit item
     itemGroup.items[0].callback(eventMock);
-    expect(objectInspectorService.toggleView).toHaveBeenCalled();
+    expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
     expect(contextMenuState.toggleContextMenu).toHaveBeenCalledWith(false);
     expect(eventMock.stopPropagation).toHaveBeenCalled();
 
@@ -316,14 +284,17 @@ describe('Directive: environment-designer', function () {
     obj.name = objName;
 
     $scope.expectedObjectName = objName;
+    $scope.gz3d.scene.getByName.and.returnValue(objName);
 
     $scope.selectCreatedEntity(objName + ' created');
 
     expect($scope.gz3d.scene.selectedEntity === obj);
-    expect(objectInspectorService.toggleView).toHaveBeenCalled();
+    expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
   });
 
   it('should check interceptEntityCreationEvent', function () {
+
+    stateService.currentSate = $scope.STATE.STARTED;
 
     var objName = 'cylinder_0';
     var obj = {};
@@ -370,6 +341,7 @@ describe('Directive: environment-designer', function () {
   });
 
   it('should emit delete_entity and toggle menu when deleteModel is called', function () {
+    spyOn($scope.gz3d.gui.guiEvents, 'emit').and.callThrough();
     $scope.deleteModel();//call function
     //should emit 'delete_entity'
     expect($scope.gz3d.gui.guiEvents.emit).toHaveBeenCalledWith('delete_entity');
