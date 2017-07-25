@@ -3,6 +3,7 @@
 describe('Controller: DynamicViewOverlayController', function() {
 
   var $compile, $rootScope, $scope, $q;
+  var DYNAMIC_VIEW_CHANNELS;
   var element, overlayController, dynamicViewController;
   var dynamicViewOverlayService;
 
@@ -20,10 +21,13 @@ describe('Controller: DynamicViewOverlayController', function() {
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayServiceMock'));
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$q_, _dynamicViewOverlayService_) {
+  beforeEach(inject(function(_$rootScope_, _$compile_, _$q_,
+                             _DYNAMIC_VIEW_CHANNELS_,
+                             _dynamicViewOverlayService_) {
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $q = _$q_;
+    DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
     dynamicViewOverlayService = _dynamicViewOverlayService_;
   }));
 
@@ -83,12 +87,56 @@ describe('Controller: DynamicViewOverlayController', function() {
     expect(overlayController.randomizePosition).toHaveBeenCalled();
   });
 
-  it(' - applyChannelDefaults() skipp if no channel defined', function() {
+  it(' - applyChannelDefaults() skip if no channel defined', function() {
     spyOn(element[0], 'getElementsByClassName');
     var previewsElement = element;
     overlayController.channelType = undefined;
     overlayController.applyChannelDefaults();
     expect(previewsElement).toBe(element);
     expect(element[0].getElementsByClassName).not.toHaveBeenCalled();
+  });
+
+  it(' - applyChannelDefaults()', function() {
+    var mockWrapper = {style: {width: '20px', height: '10px'}};
+    spyOn(element[0], 'getElementsByClassName').and.returnValue([mockWrapper]);
+
+    overlayController.channelType = DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN;
+    overlayController.applyChannelDefaults();
+
+    expect(mockWrapper.style.width).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.width + 'px');
+    expect(mockWrapper.style.height).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.height + 'px');
+    expect(mockWrapper.style.minWidth).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.minWidth + 'px');
+    expect(mockWrapper.style.minHeight).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.minHeight + 'px');
+  });
+
+  it(' - randomizePosition(), channel is not resizeable', function() {
+    spyOn(element[0], 'getElementsByClassName');
+
+    overlayController.channelType = DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR;
+    overlayController.randomizePosition();
+    expect(element[0].getElementsByClassName).not.toHaveBeenCalled();
+  });
+
+  it(' - randomizePosition()', function() {
+    var mockWrapper = {
+      style: {width: '20px', height: '10px'},
+      clientWidth: 20,
+      clientHeight: 10
+    };
+    spyOn(element[0], 'getElementsByClassName').and.returnValue([mockWrapper]);
+
+    var mockAngularWrapper = {css: jasmine.createSpy('css')};
+    var angularElementSpy = spyOn(angular, 'element').and.returnValue(mockAngularWrapper);
+
+    var mockWrapperParent = {clientWidth: 100, clientHeight: 100};
+    dynamicViewOverlayService.getOverlayParentElement.and.returnValue([mockWrapperParent]);
+
+    overlayController.channelType = DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN;
+    overlayController.randomizePosition();
+
+    expect(mockAngularWrapper.css).toHaveBeenCalledWith('left', jasmine.any(Number));
+    expect(mockAngularWrapper.css).toHaveBeenCalledWith('top', jasmine.any(Number));
+
+    angularElementSpy.and.callThrough();
   });
 });
