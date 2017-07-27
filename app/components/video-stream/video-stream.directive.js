@@ -24,7 +24,7 @@
 (function() {
     'use strict';
 
-    angular.module('videoStreamModule')
+    angular.module('videoStreamModule', [])
         .directive('videoStream', ['$timeout', 'videoStreamService', 'STATE', 'stateService',
             function($timeout, videoStreamService, STATE, stateService) {
 

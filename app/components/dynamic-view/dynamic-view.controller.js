@@ -129,6 +129,14 @@
         directive:  'object-inspector',
         isResizeable: false, // default true
         allowMultipleViews: false, // default true
+      },
+      STREAM_VIEWER: {
+        name: 'Stream viewer',
+        directive: 'video-stream',
+        overlayDefaultSize: {
+          width: 500,
+          height: 400
+        }
       }
     });
 

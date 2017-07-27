@@ -24,10 +24,11 @@
 @import "widget-popup.scss";
 
 .video-streams-popup {
-    .widget-popup-content{
-        display: flex;
-        flex-direction: column;
-    }
+
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
 
     .video-streams-chooser{
         flex-grow: 0;

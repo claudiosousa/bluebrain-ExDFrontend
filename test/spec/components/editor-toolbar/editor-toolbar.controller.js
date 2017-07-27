@@ -3,34 +3,34 @@
 describe('Controller: EditorToolbarController', function() {
 
   var $controller,
-      $rootScope,
-      $scope,
-      $timeout,
-      $window,
-      $q,
-      location,
-      editorToolbarController,
-      stateService,
-      userContextService,
-      userNavigationService,
-      editorsPanelService,
-      gz3d,
-      clbConfirm,
-      environmentService,
-      backendInterfaceService,
-      splash,
-      environmentRenderingService,
-      objectInspectorService,
-      simulationInfo,
-      editorToolbarService,
-      gz3dViewsService,
-      clientLoggerService,
-      dynamicViewOverlayService,
-      DYNAMIC_VIEW_CHANNELS,
-      NAVIGATION_MODES,
-      STATE,
-      EDIT_MODE,
-      RESET_TYPE;
+    $rootScope,
+    $scope,
+    $timeout,
+    $window,
+    $q,
+    location,
+    editorToolbarController,
+    stateService,
+    userContextService,
+    userNavigationService,
+    editorsPanelService,
+    gz3d,
+    clbConfirm,
+    environmentService,
+    backendInterfaceService,
+    splash,
+    environmentRenderingService,
+    objectInspectorService,
+    simulationInfo,
+    editorToolbarService,
+    gz3dViewsService,
+    clientLoggerService,
+    dynamicViewOverlayService,
+    DYNAMIC_VIEW_CHANNELS,
+    NAVIGATION_MODES,
+    STATE,
+    EDIT_MODE,
+    RESET_TYPE;
 
   // load the controller's module
   beforeEach(module('editorToolbarModule'));
@@ -76,9 +76,11 @@ describe('Controller: EditorToolbarController', function() {
       };
       return res;
     };
-    $provide.value('clbConfirm', { open: jasmine.createSpy('open').and.returnValue(  {
-      then: jasmine.createSpy('then')
-    })});
+    $provide.value('clbConfirm', {
+      open: jasmine.createSpy('open').and.returnValue({
+        then: jasmine.createSpy('then')
+      })
+    });
     $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
 
     $provide.value('simulationState', jasmine.createSpy('simulationState').and.returnValue(simulationStateObject));
@@ -95,32 +97,32 @@ describe('Controller: EditorToolbarController', function() {
   }));
 
   beforeEach(inject(function(_$controller_,
-                             _$rootScope_,
-                             _$timeout_,
-                             _$location_,
-                             _$window_,
-                             _$q_,
-                             _stateService_,
-                             _userContextService_,
-                             _userNavigationService_,
-                             _gz3d_,
-                             _editorsPanelService_,
-                             _clbConfirm_,
-                             _environmentService_,
-                             _backendInterfaceService_,
-                             _splash_,
-                             _environmentRenderingService_,
-                             _objectInspectorService_,
-                             _simulationInfo_,
-                             _editorToolbarService_,
-                             _gz3dViewsService_,
-                             _clientLoggerService_,
-                             _dynamicViewOverlayService_,
-                             _DYNAMIC_VIEW_CHANNELS_,
-                             _STATE_,
-                             _NAVIGATION_MODES_,
-                             _EDIT_MODE_,
-                             _RESET_TYPE_) {
+    _$rootScope_,
+    _$timeout_,
+    _$location_,
+    _$window_,
+    _$q_,
+    _stateService_,
+    _userContextService_,
+    _userNavigationService_,
+    _gz3d_,
+    _editorsPanelService_,
+    _clbConfirm_,
+    _environmentService_,
+    _backendInterfaceService_,
+    _splash_,
+    _environmentRenderingService_,
+    _objectInspectorService_,
+    _simulationInfo_,
+    _editorToolbarService_,
+    _gz3dViewsService_,
+    _clientLoggerService_,
+    _dynamicViewOverlayService_,
+    _DYNAMIC_VIEW_CHANNELS_,
+    _STATE_,
+    _NAVIGATION_MODES_,
+    _EDIT_MODE_,
+    _RESET_TYPE_) {
     $controller = _$controller_;
     $rootScope = _$rootScope_;
     $scope = $rootScope.$new();
@@ -207,9 +209,9 @@ describe('Controller: EditorToolbarController', function() {
       environmentService.setPrivateExperiment(false); //Collab IS NOT available
 
       expect(backendInterfaceService.reset).toHaveBeenCalledWith(
-      request,
-      jasmine.any(Function),
-      jasmine.any(Function));
+        request,
+        jasmine.any(Function),
+        jasmine.any(Function));
 
       var successCallback = backendInterfaceService.reset.calls.mostRecent().args[1];
       successCallback();
@@ -265,7 +267,7 @@ describe('Controller: EditorToolbarController', function() {
       };
       var testCases = [testWorld, testBrain];
 
-      for(var i = 0; i < testCases.length; i++) {
+      for (var i = 0; i < testCases.length; i++) {
 
         var request = { resetType: testCases[i].type };
         editorToolbarController.resetButtonClickHandler();
@@ -293,17 +295,17 @@ describe('Controller: EditorToolbarController', function() {
 
         expect(splash.spin).toBe(true);
         expect(splash.setMessage).toHaveBeenCalledWith(
-        {
-          headline: testCases[i].headline,
-          subHeadline: testCases[i].subHeadline
-        }
+          {
+            headline: testCases[i].headline,
+            subHeadline: testCases[i].subHeadline
+          }
         );
 
         expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
-        simulationInfo.contextID,
-        request,
-        jasmine.any(Function),
-        jasmine.any(Function)
+          simulationInfo.contextID,
+          request,
+          jasmine.any(Function),
+          jasmine.any(Function)
         );
 
         backendInterfaceService.resetCollab.calls.mostRecent().args[2](); //2 is the success callback
@@ -321,7 +323,7 @@ describe('Controller: EditorToolbarController', function() {
 
     it('notify everything to update panel ui if there is a RESET of the brain', function() {
       spyOn($rootScope, '$broadcast').and.callThrough();
-      var request = {resetType: RESET_TYPE.RESET_BRAIN};
+      var request = { resetType: RESET_TYPE.RESET_BRAIN };
 
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
@@ -582,7 +584,7 @@ describe('Controller: EditorToolbarController', function() {
       expect(gz3d.iface.webSocket).not.toBeDefined();
     });
 
-    it('should go back to the esv-web page when no "ctx" parameter was in the url', function () {
+    it('should go back to the esv-web page when no "ctx" parameter was in the url', function() {
       spyOn($window.location, 'reload');
 
       environmentService.setPrivateExperiment(false);
@@ -655,7 +657,7 @@ describe('Controller: EditorToolbarController', function() {
       });
     });
 
-    it('should go back to the esv-web page when a "ctx" parameter was in the url', function () {
+    it('should go back to the esv-web page when a "ctx" parameter was in the url', function() {
       spyOn($window.location, 'reload');
 
       editorToolbarController.exit();
@@ -742,7 +744,7 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarService.videoStreamsAvailable = true;
       editorToolbarController.videoStreamsToggle();
 
-      expect($rootScope.$emit).toHaveBeenCalledWith('openVideoStream');
+      expect(editorToolbarController.dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(editorToolbarController.DYNAMIC_VIEW_CHANNELS.STREAM_VIEWER);
     });
 
     it('should not enable the video panel if no stream is available', function() {
@@ -751,7 +753,7 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarService.videoStreamsAvailable = false;
       editorToolbarController.videoStreamsToggle();
 
-      expect($rootScope.$emit).not.toHaveBeenCalled();
+      expect(editorToolbarController.dynamicViewOverlayService.createDynamicOverlay).not.toHaveBeenCalledWith();
     });
   });
 
@@ -792,13 +794,13 @@ describe('Controller: EditorToolbarController', function() {
 // TODO: refactor more so in belongs to a new simulationService whatever
 describe('Controller: Gz3dViewCtrl - mocked window', function() {
   var editorToolbar,
-      controller,
-      scope,
-      rootScope,
-      stateService,
-      window,
-      document,
-      environmentRenderingService;
+    controller,
+    scope,
+    rootScope,
+    stateService,
+    window,
+    document,
+    environmentRenderingService;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -821,11 +823,11 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function($controller,
-                             $rootScope,
-                             _stateService_,
-                             _$window_,
-                             _$document_,
-                             _environmentRenderingService_) {
+    $rootScope,
+    _stateService_,
+    _$window_,
+    _$document_,
+    _environmentRenderingService_) {
     controller = $controller;
     rootScope = $rootScope;
     scope = $rootScope.$new();
