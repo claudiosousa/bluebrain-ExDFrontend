@@ -225,16 +225,28 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
-      expect(editorToolbarController.notifyResetToWidgets).toHaveBeenCalledWith(RESET_TYPE.RESET_WORLD);
-    });
+      expect(editorToolbarController.notifyResetToWidgets).not.toHaveBeenCalled();
 
-    it('should hide object inspector window when resetting', function() {
-      var request = { resetType: RESET_TYPE.RESET_FULL };
+      request.resetType = RESET_TYPE.RESET_CAMERA_VIEW;
 
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
       expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
+    });
+
+    it('should make correct reset calls when server reset happened', function() {
+      spyOn(editorToolbarController, 'notifyResetToWidgets').and.callThrough();
+      spyOn(editorToolbarController, 'updatePanelUI').and.callThrough();
+      editorsPanelService.showEditorPanel = true;
+
+      editorToolbarController.resetOccuredOnServer();
+
+      expect(editorsPanelService.toggleEditors).toHaveBeenCalled();
+      expect(editorToolbarController.notifyResetToWidgets).toHaveBeenCalled();
+      expect(editorToolbarController.updatePanelUI).toHaveBeenCalled();
+      expect(gz3d.scene.resetView).toHaveBeenCalled();
+
       expect(gz3d.scene.selectEntity).toHaveBeenCalled();
     });
 

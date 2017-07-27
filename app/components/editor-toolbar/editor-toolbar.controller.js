@@ -193,7 +193,7 @@
         this.editorsPanelService.toggleEditors();
       }
       // Close opened object inspectors. ResetType is 1
-      this.notifyResetToWidgets(1);
+      this.notifyResetToWidgets(this.RESET_TYPE.RESET_FULL);
       this.updatePanelUI();
       this.gz3d.scene.resetView();
     }
@@ -367,9 +367,16 @@
       if (this.editorsPanelService.showEditorPanel) {
         this.editorsPanelService.toggleEditors();
       }
+      this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
 
       this.$timeout(() => {
-        this.notifyResetToWidgets(resetType);
+        if (resetType === this.RESET_TYPE.RESET_BRAIN ||
+          resetType === this.RESET_TYPE.RESET_CAMERA_VIEW ||
+          resetType === this.RESET_TYPE.RESET_ROBOT_POSE ) {
+          // send out notifications on button click only for resets not currently being caught via backend messages
+          // right now only resets that cause a state change in backend will be registered in messageCallback()
+          this.notifyResetToWidgets(resetType);
+        }
 
         if (resetType >= 256) { // Frontend-bound reset
           if (resetType === this.RESET_TYPE.RESET_CAMERA_VIEW) {
