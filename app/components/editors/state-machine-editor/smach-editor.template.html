@@ -1,41 +1,47 @@
-<h3>SMACH State Machine Editor</h3>
-<p>The platform is designed to use state machines to control and evaluate experiments. A state machine controlling an
-  experiment can monitor any simulation properties published on ROS topics (e.g. simulation time, sensor output, spiking
-  activity of brain) and publish on ROS topics or call ROS services. </p><p>A state machine evaluating the success of an
+<!-- build:css(.tmp) styles/esv/pynn-editor.css -->
+<link rel="stylesheet" href="components/editors/state-machine-editor/smach-editor.style.css" />
+<!-- endbuild -->
+
+<div class="smach-editor-wrapper">
+  <h3>SMACH State Machine Editor</h3>
+  <p>The platform is designed to use state machines to control and evaluate experiments. A state machine controlling an
+    experiment can monitor any simulation properties published on ROS topics (e.g. simulation time, sensor output, spiking
+    activity of brain) and publish on ROS topics or call ROS services. </p><p>A state machine evaluating the success of an
   experiment has the same capabilities than a monitoring state machine and should either publish a success or failure
   message to the ROS "status" topic. State machine syntax is described in more details
-  <a target="_blank" href="{{platformDocumentationURL}}/nrp/user_manual/tutorials/experiment/state_machines.html">here</a>
-</p>
-<div ng-show="stateMachines.length === 0" class="alert alert-info" role="alert">
-  There is no SMACH script available for this experiment.
-</div>
-<hr>
-<div ng-include src="'components/editors/state-machine-editor/smach-editor-buttons.template.html'"></div>
-<div ng-repeat="stateMachine in stateMachines">
+    <a target="_blank" href="{{platformDocumentationURL}}/nrp/user_manual/tutorials/experiment/state_machines.html">here</a>
+  </p>
+  <div ng-show="stateMachines.length === 0" class="alert alert-info" role="alert">
+    There is no SMACH script available for this experiment.
+  </div>
   <hr>
-  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
-  <div ui-codemirror
-       ui-codemirror-opts="editorOptions"
-       ng-model="stateMachine.code"
-       ui-refresh="stateMachine.code"
-       ng-attr-id="state-machine-{{stateMachine.id}}"
-       ng-change="onStateMachineChange(stateMachine)">
-  </div>
-  <div ng-repeat="(type, error) in stateMachine.error">
-    <div class="alert alert-danger" role="alert">
-      {{error.message}} <b>({{type}})</b>
+  <div ng-include src="'components/editors/state-machine-editor/smach-editor-buttons.template.html'"></div>
+  <div ng-repeat="stateMachine in stateMachines">
+    <hr>
+    <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{stateMachine.name}}</span></code></h4>
+    <div ui-codemirror
+         ui-codemirror-opts="editorOptions"
+         ng-model="stateMachine.code"
+         ui-refresh="stateMachine.code"
+         ng-attr-id="state-machine-{{stateMachine.id}}"
+         ng-change="onStateMachineChange(stateMachine)">
     </div>
+    <div ng-repeat="(type, error) in stateMachine.error">
+      <div class="alert alert-danger" role="alert">
+        {{error.message}} <b>({{type}})</b>
+      </div>
+    </div>
+    <button type="button" class="btn btn-default btn-md"
+            ng-click="update(stateMachine)"
+            ng-disabled="!stateMachine.dirty || stateService.statePending">
+      <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
+    </button>
+    <button type="button" class="btn btn-default btn-md"
+            ng-disabled="stateService.statePending"
+            ng-click="delete(stateMachine)">
+      <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+    </button>
   </div>
-  <button type="button" class="btn btn-default btn-md"
-    ng-click="update(stateMachine)"
-    ng-disabled="!stateMachine.dirty || stateService.statePending">
-    <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
-  </button>
-  <button type="button" class="btn btn-default btn-md"
-    ng-disabled="stateService.statePending"
-    ng-click="delete(stateMachine)">
-    <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
-  </button>
+  <hr>
+  <div ng-show="stateMachines.length !== 0" ng-include src="'components/editors/state-machine-editor/smach-editor-buttons.template.html'" style="padding-bottom: 30px;"></div>
 </div>
-<hr>
-<div ng-show="stateMachines.length !== 0" ng-include src="'components/editors/state-machine-editor/smach-editor-buttons.template.html'" style="padding-bottom: 30px;"></div>

@@ -123,7 +123,7 @@ describe('Directive: smachEditor', function () {
   }));
 
   it('should init the stateMachines variable', function () {
-    $scope.control.refresh();
+    isolateScope.refresh();
     expect(isolateScope.stateMachines).toEqual([]);
     expect(backendInterfaceService.getStateMachines).toHaveBeenCalled();
     expect(isolateScope.backendDocumentationURL).toEqual('backendDocumentationURL');
@@ -140,7 +140,7 @@ describe('Directive: smachEditor', function () {
     var expected = [];
 
     beforeEach(function () {
-      $scope.control.refresh();
+      isolateScope.refresh();
       for (var i = 0; i < 3; ++i) {
         var smId = 'SM' + i;
         var sm = new ScriptObject(smId, data[smId]);

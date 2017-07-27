@@ -45,6 +45,8 @@
     'saveErrorsService',
     'environmentService',
     'userContextService',
+    'bbpConfig',
+    'editorToolbarService',
     function ($q,
               backendInterfaceService,
               pythonCodeHelper,
@@ -64,7 +66,9 @@
               codeEditorsServices,
               saveErrorsService,
               environmentService,
-              userContextService) {
+              userContextService,
+              bbpConfig,
+              editorToolbarService) {
 
       var DIRTY_TYPE = 'SM';
 
@@ -93,6 +97,13 @@
           scope.backendDocumentationURL = docs.backendDocumentationURL;
           scope.platformDocumentationURL = docs.platformDocumentationURL;
 
+          scope.$on('$destroy', () => {
+            scope.resetListenerUnbindHandler();
+            scope.unbindWatcherResize();
+            scope.unbindListenerUpdatePanelUI();
+            editorToolbarService.showSmachEditor = false;
+          });
+
           function loadStateMachines() {
             return backendInterfaceService.getStateMachines(
               function(response) {
@@ -112,7 +123,7 @@
               });
           }
 
-          scope.control.refresh = function () {
+          scope.refresh = function () {
             if (scope.collabDirty) {
               codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) {return 'state-machine-' + sm.id;}));
               return;
@@ -121,6 +132,33 @@
               codeEditorsServices.refreshAllEditors(scope.stateMachines.map(function(sm) { return 'state-machine-' + sm.id; }));
             });
           };
+
+          // update UI
+          scope.unbindListenerUpdatePanelUI = scope.$on("UPDATE_PANEL_UI", function () {
+            // prevent calling the select functions of the tabs
+            scope.refresh();
+          });
+
+          // only start watching for changes after a little timeout
+          // the flood of changes during compilation will cause angular to throw digest errors when watched
+          $timeout(
+            () => {
+              // refresh on resize
+              scope.unbindWatcherResize = scope.$watch(() => {
+                  if (element[0].offsetParent) {
+                    return [element[0].offsetParent.offsetWidth, element[0].offsetParent.offsetHeight].join('x');
+                  } else {
+                    return '';
+                  }
+                },
+                () => {
+                  scope.refresh();
+                }
+              );
+              scope.refresh();
+            },
+            300
+          );
 
           scope.update = function(stateMachines) {
             var restart = stateService.currentState === STATE.STARTED;
@@ -157,8 +195,7 @@
             );
           };
 
-          scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType)
-          {
+          scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType === RESET_TYPE.RESET_FULL)
             {
               scope.collabDirty = false;
@@ -385,8 +422,8 @@
             delete stateMachine.error[scope.ERROR.COMPILE];
           };
 
-          var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
-          scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
+          var rosConnection = roslib.getOrCreateConnectionTo(simulationInfo.serverConfig.rosbridge.websocket);
+          scope.errorTopicSubscriber = roslib.createTopic(rosConnection, bbpConfig.get('ros-topics').cleError, 'cle_ros_msgs/CLEError');
           scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived, true);
 
         saveErrorsService.registerCallback(DIRTY_TYPE, function(newSMs){

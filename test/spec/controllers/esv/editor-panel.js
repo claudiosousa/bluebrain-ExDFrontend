@@ -87,7 +87,6 @@ describe('Controller: editorPanelCtrl', function () {
     scope.activeTabIndex = scope.tabindex.statemachine;
     scope.closeCallback();
     scope.openCallback();
-    expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
     expect(scope.controls.graphicalEditor.refresh).not.toHaveBeenCalled();
 
     scope.activeTabIndex = scope.tabindex.pynneditor;
@@ -180,10 +179,6 @@ describe('Controller: editorPanelCtrl', function () {
     scope.activeTabIndex = scope.tabindex.transferfunction;
     scope.onResizeEnd();
     expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
-
-    scope.activeTabIndex = scope.tabindex.statemachine;
-    scope.onResizeEnd();
-    expect(scope.controls.statemachine.refresh).toHaveBeenCalled();
   });
 
   it('should watch showEditorPanel', function () {

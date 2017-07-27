@@ -22,8 +22,7 @@
       <uib-tab heading="State Machine (SMACH)" index="tabindex.statemachine"
            select="disableKeyBindings(); controls.statemachine.refresh()"
            deselect="reenableKeyBindings()">
-        <smach-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
-                      control="controls.statemachine"/>
+        <smach-editor />
       </uib-tab>
       <uib-tab heading="Brain Editor" index="tabindex.pynneditor"
            select="disableKeyBindings();"

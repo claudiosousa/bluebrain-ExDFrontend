@@ -34,6 +34,8 @@
       this.showNavigationModeMenu = false;
       this.videoStreamsAvailable = false;
       this.showPynnEditor = false;
+      this.showSmachEditor = false;
+      this.showEditorMenu = false;
 
       this.dynamicViewOverlayService = dynamicViewOverlayService;
       this.editorsPanelService = editorsPanelService;
@@ -68,6 +70,16 @@
     get isPynnEditorActive()
     {
       return (this.showPynnEditor);
+    }
+
+    get isSmachEditorActive()
+    {
+      return (this.showSmachEditor);
+    }
+
+    get isEditorMenuActive()
+    {
+      return this.showEditorMenu;
     }
 
     toggleLogConsole() {
@@ -110,6 +122,17 @@
           this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR);
         } else {
           this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR);
+        }
+      });
+    }
+
+    toggleSmachEditor() {
+      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.SMACH_EDITOR).then(state => {
+        this.showSmachEditor = !state;
+        if(state) {
+          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.SMACH_EDITOR);
+        } else {
+          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.SMACH_EDITOR);
         }
       });
     }

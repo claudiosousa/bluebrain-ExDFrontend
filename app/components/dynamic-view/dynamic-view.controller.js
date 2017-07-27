@@ -21,6 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
+
 (function() {
   'use strict';
 
@@ -152,6 +153,17 @@
       PYNN_EDITOR: {
         name: 'PyNN Editor',
         directive:  'pynn-editor',
+        allowMultipleViews: false, // default true
+        overlayDefaultSize: {
+          width: 800,
+          height: 500,
+          minWidth: 700,
+          minHeight: 300
+        }
+      },
+      SMACH_EDITOR: {
+        name: 'SMACH Editor',
+        directive:  'smach-editor',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 800,

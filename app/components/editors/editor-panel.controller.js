@@ -81,8 +81,6 @@
       if ($scope.panelIsOpen) {
         if (isTabSelected($scope.tabindex.transferfunction))
           $scope.controls.transferfunction.refresh();
-        else if (isTabSelected($scope.tabindex.statemachine))
-          $scope.controls.statemachine.refresh();
         else if (isTabSelected($scope.tabindex.graphicalEditor))
           $scope.controls.graphicalEditor.refresh();
       }
@@ -138,8 +136,6 @@
 
       if (isTabSelected($scope.tabindex.transferfunction))
         $scope.controls.transferfunction.refresh();
-      else if (isTabSelected($scope.tabindex.statemachine))
-        $scope.controls.statemachine.refresh();
       //else if (isTabSelected($scope.tabindex.pynneditor))
         //$scope.controls.pynneditor.refresh();
       // graphical editor is not refreshed

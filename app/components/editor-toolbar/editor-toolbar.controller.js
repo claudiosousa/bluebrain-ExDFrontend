@@ -481,6 +481,10 @@
       this.editorToolbarService.showNavigationModeMenu = !this.editorToolbarService.showNavigationModeMenu;
     };
 
+    editorMenuClickHandler() {
+      this.editorToolbarService.showEditorMenu = !this.editorToolbarService.showEditorMenu;
+    };
+
     setNavigationMode(mode) {
       switch (mode) {
         case this.NAVIGATION_MODES.FREE_CAMERA:
