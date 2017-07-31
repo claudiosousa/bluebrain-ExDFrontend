@@ -1,23 +1,23 @@
-(function () {
+(function() {
   'use strict';
 
-  describe('Directive: newExperimentWizard', function () {
-    var $httpBackend, $rootScope, $compile, nrpModalService, collabFolderAPIService, $q, scope, clbErrorDialog, newExperimentProxyService, collabConfigService;
+  describe('Directive: newExperimentWizard', function() {
+    var $httpBackend, $rootScope, $compile, nrpModalService, storageServer, $q, scope, clbErrorDialog, newExperimentProxyService, collabConfigService;
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
     beforeEach(module('hbpCollaboratoryCore'));
 
-    beforeEach(inject(function (
+    beforeEach(inject(function(
       _$rootScope_, _$httpBackend_, _$compile_, _nrpModalService_,
-      _collabFolderAPIService_, _$q_, _clbErrorDialog_, _newExperimentProxyService_,
+      _storageServer_, _$q_, _clbErrorDialog_, _newExperimentProxyService_,
       _collabConfigService_
     ) {
       $httpBackend = _$httpBackend_;
       $rootScope = _$rootScope_;
       $compile = _$compile_;
       nrpModalService = _nrpModalService_;
-      collabFolderAPIService = _collabFolderAPIService_;
+      storageServer = _storageServer_;
       $q = _$q_;
       clbErrorDialog = _clbErrorDialog_;
       newExperimentProxyService = _newExperimentProxyService_;
@@ -27,29 +27,24 @@
       $rootScope.$digest();
       scope = $rootScope.$$childHead;
       spyOn(nrpModalService, 'createModal')
-        .and.callFake(function () {
+        .and.callFake(function() {
           return;
         });
     }));
 
-    afterEach(function () {
+    afterEach(function() {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
       scope.destroyDialog();
     });
 
-    it('should check successful upload from private collab for the robot', function () {
+    it('should check successful upload from private collab for the robot', function() {
 
-      spyOn(collabFolderAPIService, 'getFilesFromNavEntityFolder')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.resolve({
-            empty: 'empty'
-          });
-          return deferred.promise;
-        });
+      spyOn(storageServer, 'getExperiments')
+        .and.returnValue(window.$q.when([]));
+
       spyOn(scope, 'createEntitiesListFromEntityFiles')
-        .and.callFake(function () {
+        .and.callFake(function() {
           var deferred = $q.defer();
           deferred.resolve({
             result: [
@@ -78,18 +73,13 @@
       expect(scope.entities.result[1].name).toBe('fakeHusky');
     });
 
-    it('should check successful upload from private collab for the environment', function () {
+    it('should check successful upload from private collab for the environment', function() {
 
-      spyOn(collabFolderAPIService, 'getFilesFromNavEntityFolder')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.resolve({
-            empty: 'empty'
-          });
-          return deferred.promise;
-        });
+      spyOn(storageServer, 'getExperiments')
+        .and.returnValue(window.$q.when([]));
+
       spyOn(scope, 'createEntitiesListFromEntityFiles')
-        .and.callFake(function () {
+        .and.callFake(function() {
           var deferred = $q.defer();
           deferred.resolve({
             result: [
@@ -118,18 +108,13 @@
       expect(scope.entities.result[1].name).toBe('fakeFZIGround');
     });
 
-    it('should check successful upload from private collab for the brain', function () {
+    it('should check successful upload from private collab for the brain', function() {
 
-      spyOn(collabFolderAPIService, 'getFilesFromNavEntityFolder')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.resolve({
-            empty: 'empty'
-          });
-          return deferred.promise;
-        });
+      spyOn(storageServer, 'getExperiments')
+        .and.returnValue(window.$q.when([]));
+
       spyOn(scope, 'createEntitiesListFromBrainFiles')
-        .and.callFake(function () {
+        .and.callFake(function() {
           var deferred = $q.defer();
           deferred.resolve({
             result: [
@@ -159,19 +144,13 @@
       expect(scope.brain).toBe(true);
     });
 
-    it('should check unsuccessful upload from private collab for the robot', function () {
+    it('should check unsuccessful upload from private collab for the robot', function() {
       spyOn(scope, 'createErrorPopup')
-        .and.callFake(function () {
+        .and.callFake(function() {
           return;
         });
-      spyOn(collabFolderAPIService, 'getFilesFromNavEntityFolder')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.reject({
-            empty: 'empty'
-          });
-          return deferred.promise;
-        });
+      spyOn(storageServer, 'getExperiments')
+        .and.returnValue(window.$q.reject());
       scope.uploadRobotDialog();
       scope.uploadEntity('PrivateCollab');
       scope.$digest();
@@ -179,19 +158,13 @@
       expect(scope.createErrorPopup).toHaveBeenCalled();
     });
 
-    it('should check unsuccessful upload from private collab for the environment', function () {
+    it('should check unsuccessful upload from private collab for the environment', function() {
       spyOn(scope, 'createErrorPopup')
-        .and.callFake(function () {
+        .and.callFake(function() {
           return;
         });
-      spyOn(collabFolderAPIService, 'getFilesFromNavEntityFolder')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.reject({
-            empty: 'empty'
-          });
-          return deferred.promise;
-        });
+      spyOn(storageServer, 'getExperiments')
+        .and.returnValue(window.$q.reject());
       scope.uploadEnvironmentDialog();
       scope.uploadEntity('PrivateCollab');
       scope.$digest();
@@ -199,19 +172,11 @@
       expect(scope.createErrorPopup).toHaveBeenCalled();
     });
 
-    it('should check unsuccessful upload from private collab for the brain', function () {
+    it('should check unsuccessful upload from private collab for the brain', function() {
       spyOn(scope, 'createErrorPopup')
-        .and.callFake(function () {
-          return;
-        });
-      spyOn(collabFolderAPIService, 'getFilesFromNavEntityFolder')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.reject({
-            empty: 'empty'
-          });
-          return deferred.promise;
-        });
+        .and.callFake(angular.noop);
+      spyOn(storageServer, 'getExperiments')
+        .and.returnValue(window.$q.reject());
       scope.uploadBrainDialog();
       scope.uploadEntity('PrivateCollab');
       scope.$digest();
@@ -219,17 +184,17 @@
       expect(scope.createErrorPopup).toHaveBeenCalled();
     });
 
-    it('should call the create upload from private collab function', function () {
+    it('should call the create upload from private collab function', function() {
       var mockBrainUploader = {
         name: 'FakeRobot',
-        fakeFunction: function () { }
+        fakeFunction: function() { }
       };
       scope.uploadEntityDialog(mockBrainUploader);
       expect(nrpModalService.createModal).toHaveBeenCalled();
       expect(scope.entityName).toEqual('FakeRobot');
     });
 
-    it('should call the upload from public env for the robot', function () {
+    it('should call the upload from public env for the robot', function() {
       var mockProxyResponse = {
         data: [
           {
@@ -254,7 +219,7 @@
             thumbnail: null
           }]
       };
-      spyOn(newExperimentProxyService, 'getEntity').and.callFake(function () {
+      spyOn(newExperimentProxyService, 'getEntity').and.callFake(function() {
         var deferred = $q.defer();
         deferred.resolve(mockProxyResponse);
         return deferred.promise;
@@ -275,7 +240,7 @@
       expect(scope.robotUploaded).toBe(true);
     });
 
-    it('should call the upload from public env for the environments', function () {
+    it('should call the upload from public env for the environments', function() {
       var mockProxyResponse = {
         data: [
           {
@@ -300,7 +265,7 @@
             thumbnail: null
           }]
       };
-      spyOn(newExperimentProxyService, 'getEntity').and.callFake(function () {
+      spyOn(newExperimentProxyService, 'getEntity').and.callFake(function() {
         var deferred = $q.defer();
         deferred.resolve(mockProxyResponse);
         return deferred.promise;
@@ -320,7 +285,7 @@
       expect(scope.environmentUploaded).toBe(true);
     });
 
-    it('should call the upload from public env for the brain', function () {
+    it('should call the upload from public env for the brain', function() {
       var mockProxyResponse = {
         data: [
           {
@@ -348,7 +313,7 @@
             path: 'fakePath4/fakePath4.sdf'
           }]
       };
-      spyOn(newExperimentProxyService, 'getEntity').and.callFake(function () {
+      spyOn(newExperimentProxyService, 'getEntity').and.callFake(function() {
         var deferred = $q.defer();
         deferred.resolve(mockProxyResponse);
         return deferred.promise;
@@ -368,7 +333,7 @@
       expect(scope.brainUploaded).toBe(true);
     });
 
-    it('should call the upload from local env for the robot', function () {
+    it('should call the upload from local env for the robot', function() {
       var mockSelectedEntity = {
         name: 'Arm robot force based version',
         description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
@@ -385,7 +350,7 @@
       expect(scope.robotUploaded).toBe(true);
     });
 
-    it('should call the upload from local env for the environment', function () {
+    it('should call the upload from local env for the environment', function() {
       var mockSelectedEntity = {
         name: 'Fake environment1',
         description: 'Fake Description1',
@@ -402,7 +367,7 @@
       expect(scope.environmentUploaded).toBe(true);
     });
 
-    it('should call the upload from local env for the brain', function () {
+    it('should call the upload from local env for the brain', function() {
       var selectedEntity = {
         name: 'FakeBrain1',
         description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
@@ -419,57 +384,55 @@
       expect(scope.brainUploaded).toBe(true);
     });
 
-    it('should test the createErrorPopup function', function () {
+    it('should test the createErrorPopup function', function() {
       spyOn(clbErrorDialog, 'open')
-        .and.callFake(function () {
+        .and.callFake(function() {
           return;
         });
       scope.createErrorPopup();
       expect(clbErrorDialog.open).toHaveBeenCalled();
     });
 
-    it('should test the createEntitiesListFromEntityFiles function', function () {
+    it('should test the createEntitiesListFromEntityFiles function', function() {
       /*jshint camelcase: false */
       var mockCollabStorageResponse =
+        [{
+          content_type: 'application/x-config',
+          description: '',
+          uuid: '5626127f-eaaf-4eef-9806-d152a7894eae',
+          entity_type: 'file',
+          name: 'icub.config'
+        },
         {
-          results:
-          [{
-            content_type: 'application/x-config',
-            description: '',
-            uuid: '5626127f-eaaf-4eef-9806-d152a7894eae',
-            entity_type: 'file',
-            name: 'icub.config'
-          },
-          {
-            content_type: 'image/png',
-            description: '',
-            uuid: '07419007-8353-45bd-9645-d1d6c3dc5e59',
-            entity_type: 'file',
-            name: 'icub.png'
-          },
-          {
-            content_type: 'application/x-config',
-            description: '',
-            uuid: '79e51141-98cf-4ece-aa1b-b766d7842d53',
-            entity_type: 'file',
-            name: 'lauron.config'
-          },
-          {
-            content_type: 'image/png',
-            description: '',
-            uuid: '4f541ef0-84f7-4509-9745-b10eee176205',
-            entity_type: 'file',
-            name: 'lauron.png'
-          }]
-        };
+          content_type: 'image/png',
+          description: '',
+          uuid: '07419007-8353-45bd-9645-d1d6c3dc5e59',
+          entity_type: 'file',
+          name: 'icub.png'
+        },
+        {
+          content_type: 'application/x-config',
+          description: '',
+          uuid: '79e51141-98cf-4ece-aa1b-b766d7842d53',
+          entity_type: 'file',
+          name: 'lauron.config'
+        },
+        {
+          content_type: 'image/png',
+          description: '',
+          uuid: '4f541ef0-84f7-4509-9745-b10eee176205',
+          entity_type: 'file',
+          name: 'lauron.png'
+        }];
+
       spyOn(scope, 'retrieveImageFileContent')
-        .and.callFake(function () {
+        .and.callFake(function() {
           var deferred = $q.defer();
           deferred.resolve();
           return deferred.promise;
         });
       spyOn(scope, 'retrieveConfigFileContent')
-        .and.callFake(function () {
+        .and.callFake(function() {
           var deferred = $q.defer();
           deferred.resolve({
             config:
@@ -484,20 +447,16 @@
       expect(scope.retrieveConfigFileContent).toHaveBeenCalled();
     });
 
-    it('should test the retrieveImageFileContent function', function () {
-      spyOn(collabFolderAPIService, 'downloadFile')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.resolve();
-          return deferred.promise;
-        });
+    it('should test the retrieveImageFileContent function', function() {
+      spyOn(storageServer, 'getBlobContent')
+        .and.returnValue(window.$q.when([]));
       scope.retrieveImageFileContent();
-      expect(collabFolderAPIService.downloadFile).toHaveBeenCalled();
+      expect(storageServer.getBlobContent).toHaveBeenCalled();
     });
 
-    it('should test the retrieveConfigFileContent function', function () {
-      spyOn(collabFolderAPIService, 'downloadFile')
-        .and.callFake(function () {
+    it('should test the retrieveConfigFileContent function', function() {
+      spyOn(storageServer, 'getFileContent')
+        .and.callFake(function() {
           var xmlVersionString = '<?xml version="1.0"?>';
           var xmlModelString = '<model>';
           var xmlNameString = '<name>iCub HBP ros</name>';
@@ -508,39 +467,34 @@
             .concat(xmlNameString)
             .concat(xmlDescritptionString)
             .concat(xmlModelTerminateString);
-          var deferred = $q.defer();
-          deferred.resolve(xml);
-          return deferred.promise;
+          return $q.when({
+            uuid: 'fakeuuid',
+            data: xml
+          });
         });
       scope.retrieveConfigFileContent();
-      expect(collabFolderAPIService.downloadFile).toHaveBeenCalled();
+      expect(storageServer.getFileContent).toHaveBeenCalled();
     });
 
-    it('should test the createEntitiesListFromBrainFiles success', function () {
-      spyOn(collabFolderAPIService, 'downloadFile')
-        .and.callFake(function () {
-          var deferred = $q.defer();
-          deferred.resolve('"""test"""');
-          return deferred.promise;
-        });
-      var files = {
-        results: [
-          {
-            name: 'fakeName',
-            uuid: 'fakeuuid'
-          }]
-      };
+    it('should test the createEntitiesListFromBrainFiles success', function() {
+      spyOn(storageServer, 'getFileContent')
+        .and.returnValue(window.$q.when({ uuid: 'fakeuuid', data: '"""test"""' }));
+      var files = [{
+        name: 'fakeName',
+        uuid: 'fakeuuid'
+      }];
+
       var result = scope.createEntitiesListFromBrainFiles(files);
-      result.then(function (brainFiles) {
-        expect(collabFolderAPIService.downloadFile).toHaveBeenCalledWith('fakeuuid');
+      result.then(function(brainFiles) {
+        expect(storageServer.getFileContent).toHaveBeenCalledWith('fakeuuid');
         expect(brainFiles[0].name).toEqual('fakeName');
         expect(brainFiles[0].description).toEqual('test');
       });
     });
 
-    it('should make sure that the destroy dialog function cleans up properly', function () {
+    it('should make sure that the destroy dialog function cleans up properly', function() {
       spyOn(nrpModalService, 'destroyModal')
-        .and.callFake(function () {
+        .and.callFake(function() {
           return;
         });
       scope.uploadBrainDialog();
@@ -555,12 +509,12 @@
       expect(nrpModalService.destroyModal).toHaveBeenCalled();
     });
 
-    it('should select new experiment', function () {
+    it('should select new experiment', function() {
       scope.selectEntity({ id: 1 });
       expect(scope.entityPageState.selected).toEqual(1);
     });
 
-    it('should check that model selection enables clone', function () {
+    it('should check that model selection enables clone', function() {
 
       var mockSelectedEntities = [{
         name: 'FakeBrain1',
@@ -596,20 +550,20 @@
       expect(scope.environmentUploaded).toBe(true);
     });
 
-    it('should test that the clone new experiment function works', function () {
-      spyOn(collabConfigService, 'clone').and.callFake(function () {
+    it('should test that the clone new experiment function works', function() {
+      spyOn(collabConfigService, 'clone').and.callFake(function() {
         return;
       });
       scope.cloneNewExperiment('fakeExpID');
       expect(scope.isCloneRequested).toBe(true);
     });
 
-    it('should test that the complete upload entity function creates an error popup when the path is not correct', function () {
+    it('should test that the complete upload entity function creates an error popup when the path is not correct', function() {
       var mockSelectedEntity = {
         path: 'C:\\WindowsFakePath'
       };
       spyOn(scope, 'createErrorPopup')
-        .and.callFake(function () {
+        .and.callFake(function() {
           return;
         });
       scope.completeUploadEntity(mockSelectedEntity);

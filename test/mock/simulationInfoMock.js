@@ -3,7 +3,7 @@
 
 
   angular.module('simulationInfoMock', [])
-    .service('simulationInfo', ['$q', '$httpBackend', '$rootScope', function($q, $httpBackend, $rootScope) {
+    .service('simulationInfo', ['$q', '$httpBackend', '$rootScope', function($q, $httpBackend) {
       this.serverConfig = {
         gzweb: { assets: {} },
         rosbridge: {
@@ -26,7 +26,6 @@
 
       $httpBackend.whenGET(/.*\/version/).respond({});
       $httpBackend.whenGET('version.json').respond({});
-      $httpBackend.whenGET('views/common/home.html').respond(200);
       $httpBackend.whenGET(/.*\/simulation\/mocked_simulation_id/).respond(200);
 
       this.initialized = $q.when();

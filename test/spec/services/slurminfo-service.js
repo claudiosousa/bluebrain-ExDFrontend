@@ -1,66 +1,45 @@
 'use strict';
 
-describe('Services: slurminfo', function () {
-  var httpBackend, bbpConfig, slurminfoService, expectedResult;
-  var restServiceUrl;
+describe('Services: slurminfo', function() {
+  var httpBackend, bbpConfig, slurminfoService, expectedResult,
+    restServiceUrl, $rootScope, scheduler;
 
   // load the service to test and mock the necessary service
   beforeEach(module('slurminfoService'));
-  
   beforeEach(module('nrpErrorHandlers'));
 
   describe('Available cluster', function() {
 
-    beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _slurminfoService_) {
+    beforeEach(function() {
+      scheduler = new Rx.TestScheduler();
+      var originalTimer = Rx.Observable.timer;
+      spyOn(Rx.Observable, 'timer').and.callFake(function(initialDelay, dueTime) {
+        return originalTimer(initialDelay, dueTime, scheduler);
+      });
+    });
+
+    beforeEach(inject(function(_$httpBackend_, _$rootScope_, _bbpConfig_, _slurminfoService_) {
       httpBackend = _$httpBackend_;
       bbpConfig = _bbpConfig_;
       slurminfoService = _slurminfoService_;
-      expectedResult = {'name':'interactive','available':true,'cpus':[280,264,0,544],'nodes':[34,0,0,34],'gpus':2};
+      $rootScope = _$rootScope_;
+
+      expectedResult = { 'name': 'interactive', 'available': true, 'cpus': [280, 264, 0, 544], 'nodes': [34, 0, 0, 34], 'gpus': 2, free: 25 };
       restServiceUrl = bbpConfig.get('api.slurmmonitor.url') + '/api/v1/partitions/interactive';
       httpBackend.whenGET(restServiceUrl).respond(expectedResult);
     }));
 
-    it('should fetch the usage of the cluster', function() {
-      var result;
-      slurminfoService.get(function(data) { result = data; });
+    it('should fetch the usage of the cluster', function(done) {
+      slurminfoService.subscribe(function(result) {
+        expect(result.total).toEqual(34);
+        expect(result.free).toBe(25);
+        done();
+      });
+      scheduler.flush();
+      $rootScope.$digest();
       httpBackend.expectGET(restServiceUrl);
       httpBackend.flush();
-      expect(result.name).toBe('interactive');
-      expect(result.available).toBe(true);
-      expect(result.cpus).toEqual([280,264,0,544]);
-      expect(result.nodes).toEqual([34,0,0,34]);
-      expect(result.gpus).toBe(2);
     });
   });
-
-  describe('Unavailable cluster', function() {
-    var serverErrorMock = {};
-    var serverError;
-    serverErrorMock.displayHTTPError = jasmine.createSpy('displayHTTPError');
-
-    beforeEach(module(function ($provide) {
-      $provide.value('serverError', serverErrorMock);
-    }));
-
-    beforeEach(inject(function (_$httpBackend_, _bbpConfig_, _slurminfoService_, _serverError_) {
-      serverError = _serverError_;
-      httpBackend = _$httpBackend_;
-      bbpConfig = _bbpConfig_;
-      slurminfoService = _slurminfoService_;
-      restServiceUrl = bbpConfig.get('api.slurmmonitor.url') + '/api/v1/partitions/interactive';
-      httpBackend.whenGET(restServiceUrl).respond(-1, '');
-    }));
-
-    it('should enhance error when viz cluster is not available', function() {
-      var result;
-      slurminfoService.get(function(data) { result = data; });
-      httpBackend.expectGET(restServiceUrl);
-      httpBackend.flush();
-      var response = serverError.displayHTTPError.calls.mostRecent().args[0];
-      expect(response.status).toBe(-1);
-      expect(response.data).not.toBe('');
-    });
-  });
-
 
 });

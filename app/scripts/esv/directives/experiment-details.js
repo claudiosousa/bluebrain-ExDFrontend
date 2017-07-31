@@ -26,18 +26,22 @@
 
   angular.module('exdFrontendApp')
     .directive('experimentDetails', [
+      '$interval',
       'experimentProxyService',
       'nrpFrontendVersion',
       'nrpBackendVersions',
+      'slurminfoService',
+      'uptimeFilter',
       'CLUSTER_THRESHOLDS',
       'STATE',
-      function(experimentProxyService, nrpFrontendVersion, nrpBackendVersions, CLUSTER_THRESHOLDS, STATE) {
+      function($interval, experimentProxyService, nrpFrontendVersion, nrpBackendVersions, slurminfoService, uptimeFilter, CLUSTER_THRESHOLDS, STATE) {
         return {
           scope: true,
           link: function(scope) {
 
             scope.STATE = STATE;
             scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
+            let slurminfoSubscription = slurminfoService.subscribe(availability => scope.clusterAvailability = availability);
 
             scope.isCollapsed = true;
             scope.softwareVersions = '';
@@ -64,6 +68,13 @@
                     .get(result => scope.softwareVersions += result.toString);
                 });
             };
+
+            let updateUptime = $interval(() => scope.exp.joinableServers.forEach(s => s.uptime = uptimeFilter(s.runningSimulation.creationDate)), 1000);
+
+            scope.$on('$destroy', () => {
+              $interval.cancel(updateUptime);
+              slurminfoSubscription.unsubscribe();
+            });
           }
         };
       }

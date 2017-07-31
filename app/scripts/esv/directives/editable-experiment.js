@@ -33,8 +33,8 @@
       'environmentService',
       'userContextService',
       'collabExperimentLockService',
-      'collabFolderAPIService',
-      function($timeout, $window, $stateParams, clbErrorDialog, environmentService, userContextService, collabExperimentLockService, collabFolderAPIService) {
+      'storageServer',
+      function($timeout, $window, $stateParams, clbErrorDialog, environmentService, userContextService, collabExperimentLockService, storageServer) {
         return {
           scope: true,
           link: function(scope) {
@@ -44,7 +44,7 @@
             let editLockEntity;
             let lockService;
             if (environmentService.isPrivateExperiment()) {
-              lockService = collabExperimentLockService.createLockServiceForContext($stateParams.ctx);
+              lockService = collabExperimentLockService.createLockServiceForExperimentId(scope.exp.id);
             }
 
             scope.descID = "descID";
@@ -86,9 +86,7 @@
                 return;
               }
               scope.isSavingToCollab = true;
-              var experimentFile = scope.experimentsService.getCollabExperimentFile();
-
-              if (!experimentFile || !experimentFile[0]) {
+              if (!scope.exp.configuration.experimentFile) {
                 clbErrorDialog.open({
                   type: "Error",
                   message: "Something went wrong when retrieving the experiment_configuration.exc file from the collab storage. Please check the file exists and is not empty."
@@ -96,26 +94,27 @@
                 scope.isSavingToCollab = false;
                 return;
               }
-              var xml = experimentFile[0];
+              var xml = scope.exp.configuration.experimentFile;
               xml = xml.replace(originalValue, newDetails);
-              collabFolderAPIService.uploadEntity(xml, experimentFile[1]).then(function(response) {
-                scope.isSavingToCollab = false;
+              storageServer.setFileContent(scope.exp.id, 'experiment_configuration.exc', xml, true)
+                .then(function(response) {
+                  scope.isSavingToCollab = false;
+                  scope.exp.configuration.experimentFile = xml;
+                  scope.stopEditingExperimentDetails(editingKey);
+                }, function() {
+                  if (editingKey === scope.nameID) {
+                    scope.exp.configuration.name = originalValue;
+                  }
+                  else {
+                    scope.exp.configuration.description = originalValue;
+                  }
 
-                scope.stopEditingExperimentDetails(editingKey);
-              }, function() {
-                if (editingKey === scope.nameID) {
-                  scope.exp.configuration.name = originalValue;
-                }
-                else {
-                  scope.exp.configuration.description = originalValue;
-                }
-
-                scope.isSavingToCollab = false;
-                clbErrorDialog.open({
-                  type: "CollabSaveError",
-                  message: "Error while saving updated experiment details to Collab storage."
+                  scope.isSavingToCollab = false;
+                  clbErrorDialog.open({
+                    type: "CollabSaveError",
+                    message: "Error while saving updated experiment details to Collab storage."
+                  });
                 });
-              });
             };
 
             scope.containsTags = function(input) {
@@ -125,7 +124,7 @@
             };
 
             scope.stopEditingExperimentDetails = function(editingKey) {
-              lockService && lockService.releaseLock(editLockEntity)
+              lockService && lockService.releaseLock()
                 .catch(function() {
                   clbErrorDialog.open({
                     type: "CollabError",

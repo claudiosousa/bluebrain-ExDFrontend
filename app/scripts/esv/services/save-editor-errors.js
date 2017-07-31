@@ -21,15 +21,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   angular.module('exdFrontendApp')
     .constant('SAVE_FILE', 'editor_errors.saved')
-    .service('saveErrorsService', ['$stateParams', '$q', 'collabFolderAPIService',
-      'SAVE_FILE','tempFileService', 'environmentService',
-      function ($stateParams, $q, collabFolderAPIService,
-        SAVE_FILE, tempFileService, environmentService) {
+    .service('saveErrorsService', ['$stateParams', '$q',
+      'SAVE_FILE', 'tempFileService', 'environmentService', 'storageServer', 'simulationInfo',
+      function($stateParams, $q,
+        SAVE_FILE, tempFileService, environmentService, storageServer, simulationInfo) {
         /*
         This service can be used to save data (which contains Python errors) to an error file. e.g. TFs, SMs, Brain Editor.
         It's needed as if they are saved to the normal file, further simulations are not possible.
@@ -45,39 +45,38 @@
           clearDirty: clearDirty,
           registerCallback: registerCallback
         };
-        function saveDirtyData(dirtyType, data){
+        function saveDirtyData(dirtyType, data) {
           var dataObj = {};
           dataObj[dirtyType] = data;
           return tempFileService.saveDirtyData(SAVE_FILE, false, dataObj, dirtyType);
         }
-        function clearDirty(dirtyType){
-          if(!environmentService.isPrivateExperiment())
-              return $q.reject();
-          return collabFolderAPIService.getExperimentFolderId($stateParams.ctx)
-            .then(function(folderId){
-              return collabFolderAPIService.getFolderFile(folderId, SAVE_FILE);
-             })
-             .then(function(file){
-               return collabFolderAPIService.downloadFile(file.uuid)
-                 .then(function(fileContent){
-                   var content = angular.fromJson(fileContent);
-                   delete content[dirtyType];
-                   if (Object.keys(content).length === 0)
-                     return removeTempErrorSave();
-                   else
-                     return collabFolderAPIService.uploadEntity(angular.toJson(content), file);
-                 });
-             });
+        function clearDirty(dirtyType) {
+          if (!environmentService.isPrivateExperiment())
+            return $q.reject();
+
+          return storageServer.getFileContent(simulationInfo.experimentID, SAVE_FILE, true)
+            .then(file => {
+              if (!file.uuid)
+                return $q.reject();
+
+              var content = angular.fromJson(file.data);
+              delete content[dirtyType];
+              if (Object.keys(content).length === 0)
+                return removeTempErrorSave();
+              else
+                return storageServer.setFileContent(simulationInfo.experimentID, SAVE_FILE, angular.toJson(content), true);
+            });
         }
+
         function removeTempErrorSave() {
           return tempFileService.removeSavedWork(SAVE_FILE);
         }
 
         function getErrorSavedWork() {
-          if(loaded)
+          if (loaded)
             return $q.reject();
           return tempFileService.checkSavedWork(SAVE_FILE, foundCallbacks)
-            .finally(function(){
+            .finally(function() {
               loaded = true;
             });
         }
@@ -88,7 +87,7 @@
 
       }]
     );
-} ());
+}());
 
 
 

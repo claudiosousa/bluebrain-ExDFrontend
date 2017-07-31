@@ -27,7 +27,7 @@
     angular.module('exdFrontendApp')
         .directive('newExperimentWizard', [
             '$q',
-            'collabFolderAPIService',
+            'storageServer',
             'nrpModalService',
             'clbErrorDialog',
             '$http',
@@ -37,7 +37,7 @@
             '$stateParams',
             function (
                 $q,
-                collabFolderAPIService,
+                storageServer,
                 nrpModalService,
                 clbErrorDialog,
                 $http,
@@ -81,7 +81,7 @@
                             },
                             uploadFromPrivateCollab: function () {
                                 delete $scope.entities;
-                                collabFolderAPIService.getFilesFromNavEntityFolder('Storage', 'robots')
+                                storageServer.getExperiments('robots')
                                     .then($scope.createEntitiesListFromEntityFiles,
                                     function (error) {
                                         $scope.createErrorPopup(error);
@@ -110,7 +110,7 @@
                             },
                             uploadFromPrivateCollab: function () {
                                 delete $scope.entities;
-                                collabFolderAPIService.getFilesFromNavEntityFolder('Storage', 'environments')
+                                storageServer.getExperiments('environments')
                                     .then($scope.createEntitiesListFromEntityFiles,
                                     function (error) {
                                         $scope.createErrorPopup(error);
@@ -139,7 +139,7 @@
                             },
                             uploadFromPrivateCollab: function () {
                                 delete $scope.entities;
-                                collabFolderAPIService.getFilesFromNavEntityFolder('Storage', 'brains')
+                                storageServer.getExperiments('brains')
                                     .then($scope.createEntitiesListFromBrainFiles,
                                     function (error) {
                                         $scope.createErrorPopup(error);
@@ -249,12 +249,12 @@
                         };
 
                         $scope.createEntitiesListFromBrainFiles = function (brainFiles) {
-                            return $q.all(brainFiles.results.map(function (brain) {
-                                return collabFolderAPIService.downloadFile(brain.uuid).then(function (resp) {
+                            return $q.all(brainFiles.map(function (brain) {
+                                return storageServer.getFileContent(brain.uuid).then(function (resp) {
                                     return {
                                         name: brain.name.split(".")[0],
                                         id: brain.name.split(".")[0],
-                                        description: resp.match(/^"""([^\"]*)"""/m)[1].trim() || 'Brain description'
+                                        description: resp.data.match(/^"""([^\"]*)"""/m)[1].trim() || 'Brain description'
                                     };
                                 });
                             }));
@@ -266,11 +266,11 @@
                                 return file.content_type !== 'application/x-config';
                             };
 
-                            files.results.forEach(function (file) {
+                            files.forEach(function (file) {
                                 file.entityId = file.name.split('.')[0];
                             });
 
-                            var images = $q.all(files.results
+                            var images = $q.all(files
                                 .filter(function (f) {
                                     return isImage(f);
                                 })
@@ -281,7 +281,7 @@
                                     });
                                 }));
 
-                            var configs = $q.all(files.results
+                            var configs = $q.all(files
                                 .filter(function (f) {
                                     return !isImage(f);
                                 })
@@ -317,22 +317,14 @@
                         };
 
                         $scope.retrieveImageFileContent = function (fileid) {
-                            return collabFolderAPIService.downloadFile(fileid, { "responseType": "blob" })
-                                .then(function (imageContent) {
-                                    var reader = new FileReader();
-                                    var promise = $q.defer();
-                                    reader.addEventListener('loadend', function (e) {
-                                        promise.resolve(e.target.result);
-                                    });
-                                    reader.readAsDataURL(imageContent);
-                                    return promise.promise;
-                                });
+                            return storageServer.getBlobContent(fileid)
+                                .then(file => file.data);
                         };
 
                         $scope.retrieveConfigFileContent = function (fileid) {
-                            return collabFolderAPIService.downloadFile(fileid)
-                                .then(function (fileContent) {
-                                    var xml = $.parseXML(fileContent);
+                            return storageServer.getFileContent(fileid)
+                                .then(function (file) {
+                                    var xml = $.parseXML(file.data);
                                     return $q.resolve({
                                         name: xml.getElementsByTagNameNS("*", "name")[0].textContent,
                                         desc: xml.getElementsByTagNameNS("*", "description")[0].textContent

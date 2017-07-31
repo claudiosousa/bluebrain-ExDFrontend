@@ -181,7 +181,7 @@ describe('Controller: EnvironmentRenderingController', function () {
       onLockChanged: jasmine.createSpy('onLockChanged').and.callFake(function (fn) {onLockChangedCallback = fn; return lockServiceCancelCallback;}),
       releaseLock: jasmine.createSpy('releaseLock').and.returnValue(callback.promise)
     };
-    collabExperimentLockServiceMock.createLockServiceForContext = function(){
+    collabExperimentLockServiceMock.createLockServiceForExperimentId = function(){
       return lockServiceMock;
     };
 

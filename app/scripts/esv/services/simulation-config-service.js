@@ -21,14 +21,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function ()
-{
+(function() {
   'use strict';
 
-  angular.module('simulationConfigModule', ['collabServices']).service('simulationConfigService',
-    ['$resource', 'simulationInfo', 'serverError', '$q', 'collabFolderAPIService', '$http', 'environmentService',
-      function ($resource, simulationInfo, serverError, $q, collabFolderAPIService, $http, environmentService)
-      {
+  angular.module('simulationConfigModule', ['collabServices', 'storageServer']).service('simulationConfigService',
+    ['$resource', 'simulationInfo', 'serverError', '$q', '$http', 'environmentService', 'storageServer',
+      function($resource, simulationInfo, serverError, $q, $http, environmentService, storageServer) {
         return {
           initConfigFiles: initConfigFiles,
           doesConfigFileExist: doesConfigFileExist,
@@ -40,56 +38,22 @@
         //-------------------------------------------------------
         // Get file from collab if available, if not try to get it directly from backend
 
-        function doesConfigFileExist(configType)
-        {
-          return getBackendConfigFileNames(configType).then(function (response)
-          {
+        function doesConfigFileExist(configType) {
+          return getBackendConfigFileNames(configType).then(function(response) {
             return !!response;
           });
         }
 
-        function loadConfigFile(configType)
-        {
-          return getBackendConfigFileNames(configType).then(function (response)
-          {
-            if (response)
-            {
-              if (environmentService.isPrivateExperiment())
-              {
-                return collabFolderAPIService.getExperimentFolderId(simulationInfo.contextID)
-                  .then(function (folderId)
-                  {
+        function loadConfigFile(configType) {
+          return getBackendConfigFileNames(configType).then(function(response) {
+            if (response) {
+              if (environmentService.isPrivateExperiment()) {
+                var filename = response.file.substr(response.file.lastIndexOf('/') + 1);
 
-
-                    var filename = response.file.substr(response.file.lastIndexOf('/') + 1);
-
-                    return collabFolderAPIService.getFolderFile(folderId, filename)
-                      .then(function (fileData)
-                      {
-                        if (fileData)
-                        {
-                          return collabFolderAPIService.downloadFile(fileData.uuid)
-                            .then(function (fileContent)
-                            {
-                              if (fileContent)
-                              {
-                                return fileContent;
-                              }
-                              else
-                              {
-                                return getBackendConfigFile(response.file);
-                              }
-                            });
-                        }
-                        else
-                        {
-                          return getBackendConfigFile(response.file);
-                        }
-                      });
-                  });
+                return storageServer.getFileContent(simulationInfo.experimentID, filename, true)
+                  .then(file => file.uuid ? file.data : getBackendConfigFile(response.file));
               }
-              else
-              {
+              else {
                 return getBackendConfigFile(response.file);
               }
             }
@@ -98,56 +62,18 @@
           });
         }
 
-        function saveConfigFile(configType, data)
-        {
+        function saveConfigFile(configType, data) {
           if (environmentService.isPrivateExperiment())  // A config file can be saved only in collab mode
           {
+            return getBackendConfigFileNames(configType).then(function(response) {
+              if (response) {
 
-            collabFolderAPIService.getExperimentFolderId(simulationInfo.contextID).then(function (folderId)
-            {
-              if (folderId)
-              {
-                return getBackendConfigFileNames(configType).then(function (response)
-                {
-                  if (response)
-                  {
+                var filename = response.file.substr(response.file.lastIndexOf('/') + 1);
 
-                    var filename = response.file.substr(response.file.lastIndexOf('/') + 1);
-
-                    collabFolderAPIService.getFolderFile(folderId, filename)
-                      .then(function (fileData)
-                      {
-                        if (fileData)
-                        {
-                          // File exists
-
-                          collabFolderAPIService.deleteFile(folderId, filename)
-                            .then(function (result)
-                            {
-                              if (result)
-                              {
-                                collabFolderAPIService.createFolderFile(folderId, filename, data).then(
-                                  function (result)
-                                  {
-                                    return result;
-                                  });
-                              }
-                            });
-                        }
-                        else
-                        {
-                          collabFolderAPIService.createFolderFile(folderId, filename, data).then(
-                            function (result)
-                            {
-                              return result;
-                            }
-                          );
-                        }
-                      });
-                  }
-                });
+                return storageServer.setFileContent(simulationInfo.experimentID, filename, data, true);
               }
             });
+
           }
         }
 
@@ -156,26 +82,22 @@
 
         var cachedConfigFiles;
 
-        function initConfigFiles(serverBaseUrl,simulationID)
-        {
+        function initConfigFiles(serverBaseUrl, simulationID) {
           cachedConfigFiles = $resource(serverBaseUrl + '/simulation/:sim_id/resources', {}, {
             get: {
               method: 'GET',
               interceptor: { responseError: serverError.displayHTTPError }
             }
           }).get({ sim_id: simulationID }).$promise
-            .then(function (response)
-            {
+            .then(function(response) {
               return response && response.resources;
             });
 
-            return cachedConfigFiles;
+          return cachedConfigFiles;
         }
 
-        function findConfigFileName(configType, cachedConfigFiles)
-        {
-          for(var i=0;i<cachedConfigFiles.length;i++)
-          {
+        function findConfigFileName(configType, cachedConfigFiles) {
+          for (var i = 0; i < cachedConfigFiles.length; i++) {
             var r = cachedConfigFiles[i];
 
             if (r.type === configType) return r;
@@ -184,41 +106,32 @@
           return null;
         }
 
-        function getBackendConfigFileNames(configType)
-        {
-          if (!cachedConfigFiles)
-          {
-            return initConfigFiles(simulationInfo.serverBaseUrl,simulationInfo.simulationID).then(function()
-            {
-              return cachedConfigFiles.then(function (cachedConfigFiles)
-              {
-                return findConfigFileName(configType,cachedConfigFiles);
+        function getBackendConfigFileNames(configType) {
+          if (!cachedConfigFiles) {
+            return initConfigFiles(simulationInfo.serverBaseUrl, simulationInfo.simulationID).then(function() {
+              return cachedConfigFiles.then(function(cachedConfigFiles) {
+                return findConfigFileName(configType, cachedConfigFiles);
               });
             });
           }
-          else
-          {
-            return cachedConfigFiles.then(function (cachedConfigFiles)
-            {
-                return findConfigFileName(configType,cachedConfigFiles);
+          else {
+            return cachedConfigFiles.then(function(cachedConfigFiles) {
+              return findConfigFileName(configType, cachedConfigFiles);
             });
           }
         }
 
-        function getBackendConfigFile(configFileName)
-        {
+        function getBackendConfigFile(configFileName) {
           return $http({
             url: simulationInfo.serverBaseUrl + configFileName,
             method: 'GET',
-            transformResponse: function (value)
-            {
+            transformResponse: function(value) {
               return value;
             }
-          }).then(function (response)
-          {
+          }).then(function(response) {
             return response && response.data;
           });
         }
       }
     ]);
-} ());
+}());

@@ -23,7 +23,7 @@
         <div class="list-entry-middle list-entry-container up-down">
           <div class="list-entry-container left-right title-line">
             <div class="h4" ng-hide="!loadingEdit && editing[nameID] && isPrivateExperiment">{{exp.configuration.name}}
-              <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isPrivateExperiment && (!editing[nameID] && !editing[descID]) && !config.canCloneExperiments" id="edit-button"  v-busy="loadingEdit" ng-click="editExperiment(nameID);"></a>
+              <a ng-if="exp.id == pageState.selected" style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isPrivateExperiment && (!editing[nameID] && !editing[descID]) && !config.canCloneExperiments" id="edit-button"  v-busy="loadingEdit" ng-click="editExperiment(nameID);"></a>
             </div>
             <form ng-show="editing[nameID] && isPrivateExperiment && !loadingEdit">
               <input type="text" id="{{nameID}}" value="{{exp.configuration.name}}" size="{{exp.configuration.name.length}}" ng-model="exp.configuration.name" ng-blur="saveExperimentDetails(exp.configuration.name, nameID);" ng-required/>
@@ -33,14 +33,14 @@
             <div ng-if="config.canLaunchExperiments && exp.joinableServers.length > 0" class="list-entry-running">({{exp.joinableServers.length}} simulation{{exp.joinableServers.length>1?'s':''}} running)</div>
           </div>
           <div ng-if="exp.id == pageState.selected" ng-show="!isPrivateExperiment || config.canCloneExperiments">{{exp.configuration.description}}</div>
-          <div ng-hide="!isPrivateExperiment || (editing[descID] && !loadingEdit) || config.canCloneExperiments">{{exp.configuration.description}}
+          <div ng-if="exp.id == pageState.selected" ng-hide="!isPrivateExperiment || (editing[descID] && !loadingEdit) || config.canCloneExperiments">{{exp.configuration.description}}
               <a style="font-size:15px;" name="edit-button" class="glyphicon glyphicon-pencil" href="javascript:void(0);" ng-show="isPrivateExperiment && (!editing[nameID] && !editing[descID])" v-busy="loadingEdit" ng-click="editExperiment(descID);"></a>
             </div>
             <form ng-show="editing[descID] && isPrivateExperiment && !loadingEdit">
               <textarea rows="4" cols="50" id="{{descID}}" ng-model="exp.configuration.description" ng-blur="saveExperimentDetails(exp.configuration.description, descID);"></textarea>
               <a style="font-size:15px;" href="javascript:void(0);" ng-show="isSavingToCollab" v-busy="isSavingToCollab"></a>
             </form>
-          <div ng-if="exp.id != pageState.selected">{{exp.configuration.description | limitTo: 200}}...</div>
+          <div ng-if="exp.id != pageState.selected" >{{exp.configuration.description | limitTo: 200}}...</div>
           <div ng-if="exp.id == pageState.selected && config.canLaunchExperiments">
             <br/>
             <i ng-if="exp.configuration.timeout != undefined">Timeout: {{exp.configuration.timeout | timeDDHHMMSS}}</i><br/>
@@ -70,7 +70,7 @@
             <br/>
             </span>
             <i>Server status: </i>
-             <i class="server-icon {{exp.serverStatusClass}}" title="{{exp.serverStatus}}"></i>
+             <i class="server-icon {{exp | experimentStatusClass : clusterAvailability}}" title="{{exp | experimentStatus: clusterAvailability}}"></i>
           </div>
           <div uib-collapse="!config.canCloneExperiments || (exp.id != pageState.selected) || !isCloneRequested">
             <div class="list-entry-container center">

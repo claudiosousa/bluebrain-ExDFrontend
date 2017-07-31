@@ -89,10 +89,7 @@
                                     {
                                         scope.experimentsService = scope.experimentsFactory.createExperimentsService();
                                         scope.experimentsService.initialize();
-                                        scope.experimentsService.experiments.then((experiments) =>
-                                        {
-                                            scope.experiments = experiments;
-                                        });
+                                        scope.experimentsService.experiments.then(experiments => scope.experiments = experiments);
                                     }
 
                                     if (scope.experiments)

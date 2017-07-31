@@ -12,7 +12,7 @@ describe('Directive: editable-experiment', function() {
     $httpBackend,
     collabContextUrl,
     environmentService,
-    collabFolderAPIService,
+    storageServer,
     clbErrorDialog,
     experimentsFactory,
     ctx = 'some_context',
@@ -30,7 +30,7 @@ describe('Directive: editable-experiment', function() {
     bbpConfig,
     collabExperimentLockService,
     _environmentService_,
-    _collabFolderAPIService_,
+    _storageServer_,
     _clbErrorDialog_,
     _experimentsFactory_) {
 
@@ -38,12 +38,12 @@ describe('Directive: editable-experiment', function() {
     $timeout = _$timeout_;
     $httpBackend = _$httpBackend_;
     $rootScope = _$rootScope_;
-    collabFolderAPIService = _collabFolderAPIService_;
+    storageServer = _storageServer_;
     environmentService = _environmentService_;
     clbErrorDialog = _clbErrorDialog_;
     experimentsFactory = _experimentsFactory_;
 
-    spyOn(collabExperimentLockService, 'createLockServiceForContext').and.returnValue(lockMock);
+    spyOn(collabExperimentLockService, 'createLockServiceForExperimentId').and.returnValue(lockMock);
 
     var collabContextlessUrl = bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration';
     collabContextUrl = collabContextlessUrl + '/' + ctx;
@@ -54,7 +54,8 @@ describe('Directive: editable-experiment', function() {
     $rootScope.exp = {
       configuration: {
         name: 'name',
-        description: 'description'
+        description: 'description',
+        experimentFile: 'some file'
       }
     };
   }));
@@ -81,12 +82,6 @@ describe('Directive: editable-experiment', function() {
   describe(', private experiement,', function() {
 
     var collabExperimentFile;
-    var experimentsService = {
-      getCollabExperimentFile: jasmine.createSpy('getCollabExperimentFile').and.callFake(function() {
-        return collabExperimentFile;
-      })
-    };
-
     var lockPromiseResponse;
 
     beforeEach(inject(function($compile) {
@@ -96,7 +91,6 @@ describe('Directive: editable-experiment', function() {
       $httpBackend.whenGET(collabContextUrl).respond(200, collabExperimentResponse);
       lockMock.tryAddLock.and.callFake(function() { return lockPromiseResponse; });
 
-      $rootScope.experimentsService = experimentsService;
       var element = $compile('<editable-experiment/>')($rootScope);
       $rootScope.$digest();
       scope = element.scope();
@@ -164,46 +158,47 @@ describe('Directive: editable-experiment', function() {
     });
 
     it('test saveExperimentDetails when description is empty', function() {
-      spyOn(collabFolderAPIService, 'uploadEntity');
+      spyOn(storageServer, 'setFileContent');
       spyOn(clbErrorDialog, 'open');
 
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
       scope.saveExperimentDetails('    ');
       expect(clbErrorDialog.open).toHaveBeenCalled();
-      expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
+      expect(storageServer.setFileContent).not.toHaveBeenCalled();
     });
 
     it('test saveExperimentDetails gives error when tags are in the user input', function() {
-      spyOn(collabFolderAPIService, 'uploadEntity');
       spyOn(clbErrorDialog, 'open');
+      spyOn(storageServer, 'setFileContent');
 
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
       scope.saveExperimentDetails('<tag>dkhfdf</tag>');
       expect(clbErrorDialog.open).toHaveBeenCalled();
-      expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
+      expect(storageServer.setFileContent).not.toHaveBeenCalled();
     });
 
     it('test saveExperimentDetails gives error when no xml is retrived from collab', function() {
       spyOn(clbErrorDialog, 'open');
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
 
+      spyOn(storageServer, 'setFileContent').and.returnValue(window.$q.reject());
       scope.saveExperimentDetails('newName', 'nameID');
+      $rootScope.$digest();
       expect(clbErrorDialog.open).toHaveBeenCalled();
-      expect(experimentsService.getCollabExperimentFile).toHaveBeenCalled();
     });
 
     it('test saveExperimentDetails doesnt bother to save if name hasnt changed', function() {
 
       scope.exp = { 'configuration': { 'name': 'newName' } };
       collabExperimentFile = ['xml', { 'entity_type': 'file' }];
-      spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue(window.$q.when(''));
+      spyOn(storageServer, 'setFileContent').and.returnValue(window.$q.when(''));
       spyOn(scope, 'stopEditingExperimentDetails');
       spyOn(clbErrorDialog, 'open');
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
 
       scope.saveExperimentDetails('oldName', 'nameID');
       expect(clbErrorDialog.open).not.toHaveBeenCalled();
-      expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
+      expect(storageServer.setFileContent).not.toHaveBeenCalled();
       expect(scope.stopEditingExperimentDetails).toHaveBeenCalled();
       expect(scope.isSavingToCollab).toBe(false);
     });
@@ -211,25 +206,25 @@ describe('Directive: editable-experiment', function() {
     it('test saveExperimentDetails doesnt bother to save if description hasnt changed', function() {
       scope.exp = { 'configuration': { 'description': 'newDesc' } };
       collabExperimentFile = ['xml', { 'entity_type': 'file' }];
-      spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue(window.$q.when(''));
+      spyOn(storageServer, 'setFileContent').and.returnValue(window.$q.when(''));
       spyOn(scope, 'stopEditingExperimentDetails');
       spyOn(clbErrorDialog, 'open');
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
 
       scope.saveExperimentDetails('oldDesc', 'descID');
       expect(clbErrorDialog.open).not.toHaveBeenCalled();
-      expect(collabFolderAPIService.uploadEntity).not.toHaveBeenCalled();
+      expect(storageServer.setFileContent).not.toHaveBeenCalled();
       expect(scope.stopEditingExperimentDetails).toHaveBeenCalled();
       expect(scope.isSavingToCollab).toBe(false);
     });
 
     it('test saveExperimentDetails when everything goes well saving name', function() {
       collabExperimentFile = ['xml', { 'entity_type': 'file' }];
-      spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue(window.$q.when(''));
+      spyOn(storageServer, 'setFileContent').and.returnValue(window.$q.when(''));
       spyOn(scope, 'stopEditingExperimentDetails');
       scope.editing.nameID = true;
       spyOn(clbErrorDialog, 'open');
-      scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
+      scope.originalConfiguration = { name: 'oldName', description: 'oldDesc'};
 
       scope.saveExperimentDetails('newName', 'nameID');
       scope.$digest();
@@ -240,7 +235,7 @@ describe('Directive: editable-experiment', function() {
 
     it('test saveExperimentDetails when everything goes well saving description', function() {
       collabExperimentFile = ['xml', { 'entity_type': 'file' }];
-      spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue(window.$q.when(''));
+      spyOn(storageServer, 'setFileContent').and.returnValue(window.$q.when(''));
       spyOn(scope, 'stopEditingExperimentDetails');
       spyOn(clbErrorDialog, 'open');
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
@@ -253,7 +248,7 @@ describe('Directive: editable-experiment', function() {
     });
     it('test saveExperimentDetails when there is an error saving the new details to the collab', function() {
       collabExperimentFile = ['xml', { 'entity_type': 'file' }];
-      spyOn(collabFolderAPIService, 'uploadEntity').and.returnValue(window.$q.reject(''));
+      spyOn(storageServer, 'setFileContent').and.returnValue(window.$q.reject(''));
       spyOn(scope, 'stopEditingExperimentDetails');
       scope.editing.nameID = true;
       spyOn(clbErrorDialog, 'open');

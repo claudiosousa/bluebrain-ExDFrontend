@@ -26,10 +26,14 @@
       expect(storageServer.proxyRsc).toBeDefined();
     });
 
-    it('should handle errors correctly', function() {
+    it('should handle non specific errors correctly', function(done) {
       var throwableError = { status: 403 };
-      expect(_.partial(storageServer.onError, throwableError)).toThrow(throwableError);
+      storageServer.onError(throwableError)
+        .catch(done);
+      $rootScope.$digest();
+    });
 
+    it('should handle redirect errors correctly', function() {
       var moveError = { status: 302, data: 'myloginpage' };
       storageServer.onError(moveError);
       expect(windowMock.location.href).toMatch('http://proxymyloginpage&client_id=test-client-id&redirect_uri=http%3A%2F%2Flocalhost%3A900');
@@ -51,8 +55,8 @@
     it('should set set access_token in storage when storage_token in url', function() {
       spyOn($location, 'search').and.returnValue({ 'storage_token': 'test' });
       spyOn(localStorage, 'setItem');
-      storageServer.checkForNewTokenToStore();
-      expect(localStorage.setItem).toHaveBeenCalledWith(storageServer.STORAGE_KEY, '[{"access_token":"test"}]');
+      storageServer.storageServerTokenManager.checkForNewTokenToStore();
+      expect(localStorage.setItem).toHaveBeenCalledWith(storageServer.storageServerTokenManager.STORAGE_KEY, '[{"access_token":"test"}]');
     });
 
   });

@@ -33,6 +33,7 @@
       '$window',
       'nrpUser',
       'environmentService',
+      'storageServer',
       function(
         $scope,
         $location,
@@ -41,7 +42,8 @@
         collabConfigService,
         $window,
         nrpUser,
-        environmentService) {
+        environmentService,
+        storageServer) {
 
         $scope.pageState = {};
         $scope.isCollabExperiment = environmentService.isPrivateExperiment();
@@ -69,8 +71,8 @@
             ($scope.userinfo.userID === simul.runningSimulation.owner || $scope.userinfo.forceuser);
         };
 
-        var loadExperiments = function(ctx, experimentId, experimentFolderUUID) {
-          var experimentsService = $scope.experimentsService = experimentsFactory.createExperimentsService(ctx, experimentId, experimentFolderUUID);
+        var loadExperiments = function(loadPrivateExperiments = false) {
+          var experimentsService = $scope.experimentsService = experimentsFactory.createExperimentsService(loadPrivateExperiments);
           experimentsService.initialize();
           experimentsService.experiments.then(function(experiments) {
             $scope.experiments = experiments;
@@ -78,9 +80,7 @@
               $scope.pageState.selected = experiments[0].id;
             }
           });
-          experimentsService.clusterAvailability.then(function(clusterAvailability) {
-            $scope.clusterAvailability = clusterAvailability;
-          });
+
           nrpUser.getCurrentUserInfo().then(function(userinfo) { $scope.userinfo = userinfo; });
 
           $scope.selectExperiment = function(experiment) {
@@ -117,18 +117,15 @@
         };
 
         function loadCollabExperiments() {
-          var ctx = $stateParams.ctx;
-          collabConfigService.get({ contextID: ctx },
-            function(response) {
-              if (response.experimentID) { //there is a cloned experiment
-                $scope.config.loadingMessage = 'Loading experiment description...';
-              } else {
+          storageServer.getExperiments()
+            .then(response => {
+              if (!response.length) {
                 $scope.config.canCloneExperiments = true;
                 $scope.config.canLaunchExperiments = false;
               }
-              loadExperiments(ctx, response.experimentID, response.experimentFolderUUID);
-            },
-            function(data) {
+              loadExperiments(response.length);
+            })
+            .catch(error => {
               $scope.experiments = [{
                 error: {
                   name: 'Internal Error',

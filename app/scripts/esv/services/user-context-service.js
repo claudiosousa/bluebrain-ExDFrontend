@@ -66,7 +66,7 @@
               _ownerId = ownerID;
               if (environmentService.isPrivateExperiment() && this.isOwner()) {
                 // only use locks if we are in a collab
-                this.lockService = collabExperimentLockService.createLockServiceForContext(simulationInfo.contextID);
+                this.lockService = collabExperimentLockService.createLockServiceForExperimentId(simulationInfo.experimentID);
                 this.cancelLockSubscription = this.lockService.onLockChanged(this.onLockChangedCallback);
               }
             });

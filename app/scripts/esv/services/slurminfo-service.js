@@ -21,34 +21,49 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  var module = angular.module('slurminfoService', ['ngResource', 'bbpConfig',
-    'nrpErrorHandlers']);
+  angular.module('slurminfoService', ['ngResource', 'bbpConfig', 'nrpErrorHandlers', 'exdFrontendApp.Constants'])
+    .factory('slurminfoService', ['$resource', 'serverError', 'bbpConfig', 'SERVER_POLL_INTERVAL',
+      function($resource, serverError, bbpConfig, SERVER_POLL_INTERVAL) {
+        var baseUrl = bbpConfig.get('api.slurmmonitor.url');
 
-  module.factory('slurminfoService', ['$resource', 'serverError', 'bbpConfig', function ($resource, serverError, bbpConfig) {
-    var baseUrl = bbpConfig.get('api.slurmmonitor.url');
-
-    // When we can't access the viz cluster frontend no error message is returned
-    // We therefore add one here
-    var errorWrapper = _.wrap(serverError.displayHTTPError, function(errDisplayFn, response) {
-      if (response.status === -1) {
-        response = angular.extend(response, {
-          data: "Could not probe vizualization cluster"
+        // When we can't access the viz cluster frontend no error message is returned
+        // We therefore add one here
+        var errorWrapper = _.wrap(serverError.displayHTTPError, function(errDisplayFn, response) {
+          if (response.status === -1) {
+            response = angular.extend(response, {
+              data: "Could not probe vizualization cluster"
+            });
+          }
+          errDisplayFn(response);
         });
-      }
-      errDisplayFn(response);
-    });
 
-    return $resource(baseUrl + '/api/v1/partitions/interactive', {}, {
-      get: {
-        method: 'GET',
-        // If we can't access server frontend, only display error once
-        // Since we are probing every minute
-        interceptor: {responseError: _.once(errorWrapper)}
-      }
-    });
-  }]);
+        let rsc = $resource(baseUrl + '/api/v1/partitions/interactive', {}, {
+          get: {
+            method: 'GET',
+            // If we can't access server frontend, only display error once
+            // Since we are probing every minute
+            interceptor: { responseError: _.once(errorWrapper) }
+          }
+        });
 
+        let localmode = bbpConfig.get('localmode.forceuser');
+
+        let clusterAvailability$;
+
+        if (localmode)
+          clusterAvailability$ = Rx.Observable.of({ free: 'N/A', total: 'N/A' });
+        else
+          clusterAvailability$ = Rx.Observable
+            .timer(0, SERVER_POLL_INTERVAL)
+            .switchMap(() => rsc.get().$promise)
+            .map(({ free, nodes }) => ({ free, total: nodes[3] }));
+
+
+        return clusterAvailability$
+          .multicast(new Rx.Subject())
+          .refCount();
+      }]);
 }());

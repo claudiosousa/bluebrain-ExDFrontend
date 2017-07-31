@@ -19,7 +19,6 @@ module.exports = function(config) {
 
       'node_modules/babel-polyfill/dist/polyfill.js',
       'node_modules/@reactivex/rxjs/dist/global/Rx.min.js',
-
       // The two following files are required by gz3d.js. Since
       // order matters here, they should be in front of the bower
       // section.
@@ -124,7 +123,8 @@ module.exports = function(config) {
         options: {
             babelrc: false,
             presets: ['es2015'],
-            sourceMap: 'inline'
+            sourceMap: 'inline',
+            plugins: ['transform-new-target']
         },
         filename: function(file) {
             return file.originalPath.replace(/\.js$/, '.es5.js');

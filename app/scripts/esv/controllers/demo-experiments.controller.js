@@ -109,10 +109,7 @@
       {
         this.experimentsService = this.experimentsFactory.createExperimentsService();
         this.experimentsService.initialize();
-        this.experimentsService.experiments.then((experiments) =>
-        {
-          this.experiments = experiments;
-        });
+        this.experimentsService.experiments.then(experiments => this.experiments = experiments);
       }
 
       this.tryJoiningExperiment();

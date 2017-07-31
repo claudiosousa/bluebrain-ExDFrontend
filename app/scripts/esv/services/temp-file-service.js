@@ -21,17 +21,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function (){
+(function() {
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'collabFolderAPIService', 'clbUser',
-      'nrpModalService', 'environmentService',
-      function ($stateParams, $q, $rootScope, collabFolderAPIService, clbUser,
-        nrpModalService, environmentService) {
+    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'clbUser',
+      'nrpModalService', 'environmentService', 'simulationInfo', 'storageServer',
+      function($stateParams, $q, $rootScope, clbUser,
+        nrpModalService, environmentService, simulationInfo, storageServer) {
 
-        var dirtyDataCol = {},
-          getFolderId = _.memoize(collabFolderAPIService.getExperimentFolderId);
+        var dirtyDataCol = {};
 
         return {
           dirtyDataCol: dirtyDataCol,
@@ -44,41 +43,27 @@
           /* Save dirty data to a file. If overwrite is false, only this type of data will be changed in the file. */
           if (!environmentService.isPrivateExperiment())
             return $q.reject();
-          var defer = $q.defer();
-          getFolderId($stateParams.ctx)
-            .then(function (folderId) {
-              return collabFolderAPIService.getFolderFile(folderId, filename)
-                .then(function (file) {
-                  if (file){
-                    if (overwrite){
-                      return collabFolderAPIService.uploadEntity(angular.toJson(data), file);
-                    }
-                    else {
-                      return collabFolderAPIService.downloadFile(file.uuid)
-                        .then(function(fileContent){
-                          var content = angular.fromJson(fileContent);
-                          content[dirtyType] = data[dirtyType];
-                          return collabFolderAPIService.uploadEntity(angular.toJson(content), file);
-                        });
-                    }
-                  }
-                  else
-                    return collabFolderAPIService.createFolderFile(folderId, filename, angular.toJson(data));
-                })
-                .then(function(){
-                  defer.resolve();
-                });
+
+          if (overwrite)
+            return storageServer.setFileContent(simulationInfo.experimentID, filename, angular.toJson(data), true);
+
+          return storageServer.getFileContent(simulationInfo.experimentID, filename, true)
+            .then(file => {
+              let currentData = file.uuid ? angular.fromJson(file.data) : {};
+              if (dirtyType)
+                currentData[dirtyType] = data[dirtyType];
+              else
+                angular.extend(currentData, data);
+
+              return storageServer.setFileContent(simulationInfo.experimentID, filename, angular.toJson(currentData), true);
             });
-          return defer.promise;
-        }
+        };
 
         function removeSavedWork(filename) {
           if (!environmentService.isPrivateExperiment())
             return $q.reject();
-          return getFolderId($stateParams.ctx)
-            .then(function (folderId) {
-              return collabFolderAPIService.deleteFile(folderId, filename);
-            });
+
+          return storageServer.deleteFile(simulationInfo.experimentID, filename, true);
         }
 
         function checkSavedWork(filename, callbacks, confirmBox) {
@@ -97,23 +82,18 @@
         }
 
         function retrieveSavedWork(filename, confirmBox) {
-          return getFolderId($stateParams.ctx)
-            .then(function (folderId) {
-              return collabFolderAPIService.getFolderFile(folderId, filename);
+
+          return storageServer.getFileContent(simulationInfo.experimentID, filename, true)
+            .then(file => {
+              if (!file.uuid)
+                return $q.reject('No file found');
+
+              return angular.fromJson(file.data);
             })
-            .then(function (file) {
-              if (!file)
-                return $q.reject();
-              return $q.all([
-                file,
-                collabFolderAPIService.downloadFile(file.uuid).then(angular.fromJson),
-                clbUser.get([file.created_by])
-              ]);
-            })
-            .then(_.spread(function(file, foundFile, userInfo) {
+            .then(foundFile => {
               if (confirmBox) {
                 var localScope = $rootScope.$new();
-                localScope.username = userInfo[file.created_by].displayName;
+                localScope.username = 'TODO';
                 return nrpModalService.createModal({
                   templateUrl: 'views/common/restore-auto-saved.html',
                   closable: true,
@@ -125,7 +105,7 @@
               else {
                 return [foundFile];
               }
-            }));
+            });
         }
       }]
     );

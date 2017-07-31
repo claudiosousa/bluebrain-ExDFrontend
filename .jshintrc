@@ -118,6 +118,7 @@
     "predef"        : [         // Extra globals.
         "$",
         "angular",
+        "console",
         "moment",
         "_",
         "d3",

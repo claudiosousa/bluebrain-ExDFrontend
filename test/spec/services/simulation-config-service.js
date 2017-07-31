@@ -1,12 +1,11 @@
 'use strict';
 
-describe('Services: simulation-config-service', function ()
-{
+describe('Services: simulation-config-service', function() {
   var simulationConfigService;
   var gz3dMock;
   var simulationInfo;
-  var collabFolderAPIServiceMock;
   var httpBackend;
+  var storageServerMock;
   var $rootScope, environmentService;
 
   simulationInfo = {
@@ -26,88 +25,28 @@ describe('Services: simulation-config-service', function ()
     }
   };
 
-  collabFolderAPIServiceMock = {};
-  collabFolderAPIServiceMock.experimentDoesNotExist = false;
-  collabFolderAPIServiceMock.fileDoesNotExist = false;
-  collabFolderAPIServiceMock.getExperimentFolderId = function ()
-  {
-    var res = {};
-    res.then = function (callback)
-    {
-      if (collabFolderAPIServiceMock.experimentDoesNotExist)
-      {
-        callback();
-      }
-      else
-      {
-        callback('mockedfolderid');
-      }
-    };
-    return res;
-  };
-
-  collabFolderAPIServiceMock.createFolderFile = function ()
-  {
-    var res = {};
-    res.then = function (callback)
-    {
-      callback(true);
-    };
-    return res;
-  };
-
-  collabFolderAPIServiceMock.getFolderFile = function ()
-  {
-    var res = {};
-    res.then = function (callback)
-    {
-      if (collabFolderAPIServiceMock.fileDoesNotExist)
-      {
-        callback(null);
-      }
-      else
-      {
-        callback({ uuid: 'mockeduuid' });
-      }
-    };
-    return res;
-  };
-
-  collabFolderAPIServiceMock.deleteFile = function ()
-  {
-    var res = {};
-    res.then = function (callback)
-    {
-      callback(true);
-    };
-    return res;
-  };
-
-  collabFolderAPIServiceMock.downloadFile = function ()
-  {
-    var res = {};
-    res.then = function (callback)
-    {
-      callback('CollabContentTest');
-    };
-    return res;
-  };
-
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(module('gz3dModule'));
 
   // load the service to test and mock the necessary service
 
-  beforeEach(module(function ($provide)
-  {
+  beforeEach(module(function($provide) {
+
+    storageServerMock = {
+      setFileContent: jasmine.createSpy('setFileContent').and.callFake(function() { return window.$q.when(); }),
+      getFileContent: jasmine.createSpy('getFileContent').and.callFake(function() {
+        return window.$q.when({ uuid: 'mockeduuid' });
+      }),
+      deleteFile: jasmine.createSpy('deleteFile').and.callFake(function() { return window.$q.when(); }),
+    };
+
     $provide.value('gz3d', gz3dMock);
     $provide.value('simulationInfo', simulationInfo);
-    $provide.value('collabFolderAPIService', collabFolderAPIServiceMock);
+    $provide.value('storageServer', storageServerMock);
   }));
 
-  beforeEach(inject(function (_$httpBackend_, _simulationConfigService_, _$rootScope_, _environmentService_)
-  {
+  beforeEach(inject(function(_$httpBackend_, _simulationConfigService_, _$rootScope_, _environmentService_) {
     simulationConfigService = _simulationConfigService_;
     httpBackend = _$httpBackend_;
     $rootScope = _$rootScope_;
@@ -117,38 +56,33 @@ describe('Services: simulation-config-service', function ()
     httpBackend.expectGET(simulationInfo.serverBaseUrl + '/simulation/mocked_simulation_id/resources').respond(JSON.stringify(fileresult));
   }));
 
- it('should check if config file exists in backend', function ()
-  {
+  it('should check if config file exists in backend', function() {
     var result = simulationConfigService.doesConfigFileExist('mockedFileType');
     httpBackend.flush();
     $rootScope.$digest();
 
-    result.then(function (result)
-    {
+    result.then(function(result) {
       expect(result).toBe(true);
     });
 
     $rootScope.$digest();
   });
 
-  it('should use cache after initConfigFiles has been called', function ()
-  {
-    simulationConfigService.initConfigFiles(simulationInfo.serverBaseUrl,simulationInfo.simulationID);
+  it('should use cache after initConfigFiles has been called', function() {
+    simulationConfigService.initConfigFiles(simulationInfo.serverBaseUrl, simulationInfo.simulationID);
 
     var result = simulationConfigService.doesConfigFileExist('mockedFileType');
     httpBackend.flush();
     $rootScope.$digest();
 
-    result.then(function (result)
-    {
+    result.then(function(result) {
       expect(result).toBe(true);
     });
 
     $rootScope.$digest();
   });
 
-  it('should load config file from backend', function ()
-  {
+  it('should load config file from backend', function() {
     httpBackend.expectGET(simulationInfo.serverBaseUrl + 'mockedpath/configfilename').respond('ContentTest');
 
     simulationInfo.contextID = undefined;
@@ -156,54 +90,44 @@ describe('Services: simulation-config-service', function ()
     httpBackend.flush();
     $rootScope.$digest();
 
-    result.then(function (result)
-    {
+    result.then(function(result) {
       expect(result).toBe('ContentTest');
     });
 
     $rootScope.$digest();
   });
 
-  it('should load config file from the collab', function ()
-  {
-    spyOn(collabFolderAPIServiceMock, 'downloadFile').and.callThrough();
-
+  it('should load config file from the collab', function() {
     environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
     simulationConfigService.loadConfigFile('mockedFileType');
     httpBackend.flush();
     $rootScope.$digest();
 
-    expect(collabFolderAPIServiceMock.downloadFile).toHaveBeenCalled();
+    expect(storageServerMock.getFileContent).toHaveBeenCalled();
 
   });
 
-  it('should save config file to collabs', function ()
-  {
-    collabFolderAPIServiceMock.fileDoesNotExist = true;
+  it('should save config file to collabs', function() {
     environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
 
-    spyOn(collabFolderAPIServiceMock, 'createFolderFile').and.callThrough();
-    simulationConfigService.saveConfigFile('mockedFileType','mockedData');
+    simulationConfigService.saveConfigFile('mockedFileType', 'mockedData');
     httpBackend.flush();
     $rootScope.$digest();
 
-    expect(collabFolderAPIServiceMock.createFolderFile).toHaveBeenCalled();
+    expect(storageServerMock.setFileContent).toHaveBeenCalled();
   });
 
-  it('should overwrite config file to collabs', function ()
-  {
-    collabFolderAPIServiceMock.fileDoesNotExist = false;
+  it('should overwrite config file to collabs', function() {
     environmentService.setPrivateExperiment(true);
     simulationInfo.contextID = 'mockedContextID';
 
-    spyOn(collabFolderAPIServiceMock, 'createFolderFile').and.callThrough();
-    simulationConfigService.saveConfigFile('mockedFileType','mockedData');
+    simulationConfigService.saveConfigFile('mockedFileType', 'mockedData');
     httpBackend.flush();
     $rootScope.$digest();
 
-    expect(collabFolderAPIServiceMock.createFolderFile).toHaveBeenCalled();
+    expect(storageServerMock.setFileContent).toHaveBeenCalled();
   });
 
 });

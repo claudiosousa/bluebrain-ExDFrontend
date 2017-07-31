@@ -49,7 +49,7 @@ describe('Services: userContextService', function() {
     };
 
     var collabExperimentLockServiceMock = {
-      createLockServiceForContext: jasmine.createSpy('createLockServiceForContext').and.returnValue(lockServiceMock)
+      createLockServiceForExperimentId: jasmine.createSpy('createLockServiceForExperimentId').and.returnValue(lockServiceMock)
     };
     $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
 
