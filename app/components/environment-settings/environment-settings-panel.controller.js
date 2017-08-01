@@ -36,7 +36,8 @@
       master: 1,
       quality:2,
       color: 3,
-      environment: 4
+      environment: 4,
+      usercamera: 5
     };
 
     $scope.activeTabIndex = $scope.tabindex.master;

@@ -1,0 +1,45 @@
+<!-- build:css(.tmp) styles/esv/environment-settings-usercamera.css -->
+<link rel="stylesheet" href="components/environment-settings/environment-settings-usercamera.style.css" />
+<!-- endbuild -->
+
+<h3>User camera</h3>
+<p>You can change the properties of the camera in the web frontend: </p>
+
+<hr class="environment-settings-hr" >
+
+<div class="environment-settings-usercamera-wrapper">
+  <div class="environment-settings-usercamera-curves">
+
+
+  <div class="environment-settings-usercamera-frustum">
+
+    <div class="environment-settings-option-subblock">
+
+            <span class="environment-settings-usercamera-levels-title">
+            Camera frustum
+            </span>
+
+      <div class="environment-settings-option-subblock">
+
+        <label>Near clipping plane distance</label>
+        <input class="esv-envsettings-slider" type="range" ng-change="updateFrustumSettings()" ng-model="userCameraSettings.nearClippingDistance" step="0.01" min="0.01" max="5.0" value="0.15"
+               ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+        <label>Far clipping plane distance</label>
+        <input class="esv-envsettings-slider" type="range" ng-change="updateFrustumSettings()" ng-model="userCameraSettings.farClippingDistance" step="0.1" min="5.0" max="200.0" value="100.0"
+               ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+        <label>Vertical field of view</label>
+        <input class="esv-envsettings-slider" type="range" ng-change="updateFrustumSettings()" ng-model="userCameraSettings.verticalFOV" step="0.1" min="0.0" max="180.0" value="60.0"
+               ng-mouseup="$event.stopPropagation(); focus('container');"/>
+
+      </div>
+
+    </div>
+
+  </div>
+
+ </div>
+
+</div>
+

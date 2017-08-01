@@ -1573,6 +1573,46 @@ GZ3D.Composer.prototype.initView = function (view)
     this.applyComposerSettings(true);
 };
 
+
+/**
+ * Apply user camera settings
+ * Reflect updates to user camera parameters in the 3D scene.
+ * Must be called before a view is updated.
+*/
+
+GZ3D.Composer.prototype.applyUserCameraSettings = function ()
+{
+    var i;
+    var cs = this.gz3dScene.normalizedComposerSettings;
+
+    if (!cs.verticalFOV) {cs.verticalFOV = 60;}
+    if (!cs.nearClippingDistance) {cs.nearClippingDistance = 0.15;}
+    if (!cs.farClippingDistance) {cs.farClippingDistance = 100.0;}
+    if (!cs.showCameraHelper) {cs.showCameraHelper =false;}
+
+    for (i = 0; i < this.gz3dScene.viewManager.views.length; i++)
+    {
+        var camera = this.gz3dScene.viewManager.views[i].camera;
+
+        camera.fov = cs.verticalFOV;
+        // These two are 'string' types when assigned from Angular.js, so force a conversion to 'float'
+        camera.near = 1.0 * cs.nearClippingDistance;
+        camera.far = 1.0 * cs.farClippingDistance;
+
+        camera.updateProjectionMatrix();
+
+        if (cs.showCameraHelper === true)
+        {
+            camera.cameraHelper.visible = true;
+            camera.cameraHelper.update();
+        }
+        else
+        {
+            camera.cameraHelper.visible = false;
+        }
+    }
+};
+
 /**
  * Update PBR Material
  *
@@ -1785,6 +1825,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
 
     this.normalizedMasterSetting = null;
     this.updateComposerWithMasterSettings();
+    this.applyUserCameraSettings();
 
     // Updates the composer internal data with the latest settings.
 
@@ -2317,6 +2358,12 @@ GZ3D.ComposerSettings = function ()
 
     this.pbrMaterial = true;       // Physically based material
 
+    // User camera frustum settings
+
+    this.verticalFOV = 60.0;
+    this.nearClippingDistance = 0.15;
+    this.farClippingDistance = 100.0;
+    this.showCameraHelper = false;
 };
 
 
@@ -11177,18 +11224,17 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
   });
 };
 
-
 /**
  * Apply composer settings
  * Reflect the post-processing composer settings in the 3D scene.
  * @param updateColorCurve
 */
 
-  GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate,shadowReset)
-  {
+GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate,shadowReset)
+{
     this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate,shadowReset);
     this.needsImmediateUpdate = true;
-  };
+};
 
 /**
  * Apply composer settings to a specific model
@@ -11196,10 +11242,10 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
  * @param updateColorCurve
 */
 
-  GZ3D.Scene.prototype.applyComposerSettingsToModel = function(model)
-  {
+GZ3D.Scene.prototype.applyComposerSettingsToModel = function(model)
+{
     this.composer.applyComposerSettingsToModel(model);
-  };
+};
 
 /**
  * Set master settings
