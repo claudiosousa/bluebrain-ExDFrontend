@@ -12,7 +12,7 @@
 ###############################
 /app/components/**/Gemfile.*
 /app/components/**/src
-/app/config.json
+/app/config.json*
 /app/model_library.json
 /app/config.json.local
 
