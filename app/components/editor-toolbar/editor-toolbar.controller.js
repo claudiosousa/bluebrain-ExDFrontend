@@ -549,6 +549,7 @@
       });
     };
   }
+
   angular.module('editorToolbarModule', ['helpTooltipModule', 'clb-ui-dialog']).
       controller('EditorToolbarController',
           [

@@ -6,6 +6,9 @@ describe('Directive: spiketrain', function() {
   beforeEach(module('spikeTrainModule'));
   beforeEach(module('exd.templates')); // import html template
 
+  beforeEach(module('editorToolbarServiceMock'));
+  beforeEach(module('spikeListenerServiceMock'));
+
   var simulationInfoMock = {
     serverConfig: {
       rosbridge: {
@@ -30,38 +33,7 @@ describe('Directive: spiketrain', function() {
     editorToolbarService = _editorToolbarService_;
   }));
 
-  beforeEach(function() {
-    spyOn(scope.vm, 'startSpikeDisplay');
-    spyOn(scope.vm, 'stopSpikeDisplay');
-    spyOn(scope.vm, 'calculateCanvasSize');
-    spyOn(scope.vm, 'clearPlot');
-    spyOn(scope.vm, 'redraw');
-  });
-
-  it('should call controller methods when visible', function() {
-    editorToolbarService.showSpikeTrain = true;
-    $rootScope.$digest();
-    $interval.flush(30);
-
-    expect(scope.vm.startSpikeDisplay).toHaveBeenCalled();
-  });
-
-  it('should hide on close', function() {
-    editorToolbarService.showSpikeTrain = true;
-    scope.close();
-
-    expect(editorToolbarService.showSpikeTrain).toBe(false);
-  });
-
-  it('should clearPlot on RESET', function() {
-    scope.$emit('RESET');
-    scope.$digest();
-    expect(scope.vm.clearPlot).toHaveBeenCalled();
-  });
-
-  it('should stopSpikeDisplay on destroy', function() {
-    scope.$emit('$destroy');
-    scope.$digest();
-    expect(scope.vm.stopSpikeDisplay).toHaveBeenCalled();
+  it('should initialize controller', function() {
+    expect(scope.vm).toBeDefined();
   });
 });
