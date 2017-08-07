@@ -67,21 +67,6 @@
       return this.showNavigationModeMenu;
     }
 
-    get isPynnEditorActive()
-    {
-      return (this.showPynnEditor);
-    }
-
-    get isSmachEditorActive()
-    {
-      return (this.showSmachEditor);
-    }
-
-    get isEditorMenuActive()
-    {
-      return this.showEditorMenu;
-    }
-
     toggleLogConsole() {
       this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE).then(state => {
         this.showLogConsole = !state;
@@ -111,28 +96,6 @@
           this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
         } else {
           this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
-        }
-      });
-    }
-
-    togglePynnEditor() {
-      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR).then(state => {
-        this.showPynnEditor = !state;
-        if(state) {
-          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR);
-        } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.PYNN_EDITOR);
-        }
-      });
-    }
-
-    toggleSmachEditor() {
-      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.SMACH_EDITOR).then(state => {
-        this.showSmachEditor = !state;
-        if(state) {
-          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.SMACH_EDITOR);
-        } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.SMACH_EDITOR);
         }
       });
     }

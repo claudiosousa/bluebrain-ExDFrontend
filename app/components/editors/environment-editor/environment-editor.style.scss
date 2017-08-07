@@ -29,6 +29,14 @@ $addObjectIconHeight: 100px;
 $environmentDesignerMinWidth: 540px;
 $environmentDesignerMinHeight: 380px;
 
+.environment-designer-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
 /* panel */
 #ed-left-panel
 {
@@ -160,14 +168,13 @@ $environmentDesignerMinHeight: 380px;
 }
 
 .ed-bottom-box {
-  position: absolute;
+  position: relative;
   right: 0;
   bottom: 0;
   width: 100%;
   height: 43px;
   margin: 0;
-  background: #f8f8f8;
-  display:flex;
+  flex-shrink: 0;
 }
 
 .ed-bottom-box_options {
