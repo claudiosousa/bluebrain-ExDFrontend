@@ -53,9 +53,6 @@ describe('Controller: editorPanelCtrl', function () {
       simulationInfo: simulationInfo
     });
 
-
-    scope.controls.transferfunction.refresh = jasmine.createSpy('refresh');
-    scope.controls.statemachine.refresh = jasmine.createSpy('refresh');
     scope.controls.graphicalEditor.refresh = jasmine.createSpy('refresh');
 
     $httpBackend.whenGET(/\/me/).respond(200);
@@ -78,10 +75,7 @@ describe('Controller: editorPanelCtrl', function () {
 
   it('should refresh the panel on the open callbacks', function() {
     scope.activeTabIndex = scope.tabindex.transferfunction;
-    expect(scope.controls.transferfunction.refresh).not.toHaveBeenCalled();
     scope.openCallback();
-    expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
-    expect(scope.controls.statemachine.refresh).not.toHaveBeenCalled();
     expect(scope.controls.graphicalEditor.refresh).not.toHaveBeenCalled();
 
     scope.activeTabIndex = scope.tabindex.statemachine;
@@ -178,7 +172,6 @@ describe('Controller: editorPanelCtrl', function () {
 
     scope.activeTabIndex = scope.tabindex.transferfunction;
     scope.onResizeEnd();
-    expect(scope.controls.transferfunction.refresh).toHaveBeenCalled();
   });
 
   it('should watch showEditorPanel', function () {

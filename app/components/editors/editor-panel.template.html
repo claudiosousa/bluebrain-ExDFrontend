@@ -16,8 +16,7 @@
       <uib-tab heading="Transfer Functions" index="tabindex.transferfunction"
            select="disableKeyBindings(); controls.transferfunction.refresh()"
            deselect="reenableKeyBindings()">
-        <transfer-function-editor topic="{{cleErrorTopic}}" server="{{rosbridgeWebsocketUrl}}"
-                                  control="controls.transferfunction"/>
+        <transfer-function-editor />
       </uib-tab>
       <uib-tab heading="State Machine (SMACH)" index="tabindex.statemachine"
            select="disableKeyBindings(); controls.statemachine.refresh()"

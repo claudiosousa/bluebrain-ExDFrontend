@@ -46,29 +46,30 @@
     if (t%2<0.02):\n\
         clientLogger.info(\'Time: \', t)')
   .directive('transferFunctionEditor', [
-      '$log',
-      'backendInterfaceService',
-      'STATE',
-      'stateService',
-      'pythonCodeHelper',
-      'roslib',
-      'serverError',
-      '$timeout',
-      'documentationURLs',
-      'SIMULATION_FACTORY_CLE_ERROR',
-      'SOURCE_TYPE',
-      'simulationInfo',
-      'clbConfirm',
-      'clbErrorDialog',
-      'autoSaveService',
-      'DEFAULT_TF_CODE',
-      'downloadFileService',
-      'RESET_TYPE',
-      'codeEditorsServices',
-      '$q',
-      'saveErrorsService',
-      'environmentService',
-      'userContextService',
+    '$log',
+    'backendInterfaceService',
+    'STATE',
+    'stateService',
+    'pythonCodeHelper',
+    'roslib',
+    'serverError',
+    '$timeout',
+    'documentationURLs',
+    'SIMULATION_FACTORY_CLE_ERROR',
+    'SOURCE_TYPE',
+    'simulationInfo',
+    'clbConfirm',
+    'clbErrorDialog',
+    'autoSaveService',
+    'DEFAULT_TF_CODE',
+    'downloadFileService',
+    'RESET_TYPE',
+    'codeEditorsServices',
+    '$q',
+    'saveErrorsService',
+    'environmentService',
+    'userContextService',
+    'bbpConfig',
     function (
         $log,
         backendInterfaceService,
@@ -92,15 +93,14 @@
         $q,
         saveErrorsService,
         environmentService,
-        userContextService) {
+        userContextService,
+        bbpConfig) {
     var DIRTY_TYPE = 'TF';
 
     return {
       templateUrl: 'components/editors/transfer-function-editor/transfer-function-editor.template.html',
       restrict: 'E',
-      scope: {
-        control: '='
-      },
+      scope: {},
       link: function (scope, element, attrs) {
 
         scope.isPrivateExperiment = environmentService.isPrivateExperiment();
@@ -194,8 +194,8 @@
           }
         };
 
-        var rosConnection = roslib.getOrCreateConnectionTo(attrs.server);
-        scope.errorTopicSubscriber = roslib.createTopic(rosConnection, attrs.topic, 'cle_ros_msgs/CLEError');
+        var rosConnection = roslib.getOrCreateConnectionTo(simulationInfo.serverConfig.rosbridge.websocket);
+        scope.errorTopicSubscriber = roslib.createTopic(rosConnection, bbpConfig.get('ros-topics').cleError, 'cle_ros_msgs/CLEError');
         scope.errorTopicSubscriber.subscribe(scope.onNewErrorMessageReceived, true);
 
         scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
@@ -224,7 +224,7 @@
             });
         }
 
-        scope.control.refresh = function () {
+        scope.refresh = function () {
           if (scope.collabDirty) {
             codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
             return;
@@ -235,8 +235,38 @@
           });
         };
 
-        // initialize transfer functions
-        scope.control.refresh();
+        // update UI
+        scope.unbindListenerUpdatePanelUI = scope.$on("UPDATE_PANEL_UI", function () {
+          // prevent calling the select functions of the tabs
+          scope.refresh();
+        });
+
+        // only start watching for changes after a little timeout
+        // the flood of changes during compilation will cause angular to throw digest errors when watched
+        $timeout(
+          () => {
+            // refresh on resize
+            scope.unbindWatcherResize = scope.$watch(() => {
+                if (element[0].offsetParent) {
+                  return [element[0].offsetParent.offsetWidth, element[0].offsetParent.offsetHeight].join('x');
+                } else {
+                  return '';
+                }
+              },
+              () => {
+                scope.refresh();
+              }
+            );
+            scope.refresh();
+          },
+          300
+        );
+
+        scope.$on('$destroy', () => {
+          scope.resetListenerUnbindHandler();
+          scope.unbindWatcherResize();
+          scope.unbindListenerUpdatePanelUI();
+        });
 
         function ensurePauseStateAndExecute(fn){
           var deferred = $q.defer();
