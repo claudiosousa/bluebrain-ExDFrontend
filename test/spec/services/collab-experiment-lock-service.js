@@ -141,7 +141,7 @@ describe('Services: collab-experiment-lock-service', function() {
 
     it('releaseLock should fail', function(done) {
 
-      httpBackend.when('DELETE', 'http://proxy/storage/FAKE_CONTEXT_ID/edit.lock?byname=true')
+      httpBackend.when('DELETE', 'http://proxy/storage/FAKE_CONTEXT_ID/edit.lock?byname=true&type=file')
         .respond(500);
 
 
@@ -246,12 +246,11 @@ describe('Services: collab-experiment-lock-service', function() {
       expect(lockinfo.success).toBe(true);
     });
 
-
     it('releaseLock should succeed', function() {
 
       lockFileRequest.respond({ results: [fileResponse] });
 
-      httpBackend.when('DELETE', 'http://proxy/storage/FAKE_CONTEXT_ID/edit.lock?byname=true')
+      httpBackend.when('DELETE', 'http://proxy/storage/FAKE_CONTEXT_ID/edit.lock?byname=true&type=file')
         .respond(200);
 
       createdLockService = collabExperimentLockService.createLockServiceForExperimentId(FAKE_CONTEXT_ID);

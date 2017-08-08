@@ -33,14 +33,27 @@
       this.BASE_URL = `${this.PROXY_URL}/storage`;
 
       this.buildStorageResource();
-
     }
 
     buildStorageResource() {
+      const FILE_REGEXP = /attachment; filename=(.*)/;
       let buildAction = action => angular.merge(action, {
         headers: { 'Context-Id': () => this.$stateParams.ctx },
-        interceptor: { responseError: err => this.onError(err) }
+        interceptor: { responseError: err => this.$q.reject(this.onError(err)) }
       });
+
+      let transformFileResponse = (data, header, status) => {
+        let uuid = header('uuid');
+        let filename = header('content-disposition');
+        filename = filename && FILE_REGEXP.exec(filename);
+        filename = filename && filename[1];
+        return {
+          found: !!uuid,
+          uuid,
+          filename,
+          data
+        };
+      };
 
       this.proxyRsc = this.$resource(this.BASE_URL,
         {},
@@ -53,14 +66,19 @@
           getFile: buildAction({
             method: 'GET',
             isArray: false,
-            transformResponse: (data, header, status) => ({ uuid: header('uuid'), data }),
+            transformResponse: transformFileResponse,
             url: `${this.BASE_URL}/:experimentId/:filename`
+          }),
+          getExperimentFiles: buildAction({
+            method: 'GET',
+            isArray: true,
+            url: `${this.BASE_URL}/:experimentId`
           }),
           getBlob: buildAction({
             method: 'GET',
             isArray: false,
             responseType: 'blob',
-            transformResponse: (data, header, status) => ({ uuid: header('uuid'), data }),
+            transformResponse: transformFileResponse,
             url: `${this.BASE_URL}/:experimentId/:filename`
           }),
           deleteFile: buildAction({
@@ -71,6 +89,12 @@
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             url: `${this.BASE_URL}/:experimentId/:filename`
+          }),
+          setBlob: buildAction({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            url: `${this.BASE_URL}/:experimentId/:filename`,
+            transformRequest: []
           })
         });
     }
@@ -89,32 +113,72 @@
     }
 
     getExperiments(filter) {
-      return this.proxyRsc.getExperiments({ filter }).$promise;
+      return this.proxyRsc
+        .getExperiments({ filter })
+        .$promise;
+    }
+
+    getExperimentFiles(experimentId) {
+      return this.proxyRsc
+        .getExperimentFiles({ experimentId })
+        .$promise;
     }
 
     getFileContent(experimentId, filename, byname = false) {
-      return this.proxyRsc.getFile({ experimentId, filename, byname }).$promise;
+      return this.proxyRsc
+        .getFile({ experimentId, filename, byname })
+        .$promise;
     }
 
     getBlobContent(experimentId, filename, byname = false) {
-      return this.proxyRsc.getBlob({ experimentId, filename, byname })
+      return this.proxyRsc
+        .getBlob({ experimentId, filename, byname })
+        .$promise;
+    }
+
+    getBase64Content(experimentId, filename, byname = false) {
+      return this.proxyRsc
+        .getBlob({ experimentId, filename, byname })
         .$promise
         .then(response => this.$q(resolve => {
           let reader = new FileReader();
-          reader.addEventListener('loadend', e => {
-            response.data = e.target.result.replace(/data:[^;]*;base64,/g, '');
-            resolve(response);
-          });
+          reader.addEventListener('loadend', e =>
+            resolve(e.target.result.replace(/data:[^;]*;base64,/g, ''))
+          );
           reader.readAsDataURL(response.data);
         }));
     }
 
+    deleteEntity(experimentId, filename, byname = false, type = 'file') {
+      return this.proxyRsc
+        .deleteFile({ experimentId, filename, byname, type })
+        .$promise;
+    }
+
     deleteFile(experimentId, filename, byname = false) {
-      return this.proxyRsc.deleteFile({ experimentId, filename, byname }).$promise;
+      return this.deleteEntity(experimentId, filename, byname, 'file');
+    }
+
+    deleteFolder(experimentId, folderName, byname = false) {
+      return this.deleteEntity(experimentId, folderName, byname, 'folder');
     }
 
     setFileContent(experimentId, filename, fileContent, byname = false) {
-      return this.proxyRsc.setFile({ experimentId, filename, byname }, fileContent).$promise;
+      return this.proxyRsc
+        .setFile({ experimentId, filename, byname }, fileContent)
+        .$promise;
+    }
+
+    createFolder(experimentId, folderName) {
+      return this.proxyRsc
+        .setFile({ experimentId, filename: folderName, type: 'folder' }, null)
+        .$promise;
+    }
+
+    setBlobContent(experimentId, filename, fileContent, byname = false) {
+      return this.proxyRsc
+        .setBlob({ experimentId, filename, byname }, new Uint8Array(fileContent))
+        .$promise;
     }
   }
 

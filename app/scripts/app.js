@@ -98,7 +98,8 @@
       'environmentRenderingModule',
       'storageServer',
       'clusterReservation',
-      'demoCarousel'])
+      'demoCarousel',
+      'experimentExplorer'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function($stateProvider, $urlRouterProvider, environmentServiceProvider) {
@@ -189,6 +190,15 @@
           }
         };
 
+        var experimentExplorerState = {
+          name: 'esv-files',
+          url: '/experiment-explorer?ctx',
+          templateUrl: 'views/common/experiment-explorer.html',
+          resolve: {
+            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(true); }]
+          }
+        };
+
         var supportState = {
           name: 'support',
           url: '/support',
@@ -209,13 +219,15 @@
         esvPrivateState.templateUrl = 'views/esv/demo-experiments.html';
       }
 
-        var home = $stateProvider.state(homeState);
-        home.state(esvWebState);
-        home.state(esvDemoIntroState);
-        home.state(esvPrivateState);
-        home.state(experimentViewState);
-        home.state(supportState);
-        home.state(newCollabOverviewState);
+      var home = $stateProvider.state(homeState);
+      home.state(esvWebState);
+      home.state(esvDemoIntroState);
+      home.state(esvPrivateState);
+      home.state(experimentViewState);
+      home.state(supportState);
+      home.state(newCollabOverviewState);
+      home.state(experimentExplorerState);
+
 
       home.state(esvWegStateDebug);
 

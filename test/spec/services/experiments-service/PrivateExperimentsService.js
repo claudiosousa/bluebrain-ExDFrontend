@@ -18,10 +18,10 @@ describe('Services: PrivateExperimentsService', function() {
     /*jshint +W117 */
   }));
 
-  it('should return data on getBlobContent', function(done) {
+  it('should return data on getBase64Content', function(done) {
     var response = { uuid: 'uuid', data: 'somedata' };
 
-    spyOn(storageServer, 'getBlobContent').and.returnValue(window.$q.when(response));
+    spyOn(storageServer, 'getBase64Content').and.returnValue(window.$q.when(response));
     privateExperimentsService
       .getExperimentImage({ configuration: {} })
       .then(function(res) {

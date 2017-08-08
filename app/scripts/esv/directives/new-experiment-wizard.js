@@ -317,7 +317,7 @@
                         };
 
                         $scope.retrieveImageFileContent = function (fileid) {
-                            return storageServer.getBlobContent(fileid)
+                            return storageServer.getBase64Content(fileid)
                                 .then(file => file.data);
                         };
 

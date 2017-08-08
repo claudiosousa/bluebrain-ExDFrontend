@@ -1,0 +1,268 @@
+        /**---LICENSE-BEGIN - DO NOT CHANGE OR MOVE THIS HEADER
+ * This file is part of the Neurorobotics Platform software
+ * Copyright (C) 2014,2015,2016,2017 Human Brain Project
+ * https://www.humanbrainproject.eu
+ *
+ * The Human Brain Project is a European Commission funded project
+ * in the frame of the Horizon2020 FET Flagship plan.
+ * http://ec.europa.eu/programmes/horizon2020/en/h2020-section/fet-flagships
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * ---LICENSE-END**/
+
+.experiment-explorer-view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #fafafa;
+    align-items: stretch;
+    font-family: Roboto, Arial, Helvetica;
+    color: #404040;
+    cursor: default;
+
+    >h1 {
+        margin:20px 0 20px 8px;
+        flex-grow: 0;
+    }
+
+    #experiment-input{
+      display: none;
+    }
+
+    .experiment-explorer {
+        overflow: hidden;
+        flex-grow: 1;
+        height: 100%;
+        display: flex;
+        align-items: stretch;
+
+        .experiment-label,
+        .exp-file-name,
+        .exp-file-type,
+        .exp-file-size,
+        .exp-file-date {
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+
+        .left-panel,.right-panel {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.12);
+            background-color: white;
+            border: 1px solid #dfdfdf;
+            margin: 8px;
+        }
+
+        .left-panel {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+
+            .title {
+                height: 42px;
+                line-height: 42px;
+                background-color: #39c;
+                overflow-x: hidden;
+                font-size: 17px;
+                white-space: nowrap;
+                color: #ecf3f9;
+                padding-left: 14px;
+                flex-shrink: 0;
+            }
+
+            .experiment-list {
+                flex-grow: 1;
+
+                .experiment-title,
+                .experiment-folder {
+                    height: 32px;
+                    line-height: 31px;
+                    vertical-align: middle;
+                    border-left: 3px solid white;
+
+                    &.exp-selected {
+                      background-color: #ebebeb;
+                      border-left: 3px #39c solid;
+                    }
+
+                    &:hover {
+                        background-color: #f5f5f5;
+                    }
+
+                    .fa {
+                        font-size: 16px;
+                        margin-left: 14px;
+                        color: #737373;
+                    }
+
+                    .experiment-label{
+                      margin-left: 4px;
+                    }
+                }
+
+                .experiment-folders{
+                  margin-left: 10px;
+
+                  .experiment-folder{
+                    font-size: 13px;
+                    height: 26px;
+                    line-height: 25px;
+                    border-left: 2px solid white;
+
+                    &.folder-selected{
+                      background-color: #ebebeb;
+                      border-left: 2px #39c solid;
+                    }
+                  }
+                }
+            }
+        }
+        .right-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: 6px;
+
+            .experiment-files-header, .experiment-file {
+                display: flex;
+                border-bottom: 1px solid #dfdfdf;
+                line-height: 32px;
+                height: 32px;
+            }
+
+            .experiment-files-header {
+                color: #9f9f9f;
+                font-size: 12px;
+                flex-shrink: 0;
+
+                > *{
+                  padding-right: 20px;
+
+                .delete-folder-button,
+                .create-folder-button{
+                  position: relative;
+
+                  .fa-folder{
+                    padding-top: 8px;
+                  }
+                  .fa-remove,
+                  .fa-plus {
+                    position: absolute;
+                    top: 4px;
+                    font-size: 11px;
+                    left: 4px;
+                  }
+                  .fa-remove{
+                     color: #ff5858;
+                  }
+
+                  .fa-plus{
+                    color:#eee;
+                  }
+                }
+              }
+            }
+            .experiment-files-list {
+                flex-grow: 1;
+                font-size: 14px;
+                color: #404040;
+                overflow-y: auto;
+            }
+            .exp-file-icon {
+                width: 40px;
+                padding-left: 14px;
+            }
+
+            .exp-file-name {
+                width: calc(45% - 40px);
+            }
+
+            .exp-file-type {
+              width: calc(30% - 80px);
+            }
+
+            .exp-file-size{
+              width: 10%;
+              text-align: right;
+            }
+
+            .exp-file-date{
+              width: 15%;
+              text-align: right;
+            }
+
+            .exp-file-actions{
+              width: 80px;
+              flex-grow: 0;
+              flex-shrink: 0;
+              color: #404040;
+              padding-right: 10px !important;
+              display: flex;
+              flex-direction: row-reverse;
+
+              .action-button{
+                // padding-right: 20px;
+                cursor: pointer;
+                padding: 2px 4px;
+                margin-right: 4px;
+                opacity: 0.7;
+                font-size: 16px;
+
+                &:hover {
+                  opacity: 1;
+                }
+
+                .fa{
+
+                }
+              }
+            }
+
+            .experiment-file {
+              border-left: 2px solid white;
+
+              .exp-file-actions{
+                visibility:hidden;
+              }
+
+              &.exp-file-selected {
+                background-color: #ebebeb;
+                border-left: 2px solid #39c;
+
+                .exp-file-actions{
+                  visibility: visible;
+                }
+              }
+
+              &:hover {
+                background-color: #f5f5f5;
+
+                .exp-file-actions{
+                  visibility: visible;
+                }
+              }
+              > *{
+                padding-right: 10px;
+              }
+            }
+        }
+    }
+
+    .experiment-files-loading{
+      color: #666;
+      margin: 10px 40px;
+    }
+}

@@ -448,10 +448,10 @@
     });
 
     it('should test the retrieveImageFileContent function', function() {
-      spyOn(storageServer, 'getBlobContent')
+      spyOn(storageServer, 'getBase64Content')
         .and.returnValue(window.$q.when([]));
       scope.retrieveImageFileContent();
-      expect(storageServer.getBlobContent).toHaveBeenCalled();
+      expect(storageServer.getBase64Content).toHaveBeenCalled();
     });
 
     it('should test the retrieveConfigFileContent function', function() {

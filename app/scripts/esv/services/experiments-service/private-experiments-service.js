@@ -46,7 +46,7 @@
 
     getExperimentImage(exp) {
       return this.storageServer
-        .getBlobContent(exp.id, exp.configuration.thumbnail, true)
+        .getBase64Content(exp.id, exp.configuration.thumbnail, true)
         .then(response => response.data);
     }
 
