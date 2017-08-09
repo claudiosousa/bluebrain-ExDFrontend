@@ -115,6 +115,30 @@
             </ol>
           </li>
 
+          <!-- sub-section - axis lock, collapsible -->
+          <li class="sub-section-item" ng-show="!collapsedTransform">
+            <h6>Snap Axis Lock</h6>
+            <ol class="vec3-num-input-list">
+              <li class="vec3-num-input-item"">
+                X <input id="oi-lock-x-axis" type="checkbox" name="lock-x-axis" class="input-radio-checkbox" ng-model="objectInspectorService.lockXAxis"
+                  ng-change="objectInspectorService.onLockAxisChange()">
+              </li>
+
+              <li class="vec3-num-input-item"">
+                Y <input id="oi-lock-y-axis" type="checkbox" name="lock-y-axis" class="input-radio-checkbox" ng-model="objectInspectorService.lockYAxis"
+                  ng-change="objectInspectorService.onLockAxisChange()">
+              </li>
+
+              <li class="vec3-num-input-item"">
+                Z <input id="oi-lock-z-axis" type="checkbox" name="lock-z-axis" class="input-radio-checkbox" ng-model="objectInspectorService.lockZAxis"
+                  ng-change="objectInspectorService.onLockAxisChange()">
+              </li>
+
+
+            </ol>
+          </li>
+
+
           <!-- sub-section - view mode, collapsible -->
           <li class="sub-section-item" ng-show="!collapsedTransform">
             <h6>Space</h6>

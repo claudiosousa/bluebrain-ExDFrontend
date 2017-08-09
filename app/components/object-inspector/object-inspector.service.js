@@ -57,6 +57,9 @@
           this.inputErrorStyle = "background-color:red;";
           this.highlightingStyle = "background-color:yellow;";
           this.snapToGridDist = 0;
+          this.lockXAxis = undefined;
+          this.lockYAxis = undefined;
+          this.lockTAxis = undefined;
 
           this.getSelectedObjectShape = function () {
             if(this.selectedObject) {
@@ -181,6 +184,14 @@
           this.onSnapToGridDistChange = function()
           {
             gz3d.scene.modelManipulator.snapDist = this.snapToGridDist;
+
+          };
+
+          this.onLockAxisChange = function()
+          {
+            gz3d.scene.modelManipulator.lockXAxis = this.lockXAxis;
+            gz3d.scene.modelManipulator.lockYAxis = this.lockYAxis;
+            gz3d.scene.modelManipulator.lockZAxis = this.lockZAxis;
 
           };
 

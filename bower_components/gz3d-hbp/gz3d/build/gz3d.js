@@ -474,6 +474,11 @@ GZ3D.AutoAlignModel.prototype.init = function ()
 
 GZ3D.AutoAlignModel.prototype.alignOnMeshBase = function ()
 {
+  if (this.scene.modelManipulator.lockZAxis)
+  {
+    return;
+  }
+
   if (!this.needsAlignOnFloor && this.obj)
   {
     var bbox = new THREE.Box3().setFromObject(this.obj);
@@ -873,6 +878,7 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
 
   var viewWidth = this.scene.getDomElement().clientWidth;
   var viewHeight = this.scene.getDomElement().clientHeight;
+  var originalObjPos = new THREE.Vector3(this.obj.position.x, this.obj.position.y, this.obj.position.z);
 
   if (this.scene.snapToFloor && !this.disableSnap)
   {
@@ -933,11 +939,32 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
       point.z = this.obj.position.z;
     }
 
+    if (this.scene.modelManipulator.lockZAxis)
+    {
+      point.z = originalObjPos.z;
+    }
+
     if (this.scene.snapToObject && !this.disableSnap)
     {
       this.obj.position.copy(point);
       point = this.snapToObject(point);
     }
+
+    if (this.scene.modelManipulator.lockXAxis)
+    {
+      point.x = originalObjPos.x;
+    }
+
+    if (this.scene.modelManipulator.lockYAxis)
+    {
+      point.y = originalObjPos.y;
+    }
+
+    if (this.scene.modelManipulator.lockZAxis)
+    {
+      point.z = originalObjPos.z;
+    }
+
 
     this.scene.setPose(this.obj, point, this.obj.quaternion);
   }
@@ -1358,6 +1385,8 @@ GZ3D.Composer = function (gz3dScene)
     this.scene = gz3dScene.scene;
     this.currenSkyBoxTexture = null;
     this.currentSkyBoxID = '';
+    this.loadingSkyBox = false;
+
     this.pbrMaterial = false;
     this.pbrTotalLoadingTextures = 0;
     this.currentMasterSettings = localStorage.getItem('GZ3DMaster3DSettings');
@@ -1581,15 +1610,15 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                         that.pbrTotalLoadingTextures += 1;
 
                         materialParams[maptype] = textureLoader.load(node.material.pbrMaterialDescription[maptype],
-                        function()
-                        {
-                            that.pbrTotalLoadingTextures -= 1;
-                        },
-                        undefined,
-                        function()
-                        {
-                            that.pbrTotalLoadingTextures -= 1;
-                        });
+                            function ()
+                            {
+                                that.pbrTotalLoadingTextures -= 1;
+                            },
+                            undefined,
+                            function ()
+                            {
+                                that.pbrTotalLoadingTextures -= 1;
+                            });
 
                         materialParams[maptype].wrapS = THREE.RepeatWrapping;
                         that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]] = materialParams[maptype];
@@ -1608,6 +1637,7 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                 {
                     node.pbrMeshMaterial.side = THREE.FrontSide;
                     node.pbrMeshMaterial.depthWrite = false;
+                    node.castShadow = false;
                 }
 
                 node.pbrMeshMaterial.blending = node.material.blending;
@@ -1618,12 +1648,23 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                 node.pbrMeshMaterial.roughness = 1.0;
                 node.pbrMeshMaterial.metalness = 1.0;
                 node.pbrMeshMaterial.skinning = node.stdMeshMaterial.skinning;
-                node.pbrMeshMaterial.aoMapIntensity = cs.pbrAOMapIntensity?cs.pbrAOMapIntensity:1.0;
+                node.pbrMeshMaterial.aoMapIntensity = cs.pbrAOMapIntensity ? cs.pbrAOMapIntensity : 1.0;
 
 
             }
 
-            node.pbrMeshMaterial.envMap = this.currenSkyBoxTexture; // Update skybox
+            if (cs.dynamicEnvMap)
+            {
+                if (this.cubeCamera)
+                {
+                    node.pbrMeshMaterial.envMap = this.cubeCamera.renderTarget.texture;
+                }
+            }
+            else
+            {
+                node.pbrMeshMaterial.envMap = this.currenSkyBoxTexture; // Use the sky box if no custom env map texture has been defined
+
+            }
 
             if (!this.loadingPBR)
             {
@@ -1650,7 +1691,7 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 GZ3D.Composer.prototype.disableShadowReceiving = function (node)
 {
     node.receiveShadow = false;
-    node.traverse(function (subnode){subnode.receiveShadow = false;});
+    node.traverse(function (subnode) { subnode.receiveShadow = false; });
 };
 
 /**
@@ -1671,16 +1712,21 @@ GZ3D.Composer.prototype.applyShadowSettings = function ()
             {
                 var settings = cs.shadowSettings[i];
 
-                if (node.name.indexOf('robot:')===0)
+                if (node.name && node.name.indexOf('robot:') === 0)
                 {
                     that.disableShadowReceiving(node);
                 }
 
-                if (node.name===settings.lightName && node instanceof THREE.Light)
+                if (node.name === settings.lightName && node instanceof THREE.Light)
                 {
                     if (settings.cameraNear)
                     {
-                         node.shadow.camera.near = settings.cameraNear;
+                        node.shadow.camera.near = settings.cameraNear;
+                    }
+
+                    if (settings.cameraFOV)
+                    {
+                        node.shadow.camera.fov = (2 * settings.cameraFOV / Math.PI) * 180;
                     }
 
                     if (settings.cameraFar)
@@ -1722,9 +1768,20 @@ GZ3D.Composer.prototype.applyShadowSettings = function ()
  *
  */
 
-GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,forcePBRUpdate,shadowReset)
+GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forcePBRUpdate, shadowReset)
 {
     var that = this;
+
+    var cs = this.gz3dScene.composerSettings;
+    if (cs.pbrMaterial === undefined)
+    {
+        cs.pbrMaterial = true;
+    }
+
+    if (cs.dynamicEnvMap === undefined)
+    {
+        cs.dynamicEnvMap = false;
+    }
 
     this.normalizedMasterSetting = null;
     this.updateComposerWithMasterSettings();
@@ -1734,12 +1791,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
     // Pass true to updateColorCurve it the color curve has been changed. This will
     // force the composer to update its ramp texture for the color curves.
 
-    var cs = this.gz3dScene.normalizedComposerSettings;
-
-    if (cs.pbrMaterial === undefined)
-    {
-        cs.pbrMaterial = true;
-    }
+    cs = this.gz3dScene.normalizedComposerSettings;
 
     // Shadows
 
@@ -1785,6 +1837,8 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
 
     // Update sky box
 
+    var path, format, urls;
+
     if (this.currentSkyBoxID !== cs.skyBox)
     {
         this.currentSkyBoxID = cs.skyBox;
@@ -1796,18 +1850,24 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
         }
         else
         {
-            var path = this.currentSkyBoxID;
-            var format = '.png';
+            path = this.currentSkyBoxID;
+            format = '.png';
 
             path += '-';
 
-            var urls = [
+            urls = [
                 path + 'px' + format, path + 'nx' + format,
                 path + 'nz' + format, path + 'pz' + format,
                 path + 'py' + format, path + 'ny' + format
             ];
 
-            this.currenSkyBoxTexture = new THREE.CubeTextureLoader().load(urls);
+            this.loadingSkyBox = true;
+            this.currenSkyBoxTexture = new THREE.CubeTextureLoader().load(urls,
+                function ()
+                {
+                    that.loadingSkyBox = false;
+                }
+            );
             this.currenSkyBoxTexture.format = THREE.RGBFormat;
         }
     }
@@ -1831,6 +1891,26 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve,force
                 node.material.needsUpdate = true;
             }
         });
+
+        if (cs.pbrMaterial && cs.dynamicEnvMap)
+        {
+            if (!this.cubeCamera)
+            {
+                this.cubeCamera = new THREE.CubeCamera(1, 100000, 16);
+                this.cubeCamera.position.copy(new THREE.Vector3(0, 0, 1.5));
+                this.scene.add(this.cubeCamera);
+            }
+
+            this.cubeMapNeedsUpdate = true;
+            this.scene.traverse(function (node)
+            {
+                if (node.material && node.pbrMeshMaterial)
+                {
+                    node.pbrMeshMaterial.envMap = that.cubeCamera.renderTarget.texture;
+                    node.pbrMeshMaterial.needsUpdate = true;
+                }
+            });
+        }
     }
 
     // Now updates per-view settings. Please note that most of the settings need no update since
@@ -1925,6 +2005,23 @@ GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
     });
 };
 
+/**
+ * Enable/disable env. map
+ *
+ */
+
+GZ3D.Composer.prototype.setCubeMapEnvMapEnabled = function (enabled)
+{
+    var that = this;
+    this.scene.traverse(function (node)
+    {
+        if (node.material && node.pbrMeshMaterial)
+        {
+            node.pbrMeshMaterial.envMap = enabled ? that.cubeCamera.renderTarget.texture : null;
+            node.pbrMeshMaterial.needsUpdate = true;
+        }
+    });
+};
 
 /**
  * Render the scene and apply the post-processing effects.
@@ -1933,30 +2030,43 @@ GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
 
 GZ3D.Composer.prototype.render = function (view)
 {
+    var cs = this.gz3dScene.normalizedComposerSettings;
+
     if (view.composer === undefined)    // No ThreeJS composer for this view, we need to initialize it.
     {
         this.initView(view);
     }
 
+
     view.renderer.clear();
 
     if (this.pbrMaterial)
     {
-        if (this.loadingPBR && this.pbrTotalLoadingTextures===0)
+        if (this.loadingPBR && this.pbrTotalLoadingTextures === 0)
         {
             this.loadingPBR = false;
-            this.applyComposerSettings(false,true);
-            this.loadingPBR = (this.pbrTotalLoadingTextures!==0);
+            this.applyComposerSettings(false, true);
+            this.loadingPBR = (this.pbrTotalLoadingTextures !== 0);
+        }
+    }
+
+    if (!this.loadingPBR && this.pbrMaterial && !this.loadingSkyBox)
+    {
+        if (this.cubeMapNeedsUpdate)
+        {
+            this.cubeMapNeedsUpdate = false;
+            this.setCubeMapEnvMapEnabled(false);
+            this.cubeCamera.updateCubeMap(view.renderer, this.scene);
+            this.setCubeMapEnvMapEnabled(true);
         }
     }
 
     var camera = view.camera;
     var width = view.container.clientWidth;
     var height = view.container.clientHeight;
-    var cs = this.gz3dScene.normalizedComposerSettings;
     var nopostProcessing = (cs.sun === '' && !cs.ssao && !cs.antiAliasing && !view.rgbCurvesShader.enabled && !view.levelsShader.enabled && this.currentSkyBoxID === '');
 
-    if (this.minimalRender || nopostProcessing || this.currentMasterSettings===GZ3D.MASTER_QUALITY_MINIMAL) // No post processing is required, directly render to the screen.
+    if (this.minimalRender || nopostProcessing || this.currentMasterSettings === GZ3D.MASTER_QUALITY_MINIMAL) // No post processing is required, directly render to the screen.
     {
         this.lensFlare.visible = false;
         this.scene.background = null;
@@ -2051,7 +2161,7 @@ GZ3D.Composer.prototype.render = function (view)
  *
  */
 
-GZ3D.Composer.prototype.updateComposerWithMasterSettings = function()
+GZ3D.Composer.prototype.updateComposerWithMasterSettings = function ()
 {
     if (this.normalizedMasterSetting !== this.currentMasterSettings)
     {
@@ -2136,6 +2246,7 @@ GZ3D.Composer.prototype.isSupportedByMasterSetting = function (setting)
             if (setting === 'shadows') { return false; }
             if (setting === 'skyBox') { return false; }
             if (setting === 'pbrMaterial') { return false; }
+            if (setting === 'dynamicEnvMap') { return false; }
 
         /* falls through */
 
@@ -2191,6 +2302,7 @@ GZ3D.ComposerSettings = function ()
     this.levelsOutWhite = 1.0;
 
     this.skyBox = '';               // The file path of the sky box (without file extension) or empty string for plain color background
+    this.dynamicEnvMap = true;      // Environment map is generated at the beginning of the experiment
 
     this.sun = '';                  // empty string for no sun or "SIMPLELENSFLARE" for simple lens flare rendering
 
@@ -6294,6 +6406,12 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
 
   // world / local
   this.space = 'world';
+
+  // axis lock
+
+  this.lockXAxis = false;
+  this.lockYAxis = false;
+  this.lockZAxis = false;
 
   // hovered used for backwards compatibility
   // Whenever it wasn't an issue, hovered and active were combined
@@ -11651,6 +11769,8 @@ GZ3D.SdfParser.prototype.createGeom = function(geom, mat, parent)
         break;
       }
     }
+
+    that.scene.applyComposerSettingsToModel(visualObj);
   }
 };
 

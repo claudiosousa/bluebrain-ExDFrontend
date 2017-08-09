@@ -15,41 +15,18 @@
 
             <span> Sky Box </br></br> </span>
 
-            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
-        <input class="environment-settings-radio" type="radio"
-        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
-        ng-model="selectedSky" ng-value="0" ng-change="updateEnvSettings()">None</label>
+            <div class="environment-settings-environment-sky-box-aligner">
 
-            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
-        <input class="environment-settings-radio" type="radio"
-        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
-        ng-model="selectedSky" ng-value="1" ng-change="updateEnvSettings()">Gradient</label>
+                  <div ng-repeat="skyLabel in skyLabelList">
 
-            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
-        <input class="environment-settings-radio" type="radio"
-        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
-        ng-model="selectedSky" ng-value="2" ng-change="updateEnvSettings()">Soft Gradient</label>
+                <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
+                <input class="environment-settings-radio" type="radio" name="skybox"
+                ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
+                    ng-model="envMap.selectedEnvMap" ng-value="{{$index}}" ng-change="updateEnvSettings()">{{skyLabel}}</label>
 
-        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
-        <input class="environment-settings-radio" type="radio"
-        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
-        ng-model="selectedSky" ng-value="3" ng-change="updateEnvSettings()">Blur</label>
+                </div>
 
-
-        </br>
-        </br>
-
-        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
-        <input class="environment-settings-radio" type="radio"
-        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
-        ng-model="selectedSky" ng-value="4" ng-change="updateEnvSettings()">Dark Blur</label>
-
-        <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('skyBox')}">
-        <input class="environment-settings-radio" type="radio"
-        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('skyBox')"
-        ng-model="selectedSky" ng-value="5" ng-change="updateEnvSettings()">Sky</label>
-
-
+          </div>
 
         </div>
 
@@ -60,6 +37,33 @@
 
 <hr class="environment-settings-hr" >
 
+<div class="environment-settings-environment-wrapper">
+
+    <div class="environment-settings-option-subblock">
+
+        <div>
+
+            <span> Environment Map </br></br> </span>
+
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('dynamicEnvMap')}">
+        <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('dynamicEnvMap')"
+        ng-model="dynamicEnvMap" ng-value="0" ng-change="updateEnvSettings()">Use Sky Box</label>
+
+            <label ng-class="{'environment-settings-panel-disabled-label':!gz3d.scene.isSupportedByMasterSetting('dynamicEnvMap')}">
+        <input class="environment-settings-radio" type="radio"
+        ng-disabled="!gz3d.scene.isSupportedByMasterSetting('dynamicEnvMap')"
+        ng-model="dynamicEnvMap" ng-value="1" ng-change="updateEnvSettings()">Generate</label>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+
+<hr class="environment-settings-hr" >
 
 <div class="environment-settings-environment-wrapper">
 

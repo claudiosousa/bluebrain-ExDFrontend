@@ -319,7 +319,7 @@ describe('Services: environmentRenderingService', function () {
     environmentRenderingService.onSceneLoaded();
 
     expect(environmentRenderingService.assetLoadingSplashScreen).not.toBeDefined();
-    expect(gz3d.scene.showLightHelpers).toBe(true);
+    expect(gz3d.scene.showLightHelpers).toBe(false);
     expect(environmentRenderingService.deferredSceneInitialized.resolve).toHaveBeenCalled();
     expect(gz3d.setLightHelperVisibility).toHaveBeenCalled();
     expect(userNavigationService.init).toHaveBeenCalled();

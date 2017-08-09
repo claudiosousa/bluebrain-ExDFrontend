@@ -35,7 +35,12 @@
 
 .environment-settings-option-subblock-environment {
   margin:10px 10px 10px 10px;
-};
+}
+
+.environment-settings-environment-sky-box-aligner {
+  display: flex;
+  flex-wrap: wrap;
+}
 
 input[type="range"].esv-envsettings-bloom-slider {
   display: inline;

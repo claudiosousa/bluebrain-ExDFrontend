@@ -40,7 +40,11 @@
             //----------------------------------------------
             // Init the values
 
-            scope.selectedSky = 0;
+            scope.envMap = {
+              selectedEnvMap: 0,
+            };
+
+            scope.dynamicEnvMap = 0;
             scope.selectedSun = 0;
             scope.bloom = false;
             scope.bloomStrength = 0;
@@ -55,10 +59,30 @@
               'img/3denv/sky/softgradient/softgradient',
               'img/3denv/sky/blur/blur',
               'img/3denv/sky/skyblur/skyblur',
-              'img/3denv/sky/clouds/clouds'
+              'img/3denv/sky/clouds/clouds',
+              'img/3denv/sky/country/country',
+              'img/3denv/sky/forest/forest',
+              'img/3denv/sky/stonewall/Stonewall',
+              'img/3denv/sky/basketballcourt/BasketballCourt',
+              'img/3denv/sky/indoor/indoor',
               ];
 
-            scope.skyDefaultFogList = ['#b2b2b2', '#cddde9', '#97a2af', '#c7c0bc','#3c4146', '#d8ccb1'];
+            scope.skyLabelList = ['None',
+              'Gradient',
+              'Soft Gradient',
+              'Blur',
+              'Dark Blur',
+              'Sky',
+              'Country',
+              'Forest',
+              'Stone Wall',
+              'Basketball Court',
+              'Indoor',
+              ];
+
+
+            scope.skyDefaultFogList = ['#b2b2b2', '#cddde9', '#97a2af', '#c7c0bc','#3c4146', '#d8ccb1', '#675b33',
+                                       '#3b482d','#2c3a1f','#756e01','#777674'];
 
             scope.sunList = ['', 'SIMPLELENSFLARE'];
 
@@ -68,8 +92,9 @@
               {
                 var cs = gz3d.scene.composerSettings;
 
-                scope.selectedSky = scope.skyList.indexOf(cs.skyBox);
+                scope.envMap.selectedEnvMap = scope.skyList.indexOf(cs.skyBox);
                 scope.selectedSun = scope.sunList.indexOf(cs.sun);
+                scope.dynamicEnvMap = cs.dynamicEnvMap?1:0;
 
                 scope.bloom = cs.bloom;
                 scope.bloomThreshold = cs.bloomThreshold;
@@ -92,19 +117,28 @@
               scope.composerSettingsToUI();
             });
 
+            scope.envModeChanged = function ()
+            {
+                var cs = gz3d.scene.composerSettings;
+                scope.envMap.selectedEnvMap = scope.skyList.indexOf(cs.skyBox);
+            };
 
             //----------------------------------------------
             // UI to 3D scene
 
-            scope.updateEnvSettings = function (p)
+
+            scope.updateEnvSettings = function ()
             {
-              if (gz3d.scene.composerSettings.skyBox !== scope.skyList[scope.selectedSky])
+              var previousDynamicEnvMap = gz3d.scene.composerSettings.dynamicEnvMap;
+
+              if (gz3d.scene.composerSettings.skyBox !== scope.skyList[scope.envMap.selectedEnvMap])
               {
-                gz3d.scene.composerSettings.skyBox = scope.skyList[scope.selectedSky];
-                scope.fogColor = gz3d.scene.composerSettings.fogColor = scope.skyDefaultFogList[scope.selectedSky];
+                gz3d.scene.composerSettings.skyBox = scope.skyList[scope.envMap.selectedEnvMap];
+                scope.fogColor = gz3d.scene.composerSettings.fogColor = scope.skyDefaultFogList[scope.envMap.selectedEnvMap];
               }
 
               gz3d.scene.composerSettings.sun = scope.sunList[scope.selectedSun];
+              gz3d.scene.composerSettings.dynamicEnvMap = scope.dynamicEnvMap?true:false;
 
               gz3d.scene.composerSettings.bloom = scope.bloom;
               gz3d.scene.composerSettings.bloomStrength = scope.bloomStrength;
@@ -115,7 +149,7 @@
               gz3d.scene.composerSettings.fogDensity = scope.fogDensity;
               gz3d.scene.composerSettings.fogColor = scope.fogColor;
 
-              gz3d.scene.applyComposerSettings(undefined,undefined,true);
+              gz3d.scene.applyComposerSettings(undefined,previousDynamicEnvMap!==gz3d.scene.composerSettings.dynamicEnvMap,true);
             };
 
           }

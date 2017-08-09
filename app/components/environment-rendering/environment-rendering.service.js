@@ -246,8 +246,7 @@
             });
             nrpAnalytics.tickDurationEvent('Simulate');
 
-            // make light's helper geometry visible
-            gz3d.scene.showLightHelpers = true;
+            gz3d.scene.showLightHelpers = false;
             that.deferredSceneInitialized.resolve();
             gz3d.setLightHelperVisibility();
             userNavigationService.init();
