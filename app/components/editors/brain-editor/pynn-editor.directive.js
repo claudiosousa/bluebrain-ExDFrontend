@@ -24,15 +24,22 @@
 (function () {
   'use strict';
 
+  angular.module('exdFrontendApp.Constants')
+    .constant('PYNN_ERROR', {
+      COMPILE: 'Compile'
+    });
+
   angular.module('exdFrontendApp').directive('pynnEditor', [
     '$timeout',
     '$rootScope',
     'backendInterfaceService',
+    'pythonCodeHelper',
     'documentationURLs',
     'clbErrorDialog',
     'clbConfirm',
     'simulationInfo',
     'STATE',
+    'PYNN_ERROR',
     'stateService',
     'autoSaveService',
     'RESET_TYPE',
@@ -43,22 +50,24 @@
     'baseEventHandler',
     'editorToolbarService',
     function ($timeout,
-              $rootScope,
-              backendInterfaceService,
-              documentationURLs,
-              clbErrorDialog,
-              clbConfirm,
-              simulationInfo,
-              STATE,
-              stateService,
-              autoSaveService,
-              RESET_TYPE,
-              codeEditorsServices,
-              environmentService,
-              downloadFileService,
-              userContextService,
-              baseEventHandler,
-              editorToolbarService) {
+      $rootScope,
+      backendInterfaceService,
+      pythonCodeHelper,
+      documentationURLs,
+      clbErrorDialog,
+      clbConfirm,
+      simulationInfo,
+      STATE,
+      PYNN_ERROR,
+      stateService,
+      autoSaveService,
+      RESET_TYPE,
+      codeEditorsServices,
+      environmentService,
+      downloadFileService,
+      userContextService,
+      baseEventHandler,
+      editorToolbarService) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
@@ -73,11 +82,14 @@
           scope.localDirty = false;
           scope.isSavingToCollab = false;
 
+          var ScriptObject = pythonCodeHelper.ScriptObject;
+          scope.pynnScript = new ScriptObject(0, 'empty');
+
           scope.isMultipleBrains = function () {
             return simulationInfo.experimentDetails.brainProcesses > 1;
           };
 
-          scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), {readOnly: scope.isMultipleBrains() && 'nocursor'});
+          scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), { readOnly: scope.isMultipleBrains() && 'nocursor' });
           scope.editorOptions = codeEditorsServices.ownerOnlyOptions(scope.editorOptions);
 
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
@@ -102,16 +114,11 @@
           // * env poses reset
           scope.refresh = function () {
             var editor = codeEditorsServices.getEditorChild('codeEditor', element[0]);
-            if (scope.collabDirty || scope.localDirty) {
-              $timeout(function () {
-                codeEditorsServices.refreshEditor(editor);
-              }, 100);
-              return;
-            }
+            codeEditorsServices.refreshEditor(editor);
             scope.loading = true;
             backendInterfaceService.getBrain(function (response) {
               if (response.brain_type === "py") {
-                scope.pynnScript = response.data;
+                scope.pynnScript.code = response.data;
                 scope.populations = scope.preprocessPopulations(response.additional_populations);
                 codeEditorsServices.refreshEditor(editor);
                 scope.loading = false;
@@ -120,7 +127,7 @@
                   scope.searchToken("si");
                 }, 100);
               } else {
-                scope.pynnScript = undefined;
+                scope.pynnScript.code = 'empty';
                 scope.populations = undefined;
                 codeEditorsServices.refreshEditor(editor);
               }
@@ -139,12 +146,12 @@
             () => {
               // refresh on resize
               scope.unbindWatcherResize = scope.$watch(() => {
-                  if (element[0].offsetParent) {
-                    return [element[0].offsetParent.offsetWidth, element[0].offsetParent.offsetHeight].join('x');
-                  } else {
-                    return '';
-                  }
-                },
+                if (element[0].offsetParent) {
+                  return [element[0].offsetParent.offsetWidth, element[0].offsetParent.offsetHeight].join('x');
+                } else {
+                  return '';
+                }
+              },
                 () => {
                   scope.refresh();
                 }
@@ -254,7 +261,7 @@
               STATE.PAUSED,
               function () {
                 backendInterfaceService.setBrain(
-                  scope.pynnScript, scope.stringsToLists(populations), 'py', 'text', change_population,
+                  scope.pynnScript.code, scope.stringsToLists(populations), 'py', 'text', change_population,
                   function () { // Success callback
                     scope.loading = false;
                     codeEditorsServices.getEditor("codeEditor").markClean();
@@ -285,7 +292,6 @@
                         result.data.error_line,
                         result.data.error_column
                       );
-                      clbErrorDialog.open({type: 'Error.', message: result.data.error_message});
                     }
                   });
               });
@@ -295,7 +301,7 @@
             scope.isSavingToCollab = true;
             backendInterfaceService.saveBrain(
               simulationInfo.contextID,
-              scope.pynnScript,
+              scope.pynnScript.code,
               scope.stringsToLists(scope.populations),
               function () { // Success callback
                 scope.isSavingToCollab = false;
@@ -313,9 +319,9 @@
           };
 
           scope.searchToken = function (name) {
-            var lines = scope.pynnScript.split('\n');
+            var lines = scope.pynnScript.code.split('\n');
             var l = 0;
-            var ret = {line: 0, ch: 0};
+            var ret = { line: 0, ch: 0 };
             var found = false;
 
             lines.forEach(function (line) {
@@ -326,9 +332,9 @@
               while (c !== -1 && !found) {
                 c = line.indexOf(name, c + 1);
                 if (c !== -1) {
-                  var token = codeEditorsServices.getEditor("codeEditor").getTokenAt({line: l, ch: c + 1});
+                  var token = codeEditorsServices.getEditor("codeEditor").getTokenAt({ line: l, ch: c + 1 });
                   if (token.type !== "string" && token.string === name) {
-                    ret = {line: l, ch: c};
+                    ret = { line: l, ch: c };
                     found = true;
                   }
                 }
@@ -350,10 +356,10 @@
           scope.onBrainChange = function () {
             scope.collabDirty = environmentService.isPrivateExperiment();
             scope.localDirty = true;
-            autoSaveService.setDirty(DIRTY_TYPE, [scope.pynnScript, scope.populations]);
+            autoSaveService.setDirty(DIRTY_TYPE, scope.pynnScript.code);
           };
 
-          scope.$watch('pynnScript', function (after, before) {
+          scope.$watch('pynnScript.code', function (after, before) {
             if (before) scope.onBrainChange();
           });
           scope.$watchCollection('populations', function (after, before) {
@@ -362,13 +368,13 @@
 
           scope.addList = function () {
             var regex = generateRegexPattern(populationNames(), scope.populations.length);
-            scope.populations.push({name: scope.generatePopulationName(), list: '0, 1, 2', regex: regex});
+            scope.populations.push({ name: scope.generatePopulationName(), list: '0, 1, 2', regex: regex });
             scope.updateRegexPatterns();
           };
 
           scope.addSlice = function () {
             var regex = generateRegexPattern(populationNames(), scope.populations.length);
-            scope.populations.push({name: scope.generatePopulationName(), from: 0, to: 1, step: 1, regex: regex});
+            scope.populations.push({ name: scope.generatePopulationName(), from: 0, to: 1, step: 1, regex: regex });
             scope.updateRegexPatterns();
           };
 
@@ -383,6 +389,7 @@
           };
 
           scope.parseName = function (error) {
+
             if (error.search("is not defined") > 0) {
               var start = error.search("name '");
               var end = error.search("' is not defined");
@@ -420,10 +427,10 @@
             var htmlNode = document.createElement('pre');
             var text = document.createTextNode(err);
             htmlNode.appendChild(text);
-
+            var compileError = { message: error_message, errorType: PYNN_ERROR.COMPILE };
+            scope.pynnScript.error[PYNN_ERROR.COMPILE] = compileError;
             scope.lineHandle = editor.addLineClass(line, 'background', 'alert-danger');
-            scope.lineWidget = editor.addLineWidget(line, htmlNode, true);
-            editor.scrollIntoView({line: line, ch: 1});
+            editor.scrollIntoView({ line: line, ch: 1 });
           };
 
           scope.clearError = function () {
@@ -433,6 +440,7 @@
             if (scope.lineWidget) {
               scope.lineWidget.clear();
             }
+            delete scope.pynnScript.error[PYNN_ERROR.COMPILE];
           };
 
           var docs = documentationURLs.getDocumentationURLs();
@@ -440,7 +448,7 @@
           scope.platformDocumentationURL = docs.platformDocumentationURL;
 
           userContextService.isOwner() && autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved, applyChanges) {
-            scope.pynnScript = autoSaved[0];
+            scope.pynnScript.code = autoSaved[0];
             scope.populations = autoSaved[1];
             scope.collabDirty = true;
             if (applyChanges)
@@ -448,7 +456,7 @@
           });
 
           scope.download = function () {
-            var href = URL.createObjectURL(new Blob([scope.pynnScript], {type: "plain/text", endings: 'native'}));
+            var href = URL.createObjectURL(new Blob([scope.pynnScript.code], { type: "plain/text", endings: 'native' }));
             downloadFileService.downloadFile(href, 'pynnBrain.py');
           };
 
@@ -458,7 +466,7 @@
 
             var textReader = new FileReader();
             textReader.onload = function (e) {
-              scope.pynnScript = e.target.result;
+              scope.pynnScript.code = e.target.result;
               scope.apply(0);
             };
             textReader.readAsText(file);

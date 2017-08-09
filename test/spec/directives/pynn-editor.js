@@ -31,7 +31,8 @@ describe('Directive: pynnEditor', function () {
 
   var autoSaveServiceMock = {
     registerFoundAutoSavedCallback: jasmine.createSpy('registerFoundAutoSavedCallback'),
-    clearDirty: jasmine.createSpy('clearDirty')
+    clearDirty: jasmine.createSpy('clearDirty'),
+    setDirty: jasmine.createSpy('setDirty')
   };
 
   var documentationURLsMock =
@@ -189,7 +190,7 @@ describe('Directive: pynnEditor', function () {
       backendInterfaceService.getBrain.and.callFake(function(f) { f(data); });
       isolateScope.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
-      expect(isolateScope.pynnScript).toEqual(expected_script);
+      expect(isolateScope.pynnScript.code).toEqual(expected_script);
       console.log(JSON.stringify(isolateScope.populations, null, '\t'));
       console.log(JSON.stringify(expected_populations, null, '\t'));
       expect(isolateScope.populations).toEqual(expected_populations);
@@ -200,15 +201,15 @@ describe('Directive: pynnEditor', function () {
       backendInterfaceService.getBrain.and.callFake(function(f) { f(data2); });
       isolateScope.refresh();
       expect(backendInterfaceService.getBrain).toHaveBeenCalled();
-      expect(isolateScope.pynnScript).toBeUndefined();
+      expect(isolateScope.pynnScript.code).toBe('empty');
     });
 
     it('should apply changes made on the pynn script and the brain population properly', function () {
-      isolateScope.pynnScript = expected_script;
+      isolateScope.pynnScript.code = expected_script;
       isolateScope.populations = [{name: 'index', list: '1'}];
       isolateScope.apply(0);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
-        isolateScope.pynnScript,
+        isolateScope.pynnScript.code,
         {index: [1]},
         'py',
         'text',
@@ -222,11 +223,11 @@ describe('Directive: pynnEditor', function () {
     });
 
     it('should set brain with change_population parameter', function () {
-      isolateScope.pynnScript = expected_script;
+      isolateScope.pynnScript.code = expected_script;
       isolateScope.populations = [{name: 'index', list: '1'}];
       isolateScope.apply(1);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
-        isolateScope.pynnScript,
+        isolateScope.pynnScript.code,
         {index: [1]},
         'py',
         'text',
@@ -246,13 +247,13 @@ describe('Directive: pynnEditor', function () {
     });
 
     it('should save the pynn script and the neuron populations properly', function () {
-      isolateScope.pynnScript = '# some dummy pynn script';
+      isolateScope.pynnScript.code = '# some dummy pynn script';
       isolateScope.populations = {'dummy_population': {list: ' 1, 2, 3 '}};
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.saveIntoCollabStorage();
       expect(backendInterfaceService.saveBrain).toHaveBeenCalledWith(
         simulationInfoMock.contextID,
-        isolateScope.pynnScript,
+        isolateScope.pynnScript.code,
         {'dummy_population': [1, 2, 3]},
         jasmine.any(Function),
         jasmine.any(Function)
@@ -287,7 +288,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply();
       expect(backendInterfaceService.setBrain).toHaveBeenCalled();
       expect(isolateScope.loading).toBe(true);
-      isolateScope.pynnScript = 'some pynn script';
+      isolateScope.pynnScript.code = 'some pynn script';
       backendInterfaceService.setBrain.calls.argsFor(0)[6](errorMock2); // error callback
       expect(isolateScope.loading).toBe(false);
     });
@@ -327,7 +328,7 @@ describe('Directive: pynnEditor', function () {
     });
 
     it('should search a token', function() {
-      isolateScope.pynnScript = 'search a\ntoken token\nanother line';
+      isolateScope.pynnScript.code = 'search a\ntoken token\nanother line';
       var pos = isolateScope.searchToken('token');
       expect(pos.line).toBe(1);
       expect(pos.ch).toBe(0);
@@ -477,15 +478,15 @@ describe('Directive: pynnEditor', function () {
 
     it('should set pyNN script & population when auto saved data found', function() {
       isolateScope.agreeAction = jasmine.createSpy('agreeAction');
-      expect(isolateScope.collabDirty).toBe(false);
+      expect(isolateScope.collabDirty).not.toBeDefined();
       expect(autoSaveServiceMock.registerFoundAutoSavedCallback.calls.count()).toBe(1);
 
-      var autosavedData = ['pynnScript', 'population'];
+      var autosavedData = ['pynnScript.code', 'population'];
 
       autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, false);
       expect(isolateScope.agreeAction).not.toHaveBeenCalled();
       expect(isolateScope.collabDirty).toBe(true);
-      expect(isolateScope.pynnScript).toBe(autosavedData[0]);
+      expect(isolateScope.pynnScript.code).toBe(autosavedData[0]);
       expect(isolateScope.populations).toBe(autosavedData[1]);
 
       autoSaveServiceMock.registerFoundAutoSavedCallback.calls.mostRecent().args[1](autosavedData, true);
@@ -506,7 +507,7 @@ describe('Directive: pynnEditor', function () {
       var new_pynn_script = 'new_pynn_script';
       isolateScope.uploadFile(new Blob([new_pynn_script]));
       setTimeout(function(){
-        expect(isolateScope.pynnScript).toBe(new_pynn_script);
+        expect(isolateScope.pynnScript.code).toBe(new_pynn_script);
         done();
       });
     });
