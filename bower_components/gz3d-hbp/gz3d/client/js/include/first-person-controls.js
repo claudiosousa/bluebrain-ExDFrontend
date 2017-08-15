@@ -38,8 +38,10 @@ THREE.FirstPersonControls = function(userView)
   this.azimuthOnMouseDown = 0.0;
   this.zenithOnMouseDown = 0.0;
   this.speedUpFactor = 3.0;
+  this.speedDownFactor = 0.1;
 
   this.shiftHold = false;
+  this.altHold = false;
   this.moveForward = false;
   this.moveBackward = false;
   this.moveLeft = false;
@@ -225,6 +227,7 @@ THREE.FirstPersonControls = function(userView)
       return;
     }
     that.shiftHold = event.shiftKey;
+    that.altHold = event.altKey;
     switch(event.code) {
 
       case "KeyW":
@@ -268,6 +271,7 @@ THREE.FirstPersonControls = function(userView)
       return;
     }
     that.shiftHold = event.shiftKey;
+    that.altHold = event.altKey;
     switch(event.code) {
 
       case "KeyW":
@@ -342,6 +346,10 @@ THREE.FirstPersonControls = function(userView)
       speed = delta * this.movementSpeed;
       if (this.shiftHold) {
         speed = speed * this.speedUpFactor;
+      }
+      else if (this.altHold)
+      {
+        speed = speed * this.speedDownFactor;
       }
 
       if (this.moveForward) {
