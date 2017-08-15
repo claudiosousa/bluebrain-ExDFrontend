@@ -12472,8 +12472,8 @@ GZ3D.SpawnModel.prototype.attachEventListeners = function()
   this.scene.getDomElement().addEventListener('mousedown', that.mouseDown, false);
   this.scene.getDomElement().addEventListener('mouseup', that.mouseUp, false);
   this.scene.getDomElement().addEventListener('mousemove', that.mouseMove, false);
-  this.scene.getDomElement().addEventListener('keydown', that.keyDown, false);
-  this.scene.getDomElement().addEventListener('keyup', that.keyUp, false);
+  window.addEventListener('keydown', that.keyDown, false);
+  window.addEventListener('keyup', that.keyUp, false);
 
   this.scene.getDomElement().addEventListener('touchmove', that.touchMove, false);
   this.scene.getDomElement().addEventListener('touchend', that.touchEnd, false);
@@ -12489,8 +12489,8 @@ GZ3D.SpawnModel.prototype.detachEventListeners = function()
   this.scene.getDomElement().removeEventListener('mousedown', that.mouseDown, false);
   this.scene.getDomElement().removeEventListener('mouseup', that.mouseUp, false);
   this.scene.getDomElement().removeEventListener('mousemove', that.mouseMove, false);
-  this.scene.getDomElement().removeEventListener('keydown', that.keyDown, false);
-  this.scene.getDomElement().removeEventListener('keyup', that.keyUp, false);
+  window.removeEventListener('keydown', that.keyDown, false);
+  window.removeEventListener('keyup', that.keyUp, false);
 };
 
 /**
