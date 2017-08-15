@@ -239,18 +239,21 @@
           };
 
           this.onSceneLoaded = function () {
-            delete this.assetLoadingSplashScreen;
+            if (that.sceneLoading)
+            {
+              delete this.assetLoadingSplashScreen;
 
-            nrpAnalytics.durationEventTrack('Browser-initialization', {
-              category: 'Simulation'
-            });
-            nrpAnalytics.tickDurationEvent('Simulate');
+              nrpAnalytics.durationEventTrack('Browser-initialization', {
+                category: 'Simulation'
+              });
+              nrpAnalytics.tickDurationEvent('Simulate');
 
-            gz3d.scene.showLightHelpers = false;
-            that.deferredSceneInitialized.resolve();
-            gz3d.setLightHelperVisibility();
-            userNavigationService.init();
-            that.sceneLoading = false;
+              gz3d.scene.showLightHelpers = false;
+              that.deferredSceneInitialized.resolve();
+              gz3d.setLightHelperVisibility();
+              userNavigationService.init();
+              that.sceneLoading = false;
+            }
           };
 
           // Init composer settings

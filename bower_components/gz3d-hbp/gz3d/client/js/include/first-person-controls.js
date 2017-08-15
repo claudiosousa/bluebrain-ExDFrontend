@@ -491,19 +491,22 @@ THREE.FirstPersonControls = function(userView)
   };
 
   this.detachEventListeners = function() {
-    this.domElementPointerBindings.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-    this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
-    this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
-    this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
-    this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
-    this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
-    this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
+    if (this.domElementPointerBindings)
+    {
+      this.domElementPointerBindings.removeEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
+      this.domElementPointerBindings.removeEventListener('mousedown', this.onMouseDown, false);
+      this.domElementPointerBindings.removeEventListener('mousemove', this.onMouseMove, false);
+      this.domElementPointerBindings.removeEventListener('mouseup', this.onMouseUp, false);
+      this.domElementPointerBindings.removeEventListener('touchstart', this.onTouchStart, false);
+      this.domElementPointerBindings.removeEventListener('touchmove', this.onTouchMove, false);
+      this.domElementPointerBindings.removeEventListener('touchend', this.onTouchEnd, false);
 
-    this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
-    this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
+      this.domElementKeyboardBindings.removeEventListener('keydown', this.onKeyDown, false);
+      this.domElementKeyboardBindings.removeEventListener('keyup', this.onKeyUp, false);
 
-    this.domElementPointerBindings.removeEventListener('mousewheel', this.onMouseWheel, false);
-    this.domElementPointerBindings.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
+      this.domElementPointerBindings.removeEventListener('mousewheel', this.onMouseWheel, false);
+      this.domElementPointerBindings.removeEventListener('DOMMouseScroll', this.onMouseWheel, false);
+    }
   };
 
 };
