@@ -31,8 +31,11 @@ THREE.LookatRobotControls = function (userView, robot)
   this.startTouchMid = new THREE.Vector2();
 
   this.mouseWheelSensitivity = 0.25;
+  this.speedUpFactor = 3.0;
+  this.speedDownFactor = 0.1;
 
   this.shiftHold = false;
+  this.altHold = false;
   this.moveForward = false;
   this.moveBackward = false;
   this.moveLeft = false;
@@ -151,6 +154,7 @@ THREE.LookatRobotControls = function (userView, robot)
       return;
     }
     that.shiftHold = event.shiftKey;
+    that.altHold = event.altKey;
     switch (event.code)
     {
       case "PageUp":
@@ -196,6 +200,7 @@ THREE.LookatRobotControls = function (userView, robot)
       return;
     }
     that.shiftHold = event.shiftKey;
+    that.altHold = event.altKey;
     switch (event.code)
     {
 
@@ -242,6 +247,14 @@ THREE.LookatRobotControls = function (userView, robot)
       elapsed = 0;
     }
 
+    if (this.shiftHold)
+    {
+      elapsed *= this.speedUpFactor;
+    }
+    else if (this.altHold)
+    {
+      elapsed *= this.speedDownFactor;
+    }
 
     if (!this.enabled)
     {
