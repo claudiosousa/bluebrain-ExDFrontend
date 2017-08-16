@@ -73,7 +73,13 @@
     </button>
     <hr>
     <div id="codeEditor" ui-codemirror ui-codemirror-opts="editorOptions"
-         ng-model="pynnScript">
+         ng-model="pynnScript.code"
+         ui-refresh="pynnScript.code">
+    </div>
+    <div ng-repeat="(type, error) in pynnScript.error">
+     <div class="alert alert-danger" role="alert">
+      {{error.message}} <b>({{type}})</b>
+     </div>
     </div>
     <hr>
     <div  style="padding-bottom: 30px;">
