@@ -2047,19 +2047,47 @@ GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
 };
 
 /**
- * Enable/disable env. map
+ * Prepare cube map render
  *
  */
 
-GZ3D.Composer.prototype.setCubeMapEnvMapEnabled = function (enabled)
+GZ3D.Composer.prototype.prepareCubeMapEnvMapRender = function (done)
 {
     var that = this;
+    var i = 0;
+
+    if (!done)
+    {
+        this.cubeMapRenderHidden = [];
+    }
+    else
+    {
+        for (i = 0; i < this.cubeMapRenderHidden.length; i++)
+        {
+            this.cubeMapRenderHidden[i].visible = true;
+        }
+
+        this.cubeMapRenderHidden = undefined;
+    }
+
+
     this.scene.traverse(function (node)
     {
-        if (node.material && node.pbrMeshMaterial)
+        if (node.material)
         {
-            node.pbrMeshMaterial.envMap = enabled ? that.cubeCamera.renderTarget.texture : null;
-            node.pbrMeshMaterial.needsUpdate = true;
+            if (node.pbrMeshMaterial)
+            {
+                node.pbrMeshMaterial.envMap = done ? that.cubeCamera.renderTarget.texture : null;
+                node.pbrMeshMaterial.needsUpdate = true;
+            }
+            else if (!done)
+            {
+                if (node.visible)
+                {
+                    node.visible = false;
+                    that.cubeMapRenderHidden.push(node);
+                }
+            }
         }
     });
 };
@@ -2071,6 +2099,7 @@ GZ3D.Composer.prototype.setCubeMapEnvMapEnabled = function (enabled)
 
 GZ3D.Composer.prototype.render = function (view)
 {
+    var that = this;
     var cs = this.gz3dScene.normalizedComposerSettings;
 
     if (view.composer === undefined)    // No ThreeJS composer for this view, we need to initialize it.
@@ -2091,14 +2120,14 @@ GZ3D.Composer.prototype.render = function (view)
         }
     }
 
-    if (!this.loadingPBR && this.pbrMaterial && !this.loadingSkyBox)
+    if (!this.loadingPBR && this.pbrMaterial && !this.loadingSkyBox && cs.dynamicEnvMap)
     {
         if (this.cubeMapNeedsUpdate)
         {
             this.cubeMapNeedsUpdate = false;
-            this.setCubeMapEnvMapEnabled(false);
+            this.prepareCubeMapEnvMapRender(false);
             this.cubeCamera.updateCubeMap(view.renderer, this.scene);
-            this.setCubeMapEnvMapEnabled(true);
+            this.prepareCubeMapEnvMapRender(true);
         }
     }
 
@@ -7801,6 +7830,8 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
 
     scope.userView.container.removeEventListener('mousemove', onPointerMove, false);
     scope.userView.container.removeEventListener('mouseup', onMouseUp, false);
+
+    scope.gz3dScene.updateDynamicEnvMap();
   }
 
   function onMouseUp(event)
@@ -9040,6 +9071,7 @@ GZ3D.Scene.prototype.endNaturalManipulation = function(event)
   {
     this.naturalAutoAlignMode.finish();
     this.naturalAutoAlignMode = null;
+    this.updateDynamicEnvMap();
   }
 };
 
@@ -9421,6 +9453,7 @@ GZ3D.Scene.prototype.add = function(model)
 {
   model.viewAs = 'normal';
   this.scene.add(model);
+  this.updateDynamicEnvMap();
 };
 
 /**
@@ -9430,6 +9463,7 @@ GZ3D.Scene.prototype.add = function(model)
 GZ3D.Scene.prototype.remove = function(model)
 {
   this.scene.remove(model);
+  this.updateDynamicEnvMap();
 };
 
 /**
@@ -10534,6 +10568,8 @@ GZ3D.Scene.prototype.setMaterial = function(obj, material)
             THREE.ImageUtils.loadTexture(material.normalMap);
       }
     }
+
+    this.updateDynamicEnvMap();
   }
 };
 
@@ -11233,6 +11269,16 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
 GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRUpdate,shadowReset)
 {
     this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate,shadowReset);
+    this.needsImmediateUpdate = true;
+  };
+
+/**
+ * Force an update of the dynamic environment map
+*/
+
+  GZ3D.Scene.prototype.updateDynamicEnvMap = function()
+  {
+    this.composer.cubeMapNeedsUpdate = true;
     this.needsImmediateUpdate = true;
 };
 
@@ -12353,7 +12399,7 @@ GZ3D.SpawnModel.prototype.finish = function ()
   this.active = false;
 
   this.autoAlignModel.finish();
-
+  this.scene.updateDynamicEnvMap();
 };
 
 /**
