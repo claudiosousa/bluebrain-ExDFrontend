@@ -37,16 +37,20 @@
       this.demoExperiments =
         [
           {
-            image: "img/demo/thumbnails/ExDBraitenbergHuskySBC_Anim.gif"
+            image: "img/demo/thumbnails/ExDBraitenbergHuskySBC_Anim.gif",
+            id: 0
           },
           {
-            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif"
+            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif",
+            id: 1
           },
           {
-            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif"
+            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif",
+            id: 2
           },
           {
-            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif"
+            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif",
+            id: 3
           }
         ];
 
