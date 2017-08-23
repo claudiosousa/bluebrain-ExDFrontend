@@ -182,6 +182,17 @@
           minWidth: 700,
           minHeight: 300
         }
+      },
+      TRANSFER_FUNCTION_EDITOR: {
+        name: 'Transfer Function Editor',
+        directive:  'transfer-function-editor',
+        allowMultipleViews: false, // default true
+        overlayDefaultSize: {
+          width: 800,
+          height: 500,
+          minWidth: 700,
+          minHeight: 300
+        }
       }
     });
 

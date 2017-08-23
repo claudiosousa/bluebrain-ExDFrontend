@@ -47,12 +47,9 @@
       graphicalEditor: 6
     };
 
-    $scope.activeTabIndex = $scope.isOwner? $scope.tabindex.environment :$scope.tabindex.transferfunction;
+    $scope.activeTabIndex = $scope.isOwner? $scope.tabindex.environment : $scope.tabindex.transferfunction;
 
     $scope.controls = {};
-    $scope.controls.transferfunction = {};
-    $scope.controls.statemachine = {};
-    //$scope.controls.pynneditor = {};
     $scope.controls.graphicalEditor = {};
 
     $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
@@ -79,9 +76,7 @@
 
     $scope.refresh = function() {
       if ($scope.panelIsOpen) {
-        if (isTabSelected($scope.tabindex.transferfunction))
-          $scope.controls.transferfunction.refresh();
-        else if (isTabSelected($scope.tabindex.graphicalEditor))
+        if (isTabSelected($scope.tabindex.graphicalEditor))
           $scope.controls.graphicalEditor.refresh();
       }
     };
@@ -133,12 +128,6 @@
       // the codemirror elements inside the transfer function tab of the editor panel
       // do not work well with resizing so deselect them on resize and refresh on focus
       document.activeElement.blur();
-
-      if (isTabSelected($scope.tabindex.transferfunction))
-        $scope.controls.transferfunction.refresh();
-      //else if (isTabSelected($scope.tabindex.pynneditor))
-        //$scope.controls.pynneditor.refresh();
-      // graphical editor is not refreshed
     };
 
     $scope.suppressKeyPress = function(event) {

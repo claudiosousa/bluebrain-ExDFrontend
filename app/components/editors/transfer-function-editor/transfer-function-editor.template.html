@@ -1,32 +1,34 @@
-<!-- build:css(.tmp) styles/esv/transfer-function-editor.css -->
+<!-- build:css(.tmp) components/editors/transfer-function-editor/transfer-function-editor.style.css -->
 <link rel="stylesheet" href="components/editors/transfer-function-editor/transfer-function-editor.style.css" />
 <!-- endbuild -->
-<h3>Transfer Functions Editor</h3>
-<p>The transfer functions describe how spikes from the neuronal simulation are to be translated into commands for a robot and
-  how the sensor data from the robot should be translated back to spikes. Help on transfer functions could be obtained
-  <a target="_blank" href="{{platformDocumentationURL}}/nrp/user_manual/tutorials/transfer_function/index.html">here</a>.
-  Further implementation details on the underlying Transfer Functions Framework and the Closed Loop Engine can be obtained
-  <a target="_blank" href="{{cleDocumentationURL}}/architecture/transfer_functions.html">here</a>.</p>
-<div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable transfer function edition.</div>
-<!-- TODO: remove when we support distributed TF updates/deletion, also see ng-show conditions below -->
-<strong style="color: red;" ng-show="isMultipleBrains()">Editing Transfer Functions Is Currently Disabled for Multiprocess Brain Simulations</strong>
-<div ng-hide="isMultipleBrains()">
-  <hr style="margin-bottom: 10px;">
-  <h4 class="collapsable-title" ng-click="togglePopulations()">
-    <div class="collapsearrow" ng-class="showPopulations?'expanded':'collapsed'"></div>
-    <span>Populations</span>
-  </h4>
-  <div ng-show="showPopulations" class="animate-appearance">
-    <table class="populations-table">
-      <thead>
+
+<div class="transfer-function-editor-wrapper">
+  <h3>Transfer Functions Editor</h3>
+  <p>The transfer functions describe how spikes from the neuronal simulation are to be translated into commands for a robot and
+    how the sensor data from the robot should be translated back to spikes. Help on transfer functions could be obtained
+    <a target="_blank" href="{{platformDocumentationURL}}/nrp/user_manual/tutorials/transfer_function/index.html">here</a>.
+    Further implementation details on the underlying Transfer Functions Framework and the Closed Loop Engine can be obtained
+    <a target="_blank" href="{{cleDocumentationURL}}/architecture/transfer_functions.html">here</a>.</p>
+  <div ng-show="(stateService.currentState === STATE.INITIALIZED)" class="alert alert-warning" role="alert">The simulation is in initialized state. It has to be started (or started and paused) to enable transfer function edition.</div>
+  <!-- TODO: remove when we support distributed TF updates/deletion, also see ng-show conditions below -->
+  <strong style="color: red;" ng-show="isMultipleBrains()">Editing Transfer Functions Is Currently Disabled for Multiprocess Brain Simulations</strong>
+  <div ng-hide="isMultipleBrains()">
+    <hr style="margin-bottom: 10px;">
+    <h4 class="collapsable-title" ng-click="togglePopulations()">
+      <div class="collapsearrow" ng-class="showPopulations?'expanded':'collapsed'"></div>
+      <span>Populations</span>
+    </h4>
+    <div ng-show="showPopulations" class="animate-appearance">
+      <table class="populations-table">
+        <thead>
         <tr>
           <th>Name</th>
           <th>Type</th>
-        <th>Indices</th>
+          <th>Indices</th>
           <th>Parameters</th>
         </tr>
-      </thead>
-      <tbody>
+        </thead>
+        <tbody>
         <tr ng-repeat="pop in populations" ng-click="togglePopulationParameters(pop)">
           <td>{{pop.name}}</td>
           <td>{{pop.neuron_model}}</td>
@@ -36,60 +38,61 @@
             <span ng-hide="pop.showDetails" class="collapsed-text">...</span>
             <table ng-show="pop.showDetails" class="population-parameters-table">
               <thead>
-                <tr>
-                  <th>Parameter</th>
-                  <th>Value</th>
-                </tr>
+              <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+              </tr>
               </thead>
               <tbody>
-                <tr ng-repeat="par in pop.parameters">
-                  <td>{{par.parameterName}}</td>
-                  <td>{{par.value}}</td>
-                </tr>
+              <tr ng-repeat="par in pop.parameters">
+                <td>{{par.parameterName}}</td>
+                <td>{{par.value}}</td>
+              </tr>
               </tbody>
             </table>
           </td>
         </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-<hr style="margin-top: 10px;margin-bottom: 30px">
-<h4>
-  Transfer functions
-</h4>
-<transfer-function-editor-buttons ng-hide="isMultipleBrains()"></transfer-function-editor-buttons>
-<div ng-repeat="transferFunction in transferFunctions">
-  <hr>
-  <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
-  <div ng-attr-id="transfer-function-{{transferFunction.id}}"
-       ui-codemirror ui-codemirror-opts="editorOptions"
-       ng-change="onTransferFunctionChange(transferFunction)"
-       ng-model="transferFunction.code">
-  </div>
-  <div ng-repeat="(type, error) in transferFunction.error">
-    <div class="alert alert-danger" role="alert">
-      {{error.message}} <b>({{type}})</b>
+        </tbody>
+      </table>
     </div>
   </div>
+  <hr style="margin-top: 10px;margin-bottom: 30px">
+  <h4>
+    Transfer functions
+  </h4>
+  <transfer-function-editor-buttons ng-hide="isMultipleBrains()"></transfer-function-editor-buttons>
+  <div ng-repeat="transferFunction in transferFunctions">
+    <hr>
+    <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
+    <div ng-attr-id="transfer-function-{{transferFunction.id}}"
+         ui-codemirror ui-codemirror-opts="editorOptions"
+         ng-change="onTransferFunctionChange(transferFunction)"
+         ng-model="transferFunction.code">
+    </div>
+    <div ng-repeat="(type, error) in transferFunction.error">
+      <div class="alert alert-danger" role="alert">
+        {{error.message}} <b>({{type}})</b>
+      </div>
+    </div>
 
-  <div ng-hide="isMultipleBrains()">
-    <button type="button" class="btn btn-default btn-md"
-      owner-only
-      ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
-      ng-click="update(transferFunction, false)"
-      v-busy="transferFunction.dirty && stateService.statePending"
-      v-busy-label="Applying changes"
-      v-pressable>
-      <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
-    </button>
-    <button type="button" class="btn btn-default btn-md"
-      owner-only
-      ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
-      ng-click="delete(transferFunction)">
-      <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
-    </button>
+    <div ng-hide="isMultipleBrains()">
+      <button type="button" class="btn btn-default btn-md"
+              owner-only
+              ng-disabled="!transferFunction.dirty || (stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+              ng-click="update(transferFunction, false)"
+              v-busy="transferFunction.dirty && stateService.statePending"
+              v-busy-label="Applying changes"
+              v-pressable>
+        <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
+      </button>
+      <button type="button" class="btn btn-default btn-md"
+              owner-only
+              ng-disabled="(stateService.currentState === STATE.INITIALIZED) || stateService.statePending"
+              ng-click="delete(transferFunction)">
+        <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
+      </button>
     </div>
+  </div>
+  <hr>
+  <transfer-function-editor-buttons ng-show="transferFunctions[0] && !isMultipleBrains()" append-at-end="true" style="padding-bottom: 30px;"></transfer-function-editor-buttons>
 </div>
-<hr>
-<transfer-function-editor-buttons ng-show="transferFunctions[0] && !isMultipleBrains()" append-at-end="true" style="padding-bottom: 30px;"></transfer-function-editor-buttons>

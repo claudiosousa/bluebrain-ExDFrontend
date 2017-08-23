@@ -113,7 +113,7 @@ describe('Directive: transferFunctionEditor', function () {
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
     $scope.control = {};
-    element = $compile('<transfer-function-editor control="control"/>')($scope);
+    element = $compile('<transfer-function-editor />')($scope);
     $scope.$digest();
     isolateScope = element.isolateScope();
     transferFunctions = isolateScope.transferFunctions;
@@ -122,19 +122,20 @@ describe('Directive: transferFunctionEditor', function () {
   it('should request transferFunctions on initialization', function () {
     expect(isolateScope.transferFunctions).toEqual([]);
     expect(isolateScope.ERROR).toBeDefined();
+    $timeout.flush();
     expect(backendInterfaceService.getTransferFunctions).toHaveBeenCalled();
     expect(isolateScope.cleDocumentationURL).toEqual('cleDocumentationURL');
   });
 
   it('should init the populations variable', function () {
-    $scope.control.refresh();
+    isolateScope.refresh();
     expect(isolateScope.populations).toEqual([]);
     expect(isolateScope.showPopulations).toBe(false);
   });
 
   it('should load the populations when showPopulations is True', function () {
     isolateScope.showPopulations = true;
-    $scope.control.refresh();
+    isolateScope.refresh();
     $scope.$digest();
     expect(isolateScope.populations).toEqual([]);
     expect(isolateScope.showPopulations).toBe(true);
@@ -190,12 +191,12 @@ describe('Directive: transferFunctionEditor', function () {
   });
 
    it('should refresh code editors on refresh if dirty', function() {
-    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(1);
+    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(0);
     isolateScope.collabDirty = true;
     isolateScope.transferFunctions = [1, 2, 3];
-    isolateScope.control.refresh();
+    isolateScope.refresh();
     $rootScope.$digest();
-    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(2);
+    expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(1);
   });
 
   it('should add new populations correctly', function() {
@@ -216,6 +217,7 @@ describe('Directive: transferFunctionEditor', function () {
     beforeEach(function(){
       expectedTf1 = new ScriptObject('tf1', tf1Code);
       expected = [expectedTf1];
+      $timeout.flush();
     });
 
     it('should handle the retrieved transferFunctions properly', function () {
@@ -243,7 +245,7 @@ describe('Directive: transferFunctionEditor', function () {
     var expected = [];
 
     beforeEach(function(){
-      $scope.control.refresh();
+      isolateScope.refresh();
       expectedTf1 = new ScriptObject('tf1', tf1Code);
       expectedTf2 = new ScriptObject('tf2', tf2Code);
       expectedTf3 = new ScriptObject('tf3', tf3Code);
@@ -654,7 +656,7 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
     saveDirtyData: jasmine.createSpy('saveDirtyData').and.callFake(function(){return $q.when();}),
     clearDirty: jasmine.createSpy('clearDirty')
   };
-  
+
   var backendInterfaceServiceMock = {};
   backendInterfaceServiceMock.getPopulations = function () {
     isolateScope.onPopulationsReceived(shownPopulation);
@@ -711,7 +713,7 @@ describe('Directive: transferFunctionEditor refresh populations', function () {
     $scope.$digest();
     isolateScope = element.isolateScope();
   }));
-   
+
   it('should refresh correctly', function() {
     var population = { name: 'test', showDetails : false};
 
