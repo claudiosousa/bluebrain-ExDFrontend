@@ -171,6 +171,17 @@
           minWidth: 700,
           minHeight: 300
         }
+      },
+      ENVIRONMENT_EDITOR: {
+        name: 'Environment Editor',
+        directive:  'environment-designer',
+        allowMultipleViews: false, // default true
+        overlayDefaultSize: {
+          width: 800,
+          height: 500,
+          minWidth: 700,
+          minHeight: 300
+        }
       }
     });
 

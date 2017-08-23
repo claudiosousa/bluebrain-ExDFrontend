@@ -128,10 +128,6 @@ describe('Directive: environment-designer', function () {
     expect($scope.assetsPath).toBeDefined();
   });
 
-  it('should replace the element with the appropriate content', function () {
-    expect(element.prop('outerHTML')).toContain('<!-- TEST: Environment Designer loaded correctly -->');
-  });
-
   it('should call correctly close panels when edit mode already set', function () {
     stateService.currentState = $scope.STATE.STARTED;
     $scope.gz3d.scene.manipulationMode = $scope.EDIT_MODE.TRANSLATE;
