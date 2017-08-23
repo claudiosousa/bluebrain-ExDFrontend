@@ -5884,16 +5884,16 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
     {
       if (allChildren[c] instanceof THREE.Mesh)
       {
-        allChildren[c].castShadow = true;
-        allChildren[c].receiveShadow = true;
+        allChildren[c].castShadow = visualObj.castShadow===undefined;
+        allChildren[c].receiveShadow = visualObj.receiveShadow===undefined;
 
-        if (visualObj.castShadows)
+        if (visualObj.castShadow)
         {
-          allChildren[c].castShadow = visualObj.castShadows;
+          allChildren[c].castShadow = visualObj.castShadow;
         }
-        if (visualObj.receiveShadows)
+        if (visualObj.receiveShadow)
         {
-          allChildren[c].receiveShadow = visualObj.receiveShadows;
+          allChildren[c].receiveShadow = visualObj.receiveShadow;
         }
 
         if (visualObj.name !== undefined && visualObj.name.indexOf('COLLISION_VISUAL') >= 0)
@@ -11793,16 +11793,16 @@ GZ3D.SdfParser.prototype.createGeom = function(geom, mat, parent)
     {
       if (allChildren[c] instanceof THREE.Mesh)
       {
-        allChildren[c].castShadow = true;
-        allChildren[c].receiveShadow = true;
+        allChildren[c].castShadow = visualObj.castShadow===undefined;
+        allChildren[c].receiveShadow = visualObj.receiveShadow===undefined;
 
-        if (visualObj.castShadows)
+        if (visualObj.castShadow)
         {
-          allChildren[c].castShadow = visualObj.castShadows;
+          allChildren[c].castShadow = visualObj.castShadow;
         }
-        if (visualObj.receiveShadows)
+        if (visualObj.receiveShadow)
         {
-          allChildren[c].receiveShadow = visualObj.receiveShadows;
+          allChildren[c].receiveShadow = visualObj.receiveShadow;
         }
 
         if (visualObj.name !== undefined && visualObj.name.indexOf('COLLISION_VISUAL') >= 0)
