@@ -63,7 +63,7 @@
   <transfer-function-editor-buttons ng-hide="isMultipleBrains()"></transfer-function-editor-buttons>
   <div ng-repeat="transferFunction in transferFunctions">
     <hr>
-    <h4><code class="CodeMirror cm-s-default"><span class="cm-def">{{transferFunction.name}}</span></code></h4>
+    <h4><input type="text" readonly class="tf-name" ng-model="transferFunction.name"></h4>
     <div ng-attr-id="transfer-function-{{transferFunction.id}}"
          ui-codemirror ui-codemirror-opts="editorOptions"
          ng-change="onTransferFunctionChange(transferFunction)"

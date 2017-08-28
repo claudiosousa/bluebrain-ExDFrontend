@@ -520,6 +520,21 @@
           });
         }
 
+        function generateRegexPattern(currentTransferFunctionNames, index) {
+          var pattern = '([A-z_]+[\\w_]*)$';
+          var tfNames = angular.copy(currentTransferFunctionNames);
+          tfNames.splice(index, 1);
+          tfNames = tfNames.filter(function (item) {
+            return item !== undefined;
+          });
+          if (tfNames.length === 0) {
+            return pattern;
+          } else {
+            var exclude = '^\\b(?!\\b' + tfNames.join('\\b|\\b') + '\\b)';
+            return exclude + pattern;
+          }
+        }
+
         scope.loadTransferFunctions = function(file) {
           if (file && !file.$error) {
             var deferred = $q.defer();
