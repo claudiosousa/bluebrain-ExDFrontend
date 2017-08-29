@@ -129,12 +129,12 @@ describe('Controller: spiketrain', function() {
   };
 
   var verifyAllLineColor = function(canvasData, color) {
-    for (var i = SPIKE_TIMELABEL_SPACE * 4; i < canvasData.length - 4 * (SPIKE_TIMELABEL_SPACE + 1); i = i + 4) {
+    for (var i = canvasData.length-1; i >=4; i = i - 4) {
       // rgba values
-      expect(canvasData[i]).toBe(color[0]);
-      expect(canvasData[i + 1]).toBe(color[1]);
-      expect(canvasData[i + 2]).toBe(color[2]);
-      expect(canvasData[i + 3]).toBe(255);
+      expect(canvasData[i - 3]).toBe(color[0]);
+      expect(canvasData[i - 2]).toBe(color[1]);
+      expect(canvasData[i - 1]).toBe(color[2]);
+      expect(canvasData[i]).toBe(255);
     }
   };
 

@@ -150,8 +150,9 @@
       const xPos = this.visibleWidth - .5;
 
       this.canvasCtx.beginPath();
-      this.canvasCtx.moveTo(xPos, y);
-      this.canvasCtx.lineTo(xPos, y + height);
+      // do canvas.height - y so that we draw from the bottom of the canvas up
+      this.canvasCtx.moveTo(xPos, this.canvas.height - y);
+      this.canvasCtx.lineTo(xPos, this.canvas.height - (y + height));
       this.canvasCtx.stroke();
     }
 
