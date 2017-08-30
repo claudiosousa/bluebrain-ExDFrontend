@@ -347,7 +347,7 @@
 
                         $scope.cloneNewExperiment = function (experimentID) {
                             $scope.isCloneRequested = true;
-                            collabConfigService.clone({ contextID: $stateParams.ctx },
+                            collabConfigService.clone({ experimentId: experimentID },
                                 {
                                     experimentID: experimentID,
                                     brainPath: $scope.paths.brainPath,

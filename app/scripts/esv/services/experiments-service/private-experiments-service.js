@@ -23,7 +23,8 @@
     mapToExperiments(exps) {
       return exps.map(exp => ({
         configuration: { maturity: 'production' },
-        id: exp.uuid
+        id: exp.uuid,
+        private: true
       }));
     }
 
@@ -31,16 +32,20 @@
 
       return this.$q.all([
         this.experimentProxyService.getAvailableServers(),
-        this.$q.all(exps.map(({ id }) => this.experimentProxyService.getJoinableServers(this.$stateParams.ctx))),//TODO: contextId id to be replaced by experiementId once teh ExDBackend has been migrated
+        this.$q.all(exps.map(({ id }) => this.experimentProxyService.getJoinableServers(id))),//TODO: contextId id to be replaced by experiementId once teh ExDBackend has been migrated
         this.$q.all(exps.map(exp => this.loadExperimentDetails(exp))),
       ])
         .then(([availableServers, joinableServers, experimentsDetails]) => {
-          exps.forEach((exp, i) => {
+          let expsWithDetail = exps
+            .filter((exp, i) => experimentsDetails[i]);
+
+          expsWithDetail.forEach((exp, i) => {
             exp.availableServers = availableServers;
             exp.joinableServers = joinableServers[i];
             angular.extend(exp.configuration, experimentsDetails[i]);
           });
-          return exps;
+
+          return expsWithDetail;
         });
     }
 
@@ -53,8 +58,7 @@
       return this.storageServer.getFileContent(exp.id, 'experiment_configuration.exc', true)
         .then(file => {
           if (!file.uuid)
-            return this.$q.reject('No experiment configuration file found');
-
+            return this.$q.resolve(null);
 
           let xml = $.parseXML(file.data);
           let thumbnail = xml.getElementsByTagNameNS("*", "thumbnail")[0];

@@ -44,7 +44,7 @@ describe('Services: server-info-service', function () {
     // Collab mode
     environmentService.setPrivateExperiment(true);
     var experimentResponse = { data: { 'experiment_configuration': { visualModel: 'mouse.dae'} } };
-    httpBackend.whenGET(serverConfig.gzweb['nrp-services'] + '/experiment/' + simulationData.ctx).respond(200, experimentResponse);
+    httpBackend.whenGET(serverConfig.gzweb['nrp-services'] + '/experiment/' + simulationData.experimentID).respond(200, experimentResponse);
     simulationInfo.initialize(simulationData.serverID, simulationData.experimentID, simulationData.simulationID, simulationData.ctx);
     httpBackend.flush();
 

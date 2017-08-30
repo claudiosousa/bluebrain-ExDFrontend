@@ -37,7 +37,7 @@ describe('Services: slurminfo', function() {
       });
       scheduler.flush();
       $rootScope.$digest();
-      httpBackend.expectGET(restServiceUrl);
+      httpBackend.whenGET(restServiceUrl);
       httpBackend.flush();
     });
   });

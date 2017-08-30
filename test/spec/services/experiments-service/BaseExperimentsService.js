@@ -1,6 +1,11 @@
 'use strict';
 
 describe('Services: BaseExperimentsService', function() {
+  var $rootScope;
+
+  beforeEach(inject(function(_$rootScope_) {
+    $rootScope = _$rootScope_;
+  }));
 
   it('should throw if instantiated', function() {
     expect(function() { new window.BaseExperimentsService(); }).toThrow();
@@ -16,6 +21,30 @@ describe('Services: BaseExperimentsService', function() {
     abstractFunctions.forEach(function(fnName) {
       expect(function() { new ExperimentsService()[fnName](); }).toThrow();
     });
+  });
+
+  it('should set imageData to false if failed to retrieve image', function() {
+    var catchCallback;
+    var ExperimentsService = function() {
+      this.getExperimentImage = function() {
+        return {
+          then: function() {
+            return {
+              catch: function(cb) { catchCallback = cb; }
+            };
+          }
+        };
+      };
+    };
+    ExperimentsService.prototype = Object.create(window.BaseExperimentsService.prototype);
+    ExperimentsService.prototype.constructor = window.BaseExperimentsService;
+
+    var experimentsService = new ExperimentsService();
+    experimentsService.experimentsArray = [{}];
+
+    experimentsService.updateMissingImages();
+    catchCallback();
+    expect(experimentsService.experimentsArray[0].imageData).toBe(false);
   });
 
 });

@@ -274,7 +274,7 @@
             scope.saveSDFIntoCollabStorage = function () {
               scope.isSavingToCollab = true;
               backendInterfaceService.saveSDF(
-                simulationInfo.contextID,
+                simulationInfo.experimentID,
                 function () { // Success callback
                   scope.isSavingToCollab = false;
                 }, function () { // Failure callback

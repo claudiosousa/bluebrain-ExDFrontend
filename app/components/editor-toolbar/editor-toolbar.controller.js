@@ -406,7 +406,6 @@
             });
 
             this.backendInterfaceService.resetCollab(
-                this.simulationInfo.contextID,
                 request,
                 this.splash.closeSplash,
                 this.splash.closeSplash
