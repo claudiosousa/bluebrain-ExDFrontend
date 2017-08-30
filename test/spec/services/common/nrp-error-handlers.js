@@ -132,16 +132,18 @@ describe('Services: nrp-error-handlers', function () {
 });
 
 describe('Services: nrp-error-handlers', function () {
+  var $q;
   var serverError;
   var clbErrorDialog, nrpErrorService, NO_CLUSTER_AVAILABLE_ERR_MSG;
 
   beforeEach(module('nrpErrorHandlers'));
-  beforeEach(inject(function(_serverError_,_clbErrorDialog_, _nrpErrorService_, _NO_CLUSTER_AVAILABLE_ERR_MSG_){
+  beforeEach(inject(function(_$q_,_serverError_,_clbErrorDialog_, _nrpErrorService_, _NO_CLUSTER_AVAILABLE_ERR_MSG_){
+    $q = _$q_;
     serverError = _serverError_;
     clbErrorDialog =  _clbErrorDialog_;
     nrpErrorService = _nrpErrorService_;
     NO_CLUSTER_AVAILABLE_ERR_MSG = _NO_CLUSTER_AVAILABLE_ERR_MSG_;
-    spyOn(clbErrorDialog, 'open');
+    spyOn(clbErrorDialog, 'open').and.returnValue($q.when());
     spyOn(nrpErrorService, 'httpError').and.returnValue({'message': 'error template'});
   }));
 
@@ -202,7 +204,7 @@ describe('Services: nrp-error-handlers', function () {
     var response = { data: { message: 'This is a serious error', type: 'serious'} };
     serverError.displayHTTPError(response, true);
     expect(clbErrorDialog.open.calls.count()).toBe(1);
-    
+
     expect(clbErrorDialog.open.calls.mostRecent().args[0].message).toBe('error template');
     expect(nrpErrorService.httpError).toHaveBeenCalledWith(response);
     expect(nrpErrorService.httpError.calls.count()).toBe(1);
@@ -214,4 +216,20 @@ describe('Services: nrp-error-handlers', function () {
     expect(clbErrorDialog.open.calls.count()).toBe(1);
     expect(clbErrorDialog.open.calls.mostRecent().args[0].message).toBe(NO_CLUSTER_AVAILABLE_ERR_MSG);
   });
+
+  it('should show a specific error for recoverable errors', function() {
+    var response = { data: {message:'BLA BLA recoverable error BLA BLA',type:'General error'} };
+    serverError.displayHTTPError(response, true);
+    expect(clbErrorDialog.open.calls.count()).toBe(1);
+    expect(clbErrorDialog.open.calls.mostRecent().args[0].message).toBe('Job allocation failed. Please try again.');
+  });
+
+
+  it('should pass on data from response to the error message', function() {
+    var response = { data: {data: 'Some Data', message:'Some message', type:'General error'} };
+    serverError.displayHTTPError(response, true);
+    expect(clbErrorDialog.open.calls.count()).toBe(1);
+    expect(clbErrorDialog.open.calls.mostRecent().args[0].data).toBe('Some Data');
+  });
+
 });
