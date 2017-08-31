@@ -29,7 +29,7 @@
           ng-class="{'ed-section-button':true,'ed-section-button-first':$first,'ed-section-button-last':$last}"
       style="background-color: {{category.visible?category.color[category.colorMode]: (category.colorMode=='mouseover'? '#ffffff' : '#eeeeee')}};">
 
-        <img class="ed-section-image" src="{{'img/esv/envsections/'+category.thumbnail}}" draggable="false"/>
+        <img class="ed-section-image" ng-src="{{'img/esv/envsections/'+category.thumbnail}}" draggable="false"/>
 
         <div class="ed-section-caption">{{category.title}}</div>
 
