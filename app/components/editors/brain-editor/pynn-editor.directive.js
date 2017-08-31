@@ -286,7 +286,12 @@
                       }).then(scope.agreeAction, function () {
                       });
                     }
-                    else {
+                    else if (result.data.error_line === 0 && result.data.error_column === 0){
+                      clbErrorDialog.open({
+                        type: 'BackendError.',
+                        message: result.data.error_message
+                      });
+                    }else{
                       scope.markError(
                         result.data.error_message,
                         result.data.error_line,
