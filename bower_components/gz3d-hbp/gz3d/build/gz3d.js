@@ -4864,6 +4864,14 @@ GZ3D.GZIface.prototype.onConnected = function()
         var visualObj = this.createVisualFromMsg(message);
         parent.add(visualObj);
       }
+    } else {
+      // backend generated material updates for objects in the scene
+      // these are not a user actions, so update the visuals
+      var backendVisualObj = this.scene.getByName(message.name);
+      if(message.material && message.material.script.name !== '__default__')
+      {
+        this.updateVisualFromMsg(backendVisualObj, message);
+      }
     }
   };
 
@@ -11270,7 +11278,7 @@ GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRU
 {
     this.composer.applyComposerSettings(updateColorCurve,forcePBRUpdate,shadowReset);
     this.needsImmediateUpdate = true;
-  };
+};
 
 /**
  * Force an update of the dynamic environment map
@@ -11280,7 +11288,7 @@ GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRU
   {
     this.composer.cubeMapNeedsUpdate = true;
     this.needsImmediateUpdate = true;
-};
+  };
 
 /**
  * Apply composer settings to a specific model
