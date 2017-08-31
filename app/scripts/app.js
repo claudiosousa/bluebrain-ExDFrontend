@@ -99,7 +99,8 @@
       'storageServer',
       'clusterReservation',
       'demoCarousel',
-      'experimentExplorer'])
+      'experimentExplorer',
+      'experimentList'])
     // Routes
     .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
       function($stateProvider, $urlRouterProvider, environmentServiceProvider) {

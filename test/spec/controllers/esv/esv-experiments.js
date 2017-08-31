@@ -66,7 +66,7 @@
   };
 
   describe('Controller: esvExperimentsCtrl', function() {
-    var $controller, $httpBackend, $rootScope, $timeout, $templateCache, $compile, $stateParams, $interval, environmentService,
+    var $http, $controller, $httpBackend, $rootScope, $timeout, $templateCache, $compile, $stateParams, $interval, environmentService,
       $location, bbpConfig, proxyUrl, roslib, oidcUrl, experimentsFactory, SERVER_POLL_INTERVAL, $window, storageServer, $q,
       clbErrorDialog, collabConfigService, experimentSimulationService;
 
@@ -97,9 +97,10 @@
     }));
 
     beforeEach(inject(function(
-      _$controller_, _$rootScope_, _$timeout_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
+      _$http_, _$controller_, _$rootScope_, _$timeout_, _$httpBackend_, _$templateCache_, _$compile_, _$stateParams_, _$interval_, _environmentService_,
       _$location_, _bbpConfig_, _roslib_, _experimentsFactory_, _SERVER_POLL_INTERVAL_, _$window_, _storageServer_, _$q_, _clbErrorDialog_,
       _collabConfigService_, _experimentSimulationService_) {
+      $http = _$http_;
       $controller = _$controller_;
       $httpBackend = _$httpBackend_;
       $templateCache = _$templateCache_;
@@ -152,16 +153,31 @@
 
       $controller('esvExperimentsCtrl', {
         $rootScope: $rootScope,
-        $scope: $rootScope
+        $scope: $rootScope,
+        environmentService: environmentService,
+        storageServer: storageServer,
+        clbErrorDialog: clbErrorDialog
       });
 
       var template = $templateCache.get('views/esv/esv-experiments.html');
       var page = $compile(template)($rootScope);
 
+      $rootScope.$digest();
+      $timeout.flush();
       $httpBackend.flush();
-      $rootScope.$apply();
+      $timeout.flush();
+
+      if ($http.pendingRequests.length) {
+        $httpBackend.flush();
+        $rootScope.$digest();
+      }
+
 
       return page;
+    }
+
+    function getExperimentListScope(page) {
+      return angular.element(page.find('[load-private-experiments]')).isolateScope();
     }
 
     it('should show only mature experiments in normal mode', function() {
@@ -379,8 +395,13 @@
 
       it('should set experiments to error when collab fails', function() {
         $httpBackend.whenGET(collabContextUrl).respond(502, []);
-        renderEsvWebPage({ collab: true });
-        expect($rootScope.experiments).toEqual([{ error: { name: 'Internal Error', description: 'Database unavailable' } }]);
+        spyOn(clbErrorDialog, 'open');
+        renderEsvWebPage({ collab: true, });
+
+        expect(clbErrorDialog.open).toHaveBeenCalledWith({
+          type: 'Private experiment error',
+          message: 'Failed to retrive private experiments'
+        });
       });
 
       describe('yet to clone', function() {
@@ -409,13 +430,14 @@
           page.find('[analytics-event="Clone"]').click();
         });
 
-        it('should trigger reload after clone', function() {
-          renderEsvWebPage();
-          spyOn($window.location, 'reload');
+        it('should reload experiments after clone', function() {
+          var page = renderEsvWebPage();
+          spyOn($rootScope, 'reloadExperiments');
           spyOn(collabConfigService, 'clone');
-          $rootScope.cloneExperiment('experiment_id');
+          var scope = getExperimentListScope(page);
+          scope.cloneExperiment('experiment_id');
           collabConfigService.clone.calls.mostRecent().args[2]();
-          expect($window.location.reload).toHaveBeenCalled();
+          expect($rootScope.reloadExperiments).toHaveBeenCalled();
         });
       });
 
@@ -433,14 +455,16 @@
         });
 
         it('should select first experiment if only one experiment is shown', function() {
-          renderEsvWebPage({ experiments: { matureExperiment: matureExperiment } });
-          expect($rootScope.pageState.selected).toBeDefined($rootScope.experiments[0].id);
+          var page = renderEsvWebPage({ experiments: { matureExperiment: matureExperiment } });
+          var scope = getExperimentListScope(page);
+          expect(scope.pageState.selected).toBeDefined(scope.experiments[0].id);
         });
 
         it('should not select an experiment if multiple experiments are shown', function() {
           $httpBackend.whenGET(collabContextUrl).respond(200, {});
-          renderEsvWebPage();
-          expect($rootScope.pageState.selected).toBeUndefined();
+          var page = renderEsvWebPage();
+          var scope = getExperimentListScope(page);
+          expect(scope.pageState.selected).toBeUndefined();
         });
 
         it('should only show the launch button when the experiment exists in collab', function() {

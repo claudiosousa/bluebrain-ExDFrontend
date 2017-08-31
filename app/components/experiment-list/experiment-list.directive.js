@@ -23,38 +23,19 @@
  * ---LICENSE-END**/
 (function() {
   'use strict';
-  angular.module('exdFrontendApp')
-    .controller('esvExperimentsCtrl', [
-      '$scope',
-      '$timeout',
-      'environmentService',
-      'storageServer',
-      'clbErrorDialog',
-      function($scope, $timeout, environmentService, storageServer, clbErrorDialog) {
 
-        $scope.reloadExperiments = privateExperiment => {
-          $scope.showExperiments = false;
-          $scope.loadPrivateExperiments = privateExperiment;
-          if (privateExperiment)
-            $scope.cloningAnotherExperiement = false;
-          $timeout(() => $scope.showExperiments = true);
-        };
-
-        if (environmentService.isPrivateExperiment()) {
-          storageServer.getExperiments()
-            .then(response => $scope.reloadExperiments(!!response.length))
-            .catch(err => clbErrorDialog.open({
-              type: 'Private experiment error',
-              message: 'Failed to retrive private experiments'
-            }));
-        } else
-          $scope.reloadExperiments(false);
-
-        $scope.cloneAnotherExperiment = () => {
-          $scope.reloadExperiments(false);
-          $scope.cloningAnotherExperiement = true;
-        };
-
-      }
+  angular.module('experimentList')
+    .directive('experimentList',
+    ['$timeout', ($timeout) => ({
+      templateUrl: 'components/experiment-list/experiment-list.template.html',
+      restrict: 'E',
+      scope: {
+        private: '=',
+        loadPrivateExperiments: '&'
+      },
+      replace: true,
+      controller: 'ExperimentListController',
+      controllerAs: 'vm'
+    })
     ]);
-})();
+}());

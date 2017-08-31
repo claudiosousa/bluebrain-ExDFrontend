@@ -25,7 +25,7 @@ describe('Services: PrivateExperimentsService', function() {
     privateExperimentsService
       .getExperimentImage({ configuration: {} })
       .then(function(res) {
-        expect(res).toBe(response.data);
+        expect(res).toBe(response);
         done();
       });
     $rootScope.$digest();

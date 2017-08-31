@@ -46,8 +46,7 @@
 
     getExperimentImage(exp) {
       return this.storageServer
-        .getBase64Content(exp.id, exp.configuration.thumbnail, true)
-        .then(response => response.data);
+        .getBase64Content(exp.id, exp.configuration.thumbnail, true);
     }
 
     loadExperimentDetails(exp) {
