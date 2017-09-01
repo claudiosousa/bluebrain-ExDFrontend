@@ -123,8 +123,8 @@ describe('Directive: brainvisualizer', function() {
       window.BRAIN3D.REP_DISTRIBUTION_OVERLAP = 'Overlap';
       window.BRAIN3D.REP_DISTRIBUTION_DISTRIBUTE = 'Distribute';
       window.BRAIN3D.REP_DISTRIBUTION_SPLIT = 'Split';
-      window.BRAIN3D.DISPLAY_TYPE_POINT = 'Big Solid';
-      window.BRAIN3D.DISPLAY_TYPE_BLENDED = 'Small Blended';
+      window.BRAIN3D.DISPLAY_TYPE_POINT = 'Solid';
+      window.BRAIN3D.DISPLAY_TYPE_BLENDED = 'Blended';
 
       $rootScope = _$rootScope_;
       element = $compile('<brainvisualizer></brainvisualizer>')($rootScope);
@@ -258,8 +258,8 @@ describe('Directive: brainvisualizer', function() {
       window.BRAIN3D.REP_DISTRIBUTION_OVERLAP = 'Overlap';
       window.BRAIN3D.REP_DISTRIBUTION_DISTRIBUTE = 'Distribute';
       window.BRAIN3D.REP_DISTRIBUTION_SPLIT = 'Split';
-      window.BRAIN3D.DISPLAY_TYPE_POINT = 'Big Solid';
-      window.BRAIN3D.DISPLAY_TYPE_BLENDED = 'Small Blended';
+      window.BRAIN3D.DISPLAY_TYPE_POINT = 'Solid';
+      window.BRAIN3D.DISPLAY_TYPE_BLENDED = 'Blended';
 
       $rootScope = _$rootScope_;
 

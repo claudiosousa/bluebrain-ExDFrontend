@@ -35,14 +35,13 @@ BRAIN3D.REP_SHAPE_SPHERICAL = 'Sphere';
 BRAIN3D.REP_SHAPE_CUBIC = 'Cube';
 BRAIN3D.REP_SHAPE_FLAT = 'Flat';
 BRAIN3D.REP_SHAPE_CLOUD = 'Cloud';
-BRAIN3D.REP_SHAPE_USER = 'User';           // XYZ has been defined by the user, in the brain file
+BRAIN3D.REP_SHAPE_USER = 'User Defined';           // Coordinates have been defined by the user, in the brain file
 
 // Population Distribution mode
 
 BRAIN3D.REP_DISTRIBUTION_OVERLAP = 'Overlap';
 BRAIN3D.REP_DISTRIBUTION_DISTRIBUTE = 'Distribute';
 BRAIN3D.REP_DISTRIBUTION_SPLIT = 'Split';
-
 
 //------------------------------
 // Initialize
@@ -67,7 +66,7 @@ BRAIN3D.NeuroRepresentation.prototype.updateRadius = function ()
     // Radius of a shape is based on the number of particles
 
     var minRadius = 2.0,
-        maxRadius = 200.0;
+        maxRadius = 150.0;
 
     var partStart = 20,
         partEnd = 10000;
@@ -82,7 +81,9 @@ BRAIN3D.NeuroRepresentation.prototype.updateRadius = function ()
     }
     else
     {
-        var f = this.mainView.particles.length / (partEnd - partStart);
+        var f;
+
+        f = this.mainView.particles.length / (partEnd - partStart);            
 
         this.radius = minRadius + (f * (maxRadius - minRadius));
     }
@@ -188,6 +189,11 @@ BRAIN3D.NeuroRepresentation.prototype.setShape = function (shape)
         case BRAIN3D.REP_SHAPE_CLOUD:
             this.applyCloudShape();
             break;
+
+        case BRAIN3D.REP_SHAPE_USER:
+            this.applyUserShape();
+            break;
+            
     }
 
 };
@@ -541,8 +547,8 @@ BRAIN3D.NeuroRepresentation.prototype.applySphericalShape = function ()
 {
     var particles = this.mainView.particles;
 
-    var layerMode = this.distrib === BRAIN3D.REP_DISTRIBUTION_SPLIT;
     var popnames = Object.getOwnPropertyNames(this.mainView.populations);
+    var layerMode = this.distrib === BRAIN3D.REP_DISTRIBUTION_SPLIT && popnames.length>1;
     var layerScaler = 1.0;
 
     for (layerpop = 0; layerpop < popnames.length; layerpop++)
@@ -689,6 +695,106 @@ BRAIN3D.NeuroRepresentation.prototype.applySphericalShape = function ()
 
 };
 
+
+// User shape
+
+BRAIN3D.NeuroRepresentation.prototype.applyUserShape = function ()
+{
+    var particles = this.mainView.particles;
+    var userPos = this.mainView.userData.positions;
+    var userPosPerPop = this.mainView.userData.populations;
+    var layerMode = this.distrib === BRAIN3D.REP_DISTRIBUTION_SPLIT;
+
+    this.mainView.needsAnimationPass = true;
+
+    if (layerMode)
+    {
+        var popnames = Object.getOwnPropertyNames(this.mainView.populations);
+
+        var zsize = this.radius * 2;
+        var zstep = zsize / popnames.length;
+
+        var v = new THREE.Vector3;
+        var rv = new THREE.Vector3;
+        v.x = 0;
+        v.y = 0;
+        v.z = -zsize * 0.5 - zstep * 0.5;
+
+        for (layerpop = 0; layerpop < popnames.length; layerpop++)
+        {
+            var p = 0;
+
+            var popname = popnames[layerpop];
+            var partlength = particles.length;
+            var partstart = 0;
+
+            var res = this.findPopulationParticleRange(popname);
+            p = partstart = res[0];
+            partlength = res[1];
+
+            v.z += zstep;
+
+            if (userPosPerPop)
+            {
+                userPos = userPosPerPop[popname];
+            }
+
+            for (var i = p; i < (partstart+partlength); i++)
+            {
+                var pa = particles[i];
+
+                rv.x = userPos[pa.index][0] * this.radius/zstep;
+                rv.y = userPos[pa.index][1] * this.radius/zstep;
+                rv.z = userPos[pa.index][2] * this.radius/zstep;
+                rv.z *= zstep * 0.2;
+                pa.tx = v.x + rv.x;
+                pa.ty = v.y + rv.y;
+                pa.tz = v.z + rv.z;
+                pa.xyzInterpolant = 0;
+            }
+        }
+    }
+    else
+    {
+        var popnames = Object.getOwnPropertyNames(this.mainView.populations);
+        var p;
+
+        for (p = 0; p < popnames.length; p++)
+        {
+            var pop = this.mainView.populations[popnames[p]];
+
+            if (userPosPerPop)
+            {
+                userPos = userPosPerPop[popnames[p]].positions;
+            }
+
+            for (var i = 0; i < particles.length; i++)
+            {
+                var pa = particles[i];
+                if (pa.population === pop)
+                {
+                    var dx = userPos[pa.index][0] * this.radius;
+                    var dy = userPos[pa.index][1] * this.radius;
+                    var dz = userPos[pa.index][2] * this.radius;
+    
+                    do
+                    {
+                        pa.tx = dx;
+                        pa.ty = dy;
+                        pa.tz = dz;
+                        pa.xyzInterpolant = 0;
+                        pa = pa.nextlevel;
+                    }
+                    while (pa);
+                }
+            }
+        }
+    }
+};
+
+
+
+
 // Cubical shape
 
 BRAIN3D.NeuroRepresentation.prototype.applyCubicalShape = function ()
@@ -701,8 +807,8 @@ BRAIN3D.NeuroRepresentation.prototype.applyCubicalShape = function ()
     var faces = [[0, 1, 2, 3], [0, 4, 5, 1], [1, 5, 6, 2], [3, 2, 6, 7], [0, 3, 7, 4], [4, 7, 6, 5]];
     var edges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
 
-    var layerMode = this.distrib === BRAIN3D.REP_DISTRIBUTION_SPLIT;
     var popnames = Object.getOwnPropertyNames(this.mainView.populations);
+    var layerMode = this.distrib === BRAIN3D.REP_DISTRIBUTION_SPLIT && popnames.length>1;
     var layerScaler = 1.0;
 
     this.mainView.needsAnimationPass = true;
