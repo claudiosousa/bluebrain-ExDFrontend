@@ -296,6 +296,26 @@ describe('Controller: ExperimentExplorerController', function() {
     expect(controller.onError).toHaveBeenCalled();
   });
 
+  it('should handle upload file exception', function() {
+    var controller = loadExperiments();
+
+    selectExperiment(controller);
+
+    spyOn(controller, 'onError');
+
+    spyOn(storageServer, 'setBlobContent').and.returnValue(window.$q.reject());
+
+    var fileReaderMock = { readAsArrayBuffer: angular.noop };
+    spyOn(window, 'FileReader').and.returnValue(fileReaderMock);
+
+    controller.uploadFile({ target: { files: [{ name: 'myfile.txt' }] } });
+    fileReaderMock.onload({ target: { result: 'content' } });
+
+    $rootScope.$digest();
+
+    expect(controller.onError).toHaveBeenCalled();
+  });
+
   it('should find file type for folder to be folder', function() {
     var controller = loadExperiments();
     var fileType = controller.getFileType({ type: 'folder' });
