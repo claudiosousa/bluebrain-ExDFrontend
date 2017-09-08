@@ -17,6 +17,7 @@
     beforeEach(module('splashMock'));
     beforeEach(module('backendInterfaceServiceMock'));
     beforeEach(module('objectInspectorServiceMock'));
+    beforeEach(module('performanceMonitorServiceMock'));
     beforeEach(module('userNavigationServiceMock'));
     beforeEach(module('userContextServiceMock'));
     beforeEach(module('editorsPanelServiceMock'));

@@ -47,5 +47,59 @@ describe('Service: EditorToolbar', function() {
       expect(editorToolbarService.isLogConsoleActive).toBe(false);
       expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
     });
+
+    it('Toggle Brainvisualizer should create console overlay if none is open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(false);
+      })});
+      editorToolbarService.toggleBrainvisualizer();
+      expect(editorToolbarService.isBrainVisualizerActive).toBe(true);
+      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
+    });
+
+    it('Toggle Brainvisualizer should be closed if already open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(true);
+      })});
+      editorToolbarService.toggleBrainvisualizer();
+      expect(editorToolbarService.isBrainVisualizerActive).toBe(false);
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
+    });
+
+    it('Toggle Spike Train should create console overlay if none is open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(false);
+      })});
+      editorToolbarService.toggleSpikeTrain();
+      expect(editorToolbarService.isSpikeTrainActive).toBe(true);
+      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
+    });
+
+    it('Toggle Spike Train should be closed if already open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(true);
+      })});
+      editorToolbarService.toggleSpikeTrain();
+      expect(editorToolbarService.isSpikeTrainActive).toBe(false);
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
+    });
+
+    it('Toggle Performance View should create console overlay if none is open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(false);
+      })});
+      editorToolbarService.togglePerformanceView();
+      expect(editorToolbarService.isPerformanceViewActive).toBe(true);
+      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR);
+    });
+
+    it('Toggle Performance View should be closed if already open', function() {
+      dynamicViewOverlayService.isOverlayOpen.and.returnValue( { then: jasmine.createSpy('then').and.callFake(function(fn) {
+        fn(true);
+      })});
+      editorToolbarService.togglePerformanceView();
+      expect(editorToolbarService.isPerformanceViewActive).toBe(false);
+      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR);
+    });
   });
 });

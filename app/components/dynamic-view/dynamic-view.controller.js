@@ -163,7 +163,7 @@
       },
       SMACH_EDITOR: {
         name: 'SMACH Editor',
-        directive:  'smach-editor',
+        directive: 'smach-editor',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 800,
@@ -192,6 +192,17 @@
           height: 500,
           minWidth: 700,
           minHeight: 300
+        },
+      },
+      PERFORMANCE_MONITOR: {
+        name: 'Performance Monitor',
+        directive: 'performance-monitor',
+        allowMultipleViews: false, // default true
+        overlayDefaultSize: {
+          width: 550,
+          height: 450,
+          minWidth: 400,
+          minHeight: 450
         }
       }
     });
