@@ -449,11 +449,9 @@ GZ3D.AutoAlignModel = function (scene)
  */
 
 
-GZ3D.AutoAlignModel.HorizontalObjectSnapDist = 0.06;
-GZ3D.AutoAlignModel.HorizontalAutoAlignSnapDist = 0.1;
-GZ3D.AutoAlignModel.HorizontalInnerBorder = 0.05;
-GZ3D.AutoAlignModel.VerticalInnerBorder = 0.05;
-GZ3D.AutoAlignModel.VerticalAutoAlignSnapDist = 0.15;
+GZ3D.AutoAlignModel.HorizontalObjectSnapDist = 0.1;
+GZ3D.AutoAlignModel.AutoAlignSnapDist = 0.1;
+GZ3D.AutoAlignModel.InnerBorder = 0.1;
 
 
 /**
@@ -487,7 +485,7 @@ GZ3D.AutoAlignModel.prototype.alignOnMeshBase = function ()
       this.needsAlignOnFloor = false;
       var point = this.obj.position.clone();
 
-      if (this.scene.snapToFloor && !this.disableSnap)
+      if (!this.disableSnap)
       {
         point.z = this.findBestZ(point.z - bbox.min.z);
       }
@@ -508,6 +506,57 @@ GZ3D.AutoAlignModel.prototype.alignOnMeshBase = function ()
 };
 
 /**
+ * Initialize UI helpers
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.initUIHelpers = function ()
+{
+  if (!this.displayAlignAxes)
+  {
+    this.displayAlignAxes = [];
+
+    for (var i = 0; i < 4; i++)
+    {
+      var axisGeometry = new THREE.Geometry();
+      if (i < 2)
+      {
+        axisGeometry.vertices.push(new THREE.Vector3(0, -1000, 0), new THREE.Vector3(0, 1000, 0));
+      }
+      else
+      {
+        axisGeometry.vertices.push(new THREE.Vector3(-1000, 0, 0), new THREE.Vector3(1000, 0, 0));
+      }
+
+
+      this.displayAlignAxes.push(new THREE.LineSegments(axisGeometry, new THREE.LineBasicMaterial({
+        opacity: 0.3, color: 0xffffff, depthTest: false,
+        depthWrite: false,
+        transparent: true
+      })));
+      this.displayAlignAxes[i].visible = false;
+      this.scene.add(this.displayAlignAxes[this.displayAlignAxes.length - 1]);
+    }
+  }
+};
+
+/**
+ * Hide UI helpers
+ *
+ */
+
+GZ3D.AutoAlignModel.prototype.hideUIHelpers = function ()
+{
+  if (this.displayAlignAxes)
+  {
+    for (var i = 0; i < this.displayAlignAxes.length; i++)
+    {
+      this.displayAlignAxes[i].visible = false;
+    }
+  }
+};
+
+/**
  * Return true, if an object should be ignored by snap
  *
  */
@@ -515,7 +564,8 @@ GZ3D.AutoAlignModel.prototype.alignOnMeshBase = function ()
 GZ3D.AutoAlignModel.prototype.autoAlignIgnoreObject = function (meshobj)
 {
   if (meshobj.name.indexOf('_lightHelper') >= 0 || meshobj.name === 'grid' || meshobj.name === 'boundingBox' ||
-    (meshobj instanceof THREE.Light))
+    ((meshobj instanceof THREE.Camera)) || (meshobj instanceof THREE.Light) || (meshobj instanceof THREE.CameraHelper) ||
+    (meshobj instanceof THREE.LensFlare) || (meshobj instanceof THREE.GridHelper))
   {
     return true;
   }
@@ -579,37 +629,37 @@ GZ3D.AutoAlignModel.prototype.snapToObjectGenInnerFaceCube = function (bbox, fac
 {
   var innerCube = new THREE.Box3();
 
-  innerCube.min.z = bbox.min.z + (bbox.max.z - bbox.min.z) * GZ3D.AutoAlignModel.VerticalInnerBorder;
-  innerCube.max.z = bbox.max.z - (bbox.max.z - bbox.min.z) * GZ3D.AutoAlignModel.VerticalInnerBorder;
+  innerCube.min.z = bbox.min.z + (bbox.max.z - bbox.min.z) * GZ3D.AutoAlignModel.InnerBorder;
+  innerCube.max.z = bbox.max.z - (bbox.max.z - bbox.min.z) * GZ3D.AutoAlignModel.InnerBorder;
 
   switch (faceIndex)
   {
     case 0:
       innerCube.min.x = bbox.min.x - snapsize;
       innerCube.max.x = bbox.min.x + snapsize;
-      innerCube.min.y = bbox.min.y + (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
-      innerCube.max.y = bbox.max.y - (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.min.y = bbox.min.y + (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.InnerBorder;
+      innerCube.max.y = bbox.max.y - (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.InnerBorder;
       break;
 
     case 1:
       innerCube.min.x = bbox.max.x - snapsize;
       innerCube.max.x = bbox.max.x + snapsize;
-      innerCube.min.y = bbox.min.y + (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
-      innerCube.max.y = bbox.max.y - (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.min.y = bbox.min.y + (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.InnerBorder;
+      innerCube.max.y = bbox.max.y - (bbox.max.y - bbox.min.y) * GZ3D.AutoAlignModel.InnerBorder;
       break;
 
     case 2:
       innerCube.min.y = bbox.min.y - snapsize;
       innerCube.max.y = bbox.min.y + snapsize;
-      innerCube.min.x = bbox.min.x + (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
-      innerCube.max.x = bbox.max.x - (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.min.x = bbox.min.x + (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.InnerBorder;
+      innerCube.max.x = bbox.max.x - (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.InnerBorder;
       break;
 
     case 3:
       innerCube.min.y = bbox.max.y - snapsize;
       innerCube.max.y = bbox.max.y + snapsize;
-      innerCube.min.x = bbox.min.x + (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
-      innerCube.max.x = bbox.max.x - (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.HorizontalInnerBorder;
+      innerCube.min.x = bbox.min.x + (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.InnerBorder;
+      innerCube.max.x = bbox.max.x - (bbox.max.x - bbox.min.x) * GZ3D.AutoAlignModel.InnerBorder;
       break;
   }
 
@@ -636,53 +686,31 @@ GZ3D.AutoAlignModel.prototype.gravityPointOfFace = function (bbox, faceIndex)
 };
 
 /**
- * Snap to the center of a face (horizontally only)
+ * Check if this object contain at least one 3D mesh
  */
 
-GZ3D.AutoAlignModel.prototype.snapToObjectCenterOnSurface = function (position, bbox, snap2obj, faceIndex)
+GZ3D.AutoAlignModel.prototype.hasMeshSubObjects = function (object)
 {
-  var pt1, pt2;
-  var faceIndex2;
+  var meshFound = false;
 
-  switch (faceIndex)
+  object.traverse(function (subobj)
   {
-    case 0: faceIndex2 = 1; break;
-    case 1: faceIndex2 = 0; break;
-    case 2: faceIndex2 = 3; break;
-    case 3: faceIndex2 = 2; break;
-  }
-
-  pt1 = this.gravityPointOfFace(snap2obj, faceIndex);
-  pt2 = this.gravityPointOfFace(bbox, faceIndex2);
-
-  var vx = pt2.x - pt1.x;
-  var vy = pt2.y - pt1.y;
-  var minDist = GZ3D.AutoAlignModel.HorizontalAutoAlignSnapDist;
-
-  if ((vx * vx + vy * vy) < (minDist * minDist))
-  {
-    if (faceIndex <= 1)
+    if (subobj instanceof THREE.Mesh)
     {
-      position.y = (pt1.y - (bbox.max.y - this.obj.position.y)) + (bbox.max.y - bbox.min.y) * 0.5;
+      meshFound = true;
     }
-    else
-    {
-      position.x = (pt1.x - (bbox.max.x - this.obj.position.x)) + (bbox.max.x - bbox.min.x) * 0.5;
-    }
+  });
 
-    position.z = snap2obj.min.z - (bbox.min.z - this.obj.position.z);
-
-  }
-
-  return position;
+  return meshFound;
 };
 
 /**
- * Snap to object horizontally
+ * Align to objects
  */
 
-GZ3D.AutoAlignModel.prototype.snapToObject = function (position)
+GZ3D.AutoAlignModel.prototype.alignToObjects = function (position)
 {
+
   var minimalSnapDistance = GZ3D.AutoAlignModel.HorizontalObjectSnapDist;
   if (this.obj && !this.needsAlignOnFloor)
   {
@@ -693,17 +721,21 @@ GZ3D.AutoAlignModel.prototype.snapToObject = function (position)
     if (Math.abs(bbox.min.x) !== Infinity)
     {
       var innerFaceCubes = [this.snapToObjectGenInnerFaceCube(bbox, 1, minimalSnapDistance),
-        this.snapToObjectGenInnerFaceCube(bbox, 0, minimalSnapDistance),
-        this.snapToObjectGenInnerFaceCube(bbox, 3, minimalSnapDistance),
-        this.snapToObjectGenInnerFaceCube(bbox, 2, minimalSnapDistance)];
+      this.snapToObjectGenInnerFaceCube(bbox, 0, minimalSnapDistance),
+      this.snapToObjectGenInnerFaceCube(bbox, 3, minimalSnapDistance),
+      this.snapToObjectGenInnerFaceCube(bbox, 2, minimalSnapDistance)];
 
       var that = this;
       var snapFound = false;
+      var alignXFound = false;
+      var alignYFound = false;
+      var alignZFound = false;
+
+      // Align faces
 
       this.scene.scene.traverse(function (snap2obj)
       {
-        if (!snapFound &&
-          snap2obj.visible &&
+        if (snap2obj.visible &&
           snap2obj instanceof THREE.Mesh &&
           !that.autoAlignIgnoreObject(snap2obj))
         {
@@ -712,31 +744,185 @@ GZ3D.AutoAlignModel.prototype.snapToObject = function (position)
           snap2bbox.setFromObject(snap2obj);
           if (Math.abs(snap2bbox.min.x) !== Infinity)
           {
-            for (var j = 0; j < 4; j++)
+
+            if (!snapFound)
             {
-              var fc = that.snapToObjectGenInnerFaceCube(snap2bbox, j, minimalSnapDistance);
-
-              if (fc.intersectsBox(innerFaceCubes[j]))
+              for (var j = 0; j < 4; j++)
               {
-                snapFound = true;
+                var fc = that.snapToObjectGenInnerFaceCube(snap2bbox, j, minimalSnapDistance);
 
-                switch (j)
+                if (fc.intersectsBox(innerFaceCubes[j]))
                 {
-                  case 0: position.x = snap2bbox.min.x - (bbox.max.x - that.obj.position.x); break;
-                  case 1: position.x = snap2bbox.max.x - (bbox.min.x - that.obj.position.x); break;
-                  case 2: position.y = snap2bbox.min.y - (bbox.max.y - that.obj.position.y); break;
-                  case 3: position.y = snap2bbox.max.y - (bbox.min.y - that.obj.position.y); break;
-                }
+                  snapFound = true;
 
-                that.obj.position.copy(position);
-                bbox.setFromObject(that.obj);
-                position = that.snapToObjectCenterOnSurface(position, bbox, snap2bbox, j);
-                break;
+                  switch (j)
+                  {
+                    case 0:
+                      position.x = snap2bbox.min.x - (bbox.max.x - that.obj.position.x);
+                      that.displayAlignAxes[0].position.copy(new THREE.Vector3(snap2bbox.min.x, position.y, position.z));
+                      that.displayAlignAxes[0].visible = true;
+                      break;
+
+                    case 1:
+                      position.x = snap2bbox.max.x - (bbox.min.x - that.obj.position.x);
+                      that.displayAlignAxes[1].position.copy(new THREE.Vector3(snap2bbox.max.x, position.y, position.z));
+                      that.displayAlignAxes[1].visible = true;
+                      break;
+
+                    case 2:
+                      position.y = snap2bbox.min.y - (bbox.max.y - that.obj.position.y);
+                      that.displayAlignAxes[2].position.copy(new THREE.Vector3(position.x, snap2bbox.min.y, position.z));
+                      that.displayAlignAxes[2].visible = true;
+                      break;
+
+                    case 3:
+                      position.y = snap2bbox.max.y - (bbox.min.y - that.obj.position.y);
+                      that.displayAlignAxes[3].position.copy(new THREE.Vector3(position.x, snap2bbox.max.y, position.z));
+                      that.displayAlignAxes[3].visible = true;
+                      break;
+                  }
+
+                  that.obj.position.copy(position);
+                  bbox.setFromObject(that.obj);
+                }
               }
             }
           }
         }
       });
+
+      // Align borders ( try first with object of same size (x/y))
+
+      for (var i = 0; i < 2; i++)
+      {
+        if (alignXFound && alignYFound && alignZFound)
+        {
+          break;
+        }
+
+        for (var j = 0; j < this.scene.scene.children.length; j++)
+        {
+          var snap2obj = this.scene.scene.children[j];
+
+          if (snap2obj.visible && !that.autoAlignIgnoreObject(snap2obj) && that.hasMeshSubObjects(snap2obj))
+          {
+            var snap2bbox = new THREE.Box3();
+
+            snap2bbox.setFromObject(snap2obj);
+            if (Math.abs(snap2bbox.min.x) !== Infinity)
+            {
+              if (i === 0)
+              {
+                var s = bbox.size();
+                var s2 = snap2bbox.size();
+                if (Math.abs(s.x - s2.x) > 0.01 || Math.abs(s.y - s2.y) > 0.01)
+                {
+                  continue;
+                }
+              }
+
+              if (!((bbox.min.z >= (snap2bbox.max.z + GZ3D.AutoAlignModel.InnerBorder) ||
+                bbox.max.z <= (snap2bbox.min.z + GZ3D.AutoAlignModel.InnerBorder))))
+              {
+                if (!alignZFound)
+                {
+                  if (Math.abs(snap2bbox.min.x - bbox.max.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.x - bbox.min.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.x - bbox.min.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.x - bbox.max.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.y - bbox.max.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.y - bbox.min.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.y - bbox.min.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.y - bbox.max.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                  {
+                    if (Math.abs(snap2bbox.min.z - bbox.min.z) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                    {
+                      position.z = snap2bbox.min.z - (bbox.min.z - that.obj.position.z);
+                      alignZFound = true;
+                    }
+                    else if (Math.abs(snap2bbox.max.z - bbox.max.z) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                    {
+                      position.z = snap2bbox.max.z - (bbox.max.z - that.obj.position.z);
+                      alignZFound = true;
+                    }
+
+                    if (alignZFound)
+                    {
+                      that.obj.position.copy(position);
+                      bbox.setFromObject(that.obj);
+                    }
+                  }
+                }
+
+                if (!alignYFound)
+                {
+                  if (Math.abs(snap2bbox.min.x - bbox.max.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.x - bbox.min.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.x - bbox.min.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.x - bbox.max.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.z - bbox.max.z) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.z - bbox.min.z) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                  {
+                    if (Math.abs(snap2bbox.min.y - bbox.min.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                    {
+                      position.y = snap2bbox.min.y - (bbox.min.y - that.obj.position.y);
+                      this.displayAlignAxes[2].position.copy(new THREE.Vector3(position.x, snap2bbox.min.y, position.z));
+                      this.displayAlignAxes[2].visible = true;
+                      alignYFound = true;
+                    }
+                    if (Math.abs(snap2bbox.max.y - bbox.max.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                    {
+                      position.y = snap2bbox.max.y - (bbox.max.y - that.obj.position.y);
+                      this.displayAlignAxes[3].position.copy(new THREE.Vector3(position.x, snap2bbox.max.y, position.z));
+                      this.displayAlignAxes[3].visible = true;
+                      alignYFound = true;
+                    }
+
+                    if (alignYFound)
+                    {
+
+                      that.obj.position.copy(position);
+                      bbox.setFromObject(that.obj);
+                    }
+                  }
+                }
+
+                if (!alignXFound)
+                {
+                  if (Math.abs(snap2bbox.min.y - bbox.max.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.y - bbox.min.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.y - bbox.min.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.y - bbox.max.y) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.min.z - bbox.max.z) < GZ3D.AutoAlignModel.AutoAlignSnapDist ||
+                    Math.abs(snap2bbox.max.z - bbox.min.z) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                  {
+                    if (Math.abs(snap2bbox.min.x - bbox.min.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                    {
+                      position.x = snap2bbox.min.x - (bbox.min.x - that.obj.position.x);
+                      this.displayAlignAxes[0].position.copy(new THREE.Vector3(snap2bbox.min.x, position.y, position.z));
+                      this.displayAlignAxes[0].visible = true;
+                      alignXFound = true;
+                    }
+                    if (Math.abs(snap2bbox.max.x - bbox.max.x) < GZ3D.AutoAlignModel.AutoAlignSnapDist)
+                    {
+                      position.x = snap2bbox.max.x - (bbox.max.x - that.obj.position.x);
+                      this.displayAlignAxes[1].position.copy(new THREE.Vector3(snap2bbox.max.x, position.y, position.z));
+                      this.displayAlignAxes[1].visible = true;
+                      alignXFound = true;
+                    }
+
+                    if (alignXFound)
+                    {
+                      that.obj.position.copy(position);
+                      bbox.setFromObject(that.obj);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -744,36 +930,121 @@ GZ3D.AutoAlignModel.prototype.snapToObject = function (position)
 };
 
 /**
- * Align on the floor and auto-center if required
+ * Align snap object on target hitten mesh
  *
  */
 
-GZ3D.AutoAlignModel.prototype.alignOnShapeBelow = function (position)
+GZ3D.AutoAlignModel.prototype.alignOnShape = function (position, hitDesc)
 {
-  var resInfo = this.findBestSurfaceToAlignZ(position.z);
-  if (resInfo)
+  var bbox = new THREE.Box3().setFromObject(this.obj);
+  if (Math.abs(bbox.min.x) !== Infinity)
   {
-    position.z = resInfo.lowerZ;
+    var alignOnGround = true;
 
-    var bbox = new THREE.Box3().setFromObject(this.obj);
-    if (Math.abs(bbox.min.x) !== Infinity)
+    if (hitDesc && hitDesc.object && hitDesc.face)
     {
-      var centerbbox = new THREE.Box3().setFromObject(resInfo.lowerObject);
-      if (Math.abs(centerbbox.min.x) !== Infinity)
-      {
-        var pt1 = this.gravityPointOfFace(centerbbox, 4);
-        var pt2 = this.gravityPointOfFace(bbox, 5);
-        var vx = pt2.x - pt1.x;
-        var vy = pt2.y - pt1.y;
-        var minDist = GZ3D.AutoAlignModel.VerticalAutoAlignSnapDist;
+      var av = hitDesc.object.geometry.vertices[hitDesc.face.a],
+        bv = hitDesc.object.geometry.vertices[hitDesc.face.b],
+        cv = hitDesc.object.geometry.vertices[hitDesc.face.c];
 
-        if ((vx * vx + vy * vy) < (minDist * minDist))
+      var q = hitDesc.object.getWorldQuaternion();
+
+      var abv = new THREE.Vector3();
+      var acv = new THREE.Vector3();
+
+      abv.subVectors(bv, av);
+      acv.subVectors(cv, av);
+
+      var v = new THREE.Vector3();
+      v.copy(abv);
+
+      v.cross(acv);
+      v.normalize();
+
+      v.applyQuaternion(q);
+
+      if (Math.abs(v.x) > Math.abs(v.y))
+      {
+        v.y = 0;
+
+        if (Math.abs(v.x) > Math.abs(v.z))
         {
-          position.x = (pt1.x - (bbox.max.x - this.obj.position.x)) + (bbox.max.x - bbox.min.x) * 0.5;
-          position.y = (pt1.y - (bbox.max.y - this.obj.position.y)) + (bbox.max.y - bbox.min.y) * 0.5;
+          v.z = 0;
+        }
+        else
+        {
+          v.x = 0;
+        }
+      }
+      else
+      {
+        v.x = 0;
+
+        if (Math.abs(v.y) > Math.abs(v.z))
+        {
+          v.z = 0;
+        }
+        else
+        {
+          v.y = 0;
+        }
+      }
+
+      v.normalize();
+
+      if (v.x > 0)
+      {
+        position.x = position.x - (bbox.min.x - this.obj.position.x);
+      }
+      else if (v.x < 0)
+      {
+        position.x = position.x - (bbox.max.x - this.obj.position.x);
+      }
+      else if (v.y > 0)
+      {
+        position.y = position.y - (bbox.min.y - this.obj.position.y);
+      }
+      else if (v.y < 0)
+      {
+        position.y = position.y - (bbox.max.y - this.obj.position.y);
+      }
+      else if (v.z < 0)
+      {
+        position.z = position.z - (bbox.max.z - this.obj.position.z);
+        alignOnGround = false;
+      }
+
+    }
+    else
+    {
+      alignOnGround = false;
+      var resInfo = this.findBestSurfaceToAlignZ(position.z);
+      if (resInfo)
+      {
+        position.z = resInfo.lowerZ;
+        var centerbbox = new THREE.Box3().setFromObject(resInfo.lowerObject);
+        if (Math.abs(centerbbox.min.x) !== Infinity)
+        {
+          var pt1 = this.gravityPointOfFace(centerbbox, 4);
+          var pt2 = this.gravityPointOfFace(bbox, 5);
+          var vx = pt2.x - pt1.x;
+          var vy = pt2.y - pt1.y;
+          var minDist = GZ3D.AutoAlignModel.AutoAlignSnapDist;
+
+          if ((vx * vx + vy * vy) < (minDist * minDist))
+          {
+            position.x = (pt1.x - (bbox.max.x - this.obj.position.x)) + (bbox.max.x - bbox.min.x) * 0.5;
+            position.y = (pt1.y - (bbox.max.y - this.obj.position.y)) + (bbox.max.y - bbox.min.y) * 0.5;
+          }
         }
       }
     }
+
+    if (alignOnGround)
+    {
+      position.z = position.z - (bbox.min.z - this.obj.position.z);
+    }
+
   }
 
   return position;
@@ -849,7 +1120,7 @@ GZ3D.AutoAlignModel.prototype.start = function (objectToAlign)
 {
   this.obj = objectToAlign;
   this.disableSnap = false;
-
+  this.initUIHelpers();
 };
 
 /**
@@ -862,6 +1133,7 @@ GZ3D.AutoAlignModel.prototype.finish = function ()
 
   this.obj = undefined;
   this.needsAlignOnFloor = false;
+  this.hideUIHelpers();
 };
 
 
@@ -874,13 +1146,16 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
 {
   var raycaster = new THREE.Raycaster();
   var point, i;
-  var higherZ = -1000;
+  var distance = -1000;
+  var hitDesc;
 
   var viewWidth = this.scene.getDomElement().clientWidth;
   var viewHeight = this.scene.getDomElement().clientHeight;
   var originalObjPos = new THREE.Vector3(this.obj.position.x, this.obj.position.y, this.obj.position.z);
 
-  if (this.scene.snapToFloor && !this.disableSnap)
+  this.hideUIHelpers();
+
+  if (!this.disableSnap)
   {
     raycaster.setFromCamera(new THREE.Vector2((positionX / viewWidth) * 2 - 1,
       -(positionY / viewHeight) * 2 + 1), this.scene.camera);
@@ -893,10 +1168,11 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
 
       if (!this.autoAlignIgnoreObject(idesc.object))
       {
-        if (idesc.point.z > higherZ || !point)
+        if (idesc.distance < distance || !point)
         {
-          higherZ = idesc.point.z;
+          distance = idesc.distance;
           point = idesc.point.clone();
+          hitDesc = idesc;
         }
       }
     }
@@ -929,10 +1205,10 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
       }
     }
 
-    if (this.scene.snapToFloor && !this.disableSnap)
+    if (!this.disableSnap)
     {
       this.obj.position.copy(point);
-      point = this.alignOnShapeBelow(point);
+      point = this.alignOnShape(point, hitDesc);
     }
     else
     {
@@ -944,10 +1220,10 @@ GZ3D.AutoAlignModel.prototype.moveAlignModel = function (positionX, positionY)
       point.z = originalObjPos.z;
     }
 
-    if (this.scene.snapToObject && !this.disableSnap)
+    if (!this.disableSnap)
     {
       this.obj.position.copy(point);
-      point = this.snapToObject(point);
+      point = this.alignToObjects(point);
     }
 
     if (this.scene.modelManipulator.lockXAxis)
@@ -2120,7 +2396,7 @@ GZ3D.Composer.prototype.render = function (view)
         }
     }
 
-    if (!this.loadingPBR && this.pbrMaterial && !this.loadingSkyBox && cs.dynamicEnvMap)
+    if (!this.loadingPBR && this.pbrMaterial && !this.loadingSkyBox && cs.dynamicEnvMap && !this.gz3dScene.dontRebuildCubemapNow)
     {
         if (this.cubeMapNeedsUpdate)
         {
@@ -3447,7 +3723,7 @@ GZ3D.Gui.prototype.init = function()
             that.scene.spawnModel.start(entity, function (obj)
             {
               that.emitter.emit('entityCreated', obj, entity);
-            },modelEntity.position,modelEntity.quaternion);
+            },modelEntity.position,modelEntity.quaternion,modelEntity.scale);
 
             guiEvents.emit('notification_popup',
               'Place ' + name + ' at the desired position');
@@ -4488,6 +4764,7 @@ GZ3D.Gui.prototype.deleteFromStats = function(type, name)
 
 THREE.ImageUtils.crossOrigin = 'anonymous'; // needed to allow cross-origin loading of textures
 
+
 GZ3D.GZIface = function(scene, gui)
 {
   this.scene = scene;
@@ -4506,6 +4783,8 @@ GZ3D.GZIface = function(scene, gui)
 
   // Stores muscle visualization geometries
   this.muscleVisuzalizations = {};
+
+  this.waitingForScaleNewObjects = [];
 
   GZ3D.assetProgressData = {};
   GZ3D.assetProgressData.assets = [];
@@ -4560,6 +4839,43 @@ GZ3D.GZIface.prototype.connect = function() {
 GZ3D.GZIface.prototype.onError = function()
 {
   this.emitter.emit('error');
+};
+
+
+GZ3D.GZIface.prototype.createEntityModifyMessage = function(entity)
+{
+  var matrix = entity.matrixWorld;
+  var translation = new THREE.Vector3();
+  var quaternion = new THREE.Quaternion();
+  var scale = new THREE.Vector3();
+  matrix.decompose(translation, quaternion, scale);
+
+  var entityMsg =
+  {
+    name : entity.name,
+    id : entity.userData,
+    createEntity : 0,
+    position :
+    {
+      x : translation.x,
+      y : translation.y,
+      z : translation.z
+    },
+    scale :
+    {
+      x : scale.x,
+      y : scale.y,
+      z : scale.z
+    },
+    orientation :
+    {
+      w: quaternion.w,
+      x: quaternion.x,
+      y: quaternion.y,
+      z: quaternion.z
+    }
+  };
+  return entityMsg;
 };
 
 GZ3D.GZIface.prototype.onConnected = function()
@@ -4984,41 +5300,6 @@ GZ3D.GZIface.prototype.onConnected = function()
     messageType : 'light',
   });
 
-  var createEntityModifyMessage = function(entity)
-  {
-    var matrix = entity.matrixWorld;
-    var translation = new THREE.Vector3();
-    var quaternion = new THREE.Quaternion();
-    var scale = new THREE.Vector3();
-    matrix.decompose(translation, quaternion, scale);
-
-    var entityMsg =
-    {
-      name : entity.name,
-      id : entity.userData,
-      createEntity : 0,
-      position :
-      {
-        x : translation.x,
-        y : translation.y,
-        z : translation.z
-      },
-      scale :
-      {
-        x : scale.x,
-        y : scale.y,
-        z : scale.z
-      },
-      orientation :
-      {
-        w: quaternion.w,
-        x: quaternion.x,
-        y: quaternion.y,
-        z: quaternion.z
-      }
-    };
-    return entityMsg;
-  };
 
   /*
   TODO: (Sandro Weber)
@@ -5028,7 +5309,7 @@ GZ3D.GZIface.prototype.onConnected = function()
    */
   var createEntityModifyMessageWithLight = function (entity, diffuse)
   {
-    var entityMsg = createEntityModifyMessage(entity);
+    var entityMsg = that.createEntityModifyMessage(entity);
 
     var lightObj = entity.children[0];
 
@@ -5074,7 +5355,7 @@ GZ3D.GZIface.prototype.onConnected = function()
       }
       else
       {
-        that.modelModifyTopic.publish(createEntityModifyMessage(entity));
+        that.modelModifyTopic.publish(that.createEntityModifyMessage(entity));
       }
     }
   };
@@ -5104,7 +5385,7 @@ GZ3D.GZIface.prototype.onConnected = function()
       lights[i].color.g = THREE.Math.clamp(vec + lights[i].color.g, 0, 1);
       lights[i].color.b = THREE.Math.clamp(vec + lights[i].color.b, 0, 1);
 
-      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, lights[i].color));
+      that.lightModifyTopic.publish(that.createEntityModifyMessageWithLight(entity, lights[i].color));
     }
   };
 
@@ -5187,6 +5468,11 @@ GZ3D.GZIface.prototype.onConnected = function()
     else
     {
       that.factoryTopic.publish(entityMsg);
+
+      if (scale.x!==1.0 || scale.y!==1.0 || scale.z!==1.0)  // The factory topic does not handle the scale value, so I have to publish a modify message
+      {                                                     // to apply the scale transform. I'll do it later, since I don't have the ID of the new created object now
+        that.waitingForScaleNewObjects[model.name] = [scale.x,scale.y,scale.z];
+      }
     }
   };
 
@@ -5468,6 +5754,18 @@ GZ3D.GZIface.prototype.createModelFromMsg = function(model)
   modelObj.userData.isSimpleShape = (shapeName !== 'complex');
   modelObj.getShapeName  = function () { return this.userData.shapeName; };
   modelObj.isSimpleShape = function () { return this.userData.isSimpleShape; };
+
+  if (this.waitingForScaleNewObjects[model.name])
+  {
+    modelObj.scale.x = this.waitingForScaleNewObjects[model.name][0];
+    modelObj.scale.y = this.waitingForScaleNewObjects[model.name][1];
+    modelObj.scale.z = this.waitingForScaleNewObjects[model.name][2];
+    modelObj.updateMatrixWorld();
+    this.modelModifyTopic.publish(this.createEntityModifyMessage(modelObj));
+
+    delete this.waitingForScaleNewObjects[model.name];
+  }
+
 
   return modelObj;
 };
@@ -7023,6 +7321,11 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
    */
   this.update = function()
   {
+    if (this.gz3dScene.manipulationMode !== 'natural')
+    {
+      setMoveHoverMesh(null);
+    }
+
     if(this.object === undefined)
     {
       return;
@@ -7439,12 +7742,134 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
     onPointerMove(event);
   };
 
+  var moveHoverMesh = null;
+
+  function setMoveHoverMesh(obj)
+  {
+    if (moveHoverMesh===obj)
+    {
+      return;
+    }
+    if (moveHoverMesh)
+    {
+      moveHoverMesh.traverse(function (obj)
+      {
+        if (obj.material && obj.material.emissive)
+        {
+          obj.material.emissive.r = obj.material._tempEmissive.r;
+          obj.material.emissive.g = obj.material._tempEmissive.g;
+          obj.material.emissive.b = obj.material._tempEmissive.b;
+          obj.material.color.r = obj.material._tempColor.r;
+          obj.material.color.g = obj.material._tempColor.g;
+          obj.material.color.b = obj.material._tempColor.b;
+          obj.material._tempEmissive = undefined;
+          obj.material._tempColor = undefined;
+        }
+      });
+    }
+
+
+    if (obj)
+    {
+      obj.traverse(function (obj)
+      {
+        if (obj.material && obj.material.emissive)
+        {
+          obj.material._tempEmissive = obj.material.emissive.clone();
+          obj.material._tempColor= obj.material.color.clone();
+          obj.material.emissive.r = 0.1;
+          obj.material.emissive.g = 0.01;
+          obj.material.emissive.b = 0.08;
+          obj.material.color.r = 0.8;
+          obj.material.color.g = 0.8;
+          obj.material.color.b = 0.8;
+        }
+      });
+    }
+
+    moveHoverMesh = obj;
+    scope.gz3dScene.dontRebuildCubemapNow = moveHoverMesh!==null;
+  }
+
+  function processNaturalMoveHover(event)
+  {
+    if (scope.gz3dScene.naturalAutoAlignMode)
+    {
+        return;
+    }
+
+    var positionX = event.clientX, positionY = event.clientY;
+    var raycaster = new THREE.Raycaster();
+    var i;
+    var distance = -1000;
+    var hitDesc;
+    var point;
+
+    var viewWidth = scope.gz3dScene.getDomElement().clientWidth;
+    var viewHeight = scope.gz3dScene.getDomElement().clientHeight;
+
+    raycaster.setFromCamera(new THREE.Vector2((positionX / viewWidth) * 2 - 1,
+      -(positionY / viewHeight) * 2 + 1), scope.gz3dScene.camera);
+
+    var objects = raycaster.intersectObjects(scope.gz3dScene.scene.children, true);
+
+    for (i = 0; i < objects.length; i++)
+    {
+      var idesc = objects[i];
+      var meshobj = idesc.object;
+
+      if (meshobj.name.indexOf('_lightHelper') >= 0 || meshobj.name === 'grid' || meshobj.name === 'boundingBox' ||
+        ((meshobj instanceof THREE.Camera)) || (meshobj instanceof THREE.Light) || (meshobj instanceof THREE.CameraHelper) ||
+        (meshobj instanceof THREE.LensFlare) || (meshobj instanceof THREE.GridHelper))
+      {
+        continue;
+      }
+
+      if (idesc.distance < distance || !point)
+      {
+        distance = idesc.distance;
+        hitDesc = idesc;
+        point = idesc.point.clone();
+      }
+
+    }
+
+
+    if (hitDesc && hitDesc.object)
+    {
+      var rootObject = hitDesc.object;
+      while(rootObject && !(rootObject.parent instanceof THREE.Scene))
+      {
+        rootObject = rootObject.parent;
+      }
+
+      setMoveHoverMesh(rootObject);
+    }
+    else
+    {
+      setMoveHoverMesh(null);
+    }
+  }
+
   /**
    * Window event callback (mouse move and touch move)
    * @param {} event
    */
   function onPointerMove(event)
   {
+    if (scope.gz3dScene.naturalAutoAlignMode)
+    {
+      setMoveHoverMesh(scope.gz3dScene.naturalAutoAlignMode.obj);
+    }
+    else if (scope.gz3dScene.manipulationMode === 'natural')
+    {
+      processNaturalMoveHover(event);
+    }
+    else
+    {
+      setMoveHoverMesh(null);
+    }
+
     if(scope.selected === 'null')
     {
       return;
@@ -8710,10 +9135,6 @@ GZ3D.Scene.prototype.init = function()
   this.manipulationMode = 'view';
   this.pointerOnMenu = false;
 
-  // Snap to object/floor
-  this.snapToFloor = true;
-  this.snapToObject = true;
-
   // create views manager
   this.viewManager = new GZ3D.MultiView(this);
 
@@ -9125,6 +9546,8 @@ GZ3D.Scene.prototype.onPointerDown = function(event)
   if (this.manipulationMode==='natural')
   {
     this.beginNaturalManipulation(event);
+    this.updateUI();
+
     if (this.naturalAutoAlignMode)
     {
       return;
@@ -11897,6 +12320,9 @@ GZ3D.SdfParser.prototype.createVisual = function(visual)
         .setPose(visualObj, visualPose.position, visualPose.orientation);
     }
 
+    visualObj.castShadow = visual.cast_shadows;
+    visualObj.receiveShadow = visual.receive_shadows;
+
     this.createGeom(visual.geometry, visual.material, visualObj);
 
     return visualObj;
@@ -12302,7 +12728,7 @@ GZ3D.SpawnModel.prototype.init = function ()
  * @param {string} entity
  * @param {function} callback
  */
-GZ3D.SpawnModel.prototype.start = function (entity, callback, position, quaternion)
+GZ3D.SpawnModel.prototype.start = function (entity, callback, position, quaternion,scale)
 {
   if (this.active)
   {
@@ -12388,6 +12814,11 @@ GZ3D.SpawnModel.prototype.start = function (entity, callback, position, quaterni
   if (position && quaternion)
   {
     this.scene.setPose(this.obj, position, quaternion);
+  }
+
+  if (scale)
+  {
+    this.scene.setScale(this.obj, scale);
   }
 
   this.active = true;
