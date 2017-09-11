@@ -224,15 +224,20 @@
             });
         }
 
-        scope.refresh = function () {
+
+        let refreshEditors = () => {
+          codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) { return 'transfer-function-' + tf.id; }));
+        };
+
+        scope.refresh = function() {
           if (scope.collabDirty) {
-            codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) {return 'transfer-function-' + tf.id;}));
-            return;
+            refreshEditors();
+          } else {
+            loadTFs().then(function() {
+              refreshEditors();
+              refreshPopulations();
+            });
           }
-          loadTFs().then(function() {
-            codeEditorsServices.refreshAllEditors(scope.transferFunctions.map(function(tf) { return 'transfer-function-' + tf.id; }));
-            refreshPopulations();
-          });
         };
 
         // update UI
@@ -254,10 +259,10 @@
                 }
               },
               () => {
-                scope.refresh();
+                refreshEditors();
               }
             );
-            scope.refresh();
+            refreshEditors();
           },
           300
         );
@@ -546,6 +551,8 @@
           else
             scope.transferFunctions = autoSaved;
         });
+
+        scope.refresh();
       }
     };
   }]);

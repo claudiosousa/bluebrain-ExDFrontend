@@ -191,6 +191,7 @@ describe('Directive: transferFunctionEditor', function () {
   });
 
    it('should refresh code editors on refresh if dirty', function() {
+    codeEditorsServices.refreshAllEditors.calls.reset();
     expect(codeEditorsServices.refreshAllEditors.calls.count()).toBe(0);
     isolateScope.collabDirty = true;
     isolateScope.transferFunctions = [1, 2, 3];
