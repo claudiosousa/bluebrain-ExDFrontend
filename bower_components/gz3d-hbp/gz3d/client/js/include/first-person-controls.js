@@ -80,6 +80,8 @@ THREE.FirstPersonControls = function(userView)
     //  this.domElement.focus();
     //}
 
+    $(document.activeElement).blur();
+
     event.preventDefault();
     event.stopPropagation();
 

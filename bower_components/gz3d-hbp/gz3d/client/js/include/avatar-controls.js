@@ -114,6 +114,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
     //  this.domElementPointerBindings.focus();
     //}
 
+    $(document.activeElement).blur();
     event.preventDefault();
     event.stopPropagation();
 
