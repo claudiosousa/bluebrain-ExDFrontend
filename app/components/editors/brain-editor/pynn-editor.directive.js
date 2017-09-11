@@ -74,13 +74,19 @@
         templateUrl: 'components/editors/brain-editor/pynn-editor.template.html',
         restrict: 'E',
         scope: {},
+        replace:true,
         link: function (scope, element, attrs) {
+
+          let messageCallbackHandler = stateService.addMessageCallback((message) => {
+            if (message.action === 'setbrain')
+              if (element.is(':visible'))
+                scope.refresh();
+          });
 
           scope.isPrivateExperiment = environmentService.isPrivateExperiment();
           scope.loading = false;
           scope.collabDirty = false;
           scope.localBrainDirty = false;
-          scope.localPopulationsDirty = false;
           scope.isSavingToCollab = false;
 
           var ScriptObject = pythonCodeHelper.ScriptObject;
@@ -97,7 +103,6 @@
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
               scope.collabDirty = false;
               scope.localBrainDirty = false;
-              scope.localPopulationsDirty = false;
             }
           });
 
@@ -105,6 +110,7 @@
             scope.resetListenerUnbindHandler();
             scope.unbindWatcherResize();
             scope.unbindListenerUpdatePanelUI();
+            stateService.removeMessageCallback(messageCallbackHandler);
             editorToolbarService.showPynnEditor = false;
           });
 
@@ -139,7 +145,7 @@
                 scope.populations = undefined;
                 refreshEditor();
               }
-              $timeout(() => scope.localPopulationsDirty = scope.localBrainDirty = false);
+              $timeout(() => scope.localBrainDirty = false);
             });
           };
 
@@ -273,7 +279,6 @@
                     codeEditorsServices.getEditor("codeEditor").markClean();
                     scope.clearError();
                     scope.localBrainDirty = false;
-                    scope.localPopulationsDirty = false;
                     if (restart) {
                       stateService.setCurrentState(STATE.STARTED);
                     }
@@ -291,12 +296,6 @@
                         template: 'Applying your changes may update the population name your transfer functions. Do you wish to continue?',
                         closable: false
                       }).then(scope.agreeAction, function () {
-                      });
-                    }
-                    else if (result.data.error_line === 0 && result.data.error_column === 0){
-                      clbErrorDialog.open({
-                        type: 'BackendError.',
-                        message: result.data.error_message
                       });
                     }else{
                       scope.markError(
@@ -364,17 +363,14 @@
             scope.updateRegexPatterns();
           };
 
-          scope.onPynnChange = function (brainChanges=false) {
+          scope.onPynnChange = function () {
             scope.collabDirty = environmentService.isPrivateExperiment();
-            if (brainChanges)
-              scope.localBrainDirty = true;
-            else
-              scope.localPopulationsDirty = true;
+            scope.localBrainDirty = true;
             autoSaveService.setDirty(DIRTY_TYPE, scope.pynnScript.code);
           };
 
           scope.$watch('pynnScript.code', function (after, before) {
-            if (before !== 'empty') scope.onPynnChange(true);
+            if (before !== 'empty') scope.onPynnChange();
           });
           scope.$watchCollection('populations', function (after, before) {
             if (before !== 'empty') scope.onPynnChange();
