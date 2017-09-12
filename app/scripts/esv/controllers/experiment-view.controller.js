@@ -43,7 +43,7 @@
 
   class ExperimentViewController
   {
-    constructor(scope, stateService, STATE, userContextService,
+    constructor(scope, element, stateService, STATE, userContextService,
                 nrpAnalytics,environmentRenderingService,gz3d,log,
                 colorableObjectService,
                 simulationInfo,
@@ -51,6 +51,7 @@
                 timeout,
                 window)
     {
+      this.element = element;
       this.userContextService = userContextService;
       this.simulationInfo = simulationInfo;
 
@@ -193,11 +194,20 @@
 
       });
     }
+
+    exit(){
+      //calls the exit function that has been moved to the toolbar
+      const  editorToolbar = 'editor-toolbar';
+      if (this.element){ //not systematically mocked in the tests
+        const controller = angular.element(this.element.find(editorToolbar)).controller(editorToolbar);
+        controller.exit();
+      }
+    }
   }
 
   angular
     .module('exdFrontendApp')
-    .controller('experimentViewController', ['$scope', 'stateService', 'STATE','userContextService',
+    .controller('experimentViewController', ['$scope', '$element', 'stateService', 'STATE','userContextService',
                                               'nrpAnalytics','environmentRenderingService','gz3d','$log',
                                               'colorableObjectService','simulationInfo','contextMenuState','$timeout',
                                               '$window',
