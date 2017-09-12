@@ -462,14 +462,35 @@
         return;
       }
 
-      // open overlays for every view that doesn't have a container
+      var allHidden = true;
+
       this.gz3dViewsService.views.forEach(
-        (view, index, array) => {
-          if (view.container === undefined) {
-            this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
+        (view, index, array) =>
+        {
+          if (view.name !== "main_view" && view.container !== undefined)
+          {
+            allHidden = false;
           }
         }
       );
+
+      if (allHidden)
+      {
+        // open overlays for every view that doesn't have a container
+        this.gz3dViewsService.views.forEach(
+          (view, index, array) =>
+          {
+            if (view.container === undefined)
+            {
+              this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
+            }
+          }
+        );
+      }
+      else
+      {
+        this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
+      }
 
       this.nrpAnalytics.eventTrack('Toggle-robot-view', {
         category: 'Simulation-GUI',
