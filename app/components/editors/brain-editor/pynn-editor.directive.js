@@ -297,6 +297,14 @@
                         closable: false
                       }).then(scope.agreeAction, function () {
                       });
+                    }
+                    else if (result.data.error_line === -1 && result.data.error_column === -1){
+                      scope.refresh();
+                      clbErrorDialog.open({
+                        type: 'Impossible to delete population',
+                        message: 'Please remove all references to the population in the transfer functions and try again.',
+                        data: { error: result.data.error_message }
+                      });
                     }else{
                       scope.markError(
                         result.data.error_message,
