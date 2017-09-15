@@ -79,7 +79,8 @@
           scope.isPrivateExperiment = environmentService.isPrivateExperiment();
           scope.loading = false;
           scope.collabDirty = false;
-          scope.localDirty = false;
+          scope.localBrainDirty = false;
+          scope.localPopulationsDirty = false;
           scope.isSavingToCollab = false;
 
           var ScriptObject = pythonCodeHelper.ScriptObject;
@@ -95,7 +96,8 @@
           scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
               scope.collabDirty = false;
-              scope.localDirty = false;
+              scope.localBrainDirty = false;
+              scope.localPopulationsDirty = false;
             }
           });
 
@@ -131,6 +133,7 @@
                 scope.populations = undefined;
                 codeEditorsServices.refreshEditor(editor);
               }
+              $timeout(() => scope.localPopulationsDirty = scope.localBrainDirty = false);
             });
           };
 
@@ -266,7 +269,8 @@
                     scope.loading = false;
                     codeEditorsServices.getEditor("codeEditor").markClean();
                     scope.clearError();
-                    scope.localDirty = false;
+                    scope.localBrainDirty = false;
+                    scope.localPopulationsDirty = false;
                     if (restart) {
                       stateService.setCurrentState(STATE.STARTED);
                     }
@@ -358,17 +362,20 @@
             scope.updateRegexPatterns();
           };
 
-          scope.onBrainChange = function () {
+          scope.onPynnChange = function (brainChanges=false) {
             scope.collabDirty = environmentService.isPrivateExperiment();
-            scope.localDirty = true;
+            if (brainChanges)
+              scope.localBrainDirty = true;
+            else
+              scope.localPopulationsDirty = true;
             autoSaveService.setDirty(DIRTY_TYPE, scope.pynnScript.code);
           };
 
           scope.$watch('pynnScript.code', function (after, before) {
-            if (before) scope.onBrainChange();
+            if (before !== 'empty') scope.onPynnChange(true);
           });
           scope.$watchCollection('populations', function (after, before) {
-            if (before) scope.onBrainChange();
+            if (before !== 'empty') scope.onPynnChange();
           });
 
           scope.addList = function () {

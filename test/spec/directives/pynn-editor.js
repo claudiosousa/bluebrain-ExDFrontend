@@ -380,10 +380,10 @@ describe('Directive: pynnEditor', function () {
 
     it('should set dirty flags on event RESET', function () {
       isolateScope.collabDirty = true;
-      isolateScope.localDirty = true;
+      isolateScope.localBrainDirty = true;
       isolateScope.$broadcast('RESET', RESET_TYPE.RESET_FULL);
       expect(isolateScope.collabDirty).toBe(false);
-      expect(isolateScope.localDirty).toBe(false);
+      expect(isolateScope.localBrainDirty).toBe(false);
     });
   });
 

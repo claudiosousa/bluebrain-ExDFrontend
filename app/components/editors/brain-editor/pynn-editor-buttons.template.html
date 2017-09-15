@@ -6,7 +6,7 @@
 </button>
 <button type="button" owner-only class="btn btn-default btn-md"
         ng-click="apply(0)"
-        ng-disabled="loading || stateService.statePending || !populationForm.$valid"
+        ng-disabled="loading || stateService.statePending || !populationForm.$valid || !localPopulationsDirty"
         v-busy="loading || stateService.statePending"
         v-busy-label="Applying changes"
         v-pressable>
