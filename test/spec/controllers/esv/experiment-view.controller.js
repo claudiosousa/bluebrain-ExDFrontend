@@ -129,6 +129,7 @@ describe('Controller: ExperimentViewController', function () {
 
       ExperimentViewController = controller('experimentViewController', {
         $scope: scope,
+        $element:undefined,
         stateService: stateService,
         STATE: STATE,
         userContextService: userContextService,
@@ -295,13 +296,19 @@ describe('Controller: ExperimentViewController', function () {
   });
 
   describe('(EditMode)', function() {
-    beforeEach(function () {
+    var elementMock;
+    beforeEach(function() {
       environmentService.setPrivateExperiment(true);
       lockServiceMock.tryAddLock.calls.reset();
       lockServiceMock.releaseLock.calls.reset();
 
-    ExperimentViewController = controller('experimentViewController', {
+      elementMock = {
+        find: jasmine.createSpy('find')
+      };
+
+      ExperimentViewController = controller('experimentViewController', {
         $scope: scope,
+        $element: elementMock,
         stateService: stateService,
         STATE: STATE,
         userContextService: userContextService,
@@ -315,7 +322,25 @@ describe('Controller: ExperimentViewController', function () {
         $timeout: timeout,
         $window: window,
       });
+    });
+
+    it(' - controller exit() should call toolbar controller exit', function() {
+      var exitMock = jasmine.createSpy('exit');
+
+      var controllerMock = jasmine.createSpy('controller')
+        .and.returnValue({
+          exit: exitMock
         });
+
+      spyOn(angular, 'element').and.returnValue({
+        controller:controllerMock
+      });
+      ExperimentViewController.exit();
+      var editorToolbar = 'editor-toolbar';
+      expect(elementMock.find).toHaveBeenCalledWith(editorToolbar);
+      expect(controllerMock).toHaveBeenCalledWith(editorToolbar);
+      expect(exitMock).toHaveBeenCalled();
+    });
 
     it(' - onContainerMouseDown() should make the right calls', function() {
       var eventMock = {};
