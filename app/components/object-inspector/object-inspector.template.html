@@ -58,7 +58,7 @@
           </li>
           <!-- sub-section - numerical translation, collapsible -->
           <li class="sub-section-item" ng-show="!collapsedTransform">
-            <h6>Translation</h6>
+            <h6>Translation (meters)</h6>
             <ol class="vec3-num-input-list" ng-show="objectInspectorService.selectedObject.position">
               <li class="vec3-num-input-item">
                 <input interactive id="oi-translate-x" type="number" name="translate-x" class="vec3-num-input" ng-model="objectInspectorService.translation.x"
@@ -77,7 +77,7 @@
 
           <!-- sub-section - numerical rotation, collapsible -->
           <li class="sub-section-item" ng-show="!collapsedTransform">
-            <h6>Rotation</h6>
+            <h6>Rotation (degrees)</h6>
             <ol class="vec3-num-input-list" ng-show="objectInspectorService.selectedObject.rotation">
               <li class="vec3-num-input-item">
                 <input interactive id="oi-rot-euler-x" type="number" name="rotate-x" class="vec3-num-input" ng-model="objectInspectorService.rotationEuler.x"
