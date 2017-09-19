@@ -50,7 +50,7 @@
     };
   }]);
 
-  module.factory('simulationCreationInterceptor', ['$q', '$log', 'serverError', function ($q, $log, serverError) {
+  module.factory('simulationCreationInterceptor', ['$q', '$log', '$window','serverError', function ($q, $log, $window, serverError) {
     // white list of non-fatal error regexps
     var NON_FATAL_ERRORS_WHITELIST = [
       'Another',
@@ -85,7 +85,9 @@
         if (isFatal)
         {
           // If it is a fatal error, then we go through the normal error handling
-          serverError.displayHTTPError(error, true);
+          // reload the page after the modal has been closed
+          var reloadPage = () => $window.location.reload();
+          serverError.displayHTTPError(error, true, reloadPage);
         } else
         {
           // Log error on console

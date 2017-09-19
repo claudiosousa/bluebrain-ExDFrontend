@@ -345,7 +345,7 @@ describe('Directive: transferFunctionEditor', function () {
       var errorType = isolateScope.ERROR.RUNTIME;
       var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.TRANSFER_FUNCTION };
 
-      spyOn(clbErrorDialog, 'open');
+      spyOn(clbErrorDialog, 'open').and.returnValue($q.when());
       expect(clbErrorDialog.open).not.toHaveBeenCalled();
 
       // can't find a way to set offsetParent in phantomjs, or force element display

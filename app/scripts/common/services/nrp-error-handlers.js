@@ -124,6 +124,7 @@
     'nrpAnalytics',
     '$log',
     '$q',
+    '$window',
     'NO_CLUSTER_AVAILABLE_ERR_MSG',
     function(
       nrpErrorService,
@@ -131,6 +132,7 @@
       nrpAnalytics,
       $log,
       $q,
+      $window,
       NO_CLUSTER_AVAILABLE_ERR_MSG
     ) {
       var filter = function(response) {
@@ -150,8 +152,10 @@
         return true;
       };
 
-      var displayError = function(nrpError) {
-        clbErrorDialog.open(nrpError);
+      var displayError = function(nrpError, successClbk) {
+
+        successClbk = successClbk || _.noop;
+        clbErrorDialog.open(nrpError).then(successClbk);
 
         // record the error in the analytics
         var code = "No code", message = "No template";
@@ -165,7 +169,7 @@
         });
       };
 
-      var displayHTTPError = function(response, keepErrorMessage) {
+      var displayHTTPError = function(response, keepErrorMessage, successClbk) {
         response = angular.extend({
           human_readable: nrpErrorService.httpError(response).message
         },
@@ -199,7 +203,8 @@
           response.server && (nrpError.message += ' (host: ' + response.server + ')');
 
           // display the parsed http error
-          displayError(nrpError);
+          successClbk = successClbk || _.noop;
+          displayError(nrpError, successClbk);
         }
         else {
           $log.debug(response);
