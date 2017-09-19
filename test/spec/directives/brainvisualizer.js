@@ -63,7 +63,7 @@ describe('Directive: brainvisualizer', function() {
       var that = this;
       var res = {};
       res.then = function(callback) {
-        var testData = '{"xyz":[100,0,0,-100,0,0,100,0,100,-100,0,100,0,0,100,0,0,-100,0,100,-100,0,100,100],"populations":{"record":{"to":2,"step":null,"from":0,"color":"hsl(0,70%,80%)","name":"record","visible":true},"neurons":{"to":2,"step":null,"from":0,"color":"hsl(120,70%,80%)","name":"neurons","visible":true}}}';
+        var testData = '{"position":[[0,0,0],[0,0,0]],"color":[[0,0,0],[0,0,0]]}';
 
         if (that.fileWrongFormat) {
           testData = null;
@@ -109,9 +109,11 @@ describe('Directive: brainvisualizer', function() {
             setDistribution: function(p) {_$rootScope_.distribution = p;},
             setDisplayType: function(p) {_$rootScope_.display = p;},
             setShape: function(p) {_$rootScope_.shape = p;},
+            setColorMap: function(p) {_$rootScope_.colorMap = p;},
             displaySpikes: jasmine.createSpy('displaySpikes'),
             updatePopulationVisibility: angular.noop,
-            terminate: jasmine.createSpy('terminate')
+            terminate: jasmine.createSpy('terminate'),
+            userData:{'position':[[0,0,0],[0,0,0]],'colors':[[0,0,0],[0,0,0]],'populations':{}}
           })
       };
 
@@ -170,6 +172,22 @@ describe('Directive: brainvisualizer', function() {
       expect($rootScope.shape).toBe(true);
 
     });
+
+    it('should color map', function() {
+      $rootScope.$digest();
+
+      $rootScope.$$childTail.setColorMap('user');
+      expect($rootScope.colorMap).toBe('user');
+
+    });
+
+    it('should set user shape', function() {
+      $rootScope.$digest();
+
+      $rootScope.$$childTail.setShape('User');
+      expect($rootScope.shape).toBe('User');
+    });
+
 
     it('should set distribution', function() {
       $rootScope.$digest();
@@ -246,7 +264,8 @@ describe('Directive: brainvisualizer', function() {
             setShape: function(p) {_$rootScope_.shape = p;},
             displaySpikes: jasmine.createSpy('displaySpikes'),
             updatePopulationVisibility: angular.noop,
-            terminate: jasmine.createSpy('terminate')
+            terminate: jasmine.createSpy('terminate'),
+            userData:{'position':[[0,0,0],[0,0,0]],'colors':[[0,0,0],[0,0,0]]}
           })
       };
 
@@ -273,7 +292,6 @@ describe('Directive: brainvisualizer', function() {
       $rootScope.$digest();
 
       expect(window.BRAIN3D.MainView).toHaveBeenCalled();
-      //expect($rootScope.$$childTail.initBrainContainer).not.toHaveBeenCalled();
     });
 
     it('should be able to init with a bad formatted file', function() {
@@ -294,25 +312,6 @@ describe('Directive: brainvisualizer', function() {
       expect(window.BRAIN3D.MainView).toHaveBeenCalled();
 
     });
-    //
-    //it('should skip init brain container and call initWithPopulation', function() {
-    //  simulationConfigServiceMock.fileExists = false;
-    //  $rootScope.$$childTail.initBrainContainer = jasmine.createSpy('initBrainContainer');
-    //  $rootScope.$$childTail.initWithPopulations = jasmine.createSpy('initWithPopulations');
-    //  $rootScope.$digest();
-    //
-    //  expect($rootScope.$$childTail.initBrainContainer).not.toHaveBeenCalled();
-    //  //expect($rootScope.$$childTail.initWithPopulations).toHaveBeenCalled();
-    //});
-    //
-    //it('should skip init brain container and call initWithPopulation', function() {
-    //  simulationConfigServiceMock.fileWrongFormat = false;
-    //  $rootScope.$$childTail.initBrainContainer = jasmine.createSpy('initBrainContainer');
-    //  $rootScope.$$childTail.initWithPopulations = jasmine.createSpy('initWithPopulations');
-    //  $rootScope.$digest();
-    //
-    //  expect($rootScope.$$childTail.initBrainContainer).not.toHaveBeenCalled();
-    //  //expect($rootScope.$$childTail.initWithPopulations).toHaveBeenCalled();
-    //});
+
   });
 });

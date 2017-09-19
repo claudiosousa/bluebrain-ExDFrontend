@@ -542,15 +542,18 @@ describe('Controller: EditorToolbarController', function() {
     it(' - robotViewButtonClickHandler()', function() {
       // define mock views
       var mockView1 = {
-        container: undefined
+        container: {},
+        name:'main_view'
       };
       gz3dViewsService.views.push(mockView1);
       var mockView2 = {
-        container: {}
+        container: undefined,
+        name:'camera1'
       };
       gz3dViewsService.views.push(mockView2);
       var mockView3 = {
-        container: undefined
+        container: undefined,
+        name:'camera1'
       };
       gz3dViewsService.views.push(mockView3);
 
