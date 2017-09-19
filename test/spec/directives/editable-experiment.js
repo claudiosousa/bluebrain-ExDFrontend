@@ -60,7 +60,7 @@ describe('Directive: editable-experiment', function() {
     };
   }));
 
-  describe(', public experiement,', function() {
+  describe(', public experiment,', function() {
     beforeEach(inject(function($compile) {
       environmentService.setPrivateExperiment(false);
 
@@ -79,7 +79,7 @@ describe('Directive: editable-experiment', function() {
     });
   });
 
-  describe(', private experiement,', function() {
+  describe(', private experiment,', function() {
 
     var collabExperimentFile;
     var lockPromiseResponse;
@@ -177,7 +177,7 @@ describe('Directive: editable-experiment', function() {
       expect(storageServer.setFileContent).not.toHaveBeenCalled();
     });
 
-    it('test saveExperimentDetails gives error when no xml is retrived from collab', function() {
+    it('test saveExperimentDetails gives error when no xml is retrieved from collab', function() {
       spyOn(clbErrorDialog, 'open');
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
 

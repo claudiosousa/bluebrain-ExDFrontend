@@ -196,7 +196,7 @@
 
     it('should not allow to chose backend when in dev mode', function() {
       var page = renderEsvWebPage();
-      //select first experiement
+      //select first experiment
       page.find('.experiment-box').first().click();
 
       var selectServer = page.find('select[ng-model="exp.devServer"]');
@@ -340,7 +340,7 @@
       expect($location.path.calls.mostRecent().args).toEqual(expectedLocation);
     });
 
-    it('should requery experiements after SERVER_POLL_INTERVAL', function() {
+    it('should requery experiments after SERVER_POLL_INTERVAL', function() {
       renderEsvWebPage();
       $httpBackend.expectGET(proxyUrl + '/experiments').respond(200, defaultPageOptions.experiments);
       $interval.flush(SERVER_POLL_INTERVAL);
@@ -400,7 +400,7 @@
 
         expect(clbErrorDialog.open).toHaveBeenCalledWith({
           type: 'Private experiment error',
-          message: 'Failed to retrive private experiments'
+          message: 'Failed to retrieve private experiments'
         });
       });
 

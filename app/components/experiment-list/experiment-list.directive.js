@@ -31,7 +31,8 @@
       restrict: 'E',
       scope: {
         private: '=',
-        loadPrivateExperiments: '&'
+        loadPrivateExperiments: '&',
+        query: '=',
       },
       replace: true,
       controller: 'ExperimentListController',

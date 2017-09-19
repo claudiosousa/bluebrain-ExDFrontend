@@ -72,7 +72,7 @@ describe('Controller: ExperimentExplorerController', function() {
     return controller;
   };
 
-  it('should retrive experiments', function() {
+  it('should retrieve experiments', function() {
     var controller = loadExperiments();
 
     expect(controller.experimentList).toContain(jasmine.objectContaining(MOCKED_DATA.experiments[0]));
