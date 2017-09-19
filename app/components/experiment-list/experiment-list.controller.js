@@ -53,11 +53,11 @@
           loadingMessage: 'Loading list of experiments...'
         };
 
-        $scope.config.canCloneExperiments = !($scope.config.canLaunchExperiments = ! $scope.isCollabExperiment || $scope.private);
+        $scope.config.canCloneExperiments = !($scope.config.canLaunchExperiments = !$scope.isCollabExperiment || $scope.private);
 
         $scope.cloneExperiment = function(experimentID) {
           $scope.isCloneRequested = true;
-          collabConfigService.clone({ contextID: $stateParams.ctx }, { experimentID: experimentID }, function() {
+          collabConfigService.clone({ experimentId: experimentID }, { experimentID: experimentID }, function() {
             try {
               $window.document.getElementById('clb-iframe-workspace').contentWindow.parent.postMessage({ eventName: 'location', data: { url: window.location.href.split("?")[0] } }, '*');
             } catch (err) {

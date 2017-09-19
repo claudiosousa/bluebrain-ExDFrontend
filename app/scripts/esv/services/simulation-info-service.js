@@ -64,7 +64,7 @@
               };
 
               if (environmentService.isPrivateExperiment()) {
-                return experimentList(thisService.serverBaseUrl).experiments({ context_id: contextID }, function(data) {
+                return experimentList(thisService.serverBaseUrl).experiments({ experimentId: experimentID }, function(data) {
                   var configuration = data.data.experiment_configuration;
                   setExperimentDetails(configuration);
                 }).$promise;

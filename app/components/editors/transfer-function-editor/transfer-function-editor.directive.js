@@ -453,9 +453,7 @@
                 });
               return;
           }
-          backendInterfaceService.saveTransferFunctions(
-            simulationInfo.contextID,
-            _.map(scope.transferFunctions, 'code'),
+          backendInterfaceService.saveTransferFunctions(_.map(scope.transferFunctions, 'code'),
             function() { // Success callback
               scope.isSavingToCollab = false;
               scope.collabDirty = false;

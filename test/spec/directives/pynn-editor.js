@@ -252,18 +252,17 @@ describe('Directive: pynnEditor', function () {
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.saveIntoCollabStorage();
       expect(backendInterfaceService.saveBrain).toHaveBeenCalledWith(
-        simulationInfoMock.contextID,
         isolateScope.pynnScript.code,
         {'dummy_population': [1, 2, 3]},
         jasmine.any(Function),
         jasmine.any(Function)
       );
       expect(isolateScope.isSavingToCollab).toBe(true);
-      backendInterfaceService.saveBrain.calls.argsFor(0)[3]();
+      backendInterfaceService.saveBrain.calls.argsFor(0)[2]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
       spyOn(clbErrorDialog, 'open');
-      backendInterfaceService.saveBrain.calls.argsFor(0)[4]();
+      backendInterfaceService.saveBrain.calls.argsFor(0)[3]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       expect(clbErrorDialog.open).toHaveBeenCalled();
     });

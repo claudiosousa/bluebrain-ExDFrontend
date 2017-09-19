@@ -376,7 +376,6 @@
               return;
             }
             backendInterfaceService.saveStateMachines(
-              simulationInfo.contextID,
               stateMachines,
               function() { // Success callback
                 scope.isSavingToCollab = false;

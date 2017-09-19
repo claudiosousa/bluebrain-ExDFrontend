@@ -220,7 +220,7 @@
 
   module.factory('experimentList', ['$resource', 'serverError', 'EXPERIMENTS_GET_TIMEOUT', function ($resource, serverError, EXPERIMENTS_GET_TIMEOUT) {
     return function (baseUrl) {
-      return $resource(baseUrl + '/experiment/:context_id', {}, {
+      return $resource(baseUrl + '/experiment/:experimentId', {}, {
         experiments: {
           method: 'GET',
           // prevent the user to wait for long time since our servers can only handle one request at a time (yet).
@@ -296,6 +296,7 @@
               function launch(environmentConfiguration) {
                 return launchExperimentOnServer(
                   experiment.id,
+                  experiment.private,
                   experiment.configuration.experimentConfiguration,
                   environmentConfiguration,
                   brainProcesses, server, serverConfig, reservation
@@ -320,6 +321,7 @@
 
       var launchExperimentOnServer = function (
         experimentID,
+        privateExperiment,
         experimentConfiguration,
         environmentConfiguration,
         brainProcesses,
@@ -337,7 +339,8 @@
         var simInitData = {
           experimentConfiguration: experimentConfiguration,
           gzserverHost: serverJobLocation,
-          contextID: environmentService.isPrivateExperiment() ? $stateParams.ctx : null,
+          private: privateExperiment,
+          experimentID: experimentID,
           brainProcesses: brainProcesses,
           reservation: reservation,
           creationUniqueID: (Date.now() + Math.random()).toString()

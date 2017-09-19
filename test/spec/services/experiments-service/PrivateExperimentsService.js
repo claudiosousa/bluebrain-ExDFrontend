@@ -31,11 +31,14 @@ describe('Services: PrivateExperimentsService', function() {
     $rootScope.$digest();
   });
 
-  it('should throw if not file found', function(done) {
+  it('should resolve to null if not file found', function(done) {
     spyOn(storageServer, 'getFileContent').and.returnValue(window.$q.when({}));
     privateExperimentsService
       .loadExperimentDetails({})
-      .catch(done);
+      .then(function(res){
+        expect(res).toBeNull();
+        done();
+      });
     $rootScope.$digest();
   });
 

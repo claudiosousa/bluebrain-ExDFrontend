@@ -305,7 +305,6 @@
           scope.saveIntoCollabStorage = function () {
             scope.isSavingToCollab = true;
             backendInterfaceService.saveBrain(
-              simulationInfo.contextID,
               scope.pynnScript.code,
               scope.stringsToLists(scope.populations),
               function () { // Success callback

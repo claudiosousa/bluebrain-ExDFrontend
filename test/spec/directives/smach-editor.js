@@ -220,12 +220,12 @@ describe('Directive: smachEditor', function () {
       isolateScope.saveSMIntoCollabStorage();
       var sms = {};
       sms[sm.id] = sm.code;
-      expect(backendInterfaceService.saveStateMachines).toHaveBeenCalledWith(simulationInfo.contextID, sms, jasmine.any(Function), jasmine.any(Function));
+      expect(backendInterfaceService.saveStateMachines).toHaveBeenCalledWith(sms, jasmine.any(Function), jasmine.any(Function));
       expect(isolateScope.isSavingToCollab).toEqual(true);
-      backendInterfaceService.saveStateMachines.calls.argsFor(0)[2]();
+      backendInterfaceService.saveStateMachines.calls.argsFor(0)[1]();
       expect(isolateScope.isSavingToCollab).toBe(false);
       isolateScope.isSavingToCollab = true;
-      backendInterfaceService.saveStateMachines.calls.argsFor(0)[3]();
+      backendInterfaceService.saveStateMachines.calls.argsFor(0)[2]();
       expect(isolateScope.isSavingToCollab).toBe(false);
     });
 

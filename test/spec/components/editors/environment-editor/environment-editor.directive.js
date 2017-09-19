@@ -350,7 +350,7 @@ describe('Directive: environment-designer', function () {
     expect($scope.isSavingToCollab).toEqual(false);
     $scope.saveSDFIntoCollabStorage();
     expect(backendInterfaceService.saveSDF).toHaveBeenCalledWith(
-      simulationInfo.contextID,
+      simulationInfo.experimentID,
       jasmine.any(Function),
       jasmine.any(Function)
     );

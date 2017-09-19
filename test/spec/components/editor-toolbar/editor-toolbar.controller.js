@@ -302,13 +302,12 @@ describe('Controller: EditorToolbarController', function() {
         );
 
         expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
-          simulationInfo.contextID,
           request,
           jasmine.any(Function),
           jasmine.any(Function)
         );
 
-        backendInterfaceService.resetCollab.calls.mostRecent().args[2](); //2 is the success callback
+        backendInterfaceService.resetCollab.calls.mostRecent().args[1](); //1 is the success callback
 
         expect(splash.closeSplash).toHaveBeenCalled();
 
@@ -316,7 +315,7 @@ describe('Controller: EditorToolbarController', function() {
         splash.close.calls.reset();
         splash.splashScreen = 'isDefined';
 
-        backendInterfaceService.resetCollab.calls.mostRecent().args[3](); //3 is the failure callback
+        backendInterfaceService.resetCollab.calls.mostRecent().args[2](); //2 is the failure callback
         $timeout.flush(100);
       }
     });

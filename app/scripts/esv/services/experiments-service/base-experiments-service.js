@@ -55,9 +55,11 @@
 
     updateMissingImages() {
       this.experimentsArray.forEach(exp => {
-        if (exp.imageData)
+        if (exp.imageData !== undefined)
           return;
-        this.getExperimentImage(exp).then(imageData => exp.imageData = imageData);
+        this.getExperimentImage(exp)
+          .then(imageData => exp.imageData = imageData)
+          .catch(e => exp.imageData = false);
       });
     }
 
