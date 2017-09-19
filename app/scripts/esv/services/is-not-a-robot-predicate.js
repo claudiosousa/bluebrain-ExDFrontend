@@ -26,8 +26,37 @@
 
   angular.module('exdFrontendApp')
     .service('isNotARobotPredicate', function () {
-      return function (entity) {
-        return entity && entity.name.indexOf('robot') === -1;
+      return function (entity)
+      {
+        if (entity)
+        {
+          var robotIdentifier = 'robot';
+
+          if (entity.name === robotIdentifier)
+          {
+            return false;
+          }
+
+          var idx = entity.name.indexOf(robotIdentifier);
+          if (idx === -1)
+          {
+            return true;
+          }
+
+          if ((idx + robotIdentifier.length) < entity.name.length)
+          {
+            if (entity.name[idx + robotIdentifier.length] === ' ' ||
+              entity.name[idx + robotIdentifier.length] === '_')
+            {
+              return false;
+            }
+          }
+
+          return true;
+
+        }
+        return true;
+
       };
     });
 })();

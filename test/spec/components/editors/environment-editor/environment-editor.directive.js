@@ -186,13 +186,13 @@ describe('Directive: environment-designer', function () {
     expect(eventMock.stopPropagation).toHaveBeenCalled();
 
     // see that anyhting containing 'robot' can't be deleted
-    var modelMock = {name: 'my_robot'};
+    var modelMock = {name: 'robot'};
     itemGroup.show(modelMock);
     expect(itemGroup.visible).toBe(true);
     expect(itemGroup.items[0].visible).toBe(true);
     expect(itemGroup.items[1].visible).toBe(false);
     expect(itemGroup.items[2].visible).toBe(false);
-    modelMock.name = 'iAmNotARobot';
+    modelMock.name = 'im a mesh';
     itemGroup.show(modelMock);
     expect(itemGroup.visible).toBe(true);
     expect(itemGroup.items[0].visible).toBe(true);
