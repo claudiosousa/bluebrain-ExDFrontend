@@ -45,7 +45,7 @@
                             if (extend && !timeoutExtendRefused && !popupIsOpen) {
                                 popupIsOpen = true;
                                 return clbConfirm.open({
-                                    title: 'Your simulation will soon reach it\'s timeout.',
+                                    title: 'Your simulation will soon reach its timeout.',
                                     confirmLabel: 'Yes',
                                     cancelLabel: 'No',
                                     template: 'Would you like to extend the simulation timeout?',
