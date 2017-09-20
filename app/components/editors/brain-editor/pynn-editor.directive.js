@@ -108,6 +108,13 @@
             editorToolbarService.showPynnEditor = false;
           });
 
+          let refreshEditor = (reset=false) => {
+            var editor = codeEditorsServices.getEditorChild('codeEditor', element[0]);
+            codeEditorsServices.refreshEditor(editor);
+            if (reset)
+              codeEditorsServices.resetEditor(editor);
+          };
+
           //TODO: get this mess of upwards-downwards intertwined scope definition out and handle refreshing in here alone
           // refresh is called on:
           // * resize
@@ -115,23 +122,22 @@
           // * simulation reset
           // * env poses reset
           scope.refresh = function () {
-            var editor = codeEditorsServices.getEditorChild('codeEditor', element[0]);
-            codeEditorsServices.refreshEditor(editor);
+            refreshEditor();
             scope.loading = true;
             backendInterfaceService.getBrain(function (response) {
               if (response.brain_type === "py") {
                 scope.pynnScript.code = response.data;
                 scope.populations = scope.preprocessPopulations(response.additional_populations);
-                codeEditorsServices.refreshEditor(editor);
+                refreshEditor();
                 scope.loading = false;
                 setTimeout(function () {
-                  codeEditorsServices.resetEditor(editor);
+                  refreshEditor(true);
                   scope.searchToken("si");
                 }, 100);
               } else {
                 scope.pynnScript.code = 'empty';
                 scope.populations = undefined;
-                codeEditorsServices.refreshEditor(editor);
+                refreshEditor();
               }
               $timeout(() => scope.localPopulationsDirty = scope.localBrainDirty = false);
             });
@@ -156,10 +162,10 @@
                 }
               },
                 () => {
-                  scope.refresh();
+                  refreshEditor();
                 }
               );
-              scope.refresh();
+              refreshEditor();
             },
             300
           );
@@ -482,6 +488,8 @@
             };
             textReader.readAsText(file);
           };
+
+          scope.refresh();
         }
       };
     }]);
