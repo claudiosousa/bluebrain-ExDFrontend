@@ -46,18 +46,21 @@
         storageServer) {
 
         $scope.pageState = {};
-        $scope.isCollabExperiment = environmentService.isPrivateExperiment();
+        $scope.isPrivateExperiment = environmentService.isPrivateExperiment();
         $scope.devMode = environmentService.isDevMode();
 
         $scope.config = {
           loadingMessage: 'Loading list of experiments...'
         };
 
-        $scope.config.canCloneExperiments = !($scope.config.canLaunchExperiments = !$scope.isCollabExperiment || $scope.private);
+        $scope.config.canCloneExperiments = !($scope.config.canLaunchExperiments = !$scope.isPrivateExperiment || $scope.private);
 
-        $scope.cloneExperiment = function(experimentID) {
+        $scope.cloneExperiment = function(experiment) {
           $scope.isCloneRequested = true;
-          collabConfigService.clone({ experimentId: experimentID }, { experimentID: experimentID }, function() {
+          collabConfigService.clone(null, {
+            exp_configuration_path: experiment.configuration.experimentConfiguration,
+            context_id: $stateParams.ctx
+          }, function() {
             try {
               $window.document.getElementById('clb-iframe-workspace').contentWindow.parent.postMessage({ eventName: 'location', data: { url: window.location.href.split("?")[0] } }, '*');
             } catch (err) {

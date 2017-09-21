@@ -471,7 +471,7 @@
             },function() { // Failure callback
               clbErrorDialog.open({
                 type: "BackendError.",
-                message: "Error while saving transfer functions to Collab storage."
+                message: "Error while saving transfer functions to the Storage."
               });
               scope.isSavingToCollab = false;
             }
@@ -486,7 +486,7 @@
             }, function () { // Failure callback
               clbErrorDialog.open({
                 type: "BackendError.",
-                message: "Error while saving recorded CSV files to Collab storage."
+                message: "Error while saving recorded CSV files to the Storage."
               });
               scope.isSavingCSVToCollab = false;
             }

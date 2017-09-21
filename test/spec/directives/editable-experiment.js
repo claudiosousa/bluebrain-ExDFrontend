@@ -177,7 +177,7 @@ describe('Directive: editable-experiment', function() {
       expect(storageServer.setFileContent).not.toHaveBeenCalled();
     });
 
-    it('test saveExperimentDetails gives error when no xml is retrived from collab', function() {
+    it('test saveExperimentDetails gives error when no xml is retrieved from collab', function() {
       spyOn(clbErrorDialog, 'open');
       scope.originalConfiguration = { name: 'oldName', description: 'oldDesc' };
 

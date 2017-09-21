@@ -325,7 +325,7 @@
               }, function () { // Failure callback
                 clbErrorDialog.open({
                   type: "BackendError.",
-                  message: "Error while saving pyNN script to Collab storage."
+                  message: "Error while saving pyNN script to the Storage."
                 });
                 scope.isSavingToCollab = false;
               }

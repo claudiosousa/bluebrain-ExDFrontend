@@ -1,5 +1,5 @@
 <div class="experiment-box" id="newExpWizard" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false"
-    ng-click="selectNewExperiment();" ng-class="devMode" ng-if="isCollabExperiment && devMode">
+    ng-click="selectNewExperiment();" ng-class="devMode" ng-if="isPrivateExperiment && devMode">
     <div class="list-entry-container left-right" ng-class="{selected: pageState.selected == newExperiment || isHovered}">
         <!-- image div -->
         <div class="list-entry-left" ng-class="{selected: pageState.selected == newExperiment}">
@@ -41,7 +41,7 @@
                                      <div uib-collapse="!isCloneRequested">
                                          <div class="list-entry-container center">
                                             <i class="fa fa-spinner fa-spin"></i>&nbsp;
-                                            <i>Copying files to Collab storage.This might take some minutes, so please be patient...</i>
+                                            <i>Copying files to the storage.This might take some minutes, so please be patient...</i>
                                          </div>
                                     </div>
                                     <button analytics-on analytics-event="CloneNewExperiment" ng-if="pageState.selected == newExperiment" ng-disabled="!brainUploaded || !environmentUploaded || !robotUploaded"

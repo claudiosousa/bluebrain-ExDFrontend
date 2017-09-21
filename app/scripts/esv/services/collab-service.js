@@ -32,7 +32,8 @@
     return $resource(baseUrl + '/collab/configuration/:contextID', {}, {
       clone: {
         method: 'PUT',
-        interceptor: { responseError: serverError.displayHTTPError }
+        interceptor: { responseError: serverError.displayHTTPError },
+        url:`${baseUrl}/experiment/clone`
       },
       get: {
         method: 'GET',

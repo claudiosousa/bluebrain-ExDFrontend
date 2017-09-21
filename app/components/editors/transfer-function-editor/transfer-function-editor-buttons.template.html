@@ -10,9 +10,9 @@
         ng-click="saveTFIntoCollabStorage()"
         ng-disabled="stateService.currentState === STATE.INITIALIZED || !collabDirty"
         v-busy="isSavingToCollab"
-        v-busy-label="Saving to Collab"
+        v-busy-label="Saving to Storage"
         v-pressable>
-  <i class="glyphicon glyphicon-book"></i><span> Save to Collab</span>
+  <i class="glyphicon glyphicon-book"></i><span> Save to Storage</span>
 </button>
 
 <button ng-show="isPrivateExperiment" type="button" class="btn btn-default"
@@ -20,9 +20,9 @@
         ng-click="saveCSVIntoCollabStorage()"
         ng-disabled="(stateService.currentState === STATE.INITIALIZED)"
         v-busy="isSavingCSVToCollab"
-        v-busy-label="Saving to Collab"
+        v-busy-label="Saving to Storage"
         v-pressable>
-  <i class="glyphicon glyphicon glyphicon-stats"></i><span> Save CSV to Collab</span>
+  <i class="glyphicon glyphicon glyphicon-stats"></i><span> Save CSV to Storage</span>
 </button>
 
 

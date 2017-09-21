@@ -400,7 +400,7 @@
 
         expect(clbErrorDialog.open).toHaveBeenCalledWith({
           type: 'Private experiment error',
-          message: 'Failed to retrive private experiments'
+          message: 'Failed to retrieve private experiments'
         });
       });
 
@@ -435,7 +435,7 @@
           spyOn($rootScope, 'reloadExperiments');
           spyOn(collabConfigService, 'clone');
           var scope = getExperimentListScope(page);
-          scope.cloneExperiment('experiment_id');
+          scope.cloneExperiment(matureExperiment);
           collabConfigService.clone.calls.mostRecent().args[2]();
           expect($rootScope.reloadExperiments).toHaveBeenCalled();
         });

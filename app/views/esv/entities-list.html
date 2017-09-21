@@ -21,10 +21,10 @@
                 </div>
                 <div class="list-entry-middle list-entry-container up-down">
                     <div class="list-entry-container left-right title-line">
-                        <div class="h4" ng-hide="!loadingEdit && editing[nameID] && isCollabExperiment">{{entity.name}}
+                        <div class="h4" ng-hide="!loadingEdit && editing[nameID] && isPrivateExperiment">{{entity.name}}
                         </div>
                     </div>
-                    <div ng-if="entity.id == entityPageState.selected" ng-show="!isCollabExperiment || config.canCloneExperiments">{{entity.description}}</div>
+                    <div ng-if="entity.id == entityPageState.selected" ng-show="!isPrivateExperiment || config.canCloneExperiments">{{entity.description}}</div>
                     <div ng-if="entity.id != entityPageState.selected">{{entity.description | limitTo: 200}}...</div>
                 </div>
             </div>
