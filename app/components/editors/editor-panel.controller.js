@@ -50,7 +50,10 @@
     $scope.activeTabIndex = $scope.isOwner? $scope.tabindex.environment : $scope.tabindex.transferfunction;
 
     $scope.controls = {};
-    $scope.controls.graphicalEditor = {};
+
+    for (let tab in $scope.tabindex)
+      if ($scope.tabindex.hasOwnProperty(tab))
+        $scope.controls[tab] = {};
 
     $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
     $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;

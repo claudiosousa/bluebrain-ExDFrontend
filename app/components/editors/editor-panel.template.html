@@ -16,12 +16,12 @@
       <uib-tab heading="Transfer Functions" index="tabindex.transferfunction"
            select="disableKeyBindings(); controls.transferfunction.refresh()"
            deselect="reenableKeyBindings()">
-        <transfer-function-editor />
+        <transfer-function-editor control="controls.transferfunction"/>
       </uib-tab>
       <uib-tab heading="State Machine (SMACH)" index="tabindex.statemachine"
            select="disableKeyBindings(); controls.statemachine.refresh()"
            deselect="reenableKeyBindings()">
-        <smach-editor />
+        <smach-editor control="controls.statemachine"/>
       </uib-tab>
       <uib-tab heading="Brain Editor" index="tabindex.pynneditor"
            select="disableKeyBindings();"

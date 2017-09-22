@@ -133,6 +133,8 @@
             });
           };
 
+          scope.control.refresh = scope.refresh;
+
           // update UI
           scope.unbindListenerUpdatePanelUI = scope.$on("UPDATE_PANEL_UI", function () {
             // prevent calling the select functions of the tabs
