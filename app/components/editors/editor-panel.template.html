@@ -28,9 +28,9 @@
            deselect="reenableKeyBindings()">
         <pynn-editor />
       </uib-tab>
-	  <uib-tab heading="TF Graphical Editor" index="tabindex.graphicalEditor"
+      <uib-tab heading="TF Graphical Editor" index="tabindex.graphicalEditor"
            select="disableKeyBindings(); controls.graphicalEditor.refresh()"
-           disable="!isOwner"
+           disable="true"
            deselect="reenableKeyBindings()">
         <graphical-editor topic="{{cleErrorTopic}}"  server="{{rosbridgeWebsocketUrl}}"
                           control="controls.graphicalEditor"/>
