@@ -54,6 +54,7 @@
       'dynamicViewOverlayService',
       'DYNAMIC_VIEW_CHANNELS',
       '$http',
+      'userNavigationService',
       function ($document,
         STATE,
         EDIT_MODE,
@@ -71,7 +72,8 @@
         environmentService,
         dynamicViewOverlayService,
         DYNAMIC_VIEW_CHANNELS,
-        $http) {
+        $http,
+        userNavigationService) {
         return {
           templateUrl: 'components/editors/environment-editor/environment-editor.template.html',
           restrict: 'E',
@@ -229,6 +231,16 @@
                     visible: false
                   },
                   {
+                    text: 'Look At',
+                    callback: function (event) {
+                      userNavigationService.setLookatRobotCamera();
+                      gz3d.gui.guiEvents.emit('lookat_entity');
+                      contextMenuState.toggleContextMenu(false);
+                      event.stopPropagation();
+                    },
+                    visible: false
+                  },
+                  {
                     text: 'Duplicate',
                     callback: function (event) {
 
@@ -248,7 +260,7 @@
                 ],
 
                 hide: function () {
-                  this.visible = this.items[0].visible = this.items[1].visible = this.items[2].visible = false;
+                  this.visible = this.items[0].visible = this.items[1].visible = this.items[2].visible = this.items[3].visible = false;
                 },
 
                 show: function (model) {
@@ -256,8 +268,9 @@
                   var canDelete = isNotARobotPredicate(model);
 
                   this.visible = this.items[0].visible = true;
-                  this.items[1].visible = canDelete && gz3d.gui.canModelBeDuplicated(model.name);
-                  this.items[2].visible = canDelete;
+                  this.items[1].visible = true;
+                  this.items[2].visible = canDelete && gz3d.gui.canModelBeDuplicated(model.name);
+                  this.items[3].visible = canDelete;
 
                   return true;
                 }

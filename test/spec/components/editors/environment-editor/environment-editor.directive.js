@@ -150,21 +150,25 @@ describe('Directive: environment-designer', function () {
     expect(itemGroup.visible).toBe(false);
     expect(itemGroup.items[0].text).toEqual('Inspect');
     expect(itemGroup.items[0].visible).toBe(false);
-    expect(itemGroup.items[1].text).toEqual('Duplicate');
+    expect(itemGroup.items[1].text).toEqual('Look At');
     expect(itemGroup.items[1].visible).toBe(false);
-    expect(itemGroup.items[2].text).toEqual('Delete');
+    expect(itemGroup.items[2].text).toEqual('Duplicate');
     expect(itemGroup.items[2].visible).toBe(false);
+    expect(itemGroup.items[3].text).toEqual('Delete');
+    expect(itemGroup.items[3].visible).toBe(false);
 
     // check hide()
     itemGroup.visible = true;
     itemGroup.items[0].visible = true;
     itemGroup.items[1].visible = true;
     itemGroup.items[2].visible = true;
+    itemGroup.items[3].visible = true;
     itemGroup.hide();
     expect(itemGroup.visible).toBe(false);
     expect(itemGroup.items[0].visible).toBe(false);
     expect(itemGroup.items[1].visible).toBe(false);
     expect(itemGroup.items[2].visible).toBe(false);
+    expect(itemGroup.items[3].visible).toBe(false);
 
     var eventMock = {stopPropagation: jasmine.createSpy('stopPropagation')};
     // check call to edit item
@@ -175,13 +179,13 @@ describe('Directive: environment-designer', function () {
 
     // check call to duplicate item
     spyOn($scope, 'duplicateModel');
-    itemGroup.items[1].callback(eventMock);
+    itemGroup.items[2].callback(eventMock);
     expect($scope.duplicateModel).toHaveBeenCalled();
     expect(eventMock.stopPropagation).toHaveBeenCalled();
 
     // check call to delete item
     spyOn($scope, 'deleteModel');
-    itemGroup.items[2].callback(eventMock);
+    itemGroup.items[3].callback(eventMock);
     expect($scope.deleteModel).toHaveBeenCalled();
     expect(eventMock.stopPropagation).toHaveBeenCalled();
 
@@ -190,14 +194,16 @@ describe('Directive: environment-designer', function () {
     itemGroup.show(modelMock);
     expect(itemGroup.visible).toBe(true);
     expect(itemGroup.items[0].visible).toBe(true);
-    expect(itemGroup.items[1].visible).toBe(false);
+    expect(itemGroup.items[1].visible).toBe(true);
     expect(itemGroup.items[2].visible).toBe(false);
-    modelMock.name = 'im a mesh';
+    expect(itemGroup.items[3].visible).toBe(false);
+    modelMock.name = 'iAmNotARobot';
     itemGroup.show(modelMock);
     expect(itemGroup.visible).toBe(true);
     expect(itemGroup.items[0].visible).toBe(true);
     expect(itemGroup.items[1].visible).toBe(true);
     expect(itemGroup.items[2].visible).toBe(true);
+    expect(itemGroup.items[3].visible).toBe(true);
   });
 
   it('should pause the simulation when needed', function () {

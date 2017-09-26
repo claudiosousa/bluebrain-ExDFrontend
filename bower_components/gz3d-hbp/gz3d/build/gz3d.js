@@ -2400,6 +2400,7 @@ GZ3D.Composer.prototype.render = function (view)
     {
         if (this.cubeMapNeedsUpdate)
         {
+            this.scene.background = this.currenSkyBoxTexture;
             this.cubeMapNeedsUpdate = false;
             this.prepareCubeMapEnvMapRender(false);
             this.cubeCamera.updateCubeMap(view.renderer, this.scene);
@@ -3693,6 +3694,14 @@ GZ3D.Gui.prototype.init = function()
       {
         that.scene.viewJoints(that.scene.selectedEntity);
       }
+  );
+
+
+
+  guiEvents.on('lookat_entity', function ()
+    {
+        that.scene.controls.setLookatTarget(that.scene.selectedEntity);
+    }
   );
 
   guiEvents.on('delete_entity', function ()

@@ -14,7 +14,15 @@ THREE.LookatRobotControls = function (userView, robot)
 
   this.userView = userView;
   this.robot = robot;
+  this.lookAtTarget = robot;
   this.activeLook = true;
+
+  var bbox = new THREE.Box3().setFromObject(this.lookAtTarget);
+  this.minDistance = bbox.getBoundingSphere().radius;
+  if (this.minDistance === Infinity)
+  {
+    this.minDistance = 0.25;
+  }
 
   // Set to false to disable this control
   this.enabled = false;
@@ -30,7 +38,7 @@ THREE.LookatRobotControls = function (userView, robot)
   this.startTouchDistance = new THREE.Vector2();
   this.startTouchMid = new THREE.Vector2();
 
-  this.mouseWheelSensitivity = 0.25;
+  this.mouseWheelSensitivity = Math.min(0.25*this.minDistance,0.25);
   this.speedUpFactor = 3.0;
   this.speedDownFactor = 0.1;
 
@@ -56,7 +64,6 @@ THREE.LookatRobotControls = function (userView, robot)
     //  this.domElement.focus();
     //}
 
-    $(document.activeElement).blur();
     event.preventDefault();
     event.stopPropagation();
 
@@ -71,6 +78,26 @@ THREE.LookatRobotControls = function (userView, robot)
           break;
       }
     }
+  };
+
+  this.setLookatTarget = function (target)
+  {
+    if (!target)
+    {
+      this.lookAtTarget = robot;
+    }
+    else
+    {
+      this.lookAtTarget = target;
+    }
+
+    var bbox = new THREE.Box3().setFromObject(this.lookAtTarget);
+    this.minDistance = bbox.getBoundingSphere().radius;
+    if (this.minDistance === Infinity)
+    {
+      this.minDistance = 0.25;
+    }
+
   };
 
   this.onMouseUp = function (event)
@@ -307,7 +334,7 @@ THREE.LookatRobotControls = function (userView, robot)
     var currentDistance;
 
     this.currentVector = this.userView.camera.position.clone();
-    this.currentVector.sub(this.robot.position);
+    this.currentVector.sub(this.lookAtTarget.position);
     currentDistance = this.currentVector.length();
     this.currentVector.normalize();
 
@@ -316,22 +343,22 @@ THREE.LookatRobotControls = function (userView, robot)
       currentDistance += this.distanceDelta;
       this.distanceDelta = 0;
 
-      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), 1.0);
+      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), this.minDistance);
     }
 
 
     if (this.moveUp)
     {
-      currentDistance -= elapsed *0.004;
-      currentDistance = Math.max(Math.min( currentDistance, 20.0), 1.0);
-      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), 1.0);
+      currentDistance -= elapsed * Math.min(0.004*this.minDistance,0.004);
+      currentDistance = Math.max(Math.min( currentDistance, 20.0), this.minDistance);
+      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), this.minDistance);
     }
 
     if (this.moveDown)
     {
-      currentDistance += elapsed *0.004;
-      currentDistance = Math.max(Math.min( currentDistance, 20.0), 1.0);
-      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), 1.0);
+      currentDistance += elapsed * Math.min(0.004*this.minDistance,0.004);
+      currentDistance = Math.max(Math.min( currentDistance, 20.0), this.minDistance);
+      this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), this.minDistance);
     }
 
     if (this.averageDistance <= 0)
@@ -376,9 +403,9 @@ THREE.LookatRobotControls = function (userView, robot)
 
     var v = this.currentVector.clone();
     v.multiplyScalar(currentDistance);
-    v.add(this.robot.position);
+    v.add(this.lookAtTarget.position);
     this.userView.camera.position.copy(v);
-    this.userView.camera.lookAt(this.robot.position);
+    this.userView.camera.lookAt(this.lookAtTarget.position);
   };
 
   this.onMouseDownManipulator = function (action)

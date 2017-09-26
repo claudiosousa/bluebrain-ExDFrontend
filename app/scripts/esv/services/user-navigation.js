@@ -56,6 +56,7 @@
             userDisplayName: undefined,
             userReferenceROSCompliant: undefined,
             showHumanNavInfoDiv: false,
+            initAsLookatRobot:false,
 
             rosbridgeWebsocketUrl: undefined,
             roslib: undefined,
@@ -92,8 +93,14 @@
                     that.avatarControls = new THREE.AvatarControls(that, gz3d);
                     that.avatarControls.createAvatarTopics(that.avatarObjectName);
 
-                    // start in free camera mode
-                    that.setModeFreeCamera();
+                    if (that.initAsLookatRobot)
+                    {
+                      that.setLookatRobotCamera();
+                    }
+                    else
+                    {
+                      that.setModeFreeCamera();
+                    }
                   });
                 }
               });

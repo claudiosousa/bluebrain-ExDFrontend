@@ -26,8 +26,8 @@
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('collab3DSettingsService', ['gz3d', 'simulationConfigService',
-      function (gz3d, simulationConfigService)
+    .service('collab3DSettingsService', ['gz3d', 'simulationConfigService','userNavigationService',
+      function (gz3d, simulationConfigService,userNavigationService)
       {
         var loadSettings = function ()
         {
@@ -42,6 +42,19 @@
               gz3d.scene.composerSettings = JSON.parse(fileContent);
               gz3d.scene.applyComposerSettings(true);
               gz3d.scene.defaultComposerSettings = JSON.parse(JSON.stringify(gz3d.scene.composerSettings));
+
+              if (gz3d.scene.composerSettings.defaultCameraMode==='lookatrobot')
+              {
+                if (userNavigationService.lookatRobotControls)
+                {
+                  userNavigationService.setLookatRobotCamera();
+                }
+                else
+                {
+                  userNavigationService.initAsLookatRobot = true;
+                }
+              }
+
               return fileContent;
             });
         };
