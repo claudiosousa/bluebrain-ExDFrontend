@@ -5,6 +5,7 @@ describe('Directive: transferFunctionEditor', function() {
     $compile,
     $timeout,
     $scope,
+    RESET_TYPE,
     isolateScope,
     transferFunctions,
     element,
@@ -92,6 +93,7 @@ describe('Directive: transferFunctionEditor', function() {
       _backendInterfaceService_,
       $templateCache,
       _SOURCE_TYPE_,
+      _RESET_TYPE_,
       _pythonCodeHelper_,
       _clbConfirm_,
       _clbErrorDialog_,
@@ -105,6 +107,7 @@ describe('Directive: transferFunctionEditor', function() {
       $compile = _$compile_;
       $timeout = _$timeout_;
       SOURCE_TYPE = _SOURCE_TYPE_;
+      RESET_TYPE = _RESET_TYPE_;
       backendInterfaceService = _backendInterfaceService_;
       editorMock.addLineClass = jasmine.createSpy('addLineClass');
       editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
@@ -267,6 +270,7 @@ describe('Directive: transferFunctionEditor', function() {
     });
 
     it('should handle the retrieved transferFunctions properly', function() {
+      expectedTf1.regex = '([A-z_]+[\\w_]*)$';
       // call the callback given to getTransferFunctions with a response mock
       spyOn(document, 'getElementById').and.returnValue({
         firstChild: { CodeMirror: editorMock }
@@ -810,6 +814,18 @@ describe('Directive: transferFunctionEditor', function() {
       expect(saveErrorsServiceMock.saveDirtyData).not.toHaveBeenCalled();
       expect(autoSaveServiceMock.clearDirty).not.toHaveBeenCalled();
       expect(isolateScope.isSavingToCollab).toEqual(false);
+    });
+
+    it('should refresh on event UPDATE_PANEL_UI', function() {
+      spyOn(isolateScope, 'refresh').and.callThrough();
+      isolateScope.$emit('UPDATE_PANEL_UI');
+      expect(isolateScope.refresh).toHaveBeenCalled();
+    });
+
+    it('should react to event RESET', function() {
+      isolateScope.$emit('RESET', ({}, RESET_TYPE.RESET_FULL));
+      expect(isolateScope.collabDirty).toBe(false);
+      expect(isolateScope.transferFunctions.length).toBe(0);
     });
   });
 });
