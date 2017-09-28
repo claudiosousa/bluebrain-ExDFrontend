@@ -9855,12 +9855,12 @@ GZ3D.Scene.prototype.updateUI = function()
       this.naturalAutoAlignMode)
     {
       this.controls.enabled = false;
-      this.controls.update();
+      //this.controls.update();
     }
     else
     {
       this.controls.enabled = true;
-      this.controls.update();
+      //this.controls.update();
     }
   }
 

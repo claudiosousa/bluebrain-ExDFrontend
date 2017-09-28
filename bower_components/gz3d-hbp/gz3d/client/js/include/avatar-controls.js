@@ -478,10 +478,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
     this.zenithOnRotStart = this.zenith;
   };
 
-  this.updateSphericalAnglesFromUserInput = function(timeDelta) {
+  this.updateSphericalAnglesFromUserInput = function(timeDelta, rotationSensitivity) {
     /* --- rotation by means of a manipulator --- */
     var speedup = this.shiftHold ? 2 : 1;
-    var keyboardRotationSpeed = speedup * this.KEYBOARD_ROTATION_SPEED;
+    var keyboardRotationSpeed = speedup * this.KEYBOARD_ROTATION_SPEED * rotationSensitivity;
     if (this.keyboardRotateUp || this.keyboardRotateDown) {
       var sign = this.keyboardRotateUp ? 1.0 : -1.0;
       this.keyboardRotate(0.0, sign * keyboardRotationSpeed);
@@ -495,7 +495,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
 
     /* --- rotation by means of a mouse drag --- */
     if (this.mouseRotationEnabled) {
-      var actualLookSpeed = this.MOUSE_ROTATION_SPEED;
+      var actualLookSpeed = this.MOUSE_ROTATION_SPEED * rotationSensitivity;
       if (!this.mouseBindingsEnabled) {
         actualLookSpeed = 0;
       }
@@ -516,7 +516,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
 
     /* --- rotation by means of touch --- */
     if (this.touchRotationEnabled) {
-      var actualLookSpeed = this.TOUCH_ROTATION_SPEED;
+      var actualLookSpeed = this.TOUCH_ROTATION_SPEED * rotationSensitivity;
       if (!this.mouseBindingsEnabled) {
         actualLookSpeed = 0;
       }
@@ -574,8 +574,8 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
     this.camera.updateMatrixWorld();
   };
 
-  this.updateLinearVelocity = function(delta) {
-    var speed = this.MOVEMENT_SPEED;
+  this.updateLinearVelocity = function(delta, translationSensitivity) {
+    var speed = this.MOVEMENT_SPEED * translationSensitivity;
     if (this.shiftHold) {
       speed = speed * this.SHIFT_SPEEDUP_FACTOR;
     }
@@ -619,7 +619,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
    * Method to be called during render cycles for updates between frames.
    * @param delta Time passed since last frame
    */
-  this.update = function(delta) {
+  this.update = function(delta, translationSensitivity, rotationSensitivity) {
     if (!this.enabled) {
       if (this.mouseRotationEnabled || this.touchRotationEnabled)
       {
@@ -643,10 +643,10 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
     }
     else {
       if (!this.freeze) {
-        this.updateLinearVelocity(delta);
+        this.updateLinearVelocity(delta, translationSensitivity);
         this.publishLinearVelocity();
 
-        this.updateSphericalAnglesFromUserInput(delta);
+        this.updateSphericalAnglesFromUserInput(delta, rotationSensitivity);
       }
     }
 

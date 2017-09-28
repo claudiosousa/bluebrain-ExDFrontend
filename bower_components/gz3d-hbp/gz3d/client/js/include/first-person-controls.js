@@ -26,6 +26,9 @@ THREE.FirstPersonControls = function(userView)
   this.touchSensitivity = 0.01;
   this.mouseWheelSensitivity = 0.25;
 
+  this.translationSensitivity = 1.0;
+  this.rotationSensitivity = 1.0;
+
   this.target = new THREE.Vector3();
   this.lookVertical = true;
 
@@ -111,8 +114,6 @@ THREE.FirstPersonControls = function(userView)
       switch (event.button) {
         case 0:
           that.mouseRotate = false;
-          that.azimuthOnMouseDown = that.azimuth;
-          that.zenithOnMouseDown = that.zenith;
           break;
       }
     }
@@ -130,7 +131,7 @@ THREE.FirstPersonControls = function(userView)
 
   this.onMouseWheel = function (event) {
     var delta = Math.max(-1, Math.min(1, (-event.wheelDelta || event.detail)));
-    window.firstPersonControls.userView.camera.translateZ(delta * window.firstPersonControls.mouseWheelSensitivity);
+    window.firstPersonControls.userView.camera.translateZ(delta * window.firstPersonControls.mouseWheelSensitivity * that.translationSensitivity);
   };
 
   this.onTouchStart = function (event) {
@@ -220,8 +221,6 @@ THREE.FirstPersonControls = function(userView)
   this.endLookAround = function() {
     this.mouseRotate = false;
     this.touchRotate = false;
-    this.azimuthOnMouseDown = this.azimuth;
-    this.zenithOnMouseDown = this.zenith;
   };
 
   this.onKeyDown = function (event) {
@@ -323,7 +322,8 @@ THREE.FirstPersonControls = function(userView)
     camera.rotateX(upAmount);
   };
 
-  this.update = function(delta) {
+  this.update = function(delta, translationSensitivity, rotationSensitivity) {
+
     if (!this.enabled)
     {
       if (this.mouseRotate || this.touchRotate)
@@ -339,13 +339,16 @@ THREE.FirstPersonControls = function(userView)
 
     var speed = 0.0;
 
+    this.translationSensitivity = translationSensitivity;
+    this.rotationSensitivity = rotationSensitivity;
+
     if (!this.freeze) {
       /* --- translation --- */
       if (this.initPosition) {
         this.userView.camera.position.copy(this.initialPosition);
       }
 
-      speed = delta * this.movementSpeed;
+      speed = delta * this.movementSpeed * this.translationSensitivity;
       if (this.shiftHold) {
         speed = speed * this.speedUpFactor;
       }
@@ -374,16 +377,17 @@ THREE.FirstPersonControls = function(userView)
       }
 
       /* --- rotation by means of a manipulator --- */
-      var ROTATION_SPEED_FACTOR = 0.2;
+      var KEYBOARD_ROTATION_SPEED_FACTOR = 0.002;
+      var keyboardRotationSpeed = KEYBOARD_ROTATION_SPEED_FACTOR * delta * this.rotationSensitivity;
       if (this.rotateUp || this.rotateDown) {
         var sign = this.rotateUp ? 1.0 : -1.0;
-        this.fpRotate(0.0, sign * ROTATION_SPEED_FACTOR * speed);
+        this.fpRotate(0.0, sign * keyboardRotationSpeed);
       }
       if (this.rotateRight) {
-        this.fpRotate(ROTATION_SPEED_FACTOR * speed, 0.0);
+        this.fpRotate(keyboardRotationSpeed, 0.0);
       }
       if (this.rotateLeft) {
-        this.fpRotate(-ROTATION_SPEED_FACTOR * speed, 0.0);
+        this.fpRotate(-keyboardRotationSpeed, 0.0);
       }
       if (this.initRotation) {
         this.userView.camera.quaternion.copy(this.initialRotation);
@@ -391,7 +395,7 @@ THREE.FirstPersonControls = function(userView)
 
       /* --- rotation by means of a mouse drag --- */
       if (this.mouseRotate) {
-        var actualLookSpeed = this.lookSpeed;
+        var actualLookSpeed = this.lookSpeed * this.rotationSensitivity;
         if (!this.activeLook) {
           actualLookSpeed = 0;
         }
@@ -422,7 +426,7 @@ THREE.FirstPersonControls = function(userView)
 
       /* --- rotation by means of a touch drag --- */
       if (this.touchRotate) {
-        var actualLookSpeed = this.lookSpeed;
+        var actualLookSpeed = this.lookSpeed * this.rotationSensitivity;
         if (!this.activeLook) {
           actualLookSpeed = 0;
         }

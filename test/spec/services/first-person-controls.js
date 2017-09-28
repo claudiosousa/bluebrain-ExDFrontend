@@ -241,14 +241,14 @@ describe('FirstPersonControls', function () {
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveForward = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveForward = false;
     var posDiffNoShift = Math.abs(userView.camera.position.z - posStart.z);
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveForward = true;
     firstPersonControls.shiftHold = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveForward = false;
     firstPersonControls.shiftHold = false;
     var posDiffWithShift = Math.abs(userView.camera.position.z - posStart.z);
@@ -265,42 +265,42 @@ describe('FirstPersonControls', function () {
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveForward = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveForward = false;
     posEnd.copy(userView.camera.position);
     expect(posEnd.z - posStart.z < 0).toBe(true);
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveBackward = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveBackward = false;
     posEnd.copy(userView.camera.position);
     expect(posEnd.z - posStart.z > 0).toBe(true);
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveLeft = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveLeft = false;
     posEnd.copy(userView.camera.position);
     expect(posEnd.x - posStart.x < 0).toBe(true);
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveRight = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveRight = false;
     posEnd.copy(userView.camera.position);
     expect(posEnd.x - posStart.x > 0).toBe(true);
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveUp = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveUp = false;
     posEnd.copy(userView.camera.position);
     expect(posEnd.y - posStart.y > 0).toBe(true);
 
     posStart.copy(userView.camera.position);
     firstPersonControls.moveDown = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.moveDown = false;
     posEnd.copy(userView.camera.position);
     expect(posEnd.y - posStart.y < 0).toBe(true);
@@ -315,28 +315,28 @@ describe('FirstPersonControls', function () {
 
     rotStart.copy(userView.camera.rotation);
     firstPersonControls.rotateUp = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.rotateUp = false;
     rotEnd.copy(userView.camera.rotation);
     expect(rotEnd.x - rotStart.x > 0).toBe(true);
 
     rotStart.copy(userView.camera.rotation);
     firstPersonControls.rotateDown = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.rotateDown = false;
     rotEnd.copy(userView.camera.rotation);
     expect(rotEnd.x - rotStart.x < 0).toBe(true);
 
     rotStart.copy(userView.camera.rotation);
     firstPersonControls.rotateRight = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.rotateRight = false;
     rotEnd.copy(userView.camera.rotation);
     expect(rotEnd.z - rotStart.z < 0).toBe(true);
 
     rotStart.copy(userView.camera.rotation);
     firstPersonControls.rotateLeft = true;
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
     firstPersonControls.rotateLeft = false;
     rotEnd.copy(userView.camera.rotation);
     expect(rotEnd.z - rotStart.z > 0).toBe(true);
@@ -413,7 +413,7 @@ describe('FirstPersonControls', function () {
     firstPersonControls.mousePosOnKeyDown = new THREE.Vector2(0,0);
     firstPersonControls.mousePosCurrent = new THREE.Vector2(mouseDeltaX, mouseDeltaY);
 
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
 
     var expectedAzimuth = (firstPersonControls.azimuthOnMouseDown - mouseDeltaX * firstPersonControls.lookSpeed) % (2 * Math.PI);
     expect(firstPersonControls.azimuth).toBeCloseTo(expectedAzimuth, 5);
@@ -472,7 +472,7 @@ describe('FirstPersonControls', function () {
 
     triggerOneTouchEvent(userView.container, 'touchmove', mouseDeltaX, mouseDeltaY);
 
-    firstPersonControls.update();
+    firstPersonControls.update(undefined, 1, 1);
 
     var expectedAzimuth = (Math.PI * 2 + mouseDeltaX * firstPersonControls.lookSpeed) % (2 * Math.PI);
     expect(firstPersonControls.azimuth).toBeCloseTo(expectedAzimuth, 5);

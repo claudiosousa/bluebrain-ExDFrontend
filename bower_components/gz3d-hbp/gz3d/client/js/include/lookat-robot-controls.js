@@ -270,7 +270,7 @@ THREE.LookatRobotControls = function (userView, robot)
     event.preventDefault();
   };
 
-  this.update = function (elapsed)
+  this.update = function (elapsed, translationSensitivity, rotationSensitivity)
   {
     if (!elapsed)
     {
@@ -342,7 +342,7 @@ THREE.LookatRobotControls = function (userView, robot)
 
     if (this.distanceDelta)
     {
-      currentDistance += this.distanceDelta;
+      currentDistance += this.distanceDelta * translationSensitivity;
       this.distanceDelta = 0;
 
       this.averageDistance = currentDistance = Math.max(Math.min(currentDistance, 20.0), this.minDistance);
@@ -387,9 +387,9 @@ THREE.LookatRobotControls = function (userView, robot)
 
     if (delta)
     {
-      this.currentVector.applyAxisAngle(new THREE.Vector3(0, 0, -1), delta.x * 0.01);
+      this.currentVector.applyAxisAngle(new THREE.Vector3(0, 0, -1), delta.x * 0.01 * rotationSensitivity);
 
-      this.currentVector.z += delta.y * 0.01;
+      this.currentVector.z += delta.y * 0.01 * rotationSensitivity;
       this.currentVector.normalize();
       this.currentVector.z = Math.max(this.currentVector.z, 0.18);
       this.currentVector.normalize();

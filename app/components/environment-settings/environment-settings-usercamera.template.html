@@ -37,6 +37,22 @@
 
     </div>
 
+    <div class="environment-settings-option-subblock">
+            <span class="environment-settings-usercamera-levels-title">
+            Navigation settings
+            </span>
+      <div class="environment-settings-option-subblock">
+        <label>Translation sensitivity</label>
+        <input class="esv-envsettings-slider" type="range"
+               ng-model="userNavigationService.translationSensitivity" step="0.05" min="0.05" max="2.0" value="1.0"
+               ng-mouseup="$event.stopPropagation(); focus('container');"/>
+        <label>Rotation sensitivity</label>
+        <input class="esv-envsettings-slider" type="range"
+               ng-model="userNavigationService.rotationSensitivity" step="0.1" min="0.1" max="2.0" value="1.0"
+               ng-mouseup="$event.stopPropagation(); focus('container');"/>
+      </div>
+    </div>
+
   </div>
 
  </div>
