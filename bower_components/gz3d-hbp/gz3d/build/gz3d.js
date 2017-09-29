@@ -6063,32 +6063,19 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
         element.done = false;
         GZ3D.assetProgressData.assets.push(element);
 
-        // Use coarse version on touch devices
-        if (modelUri.indexOf('.dae') !== -1 /*&& isTouchDevice*/) // Modified for HBP, we do use coarse models all the time
+        // HBP Change (Luc): we assume that all requested collada files are
+        // are web-compliant 
+        if (modelUri.indexOf('.dae') !== -1)
         {
           var checkModel = new XMLHttpRequest();
-
-          // check if the filename ends with coarse.dae, if not check if a coarse file exsits
-          var checkModelUri = modelUri;
-          if(! checkModelUri.endsWith('_coarse.dae'))
-          {
-            checkModelUri = modelUri.substring(0,modelUri.indexOf('.dae'));
-            checkModelUri = checkModelUri + '_coarse.dae';
-          }
-
           // We use a double technique to disable the cache for these requests:
           // 1. We create a custom url by adding the time as a parameter.
           // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
           // Since browsers and servers vary in their behaviour, we use both of these tricks.
           // PS: These requests do not load the dae files, they just verify if they exist on the server
-          // so that we can choose between coarse or reqular models.
-          checkModel.open('HEAD', checkModelUri + '?timestamp=' + new Date().getTime());
+          checkModel.open('HEAD', modelUri + '?timestamp=' + new Date().getTime());
           checkModel.setRequestHeader('If-Modified-Since', 'Sat, 1 Jan 2026 00:00:00 GMT');
           checkModel.onload = function() {
-            if (checkModel.status !== 404) {
-              element.url = checkModelUri; // coarse model found, use it
-            }
-
             var materialName = parent.name + '::' + element.url;
             that.entityMaterial[materialName] = mat;
 
@@ -6125,9 +6112,9 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
                 });
           };
 
-          // try to check for coarse model, retry a few times in case of intermittent network issues
+          // check for model collada file, retry a few times in case of intermittent network issues
           // (note: exception is only for network/routing issues or other failures, not if model does not exist)
-          // if all retries fail, reflect an error in the assets loading screen
+          // if all trials fail, reflect an error in the assets loading screen
           var retries = 5;
           var checked = false;
           while (!checked && retries > 0) {
@@ -6138,9 +6125,8 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
               checked = true;
             }
             catch(err) {
-
               // log the network failure
-              console.error(modelUri + ': error checking for coarse version');
+              console.error(modelUri + ': error when checking for collada file');
               console.error(err);
 
               // all retries failed, mark the asset as failed
