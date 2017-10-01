@@ -32,20 +32,20 @@
 
       return this.$q.all([
         this.experimentProxyService.getAvailableServers(),
-        this.$q.all(exps.map(({ id }) => this.experimentProxyService.getJoinableServers(id))),//TODO: contextId id to be replaced by experiementId once teh ExDBackend has been migrated
+        this.$q.all(exps.map(({ id }) => this.experimentProxyService.getJoinableServers(id))),
         this.$q.all(exps.map(exp => this.loadExperimentDetails(exp))),
       ])
         .then(([availableServers, joinableServers, experimentsDetails]) => {
-          let expsWithDetail = exps
-            .filter((exp, i) => experimentsDetails[i]);
-
-          expsWithDetail.forEach((exp, i) => {
-            exp.availableServers = availableServers;
-            exp.joinableServers = joinableServers[i];
-            angular.extend(exp.configuration, experimentsDetails[i]);
-          });
-
-          return expsWithDetail;
+          return exps
+            .map((exp, i) => i)
+            .filter(i => experimentsDetails[i])
+            .map(i => {
+              let exp = exps[i];
+              exp.availableServers = availableServers;
+              exp.joinableServers = joinableServers[i];
+              angular.extend(exp.configuration, experimentsDetails[i]);
+              return exp;
+            });
         });
     }
 

@@ -1,7 +1,7 @@
 <div>
-    <new-experiment-wizard ng-show="experiments.length > 1 && isCollabExperiment && devMode && !private"></new-experiment-wizard>
+    <new-experiment-wizard ng-show="experiments.length > 1 && isPrivateExperiment && devMode && !private"></new-experiment-wizard>
 
-    <div ng-show="!experiments">
+    <div ng-if="!experiments">
       <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp; <i>{{config.loadingMessage}}</i>
     </div>
     <div ng-show="experiments" ng-repeat="exp in experiments | filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
@@ -70,7 +70,7 @@
           <div uib-collapse="!config.canCloneExperiments || (exp.id != pageState.selected) || !isCloneRequested">
             <div class="list-entry-container center">
               <i class="fa fa-spinner fa-spin"></i>&nbsp;
-              <i>Copying files to Collab storage...</i>
+              <i>Copying files to the storage...</i>
             </div>
           </div>
 
@@ -114,7 +114,7 @@
           </button>
 
               <button ng-if="config.canCloneExperiments && userinfo.hasEditRights" analytics-on analytics-event="Clone" class="btn btn-default"
-                analytics-label="Collab" analytics-value="exp.id" class="btn btn-default" ng-click="cloneExperiment(exp.id)">
+                analytics-label="Collab" analytics-value="exp.id" class="btn btn-default" ng-click="cloneExperiment(exp)">
             <i class="fa fa-pencil"></i> Clone
           </button>
 

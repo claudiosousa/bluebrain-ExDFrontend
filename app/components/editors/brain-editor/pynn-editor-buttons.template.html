@@ -18,9 +18,9 @@
         ng-click="saveIntoCollabStorage()"
         ng-disabled="loading || stateService.statePending || !populationForm.$valid || !collabDirty"
         v-busy="isSavingToCollab"
-        v-busy-label="Saving to Collab"
+        v-busy-label="Saving to Storage"
         v-pressable>
   <i class="glyphicon glyphicon-book"></i>
-  <span> Save to Collab</span>
+  <span> Save to Storage</span>
 </button>
 <span class="alert alert-danger" ng-if="!populationForm.$valid">Invalid population definition.</span>

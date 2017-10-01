@@ -252,18 +252,18 @@ describe('Controller: EditorToolbarController', function() {
       expect(gz3d.scene.selectEntity).toHaveBeenCalled();
     });
 
-    it('should pass the radio button value to resetCollabService when Collab is available', function() {
+    it('should pass the radio button value to resetCollabService when Storage is available', function() {
       spyOn(_, 'defer');
 
       var testWorld = {
         type: RESET_TYPE.RESET_WORLD,
         headline: 'Resetting Environment',
-        subHeadline: 'Downloading World SDF from the Collab'
+        subHeadline: 'Downloading World SDF from the Storage'
       };
       var testBrain = {
         type: RESET_TYPE.RESET_BRAIN,
         headline: 'Resetting Brain',
-        subHeadline: 'Downloading brain configuration file from the Collab'
+        subHeadline: 'Downloading brain configuration file from the Storage'
       };
       var testCases = [testWorld, testBrain];
 

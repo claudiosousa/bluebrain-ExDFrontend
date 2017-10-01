@@ -397,7 +397,7 @@
 
             const messageHeadline = 'Resetting ' + resetWhat;
             const messageSubHeadline = 'Downloading ' + downloadWhat +
-                'from the Collab';
+                'from the Storage';
 
             _.defer(() => {
               this.splash.spin = true;
