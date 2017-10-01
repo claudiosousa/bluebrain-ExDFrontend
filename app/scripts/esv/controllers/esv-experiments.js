@@ -45,7 +45,7 @@
             .then(response => $scope.reloadExperiments(!!response.length))
             .catch(err => clbErrorDialog.open({
               type: 'Private experiment error',
-              message: 'Failed to retrive private experiments'
+              message: 'Failed to retrieve private experiments'
             }));
         } else
           $scope.reloadExperiments(false);

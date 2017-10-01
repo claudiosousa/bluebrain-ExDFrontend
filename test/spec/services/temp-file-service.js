@@ -126,7 +126,7 @@ describe('Services: tempFileService', function() {
     expect(dirtyCallback).not.toHaveBeenCalled();
   });
 
-  it('should not retrived saved data if not in a collab experiment', function() {
+  it('should not retrieved saved data if not in a collab experiment', function() {
     environmentService.setPrivateExperiment(false);
     tempFileService.checkSavedWork();
     $rootScope.$digest();

@@ -96,7 +96,7 @@ describe('Services: AutoSaveService', function () {
     expect(tempFileService.saveDirtyData).toHaveBeenCalled();
   });
 
-  it('should not save temporary work if not a collab experiement', function () {
+  it('should not save temporary work if not a collab experiment', function () {
     environmentService.setPrivateExperiment(false);
 
     autoSaveService.setDirty(DIRTY_TYPE, DIRTY_DATA);
