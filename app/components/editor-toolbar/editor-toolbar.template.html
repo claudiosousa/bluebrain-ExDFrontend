@@ -3,7 +3,7 @@
 <!-- endbuild -->
 
 <!-- overlay -->
-<div id="overlay" class="esv-overlay noselect" ng-if="!vm.userContextService.demoWaitingForNextSimulation">
+<div id="overlay" class="esv-overlay noselect">
     <div class="hbp-toolbar" ng-mousedown="vm.contextMenuState.toggleContextMenu(false, $event);">
         <div ng-if="vm.userContextService.isOwner() && vm.stateService.currentState === vm.STATE.PAUSED"
              class="hbp-toolbar-action"
@@ -294,7 +294,7 @@
         <!-- exit button -->
         <div class="hbp-toolbar-action right-align hide-overflow"
              help-tooltip="EXIT_BUTTON"
-             ng-click="vm.exit()">
+             ng-click="vm.exit(true)">
             <i class="fa fa-sign-out fa-2x vertcenter"></i>
         </div>
         <!-- exit button -->

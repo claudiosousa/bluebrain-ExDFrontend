@@ -154,7 +154,15 @@
         },
       };
 
-
+        var esvDemoWaiting = {
+          name: 'esv-demo-wait',
+          url: '/esv-demo-wait',
+          templateUrl: 'views/esv/demo-waiting-message.html',
+          controller: 'DemoAutorunExperimentController',
+          resolve: {
+            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
+          },
+        };
         var esvDemoIntroState = {
           name: 'esv-demo',
           url: '/esv-demo',
@@ -206,6 +214,7 @@
 
       var home = $stateProvider.state(homeState);
       home.state(esvWebState);
+      home.state(esvDemoWaiting);
       home.state(esvDemoIntroState);
       home.state(esvPrivateState);
       home.state(experimentViewState);

@@ -212,9 +212,11 @@
 
         var stateStopFailed = this.stateService.currentState === this.STATE.STOPPED ||
             this.stateService.currentState === this.STATE.FAILED;
-
-        if (!this.demoMode || !stateStopFailed)   // In demo mode, we don't show the end splash screen,
-        {                                         // since everything is handled from the demo-autorun-experiment directive
+        if(this.demoMode && stateStopFailed){
+          this.exitSimulation();
+        }
+        else   // In demo mode, we don't show the end splash screen,
+        {
           //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
           //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
           /* splashScreen == null means it has been already closed and should not be reopened */
@@ -301,18 +303,23 @@
       this.stateService.stopListeningForStatusInformation();
     }
 
-    exit() {
-      this.exitSimulation();
+    exit(quitDemo) {
+      this.exitSimulation(quitDemo);
     };
 
-    exitSimulation() {
+    exitSimulation(quitDemo) {
       this.cleanUp();
 
       this.splash.splashScreen = null;  // do not reopen splashscreen if further messages happen
       if (this.environmentService.isPrivateExperiment()) {
         this.$location.path('esv-private');
       } else {
-        this.$location.path('esv-web');
+        if (this.demoMode && !quitDemo){
+          this.$location.path('esv-demo-wait');
+        }
+        else {
+          this.$location.path('esv-web');
+        }
       }
     }
 
