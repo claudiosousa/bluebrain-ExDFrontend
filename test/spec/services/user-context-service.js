@@ -6,23 +6,15 @@ describe('Services: userContextService', function() {
   var userContextService;
 
   var $rootScope, $scope, $window, $q;
-  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, clbUser,
+  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig,
     environmentService;
 
-  var remoteProfileMock, lockServiceMock, cancelLockServiceMock;
-
-  beforeEach(function() {
-    window.bbpConfig.localmode.forceuser = true;
-  });
-
-  afterEach(function() {
-    window.bbpConfig.localmode.forceuser = false;
-  });
+  var lockServiceMock, cancelLockServiceMock;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('userContextModule'));
-  beforeEach(module('clbUserMock'));
+  beforeEach(module('storageServerMock'));
 
 
   // provide mock objects
@@ -52,14 +44,20 @@ describe('Services: userContextService', function() {
       createLockServiceForExperimentId: jasmine.createSpy('createLockServiceForExperimentId').and.returnValue(lockServiceMock)
     };
     $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
-
+    $provide.value('simulationControl', function() {
+      return {
+        simulation: function(_, rescallback) {
+          rescallback({
+            owner: 'Some owner id',
+            experimentConfiguration: 'expconf',
+            environmentConfiguration: 'envconf',
+            creationDate: '19.02.1970'
+          });
+        }
+      };
+    });
     // bbpConfig
     $provide.value('bbpConfig', window.bbpConfig);
-
-    // clbUser
-    remoteProfileMock = {
-      id: 'remote_user_id'
-    };
   }));
 
 
@@ -67,7 +65,7 @@ describe('Services: userContextService', function() {
   // inject dependencies
   beforeEach(function() {
     inject(function(_$rootScope_, _$window_, _$q_, $httpBackend, _userContextService_, _userNavigationService_,
-      _collabExperimentLockService_, _simulationInfo_, _bbpConfig_,  _clbUser_,
+      _collabExperimentLockService_, _simulationInfo_, _bbpConfig_,
       _environmentService_, _experimentService_) {
       userContextService = _userContextService_;
       experimentService = _experimentService_;
@@ -79,7 +77,6 @@ describe('Services: userContextService', function() {
       collabExperimentLockService = _collabExperimentLockService_;
       simulationInfo = _simulationInfo_;
       bbpConfig = _bbpConfig_;
-      clbUser = _clbUser_;
       environmentService = _environmentService_;
       httpBackend = $httpBackend;
 
@@ -104,7 +101,7 @@ describe('Services: userContextService', function() {
     //userContextService.ownerID = 'owner_id';
     expect(userContextService.isOwner()).toBe(false);
 
-    userContextService.userID = 'testUser';
+    userContextService.userID = userContextService.ownerID;
     expect(userContextService.isOwner()).toBe(true);
   });
 
@@ -138,7 +135,7 @@ describe('Services: userContextService', function() {
       name: 'not_user_avatar'
     };
 
-    userContextService.userID = 'testUser';
+    userContextService.userID = 'Some owner id';
     expect(userContextService.hasEditRights(avatarMock)).toBe(true);
 
     userContextService.userID = 'not_owner';
@@ -171,22 +168,9 @@ describe('Services: userContextService', function() {
     expect(userContextService.editIsDisabled).toBe(true);
   });
 
-  describe('local mode', function () {
-    beforeEach(function() {
-      window.bbpConfig.localmode.forceuser = true;
-
-      userContextService.init();
-    });
-
-    it(' - after init()', function () {
-      expect(userContextService.userID).toBe(window.bbpConfig.localmode.ownerID);
-      expect(userContextService.ownerID).toBe(window.bbpConfig.localmode.ownerID);
-    });
-  });
 
   describe('remote collab mode', function() {
     beforeEach(function() {
-      window.bbpConfig.localmode.forceuser = false;
       simulationInfo.isCollabExperiment = true;
       environmentService.setPrivateExperiment(true);
     });

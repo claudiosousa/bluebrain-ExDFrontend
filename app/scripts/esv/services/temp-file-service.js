@@ -25,12 +25,12 @@
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'clbUser',
+    .service('tempFileService', ['$stateParams', '$q', '$rootScope', 'nrpUser',
       'nrpModalService', 'environmentService', 'simulationInfo', 'storageServer',
-      function($stateParams, $q, $rootScope, clbUser,
-        nrpModalService, environmentService, simulationInfo, storageServer) {
+      function($stateParams, $q, $rootScope, nrpUser, nrpModalService, environmentService, simulationInfo, storageServer) {
 
-        var dirtyDataCol = {};
+        const OWNER_PROPERTY = '__owner_id';
+        let dirtyDataCol = {};
 
         return {
           dirtyDataCol: dirtyDataCol,
@@ -44,18 +44,24 @@
           if (!environmentService.isPrivateExperiment())
             return $q.reject();
 
-          if (overwrite)
-            return storageServer.setFileContent(simulationInfo.experimentID, filename, angular.toJson(data), true);
+          return nrpUser.getCurrentUser()
+            .then(userInfo => {
 
-          return storageServer.getFileContent(simulationInfo.experimentID, filename, true)
-            .then(file => {
-              let currentData = file.uuid ? angular.fromJson(file.data) : {};
-              if (dirtyType)
-                currentData[dirtyType] = data[dirtyType];
-              else
-                angular.extend(currentData, data);
+              if (overwrite)
+                return storageServer.setFileContent(simulationInfo.experimentID, filename, angular.toJson({ [OWNER_PROPERTY]: userInfo.id, data }), true);
 
-              return storageServer.setFileContent(simulationInfo.experimentID, filename, angular.toJson(currentData), true);
+              return storageServer.getFileContent(simulationInfo.experimentID, filename, true)
+                .then(file => {
+                  let currentData = file.uuid ? angular.fromJson(file.data) : { data: {} };
+                  currentData.data = currentData.data || {};//backwards compatibility for old lock format
+                  currentData[OWNER_PROPERTY] = userInfo.id;
+                  if (dirtyType)
+                    currentData.data[dirtyType] = data[dirtyType];
+                  else
+                    angular.extend(currentData.data, data);
+
+                  return storageServer.setFileContent(simulationInfo.experimentID, filename, angular.toJson(currentData), true);
+                });
             });
         };
 
@@ -90,10 +96,11 @@
 
               return angular.fromJson(file.data);
             })
-            .then(foundFile => {
+            .then(foundFile => $q.all([foundFile.data, nrpUser.getOwnerDisplayName(foundFile[OWNER_PROPERTY])]))
+            .then(([foundFile, username]) => {
               if (confirmBox) {
                 var localScope = $rootScope.$new();
-                localScope.username = 'TODO';
+                localScope.username = username;
                 return nrpModalService.createModal({
                   templateUrl: 'views/common/restore-auto-saved.html',
                   closable: true,

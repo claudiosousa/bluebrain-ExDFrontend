@@ -32,17 +32,14 @@ window.bbpConfig = {
     },
     "slurmmonitor": {
       "url": "http://bbpsrvc44.cscs.ch:8080"
-    },        
-    "collab": {     
-       "v0": "https://services.humanbrainproject.eu/collab/v0"    
+    },
+    "collab": {
+       "v0": "https://services.humanbrainproject.eu/collab/v0"
     }
   },
   'auth': {
     'url': 'https://services-test.humanbrainproject-test.eu/oidc',
     'clientId': 'test-client-id'
-  },
-  'oidc': {
-    'debug': false
   },
   collab: {
     collabIds: {
@@ -80,10 +77,6 @@ window.bbpConfig = {
       'https://*.humanbrainproject.eu/**',
       'http://localhost:*/'
     ]
-  },
-  "localmode": {
-    "forceuser": false,
-    "ownerID": "testUser"
   },
   'ros-topics': {
     'spikes': '/monitor/spike_recorder',

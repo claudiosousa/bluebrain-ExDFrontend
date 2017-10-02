@@ -36,7 +36,6 @@
     var nrpAnalytics;
     beforeEach(inject(function(_nrpAnalytics_) {
       nrpAnalytics = _nrpAnalytics_;
-      window.bbpConfig.localmode.forceuser = false;
     }));
     beforeEach(function() {
       originalMoment = moment;

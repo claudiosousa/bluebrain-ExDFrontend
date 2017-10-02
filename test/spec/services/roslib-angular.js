@@ -45,16 +45,6 @@ describe('Services: roslib-angular', function () {
     expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123?token=malformed-token'});
   });
 
-  it('should not use token if in full local mode (user forced)', function() {
-    window.localStorage.getItem.calls.reset();
-    window.ROSLIB.PhoenixRos.calls.reset();
-    window.bbpConfig.localmode.forceuser = true;
-    roslib.getOrCreateConnectionTo(testURL);
-    expect(localStorage.getItem).not.toHaveBeenCalled();
-    expect(window.ROSLIB.PhoenixRos).toHaveBeenCalledWith({url: 'ws://fu.bar:123'});
-    window.bbpConfig.localmode.forceuser = false;
-  });
-
   it('should reuse an already existing connection', function () {
     var rosConnection1 = roslib.getOrCreateConnectionTo(testURL);
     var rosConnection2 = roslib.getOrCreateConnectionTo(testURL);

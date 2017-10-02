@@ -43,11 +43,11 @@
     .factory('experimentsFactory',
     ['$q', '$interval', '$log',
       'experimentProxyService', 'uptimeFilter',
-      'clbUser', 'experimentSimulationService', 'clbErrorDialog',
+      'experimentSimulationService', 'clbErrorDialog',
       'SERVER_POLL_INTERVAL', 'nrpUser',
       'environmentService', 'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS', 'storageServer', '$stateParams',
       function($q, $interval, $log, experimentProxyService, uptimeFilter,
-        clbUser, experimentSimulationService, clbErrorDialog, SERVER_POLL_INTERVAL,
+        experimentSimulationService, clbErrorDialog, SERVER_POLL_INTERVAL,
         nrpUser, environmentService,
         FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS, storageServer, $stateParams) {
 

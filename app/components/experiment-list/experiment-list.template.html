@@ -6,10 +6,10 @@
     </div>
     <div ng-show="experiments" ng-repeat="exp in experiments | filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
       class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false"
-      ng-click="selectExperiment(exp);" editable-experiment experiment-details>
+      ng-click="selectExperiment(exp);" editable-experiment experiment-details="exp">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == pageState.selected) || isHovered}">
         <div class="list-entry-left" ng-class="{selected: exp.id == pageState.selected}">
-          <img ng-src="{{exp.imageData && 'data:image/png;base64,'+exp.imageData}}" />
+          <img ng-src="{{exp.imageData ? 'data:image/png;base64,'+exp.imageData:''}}" />
         </div>
         <div class="list-entry-middle list-entry-container up-down">
           <div class="list-entry-container left-right title-line">
@@ -51,7 +51,7 @@
           <i>Use server:</i>
           <select ng-model="exp.devServer" ng-change="getSoftwareVersions(exp.devServer)">
             <option value="">All servers</option>
-            <option ng-repeat="server in exp.availableServers" value="{{server}}">{{server}}</option>
+            <option ng-repeat="server in exp.availableServers" value="{{server.id}}">{{server.id}}</option>
           </select>
           <a name="versionLink" href="" ng-click="setCollapsed(!isCollapsed); getSoftwareVersions(exp.devServer)">{{isCollapsed  ? 'Show versions' : 'Hide versions'}}</a>
           <div uib-collapse="isCollapsed" name="versionDiv">

@@ -8,11 +8,11 @@ describe('Services: userNavigationService', function () {
   var NAVIGATION_MODES, STATE;
 
   var $rootScope, gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
-  var clbUser, simulationInfo, userProfile, roslib, stateService;
+  var storageServer, simulationInfo, userProfile, roslib, stateService;
 
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('userNavigationModule'));
-  beforeEach(module('clbUserMock'));
+  beforeEach(module('storageServerMock'));
 
   // provide mock objects
   beforeEach(module(function ($provide) {
@@ -69,7 +69,6 @@ describe('Services: userNavigationService', function () {
     $provide.value('avatarControls', avatarControlsMock);
 
     // look at robot mocks
-
     var lookatRobotControlsMock = {
       enabled: false,
       domElement: {
@@ -94,12 +93,10 @@ describe('Services: userNavigationService', function () {
     };
     $provide.value('firstPersonControls', firstPersonControlsMock);
 
-    // clbUser mock
-    userProfile = {
+     userProfile = {
       id: 'mock_id',
       displayName: 'mock_displayname'
     };
-
     var roslibMock = {};
     $provide.value('roslib', roslibMock);
 
@@ -115,13 +112,13 @@ describe('Services: userNavigationService', function () {
 
     // inject service for testing.
     inject(function (_$rootScope_, _userNavigationService_, _NAVIGATION_MODES_, _STATE_, _gz3d_, _camera_, _avatar_, _avatarControls_,
-                     _firstPersonControls_,_lookatRobotControls_, _clbUser_,
+                     _firstPersonControls_,_lookatRobotControls_, _storageServer_,
                      _simulationInfo_, _roslib_, _stateService_) {
       userNavigationService = _userNavigationService_;
       NAVIGATION_MODES = _NAVIGATION_MODES_;
       STATE = _STATE_;
       gz3d = _gz3d_;
-      clbUser = _clbUser_;
+      storageServer = _storageServer_;
       $rootScope = _$rootScope_;
 
       camera = _camera_;
@@ -174,10 +171,10 @@ describe('Services: userNavigationService', function () {
 
     expect(gz3d.iface.modelInfoTopic.subscribe).toHaveBeenCalledWith(jasmine.any(Function));
 
-    expect(clbUser.getCurrentUser).toHaveBeenCalled();
-    expect(userNavigationService.setUserData).toHaveBeenCalledWith(clbUser.currentUser);
-    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + clbUser.currentUser.id);
-    expect(userNavigationService.userDisplayName).toBe(clbUser.currentUser.displayName);
+    expect(storageServer.getCurrentUser).toHaveBeenCalled();
+    expect(userNavigationService.setUserData).toHaveBeenCalledWith(storageServer.currentUser);
+    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + storageServer.currentUser.id);
+    expect(userNavigationService.userDisplayName).toBe(storageServer.currentUser.displayName);
 
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
 

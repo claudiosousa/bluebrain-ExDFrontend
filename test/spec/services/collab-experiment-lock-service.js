@@ -9,7 +9,7 @@ describe('Services: collab-experiment-lock-service', function() {
   var FAKE_USER_NAME = 'FAKE_USER_NAME';
   var POLLING_TIME = 10 * 1000;//10s
 
-  var httpBackend, bbpConfig, collabExperimentLockService, $rootScope, $q, collabConfigResponse, $interval,
+  var httpBackend, bbpConfig, collabExperimentLockService, $rootScope, $q, collabConfigResponse, $interval, nrpUser,
     createdLockService, userBaseUrl, LOCK_FILE_VALIDITY_MAX_AGE_HOURS, clbStorage, lockFileRequest;
 
   // loads the service to test and mock the necessary service
@@ -24,7 +24,7 @@ describe('Services: collab-experiment-lock-service', function() {
     _$q_,
     _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_,
     _clbStorage_,
-    nrpUser) {
+    _nrpUser_) {
     httpBackend = _$httpBackend_;
     bbpConfig = _bbpConfig_;
     collabExperimentLockService = _collabExperimentLockService_;
@@ -33,6 +33,7 @@ describe('Services: collab-experiment-lock-service', function() {
     $q = _$q_;
     LOCK_FILE_VALIDITY_MAX_AGE_HOURS = _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_;
     clbStorage = _clbStorage_;
+    nrpUser = _nrpUser_;
 
     userBaseUrl = bbpConfig.get('api.user.v0');
 
@@ -81,16 +82,6 @@ describe('Services: collab-experiment-lock-service', function() {
     beforeEach(function() {
       documentBaseUrl = bbpConfig.get('api.document.v1');
       lockFileRequest = httpBackend.whenGET(documentBaseUrl + '/folder/' + FAKE_EXPERIMENT_FOLDER_ID + '/children/?name=edit.lock');
-
-      httpBackend.whenGET(userBaseUrl + '/user/search?pageSize=300&id=' + FAKE_USER_ID)
-        .respond({
-          _embedded: {
-            users: [{
-              id: FAKE_USER_ID,
-              displayName: FAKE_USER_NAME
-            }]
-          }
-        });
     });
     /*jshint camelcase: false */
     var fileResponse = {
@@ -169,6 +160,7 @@ describe('Services: collab-experiment-lock-service', function() {
     it('isLocked shoud find a lock', function() {
 
       spyOn(storageServer, 'getFileContent').and.returnValue(window.$q.when({ uuid: FAKE_USER_ID, data: JSON.stringify({ userId: FAKE_USER_ID, date: Date.now() }) }));
+      spyOn(nrpUser, 'getOwnerDisplayName').and.returnValue(window.$q.when(FAKE_USER_NAME));
 
       createdLockService = collabExperimentLockService.createLockServiceForExperimentId(FAKE_CONTEXT_ID);
 
@@ -178,7 +170,6 @@ describe('Services: collab-experiment-lock-service', function() {
           lockObj = lockObj_;
         });
 
-      httpBackend.flush();
       $rootScope.$digest();
       expect(lockObj.locked).toBe(true);
       expect(lockObj.lockInfo.user.id).toBe(FAKE_USER_ID);
@@ -209,6 +200,7 @@ describe('Services: collab-experiment-lock-service', function() {
     it('polling should find a lock', function() {
 
       spyOn(storageServer, 'getFileContent').and.returnValue(window.$q.when({ uuid: FAKE_USER_ID, data: JSON.stringify({ userId: FAKE_USER_ID, date: Date.now() }) }));
+      spyOn(nrpUser, 'getOwnerDisplayName').and.returnValue(window.$q.when(FAKE_USER_NAME));
 
       var lockObj;
       createdLockService = collabExperimentLockService.createLockServiceForExperimentId(FAKE_CONTEXT_ID);
@@ -217,7 +209,6 @@ describe('Services: collab-experiment-lock-service', function() {
           lockObj = lockObj_;
         });
       $interval.flush(POLLING_TIME);
-      httpBackend.flush();
       $rootScope.$digest();
       expect(lockObj.locked).toBe(true);
       expect(lockObj.lockInfo.user.id).toBe(FAKE_USER_ID);

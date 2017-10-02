@@ -46,23 +46,21 @@
     // custom ROSLIB methods
     ROSLIB.getOrCreateConnectionTo = function (url) {
 
-      if (!bbpConfig.get('localmode.forceuser', false)) {
-        var token = [];
-        var clientID = bbpConfig.get('auth.clientId', '');
-        var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
-        if (localStorage.getItem(localStorageTokenKey)) {
-          try {
-            token = JSON.parse(localStorage.getItem(localStorageTokenKey));
-          } catch(e) {
-            // this token will be rejected by the server and the client will get a proper auth error
-            token[0] = { access_token : 'malformed-token' };
-          }
-        } else {
+      var token = [];
+      var clientID = bbpConfig.get('auth.clientId', '');
+      var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
+      if (localStorage.getItem(localStorageTokenKey)) {
+        try {
+          token = JSON.parse(localStorage.getItem(localStorageTokenKey));
+        } catch (e) {
           // this token will be rejected by the server and the client will get a proper auth error
-          token[0] = { access_token : 'no-token' };
+          token[0] = { access_token: 'malformed-token' };
         }
-        url = url + '?token=' + token[0].access_token;
+      } else {
+        // this token will be rejected by the server and the client will get a proper auth error
+        token[0] = { access_token: 'no-token' };
       }
+      url = url + '?token=' + token[0].access_token;
 
       return new ROSLIB.PhoenixRos({ url: url });
     };

@@ -29,13 +29,13 @@
 
   .factory('userContextService', [
     '$q', '$window',  'experimentService',
-    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'clbUser',
+    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'storageServer',
     'environmentService',
     function (
       $q,
       $window,
       experimentService,
-      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, clbUser,
+      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, storageServer,
       environmentService) {
 
       function UserContextService() {
@@ -44,7 +44,7 @@
 
         this.editIsDisabled = false;
         let _ownerId;
-        //DON'T set ownerID from outside!!!
+
         Object.defineProperty(this, 'ownerID', { get: ()=>  _ownerId } );
         this.userEditingID = '';
         this.userEditing = '';
@@ -52,11 +52,8 @@
         this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
 
         let getUserId = () => {
-          if (!bbpConfig.get('localmode.forceuser', false))
-            return clbUser.getCurrentUser()
+            return storageServer.getCurrentUser()
               .then(profile => profile.id);
-
-          return $q.when(bbpConfig.get('localmode.ownerID'));
         };
 
         this.init = () => {

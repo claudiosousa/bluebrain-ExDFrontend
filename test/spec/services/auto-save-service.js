@@ -147,7 +147,7 @@ describe('Services: AutoSaveService', function () {
   });
 
   it('should removed previously saved work if user does not want to restore it', function () {
-    checkResponse = $q.reject();
+    checkResponse = $q.reject('discard');
 
     autoSaveService.checkAutoSavedWork();
 

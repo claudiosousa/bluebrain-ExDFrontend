@@ -45,7 +45,6 @@ module.exports = function(config) {
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
       'bower_components/angular-ui-router/release/angular-ui-router.js',
       'bower_components/angular.panels/dist/angular.panels.min.js',
-      'bower_components/bbp-oidc-client/angular-bbp-oidc-client.js',
       'bower_components/es5-shim/es5-shim.js',
       'bower_components/three.js/build/three.js',
       'bower_components/three.js/examples/js/controls/OrbitControls.js',

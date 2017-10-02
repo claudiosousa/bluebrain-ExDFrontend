@@ -48,6 +48,7 @@
           this.experimentsArray.push(exp);
         }
         let cachedExp = this.experimentsDict[exp.id];
+        cachedExp.onlyLocalServers = exp.availableServers.every(s => s.serverJobLocation === 'local');
         ['availableServers', 'joinableServers'].forEach(prop => cachedExp[prop] = exp[prop]);
       });
       this.experimentsDefered.resolve(this.experimentsArray);

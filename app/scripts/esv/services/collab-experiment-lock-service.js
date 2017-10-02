@@ -35,11 +35,10 @@
       return {
         $get: ['$q',
           '$interval',
-          'clbUser',
           'nrpUser',
           'storageServer',
           'LOCK_FILE_VALIDITY_MAX_AGE_HOURS',
-          function($q, $interval, clbUser, nrpUser, storageServer, LOCK_FILE_VALIDITY_MAX_AGE_HOURS) {
+          function($q, $interval, nrpUser, storageServer, LOCK_FILE_VALIDITY_MAX_AGE_HOURS) {
 
             //checks whether a file exists within a folder
             var getFolderFileMetaData = function(folderId, fileName) {
@@ -52,11 +51,11 @@
                     return $q.when(lockResponse);
 
                   let fileContent = JSON.parse(file.data);
-                  return clbUser.get([fileContent.userId])
-                    .then(function(userInfo) {
+                  return nrpUser.getOwnerDisplayName(fileContent.userId)
+                    .then(function(displayName) {
                       lockResponse.lockInfo = {
                         user: {
-                          displayName: userInfo[fileContent.userId].displayName,
+                          displayName: displayName,
                           id: fileContent.userId
                         },
                         entity: file.uuid,

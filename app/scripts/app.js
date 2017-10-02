@@ -49,11 +49,6 @@
       'angular-toArrayFilter',
       'angulartics',
       'angulartics.google.analytics',
-      'bbpOidcClient',
-      'hbpCollaboratoryCore',
-      'hbpCollaboratoryUI',
-      'clb-identity',
-      'clb-storage',
       'bbpConfig',
       'gzangular',
       'gz3dModule',
@@ -144,9 +139,6 @@
           templateUrl: 'views/esv/esv-experiments.html',
           controller: 'esvExperimentsCtrl',
           resolve: {
-            oidcToken: ['oidcClientService', function(oidcClientService) {
-              return oidcClientService.ensureSession();
-            }],
             setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
           },
         };
@@ -157,9 +149,6 @@
         templateUrl: 'views/esv/esv-experiments.html',
         controller: 'esvExperimentsCtrl',
         resolve: {
-          oidcToken: ['oidcClientService', function (oidcClientService) {
-            return oidcClientService.ensureSession();
-          }],
           setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
         },
       };
@@ -171,9 +160,6 @@
           templateUrl: 'views/esv/demo-experiments.html',
           controller: 'demoExperimentsController',
           resolve: {
-            oidcToken: ['oidcClientService', function(oidcClientService) {
-              return oidcClientService.ensureSession();
-            }],
             setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
           },
         };
@@ -184,9 +170,6 @@
           templateUrl: 'views/esv/esv-experiments.html',
           controller: 'esvExperimentsCtrl',
           resolve: {
-            oidcToken: ['oidcClientService', function(oidcClientService) {
-              return oidcClientService.ensureSession();
-            }],
             setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(true); }]
           }
         };

@@ -11,7 +11,7 @@
       maturity: 'production',
       name: 'Mature experiment name'
     },
-    availableServers: [hostName],
+    availableServers: [{ id: hostName }],
     joinableServers: [{
       server: hostName,
       runningSimulation: {
@@ -32,7 +32,7 @@
       username: 'cmartins',
       displayName: 'Claudio Sousa'
     },
-    groups: { result: ['hbp-sp10-user-edit-rights'] },
+    groups: [{ name: 'hbp-sp10-user-edit-rights' }],
     experiments: {
       matureExperiment: matureExperiment,
       developementExperiment: {
@@ -133,7 +133,6 @@
     function renderEsvWebPage(options) {
       var slurmUrl = bbpConfig.get('api.slurmmonitor.url');
 
-      window.bbpConfig.localmode.forceuser = true;
       var pageOptions = _.defaults({}, options, defaultPageOptions);
       //var experimentIds = _.map(pageOptions.experiments, function (val, key) { return key; });
 
@@ -141,14 +140,14 @@
         spyOn($location, 'search').and.returnValue({ dev: true });
       }
 
-      $httpBackend.whenGET(oidcUrl + '/user/search?pageSize=300&id=' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
+      $httpBackend.whenGET(proxyUrl + '/identity/' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
 
       environmentService.setPrivateExperiment(pageOptions.collab);
       $httpBackend.whenGET(new RegExp(proxyUrl + '/experiments')).respond(200, pageOptions.experiments);
       $httpBackend.whenGET(new RegExp(proxyUrl + '/experimentImage/')).respond(200, {});
       $httpBackend.whenGET(slurmUrl + '/api/v1/partitions/interactive').respond(200, pageOptions.slurm);
-      $httpBackend.whenGET(oidcUrl + '/user/me').respond(200, pageOptions.me);
-      $httpBackend.whenGET(oidcUrl + '/user/member-groups').respond(200, pageOptions.groups);
+      $httpBackend.whenGET(proxyUrl + '/identity/me').respond(200, pageOptions.me);
+      $httpBackend.whenGET(proxyUrl + '/identity/me/groups').respond(200, pageOptions.groups);
       $httpBackend.whenGET(/api\/collab\/configuration/).respond(200);
 
       $controller('esvExperimentsCtrl', {

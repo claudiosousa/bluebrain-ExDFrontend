@@ -94,23 +94,21 @@
           GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
           GZ3D.animatedModel = simulationInfo.animatedModel;
 
-          if (!bbpConfig.get('localmode.forceuser', false)) {
-            var token;
-            var clientID = bbpConfig.get('auth.clientId', '');
-            var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
-            if (localStorage.getItem(localStorageTokenKey)) {
-              try {
-                token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0].access_token;
-              } catch(e) {
-                // this token will be rejected by the server and the client will get a proper auth error
-                token = 'malformed-token';
-              }
-            } else {
+          var token;
+          var clientID = bbpConfig.get('auth.clientId', '');
+          var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
+          if (localStorage.getItem(localStorageTokenKey)) {
+            try {
+              token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0].access_token;
+            } catch (e) {
               // this token will be rejected by the server and the client will get a proper auth error
-              token = 'no-token';
+              token = 'malformed-token';
             }
-            GZ3D.webSocketToken = token;
+          } else {
+            // this token will be rejected by the server and the client will get a proper auth error
+            token = 'no-token';
           }
+          GZ3D.webSocketToken = token;
 
           this.scene = new GZ3D.Scene();
 

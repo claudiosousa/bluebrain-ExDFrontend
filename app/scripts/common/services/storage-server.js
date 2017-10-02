@@ -30,7 +30,8 @@
 
       this.CLIENT_ID = bbpConfig.get('auth.clientId');
       this.PROXY_URL = bbpConfig.get('api.proxy.url');
-      this.BASE_URL = `${this.PROXY_URL}/storage`;
+      this.STORAGE_BASE_URL = `${this.PROXY_URL}/storage`;
+      this.IDENTITY_BASE_URL = `${this.PROXY_URL}/identity`;
 
       this.buildStorageResource();
     }
@@ -55,45 +56,52 @@
         };
       };
 
-      this.proxyRsc = this.$resource(this.BASE_URL,
+      this.proxyRsc = this.$resource(this.STORAGE_BASE_URL,
         {},
         {
           getExperiments: buildAction({
             method: 'GET',
             isArray: true,
-            url: `${this.BASE_URL}/experiments`
+            url: `${this.STORAGE_BASE_URL}/experiments`
           }),
           getFile: buildAction({
             method: 'GET',
-            isArray: false,
             transformResponse: transformFileResponse,
-            url: `${this.BASE_URL}/:experimentId/:filename`
+            url: `${this.STORAGE_BASE_URL}/:experimentId/:filename`
+          }),
+          getUserInfo: buildAction({
+            method: 'GET',
+            url: `${this.IDENTITY_BASE_URL}/:userid`
+          }),
+          getCurrentUserGroups: buildAction({
+            method: 'GET',
+            isArray: true,
+            url: `${this.IDENTITY_BASE_URL}/me/groups`
           }),
           getExperimentFiles: buildAction({
             method: 'GET',
             isArray: true,
-            url: `${this.BASE_URL}/:experimentId`
+            url: `${this.STORAGE_BASE_URL}/:experimentId`
           }),
           getBlob: buildAction({
             method: 'GET',
-            isArray: false,
             responseType: 'blob',
             transformResponse: transformFileResponse,
-            url: `${this.BASE_URL}/:experimentId/:filename`
+            url: `${this.STORAGE_BASE_URL}/:experimentId/:filename`
           }),
           deleteFile: buildAction({
             method: 'DELETE',
-            url: `${this.BASE_URL}/:experimentId/:filename`
+            url: `${this.STORAGE_BASE_URL}/:experimentId/:filename`
           }),
           setFile: buildAction({
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            url: `${this.BASE_URL}/:experimentId/:filename`
+            url: `${this.STORAGE_BASE_URL}/:experimentId/:filename`
           }),
           setBlob: buildAction({
             method: 'POST',
             headers: { 'Content-Type': 'application/octet-stream' },
-            url: `${this.BASE_URL}/:experimentId/:filename`,
+            url: `${this.STORAGE_BASE_URL}/:experimentId/:filename`,
             transformRequest: []
           })
         });
@@ -106,7 +114,7 @@
         let url = err.data;
         if (!absoluteUrl.test(url))
           url = `${this.PROXY_URL}${url}`;
-        //localStorage.removeItem(this.STORAGE_KEY);
+        localStorage.removeItem(this.STORAGE_KEY);
         this.$window.location.href = `${url}&client_id=${this.CLIENT_ID}&redirect_uri=${encodeURIComponent(location.href)}`;
       }
       return this.$q.reject(err);
@@ -140,11 +148,14 @@
       return this.proxyRsc
         .getBlob({ experimentId, filename, byname })
         .$promise
-        .then(response => this.$q(resolve => {
+        .then(response => this.$q((resolve, reject) => {
           let reader = new FileReader();
-          reader.addEventListener('loadend', e =>
-            resolve(e.target.result.replace(/data:[^;]*;base64,/g, ''))
-          );
+          reader.addEventListener('loadend', e => {
+            if (e.target.result !== 'data:')
+              resolve(e.target.result.replace(/data:[^;]*;base64,/g, ''));
+            else
+              reject();
+          });
           reader.readAsDataURL(response.data);
         }));
     }
@@ -180,6 +191,25 @@
         .setBlob({ experimentId, filename, byname }, new Uint8Array(fileContent))
         .$promise;
     }
+
+    getCurrentUser() {
+      return this.proxyRsc
+        // similarly to the oidc api, the storage server 'identity/me' endpoint returns information about the current user
+        .getUserInfo({ userid: 'me' })
+        .$promise;
+    }
+
+    getUser(userid) {
+      return this.proxyRsc
+        .getUserInfo({ userid })
+        .$promise;
+    }
+
+    getCurrentUserGroups() {
+      return this.proxyRsc
+        .getCurrentUserGroups()
+        .$promise;
+    }
   }
 
   class StorageServerTokenManager {
@@ -192,7 +222,7 @@
     }
 
     checkForNewTokenToStore() {
-      let access_token = this.$location.search().storage_token;
+      let access_token = this.$location.search().access_token;
       if (!access_token)
         return;
 
@@ -202,9 +232,10 @@
 
     getStoredToken() {
       let storedItem = localStorage.getItem(this.STORAGE_KEY);
-      if (!storedItem)
+      if (!storedItem) {
         // this token will be rejected by the server and the client will get a proper auth error
         return 'no-token';
+      }
 
       try {
         let tokens = JSON.parse(storedItem);

@@ -37,11 +37,20 @@
       function($interval, experimentProxyService, nrpFrontendVersion, nrpBackendVersions, slurminfoService, uptimeFilter, CLUSTER_THRESHOLDS, STATE) {
         return {
           scope: true,
-          link: function(scope) {
+          link: function(scope, el, attrs) {
 
             scope.STATE = STATE;
             scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
-            let slurminfoSubscription = slurminfoService.subscribe(availability => scope.clusterAvailability = availability);
+            scope.clusterAvailability = { free: 'N/A', total: 'N/A' };
+
+            let slurminfoSubscription;
+            scope.$watch(attrs.experimentDetails, exp => {
+              if (slurminfoSubscription || !exp || exp.onlyLocalServers)
+                return;
+
+              slurminfoSubscription = slurminfoService.subscribe(availability => scope.clusterAvailability = availability);
+            });
+
 
             scope.isCollapsed = true;
             scope.softwareVersions = '';
@@ -73,7 +82,7 @@
 
             scope.$on('$destroy', () => {
               $interval.cancel(updateUptime);
-              slurminfoSubscription.unsubscribe();
+              slurminfoSubscription && slurminfoSubscription.unsubscribe();
             });
           }
         };

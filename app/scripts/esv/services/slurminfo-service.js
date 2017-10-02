@@ -49,17 +49,10 @@
           }
         });
 
-        let localmode = bbpConfig.get('localmode.forceuser');
-
-        let clusterAvailability$;
-
-        if (localmode)
-          clusterAvailability$ = Rx.Observable.of({ free: 'N/A', total: 'N/A' });
-        else
-          clusterAvailability$ = Rx.Observable
-            .timer(0, SERVER_POLL_INTERVAL)
-            .switchMap(() => rsc.get().$promise)
-            .map(({ free, nodes }) => ({ free, total: nodes[3] }));
+        let clusterAvailability$ = Rx.Observable
+          .timer(0, SERVER_POLL_INTERVAL)
+          .switchMap(() => rsc.get().$promise)
+          .map(({ free, nodes }) => ({ free, total: nodes[3] }));
 
 
         return clusterAvailability$

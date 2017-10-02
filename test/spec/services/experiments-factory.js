@@ -26,7 +26,7 @@ describe('Services: experimentsFactory', function() {
   }));
 
   it('image should come from proxy', function() {
-    var experiments = [{ joinableServers: [] }];
+    var experiments = [{ joinableServers: [], availableServers: [] }];
     var image = { '0': 'fakeImage' };
     spyOn(experimentProxyService, 'getExperiments').and.returnValue($q.when(experiments));
     spyOn(experimentProxyService, 'getImages').and.returnValue($q.when(image));
@@ -171,14 +171,14 @@ describe('Services: experimentsFactory', function() {
     scope.$apply();
     spyOn(clbErrorDialog, 'open');
     //spyOn(experimentSimulationService, 'startNewExperiment').and.returnValue(window.$q.reject());
-     exp.experiments
-       .then(function(experiments) {
-         return exp.startExperiment(experiments[0]);
-       })
+    exp.experiments
+      .then(function(experiments) {
+        return exp.startExperiment(experiments[0]);
+      })
       .catch(function() {
         expect(clbErrorDialog.open).toHaveBeenCalledWith(expectedError);
       });
-     scope.$apply();
+    scope.$apply();
   }
 
   it('should trigger a specific error when it fails to start an experiment from a list of servers', function() {

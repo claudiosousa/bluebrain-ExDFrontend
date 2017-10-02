@@ -136,7 +136,6 @@
     function renderDemoWebPage(options) {
       var slurmUrl = bbpConfig.get('api.slurmmonitor.url');
 
-      window.bbpConfig.localmode.forceuser = true;
       var pageOptions = _.defaults({}, options, defaultPageOptions);
       //var experimentIds = _.map(pageOptions.experiments, function (val, key) { return key; });
 
@@ -144,7 +143,7 @@
         spyOn($location, 'search').and.returnValue({ dev: true });
       }
 
-      $httpBackend.whenGET(oidcUrl + '/user/search?pageSize=300&id=' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
+      $httpBackend.whenGET(proxyUrl + '/identity/' + defaultPageOptions.me.id).respond(200, pageOptions.userQuery);
 
       environmentService.setPrivateExperiment(pageOptions.collab);
 

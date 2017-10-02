@@ -52,8 +52,8 @@
       $rootScope.$digest();
     });
 
-    it('should set set access_token in storage when storage_token in url', function() {
-      spyOn($location, 'search').and.returnValue({ 'storage_token': 'test' });
+    it('should set set access_token in storage when access_token in url', function() {
+      spyOn($location, 'search').and.returnValue({ 'access_token': 'test' });
       spyOn(localStorage, 'setItem');
       storageServer.storageServerTokenManager.checkForNewTokenToStore();
       expect(localStorage.setItem).toHaveBeenCalledWith(storageServer.storageServerTokenManager.STORAGE_KEY, '[{"access_token":"test"}]');

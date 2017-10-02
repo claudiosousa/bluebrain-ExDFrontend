@@ -121,8 +121,9 @@
               else
                 dirtyDataCol = savedWork;
             }))
-            .catch(function(){
-              removeAutoSavedWork();
+            .catch(function(reason){
+              if (reason === 'discard')
+                removeAutoSavedWork();
               return $q.reject();
             })
             .finally(function(){

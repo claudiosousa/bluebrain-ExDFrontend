@@ -28,8 +28,7 @@
   var module = angular.module('nrpAngulartics', [
     'nrpUser',
     'angulartics',
-    'angulartics.google.analytics',
-    'clb-identity']);
+    'angulartics.google.analytics']);
 
   module.factory('nrpAnalytics', [
     '$analytics',

@@ -72,7 +72,7 @@
 
         $scope.canStopSimulation = function(simul) {
           return $scope.userinfo && $scope.userinfo.hasEditRights &&
-            ($scope.userinfo.userID === simul.runningSimulation.owner || $scope.userinfo.forceuser);
+            ($scope.userinfo.userID === simul.runningSimulation.owner);
         };
 
         var loadExperiments = function(loadPrivateExperiments = false) {

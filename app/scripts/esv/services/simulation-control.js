@@ -272,7 +272,7 @@
       var launchExperimentInPossibleServers = function (experiment, launchSingleMode, reservation) {
 
         var fatalErrorOccurred = false,
-          serversToTry = experiment.devServer ? [experiment.devServer] : _.clone(experiment.availableServers);
+          serversToTry = experiment.devServer ? [experiment.devServer] : _.clone(experiment.availableServers.map(s => s.id));
 
         var brainProcesses = (launchSingleMode) ? 1 : experiment.configuration.brainProcesses;
 

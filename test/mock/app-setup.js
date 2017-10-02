@@ -18,16 +18,14 @@
         return;
       }
 
-      $httpBackend.whenGET(/\/api\/user\/me$/)
+      $httpBackend.whenGET(/\/identity\/[^\/]+$/)
         .respond({
           id: 'vonarnim',
           username: 'cmartins',
           displayName: 'Claudio Sousa'
         });
 
-      $httpBackend.whenGET(/\/api\/user\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
-      $httpBackend.whenGET(/\/api\/user\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
-      $httpBackend.whenGET(/\/api\/user\/me\/member-groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
+      $httpBackend.whenGET(/\/api\/identity\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
       $httpBackend.whenGET('views/common/home.html').respond(200);
     }]);
 

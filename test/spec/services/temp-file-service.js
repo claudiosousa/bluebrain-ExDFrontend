@@ -14,13 +14,14 @@ describe('Services: tempFileService', function() {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
-  beforeEach(module('clbUserMock'));
 
   beforeEach(module(function($provide) {
     storageServer = {
       setFileContent: jasmine.createSpy('setFileContent'),
+      getCurrentUser: jasmine.createSpy('getCurrentUser').and.callFake(function() { return $q.when({ id: 'ownerid' }); }),
+      getUser: jasmine.createSpy('getUser').and.callFake(function() { return $q.when({ displayName: 'ownerid' }); }),
       deleteFile: jasmine.createSpy('deleteFile'),
-      getFileContent: jasmine.createSpy('getFileContent').and.callFake(function() { return $q.when({ uuid: 'uuid', data: previouslySavedFile }); })
+      getFileContent: jasmine.createSpy('getFileContent').and.callFake(function() { return previouslySavedFile ? $q.when({ uuid: 'uuid', data: previouslySavedFile }) : $q.when({}); })
     };
 
     nrpModalService = {
@@ -40,12 +41,10 @@ describe('Services: tempFileService', function() {
     tempFileService = _tempFileService_;
     environmentService = _environmentService_;
     environmentService.setPrivateExperiment(true);
-  }));
 
-  beforeEach(function() { //default behavior
     previouslySavedFile = undefined; //by default, there is now previously auto saved file
     createFileResponse = $q.when();//succeeds by default
-  });
+  }));
 
   it('should create a file for temporary work when saveDirtyData called', function() {
     tempFileService.saveDirtyData('filename', true, DIRTY_TYPE, DIRTY_DATA);
@@ -95,7 +94,7 @@ describe('Services: tempFileService', function() {
   it('should notify registered callbacks when saved data is found', function() {
     var savedData = {};
     savedData[DIRTY_TYPE] = DIRTY_DATA;
-    previouslySavedFile = JSON.stringify(savedData);
+    previouslySavedFile = JSON.stringify({ '__owner_id': 'owner', data: savedData });
 
     var dirtyCallback = jasmine.createSpy('dirtyCallback');
     var callbacks = {};

@@ -475,14 +475,6 @@ module.exports = function(grunt) {
                     dest: '<%= yeoman.dist %>'
                 }, {
                     expand: true,
-                    cwd: '.',
-                    src: [
-                        'bower_components/bbp-oidc-client/js/bbp-oidc-client.js',
-                        'bower_components/jquery/dist/jquery.min.js'
-                    ],
-                    dest: '<%= yeoman.dist %>'
-                }, {
-                    expand: true,
                     cwd: 'bower_components/gz3d-hbp/gz3d/client/style/images',
                     src: [ // the following files are needed by gz3d [NRRPLT-3145]
                         'icon_background.png', 'joints.png', 'rotate.png', 'translate.png', 'transparent.png', 'trash.png', 'wireframe.png'

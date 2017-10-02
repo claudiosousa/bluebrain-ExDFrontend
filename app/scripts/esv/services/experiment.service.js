@@ -64,15 +64,9 @@
                 this.rosTopics = bbpConfig.get('ros-topics');
                 this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
 
-                if (!bbpConfig.get('localmode.forceuser', false)) {
-                  nrpUser.getOwnerDisplayName(data.owner).then((owner) => {
-                    this.owner = owner;
-                  }).finally(() => resolve(this));
-                }
-                else {
-                  this.ownerID = this.owner = bbpConfig.get('localmode.ownerID');
-                  resolve(this);
-                }
+                nrpUser.getOwnerDisplayName(data.owner).then((owner) => {
+                  this.owner = owner;
+                }).finally(() => resolve(this));
               });
             });
           });

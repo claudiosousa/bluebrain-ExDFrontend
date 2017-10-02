@@ -21,68 +21,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('nrpUser', ['bbpConfig']).service('nrpUser', ['$window', '$q', 'clbUser', 'bbpConfig',
-    function ($window, $q, clbUser, bbpConfig) {
-      var forceuser, ownerID;
-      var loadConfig = () => {
-        forceuser = bbpConfig.get('localmode.forceuser', false),
-          ownerID = bbpConfig.get('localmode.ownerID', null);
-      };
+  angular.module('nrpUser', ['bbpConfig', 'storageServer']).service('nrpUser', ['$window', '$q', 'storageServer', 'bbpConfig',
+    function($window, $q, storageServer, bbpConfig) {
 
-      var getCurrentUser = function () {
-        loadConfig();
-        return forceuser ? $q.when({ displayName: ownerID, id: ownerID }) : clbUser.getCurrentUser();
-      };
+      var getCurrentUser = () => storageServer.getCurrentUser();
 
-      var getReservation = function() {
-        return $window.sessionStorage.getItem('clusterReservation');
-      };
+      var getCurrentUserGroups = _.memoize(() => storageServer.getCurrentUserGroups());
 
-      var isMemberOfClusterReservationGroup = function() {
-        loadConfig();
-        return forceuser ? $q.resolve(false) : clbUser.isGroupMember('hbp-sp10-cluster-reservation');
-      };
+      var getReservation = () => $window.sessionStorage.getItem('clusterReservation');
 
-      var getOwnerName = function(owner) {
-        loadConfig();
-        if (forceuser) {
-          return $q.when(ownerID);
-        }
-        return clbUser.get([owner]).then(function (profile) {
-          return (profile[owner] && profile[owner].displayName) || 'Unkwown';
-        });
-      };
+      let isGroupMember = group => getCurrentUserGroups().then(groups => groups.some(g => g.name === group));
 
-      var getCurrentUserInfo = function() {
-        loadConfig();
-        if (forceuser) {
-          return $q.when({
-            userID: ownerID,
-            hasEditRights: true,
-            forceuser: true
-          });
-        }
-        return $q.all([
-          clbUser.getCurrentUser(),
-          clbUser.isGroupMember('hbp-sp10-user-edit-rights')
-        ]).then(function (userInfo) {
-          return {
-            userID: userInfo[0].id,
-            hasEditRights: userInfo[1],
-            forceuser: false
-          };
-        });
-      };
+      var getOwnerName = userId => storageServer.getUser(userId)
+        .then(({ displayName }) => displayName)
+        .catch(() => 'Unkwown');
+
+      let getCurrentUserInfo = () =>
+        $q.all([
+          storageServer.getCurrentUser(),
+          isGroupMember('hbp-sp10-user-edit-rights')
+        ]).then(([{ id }, hasEditRights]) => ({
+          userID: id,
+          hasEditRights
+        }));
+
       return {
         getCurrentUser: _.memoize(getCurrentUser),
         getReservation: getReservation,
-        isMemberOfClusterReservationGroup: _.memoize(isMemberOfClusterReservationGroup),
+        isMemberOfClusterReservationGroup: _.memoize(() => isGroupMember('hbp-sp10-cluster-reservation')),
         getOwnerDisplayName: _.memoize(getOwnerName),
         getCurrentUserInfo: _.memoize(getCurrentUserInfo)
       };
 
     }]);
-} ());
+}());
