@@ -210,7 +210,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply(0);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
         isolateScope.pynnScript.code,
-        {index: [1]},
+        { index: { list: [1] } },
         'py',
         'text',
         0,
@@ -228,7 +228,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.apply(1);
       expect(backendInterfaceService.setBrain).toHaveBeenCalledWith(
         isolateScope.pynnScript.code,
-        {index: [1]},
+        { index: { list: [1] } },
         'py',
         'text',
         1,
@@ -253,7 +253,7 @@ describe('Directive: pynnEditor', function () {
       isolateScope.saveIntoCollabStorage();
       expect(backendInterfaceService.saveBrain).toHaveBeenCalledWith(
         isolateScope.pynnScript.code,
-        {'dummy_population': [1, 2, 3]},
+        {'dummy_population': {list : [1, 2, 3]}},
         jasmine.any(Function),
         jasmine.any(Function)
       );

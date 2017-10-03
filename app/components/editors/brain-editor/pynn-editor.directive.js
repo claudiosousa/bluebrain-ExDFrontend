@@ -246,10 +246,7 @@
               var isList = !scope.isSlice(population);
               if (isList) {
                 var stringList = population.list.split(',');
-                var numberList = _.map(stringList, function (item) {
-                  return Number(item);
-                });
-                populations[name] = numberList;
+                populations[name].list = _.map(stringList, Number);
               }
             });
             return populations;
