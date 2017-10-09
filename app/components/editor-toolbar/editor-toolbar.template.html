@@ -186,6 +186,16 @@
             </div>
             <!-- toggle robot camera view -->
 
+            <!-- toggle performance monitor view -->
+            <div class="hbp-toolbar-action hide-overflow ng-hide"
+                 ng-class="{'active': vm.editorToolbarService.isPerformanceViewActive}"
+                 ng-click="vm.editorToolbarService.togglePerformanceView()"
+                 help-tooltip="PERFORMANCE_VIEW"
+                 ng-show="(vm.stateService.currentState === vm.STATE.STARTED) || (vm.stateService.currentState === vm.STATE.PAUSED)">
+              <img src="img/esv/performance-monitor.png" width=27 height=27>
+            </div>
+            <!-- toggle performance monitor view -->
+
             <!-- navigation mode -->
             <div class="hbp-toolbar-action ng-hide"
                  ng-class="{'active': vm.editorToolbarService.isNavigationModeMenuActive}"

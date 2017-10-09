@@ -38,6 +38,7 @@
                 editorsPanelService,
                 userNavigationService,
                 objectInspectorService,
+                performanceMonitorService,
                 nrpAnalytics,
                 clbConfirm,
                 environmentService,
@@ -70,6 +71,7 @@
       this.helpTooltipService = helpTooltipService;
       this.nrpAnalytics = nrpAnalytics;
       this.objectInspectorService = objectInspectorService;
+      this.performanceMonitorService = performanceMonitorService;
       this.simulationInfo = simulationInfo;
       this.splash = splash;
       this.stateService = stateService;
@@ -265,6 +267,7 @@
       if (angular.isDefined(message.realTime)) {
         this.simulationInfo.realTimeText = message.realTime;
       }
+      this.performanceMonitorService.processStateChange(message);
     }
 
     onStateChanged(newState) {
@@ -589,6 +592,7 @@
             'editorsPanelService',
             'userNavigationService',
             'objectInspectorService',
+            'performanceMonitorService',
             'nrpAnalytics',
             'clbConfirm',
             'environmentService',

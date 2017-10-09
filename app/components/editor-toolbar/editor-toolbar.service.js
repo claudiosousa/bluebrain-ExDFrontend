@@ -31,6 +31,7 @@
       this.showLogConsole = false;
       this.showEnvironmentSettingsPanel = false;
       this.showSpikeTrain = false;
+      this.showPerformanceView = false;
       this.showNavigationModeMenu = false;
       this.videoStreamsAvailable = false;
       this.showPynnEditor = false;
@@ -67,6 +68,11 @@
       return this.showNavigationModeMenu;
     }
 
+    get isPerformanceViewActive()
+    {
+      return this.showPerformanceView;
+    }
+
     toggleLogConsole() {
       this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE).then(state => {
         this.showLogConsole = !state;
@@ -96,6 +102,17 @@
           this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
         } else {
           this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
+        }
+      });
+    }
+
+    togglePerformanceView() {
+      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR).then(state => {
+        this.showPerformanceView = !state;
+        if (state) {
+          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR);
+        } else {
+          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR);
         }
       });
     }

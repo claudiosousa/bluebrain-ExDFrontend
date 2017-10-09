@@ -3,34 +3,35 @@
 describe('Controller: EditorToolbarController', function() {
 
   var $controller,
-    $rootScope,
-    $scope,
-    $timeout,
-    $window,
-    $q,
-    location,
-    editorToolbarController,
-    stateService,
-    userContextService,
-    userNavigationService,
-    editorsPanelService,
-    gz3d,
-    clbConfirm,
-    environmentService,
-    backendInterfaceService,
-    splash,
-    environmentRenderingService,
-    objectInspectorService,
-    simulationInfo,
-    editorToolbarService,
-    gz3dViewsService,
-    clientLoggerService,
-    dynamicViewOverlayService,
-    DYNAMIC_VIEW_CHANNELS,
-    NAVIGATION_MODES,
-    STATE,
-    EDIT_MODE,
-    RESET_TYPE;
+      $rootScope,
+      $scope,
+      $timeout,
+      $window,
+      $q,
+      location,
+      editorToolbarController,
+      stateService,
+      userContextService,
+      userNavigationService,
+      editorsPanelService,
+      gz3d,
+      clbConfirm,
+      environmentService,
+      backendInterfaceService,
+      splash,
+      environmentRenderingService,
+      objectInspectorService,
+      performanceMonitorService,
+      simulationInfo,
+      editorToolbarService,
+      gz3dViewsService,
+      clientLoggerService,
+      dynamicViewOverlayService,
+      DYNAMIC_VIEW_CHANNELS,
+      NAVIGATION_MODES,
+      STATE,
+      EDIT_MODE,
+      RESET_TYPE;
 
   // load the controller's module
   beforeEach(module('editorToolbarModule'));
@@ -43,6 +44,7 @@ describe('Controller: EditorToolbarController', function() {
   beforeEach(module('splashMock'));
   beforeEach(module('backendInterfaceServiceMock'));
   beforeEach(module('objectInspectorServiceMock'));
+  beforeEach(module('performanceMonitorServiceMock'));
   beforeEach(module('userNavigationServiceMock'));
   beforeEach(module('userContextServiceMock'));
   beforeEach(module('editorsPanelServiceMock'));
@@ -113,6 +115,7 @@ describe('Controller: EditorToolbarController', function() {
     _splash_,
     _environmentRenderingService_,
     _objectInspectorService_,
+    _performanceMonitorService_,
     _simulationInfo_,
     _editorToolbarService_,
     _gz3dViewsService_,
@@ -141,6 +144,7 @@ describe('Controller: EditorToolbarController', function() {
     splash = _splash_;
     environmentRenderingService = _environmentRenderingService_;
     objectInspectorService = _objectInspectorService_;
+    performanceMonitorService = _performanceMonitorService_;
     simulationInfo = _simulationInfo_;
     editorToolbarService = _editorToolbarService_;
     gz3dViewsService = _gz3dViewsService_;

@@ -57,6 +57,7 @@
       'simulationStateServices',
       'contextMenuStateService',
       'objectInspectorModule',
+      'performanceMonitorModule',
       'userNavigationModule',
       'userContextModule',
       'environmentRenderingModule',
