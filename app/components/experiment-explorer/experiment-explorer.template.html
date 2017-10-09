@@ -28,7 +28,19 @@
 </script>
 
 <div class="experiment-explorer-view">
-  <h1>Experiments explorer</h1>
+  <div class="container-with-navbar-margin">
+    <div class="list-container">
+      <div class="form-group form-inline col-xs-6">
+        <h1>Experiments explorer</h1>
+      </div>
+      <div class="form-group form-inline col-xs-6">
+        <button style="float:right;margin-top:20px;" ng-click="vm.directToClonePage()" class="btn btn-default enable-tooltip"
+          uib-tooltip="See my cloned experiments" tooltip-trigger="mouseenter" tooltip-placement="bottom">
+         My experiments
+        </button>
+      </div>
+    </div>
+  </div>
   <input type="file" multiple id="experiment-input">
   <div class="experiment-explorer">
     <div class="left-panel">

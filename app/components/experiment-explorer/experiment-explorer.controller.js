@@ -21,13 +21,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function() {
+(function () {
   'use strict';
 
   class ExperimentExplorerController {
 
-    constructor($scope, $element, $stateParams, $q, $log, $uibModal, clbErrorDialog, storageServer) {
+    constructor($scope, $element, $location, $stateParams, $q, $log, $uibModal, clbErrorDialog, storageServer) {
       this.$scope = $scope;
+      this.$location = $location;
       this.$stateParams = $stateParams;
       this.storageServer = storageServer;
       this.$q = $q;
@@ -254,11 +255,17 @@
     getFileIcon(f) {
       return ExperimentExplorerController.FILE_ICONS[f.extension] || 'file-o';
     }
+
+    directToClonePage() {
+      let clonePagePath = 'esv-private';
+      this.$location.path(clonePagePath);
+    }
   }
 
   angular.module('experimentExplorer', ['storageServer']).controller('ExperimentExplorerController', [
     '$scope',
     '$element',
+    '$location',
     '$stateParams',
     '$q',
     '$log',
