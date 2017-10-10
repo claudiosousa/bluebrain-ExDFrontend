@@ -133,6 +133,16 @@ describe('Directive: smachEditor', function () {
     expect(isolateScope.isPrivateExperiment).toEqual(environmentService.isPrivateExperiment());
   });
 
+  it('should destroy correctly', function() {
+    isolateScope.resetListenerUnbindHandler = jasmine.createSpy();
+    isolateScope.unbindWatcherResize = jasmine.createSpy();
+    isolateScope.unbindListenerUpdatePanelUI = jasmine.createSpy();
+    isolateScope.$broadcast('$destroy');
+    expect(isolateScope.resetListenerUnbindHandler).toHaveBeenCalledWith();
+    expect(isolateScope.unbindWatcherResize).toHaveBeenCalledWith();
+    expect(isolateScope.unbindListenerUpdatePanelUI).toHaveBeenCalledWith();
+  });
+
   describe('Retrieving, saving and deleting stateMachines', function () {
     var data = {};
     for (var i = 0; i < 3; ++i) {

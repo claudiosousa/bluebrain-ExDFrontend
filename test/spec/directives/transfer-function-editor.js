@@ -209,6 +209,16 @@ describe('Directive: transferFunctionEditor', function () {
     expect(isolateScope.populations).toEqual([population]);
   });
 
+  it('should destroy correctly', function() {
+    isolateScope.resetListenerUnbindHandler = jasmine.createSpy();
+    isolateScope.unbindWatcherResize = jasmine.createSpy();
+    isolateScope.unbindListenerUpdatePanelUI = jasmine.createSpy();
+    isolateScope.$broadcast('$destroy');
+    expect(isolateScope.resetListenerUnbindHandler).toHaveBeenCalledWith();
+    expect(isolateScope.unbindWatcherResize).toHaveBeenCalledWith();
+    expect(isolateScope.unbindListenerUpdatePanelUI).toHaveBeenCalledWith();
+  });
+
   describe('Retrieving transferFunctions', function () {
     var tf1Name = 'tf1';
     var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
@@ -492,6 +502,20 @@ describe('Directive: transferFunctionEditor', function () {
            error: {}
       });
       expect(transferFunctions[0]).toEqual(expectedTF);
+    });
+
+    it('should take existing transfer functions into account when creating a new one', function() {
+      var tf1Code = '@nrp.customdecorator(toto)\ndef transferfunction_0(var1, var2):\n\t#put your code here';
+      transferFunctions[0] = new ScriptObject('transferfunction_0', tf1Code);
+      isolateScope.create(true);
+      var tfNewName = 'transferfunction_1';
+      var expectedTF = jasmine.objectContaining({
+           id: tfNewName,
+           code: DEFAULT_TF_CODE.replace('{0}', tfNewName),
+           dirty: true, local: true, name: tfNewName,
+           error: {}
+      });
+      expect(transferFunctions[1]).toEqual(expectedTF);
     });
 
     it('should be able to create tfs at the end of the list', function () {
