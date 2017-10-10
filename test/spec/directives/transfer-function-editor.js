@@ -113,7 +113,7 @@ describe('Directive: transferFunctionEditor', function () {
     $scope = $rootScope.$new();
     $templateCache.put('views/esv/transfer-function-editor.html', '');
     $scope.control = {};
-    element = $compile('<transfer-function-editor />')($scope);
+    element = $compile('<transfer-function-editor control="control"/>')($scope);
     $scope.$digest();
     isolateScope = element.isolateScope();
     transferFunctions = isolateScope.transferFunctions;

@@ -23,6 +23,7 @@ describe('Directive: smachEditor', function () {
     codeEditorsServices,
     clbConfirm,
     environmentService,
+    editorToolbarService,
     $q;
 
   var backendInterfaceServiceMock = {
@@ -90,7 +91,8 @@ describe('Directive: smachEditor', function () {
                               _codeEditorsServices_,
                               _clbConfirm_,
                               _$q_,
-                              _environmentService_) {
+                              _environmentService_,
+                              _editorToolbarService_) {
     $rootScope = _$rootScope_;
     $httpBackend = _$httpBackend_;
     $compile = _$compile_;
@@ -107,6 +109,7 @@ describe('Directive: smachEditor', function () {
     clbConfirm = _clbConfirm_;
     $q = _$q_;
     environmentService = _environmentService_;
+    editorToolbarService = _editorToolbarService_;
 
     editorMock.addLineClass = jasmine.createSpy('addLineClass');
     editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
@@ -477,5 +480,12 @@ describe('Directive: smachEditor', function () {
       expect(window.FileReader).not.toHaveBeenCalled();
     });
 
+    it('should set toolbar flag on destroy', function () {
+      editorToolbarService.showSmachEditor = true;
+      $timeout.flush();
+      isolateScope.$destroy();
+      $rootScope.$digest();
+      expect(editorToolbarService.showSmachEditor).toBe(false);
+    });
   });
 });

@@ -100,7 +100,9 @@
     return {
       templateUrl: 'components/editors/transfer-function-editor/transfer-function-editor.template.html',
       restrict: 'E',
-      scope: {},
+      scope: {
+        control : "="
+      },
       link: function (scope, element, attrs) {
 
         scope.isPrivateExperiment = environmentService.isPrivateExperiment();
@@ -239,6 +241,8 @@
             });
           }
         };
+
+        scope.control.refresh = scope.refresh;
 
         // update UI
         scope.unbindListenerUpdatePanelUI = scope.$on("UPDATE_PANEL_UI", function () {

@@ -26,18 +26,18 @@
   height: 100%;
   padding: 10px;
   overflow: auto;
-}
 
-pynn-editor input[type="text"] {
+  input[type="text"] {
     margin-left: 5px;
+  }
+  input.ng-invalid {
+    color: red;
+    border-color: rgb(255, 78, 78);
+  }
+  .singlePopulation.ng-invalid {
+    background-color: rgb(255, 226, 226)!important;
+  }
+  input.neuron-index-field { width: 70px; }
+  div.fixed-sized { width: 110px; }
+  div.fixed-sized-short { width: 95px; }
 }
-pynn-editor input.ng-invalid {
-  color: red;
-  border-color: rgb(255, 78, 78);
-}
-pynn-editor .singlePopulation.ng-invalid {
-  background-color: rgb(255, 226, 226)!important;
-}
-pynn-editor input.neuron-index-field { width: 70px; }
-pynn-editor div.fixed-sized { width: 110px; }
-pynn-editor div.fixed-sized-short { width: 95px; }
