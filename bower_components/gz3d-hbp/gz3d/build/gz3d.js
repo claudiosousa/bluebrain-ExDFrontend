@@ -5394,7 +5394,7 @@ GZ3D.GZIface.prototype.onConnected = function()
       lights[i].color.g = THREE.Math.clamp(vec + lights[i].color.g, 0, 1);
       lights[i].color.b = THREE.Math.clamp(vec + lights[i].color.b, 0, 1);
 
-      that.lightModifyTopic.publish(that.createEntityModifyMessageWithLight(entity, lights[i].color));
+      that.lightModifyTopic.publish(createEntityModifyMessageWithLight(entity, lights[i].color));
     }
   };
 
