@@ -24,9 +24,9 @@
         <smach-editor control="controls.statemachine"/>
       </uib-tab>
       <uib-tab heading="Brain Editor" index="tabindex.pynneditor"
-           select="disableKeyBindings();"
+           select="disableKeyBindings();controls.pynneditor.refresh()"
            deselect="reenableKeyBindings()">
-        <pynn-editor />
+        <pynn-editor control="controls.pynneditor"/>
       </uib-tab>
       <uib-tab heading="TF Graphical Editor" index="tabindex.graphicalEditor"
            select="disableKeyBindings(); controls.graphicalEditor.refresh()"

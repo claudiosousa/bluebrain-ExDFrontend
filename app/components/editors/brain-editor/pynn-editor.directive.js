@@ -73,7 +73,9 @@
       return {
         templateUrl: 'components/editors/brain-editor/pynn-editor.template.html',
         restrict: 'E',
-        scope: {},
+        scope: {
+          control: '='
+        },
         replace:true,
         link: function (scope, element, attrs) {
 
@@ -148,6 +150,8 @@
               $timeout(() => scope.localBrainDirty = false);
             });
           };
+
+          scope.control.refresh = scope.refresh;
 
           // update UI
           scope.unbindListenerUpdatePanelUI = scope.$on("UPDATE_PANEL_UI", function () {
