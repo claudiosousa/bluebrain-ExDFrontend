@@ -7,6 +7,7 @@ describe('Directive: 3d settings', function () {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
+  beforeEach(module('simulationInfoMock'));
 
   beforeEach(module(function ($provide) {
     gz3d = {
@@ -29,11 +30,16 @@ describe('Directive: 3d settings', function () {
     $provide.value('collab3DSettingsService', collab3DSettingsService);
   }));
 
-  beforeEach(inject(function ($rootScope, $compile) {
+  beforeEach(inject(function ($rootScope, $compile, $httpBackend, SKYBOX_LIBRARY) {
     var element = $compile('<environment-settings-panel/>')($rootScope);
+    var regex = new RegExp('.*' + SKYBOX_LIBRARY); 
+    $httpBackend.whenGET(regex).respond({'skyList':[], 'skyLabelList': []});
+    $httpBackend.whenGET('http://proxy/identity').respond(200);
+
     scope = element.scope();
     $rootScope.$digest();
 
+    $httpBackend.flush();
   }));
 
   it('should reapply composer settings on resetSettings', function () {

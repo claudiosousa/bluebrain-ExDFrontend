@@ -6,6 +6,7 @@ describe('Directive: environment settings environment', function ()
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
+  beforeEach(module('simulationInfoMock'));
 
   beforeEach(module(function ($provide)
   {
@@ -17,11 +18,24 @@ describe('Directive: environment settings environment', function ()
 
   beforeEach(inject(function (
     _$rootScope_,
-    $compile)
+    $compile,
+    $httpBackend,
+    SKYBOX_LIBRARY)
   {
+    var skyboxLibraryMock = {
+      'skyList': ['sunset', 'sunrise', 'moon-landscape', 'end-of-the-world'],
+      'skyLabelList': [ 'Sunset', 'Sunrise', 'Moon Landscape', 'Walking Dead city']
+    };
+    
+    var regex = new RegExp('.*' + SKYBOX_LIBRARY); 
+    $httpBackend.whenGET(regex).respond(skyboxLibraryMock);
+    $httpBackend.whenGET('http://proxy/identity').respond(200);
+
     $rootScope = _$rootScope_;
     element = $compile('<environment-settings-environment></environment-settings-environment>')($rootScope);
     $rootScope.$digest();
+
+    $httpBackend.flush();
   }));
 
   it('should initialize default values', function ()

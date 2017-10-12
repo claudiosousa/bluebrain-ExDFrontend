@@ -26,8 +26,8 @@
   'use strict';
 
   angular.module('exdFrontendApp')
-    .service('collab3DSettingsService', ['gz3d', 'simulationConfigService','userNavigationService',
-      function (gz3d, simulationConfigService,userNavigationService)
+    .service('collab3DSettingsService', ['gz3d', 'simulationConfigService','userNavigationService', 'simulationInfo',
+      function (gz3d, simulationConfigService, userNavigationService, simulationInfo)
       {
         var loadSettings = function ()
         {
