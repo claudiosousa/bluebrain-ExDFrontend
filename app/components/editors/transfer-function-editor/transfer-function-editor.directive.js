@@ -380,6 +380,12 @@
 
         scope.create = function (appendAtEnd) {
           var id = "transferfunction_" + addedTransferFunctionCount;
+          var tf = _.find(scope.transferFunctions, { 'name': id });
+          while (angular.isDefined(tf)) {
+            addedTransferFunctionCount = addedTransferFunctionCount + 1;
+            id = "transferfunction_" + addedTransferFunctionCount;
+            tf = _.find(scope.transferFunctions, { 'name': id });
+          }
           var code = DEFAULT_TF_CODE.replace('{0}', id);
           var transferFunction = new ScriptObject(id, code);
           transferFunction.dirty = true;
