@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function() {
+(function () {
   'use strict';
 
   /* global console: false */
@@ -29,47 +29,36 @@
   //auto scroll when the distance from bottom of the scrollable area <= than AUTO_SCROLL_MAX_DISTANCE
   const AUTO_SCROLL_MAX_DISTANCE = 10;
   const MAX_VISIBLE_LOGS = 100; //number of last received logs kept visible
+  const LOG_INTERVAL = 500;
 
-  class LogConsoleController
-  {
+  class LogConsoleController {
 
     constructor($scope, $timeout, $element, stateService, clientLoggerService, editorToolbarService, STATE,
-                LOG_TYPE) {
+      LOG_TYPE) {
       this.logs = [];
       this.stateService = stateService;
-
       this.STATE = STATE;
-
-      // notify toolbar to reset the displayed log counter
-      const history = clientLoggerService.getLogHistory;
-      clientLoggerService.resetLoggedMessages();
-      for(let index in history)
-      {
-        if(history.hasOwnProperty(index)) {
-          if (history[index].level === LOG_TYPE.INFO) {
-            this.logs.push({
-              time: history[index].time,
-              msg: history[index].message
-            });
-          }
-        }
-      }
-
       const logList = $element.find('.log-list')[0];
 
-      let logSubscription = clientLoggerService.logs.filter(log => log.level === LOG_TYPE.INFO).
-          map(log => log.message).
-          subscribe(m => this.newMessageReceived(m));
+      // notify toolbar to reset the displayed log counter
+
+      clientLoggerService.resetLoggedMessages();
+
+      let logSubscription = clientLoggerService.logs
+        .filter(log => log.level === LOG_TYPE.INFO)
+        .map(log => ({
+          time: moment().format('HH:mm:ss'),
+          msg: log.message
+        }))
+        .bufferTime(LOG_INTERVAL)
+        .filter(m => m.length)
+        .subscribe(m => this.newMessagesReceived(m));
 
       const that = this;
 
-      this.newMessageReceived = function(message) {
+      this.newMessagesReceived = function (messages) {
         $timeout(() => {
-            that.logs.push({
-            time: moment().format('HH:mm:ss'),
-            msg: message
-          });
-
+          that.logs.splice(that.logs.length, 0, ...messages);
           //remove extra logs
           that.logs.splice(0, that.logs.length - MAX_VISIBLE_LOGS);
 
@@ -80,8 +69,7 @@
         });
       };
 
-
-      $scope.$on('$destroy', function() {
+      $scope.$on('$destroy', function () {
         logSubscription.unsubscribe();
         editorToolbarService.showLogConsole = false;
       });

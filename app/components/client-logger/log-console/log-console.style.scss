@@ -36,6 +36,12 @@ $logConsoleMinHeight: 150px;
   .log-list {
     margin: 5px 0 0 0;
     overflow: auto;
+
+    .log-line {
+      -webkit-transition: none !important;
+      -moz-transition: none !important;
+      transition: none !important;
+    }
   }
 
   b {
