@@ -78,17 +78,24 @@
     };
 
     $scope.refresh = function() {
-      if ($scope.panelIsOpen) {
-        if (isTabSelected($scope.tabindex.graphicalEditor))
-          $scope.controls.graphicalEditor.refresh();
-      }
+      if (!$scope.panelIsOpen || !$scope.activeTabIndex)
+        return;
+
+      // find the tabcontrol for the selected tabindex
+      let selectedTab = _($scope.tabindex)
+        .map((tabIndex, tabName) => [tabIndex, tabName])
+        .filter(([tabIndex, tabName]) => tabIndex === $scope.activeTabIndex && tabName)
+        .map(([tabIndex, tabName]) => $scope.controls[tabName])
+        .first();
+
+      selectedTab && selectedTab.refresh && selectedTab.refresh();
     };
 
-      // update UI
-      $scope.$on("UPDATE_PANEL_UI", function () {
-        // prevent calling the select functions of the tabs
-        $scope.refresh();
-      });
+    // update UI
+    $scope.$on("UPDATE_PANEL_UI", function() {
+      // prevent calling the select functions of the tabs
+      $scope.refresh();
+    });
 
     $scope.closeCallback = function() {
       // The Panel is closed
