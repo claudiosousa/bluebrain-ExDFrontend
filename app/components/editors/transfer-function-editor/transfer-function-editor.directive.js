@@ -211,18 +211,31 @@
         function loadTFs() {
           return backendInterfaceService.getTransferFunctions(
             function(response) {
+              _.forEach(scope.transferFunctions, function (tf) {
+                tf.local = true;
+              });
               _.forEach(response.data, function(code, id) {
                 var transferFunction = new ScriptObject(id, code);
                 // If we already have local changes, we do not update
                 var tf = _.find(scope.transferFunctions, { 'name': id });
                 var found = angular.isDefined(tf);
-                if (found && !tf.dirty) {
-                  tf.code = transferFunction.code;
-                  codeEditorsServices.resetEditor(codeEditorsServices.getEditor('transfer-function-' + transferFunction.id));
-                } else if (!found) {
+                if (found) {
+                  tf.local = false;
+                  if (tf.dirty) {
+                    tf.code = transferFunction.code;
+                    codeEditorsServices.resetEditor(codeEditorsServices.getEditor('transfer-function-' + transferFunction.id));
+                  }
+                } else {
                   scope.transferFunctions.unshift(transferFunction);
+                  transferFunction.local = false;
                 }
               });
+              for (var i = scope.transferFunctions.length - 1; i >= 0; i--) {
+                var tf = scope.transferFunctions[i];
+                if (tf.local && !tf.dirty) {
+                  scope.transferFunctions.splice(i, 1);
+                }
+              }
             });
         }
 
