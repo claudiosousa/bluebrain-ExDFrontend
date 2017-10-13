@@ -476,7 +476,7 @@
               saveErrorsService.clearDirty(DIRTY_TYPE);
               if (stateService.currentState !== STATE.STOPPED) {
                 // update all transfer functions
-                _.forEach(scope.transferFunctions, scope.update);
+                _.forEach(scope.transferFunctions, tf => scope.update(tf));
               }
             },function() { // Failure callback
               clbErrorDialog.open({
