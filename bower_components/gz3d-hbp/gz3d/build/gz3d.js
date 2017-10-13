@@ -1673,7 +1673,6 @@ GZ3D.Composer = function (gz3dScene)
     }
     this.normalizedMasterSettings = null;
 
-
     //-----------------------------------
     // Sun, lens flare
 
@@ -2167,11 +2166,9 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
         }
         else
         {
-            path = this.currentSkyBoxID;
+            var name = this.currentSkyBoxID;
+            path = GZ3D.assetsPath + '/sky/' + name + '/' + name + '-';
             format = '.png';
-
-            path += '-';
-
             urls = [
                 path + 'px' + format, path + 'nx' + format,
                 path + 'nz' + format, path + 'pz' + format,

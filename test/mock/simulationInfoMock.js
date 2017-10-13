@@ -5,7 +5,7 @@
   angular.module('simulationInfoMock', [])
     .service('simulationInfo', ['$q', '$httpBackend', '$rootScope', function($q, $httpBackend) {
       this.serverConfig = {
-        gzweb: { assets: {} },
+        gzweb: { assets: 'assets' },
         rosbridge: {
           topics: {
             cleError: {}

@@ -32,13 +32,15 @@
       TRANSLATE: 'translate',
       ROTATE: 'rotate',
       SCALE: 'scale'
-    });
+    })
+    .constant('MODEL_LIBRARY', 'libraries/model_library.json');
 
   angular.module('exdFrontendApp')
     .directive('environmentDesigner', [
       '$document',
       'STATE',
       'EDIT_MODE',
+      'MODEL_LIBRARY',
       'panels',
       'simulationSDFWorld',
       'bbpConfig',
@@ -58,6 +60,7 @@
       function ($document,
         STATE,
         EDIT_MODE,
+        MODEL_LIBRARY,
         panels,
         simulationSDFWorld,
         bbpConfig,
@@ -114,8 +117,9 @@
               category.visible = !category.visible;
               scope.updateVisibleModels();
             };
-
-            $http.get('./model_library.json').then(function (res)
+            
+            const modelLibrary = scope.assetsPath + '/' + MODEL_LIBRARY;
+            $http.get(modelLibrary).then(function (res)
             {
               scope.categories = res.data;
 

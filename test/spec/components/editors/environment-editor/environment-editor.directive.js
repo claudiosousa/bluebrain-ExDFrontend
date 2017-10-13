@@ -115,7 +115,7 @@ describe('Directive: environment-designer', function () {
         ]
       }];
 
-    httpBackend.whenGET('./model_library.json').respond(modelLibraryMock);
+    httpBackend.whenGET(/.*model_library.json/).respond(modelLibraryMock);
 
 
     element = $compile('<environment-designer />')($scope);

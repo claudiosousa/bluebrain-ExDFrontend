@@ -24,10 +24,14 @@
 (function ()
 {
   'use strict';
+
+  angular.module('exdFrontendApp.Constants')
+  .constant('SKYBOX_LIBRARY', 'libraries/skybox_library.json');
+
   angular.module('exdFrontendApp')
     .directive('environmentSettingsEnvironment', ['gz3d', 'nrpAnalytics',
-      'editorToolbarService',
-      function (gz3d, nrpAnalytics, editorToolbarService)
+      'editorToolbarService', 'simulationInfo', '$http', 'SKYBOX_LIBRARY',
+      function (gz3d, nrpAnalytics, editorToolbarService, simulationInfo, $http, SKYBOX_LIBRARY)
       {
         return {
           templateUrl: 'components/environment-settings/environment-settings-environment.template.html',
@@ -54,57 +58,40 @@
             scope.fogDensity = 0;
             scope.fogColor = "";
 
-            scope.skyList = ['',
-              'img/3denv/sky/gradient/gradient',
-              'img/3denv/sky/softgradient/softgradient',
-              'img/3denv/sky/blur/blur',
-              'img/3denv/sky/skyblur/skyblur',
-              'img/3denv/sky/clouds/clouds',
-              'img/3denv/sky/country/country',
-              'img/3denv/sky/forest/forest',
-              'img/3denv/sky/stonewall/Stonewall',
-              'img/3denv/sky/basketballcourt/BasketballCourt',
-              'img/3denv/sky/indoor/indoor',
-              ];
-
-            scope.skyLabelList = ['None',
-              'Gradient',
-              'Soft Gradient',
-              'Blur',
-              'Dark Blur',
-              'Sky',
-              'Country',
-              'Forest',
-              'Stone Wall',
-              'Basketball Court',
-              'Indoor',
-              ];
-
 
             scope.skyDefaultFogList = ['#b2b2b2', '#cddde9', '#97a2af', '#c7c0bc','#3c4146', '#d8ccb1', '#675b33',
                                        '#3b482d','#2c3a1f','#756e01','#777674'];
 
             scope.sunList = ['', 'SIMPLELENSFLARE'];
+            scope.skyList = [];
+            scope.skyLabelList = [];
+
 
             scope.composerSettingsToUI = function ()
             {
-              if (editorToolbarService.isEnvironmentSettingsPanelActive)
+              const skyBoxLibrary = simulationInfo.serverConfig.gzweb.assets + '/' + SKYBOX_LIBRARY;
+              $http.get(skyBoxLibrary).then(function (res)
               {
-                var cs = gz3d.scene.composerSettings;
-
-                scope.envMap.selectedEnvMap = scope.skyList.indexOf(cs.skyBox);
-                scope.selectedSun = scope.sunList.indexOf(cs.sun);
-                scope.dynamicEnvMap = cs.dynamicEnvMap?1:0;
-
-                scope.bloom = cs.bloom;
-                scope.bloomThreshold = cs.bloomThreshold;
-                scope.bloomStrength = cs.bloomStrength;
-                scope.bloomRadius = cs.bloomRadius;
-
-                scope.fog = cs.fog;
-                scope.fogDensity = cs.fogDensity;
-                scope.fogColor = cs.fogColor;
-              }
+                scope.skyList = res.data.skyList;
+                scope.skyLabelList = res.data.skyLabelList;
+                if (editorToolbarService.isEnvironmentSettingsPanelActive)
+                  {
+                    var cs = gz3d.scene.composerSettings;
+    
+                    scope.envMap.selectedEnvMap = scope.skyList.indexOf(cs.skyBox);
+                    scope.selectedSun = scope.sunList.indexOf(cs.sun);
+                    scope.dynamicEnvMap = cs.dynamicEnvMap?1:0;
+    
+                    scope.bloom = cs.bloom;
+                    scope.bloomThreshold = cs.bloomThreshold;
+                    scope.bloomStrength = cs.bloomStrength;
+                    scope.bloomRadius = cs.bloomRadius;
+    
+                    scope.fog = cs.fog;
+                    scope.fogDensity = cs.fogDensity;
+                    scope.fogColor = cs.fogColor;
+                  }
+              });
             };
 
             scope.$watch('editorToolbarService.showEnvironmentSettingsPanel', function ()
@@ -117,12 +104,6 @@
               scope.composerSettingsToUI();
             });
 
-            scope.envModeChanged = function ()
-            {
-                var cs = gz3d.scene.composerSettings;
-                scope.envMap.selectedEnvMap = scope.skyList.indexOf(cs.skyBox);
-            };
-
             //----------------------------------------------
             // UI to 3D scene
 
@@ -131,9 +112,10 @@
             {
               var previousDynamicEnvMap = gz3d.scene.composerSettings.dynamicEnvMap;
 
-              if (gz3d.scene.composerSettings.skyBox !== scope.skyList[scope.envMap.selectedEnvMap])
+              var cs = gz3d.scene.composerSettings;
+              if (cs.skyBox !== scope.skyList[scope.envMap.selectedEnvMap])
               {
-                gz3d.scene.composerSettings.skyBox = scope.skyList[scope.envMap.selectedEnvMap];
+                cs.skyBox = scope.skyList[scope.envMap.selectedEnvMap];
                 scope.fogColor = gz3d.scene.composerSettings.fogColor = scope.skyDefaultFogList[scope.envMap.selectedEnvMap];
               }
 
