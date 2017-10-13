@@ -115,6 +115,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
     //}
 
     $(document.activeElement).blur();
+
     event.preventDefault();
     event.stopPropagation();
 

@@ -64,6 +64,8 @@ THREE.LookatRobotControls = function (userView, robot)
     //  this.domElement.focus();
     //}
 
+    $(document.activeElement).blur();
+
     event.preventDefault();
     event.stopPropagation();
 
