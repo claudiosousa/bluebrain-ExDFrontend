@@ -19,7 +19,7 @@ module.exports = function(config) {
 
       'node_modules/babel-polyfill/dist/polyfill.js',
       'node_modules/chart.js/dist/Chart.min.js',
-      'node_modules/@reactivex/rxjs/dist/global/Rx.min.js',
+      'node_modules/rxjs/bundles/Rx.min.js',
 
       // The two following files are required by gz3d.js. Since
       // order matters here, they should be in front of the bower
