@@ -496,6 +496,12 @@ module.exports = function(grunt) {
                     cwd: 'node_modules/rxjs/bundles',
                     src: ['Rx.min.js'],
                     dest: '<%= yeoman.dist %>/node_modules/rxjs/bundles'
+                },
+                {
+                    expand: true,
+                    cwd: 'node_modules/chart.js/dist',
+                    src: ['Chart.min.js'],
+                    dest: '<%= yeoman.dist %>/node_modules/chart.js/dist'
                 }]
             },
             styles: {
