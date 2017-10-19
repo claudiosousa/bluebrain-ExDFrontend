@@ -493,9 +493,9 @@ module.exports = function(grunt) {
                 },
                 {
                     expand: true,
-                    cwd: 'node_modules/@reactivex/rxjs/dist/global',
+                    cwd: 'node_modules/rxjs/bundles',
                     src: ['Rx.min.js'],
-                    dest: '<%= yeoman.dist %>/node_modules/@reactivex/rxjs/dist/global'
+                    dest: '<%= yeoman.dist %>/node_modules/rxjs/bundles'
                 }]
             },
             styles: {
