@@ -222,12 +222,17 @@
     }
 
     checkForNewTokenToStore() {
-      let access_token = this.$location.search().access_token;
-      if (!access_token)
+      const path = this.$location.url();
+      const access_token_match = /&access_token=([^&]*)/.exec(path);
+
+      if (!access_token_match || !access_token_match[1])
         return;
 
+      let access_token = access_token_match[1];
+
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify([{ access_token }]));
-      this.$location.search({});
+      const path_minus_access_token = path.substr(0, path.indexOf('&access_token='));
+      this.$location.url(path_minus_access_token);
     }
 
     getStoredToken() {
