@@ -7746,7 +7746,7 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
     {
       moveHoverMesh.traverse(function (obj)
       {
-        if (obj.material && obj.material.emissive)
+        if (obj.material && obj.material.emissive && obj.material._tempEmissive)
         {
           obj.material.emissive.r = obj.material._tempEmissive.r;
           obj.material.emissive.g = obj.material._tempEmissive.g;
