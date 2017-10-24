@@ -2,35 +2,51 @@
   'use strict';
 
   describe('Directive: newExperimentWizard', function() {
-    var $httpBackend, $rootScope, $compile, nrpModalService, storageServer, $q, scope, clbErrorDialog, newExperimentProxyService, collabConfigService;
+    var $httpBackend,
+      $rootScope,
+      $compile,
+      nrpModalService,
+      storageServer,
+      $q,
+      scope,
+      clbErrorDialog,
+      newExperimentProxyService,
+      collabConfigService;
 
     beforeEach(module('exdFrontendApp'));
     beforeEach(module('exd.templates'));
     beforeEach(module('hbpCollaboratoryCore'));
 
-    beforeEach(inject(function(
-      _$rootScope_, _$httpBackend_, _$compile_, _nrpModalService_,
-      _storageServer_, _$q_, _clbErrorDialog_, _newExperimentProxyService_,
-      _collabConfigService_
-    ) {
-      $httpBackend = _$httpBackend_;
-      $rootScope = _$rootScope_;
-      $compile = _$compile_;
-      nrpModalService = _nrpModalService_;
-      storageServer = _storageServer_;
-      $q = _$q_;
-      clbErrorDialog = _clbErrorDialog_;
-      newExperimentProxyService = _newExperimentProxyService_;
-      collabConfigService = _collabConfigService_;
+    beforeEach(
+      inject(function(
+        _$rootScope_,
+        _$httpBackend_,
+        _$compile_,
+        _nrpModalService_,
+        _storageServer_,
+        _$q_,
+        _clbErrorDialog_,
+        _newExperimentProxyService_,
+        _collabConfigService_
+      ) {
+        $httpBackend = _$httpBackend_;
+        $rootScope = _$rootScope_;
+        $compile = _$compile_;
+        nrpModalService = _nrpModalService_;
+        storageServer = _storageServer_;
+        $q = _$q_;
+        clbErrorDialog = _clbErrorDialog_;
+        newExperimentProxyService = _newExperimentProxyService_;
+        collabConfigService = _collabConfigService_;
 
-      $compile('<new-experiment-wizard></new-experiment-wizard>')($rootScope);
-      $rootScope.$digest();
-      scope = $rootScope.$$childHead;
-      spyOn(nrpModalService, 'createModal')
-        .and.callFake(function() {
+        $compile('<new-experiment-wizard></new-experiment-wizard>')($rootScope);
+        $rootScope.$digest();
+        scope = $rootScope.$$childHead;
+        spyOn(nrpModalService, 'createModal').and.callFake(function() {
           return;
         });
-    }));
+      })
+    );
 
     afterEach(function() {
       $httpBackend.verifyNoOutstandingExpectation();
@@ -39,28 +55,31 @@
     });
 
     it('should check successful upload from private collab for the robot', function() {
+      spyOn(storageServer, 'getExperiments').and.returnValue(
+        window.$q.when([])
+      );
 
-      spyOn(storageServer, 'getExperiments')
-        .and.returnValue(window.$q.when([]));
-
-      spyOn(scope, 'createEntitiesListFromEntityFiles')
-        .and.callFake(function() {
-          var deferred = $q.defer();
-          deferred.resolve({
-            result: [
-              {
-                name: 'fakeICub',
-                description: 'fakeICubDescription',
-                imageData: ''
-              },
-              {
-                name: 'fakeHusky',
-                description: 'fakeHuskyDescription',
-                imageData: ''
-              }]
-          });
-          return deferred.promise;
+      spyOn(
+        scope,
+        'createEntitiesListFromEntityFiles'
+      ).and.callFake(function() {
+        var deferred = $q.defer();
+        deferred.resolve({
+          result: [
+            {
+              name: 'fakeICub',
+              description: 'fakeICubDescription',
+              imageData: ''
+            },
+            {
+              name: 'fakeHusky',
+              description: 'fakeHuskyDescription',
+              imageData: ''
+            }
+          ]
         });
+        return deferred.promise;
+      });
 
       scope.uploadRobotDialog();
       scope.uploadEntity('PrivateCollab');
@@ -74,28 +93,31 @@
     });
 
     it('should check successful upload from private collab for the environment', function() {
+      spyOn(storageServer, 'getExperiments').and.returnValue(
+        window.$q.when([])
+      );
 
-      spyOn(storageServer, 'getExperiments')
-        .and.returnValue(window.$q.when([]));
-
-      spyOn(scope, 'createEntitiesListFromEntityFiles')
-        .and.callFake(function() {
-          var deferred = $q.defer();
-          deferred.resolve({
-            result: [
-              {
-                name: 'fake3DSpace',
-                description: 'fakeSpaceBotGroundDescription',
-                imageData: ''
-              },
-              {
-                name: 'fakeFZIGround',
-                description: 'fakeFZIGroundDescription',
-                imageData: ''
-              }]
-          });
-          return deferred.promise;
+      spyOn(
+        scope,
+        'createEntitiesListFromEntityFiles'
+      ).and.callFake(function() {
+        var deferred = $q.defer();
+        deferred.resolve({
+          result: [
+            {
+              name: 'fake3DSpace',
+              description: 'fakeSpaceBotGroundDescription',
+              imageData: ''
+            },
+            {
+              name: 'fakeFZIGround',
+              description: 'fakeFZIGroundDescription',
+              imageData: ''
+            }
+          ]
         });
+        return deferred.promise;
+      });
 
       scope.uploadEnvironmentDialog();
       scope.uploadEntity('PrivateCollab');
@@ -109,28 +131,28 @@
     });
 
     it('should check successful upload from private collab for the brain', function() {
+      spyOn(storageServer, 'getExperiments').and.returnValue(
+        window.$q.when([])
+      );
 
-      spyOn(storageServer, 'getExperiments')
-        .and.returnValue(window.$q.when([]));
-
-      spyOn(scope, 'createEntitiesListFromBrainFiles')
-        .and.callFake(function() {
-          var deferred = $q.defer();
-          deferred.resolve({
-            result: [
-              {
-                name: 'fakeBrain1',
-                description: 'fakeBrain1Description',
-                imageData: ''
-              },
-              {
-                name: 'fakeBrain2',
-                description: 'fakeBrain2Description',
-                imageData: ''
-              }]
-          });
-          return deferred.promise;
+      spyOn(scope, 'createEntitiesListFromBrainFiles').and.callFake(function() {
+        var deferred = $q.defer();
+        deferred.resolve({
+          result: [
+            {
+              name: 'fakeBrain1',
+              description: 'fakeBrain1Description',
+              imageData: ''
+            },
+            {
+              name: 'fakeBrain2',
+              description: 'fakeBrain2Description',
+              imageData: ''
+            }
+          ]
         });
+        return deferred.promise;
+      });
 
       scope.uploadBrainDialog();
       scope.uploadEntity('PrivateCollab');
@@ -145,12 +167,12 @@
     });
 
     it('should check unsuccessful upload from private collab for the robot', function() {
-      spyOn(scope, 'createErrorPopup')
-        .and.callFake(function() {
-          return;
-        });
-      spyOn(storageServer, 'getExperiments')
-        .and.returnValue(window.$q.reject());
+      spyOn(scope, 'createErrorPopup').and.callFake(function() {
+        return;
+      });
+      spyOn(storageServer, 'getExperiments').and.returnValue(
+        window.$q.reject()
+      );
       scope.uploadRobotDialog();
       scope.uploadEntity('PrivateCollab');
       scope.$digest();
@@ -159,12 +181,12 @@
     });
 
     it('should check unsuccessful upload from private collab for the environment', function() {
-      spyOn(scope, 'createErrorPopup')
-        .and.callFake(function() {
-          return;
-        });
-      spyOn(storageServer, 'getExperiments')
-        .and.returnValue(window.$q.reject());
+      spyOn(scope, 'createErrorPopup').and.callFake(function() {
+        return;
+      });
+      spyOn(storageServer, 'getExperiments').and.returnValue(
+        window.$q.reject()
+      );
       scope.uploadEnvironmentDialog();
       scope.uploadEntity('PrivateCollab');
       scope.$digest();
@@ -173,10 +195,10 @@
     });
 
     it('should check unsuccessful upload from private collab for the brain', function() {
-      spyOn(scope, 'createErrorPopup')
-        .and.callFake(angular.noop);
-      spyOn(storageServer, 'getExperiments')
-        .and.returnValue(window.$q.reject());
+      spyOn(scope, 'createErrorPopup').and.callFake(angular.noop);
+      spyOn(storageServer, 'getExperiments').and.returnValue(
+        window.$q.reject()
+      );
       scope.uploadBrainDialog();
       scope.uploadEntity('PrivateCollab');
       scope.$digest();
@@ -187,7 +209,7 @@
     it('should call the create upload from private collab function', function() {
       var mockBrainUploader = {
         name: 'FakeRobot',
-        fakeFunction: function() { }
+        fakeFunction: function() {}
       };
       scope.uploadEntityDialog(mockBrainUploader);
       expect(nrpModalService.createModal).toHaveBeenCalled();
@@ -199,7 +221,8 @@
         data: [
           {
             name: 'Arm robot force based version',
-            description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
+            description:
+              'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
             thumbnail: null,
             path: 'robots/icub_model/model.config'
           },
@@ -215,9 +238,11 @@
           },
           {
             name: 'iCub HBP ros',
-            description: 'Model for the iCub humanoid robot. For more information check icub.org .',
+            description:
+              'Model for the iCub humanoid robot. For more information check icub.org .',
             thumbnail: null
-          }]
+          }
+        ]
       };
       spyOn(newExperimentProxyService, 'getEntity').and.callFake(function() {
         var deferred = $q.defer();
@@ -261,9 +286,10 @@
           },
           {
             name: 'Fake environment4',
-            description: 'Fake Description5',//ha
+            description: 'Fake Description5', //ha
             thumbnail: null
-          }]
+          }
+        ]
       };
       spyOn(newExperimentProxyService, 'getEntity').and.callFake(function() {
         var deferred = $q.defer();
@@ -290,7 +316,8 @@
         data: [
           {
             name: 'FakeBrain1',
-            description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
+            description:
+              'This brain is fake, which means that a zombie can get confused while trying to eat it',
             thumbnail: null,
             path: 'brains/braitenberg.py'
           },
@@ -311,7 +338,8 @@
             description: 'FakeBrain4Description',
             thumbnail: null,
             path: 'fakePath4/fakePath4.sdf'
-          }]
+          }
+        ]
       };
       spyOn(newExperimentProxyService, 'getEntity').and.callFake(function() {
         var deferred = $q.defer();
@@ -324,7 +352,9 @@
       scope.$digest();
       expect(scope.createUploadModal).toHaveBeenCalled();
       expect(scope.entityName).toEqual('Brain');
-      expect(scope.entities[0].description).toEqual('This brain is fake, which means that a zombie can get confused while trying to eat it');
+      expect(scope.entities[0].description).toEqual(
+        'This brain is fake, which means that a zombie can get confused while trying to eat it'
+      );
       expect(scope.entities[1].name).toEqual('FakeBrain2');
       expect(scope.entities[1].thumbnail).toBe(null || undefined);
       expect(scope.entities.length).toBe(4);
@@ -336,7 +366,8 @@
     it('should call the upload from local env for the robot', function() {
       var mockSelectedEntity = {
         name: 'Arm robot force based version',
-        description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
+        description:
+          'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
         thumbnail: null,
         path: 'robots/icub_model/model.config'
       };
@@ -370,7 +401,8 @@
     it('should call the upload from local env for the brain', function() {
       var selectedEntity = {
         name: 'FakeBrain1',
-        description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
+        description:
+          'This brain is fake, which means that a zombie can get confused while trying to eat it',
         thumbnail: null,
         path: 'brains/braitenberg.py'
       };
@@ -385,18 +417,17 @@
     });
 
     it('should test the createErrorPopup function', function() {
-      spyOn(clbErrorDialog, 'open')
-        .and.callFake(function() {
-          return;
-        });
+      spyOn(clbErrorDialog, 'open').and.callFake(function() {
+        return;
+      });
       scope.createErrorPopup();
       expect(clbErrorDialog.open).toHaveBeenCalled();
     });
 
     it('should test the createEntitiesListFromEntityFiles function', function() {
-      /*jshint camelcase: false */
-      var mockCollabStorageResponse =
-        [{
+      /* eslint-disable camelcase*/
+      var mockCollabStorageResponse = [
+        {
           content_type: 'application/x-config',
           description: '',
           uuid: '5626127f-eaaf-4eef-9806-d152a7894eae',
@@ -423,66 +454,68 @@
           uuid: '4f541ef0-84f7-4509-9745-b10eee176205',
           entity_type: 'file',
           name: 'lauron.png'
-        }];
-
-      spyOn(scope, 'retrieveImageFileContent')
-        .and.callFake(function() {
-          var deferred = $q.defer();
-          deferred.resolve();
-          return deferred.promise;
+        }
+      ];
+      /* eslint-enable camelcase*/
+      spyOn(scope, 'retrieveImageFileContent').and.callFake(function() {
+        var deferred = $q.defer();
+        deferred.resolve();
+        return deferred.promise;
+      });
+      spyOn(scope, 'retrieveConfigFileContent').and.callFake(function() {
+        var deferred = $q.defer();
+        deferred.resolve({
+          config: {
+            desc: 'fakeDesc'
+          }
         });
-      spyOn(scope, 'retrieveConfigFileContent')
-        .and.callFake(function() {
-          var deferred = $q.defer();
-          deferred.resolve({
-            config:
-            {
-              desc: 'fakeDesc'
-            }
-          });
-          return deferred.promise;
-        });
+        return deferred.promise;
+      });
       scope.createEntitiesListFromEntityFiles(mockCollabStorageResponse);
       expect(scope.retrieveImageFileContent).toHaveBeenCalled();
       expect(scope.retrieveConfigFileContent).toHaveBeenCalled();
     });
 
     it('should test the retrieveImageFileContent function', function() {
-      spyOn(storageServer, 'getBase64Content')
-        .and.returnValue(window.$q.when([]));
+      spyOn(storageServer, 'getBase64Content').and.returnValue(
+        window.$q.when([])
+      );
       scope.retrieveImageFileContent();
       expect(storageServer.getBase64Content).toHaveBeenCalled();
     });
 
     it('should test the retrieveConfigFileContent function', function() {
-      spyOn(storageServer, 'getFileContent')
-        .and.callFake(function() {
-          var xmlVersionString = '<?xml version="1.0"?>';
-          var xmlModelString = '<model>';
-          var xmlNameString = '<name>iCub HBP ros</name>';
-          var xmlDescritptionString = '<description>Model for the iCub humanoid robot. For more information check icub.org.</description>';
-          var xmlModelTerminateString = '</model>';
-          var xml = xmlVersionString
-            .concat(xmlModelString)
-            .concat(xmlNameString)
-            .concat(xmlDescritptionString)
-            .concat(xmlModelTerminateString);
-          return $q.when({
-            uuid: 'fakeuuid',
-            data: xml
-          });
+      spyOn(storageServer, 'getFileContent').and.callFake(function() {
+        var xmlVersionString = '<?xml version="1.0"?>';
+        var xmlModelString = '<model>';
+        var xmlNameString = '<name>iCub HBP ros</name>';
+        var xmlDescritptionString =
+          '<description>Model for the iCub humanoid robot. For more information check icub.org.</description>';
+        var xmlModelTerminateString = '</model>';
+        var xml = xmlVersionString
+          .concat(xmlModelString)
+          .concat(xmlNameString)
+          .concat(xmlDescritptionString)
+          .concat(xmlModelTerminateString);
+        return $q.when({
+          uuid: 'fakeuuid',
+          data: xml
         });
+      });
       scope.retrieveConfigFileContent();
       expect(storageServer.getFileContent).toHaveBeenCalled();
     });
 
     it('should test the createEntitiesListFromBrainFiles success', function() {
-      spyOn(storageServer, 'getFileContent')
-        .and.returnValue(window.$q.when({ uuid: 'fakeuuid', data: '"""test"""' }));
-      var files = [{
-        name: 'fakeName',
-        uuid: 'fakeuuid'
-      }];
+      spyOn(storageServer, 'getFileContent').and.returnValue(
+        window.$q.when({ uuid: 'fakeuuid', data: '"""test"""' })
+      );
+      var files = [
+        {
+          name: 'fakeName',
+          uuid: 'fakeuuid'
+        }
+      ];
 
       var result = scope.createEntitiesListFromBrainFiles(files);
       result.then(function(brainFiles) {
@@ -493,10 +526,9 @@
     });
 
     it('should make sure that the destroy dialog function cleans up properly', function() {
-      spyOn(nrpModalService, 'destroyModal')
-        .and.callFake(function() {
-          return;
-        });
+      spyOn(nrpModalService, 'destroyModal').and.callFake(function() {
+        return;
+      });
       scope.uploadBrainDialog();
       scope.uploadEntity('LocalEnv');
       scope.$digest();
@@ -515,23 +547,27 @@
     });
 
     it('should check that model selection enables clone', function() {
-
-      var mockSelectedEntities = [{
-        name: 'FakeBrain1',
-        description: 'This brain is fake, which means that a zombie can get confused while trying to eat it',
-        thumbnail: null,
-        path: 'brains/braitenberg.py'
-      }, {
-        name: 'Fake environment1',
-        description: 'Fake Description1',
-        thumbnail: null,
-        path: 'environments/virtual_world/model.config'
-      }, {
-        name: 'Arm robot force based version',
-        description: 'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
-        thumbnail: null,
-        path: 'robots/icub_model/model.config'
-      }
+      var mockSelectedEntities = [
+        {
+          name: 'FakeBrain1',
+          description:
+            'This brain is fake, which means that a zombie can get confused while trying to eat it',
+          thumbnail: null,
+          path: 'brains/braitenberg.py'
+        },
+        {
+          name: 'Fake environment1',
+          description: 'Fake Description1',
+          thumbnail: null,
+          path: 'environments/virtual_world/model.config'
+        },
+        {
+          name: 'Arm robot force based version',
+          description:
+            'Modified Hollie arm model for force based index finger movements.\n      In contrast to the first Hollie arm model it was required to remove the\n      PID control of the index finger joints to allow force control for this\n      particular finger.',
+          thumbnail: null,
+          path: 'robots/icub_model/model.config'
+        }
       ];
       scope.uploadBrainDialog();
       scope.uploadEntity('LocalEnv');
@@ -562,14 +598,11 @@
       var mockSelectedEntity = {
         path: 'C:\\WindowsFakePath'
       };
-      spyOn(scope, 'createErrorPopup')
-        .and.callFake(function() {
-          return;
-        });
+      spyOn(scope, 'createErrorPopup').and.callFake(function() {
+        return;
+      });
       scope.completeUploadEntity(mockSelectedEntity);
       expect(scope.createErrorPopup).toHaveBeenCalled();
     });
   });
 })();
-
-

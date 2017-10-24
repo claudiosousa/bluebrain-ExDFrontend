@@ -23,104 +23,147 @@
  * ---LICENSE-END**/
 (function() {
   'use strict';
-  angular.module('experimentList', [])
-    .controller('ExperimentListController', [
-      '$scope',
-      '$location',
-      '$stateParams',
-      'experimentsFactory',
-      'collabConfigService',
-      '$window',
-      'nrpUser',
-      'environmentService',
-      'storageServer',
-      function(
-        $scope,
-        $location,
-        $stateParams,
-        experimentsFactory,
-        collabConfigService,
-        $window,
-        nrpUser,
-        environmentService,
-        storageServer) {
+  angular.module('experimentList', []).controller('ExperimentListController', [
+    '$scope',
+    '$location',
+    '$stateParams',
+    'experimentsFactory',
+    'collabConfigService',
+    '$window',
+    'nrpUser',
+    'environmentService',
+    'storageServer',
+    function(
+      $scope,
+      $location,
+      $stateParams,
+      experimentsFactory,
+      collabConfigService,
+      $window,
+      nrpUser,
+      environmentService,
+      storageServer
+    ) {
+      $scope.pageState = {};
+      $scope.isPrivateExperiment = environmentService.isPrivateExperiment();
+      $scope.devMode = environmentService.isDevMode();
 
-        $scope.pageState = {};
-        $scope.isPrivateExperiment = environmentService.isPrivateExperiment();
-        $scope.devMode = environmentService.isDevMode();
+      $scope.config = {
+        loadingMessage: 'Loading list of experiments...'
+      };
 
-        $scope.config = {
-          loadingMessage: 'Loading list of experiments...'
-        };
+      $scope.config.canCloneExperiments = !($scope.config.canLaunchExperiments =
+        !$scope.isPrivateExperiment || $scope.private);
 
-        $scope.config.canCloneExperiments = !($scope.config.canLaunchExperiments = !$scope.isPrivateExperiment || $scope.private);
-
-        $scope.cloneExperiment = function(experiment) {
-          $scope.isCloneRequested = true;
-          collabConfigService.clone(null, {
-            exp_configuration_path: experiment.configuration.experimentConfiguration,
+      $scope.cloneExperiment = function(experiment) {
+        $scope.isCloneRequested = true;
+        collabConfigService.clone(
+          null,
+          {
+            /* eslint-disable camelcase */
+            exp_configuration_path:
+              experiment.configuration.experimentConfiguration,
             context_id: $stateParams.ctx
-          }, function() {
+            /* eslint-enable camelcase */
+          },
+          function() {
             try {
-              $window.document.getElementById('clb-iframe-workspace').contentWindow.parent.postMessage({ eventName: 'location', data: { url: window.location.href.split("?")[0] } }, '*');
+              $window.document
+                .getElementById('clb-iframe-workspace')
+                .contentWindow.parent.postMessage(
+                  {
+                    eventName: 'location',
+                    data: { url: window.location.href.split('?')[0] }
+                  },
+                  '*'
+                );
             } catch (err) {
               //not in using collab website, do nothing
             }
             $scope.loadPrivateExperiments();
-          });
+          }
+        );
+      };
+
+      $scope.canStopSimulation = function(simul) {
+        return (
+          $scope.userinfo &&
+          $scope.userinfo.hasEditRights &&
+          $scope.userinfo.userID === simul.runningSimulation.owner
+        );
+      };
+
+      var loadExperiments = function(loadPrivateExperiments = false) {
+        var experimentsService = ($scope.experimentsService = experimentsFactory.createExperimentsService(
+          loadPrivateExperiments
+        ));
+        experimentsService.initialize();
+        experimentsService.experiments.then(function(experiments) {
+          $scope.experiments = experiments;
+          if (experiments.length === 1) {
+            $scope.pageState.selected = experiments[0].id;
+          }
+        });
+
+        nrpUser.getCurrentUserInfo().then(function(userinfo) {
+          $scope.userinfo = userinfo;
+        });
+
+        $scope.selectExperiment = function(experiment) {
+          if ($scope.pageState.startingExperiment) {
+            return;
+          }
+          if (experiment.id !== $scope.pageState.selected) {
+            $scope.pageState.selected = experiment.id;
+            $scope.pageState.showJoin = false;
+          }
         };
 
-        $scope.canStopSimulation = function(simul) {
-          return $scope.userinfo && $scope.userinfo.hasEditRights &&
-            ($scope.userinfo.userID === simul.runningSimulation.owner);
+        $scope.startNewExperiment = function(experiment, launchSingleMode) {
+          $scope.pageState.startingExperiment = experiment.id;
+          experimentsService
+            .startExperiment(
+              experiment,
+              launchSingleMode,
+              nrpUser.getReservation()
+            )
+            .then(
+              function(path) {
+                $location.path(path);
+              }, // succeeded
+              function() {
+                $scope.pageState.startingExperiment = null;
+              }, // failed
+              function(msg) {
+                $scope.progressMessage = msg;
+              }
+            ); //in progress
         };
 
-        var loadExperiments = function(loadPrivateExperiments = false) {
-          var experimentsService = $scope.experimentsService = experimentsFactory.createExperimentsService(loadPrivateExperiments);
-          experimentsService.initialize();
-          experimentsService.experiments.then(function(experiments) {
-            $scope.experiments = experiments;
-            if (experiments.length === 1) {
-              $scope.pageState.selected = experiments[0].id;
-            }
-          });
-
-          nrpUser.getCurrentUserInfo().then(function(userinfo) { $scope.userinfo = userinfo; });
-
-          $scope.selectExperiment = function(experiment) {
-            if ($scope.pageState.startingExperiment) {
-              return;
-            }
-            if (experiment.id !== $scope.pageState.selected) {
-              $scope.pageState.selected = experiment.id;
-              $scope.pageState.showJoin = false;
-            }
-          };
-
-          $scope.startNewExperiment = function(experiment, launchSingleMode) {
-            $scope.pageState.startingExperiment = experiment.id;
-            experimentsService.startExperiment(experiment, launchSingleMode, nrpUser.getReservation())
-              .then(function(path) { $location.path(path); },// succeeded
-              function() { $scope.pageState.startingExperiment = null; },// failed
-              function(msg) { $scope.progressMessage = msg; }); //in progress
-          };
-
-          // Stop an already initialized or running experiment
-          $scope.stopSimulation = function(simulation, experiment) {
-            experimentsService.stopExperiment(simulation, experiment);
-          };
-
-          $scope.joinExperiment = function(simul, exp) {
-            var path = 'esv-web/experiment-view/' + simul.server + '/' + exp.id + '/' + environmentService.isPrivateExperiment() + "/" + simul.runningSimulation.simulationID;
-            $location.path(path);
-          };
-
-          $scope.$on('$destroy', function() {
-            experimentsService.destroy();
-          });
+        // Stop an already initialized or running experiment
+        $scope.stopSimulation = function(simulation, experiment) {
+          experimentsService.stopExperiment(simulation, experiment);
         };
 
-        loadExperiments($scope.private);
-      }
-    ]);
+        $scope.joinExperiment = function(simul, exp) {
+          var path =
+            'esv-web/experiment-view/' +
+            simul.server +
+            '/' +
+            exp.id +
+            '/' +
+            environmentService.isPrivateExperiment() +
+            '/' +
+            simul.runningSimulation.simulationID;
+          $location.path(path);
+        };
+
+        $scope.$on('$destroy', function() {
+          experimentsService.destroy();
+        });
+      };
+
+      loadExperiments($scope.private);
+    }
+  ]);
 })();

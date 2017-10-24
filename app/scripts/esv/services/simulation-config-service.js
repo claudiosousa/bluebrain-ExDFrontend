@@ -24,16 +24,31 @@
 (function() {
   'use strict';
 
-  angular.module('simulationConfigModule', ['collabServices', 'storageServer']).service('simulationConfigService',
-    ['$resource', 'simulationInfo', 'serverError', '$q', '$http', 'environmentService', 'storageServer',
-      function($resource, simulationInfo, serverError, $q, $http, environmentService, storageServer) {
+  angular
+    .module('simulationConfigModule', ['collabServices', 'storageServer'])
+    .service('simulationConfigService', [
+      '$resource',
+      'simulationInfo',
+      'serverError',
+      '$q',
+      '$http',
+      'environmentService',
+      'storageServer',
+      function(
+        $resource,
+        simulationInfo,
+        serverError,
+        $q,
+        $http,
+        environmentService,
+        storageServer
+      ) {
         return {
           initConfigFiles: initConfigFiles,
           doesConfigFileExist: doesConfigFileExist,
           loadConfigFile: loadConfigFile,
-          saveConfigFile: saveConfigFile,
+          saveConfigFile: saveConfigFile
         };
-
 
         //-------------------------------------------------------
         // Get file from collab if available, if not try to get it directly from backend
@@ -48,12 +63,19 @@
           return getBackendConfigFileNames(configType).then(function(response) {
             if (response) {
               if (environmentService.isPrivateExperiment()) {
-                var filename = response.file.substr(response.file.lastIndexOf('/') + 1);
+                var filename = response.file.substr(
+                  response.file.lastIndexOf('/') + 1
+                );
 
-                return storageServer.getFileContent(simulationInfo.experimentID, filename, true)
-                  .then(file => file.uuid ? file.data : getBackendConfigFile(response.file));
-              }
-              else {
+                return storageServer
+                  .getFileContent(simulationInfo.experimentID, filename, true)
+                  .then(
+                    file =>
+                      file.uuid
+                        ? file.data
+                        : getBackendConfigFile(response.file)
+                  );
+              } else {
                 return getBackendConfigFile(response.file);
               }
             }
@@ -63,17 +85,24 @@
         }
 
         function saveConfigFile(configType, data) {
-          if (environmentService.isPrivateExperiment())  // A config file can be saved only in collab mode
-          {
-            return getBackendConfigFileNames(configType).then(function(response) {
+          if (environmentService.isPrivateExperiment()) {
+            // A config file can be saved only in collab mode
+            return getBackendConfigFileNames(configType).then(function(
+              response
+            ) {
               if (response) {
+                var filename = response.file.substr(
+                  response.file.lastIndexOf('/') + 1
+                );
 
-                var filename = response.file.substr(response.file.lastIndexOf('/') + 1);
-
-                return storageServer.setFileContent(simulationInfo.experimentID, filename, data, true);
+                return storageServer.setFileContent(
+                  simulationInfo.experimentID,
+                  filename,
+                  data,
+                  true
+                );
               }
             });
-
           }
         }
 
@@ -83,16 +112,22 @@
         var cachedConfigFiles;
 
         function initConfigFiles(serverBaseUrl, simulationID) {
-          cachedConfigFiles = $resource(serverBaseUrl + '/simulation/:sim_id/resources', {}, {
-            get: {
-              method: 'GET',
-              interceptor: { responseError: serverError.displayHTTPError }
+          cachedConfigFiles = $resource(
+            serverBaseUrl + '/simulation/:sim_id/resources',
+            {},
+            {
+              get: {
+                method: 'GET',
+                interceptor: { responseError: serverError.displayHTTPError }
+              }
             }
-          }).get({ sim_id: simulationID }).$promise
-            .then(function(response) {
+          )
+            /*eslint-disable camelcase*/
+            .get({ sim_id: simulationID })
+            .$promise.then(function(response) {
               return response && response.resources;
             });
-
+          /*eslint-enable camelcase*/
           return cachedConfigFiles;
         }
 
@@ -108,13 +143,15 @@
 
         function getBackendConfigFileNames(configType) {
           if (!cachedConfigFiles) {
-            return initConfigFiles(simulationInfo.serverBaseUrl, simulationInfo.simulationID).then(function() {
+            return initConfigFiles(
+              simulationInfo.serverBaseUrl,
+              simulationInfo.simulationID
+            ).then(function() {
               return cachedConfigFiles.then(function(cachedConfigFiles) {
                 return findConfigFileName(configType, cachedConfigFiles);
               });
             });
-          }
-          else {
+          } else {
             return cachedConfigFiles.then(function(cachedConfigFiles) {
               return findConfigFileName(configType, cachedConfigFiles);
             });
@@ -134,4 +171,4 @@
         }
       }
     ]);
-}());
+})();

@@ -20,8 +20,14 @@
   'use strict';
 
   class StorageServer {
-
-    constructor($resource, $window, $q, $stateParams, bbpConfig, storageServerTokenManager) {
+    constructor(
+      $resource,
+      $window,
+      $q,
+      $stateParams,
+      bbpConfig,
+      storageServerTokenManager
+    ) {
       this.$resource = $resource;
       this.$window = $window;
       this.$q = $q;
@@ -38,10 +44,13 @@
 
     buildStorageResource() {
       const FILE_REGEXP = /attachment; filename=(.*)/;
-      let buildAction = action => angular.merge(action, {
-        headers: { 'Context-Id': () => this.$stateParams.ctx },
-        interceptor: { responseError: err => this.$q.reject(this.onError(err)) }
-      });
+      let buildAction = action =>
+        angular.merge(action, {
+          headers: { 'Context-Id': () => this.$stateParams.ctx },
+          interceptor: {
+            responseError: err => this.$q.reject(this.onError(err))
+          }
+        });
 
       let transformFileResponse = (data, header, status) => {
         let uuid = header('uuid');
@@ -56,7 +65,8 @@
         };
       };
 
-      this.proxyRsc = this.$resource(this.STORAGE_BASE_URL,
+      this.proxyRsc = this.$resource(
+        this.STORAGE_BASE_URL,
         {},
         {
           getExperiments: buildAction({
@@ -104,7 +114,8 @@
             url: `${this.STORAGE_BASE_URL}/:experimentId/:filename`,
             transformRequest: []
           })
-        });
+        }
+      );
     }
 
     onError(err) {
@@ -112,57 +123,48 @@
       if (err.status === 302) {
         //redirect
         let url = err.data;
-        if (!absoluteUrl.test(url))
-          url = `${this.PROXY_URL}${url}`;
+        if (!absoluteUrl.test(url)) url = `${this.PROXY_URL}${url}`;
         localStorage.removeItem(this.STORAGE_KEY);
-        this.$window.location.href = `${url}&client_id=${this.CLIENT_ID}&redirect_uri=${encodeURIComponent(location.href)}`;
+        this.$window.location.href = `${url}&client_id=${this
+          .CLIENT_ID}&redirect_uri=${encodeURIComponent(location.href)}`;
       }
       return this.$q.reject(err);
     }
 
     getExperiments(filter) {
-      return this.proxyRsc
-        .getExperiments({ filter })
-        .$promise;
+      return this.proxyRsc.getExperiments({ filter }).$promise;
     }
 
     getExperimentFiles(experimentId) {
-      return this.proxyRsc
-        .getExperimentFiles({ experimentId })
-        .$promise;
+      return this.proxyRsc.getExperimentFiles({ experimentId }).$promise;
     }
 
     getFileContent(experimentId, filename, byname = false) {
-      return this.proxyRsc
-        .getFile({ experimentId, filename, byname })
-        .$promise;
+      return this.proxyRsc.getFile({ experimentId, filename, byname }).$promise;
     }
 
     getBlobContent(experimentId, filename, byname = false) {
-      return this.proxyRsc
-        .getBlob({ experimentId, filename, byname })
-        .$promise;
+      return this.proxyRsc.getBlob({ experimentId, filename, byname }).$promise;
     }
 
     getBase64Content(experimentId, filename, byname = false) {
       return this.proxyRsc
         .getBlob({ experimentId, filename, byname })
-        .$promise
-        .then(response => this.$q((resolve, reject) => {
-          let reader = new FileReader();
-          reader.addEventListener('loadend', e => {
-            if (e.target.result !== 'data:')
-              resolve(e.target.result.replace(/data:[^;]*;base64,/g, ''));
-            else
-              reject();
-          });
-          reader.readAsDataURL(response.data);
-        }));
+        .$promise.then(response =>
+          this.$q((resolve, reject) => {
+            let reader = new FileReader();
+            reader.addEventListener('loadend', e => {
+              if (e.target.result !== 'data:')
+                resolve(e.target.result.replace(/data:[^;]*;base64,/g, ''));
+              else reject();
+            });
+            reader.readAsDataURL(response.data);
+          })
+        );
     }
 
     deleteEntity(experimentId, filename, byname = false, type = 'file') {
-      return this.proxyRsc
-        .deleteFile({ experimentId, filename, byname, type })
+      return this.proxyRsc.deleteFile({ experimentId, filename, byname, type })
         .$promise;
     }
 
@@ -175,40 +177,40 @@
     }
 
     setFileContent(experimentId, filename, fileContent, byname = false) {
-      return this.proxyRsc
-        .setFile({ experimentId, filename, byname }, fileContent)
-        .$promise;
+      return this.proxyRsc.setFile(
+        { experimentId, filename, byname },
+        fileContent
+      ).$promise;
     }
 
     createFolder(experimentId, folderName) {
-      return this.proxyRsc
-        .setFile({ experimentId, filename: folderName, type: 'folder' }, null)
-        .$promise;
+      return this.proxyRsc.setFile(
+        { experimentId, filename: folderName, type: 'folder' },
+        null
+      ).$promise;
     }
 
     setBlobContent(experimentId, filename, fileContent, byname = false) {
-      return this.proxyRsc
-        .setBlob({ experimentId, filename, byname }, new Uint8Array(fileContent))
-        .$promise;
+      return this.proxyRsc.setBlob(
+        { experimentId, filename, byname },
+        new Uint8Array(fileContent)
+      ).$promise;
     }
 
     getCurrentUser() {
-      return this.proxyRsc
-        // similarly to the oidc api, the storage server 'identity/me' endpoint returns information about the current user
-        .getUserInfo({ userid: 'me' })
-        .$promise;
+      return (
+        this.proxyRsc
+          // similarly to the oidc api, the storage server 'identity/me' endpoint returns information about the current user
+          .getUserInfo({ userid: 'me' }).$promise
+      );
     }
 
     getUser(userid) {
-      return this.proxyRsc
-        .getUserInfo({ userid })
-        .$promise;
+      return this.proxyRsc.getUserInfo({ userid }).$promise;
     }
 
     getCurrentUserGroups() {
-      return this.proxyRsc
-        .getCurrentUserGroups()
-        .$promise;
+      return this.proxyRsc.getCurrentUserGroups().$promise;
     }
   }
 
@@ -216,23 +218,30 @@
     constructor($location, bbpConfig) {
       this.$location = $location;
       this.CLIENT_ID = bbpConfig.get('auth.clientId');
-      this.STORAGE_KEY = `tokens-${this.CLIENT_ID}@https://services.humanbrainproject.eu/oidc`;
+      this.STORAGE_KEY = `tokens-${this
+        .CLIENT_ID}@https://services.humanbrainproject.eu/oidc`;
 
       this.checkForNewTokenToStore();
     }
 
     checkForNewTokenToStore() {
       const path = this.$location.url();
-      const access_token_match = /&access_token=([^&]*)/.exec(path);
+      const accessTokenMatch = /&access_token=([^&]*)/.exec(path);
 
-      if (!access_token_match || !access_token_match[1])
-        return;
+      if (!accessTokenMatch || !accessTokenMatch[1]) return;
 
-      let access_token = access_token_match[1];
+      let accessToken = accessTokenMatch[1];
 
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify([{ access_token }]));
-      const path_minus_access_token = path.substr(0, path.indexOf('&access_token='));
-      this.$location.url(path_minus_access_token);
+      localStorage.setItem(
+        this.STORAGE_KEY,
+        //eslint-disable-next-line camelcase
+        JSON.stringify([{ access_token: accessToken }])
+      );
+      const pathMinusAccessToken = path.substr(
+        0,
+        path.indexOf('&access_token=')
+      );
+      this.$location.url(pathMinusAccessToken);
     }
 
     getStoredToken() {
@@ -252,10 +261,24 @@
     }
   }
 
-  angular.module('storageServer', ['ngResource', 'bbpConfig', 'ui.router'])
-    .service('storageServer', ['$resource', '$window', '$q', '$stateParams', 'bbpConfig', 'storageServerTokenManager', (...args) => new StorageServer(...args)])
-    .service('storageServerTokenManager', ['$location', 'bbpConfig', (...args) => new StorageServerTokenManager(...args)])
-    .factory('storageServerRequestInterceptor', ['storageServerTokenManager',
+  angular
+    .module('storageServer', ['ngResource', 'bbpConfig', 'ui.router'])
+    .service('storageServer', [
+      '$resource',
+      '$window',
+      '$q',
+      '$stateParams',
+      'bbpConfig',
+      'storageServerTokenManager',
+      (...args) => new StorageServer(...args)
+    ])
+    .service('storageServerTokenManager', [
+      '$location',
+      'bbpConfig',
+      (...args) => new StorageServerTokenManager(...args)
+    ])
+    .factory('storageServerRequestInterceptor', [
+      'storageServerTokenManager',
       storageServerTokenManager => ({
         request: function(requestConfig) {
           var token = storageServerTokenManager.getStoredToken();
@@ -264,7 +287,9 @@
         }
       })
     ])
-    .config(['$httpProvider', $httpProvider =>
-      $httpProvider.interceptors.push('storageServerRequestInterceptor')
+    .config([
+      '$httpProvider',
+      $httpProvider =>
+        $httpProvider.interceptors.push('storageServerRequestInterceptor')
     ]);
-}());
+})();

@@ -1,0 +1,16 @@
+{
+  "env": {
+    "node": true
+  },
+  "globals": {
+    "expect": true,
+    "it": true,
+    "spyOn": true,
+    "beforeEach": true,
+    "afterEach": true,
+    "describe": true,
+    "inject": true,
+    "jasmine": true,
+    "moment": true
+  }
+}

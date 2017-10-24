@@ -4,29 +4,36 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .config(['$compileProvider', '$logProvider',
+  angular
+    .module('exdFrontendApp')
+    .config([
+      '$compileProvider',
+      '$logProvider',
       function($compileProvider, $logProvider) {
         $compileProvider.debugInfoEnabled(true);
         $logProvider.debugEnabled(true);
       }
     ])
-    .run(['$httpBackend', '$q', function($httpBackend, $q) {
-      window.$q = $q;
+    .run([
+      '$httpBackend',
+      '$q',
+      function($httpBackend, $q) {
+        window.$q = $q;
 
-      if (!$httpBackend.whenGET) {
-        return;
-      }
+        if (!$httpBackend.whenGET) {
+          return;
+        }
 
-      $httpBackend.whenGET(/\/identity\/[^\/]+$/)
-        .respond({
+        $httpBackend.whenGET(/\/identity\/[^/]+$/).respond({
           id: 'vonarnim',
           username: 'cmartins',
           displayName: 'Claudio Sousa'
         });
 
-      $httpBackend.whenGET(/\/api\/identity\/me\/groups$/).respond({ result: ['hbp-sp10-user-edit-rights'] });
-      $httpBackend.whenGET('views/common/home.html').respond(200);
-    }]);
-
+        $httpBackend
+          .whenGET(/\/api\/identity\/me\/groups$/)
+          .respond({ result: ['hbp-sp10-user-edit-rights'] });
+        $httpBackend.whenGET('views/common/home.html').respond(200);
+      }
+    ]);
 })();

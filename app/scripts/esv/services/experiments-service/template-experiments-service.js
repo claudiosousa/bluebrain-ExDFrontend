@@ -1,10 +1,8 @@
 (function() {
   'use strict';
 
-  /*jshint -W117 */
+  /*global BaseExperimentsService */
   class TemplateExperimentsService extends BaseExperimentsService {
-    /*jshint +W117 */
-
     constructor(experimentProxyService, ...baseDependencies) {
       super(...baseDependencies);
 
@@ -12,12 +10,12 @@
     }
 
     getExperiments() {
-      return this.experimentProxyService
-        .getExperiments()
-        .then(experiments => _.map(experiments, (exp, id) => {
+      return this.experimentProxyService.getExperiments().then(experiments =>
+        _.map(experiments, (exp, id) => {
           exp.id = id;
           return exp;
-        }));
+        })
+      );
     }
 
     getExperimentImage(exp) {

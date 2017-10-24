@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Services: nrp-versions', function () {
+describe('Services: nrp-versions', function() {
   var nrpBackendVersions, nrpFrontendVersion;
   var serverError;
   var httpBackend;
@@ -10,22 +10,31 @@ describe('Services: nrp-versions', function () {
 
   beforeEach(module('nrpBackendAbout'));
 
-    beforeEach(module(function ($provide) {
+  beforeEach(
+    module(function($provide) {
       $provide.value('serverError', serverErrorMock);
-    }));
+    })
+  );
 
-  beforeEach(inject(function($httpBackend, _serverError_, _nrpBackendVersions_, _nrpFrontendVersion_){
-    httpBackend = $httpBackend;
-    serverError = _serverError_;
-    nrpBackendVersions = _nrpBackendVersions_;
-    nrpFrontendVersion = _nrpFrontendVersion_;
-    serverError.displayHTTPError.calls.reset();
-  }));
+  beforeEach(
+    inject(function(
+      $httpBackend,
+      _serverError_,
+      _nrpBackendVersions_,
+      _nrpFrontendVersion_
+    ) {
+      httpBackend = $httpBackend;
+      serverError = _serverError_;
+      nrpBackendVersions = _nrpBackendVersions_;
+      nrpFrontendVersion = _nrpFrontendVersion_;
+      serverError.displayHTTPError.calls.reset();
+    })
+  );
 
   afterEach(function() {
-     httpBackend.verifyNoOutstandingExpectation();
-     httpBackend.verifyNoOutstandingRequest();
-   });
+    httpBackend.verifyNoOutstandingExpectation();
+    httpBackend.verifyNoOutstandingRequest();
+  });
 
   it('should retrieve the versions of the CLosed Loop Engine and the Experiment Designer Back-Ends', function() {
     nrpBackendVersions(serverURL).get();
@@ -40,10 +49,16 @@ describe('Services: nrp-versions', function () {
     var softwareBVersion = '1.3.4.dev4';
     var softwareCVersion = 'Not_a_standard_version';
 
-    var serverResponse = {'software_a': softwareAVersion, 'software_b': softwareBVersion, 'software_c': softwareCVersion};
+    var serverResponse = {
+      softwareA: softwareAVersion,
+      softwareB: softwareBVersion,
+      softwareC: softwareCVersion
+    };
     httpBackend.expectGET(serverURL + '/version').respond(200, serverResponse);
     httpBackend.flush();
-    expect(response.toString).toEqual('Backend:\n\tsoftware_a: 1.2.3\n\tsoftware_b: 1.3.4.dev4\n\tsoftware_c: Not_a_standard_version\n');
+    expect(response.toString).toEqual(
+      'Backend:\n\tsoftwareA: 1.2.3\n\tsoftwareB: 1.3.4.dev4\n\tsoftwareC: Not_a_standard_version\n'
+    );
   });
 
   it('should call once serverError when the service call fails', function() {
@@ -53,12 +68,12 @@ describe('Services: nrp-versions', function () {
     expect(serverError.displayHTTPError.calls.count()).toBe(1);
     response = serverError.displayHTTPError.calls.mostRecent().args[0];
     expect(response.status).toBe(400);
-   });
+  });
 
   it('should parse the frontend version', function() {
     httpBackend.expectGET('version.json').respond(200, '{"hbp_nrp_esv":1}');
     var response = nrpFrontendVersion.get();
     httpBackend.flush();
     expect(response.toString).toBe('Frontend: 1\n');
-   });
+  });
 });

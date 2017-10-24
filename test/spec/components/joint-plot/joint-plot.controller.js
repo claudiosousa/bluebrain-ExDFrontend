@@ -2,14 +2,10 @@
   'use strict';
 
   describe('Directive: joint-plot', function() {
-    /*jshint camelcase: false */
-
     var scope, parentscope, controller, element, RESET_TYPE;
 
     var messageMock = {
-      name: ['jointa',
-        'jointb',
-        'jointc'],
+      name: ['jointa', 'jointb', 'jointc'],
       position: [1, 2, 3],
       velocity: [4, 5, 6],
       effort: [7, 8, 9],
@@ -19,10 +15,14 @@
     var messageMockFar = _.cloneDeep(messageMock);
     messageMockFar.header.stamp.secs += 1;
 
-    var jointServiceMockUnsubscribe = jasmine.createSpy('jointServiceMockUnsubscribe');
+    var jointServiceMockUnsubscribe = jasmine.createSpy(
+      'jointServiceMockUnsubscribe'
+    );
 
     var jointServiceMock = {
-      subscribe: jasmine.createSpy('subscribe').and.returnValue(jointServiceMockUnsubscribe),
+      subscribe: jasmine
+        .createSpy('subscribe')
+        .and.returnValue(jointServiceMockUnsubscribe),
       unsubscribe: jasmine.createSpy('unsubscribe')
     };
 
@@ -30,28 +30,37 @@
     beforeEach(module('jointPlotModule'));
     beforeEach(module('exd.templates')); // import html template
 
-    beforeEach(module(function($provide) {
-      $provide.value('jointService', jointServiceMock);
-      jointServiceMock.subscribe.calls.reset();
-      jointServiceMockUnsubscribe.calls.reset();
-    }));
+    beforeEach(
+      module(function($provide) {
+        $provide.value('jointService', jointServiceMock);
+        jointServiceMock.subscribe.calls.reset();
+        jointServiceMockUnsubscribe.calls.reset();
+      })
+    );
 
-    beforeEach(inject(function($rootScope, $compile, _RESET_TYPE_) {
-      RESET_TYPE = _RESET_TYPE_;
+    beforeEach(
+      inject(function($rootScope, $compile, _RESET_TYPE_) {
+        RESET_TYPE = _RESET_TYPE_;
 
-      parentscope = $rootScope.$new();
-      parentscope.showJointPlot = true;
-      element = $compile('<joint-plot ng-show="showJointPlot"></joint-plot>')(parentscope);
-      parentscope.$digest();
+        parentscope = $rootScope.$new();
+        parentscope.showJointPlot = true;
+        element = $compile('<joint-plot ng-show="showJointPlot"></joint-plot>')(
+          parentscope
+        );
+        parentscope.$digest();
 
-      scope = element.isolateScope();
-      controller = element.controller('jointPlot');
-      controller.selectedProperty.name = 'position';
-    }));
+        scope = element.isolateScope();
+        controller = element.controller('jointPlot');
+        controller.selectedProperty.name = 'position';
+      })
+    );
 
     function checkSeriesVisibility() {
       controller.plot.options.series.forEach(function(serie) {
-        expect(serie.visible).toBe(serie.prop === controller.selectedProperty.name && !!serie.joint.selected);
+        expect(serie.visible).toBe(
+          serie.prop === controller.selectedProperty.name &&
+            !!serie.joint.selected
+        );
       });
     }
 
@@ -67,7 +76,9 @@
       //test values
       messageMock.name.forEach(function(jointName, iJoint) {
         ['position', 'velocity', 'effort'].forEach(function(propName) {
-          expect(controller.plot.curves[jointName + '_' + propName][0].y).toBe(messageMock[propName][iJoint]);
+          expect(controller.plot.curves[jointName + '_' + propName][0].y).toBe(
+            messageMock[propName][iJoint]
+          );
         });
       });
 
@@ -108,7 +119,9 @@
       var colorScale = d3.scale.category10();
 
       controller.plot.options.series.forEach(function(serie) {
-        expect(serie.color).toBe(colorScale(controller.allJoints.indexOf(serie.joint)));
+        expect(serie.color).toBe(
+          colorScale(controller.allJoints.indexOf(serie.joint))
+        );
       });
     });
 
@@ -158,4 +171,4 @@
       });
     });
   });
-}());
+})();

@@ -33,7 +33,9 @@
    */
   class JointPlotService {
     // number of points per second
-    static get POINT_FREQUENCY() { return 2; }
+    static get POINT_FREQUENCY() {
+      return 2;
+    }
 
     constructor(roslib, simulationInfo, bbpConfig) {
       this.roslib = roslib;
@@ -46,6 +48,7 @@
         this.rosConnection,
         this.jointTopic,
         'sensor_msgs/JointState',
+        // eslint-disable-next-line camelcase
         { throttle_rate: 1.0 / JointPlotService.POINT_FREQUENCY * 1000.0 }
       );
       this.callbacks = [];
@@ -69,11 +72,15 @@
       //10% tolerance timewise
       const tolerance = 1.1;
 
-      let currentTime = message.header.stamp.secs + message.header.stamp.nsecs * 0.000000001;
+      let currentTime =
+        message.header.stamp.secs + message.header.stamp.nsecs * 0.000000001;
 
-      if (Math.abs(currentTime - this.lastMessageTime) * tolerance >= (1 / JointPlotService.POINT_FREQUENCY)) {
+      if (
+        Math.abs(currentTime - this.lastMessageTime) * tolerance >=
+        1 / JointPlotService.POINT_FREQUENCY
+      ) {
         this.lastMessageTime = currentTime;
-        for (let i = 0; i < this.callbacks.length; i = i+1) {
+        for (let i = 0; i < this.callbacks.length; i = i + 1) {
           this.callbacks[i](message);
         }
       }
@@ -89,7 +96,7 @@
       this.callbacks.push(callback);
       if (this.callbacks.length === 1) {
         // we went from zero subscribers to one
-        this.topicCallback = (msg) => this.parseMessages(msg);
+        this.topicCallback = msg => this.parseMessages(msg);
         this.jointTopicSubscriber.subscribe(this.topicCallback);
       }
     }
@@ -113,7 +120,12 @@
     }
   }
 
-  angular.module('jointPlotModule')
-    .factory('jointService', ['roslib', 'simulationInfo', 'bbpConfig', (...args) => new JointPlotService(...args)]);
-
-}());
+  angular
+    .module('jointPlotModule')
+    .factory('jointService', [
+      'roslib',
+      'simulationInfo',
+      'bbpConfig',
+      (...args) => new JointPlotService(...args)
+    ]);
+})();

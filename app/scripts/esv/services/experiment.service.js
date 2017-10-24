@@ -33,50 +33,70 @@
    * @description Service that manage experiment informations
    */
   class ExperimentService {
-    constructor($q, simulationInfo,
-      simulationControl, bbpConfig, nrpUser, experimentsFactory,
+    constructor(
+      $q,
+      simulationInfo,
+      simulationControl,
+      bbpConfig,
+      nrpUser,
+      experimentsFactory,
       nrpFrontendVersion,
-      nrpBackendVersions) {
-
+      nrpBackendVersions
+    ) {
       //this.experiment is a promise that resolves to the same value as the service
-      this.experiment =
-        simulationInfo.initialized
-          .then(() => {
-            this.versionString = '';
-            nrpFrontendVersion.get((data) => {
-              this.versionString += data.toString;
-            });
+      this.experiment = simulationInfo.initialized.then(() => {
+        this.versionString = '';
+        nrpFrontendVersion.get(data => {
+          this.versionString += data.toString;
+        });
 
-            nrpBackendVersions(simulationInfo.serverBaseUrl).get((data) => {
-              this.versionString += data.toString;
-            });
+        nrpBackendVersions(simulationInfo.serverBaseUrl).get(data => {
+          this.versionString += data.toString;
+        });
 
-            return $q(resolve => {
-              simulationControl(simulationInfo.serverBaseUrl).simulation({ sim_id: simulationInfo.simulationID }, (data) => {
-                this.ownerID = data.owner;
-                this.experimentConfiguration = data.experimentConfiguration;
-                this.environmentConfiguration = data.environmentConfiguration;
-                this.creationDate = data.creationDate;
+        return $q(resolve => {
+          /*eslint-disable camelcase*/
+          simulationControl(simulationInfo.serverBaseUrl).simulation(
+            { sim_id: simulationInfo.simulationID },
+            /*eslint-enable camelcase*/
+            data => {
+              this.ownerID = data.owner;
+              this.experimentConfiguration = data.experimentConfiguration;
+              this.environmentConfiguration = data.environmentConfiguration;
+              this.creationDate = data.creationDate;
 
-                this.experimentDescription = simulationInfo.experimentDetails.description;
-                this.experimentName = simulationInfo.experimentDetails.name;
+              this.experimentDescription =
+                simulationInfo.experimentDetails.description;
+              this.experimentName = simulationInfo.experimentDetails.name;
 
-                this.rosTopics = bbpConfig.get('ros-topics');
-                this.rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+              this.rosTopics = bbpConfig.get('ros-topics');
+              this.rosbridgeWebsocketUrl =
+                simulationInfo.serverConfig.rosbridge.websocket;
 
-                nrpUser.getOwnerDisplayName(data.owner).then((owner) => {
+              nrpUser
+                .getOwnerDisplayName(data.owner)
+                .then(owner => {
                   this.owner = owner;
-                }).finally(() => resolve(this));
-              });
-            });
-          });
+                })
+                .finally(() => resolve(this));
+            }
+          );
+        });
+      });
     }
   }
 
-  angular.module('experimentModule', ['nrpBackendAbout', 'editorToolbarModule'])
-    .factory('experimentService', ['$q', 'simulationInfo', 'simulationControl',
-      'bbpConfig', 'nrpUser',
-      'experimentsFactory', 'nrpFrontendVersion', 'nrpBackendVersions',
-      (...args) => new ExperimentService(...args)]);
-
-}());
+  angular
+    .module('experimentModule', ['nrpBackendAbout', 'editorToolbarModule'])
+    .factory('experimentService', [
+      '$q',
+      'simulationInfo',
+      'simulationControl',
+      'bbpConfig',
+      'nrpUser',
+      'experimentsFactory',
+      'nrpFrontendVersion',
+      'nrpBackendVersions',
+      (...args) => new ExperimentService(...args)
+    ]);
+})();

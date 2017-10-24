@@ -1,128 +1,190 @@
 'use strict';
 
-describe('Directive: graphicalEditor', function () {
+describe('Directive: graphicalEditor', function() {
+  var $rootScope,
+    $compile,
+    $httpBackend,
+    $log,
+    $timeout,
+    $scope,
+    isolateScope,
+    transferFunctions,
+    element,
+    backendInterfaceService,
+    currentStateMock,
+    roslib,
+    stateService,
+    STATE,
+    documentationURLs,
+    SIMULATION_FACTORY_CLE_ERROR,
+    SOURCE_TYPE,
+    TRANSFER_FUNCTION_TYPE,
+    pythonCodeHelper,
+    ScriptObject,
+    simulationInfo;
 
-	var $rootScope, $compile, $httpBackend, $log, $timeout, $scope, isolateScope,
-    transferFunctions, element, backendInterfaceService,
-    currentStateMock, roslib, stateService, STATE, documentationURLs,
-    SIMULATION_FACTORY_CLE_ERROR, SOURCE_TYPE, TRANSFER_FUNCTION_TYPE, pythonCodeHelper,
-    ScriptObject, simulationInfo;
-
-	var backendInterfaceServiceMock = {
-	  getPopulations: jasmine.createSpy('getPopulations'),
-    getStructuredTransferFunctions: jasmine.createSpy('getStructuredTransferFunctions'),
-    setStructuredTransferFunction: jasmine.createSpy('setStructuredTransferFunction'),
+  var backendInterfaceServiceMock = {
+    getPopulations: jasmine.createSpy('getPopulations'),
+    getStructuredTransferFunctions: jasmine.createSpy(
+      'getStructuredTransferFunctions'
+    ),
+    setStructuredTransferFunction: jasmine.createSpy(
+      'setStructuredTransferFunction'
+    ),
     deleteTransferFunction: jasmine.createSpy('deleteTransferFunction'),
     getServerBaseUrl: jasmine.createSpy('getServerBaseUrl'),
     saveTransferFunctions: jasmine.createSpy('saveTransferFunctions'),
-	  getTopics: jasmine.createSpy('getTopics'),
+    getTopics: jasmine.createSpy('getTopics')
   };
 
-	var documentationURLsMock =
-	{
-		getDocumentationURLs: function() {
-		  return {
-			then: function(callback) {
-			  return callback({cleDocumentationURL: 'cleDocumentationURL',
-				backendDocumentationURL: 'backendDocumentationURL'});}
-		  };
-		}
-	};
+  var documentationURLsMock = {
+    getDocumentationURLs: function() {
+      return {
+        then: function(callback) {
+          return callback({
+            cleDocumentationURL: 'cleDocumentationURL',
+            backendDocumentationURL: 'backendDocumentationURL'
+          });
+        }
+      };
+    }
+  };
 
+  var roslibMock = {};
+  var returnedConnectionObject = {};
+  returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
+  roslibMock.getOrCreateConnectionTo = jasmine
+    .createSpy('getOrCreateConnectionTo')
+    .and.returnValue({});
+  roslibMock.createTopic = jasmine
+    .createSpy('createTopic')
+    .and.returnValue(returnedConnectionObject);
 
-	var roslibMock = {};
-	var returnedConnectionObject = {};
-	returnedConnectionObject.subscribe = jasmine.createSpy('subscribe');
-	roslibMock.getOrCreateConnectionTo = jasmine.createSpy('getOrCreateConnectionTo').and.returnValue({});
-	roslibMock.createTopic = jasmine.createSpy('createTopic').and.returnValue(returnedConnectionObject);
-
-	beforeEach(module('exdFrontendApp'));
-	beforeEach(module('exd.templates')); // import html template
-	beforeEach(module('currentStateMockFactory'));
+  beforeEach(module('exdFrontendApp'));
+  beforeEach(module('exd.templates')); // import html template
+  beforeEach(module('currentStateMockFactory'));
   beforeEach(module('simulationInfoMock'));
-	beforeEach(module(function ($provide) {
-		$provide.value('backendInterfaceService', backendInterfaceServiceMock);
-		$provide.value('documentationURLs', documentationURLsMock);
-		$provide.value('stateService', currentStateMock);
-		$provide.value('roslib', roslibMock);
-	}));
+  beforeEach(
+    module(function($provide) {
+      $provide.value('backendInterfaceService', backendInterfaceServiceMock);
+      $provide.value('documentationURLs', documentationURLsMock);
+      $provide.value('stateService', currentStateMock);
+      $provide.value('roslib', roslibMock);
+    })
+  );
 
-	var editorMock = {};
-	beforeEach(inject(function (_$rootScope_,
-                              _$compile_,
-                              _$httpBackend_,
-                              _$log_,
-                              _$timeout_,
-                              _backendInterfaceService_,
-                              $templateCache,
-                              _currentStateMockFactory_,
-                              _documentationURLs_,
-                              _roslib_,
-                              _stateService_,
-                              _STATE_,
-                              _SIMULATION_FACTORY_CLE_ERROR_,
-                              _SOURCE_TYPE_,
-                              _TRANSFER_FUNCTION_TYPE_,
-                              _pythonCodeHelper_,
-                              _simulationInfo_) {
-    simulationInfo = _simulationInfo_;
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $httpBackend = _$httpBackend_;
-    $log = _$log_;
-    $timeout = _$timeout_;
-    documentationURLs = _documentationURLs_;
-    roslib = _roslib_;
-    STATE = _STATE_;
-    SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
-    SOURCE_TYPE = _SOURCE_TYPE_;
-    TRANSFER_FUNCTION_TYPE = _TRANSFER_FUNCTION_TYPE_;
-    stateService = _stateService_;
-    backendInterfaceService = _backendInterfaceService_;
-    currentStateMock = _currentStateMockFactory_.get().stateService;
-    editorMock.getLineHandle = jasmine.createSpy('getLineHandle').and.returnValue(0);
-    editorMock.addLineClass = jasmine.createSpy('addLineClass');
-    editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
-    pythonCodeHelper = _pythonCodeHelper_;
-    ScriptObject = pythonCodeHelper.ScriptObject;
+  var editorMock = {};
+  beforeEach(
+    inject(function(
+      _$rootScope_,
+      _$compile_,
+      _$httpBackend_,
+      _$log_,
+      _$timeout_,
+      _backendInterfaceService_,
+      $templateCache,
+      _currentStateMockFactory_,
+      _documentationURLs_,
+      _roslib_,
+      _stateService_,
+      _STATE_,
+      _SIMULATION_FACTORY_CLE_ERROR_,
+      _SOURCE_TYPE_,
+      _TRANSFER_FUNCTION_TYPE_,
+      _pythonCodeHelper_,
+      _simulationInfo_
+    ) {
+      simulationInfo = _simulationInfo_;
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
+      $httpBackend = _$httpBackend_;
+      $log = _$log_;
+      $timeout = _$timeout_;
+      documentationURLs = _documentationURLs_;
+      roslib = _roslib_;
+      STATE = _STATE_;
+      SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
+      SOURCE_TYPE = _SOURCE_TYPE_;
+      TRANSFER_FUNCTION_TYPE = _TRANSFER_FUNCTION_TYPE_;
+      stateService = _stateService_;
+      backendInterfaceService = _backendInterfaceService_;
+      currentStateMock = _currentStateMockFactory_.get().stateService;
+      editorMock.getLineHandle = jasmine
+        .createSpy('getLineHandle')
+        .and.returnValue(0);
+      editorMock.addLineClass = jasmine.createSpy('addLineClass');
+      editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
+      pythonCodeHelper = _pythonCodeHelper_;
+      ScriptObject = pythonCodeHelper.ScriptObject;
 
-    $scope = $rootScope.$new();
-    $templateCache.put('views/esv/graphical-editor.html', '');
-    $scope.control = {};
-    element = $compile('<graphical-editor control="control"/>')($scope);
-    $scope.$digest();
-    isolateScope = element.isolateScope();
-    transferFunctions = isolateScope.transferFunctions;
-  }));
+      $scope = $rootScope.$new();
+      $templateCache.put('views/esv/graphical-editor.html', '');
+      $scope.control = {};
+      element = $compile('<graphical-editor control="control"/>')($scope);
+      $scope.$digest();
+      isolateScope = element.isolateScope();
+      transferFunctions = isolateScope.transferFunctions;
+    })
+  );
 
-  it('should init the populations, topics and transfer functions', function () {
+  it('should init the populations, topics and transfer functions', function() {
     $scope.control.refresh();
-	  expect(isolateScope.populations).toEqual([]);
+    expect(isolateScope.populations).toEqual([]);
     expect(isolateScope.topics).toEqual([]);
-	  expect(isolateScope.transferFunctions).toEqual([]);
-	  expect(backendInterfaceService.getStructuredTransferFunctions).toHaveBeenCalled();
+    expect(isolateScope.transferFunctions).toEqual([]);
+    expect(
+      backendInterfaceService.getStructuredTransferFunctions
+    ).toHaveBeenCalled();
   });
 
-  it('should populate the populations', function () {
-	  $scope.control.refresh();
-	  expect(backendInterfaceService.getPopulations).toHaveBeenCalled();
+  it('should populate the populations', function() {
+    $scope.control.refresh();
+    expect(backendInterfaceService.getPopulations).toHaveBeenCalled();
   });
 
-  it('should populate the topics', function () {
-	  $scope.control.refresh();
-	  expect(backendInterfaceService.getTopics).toHaveBeenCalled();
+  it('should populate the topics', function() {
+    $scope.control.refresh();
+    expect(backendInterfaceService.getTopics).toHaveBeenCalled();
   });
 
   it('should print populations nicely', function() {
-    expect(isolateScope.getFriendlyPopulationName({'type': 1, 'start': 0, 'step': 8, 'stop': 15, 'name': 'foo'})).toEqual('foo[0:8:15]');
-    expect(isolateScope.getFriendlyPopulationName({'type': 1, 'start': 0, 'step': 1, 'stop': 15, 'name': 'foo'})).toEqual('foo[0:15]');
-    expect(isolateScope.getFriendlyPopulationName({'type': 2, 'gids': [0, 8, 15], 'name': 'foo'})).toEqual('foo[0,8,15]');
-    expect(isolateScope.getFriendlyPopulationName({'type': 3, 'name': 'foo'})).toEqual('foo');
+    expect(
+      isolateScope.getFriendlyPopulationName({
+        type: 1,
+        start: 0,
+        step: 8,
+        stop: 15,
+        name: 'foo'
+      })
+    ).toEqual('foo[0:8:15]');
+    expect(
+      isolateScope.getFriendlyPopulationName({
+        type: 1,
+        start: 0,
+        step: 1,
+        stop: 15,
+        name: 'foo'
+      })
+    ).toEqual('foo[0:15]');
+    expect(
+      isolateScope.getFriendlyPopulationName({
+        type: 2,
+        gids: [0, 8, 15],
+        name: 'foo'
+      })
+    ).toEqual('foo[0,8,15]');
+    expect(
+      isolateScope.getFriendlyPopulationName({ type: 3, name: 'foo' })
+    ).toEqual('foo');
   });
 
   it('should print topics nicely', function() {
-    expect(isolateScope.getFriendlyTopicName({'publishing': true, 'topic': 'foo'})).toEqual('publishes on foo');
-    expect(isolateScope.getFriendlyTopicName({'publishing': false, 'topic': 'bar'})).toEqual('subscribes to bar');
+    expect(
+      isolateScope.getFriendlyTopicName({ publishing: true, topic: 'foo' })
+    ).toEqual('publishes on foo');
+    expect(
+      isolateScope.getFriendlyTopicName({ publishing: false, topic: 'bar' })
+    ).toEqual('subscribes to bar');
   });
 
   it('does nothing on apply or delete if no transfer function present', function() {
@@ -132,88 +194,99 @@ describe('Directive: graphicalEditor', function () {
   });
 
   it('loads transfer functions correctly', function() {
-    isolateScope.transferFunction = {'name': 'tf1', 'code': 'return 42'};
+    isolateScope.transferFunction = { name: 'tf1', code: 'return 42' };
     isolateScope.transferFunctions = [isolateScope.transferFunction];
+    /* eslint-disable camelcase*/
     isolateScope.loadTransferFunctions({
-      'transferFunctions': [
+      transferFunctions: [
         {
-          'name': 'tf1',
-          'type': 1,
-          'devices': [0,8,15],
-          'topics': [{
-            'name': 'sub'
-          }],
-          'variables': [{
-            'type': 'csv',
-            'initial_value': '{"filename":"results.csv", "headers": ["Name", "Value"]}'
-          }],
-          'code': 'pass'
+          name: 'tf1',
+          type: 1,
+          devices: [0, 8, 15],
+          topics: [
+            {
+              name: 'sub'
+            }
+          ],
+          variables: [
+            {
+              type: 'csv',
+              initial_value:
+                '{"filename":"results.csv", "headers": ["Name", "Value"]}'
+            }
+          ],
+          code: 'pass'
         },
         {
-          'name': 'tf2',
-          'type': 2,
-          'devices': [],
-          'variables': [],
-          'topics': [{
-            'name': '__return__'
-          }],
-          'code': 'raise Exception()'
+          name: 'tf2',
+          type: 2,
+          devices: [],
+          variables: [],
+          topics: [
+            {
+              name: '__return__'
+            }
+          ],
+          code: 'raise Exception()'
         }
       ]
     });
     expect(isolateScope.transferFunctions.length).toEqual(2);
-    expect(isolateScope.transferFunctions[0].devices).toEqual([0,8,15]);
-    expect(isolateScope.transferFunctions[0].topics).toEqual([{'name': 'sub', 'isDefault': false}]);
-    expect(isolateScope.transferFunctions[0].variables).toEqual([{
-      'type': 'csv',
-      'initial_value': '{"filename":"results.csv", "headers": ["Name", "Value"]}',
-      'headers': ['Name', 'Value'],
-      'filename': 'results.csv'
-    }]);
+    expect(isolateScope.transferFunctions[0].devices).toEqual([0, 8, 15]);
+    expect(isolateScope.transferFunctions[0].topics).toEqual([
+      { name: 'sub', isDefault: false }
+    ]);
+    expect(isolateScope.transferFunctions[0].variables).toEqual([
+      {
+        type: 'csv',
+        initial_value:
+          '{"filename":"results.csv", "headers": ["Name", "Value"]}',
+        headers: ['Name', 'Value'],
+        filename: 'results.csv'
+      }
+    ]);
     expect(isolateScope.transferFunctions[0].code).toEqual('pass');
     expect(isolateScope.transferFunctions[1].devices).toEqual([]);
-    expect(isolateScope.transferFunctions[1].topics).toEqual([{'name': '__return__', 'isDefault': true}]);
+    expect(isolateScope.transferFunctions[1].topics).toEqual([
+      { name: '__return__', isDefault: true }
+    ]);
     expect(isolateScope.transferFunctions[1].variables).toEqual([]);
     expect(isolateScope.transferFunctions[1].code).toEqual('raise Exception()');
   });
 
-  it('loads populations correctly', function () {
+  it('loads populations correctly', function() {
     expect(isolateScope.populations.length).toEqual(0);
     isolateScope.loadPopulations({
-      'populations': [
+      populations: [
         {
-          'name': 'actors', 'neuron_model': 'FakeNeuron', 'gids': [0, 8, 15],
-          'parameters': [
-            { 'parameterName': 'E', 'value': 42 }
-          ]
+          name: 'actors',
+          neuron_model: 'FakeNeuron',
+          gids: [0, 8, 15],
+          parameters: [{ parameterName: 'E', value: 42 }]
         }
       ]
     });
     expect(isolateScope.populations.length).toEqual(1);
     expect(isolateScope.populations[0]).toEqual({
-      'name': 'actors',
-      'neuron_model': 'FakeNeuron',
-      'tooltip': 'E: 42\n',
-      'gids': [
-        { 'id': 0, 'selected': false },
-        { 'id': 8, 'selected': false },
-        { 'id': 15, 'selected': false }
+      name: 'actors',
+      neuron_model: 'FakeNeuron',
+      tooltip: 'E: 42\n',
+      gids: [
+        { id: 0, selected: false },
+        { id: 8, selected: false },
+        { id: 15, selected: false }
       ]
     });
   });
 
   it('loads topics correctly', function() {
-    isolateScope.loadTopics({ 'topics': [0, 8, 15]});
-    expect(isolateScope.topics).toEqual([0,8,15]);
+    isolateScope.loadTopics({ topics: [0, 8, 15] });
+    expect(isolateScope.topics).toEqual([0, 8, 15]);
   });
 
   it('should toggle neurons correctly', function() {
-    var neurons = [
-      { 'selected': true},
-      { 'selected': true},
-      { 'selected': false}
-    ];
-    isolateScope.selectedPopulation = { 'gids': neurons};
+    var neurons = [{ selected: true }, { selected: true }, { selected: false }];
+    isolateScope.selectedPopulation = { gids: neurons };
     isolateScope.toggleNeuron(neurons[0], true);
     expect(isolateScope.isNeuronsSelected).toBeTruthy();
     isolateScope.toggleNeuron(neurons[1], true);
@@ -229,7 +302,7 @@ describe('Directive: graphicalEditor', function () {
     var expectedPopulation1, expectedPopulation2, expectedPopulation3;
     var expected = [];
 
-    beforeEach(function () {
+    beforeEach(function() {
       $scope.control.refresh();
       expectedTf1 = new ScriptObject('tf1', 'return 42');
       expectedTf1.type = TRANSFER_FUNCTION_TYPE.NEURON2ROBOT;
@@ -237,23 +310,23 @@ describe('Directive: graphicalEditor', function () {
       expectedTf1.local = false;
       expectedTf1.devices = [
         {
-          'name': 'device1',
-          'type': 'LeakyIntegratorAlpha',
-          'neurons': {
-            'name': 'sensors',
-            'start': 0,
-            'step': 8,
-            'stop': 15,
-            'type': 1
+          name: 'device1',
+          type: 'LeakyIntegratorAlpha',
+          neurons: {
+            name: 'sensors',
+            start: 0,
+            step: 8,
+            stop: 15,
+            type: 1
           }
         }
       ];
       expectedTf1.topics = [
         {
-          'name': 'foo',
-          'topic': '/bar',
-          'topicType': 'Device',
-          'publishing': true
+          name: 'foo',
+          topic: '/bar',
+          topicType: 'Device',
+          publishing: true
         }
       ];
       expectedTf1.variables = [];
@@ -263,72 +336,75 @@ describe('Directive: graphicalEditor', function () {
       expectedTf2.local = true;
       expectedTf2.devices = [
         {
-          'name': 'device1',
-          'type': 'Poisson',
-          'neurons': {
-            'name': 'actors',
-            'type': 0
+          name: 'device1',
+          type: 'Poisson',
+          neurons: {
+            name: 'actors',
+            type: 0
           }
         }
       ];
       expectedTf2.topics = [
         {
-          'name': 'foo',
-          'topic': '/bar',
-          'topicType': 'Device',
-          'publishing': false
+          name: 'foo',
+          topic: '/bar',
+          topicType: 'Device',
+          publishing: false
         }
       ];
-      expectedTf2.variables = [{
-        'name': 'bar',
-        'initial_value': '42',
-        'type': 'int'
-      }];
+      expectedTf2.variables = [
+        {
+          name: 'bar',
+          initial_value: '42',
+          type: 'int'
+        }
+      ];
       expected = [expectedTf1, expectedTf2];
 
       expectedPopulation1 = {
-        'name': 'sensors',
-        'neuron_model': 'IF_cond_alpha',
-        'tooltip': 'This is fake',
-        'gids' : [
-          { 'id': 0, 'selected': true },
-          { 'id': 8, 'selected': false },
-          { 'id': 15, 'selected': true }
+        name: 'sensors',
+        neuron_model: 'IF_cond_alpha',
+        tooltip: 'This is fake',
+        gids: [
+          { id: 0, selected: true },
+          { id: 8, selected: false },
+          { id: 15, selected: true }
         ]
       };
       expectedPopulation2 = {
-        'name': 'actors',
-        'neuron_model': 'IF_cond_alpha',
-        'tooltip': 'This is fake',
-        'gids' : [
-          { 'id': 42, 'selected': true }
-        ]
+        name: 'actors',
+        neuron_model: 'IF_cond_alpha',
+        tooltip: 'This is fake',
+        gids: [{ id: 42, selected: true }]
       };
       expectedPopulation3 = {
-        'name': 'foobars',
-        'neuron_model': 'FakeNeuron',
-        'tooltip': 'This is fake',
-        'gids' : [
-          { 'id': 0, 'selected': true },
-          { 'id': 8, 'selected': true },
-          { 'id': 15, 'selected': false },
-          { 'id': 23, 'selected': true }
+        name: 'foobars',
+        neuron_model: 'FakeNeuron',
+        tooltip: 'This is fake',
+        gids: [
+          { id: 0, selected: true },
+          { id: 8, selected: true },
+          { id: 15, selected: false },
+          { id: 23, selected: true }
         ]
       };
-      expectedTopic1 = { 'topic': '/foo', 'topicType': 'Bar' };
-      expectedTopic2 = { 'topic': '/foo/bar', 'topicType': 'FooBar' };
+      expectedTopic1 = { topic: '/foo', topicType: 'Bar' };
+      expectedTopic2 = { topic: '/foo/bar', topicType: 'FooBar' };
 
       // We now assume that the transferFunctions are already retrieved
       isolateScope.transferFunctions = angular.copy(expected);
       isolateScope.transferFunction = isolateScope.transferFunctions[0];
       isolateScope.selectedTF = expectedTf1.name;
       isolateScope.topics = angular.copy([expectedTopic1, expectedTopic2]);
-      isolateScope.populations = angular.copy([expectedPopulation1, expectedPopulation2, expectedPopulation3]);
+      isolateScope.populations = angular.copy([
+        expectedPopulation1,
+        expectedPopulation2,
+        expectedPopulation3
+      ]);
       transferFunctions = isolateScope.transferFunctions;
     });
 
-
-    it('should fill the error field of the flawed transfer function', function () {
+    it('should fill the error field of the flawed transfer function', function() {
       var errorType = isolateScope.ERROR.RUNTIME;
       var msg = {
         functionName: 'tf1',
@@ -345,9 +421,15 @@ describe('Directive: graphicalEditor', function () {
       expect(transferFunctions[1].error[errorType]).toEqual(msg);
     });
 
-    it('should ignore state machine errors', function () {
+    it('should ignore state machine errors', function() {
       var errorType = isolateScope.ERROR.RUNTIME;
-      var msg = { functionName: 'tf1', message: 'You nearly broke the platform!', errorType: errorType, severity: 1, sourceType: SOURCE_TYPE.STATE_MACHINE };
+      var msg = {
+        functionName: 'tf1',
+        message: 'You nearly broke the platform!',
+        errorType: errorType,
+        severity: 1,
+        sourceType: SOURCE_TYPE.STATE_MACHINE
+      };
       isolateScope.onNewErrorMessageReceived(msg);
       expect(transferFunctions[0].error[errorType]).toBeUndefined();
     });
@@ -389,25 +471,29 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.selectedPopulation = expectedPopulation1;
       isolateScope.createNewMonitor();
       expect(isolateScope.transferFunctions.length).toEqual(3);
-      expect(isolateScope.transferFunction.topics).toEqual([{
-        'name': 'publisher',
-        'topic': 'a monitoring topic',
-        'type': 'monitor topic',
-        'publishing': true
-      }]);
-      expect(isolateScope.transferFunction.variables).toEqual([]);
-      expect(isolateScope.transferFunction.devices).toEqual([{
-        'name': 'device',
-        'type': 'LeakyIntegratorAlpha',
-        'neurons': {
-          'name': 'sensors',
-          'start': 0,
-          'step': 2,
-          'stop': 3,
-          'type': 1,
-          'ids': []
+      expect(isolateScope.transferFunction.topics).toEqual([
+        {
+          name: 'publisher',
+          topic: 'a monitoring topic',
+          type: 'monitor topic',
+          publishing: true
         }
-      }]);
+      ]);
+      expect(isolateScope.transferFunction.variables).toEqual([]);
+      expect(isolateScope.transferFunction.devices).toEqual([
+        {
+          name: 'device',
+          type: 'LeakyIntegratorAlpha',
+          neurons: {
+            name: 'sensors',
+            start: 0,
+            step: 2,
+            stop: 3,
+            type: 1,
+            ids: []
+          }
+        }
+      ]);
     });
 
     it('should not create tfs that already exist', function() {
@@ -415,8 +501,12 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.createNewTF();
       isolateScope.createNewTF();
       expect(isolateScope.transferFunctions.length).toEqual(4);
-      expect(isolateScope.transferFunctions[0].name).not.toEqual(isolateScope.transferFunctions[2].name);
-      expect(isolateScope.transferFunctions[3].name).not.toEqual(isolateScope.transferFunctions[2].name);
+      expect(isolateScope.transferFunctions[0].name).not.toEqual(
+        isolateScope.transferFunctions[2].name
+      );
+      expect(isolateScope.transferFunctions[3].name).not.toEqual(
+        isolateScope.transferFunctions[2].name
+      );
     });
 
     it('should not create monitors that already exist', function() {
@@ -425,8 +515,12 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.createNewMonitor();
       isolateScope.createNewMonitor();
       expect(isolateScope.transferFunctions.length).toEqual(4);
-      expect(isolateScope.transferFunctions[0].name).not.toEqual(isolateScope.transferFunctions[2].name);
-      expect(isolateScope.transferFunctions[3].name).not.toEqual(isolateScope.transferFunctions[2].name);
+      expect(isolateScope.transferFunctions[0].name).not.toEqual(
+        isolateScope.transferFunctions[2].name
+      );
+      expect(isolateScope.transferFunctions[3].name).not.toEqual(
+        isolateScope.transferFunctions[2].name
+      );
     });
 
     it('should create a new variable correctly', function() {
@@ -434,9 +528,9 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.addNewVariable();
       expect(isolateScope.transferFunction.variables.length).toEqual(1);
       expect(isolateScope.transferFunction.variables[0]).toEqual({
-        'name': 'variable1',
-        'initial_value': '0',
-        'type': 'int'
+        name: 'variable1',
+        initial_value: '0',
+        type: 'int'
       });
     });
 
@@ -456,10 +550,10 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.createTopicChannel(true);
       expect(isolateScope.transferFunction.topics.length).toEqual(2);
       expect(isolateScope.transferFunction.topics[1]).toEqual({
-        'name': 'topic1',
-        'topic': '/foo/bar',
-        'type': 'FooBar',
-        'publishing': true
+        name: 'topic1',
+        topic: '/foo/bar',
+        type: 'FooBar',
+        publishing: true
       });
     });
 
@@ -471,15 +565,15 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.createDevice();
       expect(isolateScope.transferFunction.devices.length).toEqual(2);
       expect(isolateScope.transferFunction.devices[1]).toEqual({
-        'name': 'device2',
-        'type': 'LeakyIntegratorAlpha',
-        'neurons': {
-          'name': 'sensors',
-          'start': 0,
-          'step': 2,
-          'stop': 3,
-          'type': 1,
-          'ids': []
+        name: 'device2',
+        type: 'LeakyIntegratorAlpha',
+        neurons: {
+          name: 'sensors',
+          start: 0,
+          step: 2,
+          stop: 3,
+          type: 1,
+          ids: []
         }
       });
 
@@ -487,15 +581,15 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.createDevice();
       expect(isolateScope.transferFunction.devices.length).toEqual(3);
       expect(isolateScope.transferFunction.devices[2]).toEqual({
-        'name': 'device3',
-        'type': 'LeakyIntegratorAlpha',
-        'neurons': {
-          'name': 'actors',
-          'start': 0,
-          'step': 1,
-          'stop': 1,
-          'type': 0,
-          'ids': []
+        name: 'device3',
+        type: 'LeakyIntegratorAlpha',
+        neurons: {
+          name: 'actors',
+          start: 0,
+          step: 1,
+          stop: 1,
+          type: 0,
+          ids: []
         }
       });
 
@@ -507,15 +601,15 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.createDevice();
       expect(isolateScope.transferFunction.devices.length).toEqual(4);
       expect(isolateScope.transferFunction.devices[3]).toEqual({
-        'name': 'device4',
-        'type': 'LeakyIntegratorAlpha',
-        'neurons': {
-          'name': 'foobars',
-          'start': 0,
-          'step': undefined,
-          'stop': 4,
-          'type': 2,
-          'ids': [0, 1, 3]
+        name: 'device4',
+        type: 'LeakyIntegratorAlpha',
+        neurons: {
+          name: 'foobars',
+          start: 0,
+          step: undefined,
+          stop: 4,
+          type: 2,
+          ids: [0, 1, 3]
         }
       });
     });
@@ -546,9 +640,10 @@ describe('Directive: graphicalEditor', function () {
 
       beforeEach(function() {
         csvRecorder = {
-          'name': 'csv1',
-          'type': 'csv',
-          'initial_value': '{"filename":"results.csv", "headers":["Name", "Value"]}'
+          name: 'csv1',
+          type: 'csv',
+          initial_value:
+            '{"filename":"results.csv", "headers":["Name", "Value"]}'
         };
         isolateScope.transferFunctions[0].variables.push(csvRecorder);
       });
@@ -559,9 +654,9 @@ describe('Directive: graphicalEditor', function () {
         expect(csvRecorder.headers).toEqual(['Name', 'Value']);
 
         var test2 = {
-          'name': 'test2',
-          'type': 'csv',
-          'initial_value': '{"filename":"results.csv"}'
+          name: 'test2',
+          type: 'csv',
+          initial_value: '{"filename":"results.csv"}'
         };
         isolateScope.parseFilenameAndHeaders(test2);
         expect(test2.filename).toEqual('results.csv');
@@ -578,8 +673,10 @@ describe('Directive: graphicalEditor', function () {
         isolateScope.addHeader(csvRecorder, 'StdDev');
         expect(csvRecorder.filename).toEqual('results.csv');
         expect(csvRecorder.headers).toEqual(['Name', 'Value', 'StdDev']);
-        /* jshint sub:true*/
-        expect(JSON.parse(csvRecorder['initial_value'])).toEqual({'filename':'results.csv', 'headers':['Name', 'Value', 'StdDev']});
+        expect(JSON.parse(csvRecorder['initial_value'])).toEqual({
+          filename: 'results.csv',
+          headers: ['Name', 'Value', 'StdDev']
+        });
       });
 
       it('should remove headers correctly', function() {
@@ -587,8 +684,10 @@ describe('Directive: graphicalEditor', function () {
         isolateScope.deleteHeader(csvRecorder, 'Name');
         expect(csvRecorder.filename).toEqual('results.csv');
         expect(csvRecorder.headers).toEqual(['Value']);
-        /* jshint sub:true*/
-        expect(JSON.parse(csvRecorder['initial_value'])).toEqual({'filename':'results.csv', 'headers':['Value']});
+        expect(JSON.parse(csvRecorder['initial_value'])).toEqual({
+          filename: 'results.csv',
+          headers: ['Value']
+        });
       });
     });
 
@@ -597,10 +696,16 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.selectTransferFunction('tf2');
       expect(isolateScope.transferFunction.local).toBeTruthy();
       isolateScope.apply();
-      expect(backendInterfaceService.setStructuredTransferFunction).toHaveBeenCalledWith(
-        isolateScope.transferFunction, jasmine.any(Function), jasmine.any(Function)
+      expect(
+        backendInterfaceService.setStructuredTransferFunction
+      ).toHaveBeenCalledWith(
+        isolateScope.transferFunction,
+        jasmine.any(Function),
+        jasmine.any(Function)
       );
-      backendInterfaceService.setStructuredTransferFunction.calls.mostRecent().args[1]();
+      backendInterfaceService.setStructuredTransferFunction.calls
+        .mostRecent()
+        .args[1]();
       expect(isolateScope.transferFunction.local).toBeFalsy();
       expect(isolateScope.transferFunctions.length).toEqual(2);
       expect(isolateScope.transferFunction.name).toEqual('tf2');
@@ -627,7 +732,9 @@ describe('Directive: graphicalEditor', function () {
       isolateScope.selectTransferFunction('tf2');
       isolateScope.delete();
       expect(isolateScope.transferFunctions.length).toEqual(1);
-      expect(backendInterfaceService.deleteTransferFunction).not.toHaveBeenCalled();
+      expect(
+        backendInterfaceService.deleteTransferFunction
+      ).not.toHaveBeenCalled();
       expect(isolateScope.transferFunction).not.toBeNull();
 
       isolateScope.selectTransferFunction('tf1');

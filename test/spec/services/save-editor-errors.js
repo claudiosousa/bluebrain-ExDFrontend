@@ -10,37 +10,69 @@ describe('Services: saveErrorsService', function() {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
-  beforeEach(module(function($provide) {
-    /*globals $q */
-    tempFileService = {
-      saveDirtyData: jasmine.createSpy('saveDirtyData').and.returnValue($q.when()),
-      checkSavedWork: jasmine.createSpy('checkSavedWork').and.callFake(function() { return $q.when(); }),
-      removeSavedWork: jasmine.createSpy('removeSavedWork'),
-    };
-    /*jshint camelcase: false */
-    storageServer = {
-      getFolderFile: jasmine.createSpy('getFolderFile').and.callFake(function() {
-        return $q.when(previouslySavedFile !== undefined ? { created_by: 'userid', uuid: 'uuid' } : null);
-      }),
-      setFileContent: jasmine.createSpy('setFileContent').and.callFake(function() { return { uuid: 'uuid' }; }),
-      getFileContent: jasmine.createSpy('getFileContent').and.callFake(function() { return $q.when({ uuid: 'uuid', data: previouslySavedFile }); })
-    };
-    stateParams = { ctx: CONTEXT_ID };
+  beforeEach(
+    module(function($provide) {
+      /*globals $q */
+      tempFileService = {
+        saveDirtyData: jasmine
+          .createSpy('saveDirtyData')
+          .and.returnValue($q.when()),
+        checkSavedWork: jasmine
+          .createSpy('checkSavedWork')
+          .and.callFake(function() {
+            return $q.when();
+          }),
+        removeSavedWork: jasmine.createSpy('removeSavedWork')
+      };
+      storageServer = {
+        getFolderFile: jasmine
+          .createSpy('getFolderFile')
+          .and.callFake(function() {
+            return $q.when(
+              /* eslint-disable camelcase */
+              previouslySavedFile !== undefined
+                ? { created_by: 'userid', uuid: 'uuid' }
+                : null
+            );
+          }),
+        setFileContent: jasmine
+          .createSpy('setFileContent')
+          .and.callFake(function() {
+            return { uuid: 'uuid' };
+          }),
+        getFileContent: jasmine
+          .createSpy('getFileContent')
+          .and.callFake(function() {
+            return $q.when({ uuid: 'uuid', data: previouslySavedFile });
+          })
+      };
+      stateParams = { ctx: CONTEXT_ID };
 
-    $provide.value('tempFileService', tempFileService);
-    $provide.value('storageServer', storageServer);
-    $provide.value('$stateParams', stateParams);
-  }));
+      $provide.value('tempFileService', tempFileService);
+      $provide.value('storageServer', storageServer);
+      $provide.value('$stateParams', stateParams);
+    })
+  );
 
-  beforeEach(inject(function($httpBackend, _$rootScope_, _$q_, _saveErrorsService_, _SAVE_FILE_, _environmentService_) {
-    $rootScope = _$rootScope_;
-    saveErrorsService = _saveErrorsService_;
-    SAVE_FILE = _SAVE_FILE_;
-    environmentService = _environmentService_;
-    environmentService.setPrivateExperiment(true);
-  }));
+  beforeEach(
+    inject(function(
+      $httpBackend,
+      _$rootScope_,
+      _$q_,
+      _saveErrorsService_,
+      _SAVE_FILE_,
+      _environmentService_
+    ) {
+      $rootScope = _$rootScope_;
+      saveErrorsService = _saveErrorsService_;
+      SAVE_FILE = _SAVE_FILE_;
+      environmentService = _environmentService_;
+      environmentService.setPrivateExperiment(true);
+    })
+  );
 
-  beforeEach(function() { //default behavior
+  beforeEach(function() {
+    //default behavior
     previouslySavedFile = undefined; //by default, there is now previously auto saved file
   });
 
@@ -48,11 +80,16 @@ describe('Services: saveErrorsService', function() {
     saveErrorsService.saveDirtyData(DIRTY_TYPE, DIRTY_DATA);
     var obj = {};
     obj[DIRTY_TYPE] = DIRTY_DATA;
-    expect(tempFileService.saveDirtyData).toHaveBeenCalledWith(SAVE_FILE, false, obj, DIRTY_TYPE);
+    expect(tempFileService.saveDirtyData).toHaveBeenCalledWith(
+      SAVE_FILE,
+      false,
+      obj,
+      DIRTY_TYPE
+    );
   });
 
   it('should update error file when removing some data', function() {
-    previouslySavedFile = { 'other': 'otherdata' };
+    previouslySavedFile = { other: 'otherdata' };
     previouslySavedFile[DIRTY_TYPE] = 'some data';
     saveErrorsService.clearDirty(DIRTY_TYPE);
 
@@ -88,5 +125,4 @@ describe('Services: saveErrorsService', function() {
     expect(tempFileService.checkSavedWork).not.toHaveBeenCalled();
     $rootScope.$digest();
   });
-
 });

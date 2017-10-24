@@ -24,43 +24,87 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp.Constants')
+  angular
+    .module('exdFrontendApp.Constants')
     .constant('SERVER_POLL_INTERVAL', 10 * 1000)
     .constant('CLUSTER_THRESHOLDS', {
       UNAVAILABLE: 2,
-      AVAILABLE: 4,
+      AVAILABLE: 4
     });
 
-  angular.module('experimentServices')
+  angular
+    .module('experimentServices')
     .constant('FAIL_ON_ALL_SERVERS_ERROR', {
       type: 'ServerError',
-      message: 'No server can handle your simulation at the moment. Please try again later'
+      message:
+        'No server can handle your simulation at the moment. Please try again later'
     })
     .constant('FAIL_ON_SELECTED_SERVER_ERROR', {
       type: 'ServerError',
-      message: 'The selected server cannot handle your simulation at the moment. Please try again later'
+      message:
+        'The selected server cannot handle your simulation at the moment. Please try again later'
     })
-    .factory('experimentsFactory',
-    ['$q', '$interval', '$log',
-      'experimentProxyService', 'uptimeFilter',
-      'experimentSimulationService', 'clbErrorDialog',
-      'SERVER_POLL_INTERVAL', 'nrpUser',
-      'environmentService', 'FAIL_ON_SELECTED_SERVER_ERROR', 'FAIL_ON_ALL_SERVERS_ERROR', 'CLUSTER_THRESHOLDS', 'storageServer', '$stateParams',
-      function($q, $interval, $log, experimentProxyService, uptimeFilter,
-        experimentSimulationService, clbErrorDialog, SERVER_POLL_INTERVAL,
-        nrpUser, environmentService,
-        FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, CLUSTER_THRESHOLDS, storageServer, $stateParams) {
-
-
-        const baseDependecies = [SERVER_POLL_INTERVAL, experimentSimulationService, uptimeFilter, nrpUser, clbErrorDialog, FAIL_ON_SELECTED_SERVER_ERROR, FAIL_ON_ALL_SERVERS_ERROR, $interval, $q];
+    .factory('experimentsFactory', [
+      '$q',
+      '$interval',
+      '$log',
+      'experimentProxyService',
+      'uptimeFilter',
+      'experimentSimulationService',
+      'clbErrorDialog',
+      'SERVER_POLL_INTERVAL',
+      'nrpUser',
+      'environmentService',
+      'FAIL_ON_SELECTED_SERVER_ERROR',
+      'FAIL_ON_ALL_SERVERS_ERROR',
+      'CLUSTER_THRESHOLDS',
+      'storageServer',
+      '$stateParams',
+      function(
+        $q,
+        $interval,
+        $log,
+        experimentProxyService,
+        uptimeFilter,
+        experimentSimulationService,
+        clbErrorDialog,
+        SERVER_POLL_INTERVAL,
+        nrpUser,
+        environmentService,
+        FAIL_ON_SELECTED_SERVER_ERROR,
+        FAIL_ON_ALL_SERVERS_ERROR,
+        CLUSTER_THRESHOLDS,
+        storageServer,
+        $stateParams
+      ) {
+        const baseDependecies = [
+          SERVER_POLL_INTERVAL,
+          experimentSimulationService,
+          uptimeFilter,
+          nrpUser,
+          clbErrorDialog,
+          FAIL_ON_SELECTED_SERVER_ERROR,
+          FAIL_ON_ALL_SERVERS_ERROR,
+          $interval,
+          $q
+        ];
         return {
           createExperimentsService: loadPrivateExperiments => {
-             /*jshint -W117 */
+            /*global PrivateExperimentsService,TemplateExperimentsService */
             if (loadPrivateExperiments)
-              return new PrivateExperimentsService(storageServer, $stateParams, experimentProxyService, ...baseDependecies);
+              return new PrivateExperimentsService(
+                storageServer,
+                $stateParams,
+                experimentProxyService,
+                ...baseDependecies
+              );
             else
-              return new TemplateExperimentsService(experimentProxyService, ...baseDependecies);
+              return new TemplateExperimentsService(
+                experimentProxyService,
+                ...baseDependecies
+              );
           }
         };
-      }]);
+      }
+    ]);
 })();

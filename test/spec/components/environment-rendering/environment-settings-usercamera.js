@@ -1,39 +1,38 @@
 'use strict';
 
-describe('Directive: render settings user camera frustum', function ()
-{
+describe('Directive: render settings user camera frustum', function() {
   var $rootScope, element, gz3dMock, editorToolbarService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
 
-  beforeEach(module(function ($provide)
-  {
-    gz3dMock = { 'scene': { 'composerSettings': {} } };
+  beforeEach(
+    module(function($provide) {
+      gz3dMock = { scene: { composerSettings: {} } };
 
-    gz3dMock.scene.composerSettings.verticalFOV = 60.0;     // Default user camera frustum parameters
-    gz3dMock.scene.composerSettings.nearClippingDistance = 0.15;
-    gz3dMock.scene.composerSettings.farClippingDistance = 100.0;
-    gz3dMock.scene.composerSettings.showCameraHelper = false;
+      gz3dMock.scene.composerSettings.verticalFOV = 60.0; // Default user camera frustum parameters
+      gz3dMock.scene.composerSettings.nearClippingDistance = 0.15;
+      gz3dMock.scene.composerSettings.farClippingDistance = 100.0;
+      gz3dMock.scene.composerSettings.showCameraHelper = false;
 
-    gz3dMock.scene.applyComposerSettings = function () { }; // jshint ignore:line
+      gz3dMock.scene.applyComposerSettings = function() {};
 
-    $provide.value('gz3d', gz3dMock);
-  }));
+      $provide.value('gz3d', gz3dMock);
+    })
+  );
 
-  beforeEach(inject(function (
-    _$rootScope_,
-    $compile,
-    _editorToolbarService_)
-  {
-    $rootScope = _$rootScope_;
-    editorToolbarService = _editorToolbarService_;
-    element = $compile('<environment-settings-usercamera></environment-settings-usercamera>')($rootScope);
-    $rootScope.$digest();
-  }));
+  beforeEach(
+    inject(function(_$rootScope_, $compile, _editorToolbarService_) {
+      $rootScope = _$rootScope_;
+      editorToolbarService = _editorToolbarService_;
+      element = $compile(
+        '<environment-settings-usercamera></environment-settings-usercamera>'
+      )($rootScope);
+      $rootScope.$digest();
+    })
+  );
 
-  it('should initialize default user camera frustum values', function ()
-  {
+  it('should initialize default user camera frustum values', function() {
     editorToolbarService.showEnvironmentSettingsPanel = true;
     $rootScope.$digest();
 
@@ -43,12 +42,10 @@ describe('Directive: render settings user camera frustum', function ()
     expect(gz3dMock.scene.composerSettings.showCameraHelper).toBeDefined();
   });
 
-  it('should update user camera frustum values to scene', function ()
-  {
-    spyOn(gz3dMock.scene,'applyComposerSettings');
+  it('should update user camera frustum values to scene', function() {
+    spyOn(gz3dMock.scene, 'applyComposerSettings');
     $rootScope.$$childTail.updateFrustumSettings();
 
     expect(gz3dMock.scene.applyComposerSettings).toHaveBeenCalled();
   });
-
 });

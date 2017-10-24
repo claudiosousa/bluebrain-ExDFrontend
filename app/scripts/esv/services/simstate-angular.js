@@ -31,23 +31,40 @@
   the AngularJS .then() and .catch() functions.
 */
 
-(function () {
+(function() {
   'use strict';
 
   /* global console: false */
 
-  var module = angular.module('simulationStateServices',
-    ['bbpConfig', 'simulationInfoService','simulationControlServices','nrpErrorHandlers', 'roslibModule']);
-  module.factory('stateService',
-    ['simulationState', 'STATE',
-    '$log', 'bbpConfig', '$q', 'serverError', 'roslib',
+  var module = angular.module('simulationStateServices', [
+    'bbpConfig',
+    'simulationInfoService',
+    'simulationControlServices',
+    'nrpErrorHandlers',
+    'roslibModule'
+  ]);
+  module.factory('stateService', [
+    'simulationState',
+    'STATE',
+    '$log',
+    'bbpConfig',
+    '$q',
+    'serverError',
+    'roslib',
     'simulationInfo',
-    function (simulationState, STATE,
-      $log, bbpConfig, $q, serverError, roslib,
-      simulationInfo) {
+    function(
+      simulationState,
+      STATE,
+      $log,
+      bbpConfig,
+      $q,
+      serverError,
+      roslib,
+      simulationInfo
+    ) {
       // Initialized the state to "paused" so that a view that loads before the
       // first message update from our websocket can properly render the buttons
-      var thisStateService = {currentState: STATE.PAUSED};
+      var thisStateService = { currentState: STATE.PAUSED };
       var stateCallbacks = [];
       var messageCallbacks = [];
       thisStateService.statePending = false;
@@ -69,30 +86,31 @@
         });
       };
 
-      var onMessageReceived = function (data) {
+      var onMessageReceived = function(data) {
         try {
           var message = JSON.parse(data.data);
           /* State messages */
           /* Manage before other since others may depend on state changes */
-          if (angular.isDefined(message.state) && (message.state !== thisStateService.currentState)) {
-
-            if (message.state !== STATE.CREATED)
-            {
+          if (
+            angular.isDefined(message.state) &&
+            message.state !== thisStateService.currentState
+          ) {
+            if (message.state !== STATE.CREATED) {
               // This is a tempory fix. The problem should be fixed in the backend. See NRRPLT-4148 and NRRPLT-4172.
 
               thisStateService.currentState = message.state;
             }
 
-            if (message.state === STATE.STOPPED){
-            rosConnection.disableRebirth();
-          }
+            if (message.state === STATE.STOPPED) {
+              rosConnection.disableRebirth();
+            }
             triggerStateCallbacks();
           }
 
           /* Call every registered message callback with the received message */
           triggerMessageCallbacks(message);
-        } catch(err) {
-          console.error("Invalid JSON Message received.");
+        } catch (err) {
+          console.error('Invalid JSON Message received.');
         }
       };
 
@@ -109,7 +127,8 @@
           statusListener = undefined;
         }
 
-        var rosbridgeWebsocketUrl = simulationInfo.serverConfig.rosbridge.websocket;
+        var rosbridgeWebsocketUrl =
+          simulationInfo.serverConfig.rosbridge.websocket;
         var statusTopic = bbpConfig.get('ros-topics').status;
         rosConnection = roslib.getOrCreateConnectionTo(rosbridgeWebsocketUrl);
         statusListener = roslib.createStringTopic(rosConnection, statusTopic);
@@ -135,7 +154,7 @@
       };
 
       thisStateService.removeStateCallback = function(callback) {
-        stateCallbacks = stateCallbacks.filter(function(element){
+        stateCallbacks = stateCallbacks.filter(function(element) {
           return element !== callback;
         });
       };
@@ -145,20 +164,23 @@
       };
 
       thisStateService.removeMessageCallback = function(callback) {
-        messageCallbacks = messageCallbacks.filter(function(element){
+        messageCallbacks = messageCallbacks.filter(function(element) {
           return element !== callback;
         });
       };
 
-      thisStateService.getCurrentState = function () {
+      thisStateService.getCurrentState = function() {
         var deferred = $q.defer();
 
-        simulationState(simulationInfo.serverBaseUrl).state({sim_id: simulationInfo.simulationID},
-          function (data) {
+        /*eslint-disable camelcase*/
+        simulationState(simulationInfo.serverBaseUrl).state(
+          { sim_id: simulationInfo.simulationID },
+          /*eslint-enable camelcase*/
+          function(data) {
             thisStateService.currentState = data.state;
             deferred.resolve();
           },
-          function (data) {
+          function(data) {
             deferred.reject();
           }
         );
@@ -166,28 +188,32 @@
         return deferred.promise;
       };
 
-      thisStateService.setCurrentState = function (newState) {
+      thisStateService.setCurrentState = function(newState) {
         var deferred = $q.defer();
 
         // Ignore state change request if
         // (1) there are pending state changes
         // (2) the requested state is the current state
-        if (thisStateService.statePending === true || newState === thisStateService.currentState) {
+        if (
+          thisStateService.statePending === true ||
+          newState === thisStateService.currentState
+        ) {
           deferred.reject();
           return deferred.promise; // avoid duplicated update requests
         }
         thisStateService.statePending = true;
 
         simulationState(simulationInfo.serverBaseUrl).update(
-          {sim_id: simulationInfo.simulationID},
-          {state: newState},
-          function (data) {
+          //eslint-disable-next-line camelcase
+          { sim_id: simulationInfo.simulationID },
+          { state: newState },
+          function(data) {
             thisStateService.currentState = data.state;
             thisStateService.statePending = false;
             triggerStateCallbacks();
             deferred.resolve();
           },
-          function (data) {
+          function(data) {
             thisStateService.statePending = false;
             deferred.reject();
           }
@@ -196,19 +222,20 @@
         return deferred.promise;
       };
 
-      thisStateService.ensureStateBeforeExecuting = function (state, toBeExecuted) {
+      thisStateService.ensureStateBeforeExecuting = function(
+        state,
+        toBeExecuted
+      ) {
         if (thisStateService.currentState === state) {
           toBeExecuted();
-        }
-        else {
-          thisStateService.setCurrentState(state)
-            .then(() => {
-              toBeExecuted();
-            });
+        } else {
+          thisStateService.setCurrentState(state).then(() => {
+            toBeExecuted();
+          });
         }
       };
 
       return thisStateService;
     }
   ]);
-}());
+})();

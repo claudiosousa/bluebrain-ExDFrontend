@@ -1,37 +1,36 @@
 'use strict';
 
 describe('Controller: EditorToolbarController', function() {
-
   var $controller,
-      $rootScope,
-      $scope,
-      $timeout,
-      $window,
-      $q,
-      location,
-      editorToolbarController,
-      stateService,
-      userContextService,
-      userNavigationService,
-      editorsPanelService,
-      gz3d,
-      clbConfirm,
-      environmentService,
-      backendInterfaceService,
-      splash,
-      environmentRenderingService,
-      objectInspectorService,
-      performanceMonitorService,
-      simulationInfo,
-      editorToolbarService,
-      gz3dViewsService,
-      clientLoggerService,
-      dynamicViewOverlayService,
-      DYNAMIC_VIEW_CHANNELS,
-      NAVIGATION_MODES,
-      STATE,
-      EDIT_MODE,
-      RESET_TYPE;
+    $rootScope,
+    $scope,
+    $timeout,
+    $window,
+    $q,
+    location,
+    editorToolbarController,
+    stateService,
+    userContextService,
+    userNavigationService,
+    editorsPanelService,
+    gz3d,
+    clbConfirm,
+    environmentService,
+    backendInterfaceService,
+    splash,
+    environmentRenderingService,
+    objectInspectorService,
+    performanceMonitorService,
+    simulationInfo,
+    editorToolbarService,
+    gz3dViewsService,
+    clientLoggerService,
+    dynamicViewOverlayService,
+    DYNAMIC_VIEW_CHANNELS,
+    NAVIGATION_MODES,
+    STATE,
+    EDIT_MODE,
+    RESET_TYPE;
 
   // load the controller's module
   beforeEach(module('editorToolbarModule'));
@@ -67,102 +66,127 @@ describe('Controller: EditorToolbarController', function() {
     get: jasmine.createSpy('get')
   };
 
-  beforeEach(module(function($provide) {
+  beforeEach(
+    module(function($provide) {
+      var collab3DSettingsServiceMock = {};
 
-    var collab3DSettingsServiceMock = {};
-
-    collab3DSettingsServiceMock.loadSettings = function() {
-      var res = {};
-      res.finally = function(callback) {
-        callback(true);
+      collab3DSettingsServiceMock.loadSettings = function() {
+        var res = {};
+        res.finally = function(callback) {
+          callback(true);
+        };
+        return res;
       };
-      return res;
-    };
-    $provide.value('clbConfirm', {
-      open: jasmine.createSpy('open').and.returnValue({
-        then: jasmine.createSpy('then')
-      })
-    });
-    $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
+      $provide.value('clbConfirm', {
+        open: jasmine.createSpy('open').and.returnValue({
+          then: jasmine.createSpy('then')
+        })
+      });
+      $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
 
-    $provide.value('simulationState', jasmine.createSpy('simulationState').and.returnValue(simulationStateObject));
-    $provide.value('simulationControl', jasmine.createSpy('simulationControl').and.returnValue(simulationControlObject));
+      $provide.value(
+        'simulationState',
+        jasmine
+          .createSpy('simulationState')
+          .and.returnValue(simulationStateObject)
+      );
+      $provide.value(
+        'simulationControl',
+        jasmine
+          .createSpy('simulationControl')
+          .and.returnValue(simulationControlObject)
+      );
 
-    $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
-    $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
-    $provide.value('serverError', jasmine.createSpy('serverError'));
-    $provide.value('panels', { open: jasmine.createSpy('open') });
-    var experimentListMock = {
-      experiments: jasmine.createSpy('experiments'),
-    };
-    $provide.value('experimentList', jasmine.createSpy('experimentList').and.returnValue(experimentListMock));
-  }));
+      $provide.value(
+        'nrpBackendVersions',
+        jasmine
+          .createSpy('nrpBackendVersions')
+          .and.returnValue(nrpBackendVersionsObject)
+      );
+      $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
+      $provide.value('serverError', jasmine.createSpy('serverError'));
+      $provide.value('panels', { open: jasmine.createSpy('open') });
+      var experimentListMock = {
+        experiments: jasmine.createSpy('experiments')
+      };
+      $provide.value(
+        'experimentList',
+        jasmine.createSpy('experimentList').and.returnValue(experimentListMock)
+      );
+    })
+  );
 
-  beforeEach(inject(function(_$controller_,
-    _$rootScope_,
-    _$timeout_,
-    _$location_,
-    _$window_,
-    _$q_,
-    _stateService_,
-    _userContextService_,
-    _userNavigationService_,
-    _gz3d_,
-    _editorsPanelService_,
-    _clbConfirm_,
-    _environmentService_,
-    _backendInterfaceService_,
-    _splash_,
-    _environmentRenderingService_,
-    _objectInspectorService_,
-    _performanceMonitorService_,
-    _simulationInfo_,
-    _editorToolbarService_,
-    _gz3dViewsService_,
-    _clientLoggerService_,
-    _dynamicViewOverlayService_,
-    _DYNAMIC_VIEW_CHANNELS_,
-    _STATE_,
-    _NAVIGATION_MODES_,
-    _EDIT_MODE_,
-    _RESET_TYPE_) {
-    $controller = _$controller_;
-    $rootScope = _$rootScope_;
-    $scope = $rootScope.$new();
-    $timeout = _$timeout_;
-    location = _$location_;
-    $window = _$window_;
-    $q = _$q_;
-    stateService = _stateService_;
-    userContextService = _userContextService_;
-    gz3d = _gz3d_;
-    userNavigationService = _userNavigationService_;
-    editorsPanelService = _editorsPanelService_;
-    clbConfirm = _clbConfirm_;
-    environmentService = _environmentService_;
-    backendInterfaceService = _backendInterfaceService_;
-    splash = _splash_;
-    environmentRenderingService = _environmentRenderingService_;
-    objectInspectorService = _objectInspectorService_;
-    performanceMonitorService = _performanceMonitorService_;
-    simulationInfo = _simulationInfo_;
-    editorToolbarService = _editorToolbarService_;
-    gz3dViewsService = _gz3dViewsService_;
-    clientLoggerService = _clientLoggerService_;
-    dynamicViewOverlayService = _dynamicViewOverlayService_;
-    DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
-    STATE = _STATE_;
-    NAVIGATION_MODES = _NAVIGATION_MODES_;
-    EDIT_MODE = _EDIT_MODE_;
-    RESET_TYPE = _RESET_TYPE_;
+  beforeEach(
+    inject(function(
+      _$controller_,
+      _$rootScope_,
+      _$timeout_,
+      _$location_,
+      _$window_,
+      _$q_,
+      _stateService_,
+      _userContextService_,
+      _userNavigationService_,
+      _gz3d_,
+      _editorsPanelService_,
+      _clbConfirm_,
+      _environmentService_,
+      _backendInterfaceService_,
+      _splash_,
+      _environmentRenderingService_,
+      _objectInspectorService_,
+      _performanceMonitorService_,
+      _simulationInfo_,
+      _editorToolbarService_,
+      _gz3dViewsService_,
+      _clientLoggerService_,
+      _dynamicViewOverlayService_,
+      _DYNAMIC_VIEW_CHANNELS_,
+      _STATE_,
+      _NAVIGATION_MODES_,
+      _EDIT_MODE_,
+      _RESET_TYPE_
+    ) {
+      $controller = _$controller_;
+      $rootScope = _$rootScope_;
+      $scope = $rootScope.$new();
+      $timeout = _$timeout_;
+      location = _$location_;
+      $window = _$window_;
+      $q = _$q_;
+      stateService = _stateService_;
+      userContextService = _userContextService_;
+      gz3d = _gz3d_;
+      userNavigationService = _userNavigationService_;
+      editorsPanelService = _editorsPanelService_;
+      clbConfirm = _clbConfirm_;
+      environmentService = _environmentService_;
+      backendInterfaceService = _backendInterfaceService_;
+      splash = _splash_;
+      environmentRenderingService = _environmentRenderingService_;
+      objectInspectorService = _objectInspectorService_;
+      performanceMonitorService = _performanceMonitorService_;
+      simulationInfo = _simulationInfo_;
+      editorToolbarService = _editorToolbarService_;
+      gz3dViewsService = _gz3dViewsService_;
+      clientLoggerService = _clientLoggerService_;
+      dynamicViewOverlayService = _dynamicViewOverlayService_;
+      DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
+      STATE = _STATE_;
+      NAVIGATION_MODES = _NAVIGATION_MODES_;
+      EDIT_MODE = _EDIT_MODE_;
+      RESET_TYPE = _RESET_TYPE_;
 
-    userContextService.hasEditRights.and.callFake(function(entity) {
-      return (userContextService.isOwner || userNavigationService.isUserAvatar(entity)); // todo: investigate how to inject
-    });
-  }));
+      userContextService.hasEditRights.and.callFake(function(entity) {
+        return (
+          userContextService.isOwner ||
+          userNavigationService.isUserAvatar(entity)
+        ); // todo: investigate how to inject
+      });
+    })
+  );
 
   describe('(ViewMode)', function() {
-
     beforeEach(function() {
       editorToolbarController = $controller('EditorToolbarController', {
         $rootScope: $rootScope,
@@ -173,7 +197,10 @@ describe('Controller: EditorToolbarController', function() {
     it('should set isJoiningStoppedSimulation to true when already stopped', function() {
       expect(userContextService.isJoiningStoppedSimulation).toBe(false);
       stateService.currentState = STATE.STOPPED;
-      stateService.getCurrentState().then.calls.mostRecent().args[0](); //wtf!!!
+      stateService
+        .getCurrentState()
+        .then.calls.mostRecent()
+        .args[0](); //wtf!!!
       expect(userContextService.isJoiningStoppedSimulation).toBe(true);
     });
 
@@ -192,9 +219,15 @@ describe('Controller: EditorToolbarController', function() {
     it('should ensure that the state is PAUSED when resetting', function() {
       editorToolbarController.resetButtonClickHandler();
 
-      clbConfirm.open().then.calls.mostRecent().args[0]();
+      clbConfirm
+        .open()
+        .then.calls.mostRecent()
+        .args[0]();
 
-      expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
+      expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(
+        STATE.PAUSED,
+        jasmine.any(Function)
+      );
     });
 
     it('should show a popup when the reset button is pressed', function() {
@@ -203,7 +236,6 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should pass the radio button value to resetService when Collab not available', function() {
-
       spyOn(editorToolbarController, 'notifyResetToWidgets');
       var request = { resetType: RESET_TYPE.RESET_ROBOT_POSE };
 
@@ -215,12 +247,17 @@ describe('Controller: EditorToolbarController', function() {
       expect(backendInterfaceService.reset).toHaveBeenCalledWith(
         request,
         jasmine.any(Function),
-        jasmine.any(Function));
+        jasmine.any(Function)
+      );
 
-      var successCallback = backendInterfaceService.reset.calls.mostRecent().args[1];
+      var successCallback = backendInterfaceService.reset.calls.mostRecent()
+        .args[1];
       successCallback();
       $timeout.flush(100);
-      expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(true, false);
+      expect(gz3d.scene.applyComposerSettings).toHaveBeenCalledWith(
+        true,
+        false
+      );
     });
 
     it('should notify the widgets when resetting', function() {
@@ -231,14 +268,18 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
-      expect(editorToolbarController.notifyResetToWidgets).not.toHaveBeenCalled();
+      expect(
+        editorToolbarController.notifyResetToWidgets
+      ).not.toHaveBeenCalled();
 
       request.resetType = RESET_TYPE.RESET_CAMERA_VIEW;
 
       editorToolbarController.__resetButtonClickHandler(request);
       $timeout.flush(100);
 
-      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
+      expect(
+        dynamicViewOverlayService.closeAllOverlaysOfType
+      ).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
     });
 
     it('should make correct reset calls when server reset happened', function() {
@@ -272,20 +313,26 @@ describe('Controller: EditorToolbarController', function() {
       var testCases = [testWorld, testBrain];
 
       for (var i = 0; i < testCases.length; i++) {
-
         var request = { resetType: testCases[i].type };
         editorToolbarController.resetButtonClickHandler();
         editorToolbarController.request = request; // overwrites default button state | Fake user input
         environmentService.setPrivateExperiment(true); //Collab IS available
         splash.splashScreen = undefined;
 
-        clbConfirm.open().then.calls.mostRecent().args[0]();
+        clbConfirm
+          .open()
+          .then.calls.mostRecent()
+          .args[0]();
 
         $timeout.flush(100);
-        expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(STATE.PAUSED, jasmine.any(Function));
+        expect(stateService.ensureStateBeforeExecuting).toHaveBeenCalledWith(
+          STATE.PAUSED,
+          jasmine.any(Function)
+        );
 
         //ensureStateBeforeExecuting's first parameter is a state, second is a callback
-        var resetFunction = stateService.ensureStateBeforeExecuting.calls.mostRecent().args[1];
+        var resetFunction = stateService.ensureStateBeforeExecuting.calls.mostRecent()
+          .args[1];
 
         resetFunction(); // call the callback
         $timeout.flush(100);
@@ -298,12 +345,10 @@ describe('Controller: EditorToolbarController', function() {
         _.defer.calls.mostRecent().args[0](); // call deferred function
 
         expect(splash.spin).toBe(true);
-        expect(splash.setMessage).toHaveBeenCalledWith(
-          {
-            headline: testCases[i].headline,
-            subHeadline: testCases[i].subHeadline
-          }
-        );
+        expect(splash.setMessage).toHaveBeenCalledWith({
+          headline: testCases[i].headline,
+          subHeadline: testCases[i].subHeadline
+        });
 
         expect(backendInterfaceService.resetCollab).toHaveBeenCalledWith(
           request,
@@ -334,10 +379,13 @@ describe('Controller: EditorToolbarController', function() {
       expect($rootScope.$broadcast, 'UPDATE_PANEL_UI').toHaveBeenCalled();
     });
 
-    it('shouldn\'t do anything if no radio button is set', function() {
+    it("shouldn't do anything if no radio button is set", function() {
       editorToolbarController.resetButtonClickHandler();
       editorToolbarController.request = { resetType: RESET_TYPE.NO_RESET };
-      clbConfirm.open().then.calls.mostRecent().args[0]();
+      clbConfirm
+        .open()
+        .then.calls.mostRecent()
+        .args[0]();
       expect(backendInterfaceService.reset.calls.count()).toBe(0);
     });
 
@@ -357,12 +405,13 @@ describe('Controller: EditorToolbarController', function() {
       expect(clientLoggerService.logMessage).toHaveBeenCalled();
     });
 
-
     it('should reset GUI when reset type is RESET.RESET_ALL', function() {
       editorToolbarController.resetGUI();
       expect(gz3d.scene.resetView).toHaveBeenCalled();
       expect(gz3d.scene.selectEntity).toHaveBeenCalledWith(null);
-      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
+      expect(
+        dynamicViewOverlayService.closeAllOverlaysOfType
+      ).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
     });
 
     it('should call resetView() when "Reset Camera view" checkbox is checked', function() {
@@ -378,20 +427,29 @@ describe('Controller: EditorToolbarController', function() {
 
     it('should register for status information', function() {
       stateService.currentState = STATE.STARTED;
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
-      expect(stateService.startListeningForStatusInformation).toHaveBeenCalled();
+      stateService
+        .getCurrentState()
+        .then.calls.mostRecent()
+        .args[0]();
+      expect(
+        stateService.startListeningForStatusInformation
+      ).toHaveBeenCalled();
       expect(stateService.addMessageCallback).toHaveBeenCalled();
     });
 
     it('should open splash screen with callbackOnClose', function() {
-      stateService.getCurrentState().then.calls.mostRecent().args[0]();
+      stateService
+        .getCurrentState()
+        .then.calls.mostRecent()
+        .args[0]();
       stateService.currentState = STATE.STOPPED;
       $scope.sceneLoading = false;
       //Test the messageCallback
       splash.splashScreen = undefined;
+      /* eslint-disable camelcase */
       stateService.addMessageCallback.calls.mostRecent().args[0]({
         progress: {
-          'block_ui': 'False',
+          block_ui: 'False',
           task: 'Task1',
           subtask: 'Subtask1'
         }
@@ -399,13 +457,16 @@ describe('Controller: EditorToolbarController', function() {
       expect(splash.open).toHaveBeenCalled();
       var callbackOnClose = splash.open.calls.mostRecent().args[1];
       expect(callbackOnClose).toBeDefined();
-      expect(splash.setMessage).toHaveBeenCalledWith({ headline: 'Task1', subHeadline: 'Subtask1' });
+      expect(splash.setMessage).toHaveBeenCalledWith({
+        headline: 'Task1',
+        subHeadline: 'Subtask1'
+      });
       // test open splash screen without callbackOnClose
       splash.splashScreen = undefined;
       stateService.currentState = STATE.INITIALIZED;
       stateService.addMessageCallback.calls.mostRecent().args[0]({
         progress: {
-          'block_ui': 'False',
+          block_ui: 'False',
           task: 'Task1',
           subtask: 'Subtask1'
         }
@@ -417,7 +478,7 @@ describe('Controller: EditorToolbarController', function() {
       splash.spin = true;
       stateService.addMessageCallback.calls.mostRecent().args[0]({
         progress: {
-          'block_ui': 'False',
+          block_ui: 'False',
           done: 'True'
         }
       });
@@ -433,12 +494,17 @@ describe('Controller: EditorToolbarController', function() {
       splash.close.calls.reset();
       stateService.removeMessageCallback.calls.reset();
       splash.showButton = false;
-      stateService.addMessageCallback.calls.mostRecent().args[0]({ progress: { 'block_ui': 'True', done: 'True' } });
+      stateService.addMessageCallback.calls
+        .mostRecent()
+        .args[0]({ progress: { block_ui: 'True', done: 'True' } });
+      /* eslint-enable camelcase */
       expect(splash.close).toHaveBeenCalled();
       // onSimulationDone() should NOT have been called
       expect(stateService.removeMessageCallback).not.toHaveBeenCalled();
       // test "timeout"
-      stateService.addMessageCallback.calls.mostRecent().args[0]({ timeout: 264, simulationTime: 1, realTime: 2 });
+      stateService.addMessageCallback.calls
+        .mostRecent()
+        .args[0]({ timeout: 264, simulationTime: 1, realTime: 2 });
       expect(simulationInfo.simTimeoutText).toBe(264);
       // test "simulationTime"
       expect(simulationInfo.simulationTimeText).toBe(1);
@@ -447,12 +513,14 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should test light change', function() {
-
       var initiaLightness = 0.5;
       gz3d.scene.scene = {};
       gz3d.scene.emitter = { lightDiffuse: initiaLightness };
       gz3d.scene.findLightIntensityInfo = function() {
-        return { min: this.emitter.lightDiffuse, max: this.emitter.lightDiffuse };
+        return {
+          min: this.emitter.lightDiffuse,
+          max: this.emitter.lightDiffuse
+        };
       };
 
       gz3d.scene.emitter.emit = function(msg, direction) {
@@ -492,15 +560,22 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarController.modifyLightClickHandler(1);
       expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', 0.1);
       editorToolbarController.modifyLightClickHandler(-1);
-      expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith('lightChanged', -0.1);
+      expect(gz3d.scene.emitter.emit).toHaveBeenCalledWith(
+        'lightChanged',
+        -0.1
+      );
     });
 
     it('should call or skip camera controls according to mouse events and help mode status', function() {
       var e = { which: 1 }; // 1 for left mouse button
       editorToolbarController.requestMove(e, 'moveForward');
-      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith('moveForward');
+      expect(gz3d.scene.controls.onMouseDownManipulator).toHaveBeenCalledWith(
+        'moveForward'
+      );
       editorToolbarController.releaseMove(e, 'moveForward');
-      expect(gz3d.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith('moveForward');
+      expect(gz3d.scene.controls.onMouseUpManipulator).toHaveBeenCalledWith(
+        'moveForward'
+      );
 
       e.which = 2; // 2 for right mouse button
       gz3d.scene.controls.onMouseDownManipulator.calls.reset();
@@ -520,21 +595,29 @@ describe('Controller: EditorToolbarController', function() {
 
       //true case
       editorToolbarController.setEditMode(EDIT_MODE.EDIT);
-      expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(EDIT_MODE.EDIT);
+      expect(gz3d.scene.setManipulationMode).toHaveBeenCalledWith(
+        EDIT_MODE.EDIT
+      );
     });
 
     it('should correctly execute simControlButtonHandler', function() {
       //test setup
       var newState = STATE.STARTED;
       editorToolbarController.setEditMode = jasmine.createSpy('setEditMode');
-      editorToolbarController.updateSimulation = jasmine.createSpy('updateSimulation');
+      editorToolbarController.updateSimulation = jasmine.createSpy(
+        'updateSimulation'
+      );
 
       //call function under test
       editorToolbarController.simControlButtonHandler(newState);
 
       //check test outcome
-      expect(editorToolbarController.updateSimulation).toHaveBeenCalledWith(newState);
-      expect(editorToolbarController.setEditMode).toHaveBeenCalledWith(EDIT_MODE.VIEW);
+      expect(editorToolbarController.updateSimulation).toHaveBeenCalledWith(
+        newState
+      );
+      expect(editorToolbarController.setEditMode).toHaveBeenCalledWith(
+        EDIT_MODE.VIEW
+      );
     });
 
     it('should toggle the showSpikeTrain variable', function() {
@@ -547,30 +630,34 @@ describe('Controller: EditorToolbarController', function() {
       // define mock views
       var mockView1 = {
         container: {},
-        name:'main_view'
+        name: 'main_view'
       };
       gz3dViewsService.views.push(mockView1);
       var mockView2 = {
         container: undefined,
-        name:'camera1'
+        name: 'camera1'
       };
       gz3dViewsService.views.push(mockView2);
       var mockView3 = {
         container: undefined,
-        name:'camera1'
+        name: 'camera1'
       };
       gz3dViewsService.views.push(mockView3);
 
       // test if no camera views available
       gz3dViewsService.hasCameraView.and.returnValue(false);
       editorToolbarController.robotViewButtonClickHandler();
-      expect(dynamicViewOverlayService.createDynamicOverlay).not.toHaveBeenCalled();
+      expect(
+        dynamicViewOverlayService.createDynamicOverlay
+      ).not.toHaveBeenCalled();
 
       // test if camera views available
       gz3dViewsService.hasCameraView.and.returnValue(true);
       editorToolbarController.robotViewButtonClickHandler();
       // 1 call for each container undefined
-      expect(dynamicViewOverlayService.createDynamicOverlay.calls.count()).toEqual(2);
+      expect(
+        dynamicViewOverlayService.createDynamicOverlay.calls.count()
+      ).toEqual(2);
     });
 
     // todo: is the test in this way really suitable ?
@@ -583,7 +670,9 @@ describe('Controller: EditorToolbarController', function() {
       $scope.$destroy();
 
       expect(splash.splashScreen).not.toBeDefined();
-      expect(environmentRenderingService.assetLoadingSplashScreen).not.toBeDefined();
+      expect(
+        environmentRenderingService.assetLoadingSplashScreen
+      ).not.toBeDefined();
       expect($scope.statusListener).not.toBeDefined();
       expect($scope.worldStatsListener).not.toBeDefined();
       expect($scope.rosConnection).not.toBeDefined();
@@ -642,15 +731,19 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should clean up on destroy', function() {
-      spyOn(editorToolbarController, 'resetListenerUnbindHandler').and.callThrough();
+      spyOn(
+        editorToolbarController,
+        'resetListenerUnbindHandler'
+      ).and.callThrough();
 
       $scope.$destroy();
 
       expect(environmentRenderingService.deinit).toHaveBeenCalled();
-      expect(editorToolbarController.resetListenerUnbindHandler).toHaveBeenCalled();
+      expect(
+        editorToolbarController.resetListenerUnbindHandler
+      ).toHaveBeenCalled();
       expect(gz3d.iface.webSocket.close).toHaveBeenCalled();
     });
-
   });
 
   describe('(EditMode)', function() {
@@ -691,27 +784,33 @@ describe('Controller: EditorToolbarController', function() {
     });
 
     it('should enable display of the brainvisualizer panel', function() {
-      dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-        {
+      dynamicViewOverlayService.isOverlayOpen = jasmine
+        .createSpy('isOverlayOpen')
+        .and.returnValue({
           then: jasmine.createSpy('then').and.callFake(function(fn) {
             fn(false);
           })
         });
       editorToolbarService.toggleBrainvisualizer();
       expect(editorToolbarService.isBrainVisualizerActive).toBeTruthy();
-      expect(dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
+      expect(
+        dynamicViewOverlayService.createDynamicOverlay
+      ).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
     });
 
     it('should close of the brainvisualizer panel', function() {
-      dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-        {
+      dynamicViewOverlayService.isOverlayOpen = jasmine
+        .createSpy('isOverlayOpen')
+        .and.returnValue({
           then: jasmine.createSpy('then').and.callFake(function(fn) {
             fn(true);
           })
         });
       editorToolbarService.toggleBrainvisualizer();
       expect(editorToolbarService.isBrainVisualizerActive).toBeFalsy();
-      expect(dynamicViewOverlayService.closeAllOverlaysOfType).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
+      expect(
+        dynamicViewOverlayService.closeAllOverlaysOfType
+      ).toHaveBeenCalledWith(DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
     });
   });
 
@@ -750,7 +849,11 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarService.videoStreamsAvailable = true;
       editorToolbarController.videoStreamsToggle();
 
-      expect(editorToolbarController.dynamicViewOverlayService.createDynamicOverlay).toHaveBeenCalledWith(editorToolbarController.DYNAMIC_VIEW_CHANNELS.STREAM_VIEWER);
+      expect(
+        editorToolbarController.dynamicViewOverlayService.createDynamicOverlay
+      ).toHaveBeenCalledWith(
+        editorToolbarController.DYNAMIC_VIEW_CHANNELS.STREAM_VIEWER
+      );
     });
 
     it('should not enable the video panel if no stream is available', function() {
@@ -759,7 +862,9 @@ describe('Controller: EditorToolbarController', function() {
       editorToolbarService.videoStreamsAvailable = false;
       editorToolbarController.videoStreamsToggle();
 
-      expect(editorToolbarController.dynamicViewOverlayService.createDynamicOverlay).not.toHaveBeenCalledWith();
+      expect(
+        editorToolbarController.dynamicViewOverlayService.createDynamicOverlay
+      ).not.toHaveBeenCalledWith();
     });
   });
 
@@ -817,36 +922,44 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
   beforeEach(module('stateServiceMock'));
   beforeEach(module('clientLoggerServiceMock'));
 
-  beforeEach(module(function() {
-    var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
-    var getThenSpy = jasmine.createSpy('then');
+  beforeEach(
+    module(function() {
+      var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
+      var getThenSpy = jasmine.createSpy('then');
 
-    getCurrentStateSpy.and.callFake(function() {
-      return { then: getThenSpy.and.callFake(function(f) { f(); }) };
-    });
-
-  }));
+      getCurrentStateSpy.and.callFake(function() {
+        return {
+          then: getThenSpy.and.callFake(function(f) {
+            f();
+          })
+        };
+      });
+    })
+  );
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function($controller,
-    $rootScope,
-    _stateService_,
-    _$window_,
-    _$document_,
-    _environmentRenderingService_) {
-    controller = $controller;
-    rootScope = $rootScope;
-    scope = $rootScope.$new();
-    stateService = _stateService_;
-    window = _$window_;
-    document = _$document_;
-    environmentRenderingService = _environmentRenderingService_;
+  beforeEach(
+    inject(function(
+      $controller,
+      $rootScope,
+      _stateService_,
+      _$window_,
+      _$document_,
+      _environmentRenderingService_
+    ) {
+      controller = $controller;
+      rootScope = $rootScope;
+      scope = $rootScope.$new();
+      stateService = _stateService_;
+      window = _$window_;
+      document = _$document_;
+      environmentRenderingService = _environmentRenderingService_;
 
-    spyOn(window, 'stop').and.returnValue(null);
-  }));
+      spyOn(window, 'stop').and.returnValue(null);
+    })
+  );
 
   describe('(Clean up code tested with a mocked window object)', function() {
-
     beforeEach(function() {
       editorToolbar = controller('EditorToolbarController', {
         $rootScope: rootScope,
@@ -861,8 +974,12 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
       // call the method under test
       editorToolbar.onSimulationDone();
 
-      expect(editorToolbar.stateService.stopListeningForStatusInformation).toHaveBeenCalled();
-      expect(editorToolbar.stateService.removeMessageCallback).toHaveBeenCalled();
+      expect(
+        editorToolbar.stateService.stopListeningForStatusInformation
+      ).toHaveBeenCalled();
+      expect(
+        editorToolbar.stateService.removeMessageCallback
+      ).toHaveBeenCalled();
     });
   });
 });

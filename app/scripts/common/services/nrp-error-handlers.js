@@ -24,19 +24,29 @@
 (function() {
   'use strict';
 
-  var module = angular.module('nrpErrorHandlers', ['nrpAngulartics', 'ui.bootstrap.modal', 'clb-ui-error']);
+  var module = angular.module('nrpErrorHandlers', [
+    'nrpAngulartics',
+    'ui.bootstrap.modal',
+    'clb-ui-error'
+  ]);
 
-  module.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.interceptors.push(['$q', function($q) {
-      return {
-        'responseError': function(error, a, b) {
-          var server = error.config.url.match(/\/\/([^:/]*)/);
-          error.server = server && server[1];
-          return $q.reject(error);
+  module.config([
+    '$httpProvider',
+    function($httpProvider) {
+      $httpProvider.interceptors.push([
+        '$q',
+        function($q) {
+          return {
+            responseError: function(error, a, b) {
+              var server = error.config.url.match(/\/\/([^:/]*)/);
+              error.server = server && server[1];
+              return $q.reject(error);
+            }
+          };
         }
-      };
-    }]);
-  }]);
+      ]);
+    }
+  ]);
 
   module.service('nrpErrorService', function() {
     var NrpError = function() {
@@ -80,7 +90,7 @@
             // (e.g., 'Bad Gateway Error')
             error.message = errorSource; // default value of the displayed error message
             var message;
-            if (typeof (errorSource) === 'string') {
+            if (typeof errorSource === 'string') {
               // It could be an nginx 'Bad Gateway Error'
               message = errorSource;
             } else {
@@ -95,8 +105,7 @@
               if (!_.isNull(nginxString)) {
                 error.message = error.message + ' (' + nginxString + ').';
               }
-            }
-            else {
+            } else {
               error.message = message;
             }
             if (errorSource.type && errorSource.message) {
@@ -105,9 +114,9 @@
               if (_.isNull(titleNodeContent)) {
                 error.stack = errorSource.message;
               }
-            }
-            else if (errorSource.status === 400) {
-              error.message = 'The request could not be understood by the server';
+            } else if (errorSource.status === 400) {
+              error.message =
+                'The request could not be understood by the server';
             }
           }
         }
@@ -116,7 +125,10 @@
     };
   });
 
-  module.constant('NO_CLUSTER_AVAILABLE_ERR_MSG', 'No resources available on the cluster. Please try again later.');
+  module.constant(
+    'NO_CLUSTER_AVAILABLE_ERR_MSG',
+    'No resources available on the cluster. Please try again later.'
+  );
 
   module.factory('serverError', [
     'nrpErrorService',
@@ -144,7 +156,11 @@
           // we ignore errors due to transfer function and state machines updates as they are caught by a
           // dedicated ROS topic
           if (response.data) {
-            if(response.data.type === "Transfer function error" || response.data.type === "State machine error" || response.data.type === "Duplicate name error") {
+            if (
+              response.data.type === 'Transfer function error' ||
+              response.data.type === 'State machine error' ||
+              response.data.type === 'Duplicate name error'
+            ) {
               return false;
             }
           }
@@ -153,12 +169,12 @@
       };
 
       var displayError = function(nrpError, successClbk) {
-
         successClbk = successClbk || _.noop;
         clbErrorDialog.open(nrpError).then(successClbk);
 
         // record the error in the analytics
-        var code = "No code", message = "No template";
+        var code = 'No code',
+          message = 'No template';
         if (_.isObject(nrpError)) {
           code = nrpError.code || code;
           message = nrpError.message || message;
@@ -170,9 +186,11 @@
       };
 
       var displayHTTPError = function(response, keepErrorMessage, successClbk) {
-        response = angular.extend({
-          human_readable: nrpErrorService.httpError(response).message
-        },
+        response = angular.extend(
+          {
+            // eslint-disable-next-line camelcase
+            human_readable: nrpErrorService.httpError(response).message
+          },
           response
         );
         if (filter(response)) {
@@ -183,30 +201,36 @@
           if (keepErrorMessage) {
             nrpError.message = response.human_readable;
           }
-          if (errorSource){
+          if (errorSource) {
             nrpError.type = errorSource.type;
-            if (errorSource.data){
+            if (errorSource.data) {
               nrpError.data = errorSource.data;
             }
             if (errorSource.message) {
-              if (errorSource.message.toLowerCase().indexOf("recoverable") !== -1) {
+              if (
+                errorSource.message.toLowerCase().indexOf('recoverable') !== -1
+              ) {
                 /// failure is presumably a Xvfb_Xvn_Error
-                nrpError.message = "Job allocation failed. Please try again.";
+                nrpError.message = 'Job allocation failed. Please try again.';
               }
-              if (errorSource.message.toLowerCase().indexOf('no resources available') !== -1) {
+              if (
+                errorSource.message
+                  .toLowerCase()
+                  .indexOf('no resources available') !== -1
+              ) {
                 /// failure is presumably a lack of available resources on the cluster
                 nrpError.message = NO_CLUSTER_AVAILABLE_ERR_MSG;
               }
             }
           }
 
-          response.server && (nrpError.message += ' (host: ' + response.server + ')');
+          response.server &&
+            (nrpError.message += ' (host: ' + response.server + ')');
 
           // display the parsed http error
           successClbk = successClbk || _.noop;
           displayError(nrpError, successClbk);
-        }
-        else {
+        } else {
           $log.debug(response);
         }
         return $q.reject(response);
@@ -217,5 +241,6 @@
         displayHTTPError: displayHTTPError,
         displayError: displayError
       };
-    }]);
-}());
+    }
+  ]);
+})();

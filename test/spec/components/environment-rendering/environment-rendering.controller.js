@@ -2,7 +2,7 @@
 
 'use strict';
 
-describe('Controller: EnvironmentRenderingController', function () {
+describe('Controller: EnvironmentRenderingController', function() {
   var environmentRenderingController,
     controller,
     $scope,
@@ -22,7 +22,7 @@ describe('Controller: EnvironmentRenderingController', function () {
     STATE,
     gz3d,
     userNavigationService,
-    collabExperimentLockServiceMock ={},
+    collabExperimentLockServiceMock = {},
     lockServiceMock,
     $q,
     callback,
@@ -40,7 +40,10 @@ describe('Controller: EnvironmentRenderingController', function () {
     dynamicViewOverlayService,
     videoStreamService;
 
-  var mockAngularElement, deferredSceneInitialized, deferredView, deferredStreamingUrl;
+  var mockAngularElement,
+    deferredSceneInitialized,
+    deferredView,
+    deferredStreamingUrl;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -61,180 +64,267 @@ describe('Controller: EnvironmentRenderingController', function () {
   beforeEach(module('dynamicViewOverlayServiceMock'));
   beforeEach(module('videoStreamServiceMock'));
 
-  beforeEach(module(function ($provide) {
-    simulationStateObject = {
-      update: jasmine.createSpy('update'),
-      state: jasmine.createSpy('state')
-    };
-
-    simulationControlObject = {
-      simulation: jasmine.createSpy('simulation')
-    };
-
-    nrpBackendVersionsObject = {
-      get: jasmine.createSpy('get')
-    };
-
-    var collab3DSettingsServiceMock = {};
-
-    collab3DSettingsServiceMock.loadSettings = function()
-    {
-      var res = {};
-      res.finally = function (callback)
-      {
-        callback(true);
+  beforeEach(
+    module(function($provide) {
+      simulationStateObject = {
+        update: jasmine.createSpy('update'),
+        state: jasmine.createSpy('state')
       };
-      return res;
-    };
 
-    $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
+      simulationControlObject = {
+        simulation: jasmine.createSpy('simulation')
+      };
 
-    $provide.value('simulationState', jasmine.createSpy('simulationState').and.returnValue(simulationStateObject));
-    $provide.value('simulationControl',  jasmine.createSpy('simulationControl').and.returnValue(simulationControlObject));
+      nrpBackendVersionsObject = {
+        get: jasmine.createSpy('get')
+      };
 
-    $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
-    $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
-    $provide.value('serverError', jasmine.createSpy('serverError'));
-    $provide.value('panels', { open: jasmine.createSpy('open') });
-    var experimentListMock = {
-      experiments: jasmine.createSpy('experiments')
-    };
-    $provide.value('experimentList',jasmine.createSpy('experimentList').and.returnValue(experimentListMock));
-    $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
+      var collab3DSettingsServiceMock = {};
 
-    mockAngularElement = [
-      // the mock HTML DOM
-      {
-        getElementsByClassName: jasmine.createSpy('getElementsByClassName').and.returnValue(
-          [{}, {}]
-        ),
-        getElementsByTagName: jasmine.createSpy('getElementsByClassName').and.returnValue(
-          [{remove: jasmine.createSpy('remove')}]
-        )
-      }
-    ];
-    $provide.value('$element', mockAngularElement);
+      collab3DSettingsServiceMock.loadSettings = function() {
+        var res = {};
+        res.finally = function(callback) {
+          callback(true);
+        };
+        return res;
+      };
 
-    simulationStateObject.update.calls.reset();
-    simulationStateObject.state.calls.reset();
-    simulationControlObject.simulation.calls.reset();
-    nrpBackendVersionsObject.get.calls.reset();
-  }));
+      $provide.value('collab3DSettingsService', collab3DSettingsServiceMock);
 
+      $provide.value(
+        'simulationState',
+        jasmine
+          .createSpy('simulationState')
+          .and.returnValue(simulationStateObject)
+      );
+      $provide.value(
+        'simulationControl',
+        jasmine
+          .createSpy('simulationControl')
+          .and.returnValue(simulationControlObject)
+      );
 
+      $provide.value(
+        'nrpBackendVersions',
+        jasmine
+          .createSpy('nrpBackendVersions')
+          .and.returnValue(nrpBackendVersionsObject)
+      );
+      $provide.value('nrpFrontendVersion', { get: jasmine.createSpy('get') });
+      $provide.value('serverError', jasmine.createSpy('serverError'));
+      $provide.value('panels', { open: jasmine.createSpy('open') });
+      var experimentListMock = {
+        experiments: jasmine.createSpy('experiments')
+      };
+      $provide.value(
+        'experimentList',
+        jasmine.createSpy('experimentList').and.returnValue(experimentListMock)
+      );
+      $provide.value(
+        'collabExperimentLockService',
+        collabExperimentLockServiceMock
+      );
+
+      mockAngularElement = [
+        // the mock HTML DOM
+        {
+          getElementsByClassName: jasmine
+            .createSpy('getElementsByClassName')
+            .and.returnValue([{}, {}]),
+          getElementsByTagName: jasmine
+            .createSpy('getElementsByClassName')
+            .and.returnValue([{ remove: jasmine.createSpy('remove') }])
+        }
+      ];
+      $provide.value('$element', mockAngularElement);
+
+      simulationStateObject.update.calls.reset();
+      simulationStateObject.state.calls.reset();
+      simulationControlObject.simulation.calls.reset();
+      nrpBackendVersionsObject.get.calls.reset();
+    })
+  );
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller,
-                              _$rootScope_,
-                              _$element_,
-                              _$log_,
-                              _$timeout_,
-                              _$window_,
-                              _simulationInfo_,
-                              _stateService_,
-                              _contextMenuState_,
-                              _nrpBackendVersions_,
-                              _nrpFrontendVersion_,
-                              _STATE_,
-                              _gz3d_,
-                              _userNavigationService_,
-                              _$q_,
-                              _environmentService_,
-                              _experimentService_,
-                              _userContextService_,
-                              _colorableObjectService_,
-                              _gz3dViewsService_,
-                              _environmentRenderingService_,
-                              _dynamicViewOverlayService_,
-                              _videoStreamService_
-                              ) {
-    controller = $controller;
-    $rootScope = _$rootScope_;
-    $element = _$element_;
-    log = _$log_;
-    $scope = $rootScope.$new();
-    timeout = _$timeout_;
-    window = _$window_;
-    window.location.reload = function () { };
-    simulationInfo = _simulationInfo_;
-    experimentService = _experimentService_;
-    stateService = _stateService_;
-    contextMenuState = _contextMenuState_;
-    nrpBackendVersions = _nrpBackendVersions_;
-    nrpFrontendVersion = _nrpFrontendVersion_;
-    STATE = _STATE_;
-    gz3d = _gz3d_;
-    userNavigationService = _userNavigationService_;
-    $q = _$q_;
-    environmentService = _environmentService_;
-    userContextService = _userContextService_;
-    colorableObjectService = _colorableObjectService_;
-    gz3dViewsService = _gz3dViewsService_;
-    environmentRenderingService = _environmentRenderingService_;
-    dynamicViewOverlayService = _dynamicViewOverlayService_;
-    videoStreamService = _videoStreamService_;
+  beforeEach(
+    inject(function(
+      $controller,
+      _$rootScope_,
+      _$element_,
+      _$log_,
+      _$timeout_,
+      _$window_,
+      _simulationInfo_,
+      _stateService_,
+      _contextMenuState_,
+      _nrpBackendVersions_,
+      _nrpFrontendVersion_,
+      _STATE_,
+      _gz3d_,
+      _userNavigationService_,
+      _$q_,
+      _environmentService_,
+      _experimentService_,
+      _userContextService_,
+      _colorableObjectService_,
+      _gz3dViewsService_,
+      _environmentRenderingService_,
+      _dynamicViewOverlayService_,
+      _videoStreamService_
+    ) {
+      controller = $controller;
+      $rootScope = _$rootScope_;
+      $element = _$element_;
+      log = _$log_;
+      $scope = $rootScope.$new();
+      timeout = _$timeout_;
+      window = _$window_;
+      window.location.reload = function() {};
+      simulationInfo = _simulationInfo_;
+      experimentService = _experimentService_;
+      stateService = _stateService_;
+      contextMenuState = _contextMenuState_;
+      nrpBackendVersions = _nrpBackendVersions_;
+      nrpFrontendVersion = _nrpFrontendVersion_;
+      STATE = _STATE_;
+      gz3d = _gz3d_;
+      userNavigationService = _userNavigationService_;
+      $q = _$q_;
+      environmentService = _environmentService_;
+      userContextService = _userContextService_;
+      colorableObjectService = _colorableObjectService_;
+      gz3dViewsService = _gz3dViewsService_;
+      environmentRenderingService = _environmentRenderingService_;
+      dynamicViewOverlayService = _dynamicViewOverlayService_;
+      videoStreamService = _videoStreamService_;
 
-    callback = $q.defer();
-    lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
-    lockServiceMock = {
-      tryAddLock : jasmine.createSpy('tryAddLock').and.returnValue(callback.promise),
-      onLockChanged: jasmine.createSpy('onLockChanged').and.callFake(function (fn) {onLockChangedCallback = fn; return lockServiceCancelCallback;}),
-      releaseLock: jasmine.createSpy('releaseLock').and.returnValue(callback.promise)
-    };
-    collabExperimentLockServiceMock.createLockServiceForExperimentId = function(){
-      return lockServiceMock;
-    };
+      callback = $q.defer();
+      lockServiceCancelCallback = jasmine.createSpy('cancelCallback');
+      lockServiceMock = {
+        tryAddLock: jasmine
+          .createSpy('tryAddLock')
+          .and.returnValue(callback.promise),
+        onLockChanged: jasmine
+          .createSpy('onLockChanged')
+          .and.callFake(function(fn) {
+            onLockChangedCallback = fn;
+            return lockServiceCancelCallback;
+          }),
+        releaseLock: jasmine
+          .createSpy('releaseLock')
+          .and.returnValue(callback.promise)
+      };
+      collabExperimentLockServiceMock.createLockServiceForExperimentId = function() {
+        return lockServiceMock;
+      };
 
-    simulations = [
-      { simulationID: 0, experimentConfiguration: 'fakeExperiment0', state: STATE.CREATED },
-      { simulationID: 1, experimentConfiguration: 'fakeExperiment1', state: STATE.INITIALIZED },
-      { simulationID: 2, experimentConfiguration: 'fakeExperiment2', state: STATE.PAUSED },
-      { simulationID: 3, experimentConfiguration: 'fakeExperiment3', state: STATE.STARTED },
-      { simulationID: 4, experimentConfiguration: 'fakeExperiment4', state: STATE.STOPPED},
-      { simulationID: 5, experimentConfiguration: 'fakeExperiment5', state: STATE.INITIALIZED},
-      { simulationID: 6, experimentConfiguration: 'fakeExperiment6', state: STATE.CREATED}
-    ];
+      simulations = [
+        {
+          simulationID: 0,
+          experimentConfiguration: 'fakeExperiment0',
+          state: STATE.CREATED
+        },
+        {
+          simulationID: 1,
+          experimentConfiguration: 'fakeExperiment1',
+          state: STATE.INITIALIZED
+        },
+        {
+          simulationID: 2,
+          experimentConfiguration: 'fakeExperiment2',
+          state: STATE.PAUSED
+        },
+        {
+          simulationID: 3,
+          experimentConfiguration: 'fakeExperiment3',
+          state: STATE.STARTED
+        },
+        {
+          simulationID: 4,
+          experimentConfiguration: 'fakeExperiment4',
+          state: STATE.STOPPED
+        },
+        {
+          simulationID: 5,
+          experimentConfiguration: 'fakeExperiment5',
+          state: STATE.INITIALIZED
+        },
+        {
+          simulationID: 6,
+          experimentConfiguration: 'fakeExperiment6',
+          state: STATE.CREATED
+        }
+      ];
 
-    exampleProgressData = [
-      {id: 'test::id::mesh1', url: 'http://some_fake_url.com:1234/bla1.mesh', progress: 0, total: 1, done: false},
-      {id: 'test::id::mesh2', url: 'http://some_fake_url.com:1234/bla2.mesh', progress: 700, total: 1000, done: false},
-      {id: 'test::id::mesh3', url: 'http://some_fake_url.com:1234/bla3.mesh', progress: 200, total: 200, done: true}
-    ];
+      exampleProgressData = [
+        {
+          id: 'test::id::mesh1',
+          url: 'http://some_fake_url.com:1234/bla1.mesh',
+          progress: 0,
+          total: 1,
+          done: false
+        },
+        {
+          id: 'test::id::mesh2',
+          url: 'http://some_fake_url.com:1234/bla2.mesh',
+          progress: 700,
+          total: 1000,
+          done: false
+        },
+        {
+          id: 'test::id::mesh3',
+          url: 'http://some_fake_url.com:1234/bla3.mesh',
+          progress: 200,
+          total: 200,
+          done: true
+        }
+      ];
 
-    $scope.activeSimulation = undefined;
+      $scope.activeSimulation = undefined;
 
-    fakeSimulationData = {
-      owner: '1234',
-      state: STATE.INITIALIZED,
-      simulationID: 1,
-      experimentConfiguration: 'FakeExperiment'
-    };
+      fakeSimulationData = {
+        owner: '1234',
+        state: STATE.INITIALIZED,
+        simulationID: 1,
+        experimentConfiguration: 'FakeExperiment'
+      };
 
-    userContextService.hasEditRights.and.callFake(function(entity) {
-      return (userContextService.isOwner || userNavigationService.isUserAvatar(entity));
-    });
+      userContextService.hasEditRights.and.callFake(function(entity) {
+        return (
+          userContextService.isOwner ||
+          userNavigationService.isUserAvatar(entity)
+        );
+      });
 
-    // create mock for $log
-    spyOn(log, 'error');
+      // create mock for $log
+      spyOn(log, 'error');
 
-    deferredSceneInitialized = $q.defer();
-    environmentRenderingService.sceneInitialized.and.returnValue(deferredSceneInitialized.promise);
+      deferredSceneInitialized = $q.defer();
+      environmentRenderingService.sceneInitialized.and.returnValue(
+        deferredSceneInitialized.promise
+      );
 
-    deferredView = $q.defer();
-    gz3dViewsService.assignView.and.returnValue(deferredView.promise);
+      deferredView = $q.defer();
+      gz3dViewsService.assignView.and.returnValue(deferredView.promise);
 
-    deferredStreamingUrl = $q.defer();
-    videoStreamService.getStreamingUrlForTopic.and.returnValue(deferredStreamingUrl.promise);
-  }));
+      deferredStreamingUrl = $q.defer();
+      videoStreamService.getStreamingUrlForTopic.and.returnValue(
+        deferredStreamingUrl.promise
+      );
+    })
+  );
 
-  describe('(ViewMode)', function () {
+  describe('(ViewMode)', function() {
     var currentUserInfo1234, currentUserInfo1234Hash, otherUserInfo4321;
 
-    beforeEach(function () {
-      environmentRenderingController = controller('EnvironmentRenderingController', {
-        $rootScope: $rootScope,
-        $scope: $scope
-      });
+    beforeEach(function() {
+      environmentRenderingController = controller(
+        'EnvironmentRenderingController',
+        {
+          $rootScope: $rootScope,
+          $scope: $scope
+        }
+      );
 
       currentUserInfo1234 = {
         displayName: 'John Does',
@@ -255,37 +345,40 @@ describe('Controller: EnvironmentRenderingController', function () {
       spyOn(environmentRenderingController, 'onDestroy').and.callThrough();
     });
 
-    it('should have editRights when owner', function () {
+    it('should have editRights when owner', function() {
       userContextService.isOwner = false;
-      expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(false);
+      expect(
+        userContextService.hasEditRights({ name: 'not-user-avatar' })
+      ).toBe(false);
       userContextService.isOwner = true;
-      expect(userContextService.hasEditRights({name: 'not-user-avatar'})).toBe(true);
+      expect(
+        userContextService.hasEditRights({ name: 'not-user-avatar' })
+      ).toBe(true);
       expect(userNavigationService.isUserAvatar).toHaveBeenCalled();
     });
 
-    it('should have editRights for user avatar', function () {
+    it('should have editRights for user avatar', function() {
       userContextService.isOwner = false;
-      expect(userContextService.hasEditRights({name: 'user-avatar'})).toBe(true);
+      expect(userContextService.hasEditRights({ name: 'user-avatar' })).toBe(
+        true
+      );
       expect(userNavigationService.isUserAvatar).toHaveBeenCalled();
     });
-
 
     it('should emit light intensity changes', function() {
       gz3d.scene.scene = {};
 
-      // three is loaded externally, jshint does not know that
-      var light0 = new THREE.AmbientLight(); // jshint ignore:line
-      var light1 = new THREE.PointLight(); // jshint ignore:line
+      var light0 = new THREE.AmbientLight();
+      var light1 = new THREE.PointLight();
       light1.name = 'left_spot';
       light1.initialIntensity = 0.5;
-      var light2 = new THREE.PointLight();// jshint ignore:line
+      var light2 = new THREE.PointLight();
       light2.name = 'right_spot';
       light2.initialIntensity = 0.5;
 
       gz3d.scene.scene.__lights = [light1, light2];
 
-      // helper is defined as 'undefined' for semantical reasons
-      var helper = undefined; // jshint ignore:line
+      var helper = undefined;
       var entity0 = {
         children: [light0, helper]
       };
@@ -342,15 +435,19 @@ describe('Controller: EnvironmentRenderingController', function () {
           height: 0
         }
       };
-      dynamicViewOverlayService.getParentOverlayWrapper.and.returnValue(mockOverlayWrapper);
+      dynamicViewOverlayService.getParentOverlayWrapper.and.returnValue(
+        mockOverlayWrapper
+      );
 
-      var mockOverlayParent = [
-        {clientWidth: 300, clientHeight: 200}
-      ];
-      dynamicViewOverlayService.getOverlayParentElement.and.returnValue(mockOverlayParent);
+      var mockOverlayParent = [{ clientWidth: 300, clientHeight: 200 }];
+      dynamicViewOverlayService.getOverlayParentElement.and.returnValue(
+        mockOverlayParent
+      );
 
       var container = mockAngularElement[0].getElementsByClassName()[0];
-      expect(environmentRenderingController.gz3dContainerElement).toBe(container);
+      expect(environmentRenderingController.gz3dContainerElement).toBe(
+        container
+      );
       expect(environmentRenderingController.containerElement).toBe(container);
       expect(environmentRenderingService.sceneInitialized).toHaveBeenCalled();
 
@@ -366,16 +463,30 @@ describe('Controller: EnvironmentRenderingController', function () {
       deferredView.resolve(mockView);
       $rootScope.$digest();
       expect(environmentRenderingController.view).toBe(mockView);
-      expect(dynamicViewOverlayService.getParentOverlayWrapper).toHaveBeenCalled();
-      expect(mockOverlayWrapper.setAttribute).toHaveBeenCalledWith('keep-aspect-ratio', mockView.initAspectRatio.toString());
+      expect(
+        dynamicViewOverlayService.getParentOverlayWrapper
+      ).toHaveBeenCalled();
+      expect(mockOverlayWrapper.setAttribute).toHaveBeenCalledWith(
+        'keep-aspect-ratio',
+        mockView.initAspectRatio.toString()
+      );
 
       var expectedWidth = environmentRenderingController.INIT_WIDTH_PERCENTAGE;
-      var expectedHeight = ((environmentRenderingController.INIT_WIDTH_PERCENTAGE * mockOverlayParent[0].clientWidth) /
-        mockView.initAspectRatio) / mockOverlayParent[0].clientHeight;
-      expect(mockOverlayWrapper.style.width).toBe((expectedWidth * 100).toString() + '%');
-      expect(mockOverlayWrapper.style.height).toBe((expectedHeight * 100).toString() + '%');
+      var expectedHeight =
+        environmentRenderingController.INIT_WIDTH_PERCENTAGE *
+        mockOverlayParent[0].clientWidth /
+        mockView.initAspectRatio /
+        mockOverlayParent[0].clientHeight;
+      expect(mockOverlayWrapper.style.width).toBe(
+        (expectedWidth * 100).toString() + '%'
+      );
+      expect(mockOverlayWrapper.style.height).toBe(
+        (expectedHeight * 100).toString() + '%'
+      );
 
-      expect(videoStreamService.getStreamingUrlForTopic).toHaveBeenCalledWith(mockView.topic);
+      expect(videoStreamService.getStreamingUrlForTopic).toHaveBeenCalledWith(
+        mockView.topic
+      );
       var streamUrl = 'test_streaming_url';
       deferredStreamingUrl.resolve(streamUrl);
       $rootScope.$digest();
@@ -395,7 +506,9 @@ describe('Controller: EnvironmentRenderingController', function () {
       $scope.$destroy();
 
       expect(environmentRenderingController.onDestroy).toHaveBeenCalled();
-      expect(gz3dViewsService.toggleCameraHelper).toHaveBeenCalledWith(environmentRenderingController.view);
+      expect(gz3dViewsService.toggleCameraHelper).toHaveBeenCalledWith(
+        environmentRenderingController.view
+      );
       expect(environmentRenderingController.view.container).not.toBeDefined();
     });
 
@@ -451,9 +564,6 @@ describe('Controller: EnvironmentRenderingController', function () {
       environmentRenderingController.showServerStream = true;
       url = environmentRenderingController.getVideoUrlSource();
       expect(url).toBe(testUrl + '&t=' + testState + reconnectTrials);
-
     });
-
   });
-
 });

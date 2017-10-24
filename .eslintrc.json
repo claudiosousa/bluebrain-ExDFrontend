@@ -1,0 +1,25 @@
+{
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "rules": {
+    "linebreak-style": ["error", "unix"],
+    "no-console": "off",
+    "no-unused-vars": ["off"],
+    "no-unused": ["off"],
+    "camelcase": "error"
+  },
+  "plugins": ["prettier"],
+  "globals": {
+    "angular": true,
+    "$": true,
+    "_": true,
+    "Rx": true,
+    "moment": true,
+    "Chart": true,
+    "d3": true,
+    "THREE": true
+  }
+}

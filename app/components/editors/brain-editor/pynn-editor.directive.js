@@ -21,13 +21,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp.Constants')
-    .constant('PYNN_ERROR', {
-      COMPILE: 'Compile'
-    });
+  angular.module('exdFrontendApp.Constants').constant('PYNN_ERROR', {
+    COMPILE: 'Compile'
+  });
 
   angular.module('exdFrontendApp').directive('pynnEditor', [
     '$timeout',
@@ -49,7 +48,8 @@
     'userContextService',
     'baseEventHandler',
     'editorToolbarService',
-    function ($timeout,
+    function(
+      $timeout,
       $rootScope,
       backendInterfaceService,
       pythonCodeHelper,
@@ -67,23 +67,25 @@
       downloadFileService,
       userContextService,
       baseEventHandler,
-      editorToolbarService) {
+      editorToolbarService
+    ) {
       var DIRTY_TYPE = 'BRAIN';
 
       return {
-        templateUrl: 'components/editors/brain-editor/pynn-editor.template.html',
+        templateUrl:
+          'components/editors/brain-editor/pynn-editor.template.html',
         restrict: 'E',
         scope: {
           control: '='
         },
-        replace:true,
-        link: function (scope, element, attrs) {
-
-          let messageCallbackHandler = stateService.addMessageCallback((message) => {
-            if (message.action === 'setbrain')
-              if (element.is(':visible'))
-                scope.refresh();
-          });
+        replace: true,
+        link: function(scope, element, attrs) {
+          let messageCallbackHandler = stateService.addMessageCallback(
+            message => {
+              if (message.action === 'setbrain')
+                if (element.is(':visible')) scope.refresh();
+            }
+          );
 
           scope.isPrivateExperiment = environmentService.isPrivateExperiment();
           scope.loading = false;
@@ -94,14 +96,23 @@
           var ScriptObject = pythonCodeHelper.ScriptObject;
           scope.pynnScript = new ScriptObject(0, 'empty');
 
-          scope.isMultipleBrains = function () {
+          scope.isMultipleBrains = function() {
             return simulationInfo.experimentDetails.brainProcesses > 1;
           };
 
-          scope.editorOptions = angular.extend({}, codeEditorsServices.getDefaultEditorOptions(), { readOnly: scope.isMultipleBrains() && 'nocursor' });
-          scope.editorOptions = codeEditorsServices.ownerOnlyOptions(scope.editorOptions);
+          scope.editorOptions = angular.extend(
+            {},
+            codeEditorsServices.getDefaultEditorOptions(),
+            { readOnly: scope.isMultipleBrains() && 'nocursor' }
+          );
+          scope.editorOptions = codeEditorsServices.ownerOnlyOptions(
+            scope.editorOptions
+          );
 
-          scope.resetListenerUnbindHandler = scope.$on('RESET', function (event, resetType) {
+          scope.resetListenerUnbindHandler = scope.$on('RESET', function(
+            event,
+            resetType
+          ) {
             if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) {
               scope.collabDirty = false;
               scope.localBrainDirty = false;
@@ -116,11 +127,13 @@
             editorToolbarService.showPynnEditor = false;
           });
 
-          let refreshEditor = (reset=false) => {
-            var editor = codeEditorsServices.getEditorChild('codeEditor', element[0]);
+          let refreshEditor = (reset = false) => {
+            var editor = codeEditorsServices.getEditorChild(
+              'codeEditor',
+              element[0]
+            );
             codeEditorsServices.refreshEditor(editor);
-            if (reset)
-              codeEditorsServices.resetEditor(editor);
+            if (reset) codeEditorsServices.resetEditor(editor);
           };
 
           //TODO: get this mess of upwards-downwards intertwined scope definition out and handle refreshing in here alone
@@ -129,65 +142,71 @@
           // * brain reset
           // * simulation reset
           // * env poses reset
-          scope.refresh = function () {
+          scope.refresh = function() {
             refreshEditor();
             scope.loading = true;
-            backendInterfaceService.getBrain(function (response) {
+            backendInterfaceService.getBrain(function(response) {
               scope.loading = false;
-              if (response.brain_type === "py") {
+              if (response.brain_type === 'py') {
                 scope.pynnScript.code = response.data;
-                scope.populations = scope.preprocessPopulations(response.additional_populations);
+                scope.populations = scope.preprocessPopulations(
+                  response.additional_populations
+                );
                 refreshEditor();
-                setTimeout(function () {
+                setTimeout(function() {
                   refreshEditor(true);
-                  scope.searchToken("si");
+                  scope.searchToken('si');
                 }, 100);
               } else {
                 scope.pynnScript.code = 'empty';
                 scope.populations = [];
                 refreshEditor();
               }
-              $timeout(() => scope.localBrainDirty = false);
+              $timeout(() => (scope.localBrainDirty = false));
             });
           };
 
           scope.control.refresh = scope.refresh;
 
           // update UI
-          scope.unbindListenerUpdatePanelUI = scope.$on("UPDATE_PANEL_UI", function () {
-            // prevent calling the select functions of the tabs
-            scope.refresh();
-          });
+          scope.unbindListenerUpdatePanelUI = scope.$on(
+            'UPDATE_PANEL_UI',
+            function() {
+              // prevent calling the select functions of the tabs
+              scope.refresh();
+            }
+          );
 
           // only start watching for changes after a little timeout
           // the flood of changes during compilation will cause angular to throw digest errors when watched
-          $timeout(
-            () => {
-              // refresh on resize
-              scope.unbindWatcherResize = scope.$watch(() => {
+          $timeout(() => {
+            // refresh on resize
+            scope.unbindWatcherResize = scope.$watch(
+              () => {
                 if (element[0].offsetParent) {
-                  return [element[0].offsetParent.offsetWidth, element[0].offsetParent.offsetHeight].join('x');
+                  return [
+                    element[0].offsetParent.offsetWidth,
+                    element[0].offsetParent.offsetHeight
+                  ].join('x');
                 } else {
                   return '';
                 }
               },
-                () => {
-                  refreshEditor();
-                }
-              );
-              refreshEditor();
-            },
-            300
-          );
+              () => {
+                refreshEditor();
+              }
+            );
+            refreshEditor();
+          }, 300);
 
           /** Convert Populations Object into array and create for each population a unique
            * regular expression to avoid duplicate names.
            */
-          scope.preprocessPopulations = function (neuronPopulations) {
+          scope.preprocessPopulations = function(neuronPopulations) {
             if (neuronPopulations === null) return undefined;
 
             var populationNames = Object.keys(neuronPopulations);
-            var populationsArray = populationNames.map(function (name, index) {
+            var populationsArray = populationNames.map(function(name, index) {
               var populationObject = neuronPopulations[name];
               populationObject.name = name;
               var isSlice = scope.isSlice(populationObject);
@@ -201,20 +220,23 @@
                   name: name
                 };
               }
-              populationObject.regex = generateRegexPattern(populationNames, index);
+              populationObject.regex = generateRegexPattern(
+                populationNames,
+                index
+              );
               return populationObject;
             });
             return populationsArray;
           };
 
-          scope.suppressKeyPress = function (event) {
+          scope.suppressKeyPress = function(event) {
             baseEventHandler.suppressAnyKeyPress(event);
           };
 
           function objectifyPopulations(neuroPopulations) {
             var populations = angular.copy(neuroPopulations);
             var populationsObject = {};
-            angular.forEach(populations, function (population, index) {
+            angular.forEach(populations, function(population, index) {
               var name = population.name;
               delete population.name;
               populationsObject[name] = population;
@@ -223,7 +245,7 @@
           }
 
           function populationNames() {
-            var names = scope.populations.map(function (obj) {
+            var names = scope.populations.map(function(obj) {
               return obj.name;
             });
             return names;
@@ -233,26 +255,30 @@
             var pattern = '([A-z_]+[\\w_]*)$';
             var populationNames = angular.copy(currentPopulationNames);
             populationNames.splice(index, 1);
-            populationNames = populationNames.filter(function (item) {
+            populationNames = populationNames.filter(function(item) {
               return item !== undefined;
             });
             if (populationNames.length === 0) {
               return pattern;
             } else {
-              var exclude = '^\\b(?!\\b' + populationNames.join('\\b|\\b') + '\\b)';
+              var exclude =
+                '^\\b(?!\\b' + populationNames.join('\\b|\\b') + '\\b)';
               return exclude + pattern;
             }
           }
 
-          scope.updateRegexPatterns = function () {
+          scope.updateRegexPatterns = function() {
             for (var i = 0; i < scope.populations.length; i++) {
-              scope.populations[i].regex = generateRegexPattern(populationNames(), i);
+              scope.populations[i].regex = generateRegexPattern(
+                populationNames(),
+                i
+              );
             }
           };
 
-          scope.stringsToLists = function (neuronPopulations) {
+          scope.stringsToLists = function(neuronPopulations) {
             var populations = angular.copy(neuronPopulations);
-            angular.forEach(populations, function (population, name) {
+            angular.forEach(populations, function(population, name) {
               var isList = !scope.isSlice(population);
               if (isList) {
                 var stringList = population.list.split(',');
@@ -262,91 +288,103 @@
             return populations;
           };
 
-          scope.agreeAction = function () {
+          scope.agreeAction = function() {
             scope.apply(1);
           };
 
           /**
            * @param {integer} [change_population]
            */
-          scope.apply = function (change_population) {
+          scope.apply = function(changePopulation) {
             var restart = stateService.currentState === STATE.STARTED;
             scope.loading = true;
             var populations = objectifyPopulations(scope.populations);
-            stateService.ensureStateBeforeExecuting(
-              STATE.PAUSED,
-              function () {
-                backendInterfaceService.setBrain(
-                  scope.pynnScript.code, scope.stringsToLists(populations), 'py', 'text', change_population,
-                  function () { // Success callback
-                    scope.loading = false;
-                    codeEditorsServices.getEditor("codeEditor").markClean();
-                    scope.clearError();
-                    scope.localBrainDirty = false;
-                    if (restart) {
-                      stateService.setCurrentState(STATE.STARTED);
-                    }
+            stateService.ensureStateBeforeExecuting(STATE.PAUSED, function() {
+              backendInterfaceService.setBrain(
+                scope.pynnScript.code,
+                scope.stringsToLists(populations),
+                'py',
+                'text',
+                changePopulation,
+                function() {
+                  // Success callback
+                  scope.loading = false;
+                  codeEditorsServices.getEditor('codeEditor').markClean();
+                  scope.clearError();
+                  scope.localBrainDirty = false;
+                  if (restart) {
+                    stateService.setCurrentState(STATE.STARTED);
+                  }
 
-                    $rootScope.$broadcast('pynn.populationsChanged');
-                  },
-                  function (result) { // Failure callback
-                    scope.loading = false;
-                    scope.clearError();
-                    if (result.data.handle_population_change) {
-                      clbConfirm.open({
+                  $rootScope.$broadcast('pynn.populationsChanged');
+                },
+                function(result) {
+                  // Failure callback
+                  scope.loading = false;
+                  scope.clearError();
+                  if (result.data.handle_population_change) {
+                    clbConfirm
+                      .open({
                         title: 'Confirm changing neural network',
                         confirmLabel: 'Yes',
                         cancelLabel: 'Cancel',
-                        template: 'Applying your changes may update the population name your transfer functions. Do you wish to continue?',
+                        template:
+                          'Applying your changes may update the population name your transfer functions. Do you wish to continue?',
                         closable: false
-                      }).then(scope.agreeAction, function () {
-                      });
-                    }
-                    else if (result.data.error_line === -1 && result.data.error_column === -1){
-                      scope.refresh();
-                      clbErrorDialog.open({
-                        type: 'Impossible to delete population',
-                        message: 'Please remove all references to the population in the transfer functions and try again.',
-                        data: { error: result.data.error_message }
-                      });
-                    }else{
-                      scope.markError(
-                        result.data.error_message,
-                        result.data.error_line,
-                        result.data.error_column
-                      );
-                    }
-                  });
-              });
+                      })
+                      .then(scope.agreeAction, function() {});
+                  } else if (
+                    result.data.error_line === -1 &&
+                    result.data.error_column === -1
+                  ) {
+                    scope.refresh();
+                    clbErrorDialog.open({
+                      type: 'Impossible to delete population',
+                      message:
+                        'Please remove all references to the population in the transfer functions and try again.',
+                      data: { error: result.data.error_message }
+                    });
+                  } else {
+                    scope.markError(
+                      result.data.error_message,
+                      result.data.error_line,
+                      result.data.error_column
+                    );
+                  }
+                }
+              );
+            });
           };
 
-          scope.saveIntoCollabStorage = function () {
+          scope.saveIntoCollabStorage = function() {
             scope.isSavingToCollab = true;
             backendInterfaceService.saveBrain(
               scope.pynnScript.code,
               scope.stringsToLists(scope.populations),
-              function () { // Success callback
+              function() {
+                // Success callback
                 scope.isSavingToCollab = false;
                 scope.collabDirty = false;
                 autoSaveService.clearDirty(DIRTY_TYPE);
-
-              }, function () { // Failure callback
+              },
+              function() {
+                // Failure callback
                 clbErrorDialog.open({
-                  type: "BackendError.",
-                  message: "Error while saving pyNN script to the Storage."
+                  type: 'BackendError.',
+                  message: 'Error while saving pyNN script to the Storage.'
                 });
                 scope.isSavingToCollab = false;
               }
             );
           };
 
-          scope.searchToken = function (name) {
+          scope.searchToken = function(name) {
             var lines = scope.pynnScript.code.split('\n');
             var l = 0;
             var ret = { line: 0, ch: 0 };
             var found = false;
 
-            lines.forEach(function (line) {
+            lines.forEach(function(line) {
               if (found) {
                 return;
               }
@@ -354,8 +392,10 @@
               while (c !== -1 && !found) {
                 c = line.indexOf(name, c + 1);
                 if (c !== -1) {
-                  var token = codeEditorsServices.getEditor("codeEditor").getTokenAt({ line: l, ch: c + 1 });
-                  if (token.type !== "string" && token.string === name) {
+                  var token = codeEditorsServices
+                    .getEditor('codeEditor')
+                    .getTokenAt({ line: l, ch: c + 1 });
+                  if (token.type !== 'string' && token.string === name) {
                     ret = { line: l, ch: c };
                     found = true;
                   }
@@ -366,44 +406,64 @@
             return ret;
           };
 
-          scope.isSlice = function (population) {
-            return population.hasOwnProperty('from') && population.hasOwnProperty('to');
+          scope.isSlice = function(population) {
+            return (
+              population.hasOwnProperty('from') &&
+              population.hasOwnProperty('to')
+            );
           };
 
-          scope.deletePopulation = function (index) {
+          scope.deletePopulation = function(index) {
             scope.populations.splice(index, 1);
             scope.updateRegexPatterns();
           };
 
-          scope.onPynnChange = function () {
+          scope.onPynnChange = function() {
             scope.collabDirty = environmentService.isPrivateExperiment();
             scope.localBrainDirty = true;
-            autoSaveService.setDirty(DIRTY_TYPE, [scope.pynnScript.code, scope.populations]);
+            autoSaveService.setDirty(DIRTY_TYPE, [
+              scope.pynnScript.code,
+              scope.populations
+            ]);
           };
 
           scope.$watch('pynnScript.code', function(after, before) {
-            if (before !== 'empty')
-              scope.onPynnChange(true);
+            if (before !== 'empty') scope.onPynnChange(true);
           });
 
           scope.$watchCollection('populations', function(after, before) {
-            if (before)
-              scope.onPynnChange();
+            if (before) scope.onPynnChange();
           });
 
-          scope.addList = function () {
-            var regex = generateRegexPattern(populationNames(), scope.populations.length);
-            scope.populations.push({ name: scope.generatePopulationName(), list: '0, 1, 2', regex: regex });
+          scope.addList = function() {
+            var regex = generateRegexPattern(
+              populationNames(),
+              scope.populations.length
+            );
+            scope.populations.push({
+              name: scope.generatePopulationName(),
+              list: '0, 1, 2',
+              regex: regex
+            });
             scope.updateRegexPatterns();
           };
 
-          scope.addSlice = function () {
-            var regex = generateRegexPattern(populationNames(), scope.populations.length);
-            scope.populations.push({ name: scope.generatePopulationName(), from: 0, to: 1, step: 1, regex: regex });
+          scope.addSlice = function() {
+            var regex = generateRegexPattern(
+              populationNames(),
+              scope.populations.length
+            );
+            scope.populations.push({
+              name: scope.generatePopulationName(),
+              from: 0,
+              to: 1,
+              step: 1,
+              regex: regex
+            });
             scope.updateRegexPatterns();
           };
 
-          scope.generatePopulationName = function () {
+          scope.generatePopulationName = function() {
             var prefix = 'population_';
             var suffix = 0;
             var existingNames = populationNames();
@@ -413,9 +473,8 @@
             return prefix + suffix;
           };
 
-          scope.parseName = function (error) {
-
-            if (error.search("is not defined") > 0) {
+          scope.parseName = function(error) {
+            if (error.search('is not defined') > 0) {
               var start = error.search("name '");
               var end = error.search("' is not defined");
               return error.substring(start + 6, end);
@@ -424,13 +483,13 @@
             }
           };
 
-          scope.markError = function (error_message, line, column) {
-            var editor = codeEditorsServices.getEditor("codeEditor");
+          scope.markError = function(errorMessage, line, column) {
+            var editor = codeEditorsServices.getEditor('codeEditor');
             if (isNaN(line) || isNaN(column)) {
               return;
             }
             if (line === 0 && column === 0) {
-              var tokenname = scope.parseName(error_message);
+              var tokenname = scope.parseName(errorMessage);
               if (!tokenname) {
                 return;
               }
@@ -448,19 +507,28 @@
               }
             }
 
-            var err = ' '.repeat(column) + '^\n' + error_message;
+            var err = ' '.repeat(column) + '^\n' + errorMessage;
             var htmlNode = document.createElement('pre');
             var text = document.createTextNode(err);
             htmlNode.appendChild(text);
-            var compileError = { message: error_message, errorType: PYNN_ERROR.COMPILE };
+            var compileError = {
+              message: errorMessage,
+              errorType: PYNN_ERROR.COMPILE
+            };
             scope.pynnScript.error[PYNN_ERROR.COMPILE] = compileError;
-            scope.lineHandle = editor.addLineClass(line, 'background', 'alert-danger');
+            scope.lineHandle = editor.addLineClass(
+              line,
+              'background',
+              'alert-danger'
+            );
             editor.scrollIntoView({ line: line, ch: 1 });
           };
 
-          scope.clearError = function () {
+          scope.clearError = function() {
             if (scope.lineHandle) {
-              codeEditorsServices.getEditor("codeEditor").removeLineClass(scope.lineHandle, 'background');
+              codeEditorsServices
+                .getEditor('codeEditor')
+                .removeLineClass(scope.lineHandle, 'background');
             }
             if (scope.lineWidget) {
               scope.lineWidget.clear();
@@ -472,25 +540,32 @@
           scope.backendDocumentationURL = docs.backendDocumentationURL;
           scope.platformDocumentationURL = docs.platformDocumentationURL;
 
-          userContextService.isOwner() && autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function (autoSaved, applyChanges) {
-            scope.pynnScript.code = autoSaved[0];
-            scope.populations = autoSaved[1];
-            scope.collabDirty = true;
-            if (applyChanges)
-              scope.agreeAction();
-          });
+          userContextService.isOwner() &&
+            autoSaveService.registerFoundAutoSavedCallback(DIRTY_TYPE, function(
+              autoSaved,
+              applyChanges
+            ) {
+              scope.pynnScript.code = autoSaved[0];
+              scope.populations = autoSaved[1];
+              scope.collabDirty = true;
+              if (applyChanges) scope.agreeAction();
+            });
 
-          scope.download = function () {
-            var href = URL.createObjectURL(new Blob([scope.pynnScript.code], { type: "plain/text", endings: 'native' }));
+          scope.download = function() {
+            var href = URL.createObjectURL(
+              new Blob([scope.pynnScript.code], {
+                type: 'plain/text',
+                endings: 'native'
+              })
+            );
             downloadFileService.downloadFile(href, 'pynnBrain.py');
           };
 
-          scope.uploadFile = function (file) {
-            if (!file || file.$error)
-              return;
+          scope.uploadFile = function(file) {
+            if (!file || file.$error) return;
 
             var textReader = new FileReader();
-            textReader.onload = function (e) {
+            textReader.onload = function(e) {
               scope.pynnScript.code = e.target.result;
               scope.apply(0);
             };
@@ -500,5 +575,6 @@
           scope.refresh();
         }
       };
-    }]);
-}());
+    }
+  ]);
+})();
