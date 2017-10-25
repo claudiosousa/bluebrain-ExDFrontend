@@ -57,6 +57,8 @@
             userReferenceROSCompliant: undefined,
             showHumanNavInfoDiv: false,
             initAsLookatRobot:false,
+            translationSensitivity: 1.0,
+            rotationSensitivity: 1.0,
 
             rosbridgeWebsocketUrl: undefined,
             roslib: undefined,
@@ -122,7 +124,7 @@
 
             update: function(tElapsed) {
               if (angular.isDefined(this.controls)) {
-                this.controls.update(tElapsed);
+                this.controls.update(tElapsed, this.translationSensitivity, this.rotationSensitivity);
               }
             },
 

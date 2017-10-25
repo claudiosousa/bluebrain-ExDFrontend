@@ -26,8 +26,8 @@
   'use strict';
   angular.module('exdFrontendApp')
     .directive('environmentSettingsUsercamera', ['gz3d', 'nrpAnalytics',
-      'editorToolbarService', 'gz3dViewsService',
-      function (gz3d, nrpAnalytics, editorToolbarService, gz3dViewsService)
+      'editorToolbarService', 'gz3dViewsService', 'userNavigationService',
+      function (gz3d, nrpAnalytics, editorToolbarService, gz3dViewsService, userNavigationService)
       {
         return {
           templateUrl: 'components/environment-settings/environment-settings-usercamera.template.html',
@@ -37,6 +37,7 @@
           {
             scope.editorToolbarService = editorToolbarService;
             scope.gz3dViewsService = gz3dViewsService;
+            scope.userNavigationService = userNavigationService;
 
             //----------------------------------------------
             // Init the values
