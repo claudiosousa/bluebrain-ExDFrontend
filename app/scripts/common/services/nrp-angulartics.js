@@ -28,7 +28,8 @@
   var module = angular.module('nrpAngulartics', [
     'nrpUser',
     'angulartics',
-    'angulartics.google.analytics']);
+    'angulartics.google.analytics'
+  ]);
 
   module.factory('nrpAnalytics', [
     '$analytics',
@@ -37,7 +38,7 @@
     function($analytics, $log, nrpUser) {
       var durationClocks = {};
 
-      function eventTrack (actionName, options) {
+      function eventTrack(actionName, options) {
         if (_.isObject(options) && _.isBoolean(options.value)) {
           options.value = _.toInteger(options.value);
         }
@@ -49,12 +50,14 @@
         });
       }
 
-      function tickDurationEvent (actionName) {
+      function tickDurationEvent(actionName) {
         durationClocks[actionName] = moment();
       }
-      function durationEventTrack (actionName, options) {
+      function durationEventTrack(actionName, options) {
         if (_.isUndefined(durationClocks[actionName])) {
-          $log.debug('Analytics duration: missing tick for action: '+ actionName);
+          $log.debug(
+            'Analytics duration: missing tick for action: ' + actionName
+          );
           return;
         }
         var duration = moment() - durationClocks[actionName];
@@ -70,5 +73,6 @@
         tickDurationEvent: tickDurationEvent,
         durationEventTrack: durationEventTrack
       };
-    }]);
-}());
+    }
+  ]);
+})();

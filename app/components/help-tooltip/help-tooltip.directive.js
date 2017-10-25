@@ -24,8 +24,9 @@
 (function() {
   'use strict';
 
-  angular.module('helpTooltipModule')
-    .directive('helpTooltip', ['helpTooltipService', (helpTooltipService) => {
+  angular.module('helpTooltipModule').directive('helpTooltip', [
+    'helpTooltipService',
+    helpTooltipService => {
       const SELECTED_STYLE = 'toolbar-help-highlighted';
 
       return {
@@ -33,8 +34,10 @@
         compile: () => {
           return {
             pre: (scope, element, attrs) => {
-
-              let tryPreventEvent = e => helpTooltipService.visible && (!angular.isUndefined(attrs.dontStopPropagation) || e.stopImmediatePropagation());
+              let tryPreventEvent = e =>
+                helpTooltipService.visible &&
+                (!angular.isUndefined(attrs.dontStopPropagation) ||
+                  e.stopImmediatePropagation());
 
               element[0].addEventListener('mousedown', tryPreventEvent, true);
 
@@ -45,19 +48,23 @@
 
               scope.helpTooltipService = helpTooltipService;
               scope.$watch('helpTooltipService.helpCode', (now, previous) => {
-                if (now === attrs.helpTooltip)
-                  element.addClass(SELECTED_STYLE);
+                if (now === attrs.helpTooltip) element.addClass(SELECTED_STYLE);
                 else if (previous === attrs.helpTooltip)
                   element.removeClass(SELECTED_STYLE);
               });
 
               scope.$on('$destroy', () => {
                 element.off('.helptooltip');
-                element[0].removeEventListener('mousedown', tryPreventEvent, true);
+                element[0].removeEventListener(
+                  'mousedown',
+                  tryPreventEvent,
+                  true
+                );
               });
             }
           };
         }
       };
-    }]);
-}());
+    }
+  ]);
+})();

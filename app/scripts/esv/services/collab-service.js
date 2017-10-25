@@ -24,21 +24,35 @@
 (function() {
   'use strict';
 
-  var module = angular.module('collabServices', ['ngResource', 'bbpConfig',
-    'nrpErrorHandlers', 'ui.router', 'clb-storage']);
+  var module = angular.module('collabServices', [
+    'ngResource',
+    'bbpConfig',
+    'nrpErrorHandlers',
+    'ui.router',
+    'clb-storage'
+  ]);
 
-  module.factory('collabConfigService', ['$resource', 'serverError', 'bbpConfig', function($resource, serverError, bbpConfig) {
-    var baseUrl = bbpConfig.get('api.collabContextManagement.url');
-    return $resource(baseUrl + '/collab/configuration/:contextID', {}, {
-      clone: {
-        method: 'PUT',
-        interceptor: { responseError: serverError.displayHTTPError },
-        url:`${baseUrl}/experiment/clone`
-      },
-      get: {
-        method: 'GET',
-        interceptor: { responseError: serverError.displayHTTPError }
-      }
-    });
-  }]);
-}());
+  module.factory('collabConfigService', [
+    '$resource',
+    'serverError',
+    'bbpConfig',
+    function($resource, serverError, bbpConfig) {
+      var baseUrl = bbpConfig.get('api.collabContextManagement.url');
+      return $resource(
+        baseUrl + '/collab/configuration/:contextID',
+        {},
+        {
+          clone: {
+            method: 'PUT',
+            interceptor: { responseError: serverError.displayHTTPError },
+            url: `${baseUrl}/experiment/clone`
+          },
+          get: {
+            method: 'GET',
+            interceptor: { responseError: serverError.displayHTTPError }
+          }
+        }
+      );
+    }
+  ]);
+})();

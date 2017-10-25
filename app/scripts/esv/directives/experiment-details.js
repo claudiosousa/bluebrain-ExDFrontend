@@ -24,68 +24,82 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('experimentDetails', [
-      '$interval',
-      'experimentProxyService',
-      'nrpFrontendVersion',
-      'nrpBackendVersions',
-      'slurminfoService',
-      'uptimeFilter',
-      'CLUSTER_THRESHOLDS',
-      'STATE',
-      function($interval, experimentProxyService, nrpFrontendVersion, nrpBackendVersions, slurminfoService, uptimeFilter, CLUSTER_THRESHOLDS, STATE) {
-        return {
-          scope: true,
-          link: function(scope, el, attrs) {
+  angular.module('exdFrontendApp').directive('experimentDetails', [
+    '$interval',
+    'experimentProxyService',
+    'nrpFrontendVersion',
+    'nrpBackendVersions',
+    'slurminfoService',
+    'uptimeFilter',
+    'CLUSTER_THRESHOLDS',
+    'STATE',
+    function(
+      $interval,
+      experimentProxyService,
+      nrpFrontendVersion,
+      nrpBackendVersions,
+      slurminfoService,
+      uptimeFilter,
+      CLUSTER_THRESHOLDS,
+      STATE
+    ) {
+      return {
+        scope: true,
+        link: function(scope, el, attrs) {
+          scope.STATE = STATE;
+          scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
+          scope.clusterAvailability = { free: 'N/A', total: 'N/A' };
 
-            scope.STATE = STATE;
-            scope.CLUSTER_THRESHOLDS = CLUSTER_THRESHOLDS;
-            scope.clusterAvailability = { free: 'N/A', total: 'N/A' };
+          let slurminfoSubscription;
+          scope.$watch(attrs.experimentDetails, exp => {
+            if (slurminfoSubscription || !exp || exp.onlyLocalServers) return;
 
-            let slurminfoSubscription;
-            scope.$watch(attrs.experimentDetails, exp => {
-              if (slurminfoSubscription || !exp || exp.onlyLocalServers)
-                return;
+            slurminfoSubscription = slurminfoService.subscribe(
+              availability => (scope.clusterAvailability = availability)
+            );
+          });
 
-              slurminfoSubscription = slurminfoService.subscribe(availability => scope.clusterAvailability = availability);
-            });
+          scope.isCollapsed = true;
+          scope.softwareVersions = '';
 
+          scope.$watch('pageState.selected', () => (scope.isCollapsed = true));
 
-            scope.isCollapsed = true;
+          scope.setCollapsed = function(newState) {
+            scope.isCollapsed = newState;
+          };
+
+          scope.getSoftwareVersions = function(server) {
+            if (scope.isCollapsed) return;
             scope.softwareVersions = '';
+            nrpFrontendVersion.get(
+              data => (scope.softwareVersions += data.toString)
+            );
 
-            scope.$watch('pageState.selected', () => scope.isCollapsed = true);
+            if (!server) return;
 
-            scope.setCollapsed = function(newState) {
-              scope.isCollapsed = newState;
-            };
+            experimentProxyService
+              .getServerConfig(server)
+              .then(serverConfig => {
+                nrpBackendVersions(serverConfig.gzweb['nrp-services']).get(
+                  result => (scope.softwareVersions += result.toString)
+                );
+              });
+          };
 
-            scope.getSoftwareVersions = function(server) {
-              if (scope.isCollapsed)
-                return;
-              scope.softwareVersions = '';
-              nrpFrontendVersion.get(data => scope.softwareVersions += data.toString);
+          let updateUptime = $interval(
+            () =>
+              scope.exp.joinableServers.forEach(
+                s => (s.uptime = uptimeFilter(s.runningSimulation.creationDate))
+              ),
+            1000
+          );
 
-              if (!server)
-                return;
-
-              experimentProxyService
-                .getServerConfig(server)
-                .then(serverConfig => {
-                  nrpBackendVersions(serverConfig.gzweb['nrp-services'])
-                    .get(result => scope.softwareVersions += result.toString);
-                });
-            };
-
-            let updateUptime = $interval(() => scope.exp.joinableServers.forEach(s => s.uptime = uptimeFilter(s.runningSimulation.creationDate)), 1000);
-
-            scope.$on('$destroy', () => {
-              $interval.cancel(updateUptime);
-              slurminfoSubscription && slurminfoSubscription.unsubscribe();
-            });
-          }
-        };
-      }
-    ]);
-}());
+          scope.$on('$destroy', () => {
+            $interval.cancel(updateUptime);
+            slurminfoSubscription && slurminfoSubscription.unsubscribe();
+          });
+        }
+      };
+    }
+  ]);
+})();

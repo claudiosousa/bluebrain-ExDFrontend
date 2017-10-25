@@ -1,17 +1,18 @@
 'use strict';
 
 describe('Controller: DynamicViewController', function() {
-
   var $compile, $rootScope;
   var element, elementController;
 
   beforeEach(module('dynamicViewModule'));
   beforeEach(module('exd.templates'));
 
-  beforeEach(inject(function(_$rootScope_, _$compile_) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-  }));
+  beforeEach(
+    inject(function(_$rootScope_, _$compile_) {
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
+    })
+  );
 
   beforeEach(function() {
     var $scope = $rootScope.$new();
@@ -39,7 +40,9 @@ describe('Controller: DynamicViewController', function() {
     elementController.setViewContentViaChannelType(channel);
 
     expect(elementController.viewContent).toContain(channel.directive);
-    expect(elementController.viewContainer.innerHTML).toContain(channel.directive);
+    expect(elementController.viewContainer.innerHTML).toContain(
+      channel.directive
+    );
   });
 
   it('should allow to set arbitrary content', function() {
@@ -83,5 +86,4 @@ describe('Controller: DynamicViewController', function() {
     expect(console.warn).toHaveBeenCalled();
     expect(elementController.$compile).not.toHaveBeenCalled();
   });
-
 });

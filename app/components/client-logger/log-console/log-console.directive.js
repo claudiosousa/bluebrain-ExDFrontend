@@ -28,15 +28,16 @@
   angular.module('clientLoggerModule').directive('logConsole', [
     function() {
       return {
-        templateUrl: 'components/client-logger/log-console/log-console.template.html',
+        templateUrl:
+          'components/client-logger/log-console/log-console.template.html',
         restrict: 'E',
         scope: {
           ngShow: '=',
-          close:'&closeFn'
+          close: '&closeFn'
         },
         controller: 'LogConsoleController',
         controllerAs: 'vm'
       };
     }
   ]);
-}());
+})();

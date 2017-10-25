@@ -34,7 +34,7 @@ $jointPlotMinHeight: 200px;
   min-height: $jointPlotMinHeight;
   margin: $jointPlotPadding;
 
-  &.resizing .linechart-wrapper{
+  &.resizing .linechart-wrapper {
     visibility: hidden;
   }
 
@@ -46,7 +46,8 @@ $jointPlotMinHeight: 200px;
     align-items: center;
   }
 
-  .property-selector, .joint-selector {
+  .property-selector,
+  .joint-selector {
     padding-left: $jointPlotPadding;
     padding-top: $jointPlotPadding;
     align-self: stretch;

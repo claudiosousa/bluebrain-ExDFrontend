@@ -1,8 +1,7 @@
-(function () {
+(function() {
   'use strict';
 
-  angular.module('splashMock', [])
-  .service('splash', function () {
+  angular.module('splashMock', []).service('splash', function() {
     var splashInstance = {
       close: jasmine.createSpy('modalInstance.close'),
       result: {
@@ -15,4 +14,4 @@
     this.open = jasmine.createSpy('open').and.returnValue(splashInstance);
     this.setMessage = jasmine.createSpy('setMessage');
   });
-}());
+})();

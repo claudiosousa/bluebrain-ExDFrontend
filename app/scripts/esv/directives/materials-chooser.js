@@ -21,9 +21,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
-  angular.module('exdFrontendApp')
+  angular
+    .module('exdFrontendApp')
     .constant('COLORING_MATERIALS', [
       { name: 'Gazebo/Red', color: 'red' },
       { name: 'Gazebo/Blue', color: 'blue' },
@@ -33,16 +34,17 @@
     ])
     .directive('materialsChooser', [
       'COLORING_MATERIALS',
-      function (COLORING_MATERIALS) {
+      function(COLORING_MATERIALS) {
         return {
           templateUrl: 'views/esv/materials-chooser.html',
           restrict: 'E',
           scope: {
             select: '&onSelect'
           },
-          link: function (scope) {
+          link: function(scope) {
             scope.materials = COLORING_MATERIALS;
           }
         };
-      }]);
-} ());
+      }
+    ]);
+})();

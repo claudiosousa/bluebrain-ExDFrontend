@@ -19,14 +19,17 @@
 (function() {
   'use strict';
 
-  angular.module('demoCarousel', [])
-    .directive('demoCarouselAlert', ['$window', '$timeout', 'nrpUser', ($window, $timeout, nrpUser) => {
+  angular.module('demoCarousel', []).directive('demoCarouselAlert', [
+    '$window',
+    '$timeout',
+    'nrpUser',
+    ($window, $timeout, nrpUser) => {
       return {
         restrict: 'E',
-        templateUrl: 'components/alerts/demo-carousel/demo-carousel.template.html',
+        templateUrl:
+          'components/alerts/demo-carousel/demo-carousel.template.html',
         scope: true,
         link: function(scope, element) {
-
           // Basic Users are invited to join the Demo Carousel
           var DEMO_MACHINE = '52.58.114.201';
           scope.demoCarouselUrl = 'http://' + DEMO_MACHINE + ':9000/#/esv-demo';
@@ -36,5 +39,6 @@
           });
         }
       };
-    }]);
-}());
+    }
+  ]);
+})();

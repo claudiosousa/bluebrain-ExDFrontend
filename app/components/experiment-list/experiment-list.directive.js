@@ -24,19 +24,19 @@
 (function() {
   'use strict';
 
-  angular.module('experimentList')
-    .directive('experimentList',
-    ['$timeout', ($timeout) => ({
+  angular.module('experimentList').directive('experimentList', [
+    '$timeout',
+    $timeout => ({
       templateUrl: 'components/experiment-list/experiment-list.template.html',
       restrict: 'E',
       scope: {
         private: '=',
         loadPrivateExperiments: '&',
-        query: '=',
+        query: '='
       },
       replace: true,
       controller: 'ExperimentListController',
       controllerAs: 'vm'
     })
-    ]);
-}());
+  ]);
+})();

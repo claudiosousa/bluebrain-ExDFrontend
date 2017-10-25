@@ -2,7 +2,6 @@
   'use strict';
 
   describe('Directive: EditorToolbar', function() {
-
     var $compile, $rootScope, $scope;
     var editorToolbarService, clientLoggerService;
     var element;
@@ -28,15 +27,21 @@
     beforeEach(module('clientLoggerServiceMock'));
     beforeEach(module('gz3dViewsServiceMock'));
 
-    beforeEach(inject(function(_$rootScope_, _$compile_, _editorToolbarService_, _clientLoggerService_) {
-      $rootScope = _$rootScope_;
-      $compile = _$compile_;
-      editorToolbarService = _editorToolbarService_;
-      clientLoggerService = _clientLoggerService_;
-    }));
+    beforeEach(
+      inject(function(
+        _$rootScope_,
+        _$compile_,
+        _editorToolbarService_,
+        _clientLoggerService_
+      ) {
+        $rootScope = _$rootScope_;
+        $compile = _$compile_;
+        editorToolbarService = _editorToolbarService_;
+        clientLoggerService = _clientLoggerService_;
+      })
+    );
 
     beforeEach(function() {
-
       element = $compile('<editor-toolbar></editor-toolbar>')($rootScope);
       document.createElement('div').appendChild(element[0]);
       $rootScope.$digest();
@@ -47,4 +52,4 @@
       expect($scope.vm).toBeDefined();
     });
   });
-}());
+})();

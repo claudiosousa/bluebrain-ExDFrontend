@@ -25,25 +25,34 @@
   'use strict';
 
   class SpikeTrainController {
-
-    static get PLOT_COLOR() { return 'black'; }
-    static get FONT() { return 'sans-serif'; }
-    static get MARK_INTERVAL() { return 2; }//s
-    static get MIN_NEURON_HEIGHT() { return 2; }//px
+    static get PLOT_COLOR() {
+      return 'black';
+    }
+    static get FONT() {
+      return 'sans-serif';
+    }
+    static get MARK_INTERVAL() {
+      return 2;
+    } //s
+    static get MIN_NEURON_HEIGHT() {
+      return 2;
+    } //px
 
     set drawingCanvas(value) {
       this.canvas = value;
       this.canvasCtx = this.canvas.getContext('2d');
     }
 
-    constructor($element,
-                $filter,
-                $scope,
-                $timeout,
-                RESET_TYPE,
-                SPIKE_TIMELABEL_SPACE,
-                spikeListenerService,
-                editorToolbarService) {
+    constructor(
+      $element,
+      $filter,
+      $scope,
+      $timeout,
+      RESET_TYPE,
+      SPIKE_TIMELABEL_SPACE,
+      spikeListenerService,
+      editorToolbarService
+    ) {
       this.SEPARATOR_MSG = Symbol('sep');
 
       this.$filter = $filter;
@@ -55,7 +64,7 @@
       this.messages = [];
       this.neuronCount = 0;
 
-      this.onNewSpikesMessage = (msg) => this.newSpikesMessage(msg);
+      this.onNewSpikesMessage = msg => this.newSpikesMessage(msg);
 
       this.drawingCanvas = $element.find('canvas')[0];
 
@@ -63,19 +72,22 @@
 
       // only start watching for size changes after a little timeout
       // the flood of size changes during compilation will cause angular to throw digest errors when watched
-      $timeout(
-        () => {
-          $scope.$watch(
-            () => { return [this.canvas.parentNode.offsetWidth, this.canvas.parentNode.offsetHeight].join('x'); },
-            () => { this.calculateCanvas(); }
-          );
-        },
-        200
-      );
+      $timeout(() => {
+        $scope.$watch(
+          () => {
+            return [
+              this.canvas.parentNode.offsetWidth,
+              this.canvas.parentNode.offsetHeight
+            ].join('x');
+          },
+          () => {
+            this.calculateCanvas();
+          }
+        );
+      }, 200);
 
       $scope.$on('RESET', (event, resetType) => {
-        if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
-          this.clearPlot();
+        if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) this.clearPlot();
       });
 
       $scope.$on('$destroy', () => {
@@ -90,16 +102,15 @@
      */
     calculateCanvas() {
       const parent = this.canvas.parentNode;
-      if (!parent.offsetWidth || !parent.offsetHeight)
-        return false;
+      if (!parent.offsetWidth || !parent.offsetHeight) return false;
 
-      this.canvas.setAttribute('height', parent.offsetHeight - 10);  //margin to avoid parasite scrollbar
+      this.canvas.setAttribute('height', parent.offsetHeight - 10); //margin to avoid parasite scrollbar
       this.canvas.setAttribute('width', parent.offsetWidth);
 
       this.calculateCanvasSize();
       this.redraw();
       return true;
-    };
+    }
 
     clearPlot() {
       this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -121,15 +132,18 @@
     plotMessage(msg, verifyNeuronCount = true) {
       this.translate(1);
 
-      if (!msg || !msg.spikes || msg.neuronCount === undefined)
-        return;
+      if (!msg || !msg.spikes || msg.neuronCount === undefined) return;
 
       if (verifyNeuronCount && this.neuronCount !== msg.neuronCount) {
         this.neuronCount = msg.neuronCount;
         this.calculateCanvasSize() && this.redraw();
       }
 
-      let neuronHeight = Math.floor((this.canvas.height - this.SPIKE_TIMELABEL_SPACE * 2) / msg.neuronCount - 1);
+      let neuronHeight = Math.floor(
+        (this.canvas.height - this.SPIKE_TIMELABEL_SPACE * 2) /
+          msg.neuronCount -
+          1
+      );
 
       if (msg.simulationTime % SpikeTrainController.MARK_INTERVAL === 0)
         this.drawMark(msg.simulationTime);
@@ -147,7 +161,7 @@
 
     plotLine(y = 0, height = 0) {
       // 0.5 offset for pure black lines (see: http://mzl.la/1NpjoBh)
-      const xPos = this.visibleWidth - .5;
+      const xPos = this.visibleWidth - 0.5;
 
       this.canvasCtx.beginPath();
       // do canvas.height - y so that we draw from the bottom of the canvas up
@@ -158,7 +172,7 @@
 
     translate(hDelta = 0) {
       const originOp = this.canvasCtx.globalCompositeOperation;
-      this.canvasCtx.globalCompositeOperation = 'copy';//override left pixels
+      this.canvasCtx.globalCompositeOperation = 'copy'; //override left pixels
       this.canvasCtx.drawImage(this.canvas, -hDelta, 0);
       //this.canvasCtx.clearRect(this.visibleWidth - hDelta, this.SPIKE_TIMELABEL_SPACE, hDelta, this.canvas.height - 2 * this.SPIKE_TIMELABEL_SPACE);
       this.canvasCtx.globalCompositeOperation = originOp;
@@ -169,7 +183,10 @@
       const MARK_SIZE = 10;
 
       this.setColor(MARK_COLOR);
-      this.plotLine(this.SPIKE_TIMELABEL_SPACE, this.canvas.height - 2 * this.SPIKE_TIMELABEL_SPACE);
+      this.plotLine(
+        this.SPIKE_TIMELABEL_SPACE,
+        this.canvas.height - 2 * this.SPIKE_TIMELABEL_SPACE
+      );
 
       const timeText = this.$filter('timeDDHHMMSS')(time);
       this.canvasCtx.textAlign = 'center';
@@ -195,7 +212,11 @@
 
       // Draw double ~ sign
       this.canvasCtx.font = `${SEP_SIZE}px ${SpikeTrainController.FONT}`;
-      this.canvasCtx.fillText(SEP_CHAR, this.visibleWidth, this.canvas.height / 2);
+      this.canvasCtx.fillText(
+        SEP_CHAR,
+        this.visibleWidth,
+        this.canvas.height / 2
+      );
 
       this.canvasCtx.font = originalFont;
 
@@ -204,8 +225,7 @@
 
     startSpikeDisplay() {
       this.spikeListenerService.startListening(this.onNewSpikesMessage);
-      if (!this.firstRun)
-        this.messages.push(this.SEPARATOR_MSG);
+      if (!this.firstRun) this.messages.push(this.SEPARATOR_MSG);
 
       this.firstRun = false;
     }
@@ -216,24 +236,37 @@
 
     calculateCanvasSize() {
       this.visibleWidth = this.canvas.parentNode.offsetWidth;
-      const width = this.visibleWidth + 40;  //40px for off screen buffer
-      const minHeight = this.neuronCount * SpikeTrainController.MIN_NEURON_HEIGHT + 2 * this.SPIKE_TIMELABEL_SPACE;
+      const width = this.visibleWidth + 40; //40px for off screen buffer
+      const minHeight =
+        this.neuronCount * SpikeTrainController.MIN_NEURON_HEIGHT +
+        2 * this.SPIKE_TIMELABEL_SPACE;
       if (width <= this.canvas.width && minHeight <= this.canvas.height)
-        return false;  //no canvas size change
+        return false; //no canvas size change
 
-      this.canvas.setAttribute('height', Math.max(this.canvas.height, minHeight));
+      this.canvas.setAttribute(
+        'height',
+        Math.max(this.canvas.height, minHeight)
+      );
       this.canvas.setAttribute('width', width);
-      return true;  // canvas size changed
+      return true; // canvas size changed
     }
 
     redraw() {
-      this.messages.forEach((msg) => msg === this.SEPARATOR_MSG ? this.drawSeparator() : this.plotMessage(msg, false));
+      this.messages.forEach(
+        msg =>
+          msg === this.SEPARATOR_MSG
+            ? this.drawSeparator()
+            : this.plotMessage(msg, false)
+      );
     }
   }
 
   angular
-    .module('spikeTrainModule', ['spikeListenerModule', 'exdFrontendApp.Constants'])
-    .constant('SPIKE_TIMELABEL_SPACE', 15)// Vertical space in the canvas reserved for the time label
+    .module('spikeTrainModule', [
+      'spikeListenerModule',
+      'exdFrontendApp.Constants'
+    ])
+    .constant('SPIKE_TIMELABEL_SPACE', 15) // Vertical space in the canvas reserved for the time label
     .controller('SpikeTrainController', [
       '$element',
       '$filter',
@@ -243,6 +276,6 @@
       'SPIKE_TIMELABEL_SPACE',
       'spikeListenerService',
       'editorToolbarService',
-      (...args) => new SpikeTrainController(...args)]);
-
+      (...args) => new SpikeTrainController(...args)
+    ]);
 })();

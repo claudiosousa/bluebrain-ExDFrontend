@@ -21,22 +21,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('transferFunctionEditorButtons', [function () {
+  angular.module('exdFrontendApp').directive('transferFunctionEditorButtons', [
+    function() {
       return {
-        templateUrl: 'components/editors/transfer-function-editor/transfer-function-editor-buttons.template.html',
+        templateUrl:
+          'components/editors/transfer-function-editor/transfer-function-editor-buttons.template.html',
         restrict: 'E',
         scope: true,
-        link: function (scope, element, attrs) {
-
-          scope.createTf = function () {
+        link: function(scope, element, attrs) {
+          scope.createTf = function() {
             scope.create(attrs.appendAtEnd);
           };
-
         }
       };
-    }]);
+    }
+  ]);
 })();

@@ -25,27 +25,26 @@
 (function() {
   'use strict';
 
-  angular.module('experimentExplorer')
-    .directive('experimentExplorer', () =>
-      ({
-        templateUrl: 'components/experiment-explorer/experiment-explorer.template.html',
-        restrict: 'E',
-        controller: 'ExperimentExplorerController',
-        controllerAs: 'vm',
-        link: scope => scope.vm.loadExperimentList()
-      })
-    )
-    .directive('experimentFolders', () =>
-      ({
-        restrict: 'E',
-        replace: true,
-        template: '<div class="experiment-folders" ng-include src="\'experiment-explorer-folder.html\'"></div>',
-        scope: {
-          parent: '='
-        },
-        link: scope => {
-          scope.vm = scope.$parent.vm;
-        }
-      })
-    );
-}());
+  angular
+    .module('experimentExplorer')
+    .directive('experimentExplorer', () => ({
+      templateUrl:
+        'components/experiment-explorer/experiment-explorer.template.html',
+      restrict: 'E',
+      controller: 'ExperimentExplorerController',
+      controllerAs: 'vm',
+      link: scope => scope.vm.loadExperimentList()
+    }))
+    .directive('experimentFolders', () => ({
+      restrict: 'E',
+      replace: true,
+      template:
+        '<div class="experiment-folders" ng-include src="\'experiment-explorer-folder.html\'"></div>',
+      scope: {
+        parent: '='
+      },
+      link: scope => {
+        scope.vm = scope.$parent.vm;
+      }
+    }));
+})();

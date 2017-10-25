@@ -24,34 +24,41 @@
 (function() {
   'use strict';
 
-  angular.module('collabExperimentLockModule', ['collabServices'])
+  angular
+    .module('collabExperimentLockModule', ['collabServices'])
     .value('LOCK_FILE_VALIDITY_MAX_AGE_HOURS', 24) //after x hours, lock file is ignored
     .provider('collabExperimentLockService', function() {
-
       //The edition lock file name that will be created within the experiment folder
       var LOCK_FILE_NAME = 'edit.lock';
-      var LOCK_FILE_POLL_RATE = 10 * 1000;//each 10s
+      var LOCK_FILE_POLL_RATE = 10 * 1000; //each 10s
 
       return {
-        $get: ['$q',
+        $get: [
+          '$q',
           '$interval',
           'nrpUser',
           'storageServer',
           'LOCK_FILE_VALIDITY_MAX_AGE_HOURS',
-          function($q, $interval, nrpUser, storageServer, LOCK_FILE_VALIDITY_MAX_AGE_HOURS) {
-
+          function(
+            $q,
+            $interval,
+            nrpUser,
+            storageServer,
+            LOCK_FILE_VALIDITY_MAX_AGE_HOURS
+          ) {
             //checks whether a file exists within a folder
             var getFolderFileMetaData = function(folderId, fileName) {
-              return storageServer.getFileContent(folderId, fileName, true)
+              return storageServer
+                .getFileContent(folderId, fileName, true)
                 .then(function(file) {
                   var lockResponse = {
                     locked: !!file.uuid
                   };
-                  if (!lockResponse.locked)
-                    return $q.when(lockResponse);
+                  if (!lockResponse.locked) return $q.when(lockResponse);
 
                   let fileContent = JSON.parse(file.data);
-                  return nrpUser.getOwnerDisplayName(fileContent.userId)
+                  return nrpUser
+                    .getOwnerDisplayName(fileContent.userId)
                     .then(function(displayName) {
                       lockResponse.lockInfo = {
                         user: {
@@ -60,7 +67,6 @@
                         },
                         entity: file.uuid,
                         date: fileContent.date
-
                       };
                       return $q.when(lockResponse);
                     });
@@ -68,12 +74,16 @@
             };
 
             var isValidLockFile = function(lockInfo) {
-              return moment(lockInfo.date).add(LOCK_FILE_VALIDITY_MAX_AGE_HOURS, 'hours') > Date.now();
+              return (
+                moment(lockInfo.date).add(
+                  LOCK_FILE_VALIDITY_MAX_AGE_HOURS,
+                  'hours'
+                ) > Date.now()
+              );
             };
 
             //creates a contextfull lock service for a given contextId
             var createLockServiceForExperimentId = function(experimentId) {
-
               //the folderId for the Collab context
               var folderId = $q.when(experimentId);
 
@@ -84,15 +94,13 @@
                     return getFolderFileMetaData(folderId, LOCK_FILE_NAME);
                   })
                   .then(function(lockResponse) {
-                    if (!lockResponse.locked)
-                      return lockResponse;
+                    if (!lockResponse.locked) return lockResponse;
                     else if (!isValidLockFile(lockResponse.lockInfo)) {
                       //the lock file is invalid, we set it as such and remove it
                       lockResponse.locked = false;
-                      return releaseLock()
-                        .then(function() {
-                          return lockResponse;
-                        });
+                      return releaseLock().then(function() {
+                        return lockResponse;
+                      });
                     }
                     return lockResponse;
                   });
@@ -100,30 +108,37 @@
 
               //releases the edition lock
               var releaseLock = function() {
-                return folderId.then(folderId => storageServer.deleteFile(folderId, LOCK_FILE_NAME, true));
+                return folderId.then(folderId =>
+                  storageServer.deleteFile(folderId, LOCK_FILE_NAME, true)
+                );
               };
 
               //tries to lock an experiment for edition
               var tryAddLock = function() {
-                return $q.when(folderId)
-                  .then(function(folderId) {
+                return $q.when(folderId).then(function(folderId) {
+                  return nrpUser
+                    .getCurrentUser()
+                    .then(({ id }) =>
+                      storageServer.setFileContent(
+                        folderId,
+                        LOCK_FILE_NAME,
+                        JSON.stringify({ userId: id, date: Date.now() }),
+                        true
+                      )
+                    )
+                    .then(response => ({ success: !!response.uuid }))
+                    .catch(function() {
+                      // couldn't create lock, check it actually exists
+                      return isLocked().then(function(lockInfo) {
+                        var result = {
+                          success: !lockInfo.locked,
+                          lock: lockInfo
+                        };
 
-                    return nrpUser.getCurrentUser()
-                      .then(({ id }) => storageServer.setFileContent(folderId, LOCK_FILE_NAME, JSON.stringify({ userId: id, date: Date.now() }), true))
-                      .then(response => ({ success: !!response.uuid }))
-                      .catch(function() {
-                        // couldn't create lock, check it actually exists
-                        return isLocked()
-                          .then(function(lockInfo) {
-                            var result = {
-                              success: !lockInfo.locked,
-                              lock: lockInfo
-                            };
-
-                            return $q.when(result);
-                          });
+                        return $q.when(result);
                       });
-                  });
+                    });
+                });
               };
 
               var lockChangedPromise;
@@ -141,7 +156,9 @@
                   });
                 }, LOCK_FILE_POLL_RATE);
 
-                return function() { $interval.cancel(lockChangedPromise); };
+                return function() {
+                  $interval.cancel(lockChangedPromise);
+                };
               };
 
               return {
@@ -155,7 +172,8 @@
             return {
               createLockServiceForExperimentId
             };
-          }]
+          }
+        ]
       };
     });
-}());
+})();

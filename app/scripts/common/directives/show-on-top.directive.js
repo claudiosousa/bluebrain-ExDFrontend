@@ -23,28 +23,43 @@
  * ---LICENSE-END**/
 (function() {
   'use strict';
-  angular.module('showOnTop', [])
-    .constant('MAX_PANEL_ZINDEX', 400)//panels z-index start at this value and go
-    .directive('showOnTop', ['showOnTopService', showOnTopService => {
-      return {
-        restrict: 'A',
-        link: (scope, element, attrs) => {
+  angular
+    .module('showOnTop', [])
+    .constant('MAX_PANEL_ZINDEX', 400) //panels z-index start at this value and go
+    .directive('showOnTop', [
+      'showOnTopService',
+      showOnTopService => {
+        return {
+          restrict: 'A',
+          link: (scope, element, attrs) => {
+            showOnTopService.registerPanel(element);
 
-          showOnTopService.registerPanel(element);
+            var putCurrentElementOnTop = () =>
+              showOnTopService.putPanelOnTop(element);
 
-          var putCurrentElementOnTop = () => showOnTopService.putPanelOnTop(element);
+            element.click(putCurrentElementOnTop);
+            element[0].addEventListener(
+              'mousedown',
+              putCurrentElementOnTop,
+              true
+            );
 
-          element.click(putCurrentElementOnTop);
-          element[0].addEventListener('mousedown', putCurrentElementOnTop, true);
+            if (attrs.ngShow)
+              scope.$watch(
+                attrs.ngShow,
+                visible => visible && putCurrentElementOnTop()
+              );
 
-          if (attrs.ngShow)
-            scope.$watch(attrs.ngShow, visible => visible && putCurrentElementOnTop());
-
-          scope.$on('$destroy', function() {
-            element[0].removeEventListener('mousedown', putCurrentElementOnTop, true);
-            showOnTopService.removePanel(element);
-          });
-        }
-      };
-    }]);
-}());
+            scope.$on('$destroy', function() {
+              element[0].removeEventListener(
+                'mousedown',
+                putCurrentElementOnTop,
+                true
+              );
+              showOnTopService.removePanel(element);
+            });
+          }
+        };
+      }
+    ]);
+})();

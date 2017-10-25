@@ -21,19 +21,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('editorToolbarModule')
-    .directive('editorToolbar', [
-      function () {
-        return {
-          templateUrl: 'components/editor-toolbar/editor-toolbar.template.html',
-          restrict: 'E',
-          scope: true,
-          controller: 'EditorToolbarController',
-          controllerAs: 'vm',
-         };
-      }
-    ]);
-}());
+  angular.module('editorToolbarModule').directive('editorToolbar', [
+    function() {
+      return {
+        templateUrl: 'components/editor-toolbar/editor-toolbar.template.html',
+        restrict: 'E',
+        scope: true,
+        controller: 'EditorToolbarController',
+        controllerAs: 'vm'
+      };
+    }
+  ]);
+})();

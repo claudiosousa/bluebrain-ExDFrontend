@@ -24,21 +24,39 @@
 (function() {
   'use strict';
 
-  angular.module('helpTooltipPopoverModule', ['exdFrontendApp.Constants', 'simulationStateServices', 'helpTooltipModule', 'experimentModule'])
-    .directive('helpTooltipPopover',
-    ['STATE', 'helpTooltipService', 'stateService','experimentService', 'simulationInfo',
-    function(STATE, helpTooltipService, stateService, experimentService, simulationInfo) {
-      return {
-        restrict: 'E',
-        templateUrl: 'components/help-tooltip/popover/help-tooltip-popover.template.html',
-        scope: {},
-        link: function(scope) {
-          scope.STATE = STATE;
-          scope.helpTooltipService = helpTooltipService;
-          scope.stateService = stateService;
-          scope.experimentService = experimentService;
-          scope.simulationInfo = simulationInfo;
-        }
-      };
-    }]);
-}());
+  angular
+    .module('helpTooltipPopoverModule', [
+      'exdFrontendApp.Constants',
+      'simulationStateServices',
+      'helpTooltipModule',
+      'experimentModule'
+    ])
+    .directive('helpTooltipPopover', [
+      'STATE',
+      'helpTooltipService',
+      'stateService',
+      'experimentService',
+      'simulationInfo',
+      function(
+        STATE,
+        helpTooltipService,
+        stateService,
+        experimentService,
+        simulationInfo
+      ) {
+        return {
+          restrict: 'E',
+          templateUrl:
+            'components/help-tooltip/popover/help-tooltip-popover.template.html',
+          scope: {},
+          link: function(scope) {
+            scope.STATE = STATE;
+            scope.helpTooltipService = helpTooltipService;
+            scope.stateService = stateService;
+            scope.experimentService = experimentService;
+            scope.simulationInfo = simulationInfo;
+          }
+        };
+      }
+    ]);
+})();

@@ -21,127 +21,166 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   /* global console: false */
 
-  angular.module('exdFrontendApp').controller('editorPanelCtrl',
-    ['$rootScope', '$scope', 'simulationInfo','bbpConfig', 'gz3d', 'baseEventHandler', 'autoSaveService','saveErrorsService', 'editorsPanelService', 'userContextService',
-    function ($rootScope, $scope, simulationInfo, bbpConfig, gz3d, baseEventHandler, autoSaveService, saveErrorsService, editorsPanelService, userContextService) {
+  angular.module('exdFrontendApp').controller('editorPanelCtrl', [
+    '$rootScope',
+    '$scope',
+    'simulationInfo',
+    'bbpConfig',
+    'gz3d',
+    'baseEventHandler',
+    'autoSaveService',
+    'saveErrorsService',
+    'editorsPanelService',
+    'userContextService',
+    function(
+      $rootScope,
+      $scope,
+      simulationInfo,
+      bbpConfig,
+      gz3d,
+      baseEventHandler,
+      autoSaveService,
+      saveErrorsService,
+      editorsPanelService,
+      userContextService
+    ) {
+      var serverConfig = simulationInfo.serverConfig;
+      $scope.simulationID = simulationInfo.simulationID;
+      $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
-    var serverConfig = simulationInfo.serverConfig;
-    $scope.simulationID = simulationInfo.simulationID;
-    $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
-
-    $scope.editorsPanelService = editorsPanelService;
-    $scope.panelIsOpen = false;
-    $scope.isOwner = userContextService.isOwner();
-
-    $scope.tabindex = {
-      environment: 1,
-      statemachine: 2,
-      transferfunction: 3,
-      pynneditor: 4,
-      events: 5,
-      graphicalEditor: 6
-    };
-
-    $scope.activeTabIndex = $scope.isOwner? $scope.tabindex.environment : $scope.tabindex.transferfunction;
-
-    $scope.controls = {};
-
-    for (let tab in $scope.tabindex)
-      if ($scope.tabindex.hasOwnProperty(tab))
-        $scope.controls[tab] = {};
-
-    $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
-    $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
-
-    var isTabSelected = (...tabs) => tabs.indexOf($scope.activeTabIndex) >= 0;
-
-    $scope.openCallback = function() {
-      // The Panel is opened
-
-      userContextService.isOwner() && autoSaveService.checkAutoSavedWork()
-        .catch(function() {
-          // auto saved data will always be the freshest data, so only load the error data if there is no autosave data or it was discarded.
-          saveErrorsService.getErrorSavedWork();
-        });
-
-      $scope.panelIsOpen = true;
-      if (isTabSelected($scope.tabindex.transferfunction, $scope.tabindex.statemachine, $scope.tabindex.pynneditor, $scope.tabindex.graphicalEditor))
-        gz3d.scene.controls.keyboardBindingsEnabled = false;
-
-
-      $scope.refresh();
-    };
-
-    $scope.refresh = function() {
-      if (!$scope.panelIsOpen || !$scope.activeTabIndex)
-        return;
-
-      // find the tabcontrol for the selected tabindex
-      let selectedTab = _($scope.tabindex)
-        .map((tabIndex, tabName) => [tabIndex, tabName])
-        .filter(([tabIndex, tabName]) => tabIndex === $scope.activeTabIndex && tabName)
-        .map(([tabIndex, tabName]) => $scope.controls[tabName])
-        .first();
-
-      selectedTab && selectedTab.refresh && selectedTab.refresh();
-    };
-
-    // update UI
-    $scope.$on("UPDATE_PANEL_UI", function() {
-      // prevent calling the select functions of the tabs
-      $scope.refresh();
-    });
-
-    $scope.closeCallback = function() {
-      // The Panel is closed
+      $scope.editorsPanelService = editorsPanelService;
       $scope.panelIsOpen = false;
-      if (angular.isDefined(gz3d.scene) && angular.isDefined(gz3d.scene.controls)) {
-        gz3d.scene.controls.keyboardBindingsEnabled = true;
-      }
-    };
+      $scope.isOwner = userContextService.isOwner();
 
-    $scope.disableKeyBindings = function() {
-      // Only disable the key bindings if the panel is open
-      // This prevents disabling the key bindings when the page is loaded
-      if($scope.panelIsOpen === true && angular.isDefined(gz3d.scene) && angular.isDefined(gz3d.scene.controls)) {
-        gz3d.scene.controls.keyboardBindingsEnabled = false;
-      }
-    };
+      $scope.tabindex = {
+        environment: 1,
+        statemachine: 2,
+        transferfunction: 3,
+        pynneditor: 4,
+        events: 5,
+        graphicalEditor: 6
+      };
 
-    $scope.reenableKeyBindings = function() {
-      // Reenable the key bindings when the user leaves a code-editor panel
-      if (angular.isDefined(gz3d.scene)&& angular.isDefined(gz3d.scene.controls)) {
-        gz3d.scene.controls.keyboardBindingsEnabled = true;
-      }
-    };
+      $scope.activeTabIndex = $scope.isOwner
+        ? $scope.tabindex.environment
+        : $scope.tabindex.transferfunction;
 
-    // clean up on leaving
-    $scope.$on("$destroy", function() {
-      // prevent calling the select functions of the tabs
-      editorsPanelService.showEditorPanel = false;
-    });
+      $scope.controls = {};
 
-    $scope.$watch('editorsPanelService.showEditorPanel', function() {
-      if (editorsPanelService.showEditorPanel) {
-        $scope.openCallback();
-      } else {
-        $scope.closeCallback();
-      }
-    });
+      for (let tab in $scope.tabindex)
+        if ($scope.tabindex.hasOwnProperty(tab)) $scope.controls[tab] = {};
 
-    $scope.onResizeEnd = function() {
-      // the codemirror elements inside the transfer function tab of the editor panel
-      // do not work well with resizing so deselect them on resize and refresh on focus
-      document.activeElement.blur();
-    };
+      $scope.cleErrorTopic = bbpConfig.get('ros-topics').cleError;
+      $scope.rosbridgeWebsocketUrl = serverConfig.rosbridge.websocket;
 
-    $scope.suppressKeyPress = function(event) {
-      baseEventHandler.suppressAnyKeyPress(event);
-    };
-  }]);
-}());
+      var isTabSelected = (...tabs) => tabs.indexOf($scope.activeTabIndex) >= 0;
+
+      $scope.openCallback = function() {
+        // The Panel is opened
+
+        userContextService.isOwner() &&
+          autoSaveService.checkAutoSavedWork().catch(function() {
+            // auto saved data will always be the freshest data, so only load the error data if there is no autosave data or it was discarded.
+            saveErrorsService.getErrorSavedWork();
+          });
+
+        $scope.panelIsOpen = true;
+        if (
+          isTabSelected(
+            $scope.tabindex.transferfunction,
+            $scope.tabindex.statemachine,
+            $scope.tabindex.pynneditor,
+            $scope.tabindex.graphicalEditor
+          )
+        )
+          gz3d.scene.controls.keyboardBindingsEnabled = false;
+
+        $scope.refresh();
+      };
+
+      $scope.refresh = function() {
+        if (!$scope.panelIsOpen || !$scope.activeTabIndex) return;
+
+        // find the tabcontrol for the selected tabindex
+        let selectedTab = _($scope.tabindex)
+          .map((tabIndex, tabName) => [tabIndex, tabName])
+          .filter(
+            ([tabIndex, tabName]) =>
+              tabIndex === $scope.activeTabIndex && tabName
+          )
+          .map(([tabIndex, tabName]) => $scope.controls[tabName])
+          .first();
+
+        selectedTab && selectedTab.refresh && selectedTab.refresh();
+      };
+
+      // update UI
+      $scope.$on('UPDATE_PANEL_UI', function() {
+        // prevent calling the select functions of the tabs
+        $scope.refresh();
+      });
+
+      $scope.closeCallback = function() {
+        // The Panel is closed
+        $scope.panelIsOpen = false;
+        if (
+          angular.isDefined(gz3d.scene) &&
+          angular.isDefined(gz3d.scene.controls)
+        ) {
+          gz3d.scene.controls.keyboardBindingsEnabled = true;
+        }
+      };
+
+      $scope.disableKeyBindings = function() {
+        // Only disable the key bindings if the panel is open
+        // This prevents disabling the key bindings when the page is loaded
+        if (
+          $scope.panelIsOpen === true &&
+          angular.isDefined(gz3d.scene) &&
+          angular.isDefined(gz3d.scene.controls)
+        ) {
+          gz3d.scene.controls.keyboardBindingsEnabled = false;
+        }
+      };
+
+      $scope.reenableKeyBindings = function() {
+        // Reenable the key bindings when the user leaves a code-editor panel
+        if (
+          angular.isDefined(gz3d.scene) &&
+          angular.isDefined(gz3d.scene.controls)
+        ) {
+          gz3d.scene.controls.keyboardBindingsEnabled = true;
+        }
+      };
+
+      // clean up on leaving
+      $scope.$on('$destroy', function() {
+        // prevent calling the select functions of the tabs
+        editorsPanelService.showEditorPanel = false;
+      });
+
+      $scope.$watch('editorsPanelService.showEditorPanel', function() {
+        if (editorsPanelService.showEditorPanel) {
+          $scope.openCallback();
+        } else {
+          $scope.closeCallback();
+        }
+      });
+
+      $scope.onResizeEnd = function() {
+        // the codemirror elements inside the transfer function tab of the editor panel
+        // do not work well with resizing so deselect them on resize and refresh on focus
+        document.activeElement.blur();
+      };
+
+      $scope.suppressKeyPress = function(event) {
+        baseEventHandler.suppressAnyKeyPress(event);
+      };
+    }
+  ]);
+})();

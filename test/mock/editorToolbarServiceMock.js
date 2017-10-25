@@ -1,7 +1,7 @@
-(function () {
+(function() {
   'use strict';
 
-  angular.module('editorToolbarServiceMock', [])
-  .service('editorToolbarService', function () {
-  });
-}());
+  angular
+    .module('editorToolbarServiceMock', [])
+    .service('editorToolbarService', function() {});
+})();

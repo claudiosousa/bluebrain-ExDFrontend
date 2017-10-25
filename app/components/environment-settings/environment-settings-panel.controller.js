@@ -21,54 +21,66 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp').controller('environmentSettingsPanelCtrl',
-    ['$rootScope', '$scope', 'bbpConfig', 'gz3d', 'baseEventHandler',
-      'editorToolbarService',
-      function($rootScope, $scope, bbpConfig, gz3d, baseEventHandler,
-               editorToolbarService) {
-
-    $scope.editorToolbarService = editorToolbarService;
-    $scope.panelIsOpen = false;
-    $scope.tabindex = {
-      master: 1,
-      quality:2,
-      color: 3,
-      environment: 4,
-      usercamera: 5
-    };
-
-    $scope.activeTabIndex = $scope.tabindex.master;
-
-    $scope.openCallback = function() {
-      // The Panel is opened
-      $scope.panelIsOpen = true;
-    };
-
-    $scope.closeCallback = function() {
-      // The Panel is closed
+  angular.module('exdFrontendApp').controller('environmentSettingsPanelCtrl', [
+    '$rootScope',
+    '$scope',
+    'bbpConfig',
+    'gz3d',
+    'baseEventHandler',
+    'editorToolbarService',
+    function(
+      $rootScope,
+      $scope,
+      bbpConfig,
+      gz3d,
+      baseEventHandler,
+      editorToolbarService
+    ) {
+      $scope.editorToolbarService = editorToolbarService;
       $scope.panelIsOpen = false;
-    };
+      $scope.tabindex = {
+        master: 1,
+        quality: 2,
+        color: 3,
+        environment: 4,
+        usercamera: 5
+      };
 
-    // clean up on leaving
-    $scope.$on("$destroy", function() {
-      // prevent calling the select functions of the tabs
-      editorToolbarService.showEnvironmentSettingsPanel = false;
-    });
+      $scope.activeTabIndex = $scope.tabindex.master;
 
-    $scope.$watch('editorToolbarService.showEnvironmentSettingsPanel',
+      $scope.openCallback = function() {
+        // The Panel is opened
+        $scope.panelIsOpen = true;
+      };
+
+      $scope.closeCallback = function() {
+        // The Panel is closed
+        $scope.panelIsOpen = false;
+      };
+
+      // clean up on leaving
+      $scope.$on('$destroy', function() {
+        // prevent calling the select functions of the tabs
+        editorToolbarService.showEnvironmentSettingsPanel = false;
+      });
+
+      $scope.$watch(
+        'editorToolbarService.showEnvironmentSettingsPanel',
         function() {
           if (editorToolbarService.isEnvironmentSettingsPanelActive) {
             $scope.openCallback();
           } else {
             $scope.closeCallback();
           }
-        });
+        }
+      );
 
-    $scope.suppressKeyPress = function(event) {
-      baseEventHandler.suppressAnyKeyPress(event);
-    };
-  }]);
-}());
+      $scope.suppressKeyPress = function(event) {
+        baseEventHandler.suppressAnyKeyPress(event);
+      };
+    }
+  ]);
+})();

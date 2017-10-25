@@ -21,42 +21,35 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .service('isNotARobotPredicate', function () {
-      return function (entity)
-      {
-        if (entity)
-        {
-          var robotIdentifier = 'robot';
+  angular.module('exdFrontendApp').service('isNotARobotPredicate', function() {
+    return function(entity) {
+      if (entity) {
+        var robotIdentifier = 'robot';
 
-          if (entity.name === robotIdentifier)
-          {
+        if (entity.name === robotIdentifier) {
+          return false;
+        }
+
+        var idx = entity.name.indexOf(robotIdentifier);
+        if (idx === -1) {
+          return true;
+        }
+
+        if (idx + robotIdentifier.length < entity.name.length) {
+          if (
+            entity.name[idx + robotIdentifier.length] === ' ' ||
+            entity.name[idx + robotIdentifier.length] === '_'
+          ) {
             return false;
           }
-
-          var idx = entity.name.indexOf(robotIdentifier);
-          if (idx === -1)
-          {
-            return true;
-          }
-
-          if ((idx + robotIdentifier.length) < entity.name.length)
-          {
-            if (entity.name[idx + robotIdentifier.length] === ' ' ||
-              entity.name[idx + robotIdentifier.length] === '_')
-            {
-              return false;
-            }
-          }
-
-          return true;
-
         }
-        return true;
 
-      };
-    });
+        return true;
+      }
+      return true;
+    };
+  });
 })();

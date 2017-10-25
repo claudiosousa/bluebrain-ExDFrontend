@@ -3,23 +3,33 @@
 describe('Services: BaseExperimentsService', function() {
   var $rootScope;
 
-  beforeEach(inject(function(_$rootScope_) {
-    $rootScope = _$rootScope_;
-  }));
+  beforeEach(
+    inject(function(_$rootScope_) {
+      $rootScope = _$rootScope_;
+    })
+  );
 
   it('should throw if instantiated', function() {
-    expect(function() { new window.BaseExperimentsService(); }).toThrow();
-    expect(function() { window.BaseExperimentsService(); }).toThrow();
+    expect(function() {
+      new window.BaseExperimentsService();
+    }).toThrow();
+    expect(function() {
+      window.BaseExperimentsService();
+    }).toThrow();
   });
 
   it('should throw if abstract functions are not overriden', function() {
-    var ExperimentsService = function() { };
-    ExperimentsService.prototype = Object.create(window.BaseExperimentsService.prototype);
+    var ExperimentsService = function() {};
+    ExperimentsService.prototype = Object.create(
+      window.BaseExperimentsService.prototype
+    );
     ExperimentsService.prototype.constructor = window.BaseExperimentsService;
     var abstractFunctions = ['getExperiments', 'getExperimentImage'];
 
     abstractFunctions.forEach(function(fnName) {
-      expect(function() { new ExperimentsService()[fnName](); }).toThrow();
+      expect(function() {
+        new ExperimentsService()[fnName]();
+      }).toThrow();
     });
   });
 
@@ -30,13 +40,17 @@ describe('Services: BaseExperimentsService', function() {
         return {
           then: function() {
             return {
-              catch: function(cb) { catchCallback = cb; }
+              catch: function(cb) {
+                catchCallback = cb;
+              }
             };
           }
         };
       };
     };
-    ExperimentsService.prototype = Object.create(window.BaseExperimentsService.prototype);
+    ExperimentsService.prototype = Object.create(
+      window.BaseExperimentsService.prototype
+    );
     ExperimentsService.prototype.constructor = window.BaseExperimentsService;
 
     var experimentsService = new ExperimentsService();
@@ -46,5 +60,4 @@ describe('Services: BaseExperimentsService', function() {
     catchCallback();
     expect(experimentsService.experimentsArray[0].imageData).toBe(false);
   });
-
 });

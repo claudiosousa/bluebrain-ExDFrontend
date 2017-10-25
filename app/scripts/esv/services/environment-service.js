@@ -24,9 +24,10 @@
 (function() {
   'use strict';
 
-  angular.module('environmentServiceModule', [])
-    .factory('environmentService', ['$rootScope', '$location', function($rootScope, $location) {
-
+  angular.module('environmentServiceModule', []).factory('environmentService', [
+    '$rootScope',
+    '$location',
+    function($rootScope, $location) {
       return {
         initialize: initialize,
         isDevMode: isDevMode,
@@ -51,6 +52,6 @@
       function setPrivateExperiment(isPrivateExperiment) {
         $rootScope.isPrivateExperiment = isPrivateExperiment;
       }
-    }]);
-
-}());
+    }
+  ]);
+})();

@@ -24,12 +24,26 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
+  angular
+    .module('exdFrontendApp')
     .constant('SAVE_FILE', 'editor_errors.saved')
-    .service('saveErrorsService', ['$stateParams', '$q',
-      'SAVE_FILE', 'tempFileService', 'environmentService', 'storageServer', 'simulationInfo',
-      function($stateParams, $q,
-        SAVE_FILE, tempFileService, environmentService, storageServer, simulationInfo) {
+    .service('saveErrorsService', [
+      '$stateParams',
+      '$q',
+      'SAVE_FILE',
+      'tempFileService',
+      'environmentService',
+      'storageServer',
+      'simulationInfo',
+      function(
+        $stateParams,
+        $q,
+        SAVE_FILE,
+        tempFileService,
+        environmentService,
+        storageServer,
+        simulationInfo
+      ) {
         /*
         This service can be used to save data (which contains Python errors) to an error file. e.g. TFs, SMs, Brain Editor.
         It's needed as if they are saved to the normal file, further simulations are not possible.
@@ -37,7 +51,6 @@
         var dirtyDataCol = {},
           loaded = false,
           foundCallbacks = {};
-
 
         return {
           saveDirtyData: saveDirtyData,
@@ -48,23 +61,32 @@
         function saveDirtyData(dirtyType, data) {
           var dataObj = {};
           dataObj[dirtyType] = data;
-          return tempFileService.saveDirtyData(SAVE_FILE, false, dataObj, dirtyType);
+          return tempFileService.saveDirtyData(
+            SAVE_FILE,
+            false,
+            dataObj,
+            dirtyType
+          );
         }
         function clearDirty(dirtyType) {
-          if (!environmentService.isPrivateExperiment())
-            return $q.reject();
+          if (!environmentService.isPrivateExperiment()) return $q.reject();
 
-          return storageServer.getFileContent(simulationInfo.experimentID, SAVE_FILE, true)
+          return storageServer
+            .getFileContent(simulationInfo.experimentID, SAVE_FILE, true)
             .then(file => {
-              if (!file.uuid)
-                return $q.reject();
+              if (!file.uuid) return $q.reject();
 
               var content = angular.fromJson(file.data);
               delete content[dirtyType];
               if (Object.keys(content).length === 0)
                 return removeTempErrorSave();
               else
-                return storageServer.setFileContent(simulationInfo.experimentID, SAVE_FILE, angular.toJson(content), true);
+                return storageServer.setFileContent(
+                  simulationInfo.experimentID,
+                  SAVE_FILE,
+                  angular.toJson(content),
+                  true
+                );
             });
         }
 
@@ -73,9 +95,9 @@
         }
 
         function getErrorSavedWork() {
-          if (loaded)
-            return $q.reject();
-          return tempFileService.checkSavedWork(SAVE_FILE, foundCallbacks)
+          if (loaded) return $q.reject();
+          return tempFileService
+            .checkSavedWork(SAVE_FILE, foundCallbacks)
             .finally(function() {
               loaded = true;
             });
@@ -84,10 +106,6 @@
         function registerCallback(dirtyType, cb) {
           foundCallbacks[dirtyType] = cb;
         }
-
-      }]
-    );
-}());
-
-
-
+      }
+    ]);
+})();

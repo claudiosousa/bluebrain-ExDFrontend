@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Directive: resizeable', function() {
-
   var scope, compile, element, elementDOM, document, window, resizeDiv;
   var mockedMouseDownEventStopPropagation;
   var startHeight, startWidth;
@@ -11,19 +10,22 @@ describe('Directive: resizeable', function() {
   // So in principal this test should also work with non zero values, but due to phantomjs it does not.
 
   beforeEach(module('exdFrontendApp'));
-  beforeEach(inject(function($rootScope, $compile, $document, $window) {
-    scope = $rootScope.$new();
-    compile = $compile;
-    document = $document;
-    window = $window;
-    startHeight = window.innerHeight;
-    startWidth = window.innerWidth;
-    scope.onResizeEnd = jasmine.createSpy('onResizeEnd');
-    mockedMouseDownEventStopPropagation = jasmine.createSpy('stopPropagation');
-  }));
+  beforeEach(
+    inject(function($rootScope, $compile, $document, $window) {
+      scope = $rootScope.$new();
+      compile = $compile;
+      document = $document;
+      window = $window;
+      startHeight = window.innerHeight;
+      startWidth = window.innerWidth;
+      scope.onResizeEnd = jasmine.createSpy('onResizeEnd');
+      mockedMouseDownEventStopPropagation = jasmine.createSpy(
+        'stopPropagation'
+      );
+    })
+  );
 
   describe('Resizing divs with the aspect ratio not taken into consideration', function() {
-
     beforeEach(function() {
       element = compile('<div resizeable></div>')(scope);
       element.css({
@@ -51,18 +53,30 @@ describe('Directive: resizeable', function() {
     });
 
     it('should call the onResizeEnd method', function() {
-      resizeElement(resizeDiv, { x: 0, y: 0 }, { dx: randomInt(1, 10), dy: randomInt(1, 10) });
+      resizeElement(
+        resizeDiv,
+        { x: 0, y: 0 },
+        { dx: randomInt(1, 10), dy: randomInt(1, 10) }
+      );
       expect(scope.onResizeEnd).toHaveBeenCalled();
     });
 
     it('should stop event propagation on the mousedown event', function() {
-      resizeElement(resizeDiv, { x: 0, y: 0 }, { dx: randomInt(1, 10), dy: randomInt(1, 10) });
+      resizeElement(
+        resizeDiv,
+        { x: 0, y: 0 },
+        { dx: randomInt(1, 10), dy: randomInt(1, 10) }
+      );
       expect(mockedMouseDownEventStopPropagation).toHaveBeenCalled();
     });
 
     it('should trigger onResizeBegin if existing when mousedown event occurs', function() {
       scope.onResizeBegin = jasmine.createSpy('onResizeBegin');
-      resizeElement(resizeDiv, { x: 0, y: 0 }, { dx: randomInt(1, 10), dy: randomInt(1, 10) });
+      resizeElement(
+        resizeDiv,
+        { x: 0, y: 0 },
+        { dx: randomInt(1, 10), dy: randomInt(1, 10) }
+      );
       expect(scope.onResizeBegin).toHaveBeenCalled();
     });
 
@@ -73,20 +87,26 @@ describe('Directive: resizeable', function() {
       var initWidth = parseInt(elementDOM.style.width, 10);
       var initHeight = parseInt(elementDOM.style.height, 10);
 
-      var expectedWidth = ((initWidth + mouseMoveDelta.x) / window.innerWidth) * 100;
-      var expectedHeight = ((initHeight + mouseMoveDelta.y) / window.innerHeight) * 100;
+      var expectedWidth =
+        (initWidth + mouseMoveDelta.x) / window.innerWidth * 100;
+      var expectedHeight =
+        (initHeight + mouseMoveDelta.y) / window.innerHeight * 100;
 
       resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
 
       expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 1);
-      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(
+        expectedHeight,
+        1
+      );
     });
   });
 
   describe('Using the keep aspect ratio attribute', function() {
-
     beforeEach(function() {
-      element = compile('<div resizeable keep-aspect-ratio="1.0"></div>')(scope);
+      element = compile('<div resizeable keep-aspect-ratio="1.0"></div>')(
+        scope
+      );
       element.css({
         top: '0px',
         left: '0px',
@@ -105,7 +125,10 @@ describe('Directive: resizeable', function() {
       var initHeight = parseInt(elementDOM.style.height, 10);
 
       var mouseDownPos = { x: 0, y: 0 };
-      var mouseMoveDelta = { x: Math.ceil(initWidth * 0.1), y: Math.ceil(initHeight * 0.1) };
+      var mouseMoveDelta = {
+        x: Math.ceil(initWidth * 0.1),
+        y: Math.ceil(initHeight * 0.1)
+      };
 
       var multiplierWidth = 1.0;
       var multiplierHeight = 1.0;
@@ -116,13 +139,24 @@ describe('Directive: resizeable', function() {
         multiplierHeight = window.innerHeight / window.innerWidth;
       }
 
-      var expectedWidth = (((initWidth + mouseMoveDelta.x) * multiplierWidth) / window.innerWidth) * 100;
-      var expectedHeight = (((initHeight + mouseMoveDelta.y) * multiplierHeight) / window.innerHeight) * 100;
+      var expectedWidth =
+        (initWidth + mouseMoveDelta.x) *
+        multiplierWidth /
+        window.innerWidth *
+        100;
+      var expectedHeight =
+        (initHeight + mouseMoveDelta.y) *
+        multiplierHeight /
+        window.innerHeight *
+        100;
 
       resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
 
       expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, 1);
-      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, 1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(
+        expectedHeight,
+        1
+      );
     });
 
     it('it should respect the maximum height', function() {
@@ -135,9 +169,11 @@ describe('Directive: resizeable', function() {
       resizeElement(resizeDiv, mouseDownPos, mouseMoveDelta);
 
       expect(parseFloat(elementDOM.style.width)).toBeCloseTo(expectedWidth, -1);
-      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(expectedHeight, -1);
+      expect(parseFloat(elementDOM.style.height)).toBeCloseTo(
+        expectedHeight,
+        -1
+      );
     });
-
   });
 
   function randomInt(lowerBound, upperBound) {
@@ -172,5 +208,4 @@ describe('Directive: resizeable', function() {
 
     scope.$digest();
   }
-
 });

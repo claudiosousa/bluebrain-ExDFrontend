@@ -1,7 +1,6 @@
 'use strict';
 
-describe('Service: gz3dViews', function () {
-
+describe('Service: gz3dViews', function() {
   var gz3dViewsService;
 
   var $q, $rootScope;
@@ -15,22 +14,28 @@ describe('Service: gz3dViews', function () {
   beforeEach(module('gz3dMock'));
   beforeEach(module('environmentRenderingServiceMock'));
 
-  beforeEach(inject(function (_gz3dViewsService_,
-                              _$q_,
-                              _$rootScope_,
-                              _gz3d_,
-                              _environmentRenderingService_) {
-    gz3dViewsService = _gz3dViewsService_;
+  beforeEach(
+    inject(function(
+      _gz3dViewsService_,
+      _$q_,
+      _$rootScope_,
+      _gz3d_,
+      _environmentRenderingService_
+    ) {
+      gz3dViewsService = _gz3dViewsService_;
 
-    $q = _$q_;
-    $rootScope = _$rootScope_;
-    gz3d = _gz3d_;
-    environmentRenderingService = _environmentRenderingService_;
-  }));
+      $q = _$q_;
+      $rootScope = _$rootScope_;
+      gz3d = _gz3d_;
+      environmentRenderingService = _environmentRenderingService_;
+    })
+  );
 
-  beforeEach(function () {
+  beforeEach(function() {
     deferredSceneInitialized = $q.defer();
-    environmentRenderingService.sceneInitialized.and.returnValue(deferredSceneInitialized.promise);
+    environmentRenderingService.sceneInitialized.and.returnValue(
+      deferredSceneInitialized.promise
+    );
   });
 
   it(' - constructor', function() {
@@ -62,7 +67,9 @@ describe('Service: gz3dViews', function () {
     var successPromise = gz3dViewsService.setView(mockView, mockContainer);
     successPromise.then(
       function(success) {
-        expect(gz3d.scene.viewManager.setViewContainerElement).toHaveBeenCalledWith(mockView, mockContainer);
+        expect(
+          gz3d.scene.viewManager.setViewContainerElement
+        ).toHaveBeenCalledWith(mockView, mockContainer);
         expect(success).toBe(true);
         done();
       },
@@ -70,7 +77,6 @@ describe('Service: gz3dViews', function () {
     );
     deferredSceneInitialized.resolve();
     $rootScope.$digest();
-
   });
 
   it(' - setView(), failure', function(done) {
@@ -90,14 +96,19 @@ describe('Service: gz3dViews', function () {
     $rootScope.$digest();
   });
 
-  it(' - assignView(), success (no undefined containers, last view assigned)', function(done) {
+  it(' - assignView(), success (no undefined containers, last view assigned)', function(
+    done
+  ) {
     var mockContainer = {};
-    var viewToBeAssigned = gz3d.scene.viewManager.views[gz3d.scene.viewManager.views.length - 1];
+    var viewToBeAssigned =
+      gz3d.scene.viewManager.views[gz3d.scene.viewManager.views.length - 1];
 
     var viewPromise = gz3dViewsService.assignView(mockContainer);
     viewPromise.then(
       function(result) {
-        expect(gz3d.scene.viewManager.setViewContainerElement).toHaveBeenCalledWith(viewToBeAssigned, mockContainer);
+        expect(
+          gz3d.scene.viewManager.setViewContainerElement
+        ).toHaveBeenCalledWith(viewToBeAssigned, mockContainer);
         expect(result).toBe(viewToBeAssigned);
         done();
       },
@@ -107,7 +118,9 @@ describe('Service: gz3dViews', function () {
     $rootScope.$digest();
   });
 
-  it(' - assignView(), success (first containers undefined, so it\'s assigned)', function(done) {
+  it(" - assignView(), success (first containers undefined, so it's assigned)", function(
+    done
+  ) {
     var mockContainer = {};
     gz3d.scene.viewManager.views[0].container = undefined;
     var viewToBeAssigned = gz3d.scene.viewManager.views[0];
@@ -115,7 +128,9 @@ describe('Service: gz3dViews', function () {
     var viewPromise = gz3dViewsService.assignView(mockContainer);
     viewPromise.then(
       function(result) {
-        expect(gz3d.scene.viewManager.setViewContainerElement).toHaveBeenCalledWith(viewToBeAssigned, mockContainer);
+        expect(
+          gz3d.scene.viewManager.setViewContainerElement
+        ).toHaveBeenCalledWith(viewToBeAssigned, mockContainer);
         expect(result).toBe(viewToBeAssigned);
         done();
       },

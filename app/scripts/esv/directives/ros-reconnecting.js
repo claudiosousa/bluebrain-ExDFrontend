@@ -22,53 +22,63 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 (function() {
-    'use strict';
+  'use strict';
 
-    angular.module('exdFrontendApp')
-        .constant('RECONNECTING_TIMEOUT_MS', 3000)
-        .directive('rosReconnecting', ['$timeout', 'clbErrorDialog', 'RECONNECTING_TIMEOUT_MS',
-            function($timeout, clbErrorDialog, RECONNECTING_TIMEOUT_MS) {
-                return {
-                    restrict: 'C',
-                    template: '<div class="ros-reconnecting-badge">' +
-                    '<div class="ros-reconnecting-message">Reconnecting to ROS sockets...</div>' +
-                    '<i class="fa fa-spinner fa-spin"></i></div>',
-                    scope: {
-                        onTimeout: "&onReconnectTimeout"
-                    },
-                    link: function(scope, element) {
+  angular
+    .module('exdFrontendApp')
+    .constant('RECONNECTING_TIMEOUT_MS', 3000)
+    .directive('rosReconnecting', [
+      '$timeout',
+      'clbErrorDialog',
+      'RECONNECTING_TIMEOUT_MS',
+      function($timeout, clbErrorDialog, RECONNECTING_TIMEOUT_MS) {
+        return {
+          restrict: 'C',
+          template:
+            '<div class="ros-reconnecting-badge">' +
+            '<div class="ros-reconnecting-message">Reconnecting to ROS sockets...</div>' +
+            '<i class="fa fa-spinner fa-spin"></i></div>',
+          scope: {
+            onTimeout: '&onReconnectTimeout'
+          },
+          link: function(scope, element) {
+            var reconnectingTimer, unsubscribe;
 
-                        var reconnectingTimer, unsubscribe;
-
-                        function reconnectingTimeout() {
-                            $timeout.cancel(reconnectingTimer);
-                            unsubscribe();
-                            element.hide();
-                            clbErrorDialog.open({
-                                type: 'ROSError',
-                                message: 'Could not reconnect to the server. Leaving the simulation now.'
-                            }).then(function(){
-                                scope.onTimeout && scope.onTimeout();
-                            });
-                        }
-
-                        function reconnecting(establishing) {
-                            $timeout.cancel(reconnectingTimer);
-                            if (establishing) {
-                                reconnectingTimer = $timeout(reconnectingTimeout, RECONNECTING_TIMEOUT_MS);
-                                element.show();
-                            } else {
-                                element.hide();
-                            }
-                        }
-
-                        unsubscribe = window.ROSLIB.PhoenixRos.onReconnecting(reconnecting);
-
-                        scope.$on('$destroy', function() {
-                            unsubscribe();
-                        });
-                    }
-                };
+            function reconnectingTimeout() {
+              $timeout.cancel(reconnectingTimer);
+              unsubscribe();
+              element.hide();
+              clbErrorDialog
+                .open({
+                  type: 'ROSError',
+                  message:
+                    'Could not reconnect to the server. Leaving the simulation now.'
+                })
+                .then(function() {
+                  scope.onTimeout && scope.onTimeout();
+                });
             }
-        ]);
-}());
+
+            function reconnecting(establishing) {
+              $timeout.cancel(reconnectingTimer);
+              if (establishing) {
+                reconnectingTimer = $timeout(
+                  reconnectingTimeout,
+                  RECONNECTING_TIMEOUT_MS
+                );
+                element.show();
+              } else {
+                element.hide();
+              }
+            }
+
+            unsubscribe = window.ROSLIB.PhoenixRos.onReconnecting(reconnecting);
+
+            scope.$on('$destroy', function() {
+              unsubscribe();
+            });
+          }
+        };
+      }
+    ]);
+})();

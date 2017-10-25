@@ -26,28 +26,35 @@
   'use strict';
 
   class GZ3DViewsService {
+    get views() {
+      return this.gz3d.scene.viewManager.views;
+    }
 
-    get views() { return this.gz3d.scene.viewManager.views; }
-
-    constructor($q,
-                gz3d,
-                environmentRenderingService) {
+    constructor($q, gz3d, environmentRenderingService) {
       this.$q = $q;
       this.gz3d = gz3d;
       this.environmentRenderingService = environmentRenderingService;
     }
 
     hasCameraView() {
-      return this.gz3d.scene && this.gz3d.scene.viewManager &&
-        this.views.some(function(v){return v.type && v.type === 'camera';});
-    };
+      return (
+        this.gz3d.scene &&
+        this.gz3d.scene.viewManager &&
+        this.views.some(function(v) {
+          return v.type && v.type === 'camera';
+        })
+      );
+    }
 
     setView(view, containerElement) {
       let deferredSuccess = this.$q.defer();
       this.environmentRenderingService.sceneInitialized().then(
         // success
         () => {
-          this.gz3d.scene.viewManager.setViewContainerElement(view, containerElement);
+          this.gz3d.scene.viewManager.setViewContainerElement(
+            view,
+            containerElement
+          );
           deferredSuccess.resolve(true);
         },
         // failure
@@ -57,17 +64,23 @@
       );
 
       return deferredSuccess.promise;
-    };
+    }
 
     assignView(containerElement) {
       let deferredViewAssigned = this.$q.defer();
       this.environmentRenderingService.sceneInitialized().then(
         // success
         () => {
-          for (let i = 0; i < this.views.length; i = i+1) {
+          for (let i = 0; i < this.views.length; i = i + 1) {
             // find the first view without a container displaying it, assign to this one
-            if ((this.views[i].container === undefined) || (i === this.views.length - 1)) {
-              this.gz3d.scene.viewManager.setViewContainerElement(this.views[i], containerElement);
+            if (
+              this.views[i].container === undefined ||
+              i === this.views.length - 1
+            ) {
+              this.gz3d.scene.viewManager.setViewContainerElement(
+                this.views[i],
+                containerElement
+              );
 
               if (this.views[i] === this.gz3d.scene.viewManager.mainUserView) {
                 this.gz3d.scene.attachEventListeners();
@@ -92,15 +105,20 @@
     }
 
     isUserView(view) {
-      return (view && this.gz3d.scene && view === this.gz3d.scene.viewManager.mainUserView);
+      return (
+        view &&
+        this.gz3d.scene &&
+        view === this.gz3d.scene.viewManager.mainUserView
+      );
     }
   }
 
-  angular.module('gz3dModule')
+  angular
+    .module('gz3dModule')
     .service('gz3dViewsService', [
       '$q',
       'gz3d',
       'environmentRenderingService',
-      (...args) => new GZ3DViewsService(...args)]);
-
-}());
+      (...args) => new GZ3DViewsService(...args)
+    ]);
+})();

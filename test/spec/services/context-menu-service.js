@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Services: contextMenuState', function (){
+describe('Services: contextMenuState', function() {
   var contextMenuState, gz3d;
 
   var gzInitializationMock = {};
@@ -8,15 +8,17 @@ describe('Services: contextMenuState', function (){
   gzInitializationMock.deInitialize = jasmine.createSpy('deInitialize');
 
   //mock gz3d
-  beforeEach(module(function ($provide) {
-    $provide.value('gz3d', gzInitializationMock);
+  beforeEach(
+    module(function($provide) {
+      $provide.value('gz3d', gzInitializationMock);
 
-    gzInitializationMock.Initialize.calls.reset();
-    gzInitializationMock.deInitialize.calls.reset();
-  }));
+      gzInitializationMock.Initialize.calls.reset();
+      gzInitializationMock.deInitialize.calls.reset();
+    })
+  );
 
   // excuted before each "it" is run.
-  beforeEach(function (){
+  beforeEach(function() {
     // load the module.
     module('contextMenuStateService');
 
@@ -29,17 +31,14 @@ describe('Services: contextMenuState', function (){
     gz3d.scene = {};
     gz3d.scene.radialMenu = {};
     gz3d.scene.radialMenu.showing = false;
-
   });
 
-
   // check to see if it has the expected function
-  it('should have an toggleContextMenu function', function () {
+  it('should have an toggleContextMenu function', function() {
     expect(angular.isFunction(contextMenuState.toggleContextMenu)).toBe(true);
   });
 
-  it('should hide menu when calling toggleContextMenu(false)', function(){
-
+  it('should hide menu when calling toggleContextMenu(false)', function() {
     spyOn(contextMenuState, 'hideMenu').and.callThrough();
 
     contextMenuState.toggleContextMenu(false);
@@ -47,29 +46,32 @@ describe('Services: contextMenuState', function (){
     expect(contextMenuState.hideMenu).toHaveBeenCalled();
     expect(contextMenuState.isShown).toBe(false);
     expect(gz3d.scene.radialMenu.showing).toBe(false);
-
   });
 
-  it('should show menu when calling toggleContextMenu(true)', function(){
-
-    var dummyModel = {name : 'dummyModel'};
+  it('should show menu when calling toggleContextMenu(true)', function() {
+    var dummyModel = { name: 'dummyModel' };
 
     var dummyItemGroup = {
       label: 'Sample',
       visible: false,
-      items: [{ text: 'sampleButton1',
-                callback: function() {return true;},
-                visible : true
-              }],
-       show: function() {
+      items: [
+        {
+          text: 'sampleButton1',
+          callback: function() {
+            return true;
+          },
+          visible: true
+        }
+      ],
+      show: function() {
         this.visible = true;
         return true;
-       }
+      }
     };
 
-    contextMenuState.pushItemGroup(dummyItemGroup);//add a menuItem
+    contextMenuState.pushItemGroup(dummyItemGroup); //add a menuItem
 
-    var dummyEvent = {clientX: 0, clientY: 0};
+    var dummyEvent = { clientX: 0, clientY: 0 };
 
     spyOn(contextMenuState, '_getModelUnderMouse').and.returnValue(dummyModel);
 
@@ -84,16 +86,13 @@ describe('Services: contextMenuState', function (){
 
     expect(contextMenuState.contextMenuTop).toBe(dummyEvent.clientY);
     expect(contextMenuState.contextMenuLeft).toBe(dummyEvent.clientX);
-
   });
 
-  it('should get the model under the current mouse position', function () {
-
+  it('should get the model under the current mouse position', function() {
     gz3d.scene.getRayCastModel = jasmine.createSpy('getRayCastModel');
-    spyOn(contextMenuState,'axisSelected').and.returnValue(false);
-    var event = {clientX :10, clientY:10};
+    spyOn(contextMenuState, 'axisSelected').and.returnValue(false);
+    var event = { clientX: 10, clientY: 10 };
     contextMenuState._getModelUnderMouse(event);
     expect(gz3d.scene.getRayCastModel).toHaveBeenCalled();
   });
-
 });

@@ -32,17 +32,20 @@
    * @description Service that subscribes to the joint ros-topic
    */
   class DynamicViewOverlayService {
+    static get OVERLAY_HTML() {
+      return '<dynamic-view-overlay></dynamic-view-overlay>';
+    }
+    get OVERLAY_PARENT_SELECTOR() {
+      return '.editor-display';
+    }
+    get OVERLAY_WRAPPER_CLASS() {
+      return 'dynamic-view-overlay-wrapper';
+    }
+    get DYNAMIC_VIEW_CONTAINER_CLASS() {
+      return 'dynamic-view-container';
+    }
 
-    static get OVERLAY_HTML() { return '<dynamic-view-overlay></dynamic-view-overlay>'; }
-    get OVERLAY_PARENT_SELECTOR() { return '.editor-display'; }
-    get OVERLAY_WRAPPER_CLASS() { return 'dynamic-view-overlay-wrapper'; }
-    get DYNAMIC_VIEW_CONTAINER_CLASS() { return 'dynamic-view-container'; }
-
-    constructor($compile,
-                $q,
-                $rootScope,
-                $timeout,
-                nrpAnalytics) {
+    constructor($compile, $q, $rootScope, $timeout, nrpAnalytics) {
       this.$compile = $compile;
       this.$q = $q;
       this.$rootScope = $rootScope;
@@ -60,7 +63,9 @@
 
       // create overlay
       let scope = this.$rootScope.$new();
-      let overlay = this.$compile(DynamicViewOverlayService.OVERLAY_HTML)(scope);
+      let overlay = this.$compile(DynamicViewOverlayService.OVERLAY_HTML)(
+        scope
+      );
       overlay.hide();
       // each overlay gets a unique ID
       let htmlID = 'dynamic-view-overlay-' + this.overlayIDCount;
@@ -70,30 +75,34 @@
 
       parentElement.appendChild(overlay[0]);
 
-      this.getController(overlay, 'dynamicViewOverlay').then( (controller) => {
+      this.getController(overlay, 'dynamicViewOverlay').then(controller => {
         controller.setDynamicViewChannel(dynamicViewChannel);
 
         //let overlayWrapper = overlay.children('.'+this.OVERLAY_WRAPPER_CLASS)[0];
-        let overlayWrapper = overlay[0].getElementsByClassName(this.OVERLAY_WRAPPER_CLASS)[0];
+        let overlayWrapper = overlay[0].getElementsByClassName(
+          this.OVERLAY_WRAPPER_CLASS
+        )[0];
         if (overlayWrapper) {
           // set resizeable
-          if (typeof(dynamicViewChannel.isResizeable) !== 'undefined') {
-            overlayWrapper.setAttribute('resizeable', dynamicViewChannel.isResizeable.toString());
+          if (typeof dynamicViewChannel.isResizeable !== 'undefined') {
+            overlayWrapper.setAttribute(
+              'resizeable',
+              dynamicViewChannel.isResizeable.toString()
+            );
           }
         }
         overlay.show();
       });
 
-
-      this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel.directive, {
+      this.nrpAnalytics.eventTrack('Toggle-' + dynamicViewChannel.directive, {
         category: 'Simulation-GUI',
-        value: true,
+        value: true
       });
 
       scope.$on('$destroy', () => {
-        this.nrpAnalytics.eventTrack('Toggle-'+dynamicViewChannel.directive, {
+        this.nrpAnalytics.eventTrack('Toggle-' + dynamicViewChannel.directive, {
           category: 'Simulation-GUI',
-          value: false,
+          value: false
         });
       });
 
@@ -103,24 +112,27 @@
     // TODO: Shall we merge the two create functions, or just make it clear when to use which?
     createDynamicOverlay(channel) {
       let deferedContinue = this.$q.defer();
-      this.isOverlayOpen(channel).then(
-        overlayOpen => {
-          // create a new view, only if multiple instances are possible or the view is not open
-          if (!(channel.allowMultipleViews !== undefined && !channel.allowMultipleViews) || !overlayOpen) {
-            this.createOverlay(channel);
+      this.isOverlayOpen(channel).then(overlayOpen => {
+        // create a new view, only if multiple instances are possible or the view is not open
+        if (
+          !(
+            channel.allowMultipleViews !== undefined &&
+            !channel.allowMultipleViews
+          ) ||
+          !overlayOpen
+        ) {
+          this.createOverlay(channel);
+        }
+        this.isOverlayOpen(channel).then(function(open) {
+          if (open) {
+            deferedContinue.resolve('overlay initialized');
+          } else {
+            deferedContinue.reject('overlay not found');
           }
-          this.isOverlayOpen(channel).then(function(open) {
-              if (open) {
-                deferedContinue.resolve('overlay initialized');
-              }
-              else {
-                deferedContinue.reject('overlay not found');
-              }
-            }
-          );
         });
+      });
       return deferedContinue.promise;
-    };
+    }
 
     removeOverlay(id) {
       document.getElementById(id).remove();
@@ -128,7 +140,7 @@
     }
 
     closeAllOverlaysOfType(type) {
-      let checkAndCloseOverlay = (controller) => {
+      let checkAndCloseOverlay = controller => {
         if (controller.channelType && controller.channelType === type) {
           controller.closeOverlay();
         }
@@ -137,7 +149,10 @@
       for (let property in this.overlays) {
         if (this.overlays.hasOwnProperty(property)) {
           // get controller of overlay
-          this.getController(this.overlays[property], 'dynamicViewOverlay').then(checkAndCloseOverlay);
+          this.getController(
+            this.overlays[property],
+            'dynamicViewOverlay'
+          ).then(checkAndCloseOverlay);
         }
       }
     }
@@ -147,7 +162,7 @@
     }
 
     getParentOverlayWrapper(element) {
-      return element.parents('.'+this.OVERLAY_WRAPPER_CLASS)[0];
+      return element.parents('.' + this.OVERLAY_WRAPPER_CLASS)[0];
     }
 
     getController(element, controllerType) {
@@ -167,34 +182,34 @@
       return deferredController.promise;
     }
 
-    isOverlayOpen(channelType)
-    {
+    isOverlayOpen(channelType) {
       let arrayIndex = 0;
       let deferredIsOpen = this.$q.defer();
       const array = Object.values(this.overlays);
 
-      if(array.length === 0) {
+      if (array.length === 0) {
         deferredIsOpen.resolve(false);
-      }
-      else {
-        array.forEach((overlay) => {
-          this.getController(overlay, 'dynamicViewOverlay').then(
-              (controller) => {
-                if (controller.channelType && controller.channelType === channelType) {
-                  deferredIsOpen.resolve(true);
-                }
-                else if (arrayIndex === array.length - 1) {
-                  deferredIsOpen.resolve(false);
-                }
-                arrayIndex++;
-              });
+      } else {
+        array.forEach(overlay => {
+          this.getController(overlay, 'dynamicViewOverlay').then(controller => {
+            if (
+              controller.channelType &&
+              controller.channelType === channelType
+            ) {
+              deferredIsOpen.resolve(true);
+            } else if (arrayIndex === array.length - 1) {
+              deferredIsOpen.resolve(false);
+            }
+            arrayIndex++;
+          });
         });
       }
       return deferredIsOpen.promise;
     }
   }
-  
-  angular.module('dynamicViewOverlayModule')
+
+  angular
+    .module('dynamicViewOverlayModule')
     .factory('dynamicViewOverlayService', [
       '$compile',
       '$q',
@@ -203,5 +218,4 @@
       'nrpAnalytics',
       (...args) => new DynamicViewOverlayService(...args)
     ]);
-
-}());
+})();

@@ -21,13 +21,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
-    'use strict';
-    angular.module('exdFrontendApp')
-        .service('newExperimentProxyService',
-        ['$http', 'bbpConfig',
-            function ($http, bbpConfig) {
-              /**
+(function() {
+  'use strict';
+  angular.module('exdFrontendApp').service('newExperimentProxyService', [
+    '$http',
+    'bbpConfig',
+    function($http, bbpConfig) {
+      /**
                *  Fetches the proxyUrl
                *  
                *  Example usage : 
@@ -36,10 +36,10 @@
                *
                *  @return the proxy Url, as appears in the config.json file
               **/
-               this.getProxyUrl = function () {
-                    return bbpConfig.get('api.proxy.url');
-                };
-              /**
+      this.getProxyUrl = function() {
+        return bbpConfig.get('api.proxy.url');
+      };
+      /**
                *  Performs an HTTP request to the proxy to fetch an entity from the models
                *  (i.e. robot, environment, brain etc).
                *  
@@ -50,12 +50,12 @@
                *  @return a promise containing the JSON with the response from the proxy. The 
                *  promise itself contains an array of entities. 
               **/
-                this.getEntity = function (entityName) {
-                    return $http({
-                        url: this.getProxyUrl() + '/models/' + entityName,
-                        method: 'GET'
-                    });
-                };
-            }
-        ]);
+      this.getEntity = function(entityName) {
+        return $http({
+          url: this.getProxyUrl() + '/models/' + entityName,
+          method: 'GET'
+        });
+      };
+    }
+  ]);
 })();

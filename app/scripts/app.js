@@ -96,9 +96,13 @@
       'clusterReservation',
       'demoCarousel',
       'experimentExplorer',
-      'experimentList'])
+      'experimentList'
+    ])
     // Routes
-    .config(['$stateProvider', '$urlRouterProvider', 'environmentServiceProvider',
+    .config([
+      '$stateProvider',
+      '$urlRouterProvider',
+      'environmentServiceProvider',
       function($stateProvider, $urlRouterProvider, environmentServiceProvider) {
         // Configuring routes using `angular-ui-router` states.
         // (See https://github.com/angular-ui/ui-router/wiki)
@@ -112,25 +116,51 @@
 
         var experimentViewState = {
           name: 'experiment-view',
-          url: '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
+          url:
+            '/esv-web/experiment-view/:serverID/:experimentID/:privateExperiment/:simulationID?ctx',
           templateUrl: 'views/esv/experiment-view.html',
           controller: 'experimentViewController as vm',
           controllerAs: 'vm',
-          onEnter: ['$document', function($document) {
-            $document.find('body').addClass('experiment-view-route');
-          }],
-          onExit: ['$document', function($document) {
-            $document.find('body').removeClass('experiment-view-route');
-          }],
+          onEnter: [
+            '$document',
+            function($document) {
+              $document.find('body').addClass('experiment-view-route');
+            }
+          ],
+          onExit: [
+            '$document',
+            function($document) {
+              $document.find('body').removeClass('experiment-view-route');
+            }
+          ],
           resolve: {
-            setCollabState: ['environmentService', '$stateParams', function(environmentService, $stateParams) {
-              return environmentService.setPrivateExperiment($stateParams.privateExperiment === 'true');
-            }],
-            siminfo: ['simulationInfo', '$stateParams', function(simulationInfo, $stateParams) {
-              return simulationInfo.initialize(
-                $stateParams.serverID, $stateParams.experimentID, $stateParams.simulationID, $stateParams.ctx);
-            }],
-            initUserContextService: ['userContextService', function(userContextService) { return userContextService.initialized; }]
+            setCollabState: [
+              'environmentService',
+              '$stateParams',
+              function(environmentService, $stateParams) {
+                return environmentService.setPrivateExperiment(
+                  $stateParams.privateExperiment === 'true'
+                );
+              }
+            ],
+            siminfo: [
+              'simulationInfo',
+              '$stateParams',
+              function(simulationInfo, $stateParams) {
+                return simulationInfo.initialize(
+                  $stateParams.serverID,
+                  $stateParams.experimentID,
+                  $stateParams.simulationID,
+                  $stateParams.ctx
+                );
+              }
+            ],
+            initUserContextService: [
+              'userContextService',
+              function(userContextService) {
+                return userContextService.initialized;
+              }
+            ]
           }
         };
 
@@ -140,19 +170,29 @@
           templateUrl: 'views/esv/esv-experiments.html',
           controller: 'esvExperimentsCtrl',
           resolve: {
-            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
-          },
+            setCollabState: [
+              'environmentService',
+              function(environmentService) {
+                return environmentService.setPrivateExperiment(false);
+              }
+            ]
+          }
         };
 
-      var esvWegStateDebug = {
-        name: 'esv-webdebug',
-        url: '/esv-webdebug?ctx',
-        templateUrl: 'views/esv/esv-experiments.html',
-        controller: 'esvExperimentsCtrl',
-        resolve: {
-          setCollabState: ['environmentService',function(environmentService){ return environmentService.setPrivateExperiment(false); }]
-        },
-      };
+        var esvWegStateDebug = {
+          name: 'esv-webdebug',
+          url: '/esv-webdebug?ctx',
+          templateUrl: 'views/esv/esv-experiments.html',
+          controller: 'esvExperimentsCtrl',
+          resolve: {
+            setCollabState: [
+              'environmentService',
+              function(environmentService) {
+                return environmentService.setPrivateExperiment(false);
+              }
+            ]
+          }
+        };
 
         var esvDemoWaiting = {
           name: 'esv-demo-wait',
@@ -160,8 +200,13 @@
           templateUrl: 'views/esv/demo-waiting-message.html',
           controller: 'DemoAutorunExperimentController',
           resolve: {
-            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
-          },
+            setCollabState: [
+              'environmentService',
+              function(environmentService) {
+                return environmentService.setPrivateExperiment(false);
+              }
+            ]
+          }
         };
         var esvDemoIntroState = {
           name: 'esv-demo',
@@ -169,8 +214,13 @@
           templateUrl: 'views/esv/demo-experiments.html',
           controller: 'demoExperimentsController',
           resolve: {
-            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(false); }]
-          },
+            setCollabState: [
+              'environmentService',
+              function(environmentService) {
+                return environmentService.setPrivateExperiment(false);
+              }
+            ]
+          }
         };
 
         var esvPrivateState = {
@@ -179,7 +229,12 @@
           templateUrl: 'views/esv/esv-experiments.html',
           controller: 'esvExperimentsCtrl',
           resolve: {
-            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(true); }]
+            setCollabState: [
+              'environmentService',
+              function(environmentService) {
+                return environmentService.setPrivateExperiment(true);
+              }
+            ]
           }
         };
 
@@ -188,7 +243,12 @@
           url: '/experiment-explorer?ctx',
           templateUrl: 'views/common/experiment-explorer.html',
           resolve: {
-            setCollabState: ['environmentService', function(environmentService) { return environmentService.setPrivateExperiment(true); }]
+            setCollabState: [
+              'environmentService',
+              function(environmentService) {
+                return environmentService.setPrivateExperiment(true);
+              }
+            ]
           }
         };
 
@@ -204,47 +264,53 @@
           templateUrl: 'views/common/create-collab-overview.html'
         };
 
-      if (window.bbpConfig.demomode && window.bbpConfig.demomode.demoCarousel)
-      {
-        esvWebState.controller = 'demoExperimentsController';
-        esvPrivateState.controller = 'demoExperimentsController';
-        esvWebState.templateUrl = 'views/esv/demo-experiments.html';
-        esvPrivateState.templateUrl = 'views/esv/demo-experiments.html';
-      }
+        if (
+          window.bbpConfig.demomode &&
+          window.bbpConfig.demomode.demoCarousel
+        ) {
+          esvWebState.controller = 'demoExperimentsController';
+          esvPrivateState.controller = 'demoExperimentsController';
+          esvWebState.templateUrl = 'views/esv/demo-experiments.html';
+          esvPrivateState.templateUrl = 'views/esv/demo-experiments.html';
+        }
 
-      var home = $stateProvider.state(homeState);
-      home.state(esvWebState);
-      home.state(esvDemoWaiting);
-      home.state(esvDemoIntroState);
-      home.state(esvPrivateState);
-      home.state(experimentViewState);
-      home.state(supportState);
-      home.state(newCollabOverviewState);
-      home.state(experimentExplorerState);
+        var home = $stateProvider.state(homeState);
+        home.state(esvWebState);
+        home.state(esvDemoWaiting);
+        home.state(esvDemoIntroState);
+        home.state(esvPrivateState);
+        home.state(experimentViewState);
+        home.state(supportState);
+        home.state(newCollabOverviewState);
+        home.state(experimentExplorerState);
 
-
-      home.state(esvWegStateDebug);
-
-
+        home.state(esvWegStateDebug);
 
         // Provide a default route.
         // (See https://github.com/angular-ui/ui-router/wiki/URL-Routing)
         $urlRouterProvider.otherwise('/');
 
         environmentServiceProvider.$get().initialize();
-      }])
-    .config(['$compileProvider', '$logProvider', 'environmentServiceProvider',
+      }
+    ])
+    .config([
+      '$compileProvider',
+      '$logProvider',
+      'environmentServiceProvider',
       function($compileProvider, $logProvider, environmentServiceProvider) {
-        if (environmentServiceProvider.$get().isDevMode())
-          return;
+        if (environmentServiceProvider.$get().isDevMode()) return;
         $compileProvider.debugInfoEnabled(false);
         $logProvider.debugEnabled(false);
       }
-    ]).run(['$log', 'environmentService', function($log, environmentService) {
-      if (environmentService.isDevMode())
-        return;
-      window.console.debug = $log.debug;
-    }])
+    ])
+    .run([
+      '$log',
+      'environmentService',
+      function($log, environmentService) {
+        if (environmentService.isDevMode()) return;
+        window.console.debug = $log.debug;
+      }
+    ])
     .factory('timeoutHttpInterceptor', function() {
       // Here we specify a global http request timeout value for all requests, for all browsers
       return {
@@ -253,77 +319,99 @@
           return config;
         }
       };
-    }).config(['$httpProvider', function($httpProvider) {
-      $httpProvider.interceptors.push('timeoutHttpInterceptor');
-    }])
-    .run(['$rootScope', '$location', function($rootScope, $location) {
+    })
+    .config([
+      '$httpProvider',
+      function($httpProvider) {
+        $httpProvider.interceptors.push('timeoutHttpInterceptor');
+      }
+    ])
+    .run([
+      '$rootScope',
+      '$location',
+      function($rootScope, $location) {
+        $rootScope.$on('$stateChangeSuccess', function(
+          event,
+          toState,
+          toParams,
+          fromState,
+          fromParams
+        ) {
+          var currentPath = $location.path();
+          window.parent.postMessage(
+            {
+              eventName: 'workspace.context',
+              data: {
+                state: JSON.stringify({
+                  path: currentPath
+                })
+              }
+            },
+            '*'
+          );
+        });
 
-      $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-        var currentPath = $location.path();
-        window.parent.postMessage({
-          eventName: 'workspace.context',
-          data: {
-            state: JSON.stringify({
-              path: currentPath
-            })
+        var ctxstate = $location.search().ctxstate;
+        if (ctxstate) {
+          ctxstate = JSON.parse(ctxstate);
+          var currentPath = $location.path();
+          if (ctxstate.path !== currentPath) {
+            $location.path(ctxstate.path);
           }
-        }, "*");
-      });
-
-      var ctxstate = $location.search().ctxstate;
-      if (ctxstate) {
-        ctxstate = JSON.parse(ctxstate);
-        var currentPath = $location.path();
-        if (ctxstate.path !== currentPath) {
-          $location.path(ctxstate.path);
         }
       }
-    }])
-    .run(['storageServer', '$location', function(storageServer, $location) {
-      // storageServer.getExperiments();
-    }]);
+    ])
+    .run([
+      'storageServer',
+      '$location',
+      function(storageServer, $location) {
+        // storageServer.getExperiments();
+      }
+    ]);
 
   // load the configuration used by bbpConfig
   // and then bootstrap the application.
-  angular.bootstrap().invoke(['$http', function($http) {
-    var boot = function() {
+  angular.bootstrap().invoke([
+    '$http',
+    function($http) {
+      var boot = function() {
+        // Google Analytics
+        if (angular.isDefined(window.bbpConfig.environment)) {
+          var stage = window.bbpConfig.environment;
+          if (stage === 'development') {
+            /* global ga: false */
+            ga('create', 'UA-62512653-1', 'auto');
+          } else if (stage === 'staging') {
+            /* global ga: false */
+            ga('create', 'UA-62512653-2', 'auto');
+          } else if (stage === 'production') {
+            /* global ga: false */
+            ga('create', 'UA-62512653-3', 'auto');
+          }
+        }
 
-      // Google Analytics
-      if (angular.isDefined(window.bbpConfig.environment)) {
-        var stage = window.bbpConfig.environment;
-        if (stage === "development") {
-          /* global ga: false */
-          ga('create', 'UA-62512653-1', 'auto');
-        }
-        else if (stage === "staging") {
-          /* global ga: false */
-          ga('create', 'UA-62512653-2', 'auto');
-        }
-        else if (stage === "production") {
-          /* global ga: false */
-          ga('create', 'UA-62512653-3', 'auto');
-        }
+        angular.element(document).ready(function() {
+          angular.bootstrap(document, ['exdFrontendApp'], { strictDi: true });
+        });
+      };
+
+      if (window.bbpConfig) {
+        boot();
+      } else {
+        $http
+          .get('./config.json')
+          .then(function(res) {
+            window.bbpConfig = res.data;
+          })
+          .then(boot);
       }
-
-      angular.element(document).ready(function() {
-        angular.bootstrap(document, ['exdFrontendApp'], { strictDi: true });
-      });
-    };
-
-    if (window.bbpConfig) {
-      boot();
-    } else {
-      $http.get('./config.json').then(function(res) {
-        window.bbpConfig = res.data;
-      }).then(boot);
     }
-  }]);
+  ]);
 
   // Create the constant modules at the beginning so everyone can access it and
   // use it to define its own constants.
   angular.module('exdFrontendApp.Constants', []);
-
-}());
+})();
 
 // These are the two functions of JQuery mobile used by GZWeb. We deliberately
 // chose to redeclare them as empty and not to include JQuery mobile. The
@@ -333,13 +421,8 @@
 // our case.
 
 /* global $: false */
-$.fn.buttonMarkup = function() {
-};
-$.fn.popup = function() {
-};
-$.fn.checkboxradio = function() {
-};
-$.fn.touchstart = function() {
-};
-$.fn.touchend = function() {
-};
+$.fn.buttonMarkup = function() {};
+$.fn.popup = function() {};
+$.fn.checkboxradio = function() {};
+$.fn.touchstart = function() {};
+$.fn.touchend = function() {};

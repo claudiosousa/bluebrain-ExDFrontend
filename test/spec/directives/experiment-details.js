@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Directive: experiment-details', function() {
-
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
 
@@ -13,47 +12,65 @@ describe('Directive: experiment-details', function() {
     get: jasmine.createSpy('get')
   };
 
-  beforeEach(module(function($provide) {
-    $provide.value('nrpBackendVersions', jasmine.createSpy('nrpBackendVersions').and.returnValue(nrpBackendVersionsObject));
-    $provide.value('nrpFrontendVersion', nrpFrontendVersion);
-  }));
+  beforeEach(
+    module(function($provide) {
+      $provide.value(
+        'nrpBackendVersions',
+        jasmine
+          .createSpy('nrpBackendVersions')
+          .and.returnValue(nrpBackendVersionsObject)
+      );
+      $provide.value('nrpFrontendVersion', nrpFrontendVersion);
+    })
+  );
 
   var scope, $httpBackend;
-  beforeEach(inject(function($compile,
-    $rootScope,
-    _$httpBackend_,
-    _nrpFrontendVersion_) {
+  beforeEach(
+    inject(function(
+      $compile,
+      $rootScope,
+      _$httpBackend_,
+      _nrpFrontendVersion_
+    ) {
+      $httpBackend = _$httpBackend_;
+      _nrpFrontendVersion_ = nrpFrontendVersion;
 
-    $httpBackend = _$httpBackend_;
-    _nrpFrontendVersion_ = nrpFrontendVersion;
-
-    var element = $compile('<experiment-details/>')($rootScope);
-    $rootScope.$digest();
-    scope = element.scope();
-  }));
+      var element = $compile('<experiment-details/>')($rootScope);
+      $rootScope.$digest();
+      scope = element.scope();
+    })
+  );
 
   it('should set scope.softwareVersions with Frontend version when backend returns error ', function() {
     scope.setCollapsed(false);
-    $httpBackend.whenGET('http://proxy/server/normalServer').respond(500, 'Error');
+    $httpBackend
+      .whenGET('http://proxy/server/normalServer')
+      .respond(500, 'Error');
     scope.getSoftwareVersions('normalServer');
     $httpBackend.flush();
-    var frontendData = { 'toString': 'Frontend: 0.0.1\n' };
+    var frontendData = { toString: 'Frontend: 0.0.1\n' };
     nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
     expect(scope.softwareVersions).toBe(frontendData.toString);
   });
 
   it('should set scope.softwareVersions when backend returns normally', function() {
     scope.setCollapsed(false);
-    $httpBackend.whenGET('http://proxy/server/normalServer').respond(200, { gzweb: {} });
+    $httpBackend
+      .whenGET('http://proxy/server/normalServer')
+      .respond(200, { gzweb: {} });
     scope.getSoftwareVersions('normalServer');
     $httpBackend.flush();
-    var frontendData = { 'toString': 'Frontend: 0.0.1\n' };
+    var frontendData = { toString: 'Frontend: 0.0.1\n' };
     var backendObj = {};
-    backendObj.toJSON = function() { return backendObj.data; };
-    backendObj.toString = 'Backend:\nhbp_nrp_cle: 0.0.5.dev0\nhbp_nrp_backend: 0.0.4\n';
+    backendObj.toJSON = function() {
+      return backendObj.data;
+    };
+    backendObj.toString =
+      'Backend:\nhbp_nrp_cle: 0.0.5.dev0\nhbp_nrp_backend: 0.0.4\n';
     nrpFrontendVersion.get.calls.mostRecent().args[0](frontendData);
     nrpBackendVersionsObject.get.calls.mostRecent().args[0](backendObj);
-    expect(scope.softwareVersions).toBe(frontendData.toString + backendObj.toString);
+    expect(scope.softwareVersions).toBe(
+      frontendData.toString + backendObj.toString
+    );
   });
-
 });

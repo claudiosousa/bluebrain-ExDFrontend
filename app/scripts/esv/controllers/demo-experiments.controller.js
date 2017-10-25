@@ -22,37 +22,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 
-
-(function ()
-{
+(function() {
   'use strict';
 
-  class DemoExperimentsController
-  {
-
-    constructor(scope, experimentsFactory, timeout, location, environmentService)
-    {
+  class DemoExperimentsController {
+    constructor(
+      scope,
+      experimentsFactory,
+      timeout,
+      location,
+      environmentService
+    ) {
       scope.vm = this;
 
-      this.demoExperiments =
-        [
-          {
-            image: "img/demo/thumbnails/ExDBraitenbergHuskySBC_Anim.gif",
-            id: 0
-          },
-          {
-            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif",
-            id: 1
-          },
-          {
-            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif",
-            id: 2
-          },
-          {
-            image: "img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif",
-            id: 3
-          }
-        ];
+      this.demoExperiments = [
+        {
+          image: 'img/demo/thumbnails/ExDBraitenbergHuskySBC_Anim.gif',
+          id: 0
+        },
+        {
+          image: 'img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif',
+          id: 1
+        },
+        {
+          image: 'img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif',
+          id: 2
+        },
+        {
+          image: 'img/demo/thumbnails/ExDBraitenbergMouseLab_Anim.gif',
+          id: 3
+        }
+      ];
 
       this.joiningExperiment = false;
       this.timeout = timeout;
@@ -61,35 +61,36 @@
       this.environmentService = environmentService;
       this.experimentsFactory = experimentsFactory;
 
-      scope.$on('$destroy', () =>
-      {
+      scope.$on('$destroy', () => {
         this.stopWatching = true;
-        if (this.experimentsService)
-        {
+        if (this.experimentsService) {
           this.experimentsService.destroy();
         }
       });
     }
 
-    tryJoiningExperiment()
-    {
-      if (!this.joiningExperiment)
-      {
+    tryJoiningExperiment() {
+      if (!this.joiningExperiment) {
         return;
       }
 
-      if (this.experiments)
-      {
-        for (let i = 0; i < this.experiments.length; i++)
-        {
+      if (this.experiments) {
+        for (let i = 0; i < this.experiments.length; i++) {
           let exp = this.experiments[i];
-          if (exp.joinableServers.length > 0)
-          {
+          if (exp.joinableServers.length > 0) {
             // One experiment is joinable
 
             let simul = exp.joinableServers[0];
 
-            let path = 'esv-web/experiment-view/' + simul.server + '/' + exp.id + '/' + this.environmentService.isPrivateExperiment() + "/" + simul.runningSimulation.simulationID;
+            let path =
+              'esv-web/experiment-view/' +
+              simul.server +
+              '/' +
+              exp.id +
+              '/' +
+              this.environmentService.isPrivateExperiment() +
+              '/' +
+              simul.runningSimulation.simulationID;
             this.location.path(path);
 
             return;
@@ -97,30 +98,27 @@
         }
       }
 
-      if (!this.stopWatching)
-      {
-        this.timeout(() =>
-        {
+      if (!this.stopWatching) {
+        this.timeout(() => {
           this.tryJoiningExperiment();
         }, 1000);
       }
     }
 
-    launchExperiment()
-    {
+    launchExperiment() {
       this.joiningExperiment = true;
-      if (!this.experimentsService)
-      {
+      if (!this.experimentsService) {
         this.experimentsService = this.experimentsFactory.createExperimentsService();
         this.experimentsService.initialize();
-        this.experimentsService.experiments.then(experiments => this.experiments = experiments);
+        this.experimentsService.experiments.then(
+          experiments => (this.experiments = experiments)
+        );
       }
 
       this.tryJoiningExperiment();
     }
 
-    cancelLaunch()
-    {
+    cancelLaunch() {
       this.experimentsService.destroy();
       this.experimentsService = undefined;
 
@@ -130,7 +128,12 @@
 
   angular
     .module('exdFrontendApp')
-    .controller('demoExperimentsController', ['$scope', 'experimentsFactory', '$timeout', '$location', 'environmentService', (...args) => new DemoExperimentsController(...args)]);
-
+    .controller('demoExperimentsController', [
+      '$scope',
+      'experimentsFactory',
+      '$timeout',
+      '$location',
+      'environmentService',
+      (...args) => new DemoExperimentsController(...args)
+    ]);
 })();
-

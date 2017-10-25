@@ -22,252 +22,227 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 
-
-.demo-main-page
-{
-  width:100%;
+.demo-main-page {
+  width: 100%;
   max-width: 1224px;
-  margin:20px auto;
+  margin: 20px auto;
   padding-bottom: 20px;
   background-color: #eeeeee;
 }
 
-.demo-text-server-restart
-{
-    font-size: 12px;
-    text-align: center;
-    position: relative;
-    margin-top: -30px;
+.demo-text-server-restart {
+  font-size: 12px;
+  text-align: center;
+  position: relative;
+  margin-top: -30px;
 }
 
-.demo-text-intro-title
-{
+.demo-text-intro-title {
   font-size: 18px;
   font-weight: bold;
 }
 
-.demo-text-intro
-{
-  margin-top:30px;
-  margin-bottom:0px;
-  margin-left:50px;
-  margin-right:50px;
+.demo-text-intro {
+  margin-top: 30px;
+  margin-bottom: 0px;
+  margin-left: 50px;
+  margin-right: 50px;
   font-size: 15px;
-
 }
 
-.demo-social-networks
-{
-  margin-top:2px;
-  margin-bottom:2px;
-  margin-left:2px;
-  margin-right:2px;
-  float:right;
-  position:relative;
-
+.demo-social-networks {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+  float: right;
+  position: relative;
 }
 
-.demo-experiments-title{
-  width:100%;
+.demo-experiments-title {
+  width: 100%;
 }
 
-.demo-flex-columns
-{
-  display:flex;
+.demo-flex-columns {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .demo-text-carousel-title {
-    font-size: 28px;
-    text-align: left;
-    margin-left: 10px;
-    text-transform: uppercase;
-    top: 5px;
-    position: relative;
-    color: #ffffff;
+  font-size: 28px;
+  text-align: left;
+  margin-left: 10px;
+  text-transform: uppercase;
+  top: 5px;
+  position: relative;
+  color: #ffffff;
 }
- .demo-text-carousel-content
- {
-    font-size: 18px;
-    text-align: left;
-    margin-top:37px;
-    margin-bottom:40px;
-    margin-left:10px;
-    margin-right:10px;
- }
+.demo-text-carousel-content {
+  font-size: 18px;
+  text-align: left;
+  margin-top: 37px;
+  margin-bottom: 40px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
 
 .demo-box-text {
-    height: 360px;
-    min-width: 580px;
-    margin-left: 35px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+  height: 360px;
+  min-width: 580px;
+  margin-left: 35px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .demo-box-joining {
-  height:360px;
-  max-width:480px;
-  margin-left:40px;
-  margin-right:40px;
-  margin-top:20px;
-  margin-bottom:20px;
+  height: 360px;
+  max-width: 480px;
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
-
 
 .demo-box-carousel {
-  height:360px;
-  max-width:480px;
-  margin-left:40px;
-  margin-right:40px;
-  margin-top:20px;
-  margin-bottom:20px;
+  height: 360px;
+  max-width: 480px;
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-
 .demo-carousel {
-  width:90%;
-  left:5%;
-  top:5%;
-  position:relative;
+  width: 90%;
+  left: 5%;
+  top: 5%;
+  position: relative;
 }
 
 .demo-carousel-text-back-image {
-
-    background-image: url('../../img/demo/text-slide-background.jpg');
-    border-radius: 5px;
-    width:580px;
-    height:360px;
+  background-image: url('../../img/demo/text-slide-background.jpg');
+  border-radius: 5px;
+  width: 580px;
+  height: 360px;
 }
 
 .demo-carousel-img {
-  margin:auto;
+  margin: auto;
   border-radius: 5px;
 }
 
-.demo-play-icon
-{
-  font-size:22px;
+.demo-play-icon {
+  font-size: 22px;
   position: relative;
-  left:-5px;
-  top:2px;
+  left: -5px;
+  top: 2px;
 }
 
 .demo-join-button {
-  position:relative;
+  position: relative;
   top: -75px;
-  max-width:100%;
-  width:200px;
-  display:block;
-  margin:auto;
+  max-width: 100%;
+  width: 200px;
+  display: block;
+  margin: auto;
 }
 
 .demo-cancel-button {
-  position:relative;
+  position: relative;
   top: 200px;
-  max-width:100%;
-  width:200px;
-  display:block;
-  margin:auto;
+  max-width: 100%;
+  width: 200px;
+  display: block;
+  margin: auto;
 }
 .demo-bottom-page {
-
-  display:flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 20px;
 }
 
-.demo-bottom-page-text
-{
-  margin:10px;
+.demo-bottom-page-text {
+  margin: 10px;
   font-style: italic;
 }
 
-.demo-website-button
-{
-  height:80px;
+.demo-website-button {
+  height: 80px;
   width: 200px;
-  margin:10px;
+  margin: 10px;
 }
 
-.demo-bottom-button-icon
-{
-    font-size: 30px;
-    margin-bottom: 6px;
-    margin-top: 5px;
-    color: #61aabf;
+.demo-bottom-button-icon {
+  font-size: 30px;
+  margin-bottom: 6px;
+  margin-top: 5px;
+  color: #61aabf;
 }
 
 .demo-box-joining-experiment {
   max-height: 360px;
-  min-height:360px;
-  max-width:480px;
-  min-width:480px;
-  margin-left:40px;
-  margin-right:40px;
-  margin-top:20px;
-  margin-bottom:20px;
+  min-height: 360px;
+  max-width: 480px;
+  min-width: 480px;
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   background-color: #f5f5f5;
   border-radius: 5px;
 }
 
 .demo-joining-joing-message {
-    text-align: center;
+  text-align: center;
 }
 
 .demo-joining-wait-message {
-    text-align: center;
-    font-size: 40px;
-    margin: 20px;
-    position: relative;
+  text-align: center;
+  font-size: 40px;
+  margin: 20px;
+  position: relative;
 }
 
-#textCarousel .carousel-control.right
-{
+#textCarousel .carousel-control.right {
   left: auto;
   right: auto;
   width: 100%;
 }
 
-#textCarousel .carousel-control.left
-{
-  display:none;
+#textCarousel .carousel-control.left {
+  display: none;
 }
 
-#textCarousel .glyphicon-chevron-right
-{
-  display:none;
+#textCarousel .glyphicon-chevron-right {
+  display: none;
 }
 
-#textCarousel .glyphicon-chevron-left
-{
-  display:none;
+#textCarousel .glyphicon-chevron-left {
+  display: none;
 }
 
-#textCarousel .carousel-indicators
-{
-    bottom: -15px;
+#textCarousel .carousel-indicators {
+  bottom: -15px;
 }
 
-#textCarousel .carousel-indicators li
-{
-  display:none;
+#textCarousel .carousel-indicators li {
+  display: none;
 }
 
 .carousel-control.right {
-    background-image: none;
-    filter: none
-  }
+  background-image: none;
+  filter: none;
+}
 
-  .carousel-control.left {
-    background-image: none;
-    filter: none;
+.carousel-control.left {
+  background-image: none;
+  filter: none;
 }
 
 .carousel-indicators {
-    bottom: -5px;
+  bottom: -5px;
 }
-

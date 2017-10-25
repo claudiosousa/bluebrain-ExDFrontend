@@ -23,42 +23,46 @@
  * ---LICENSE-END**/
 
 (function() {
-    'use strict';
+  'use strict';
 
-    angular.module('clientLoggerModule')
-        .directive('logAdverts', ['$timeout', 'clientLoggerService', 'LOG_TYPE', ($timeout, clientLoggerService, LOG_TYPE) => {
+  angular.module('clientLoggerModule').directive('logAdverts', [
+    '$timeout',
+    'clientLoggerService',
+    'LOG_TYPE',
+    ($timeout, clientLoggerService, LOG_TYPE) => {
+      return {
+        templateUrl:
+          'components/client-logger/log-adverts/log-adverts.template.html',
+        restrict: 'E',
+        replace: true,
+        scope: true,
+        link: scope => {
+          //message to be shown
+          scope.currentAdvert = null;
+          //if advert should be visible
+          scope.showAdvert = null;
 
-            return {
-                templateUrl: 'components/client-logger/log-adverts/log-adverts.template.html',
-                restrict: 'E',
-                replace: true,
-                scope: true,
-                link: scope => {
+          let advertLogs$ = clientLoggerService.logs.filter(
+            log => log.level === LOG_TYPE.ADVERTS
+          );
 
-                    //message to be shown
-                    scope.currentAdvert = null;
-                    //if advert should be visible
-                    scope.showAdvert = null;
+          let showLogSubscription = advertLogs$
+            .map(({ message }) => message)
+            .subscribe(message => {
+              scope.currentAdvert = message; //message to be shown
+              scope.showAdvert = true; //show it
+            });
 
-                    let advertLogs$ = clientLoggerService.logs
-                        .filter(log => log.level === LOG_TYPE.ADVERTS);
+          let hideLogSubscription = advertLogs$
+            .debounce(log => Rx.Observable.timer(log.duration))
+            .subscribe(message => (scope.showAdvert = false)); //hide it
 
-                    let showLogSubscription = advertLogs$
-                        .map(({ message }) => message)
-                        .subscribe(message => {
-                            scope.currentAdvert = message; //message to be shown
-                            scope.showAdvert = true; //show it
-                        });
-
-                    let hideLogSubscription = advertLogs$
-                        .debounce(log => Rx.Observable.timer(log.duration))
-                        .subscribe(message => scope.showAdvert = false); //hide it
-
-                    scope.$on('$destroy', () => {
-                        showLogSubscription.unsubscribe();
-                        hideLogSubscription.unsubscribe();
-                    });
-                }
-            };
-        }]);
-}());
+          scope.$on('$destroy', () => {
+            showLogSubscription.unsubscribe();
+            hideLogSubscription.unsubscribe();
+          });
+        }
+      };
+    }
+  ]);
+})();

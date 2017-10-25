@@ -19,32 +19,43 @@
 (function() {
   'use strict';
 
-  angular.module('browserSupport', ['exdFrontendFilters'])
-    .directive('browserSupportAlert', ['$window', '$timeout', 'browserSupport', ($window, $timeout, browserSupport) => {
-      return {
-        restrict: 'E',
-        templateUrl: 'components/alerts/browser-support/browser-support.template.html',
-        scope: true,
-        link: function(scope, element) {
-          scope.dismissWarning = $window.sessionStorage.getItem('unsupportedBrowserWarning') === 'dismissed';
-          scope.isSupportedBrowser = browserSupport.isSupported();
-          scope.supportedBrowsers = [''];
+  angular
+    .module('browserSupport', ['exdFrontendFilters'])
+    .directive('browserSupportAlert', [
+      '$window',
+      '$timeout',
+      'browserSupport',
+      ($window, $timeout, browserSupport) => {
+        return {
+          restrict: 'E',
+          templateUrl:
+            'components/alerts/browser-support/browser-support.template.html',
+          scope: true,
+          link: function(scope, element) {
+            scope.dismissWarning =
+              $window.sessionStorage.getItem('unsupportedBrowserWarning') ===
+              'dismissed';
+            scope.isSupportedBrowser = browserSupport.isSupported();
+            scope.supportedBrowsers = [''];
 
-          if (scope.dismissWarning || scope.isSupportedBrowser)
-            return;
+            if (scope.dismissWarning || scope.isSupportedBrowser) return;
 
-          scope.supportedBrowsers = browserSupport.SUPPORTED_BROWSERS;
-          scope.browser = browserSupport.getBrowserVersion();
-          if (scope.browser === 'unknown') {
-            scope.browser = 'your browser';
+            scope.supportedBrowsers = browserSupport.SUPPORTED_BROWSERS;
+            scope.browser = browserSupport.getBrowserVersion();
+            if (scope.browser === 'unknown') {
+              scope.browser = 'your browser';
+            }
+            scope.dismissBrowserWarning = () => {
+              $timeout(() => {
+                $window.sessionStorage.setItem(
+                  'unsupportedBrowserWarning',
+                  'dismissed'
+                );
+                scope.dismissWarning = true;
+              });
+            };
           }
-          scope.dismissBrowserWarning = () => {
-            $timeout(() => {
-              $window.sessionStorage.setItem('unsupportedBrowserWarning', 'dismissed');
-              scope.dismissWarning = true;
-            });
-          };
-        }
-      };
-    }]);
-}());
+        };
+      }
+    ]);
+})();

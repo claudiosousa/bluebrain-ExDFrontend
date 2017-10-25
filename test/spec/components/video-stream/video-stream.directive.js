@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Directive: video-stream', function() {
-
   var $compile, $rootScope, $q, $scope, $timeout, STATE;
   var refTopic = '/icub_model/right_eye_camera/image_raw';
   var expectedTopics;
@@ -19,24 +18,30 @@ describe('Directive: video-stream', function() {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
 
-  beforeEach(module(function($provide) {
-    $provide.value('videoStreamService', videoStreamServiceMock);
-  }));
+  beforeEach(
+    module(function($provide) {
+      $provide.value('videoStreamService', videoStreamServiceMock);
+    })
+  );
 
   var elementScope;
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$q_, _$timeout_, _STATE_) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $q = _$q_;
-    $timeout = _$timeout_;
-    STATE = _STATE_;
-  }));
+  beforeEach(
+    inject(function(_$rootScope_, _$compile_, _$q_, _$timeout_, _STATE_) {
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
+      $q = _$q_;
+      $timeout = _$timeout_;
+      STATE = _STATE_;
+    })
+  );
 
   beforeEach(function() {
     $scope = $rootScope.$new();
     $scope.visible = false;
-    var element = $compile('<video-stream ng-show="visible"></video-stream>')($scope);
+    var element = $compile('<video-stream ng-show="visible"></video-stream>')(
+      $scope
+    );
     document.createElement('div').appendChild(element[0]);
     $scope.$digest();
     elementScope = element.isolateScope();
@@ -60,4 +65,3 @@ describe('Directive: video-stream', function() {
     expect(elementScope.videoUrl).toBe(refTopic + '&t=0');
   });
 });
-

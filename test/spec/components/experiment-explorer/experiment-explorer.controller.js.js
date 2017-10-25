@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Controller: ExperimentExplorerController', function() {
-
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   var STORAGE_URL = 'http://proxy/storage/';
@@ -9,54 +8,71 @@ describe('Controller: ExperimentExplorerController', function() {
   var $httpBackend, $rootScope, $log, element, storageServer;
 
   var MOCKED_DATA = {
-    experiments: [{
-      uuid: '758096b6-e500-452b-93e1-ba2bba203844',
-      name: 'New experiment',
-      parent: '89857775-6215-4d53-94ee-fb6c18b9e2f8'
-    }],
-    experimentFiles: [{
-      uuid: '207a87c9-78d9-4504-bde7-6919feaac12a',
-      name: 'all_neurons_spike_monitor.py',
-      parent: '758096b6-e500-452b-93e1-ba2bba203844',
-      contentType: 'text/plain',
-      type: 'file',
-      modifiedOn: '2017-08-07T07:59:35.837002Z'
-    },
-    {
-      uuid: '207a87c9-78d9-4504-bde7-6919feaac12b',
-      name: 'test',
-      parent: '758096b6-e500-452b-93e1-ba2bba203844',
-      type: 'folder',
-      modifiedOn: '2017-08-07T07:59:35.837002Z'
-    }],
-    folderFiles: [{
-      uuid: '207a87c9-78d9-4504-bde7-6919feaac12c',
-      name: 'file2',
-      parent: '207a87c9-78d9-4504-bde7-6919feaac12b',
-      type: 'file',
-      modifiedOn: '2017-08-07T07:59:35.837002Z'
-    }]
+    experiments: [
+      {
+        uuid: '758096b6-e500-452b-93e1-ba2bba203844',
+        name: 'New experiment',
+        parent: '89857775-6215-4d53-94ee-fb6c18b9e2f8'
+      }
+    ],
+    experimentFiles: [
+      {
+        uuid: '207a87c9-78d9-4504-bde7-6919feaac12a',
+        name: 'all_neurons_spike_monitor.py',
+        parent: '758096b6-e500-452b-93e1-ba2bba203844',
+        contentType: 'text/plain',
+        type: 'file',
+        modifiedOn: '2017-08-07T07:59:35.837002Z'
+      },
+      {
+        uuid: '207a87c9-78d9-4504-bde7-6919feaac12b',
+        name: 'test',
+        parent: '758096b6-e500-452b-93e1-ba2bba203844',
+        type: 'folder',
+        modifiedOn: '2017-08-07T07:59:35.837002Z'
+      }
+    ],
+    folderFiles: [
+      {
+        uuid: '207a87c9-78d9-4504-bde7-6919feaac12c',
+        name: 'file2',
+        parent: '207a87c9-78d9-4504-bde7-6919feaac12b',
+        type: 'file',
+        modifiedOn: '2017-08-07T07:59:35.837002Z'
+      }
+    ]
   };
 
-  beforeEach(module(function($provide) {
-    $provide.value('slurminfoService', { subscribe: angular.noop });
-    $provide.value('$uibModal', { open: function() { return { result: window.$q.resolve('folder_name') }; } });
-  }));
+  beforeEach(
+    module(function($provide) {
+      $provide.value('slurminfoService', { subscribe: angular.noop });
+      $provide.value('$uibModal', {
+        open: function() {
+          return { result: window.$q.resolve('folder_name') };
+        }
+      });
+    })
+  );
 
-  beforeEach(inject(function($controller,
-    $compile,
-    _$rootScope_,
-    _$httpBackend_,
-    _$log_,
-    _storageServer_) {
+  beforeEach(
+    inject(function(
+      $controller,
+      $compile,
+      _$rootScope_,
+      _$httpBackend_,
+      _$log_,
+      _storageServer_
+    ) {
+      $rootScope = _$rootScope_;
+      $httpBackend = _$httpBackend_;
+      $log = _$log_;
+      storageServer = _storageServer_;
 
-    $rootScope = _$rootScope_;
-    $httpBackend = _$httpBackend_;
-    $log = _$log_;
-    storageServer = _storageServer_;
-
-    element = $compile('<experiment-explorer></experiment-explorer>')($rootScope);
-  }));
+      element = $compile('<experiment-explorer></experiment-explorer>')(
+        $rootScope
+      );
+    })
+  );
 
   var loadExperiments = function() {
     $httpBackend
@@ -75,7 +91,9 @@ describe('Controller: ExperimentExplorerController', function() {
   it('should retrieve experiments', function() {
     var controller = loadExperiments();
 
-    expect(controller.experimentList).toContain(jasmine.objectContaining(MOCKED_DATA.experiments[0]));
+    expect(controller.experimentList).toContain(
+      jasmine.objectContaining(MOCKED_DATA.experiments[0])
+    );
   });
 
   var selectExperiment = function(controller) {
@@ -105,14 +123,18 @@ describe('Controller: ExperimentExplorerController', function() {
 
     selectFolder(controller);
 
-    expect(controller.experimentList[0].folders[0].files).toContain(jasmine.objectContaining(MOCKED_DATA.folderFiles[0]));
+    expect(controller.experimentList[0].folders[0].files).toContain(
+      jasmine.objectContaining(MOCKED_DATA.folderFiles[0])
+    );
   });
 
   it('should select experiment', function() {
     var controller = loadExperiments();
     selectExperiment(controller);
 
-    expect(controller.experimentList[0].files).toContain(jasmine.objectContaining(MOCKED_DATA.experimentFiles[0]));
+    expect(controller.experimentList[0].files).toContain(
+      jasmine.objectContaining(MOCKED_DATA.experimentFiles[0])
+    );
   });
 
   it('should createFolder experiment', function() {
@@ -120,7 +142,10 @@ describe('Controller: ExperimentExplorerController', function() {
     selectExperiment(controller);
 
     $httpBackend
-      .expectPOST(STORAGE_URL + '758096b6-e500-452b-93e1-ba2bba203844/folder_name?type=folder')
+      .expectPOST(
+        STORAGE_URL +
+          '758096b6-e500-452b-93e1-ba2bba203844/folder_name?type=folder'
+      )
       .respond(200);
 
     spyOn(controller, 'selectParent');
@@ -144,7 +169,13 @@ describe('Controller: ExperimentExplorerController', function() {
     selectExperiment(controller);
 
     $httpBackend
-      .expectDELETE(STORAGE_URL + controller.experimentList[0].uuid + '/' + MOCKED_DATA.experimentFiles[0].uuid + '?byname=false&type=file')
+      .expectDELETE(
+        STORAGE_URL +
+          controller.experimentList[0].uuid +
+          '/' +
+          MOCKED_DATA.experimentFiles[0].uuid +
+          '?byname=false&type=file'
+      )
       .respond(200);
 
     controller.deleteFile(MOCKED_DATA.experimentFiles[0]);
@@ -161,7 +192,10 @@ describe('Controller: ExperimentExplorerController', function() {
     selectFolder(controller);
 
     $httpBackend
-      .expectDELETE(STORAGE_URL + '207a87c9-78d9-4504-bde7-6919feaac12b/207a87c9-78d9-4504-bde7-6919feaac12b?byname=false&type=folder')
+      .expectDELETE(
+        STORAGE_URL +
+          '207a87c9-78d9-4504-bde7-6919feaac12b/207a87c9-78d9-4504-bde7-6919feaac12b?byname=false&type=folder'
+      )
       .respond(200);
 
     controller.deleteFolder(controller.experimentList[0].folders[0]);
@@ -176,7 +210,13 @@ describe('Controller: ExperimentExplorerController', function() {
     selectExperiment(controller);
 
     $httpBackend
-      .expectGET(STORAGE_URL + controller.experimentList[0].uuid + '/' + MOCKED_DATA.experimentFiles[0].uuid + '?byname=false')
+      .expectGET(
+        STORAGE_URL +
+          controller.experimentList[0].uuid +
+          '/' +
+          MOCKED_DATA.experimentFiles[0].uuid +
+          '?byname=false'
+      )
       .respond(200);
 
     controller.downloadFile(MOCKED_DATA.experimentFiles[0]);
@@ -225,9 +265,7 @@ describe('Controller: ExperimentExplorerController', function() {
   });
 
   it('should handle get experiments exception', function() {
-    $httpBackend
-      .whenGET(STORAGE_URL + 'experiments')
-      .respond(500);
+    $httpBackend.whenGET(STORAGE_URL + 'experiments').respond(500);
 
     $rootScope.$digest();
 
@@ -264,7 +302,13 @@ describe('Controller: ExperimentExplorerController', function() {
     selectExperiment(controller);
 
     $httpBackend
-      .expectDELETE(STORAGE_URL + controller.experimentList[0].uuid + '/' + MOCKED_DATA.experimentFiles[0].uuid + '?byname=false&type=file')
+      .expectDELETE(
+        STORAGE_URL +
+          controller.experimentList[0].uuid +
+          '/' +
+          MOCKED_DATA.experimentFiles[0].uuid +
+          '?byname=false&type=file'
+      )
       .respond(500);
 
     spyOn(controller, 'onError');
@@ -285,7 +329,13 @@ describe('Controller: ExperimentExplorerController', function() {
     spyOn(controller, 'onError');
 
     $httpBackend
-      .expectGET(STORAGE_URL + controller.experimentList[0].uuid + '/' + MOCKED_DATA.experimentFiles[0].uuid + '?byname=false')
+      .expectGET(
+        STORAGE_URL +
+          controller.experimentList[0].uuid +
+          '/' +
+          MOCKED_DATA.experimentFiles[0].uuid +
+          '?byname=false'
+      )
       .respond(500);
 
     controller.downloadFile(MOCKED_DATA.experimentFiles[0]);
@@ -329,5 +379,4 @@ describe('Controller: ExperimentExplorerController', function() {
 
     expect(fileType).toBe('myExt file');
   });
-
 });

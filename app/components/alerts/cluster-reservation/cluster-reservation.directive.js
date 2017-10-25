@@ -19,28 +19,43 @@
 (function() {
   'use strict';
 
-  angular.module('clusterReservation', [])
-    .directive('clusterReservationAlert', ['$window', '$timeout', 'nrpUser', ($window, $timeout, nrpUser) => {
-      return {
-        restrict: 'E',
-        templateUrl: 'components/alerts/cluster-reservation/cluster-reservation.template.html',
-        scope: true,
-        link: function(scope, element) {
-          // Cluster reservation warning
-          nrpUser.isMemberOfClusterReservationGroup()
-            .then(response => scope.displayClusterReservationForm = response);
+  angular
+    .module('clusterReservation', [])
+    .directive('clusterReservationAlert', [
+      '$window',
+      '$timeout',
+      'nrpUser',
+      ($window, $timeout, nrpUser) => {
+        return {
+          restrict: 'E',
+          templateUrl:
+            'components/alerts/cluster-reservation/cluster-reservation.template.html',
+          scope: true,
+          link: function(scope, element) {
+            // Cluster reservation warning
+            nrpUser
+              .isMemberOfClusterReservationGroup()
+              .then(
+                response => (scope.displayClusterReservationForm = response)
+              );
 
-          scope.dismissReservationForm = $window.sessionStorage.getItem('reservationForm') === 'dismissed';
+            scope.dismissReservationForm =
+              $window.sessionStorage.getItem('reservationForm') === 'dismissed';
 
-          scope.setClusterReservation = () => $window.sessionStorage.setItem('clusterReservation', scope.clusterReservationName);
+            scope.setClusterReservation = () =>
+              $window.sessionStorage.setItem(
+                'clusterReservation',
+                scope.clusterReservationName
+              );
 
-          scope.dismissClusterReservationForm = () => {
-            $timeout(() => {
-              $window.sessionStorage.setItem('reservationForm', 'dismissed');
-              scope.dismissReservationForm = true;
-            });
-          };
-        }
-      };
-    }]);
-}());
+            scope.dismissClusterReservationForm = () => {
+              $timeout(() => {
+                $window.sessionStorage.setItem('reservationForm', 'dismissed');
+                scope.dismissReservationForm = true;
+              });
+            };
+          }
+        };
+      }
+    ]);
+})();

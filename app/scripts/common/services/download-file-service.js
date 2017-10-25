@@ -21,25 +21,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
-    'use strict';
+(function() {
+  'use strict';
 
-    angular.module('exdFrontendApp')
-        .service('downloadFileService', [function () {
+  angular.module('exdFrontendApp').service('downloadFileService', [
+    function() {
+      return {
+        downloadFile: downloadFile
+      };
 
-            return {
-                downloadFile: downloadFile
-            };
-
-            function downloadFile(href, fileName) {
-                var link = document.createElement('a');
-                document.body.appendChild(link);
-                link.style.display = 'none';
-                link.download = fileName;
-                link.href = href;
-                link.click();
-                document.body.removeChild(link);
-            }
-        }]);
-
-} ());
+      function downloadFile(href, fileName) {
+        var link = document.createElement('a');
+        document.body.appendChild(link);
+        link.style.display = 'none';
+        link.download = fileName;
+        link.href = href;
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  ]);
+})();

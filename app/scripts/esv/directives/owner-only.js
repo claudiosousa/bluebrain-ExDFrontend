@@ -23,23 +23,23 @@
  * ---LICENSE-END**/
 (function() {
   'use strict';
-  angular.module('exdFrontendApp')
-    .directive('ownerOnly', ['userContextService', userContextService => {
-
+  angular.module('exdFrontendApp').directive('ownerOnly', [
+    'userContextService',
+    userContextService => {
       const DISABLED_TOOTLTIP = 'Restricted to owner only';
 
       return {
         restrict: 'A',
-        priority:10000,
-        replace:true,
+        priority: 10000,
+        replace: true,
         compile: (tElement, tAttrs) => {
-          if (userContextService.isOwner())
-            return;
+          if (userContextService.isOwner()) return;
           tAttrs.title = DISABLED_TOOTLTIP;
-          tAttrs.ngDisabled = "true";
+          tAttrs.ngDisabled = 'true';
           tElement.attr('disabled', 'true');
           tElement.attr('title', DISABLED_TOOTLTIP);
         }
       };
-    }]);
-}());
+    }
+  ]);
+})();

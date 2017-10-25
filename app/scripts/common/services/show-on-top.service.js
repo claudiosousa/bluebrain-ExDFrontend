@@ -25,10 +25,13 @@
   'use strict';
 
   class ShowOnTopService {
+    static get MAX_PANEL_ZINDEX() {
+      return 400;
+    } //panels z-index start at this value and go down
 
-    static get MAX_PANEL_ZINDEX() { return 400; }//panels z-index start at this value and go down
-
-    constructor() { this.panels = []; }
+    constructor() {
+      this.panels = [];
+    }
 
     registerPanel(panel) {
       panel.css('z-index', ShowOnTopService.MAX_PANEL_ZINDEX);
@@ -41,8 +44,7 @@
 
     putPanelOnTop(panel) {
       //panel is already on top
-      if (panel.is(this.panels[this.panels.length - 1]))
-        return;
+      if (panel.is(this.panels[this.panels.length - 1])) return;
 
       //move that panel to the top of the panel stack
       var previousIndex = this.panels.indexOf(panel);
@@ -51,10 +53,14 @@
 
       //refresh panels z-index so they match the order on the stack
       for (var i = this.panels.length - 1; i >= previousIndex; i--)
-        this.panels[i].css('z-index', ShowOnTopService.MAX_PANEL_ZINDEX - this.panels.length + 1 + i);
+        this.panels[i].css(
+          'z-index',
+          ShowOnTopService.MAX_PANEL_ZINDEX - this.panels.length + 1 + i
+        );
     }
   }
 
-  angular.module('showOnTop')
+  angular
+    .module('showOnTop')
     .service('showOnTopService', () => new ShowOnTopService());
-}());
+})();

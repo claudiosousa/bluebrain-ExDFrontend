@@ -25,9 +25,12 @@
   'use strict';
 
   class HelpTooltipService {
-
-    get HELP() { return 'HELP'; }
-    get INFO() { return 'INFO'; }
+    get HELP() {
+      return 'HELP';
+    }
+    get INFO() {
+      return 'INFO';
+    }
 
     constructor(HELP_CODES, nrpAnalytics) {
       this.HELP_CODES = HELP_CODES;
@@ -35,8 +38,9 @@
 
       this.visible = false;
 
-      $(window).on("keydown", e => {
-        if (e.keyCode !== 27)/*!=escape key*/
+      $(window).on('keydown', e => {
+        if (e.keyCode !== 27)
+          /*!=escape key*/
           return;
         this.visible = false;
         this.logAnalytics();
@@ -44,9 +48,7 @@
     }
 
     displayHelp(helpCode) {
-
-      if (this.visible !== this.HELP)
-        return;
+      if (this.visible !== this.HELP) return;
 
       if (this.helpCode === helpCode || !helpCode) {
         this.helpCode = this.helpDescription = null;
@@ -64,8 +66,7 @@
 
     toggleHelp() {
       //something else than HELP visible
-      if (this.visible && this.visible !== this.HELP)
-        return;
+      if (this.visible && this.visible !== this.HELP) return;
 
       this.visible = this.visible ? false : this.HELP;
 
@@ -74,8 +75,7 @@
 
     toggleInfo() {
       //something else than INFO visible
-      if (this.visible && this.visible !== this.INFO)
-        return;
+      if (this.visible && this.visible !== this.INFO) return;
 
       this.visible = this.visible ? false : this.INFO;
 
@@ -92,7 +92,11 @@
     }
   }
 
-  angular.module('helpTooltipModule')
-    .service('helpTooltipService', ['HELP_CODES', 'nrpAnalytics', (...args) => new HelpTooltipService(...args)]);
-
-}());
+  angular
+    .module('helpTooltipModule')
+    .service('helpTooltipService', [
+      'HELP_CODES',
+      'nrpAnalytics',
+      (...args) => new HelpTooltipService(...args)
+    ]);
+})();

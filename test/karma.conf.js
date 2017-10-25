@@ -7,7 +7,6 @@ module.exports = function(config) {
   'use strict';
 
   config.set({
-
     // base path, that will be used to resolve files and exclude
     basePath: '../',
 
@@ -16,7 +15,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-
       'node_modules/babel-polyfill/dist/polyfill.js',
       'node_modules/chart.js/dist/Chart.min.js',
       'node_modules/rxjs/bundles/Rx.min.js',
@@ -96,7 +94,7 @@ module.exports = function(config) {
       'node_modules/d3/d3.min.js',
       'node_modules/n3-charts/build/LineChart.js',
       'test/support/**/*.js',
-      './node_modules/phantomjs-polyfill-find/find-polyfill.js',//phantomjs polyfill forArray.find
+      './node_modules/phantomjs-polyfill-find/find-polyfill.js', //phantomjs polyfill forArray.find
       'app/components/**/*.modules.js', // files defining modules first
       'app/scripts/common/filters/time-filters.js', // Make sure modules used in different files are loaded before they are used
       'app/scripts/**/*.js',
@@ -107,40 +105,40 @@ module.exports = function(config) {
       'app/components/**/*.html',
       'app/views/**/*.html',
 
-      {pattern: 'app/views/*.*', included: true, served: true}
+      { pattern: 'app/views/*.*', included: true, served: true }
     ],
 
     preprocessors: {
-        // source files, that you want to generate coverage for
-        // do not include tests or libraries
-        // (these files will be instrumented by Istanbul)
-        'app/scripts/*/**/*.js': ['babel', 'coverage'],
-        'app/components/**/*.js': ['babel','coverage'],
-        'app/components/**/*.html': ['ng-html2js'],
-        'app/views/**/*.html': ['ng-html2js']
+      // source files, that you want to generate coverage for
+      // do not include tests or libraries
+      // (these files will be instrumented by Istanbul)
+      'app/scripts/*/**/*.js': ['babel', 'coverage'],
+      'app/components/**/*.js': ['babel', 'coverage'],
+      'app/components/**/*.html': ['ng-html2js'],
+      'app/views/**/*.html': ['ng-html2js']
     },
 
     babelPreprocessor: {
-        options: {
-            babelrc: false,
-            presets: ['es2015'],
-            sourceMap: 'inline',
-            plugins: ['transform-new-target']
-        },
-        filename: function(file) {
-            return file.originalPath.replace(/\.js$/, '.es5.js');
-        },
-        sourceFileName: function(file) {
-            return file.originalPath;
-        }
+      options: {
+        babelrc: false,
+        presets: ['es2015'],
+        sourceMap: 'inline',
+        plugins: ['transform-new-target']
+      },
+      filename: function(file) {
+        return file.originalPath.replace(/\.js$/, '.es5.js');
+      },
+      sourceFileName: function(file) {
+        return file.originalPath;
+      }
     },
 
     ngHtml2JsPreprocessor: {
-        stripPrefix: 'app/',
-        prependPrefix: '',
+      stripPrefix: 'app/',
+      prependPrefix: '',
 
-        // the name of the Angular module to create
-        moduleName: "exd.templates"
+      // the name of the Angular module to create
+      moduleName: 'exd.templates'
     },
 
     // list of files / patterns to exclude
@@ -157,41 +155,38 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: [
-      'Chrome',
-      'PhantomJS'
-    ],
+    browsers: ['Chrome', 'PhantomJS'],
     reporters: ['progress', 'junit', 'coverage'],
 
     // Which plugins to enable
     plugins: [
-        'karma-phantomjs-launcher',
-        'karma-chrome-launcher',
-        'karma-jasmine',
-        'karma-babel-preprocessor',
-        'karma-coverage',
-        'karma-junit-reporter',
-        'karma-ng-html2js-preprocessor'
+      'karma-phantomjs-launcher',
+      'karma-chrome-launcher',
+      'karma-jasmine',
+      'karma-babel-preprocessor',
+      'karma-coverage',
+      'karma-junit-reporter',
+      'karma-ng-html2js-preprocessor'
     ],
 
     junitReporter: {
-        outputDir: 'reports/coverage/',
-        outputFile: 'unit-test.xml',
-        suite: 'unit'
+      outputDir: 'reports/coverage/',
+      outputFile: 'unit-test.xml',
+      suite: 'unit'
     },
 
     coverageReporter: {
-        reporters: [
-            {
-                type : 'lcov',
-                dir:   'reports/coverage/',
-                file : 'coverage.info'
-            },
-            {
-                type : 'cobertura',
-                dir:   'reports/coverage/'
-            }
-        ]
+      reporters: [
+        {
+          type: 'lcov',
+          dir: 'reports/coverage/',
+          file: 'coverage.info'
+        },
+        {
+          type: 'cobertura',
+          dir: 'reports/coverage/'
+        }
+      ]
     },
 
     // Continuous Integration mode
@@ -201,9 +196,9 @@ module.exports = function(config) {
     colors: true,
 
     proxies: {
-        '/views/': 'http://localhost:8000/views/',
-        '/img/': 'app/img/'
-    },
+      '/views/': 'http://localhost:8000/views/',
+      '/img/': 'app/img/'
+    }
 
     // Uncomment the following lines if you are using grunt's server to run the tests
     // proxies: {

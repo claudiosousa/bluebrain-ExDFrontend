@@ -1,12 +1,13 @@
-
 'use strict';
 
 describe('Services: userContextService', function() {
-
   var userContextService;
 
   var $rootScope, $scope, $window, $q;
-  var userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig,
+  var userNavigationService,
+    collabExperimentLockService,
+    simulationInfo,
+    bbpConfig,
     environmentService;
 
   var lockServiceMock, cancelLockServiceMock;
@@ -16,57 +17,76 @@ describe('Services: userContextService', function() {
   beforeEach(module('userContextModule'));
   beforeEach(module('storageServerMock'));
 
-
   // provide mock objects
-  beforeEach(module(function($provide) {
-    // userNavigationService
-    var userNavigationServiceMock = {
-      isUserAvatar: jasmine.createSpy('isUserAvatar').and.callFake(function(entity) {
-        if (entity.name === 'user_avatar') {
-          return true;
-        } else {
-          return false;
-        }
-      })
-    };
-    $provide.value('userNavigationService', userNavigationServiceMock);
-
-    // collabExperimentLockService
-    cancelLockServiceMock = jasmine.createSpy('cancelLockServiceMock');
-    lockServiceMock = {
-      onLockChanged: jasmine.createSpy('onLockChanged').and.returnValue(cancelLockServiceMock),
-      releaseLock: jasmine.createSpy('releaseLock').and.returnValue({
-        catch: jasmine.createSpy('catch')
-      })
-    };
-
-    var collabExperimentLockServiceMock = {
-      createLockServiceForExperimentId: jasmine.createSpy('createLockServiceForExperimentId').and.returnValue(lockServiceMock)
-    };
-    $provide.value('collabExperimentLockService', collabExperimentLockServiceMock);
-    $provide.value('simulationControl', function() {
-      return {
-        simulation: function(_, rescallback) {
-          rescallback({
-            owner: 'Some owner id',
-            experimentConfiguration: 'expconf',
-            environmentConfiguration: 'envconf',
-            creationDate: '19.02.1970'
-          });
-        }
+  beforeEach(
+    module(function($provide) {
+      // userNavigationService
+      var userNavigationServiceMock = {
+        isUserAvatar: jasmine
+          .createSpy('isUserAvatar')
+          .and.callFake(function(entity) {
+            if (entity.name === 'user_avatar') {
+              return true;
+            } else {
+              return false;
+            }
+          })
       };
-    });
-    // bbpConfig
-    $provide.value('bbpConfig', window.bbpConfig);
-  }));
+      $provide.value('userNavigationService', userNavigationServiceMock);
 
+      // collabExperimentLockService
+      cancelLockServiceMock = jasmine.createSpy('cancelLockServiceMock');
+      lockServiceMock = {
+        onLockChanged: jasmine
+          .createSpy('onLockChanged')
+          .and.returnValue(cancelLockServiceMock),
+        releaseLock: jasmine.createSpy('releaseLock').and.returnValue({
+          catch: jasmine.createSpy('catch')
+        })
+      };
+
+      var collabExperimentLockServiceMock = {
+        createLockServiceForExperimentId: jasmine
+          .createSpy('createLockServiceForExperimentId')
+          .and.returnValue(lockServiceMock)
+      };
+      $provide.value(
+        'collabExperimentLockService',
+        collabExperimentLockServiceMock
+      );
+      $provide.value('simulationControl', function() {
+        return {
+          simulation: function(_, rescallback) {
+            rescallback({
+              owner: 'Some owner id',
+              experimentConfiguration: 'expconf',
+              environmentConfiguration: 'envconf',
+              creationDate: '19.02.1970'
+            });
+          }
+        };
+      });
+      // bbpConfig
+      $provide.value('bbpConfig', window.bbpConfig);
+    })
+  );
 
   var httpBackend, experimentService;
   // inject dependencies
   beforeEach(function() {
-    inject(function(_$rootScope_, _$window_, _$q_, $httpBackend, _userContextService_, _userNavigationService_,
-      _collabExperimentLockService_, _simulationInfo_, _bbpConfig_,
-      _environmentService_, _experimentService_) {
+    inject(function(
+      _$rootScope_,
+      _$window_,
+      _$q_,
+      $httpBackend,
+      _userContextService_,
+      _userNavigationService_,
+      _collabExperimentLockService_,
+      _simulationInfo_,
+      _bbpConfig_,
+      _environmentService_,
+      _experimentService_
+    ) {
       userContextService = _userContextService_;
       experimentService = _experimentService_;
       $rootScope = _$rootScope_;
@@ -81,7 +101,6 @@ describe('Services: userContextService', function() {
       httpBackend = $httpBackend;
 
       environmentService.setPrivateExperiment(true);
-
     });
   });
 
@@ -123,11 +142,15 @@ describe('Services: userContextService', function() {
 
     lockChangeEvent.lockInfo.user.id = 'not_the_user_id';
     userContextService.onLockChangedCallback(lockChangeEvent);
-    expect(userContextService.setLockDateAndUser).toHaveBeenCalledWith(lockChangeEvent.lockInfo);
+    expect(userContextService.setLockDateAndUser).toHaveBeenCalledWith(
+      lockChangeEvent.lockInfo
+    );
 
     lockChangeEvent.locked = false;
     userContextService.onLockChangedCallback(lockChangeEvent);
-    expect(userContextService.setEditDisabled).toHaveBeenCalledWith(lockChangeEvent.locked);
+    expect(userContextService.setEditDisabled).toHaveBeenCalledWith(
+      lockChangeEvent.locked
+    );
   });
 
   it(' - hasEditRights()', function() {
@@ -157,7 +180,9 @@ describe('Services: userContextService', function() {
     userContextService.setLockDateAndUser(lockInfoMock);
     expect(userContextService.userEditing).toBe(lockInfoMock.user.displayName);
     expect(userContextService.userEditingID).toBe(lockInfoMock.user.id);
-    expect(userContextService.timeEditStarted).toBe(moment(new Date(lockInfoMock.date)).fromNow());
+    expect(userContextService.timeEditStarted).toBe(
+      moment(new Date(lockInfoMock.date)).fromNow()
+    );
   });
 
   it(' - setEditDisabled()', function() {
@@ -167,7 +192,6 @@ describe('Services: userContextService', function() {
     userContextService.setEditDisabled(true);
     expect(userContextService.editIsDisabled).toBe(true);
   });
-
 
   describe('remote collab mode', function() {
     beforeEach(function() {
@@ -183,6 +207,4 @@ describe('Services: userContextService', function() {
       expect(userContextService.removeEditLock).toHaveBeenCalledWith(true);
     });
   });
-
-
 });

@@ -22,35 +22,46 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 (function() {
-    'use strict';
+  'use strict';
 
-    angular.module('videoStreamModule', [])
-        .directive('videoStream', ['$timeout', 'videoStreamService', 'STATE', 'stateService',
-            function($timeout, videoStreamService, STATE, stateService) {
+  angular.module('videoStreamModule', []).directive('videoStream', [
+    '$timeout',
+    'videoStreamService',
+    'STATE',
+    'stateService',
+    function($timeout, videoStreamService, STATE, stateService) {
+      return {
+        templateUrl: 'components/video-stream/video-stream.template.html',
+        restrict: 'E',
+        replace: true,
+        scope: {
+          toggleVisibility: '&',
+          ngShow: '=?'
+        },
+        link: scope => {
+          scope.STATE = STATE;
+          scope.stateService = stateService;
 
-                return {
-                    templateUrl: 'components/video-stream/video-stream.template.html',
-                    restrict: 'E',
-                    replace: true,
-                    scope: {
-                        toggleVisibility: '&',
-                        ngShow: '=?'
-                    },
-                    link: scope => {
-                        scope.STATE = STATE;
-                        scope.stateService = stateService;
+          let loadVideoStreams = () =>
+            videoStreamService
+              .getStreamUrls()
+              .then(videoStreams => (scope.videoStreams = videoStreams));
 
-                        let loadVideoStreams = () => videoStreamService.getStreamUrls().then(videoStreams => scope.videoStreams = videoStreams);
+          let reconnectTrials = 0;
+          scope.showVideoStream = url =>
+            (scope.videoUrl = url ? url + '&t=' + reconnectTrials++ : '');
 
-                        let reconnectTrials = 0;
-                        scope.showVideoStream = url => scope.videoUrl = url ? url + '&t=' + reconnectTrials++ : '';
+          //starting the experiment might publish new video streams, so we check again
+          scope.$watch(
+            'stateService.currentState',
+            () =>
+              stateService.currentState === STATE.STARTED &&
+              $timeout(loadVideoStreams, 500)
+          );
 
-                        //starting the experiment might publish new video streams, so we check again
-                        scope.$watch('stateService.currentState', () => stateService.currentState === STATE.STARTED && $timeout(loadVideoStreams, 500));
-
-                        loadVideoStreams();
-                    }
-                };
-            }
-        ]);
-}());
+          loadVideoStreams();
+        }
+      };
+    }
+  ]);
+})();

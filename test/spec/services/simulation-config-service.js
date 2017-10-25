@@ -31,30 +31,55 @@ describe('Services: simulation-config-service', function() {
 
   // load the service to test and mock the necessary service
 
-  beforeEach(module(function($provide) {
+  beforeEach(
+    module(function($provide) {
+      storageServerMock = {
+        setFileContent: jasmine
+          .createSpy('setFileContent')
+          .and.callFake(function() {
+            return window.$q.when();
+          }),
+        getFileContent: jasmine
+          .createSpy('getFileContent')
+          .and.callFake(function() {
+            return window.$q.when({ uuid: 'mockeduuid' });
+          }),
+        deleteFile: jasmine.createSpy('deleteFile').and.callFake(function() {
+          return window.$q.when();
+        })
+      };
 
-    storageServerMock = {
-      setFileContent: jasmine.createSpy('setFileContent').and.callFake(function() { return window.$q.when(); }),
-      getFileContent: jasmine.createSpy('getFileContent').and.callFake(function() {
-        return window.$q.when({ uuid: 'mockeduuid' });
-      }),
-      deleteFile: jasmine.createSpy('deleteFile').and.callFake(function() { return window.$q.when(); }),
-    };
+      $provide.value('gz3d', gz3dMock);
+      $provide.value('simulationInfo', simulationInfo);
+      $provide.value('storageServer', storageServerMock);
+    })
+  );
 
-    $provide.value('gz3d', gz3dMock);
-    $provide.value('simulationInfo', simulationInfo);
-    $provide.value('storageServer', storageServerMock);
-  }));
+  beforeEach(
+    inject(function(
+      _$httpBackend_,
+      _simulationConfigService_,
+      _$rootScope_,
+      _environmentService_
+    ) {
+      simulationConfigService = _simulationConfigService_;
+      httpBackend = _$httpBackend_;
+      $rootScope = _$rootScope_;
+      environmentService = _environmentService_;
 
-  beforeEach(inject(function(_$httpBackend_, _simulationConfigService_, _$rootScope_, _environmentService_) {
-    simulationConfigService = _simulationConfigService_;
-    httpBackend = _$httpBackend_;
-    $rootScope = _$rootScope_;
-    environmentService = _environmentService_;
-
-    var fileresult = { resources: [{ type: 'mockedFileType', file: 'mockedpath/configfilename' }] };
-    httpBackend.expectGET(simulationInfo.serverBaseUrl + '/simulation/mocked_simulation_id/resources').respond(JSON.stringify(fileresult));
-  }));
+      var fileresult = {
+        resources: [
+          { type: 'mockedFileType', file: 'mockedpath/configfilename' }
+        ]
+      };
+      httpBackend
+        .expectGET(
+          simulationInfo.serverBaseUrl +
+            '/simulation/mocked_simulation_id/resources'
+        )
+        .respond(JSON.stringify(fileresult));
+    })
+  );
 
   it('should check if config file exists in backend', function() {
     var result = simulationConfigService.doesConfigFileExist('mockedFileType');
@@ -69,7 +94,10 @@ describe('Services: simulation-config-service', function() {
   });
 
   it('should use cache after initConfigFiles has been called', function() {
-    simulationConfigService.initConfigFiles(simulationInfo.serverBaseUrl, simulationInfo.simulationID);
+    simulationConfigService.initConfigFiles(
+      simulationInfo.serverBaseUrl,
+      simulationInfo.simulationID
+    );
 
     var result = simulationConfigService.doesConfigFileExist('mockedFileType');
     httpBackend.flush();
@@ -83,7 +111,9 @@ describe('Services: simulation-config-service', function() {
   });
 
   it('should load config file from backend', function() {
-    httpBackend.expectGET(simulationInfo.serverBaseUrl + 'mockedpath/configfilename').respond('ContentTest');
+    httpBackend
+      .expectGET(simulationInfo.serverBaseUrl + 'mockedpath/configfilename')
+      .respond('ContentTest');
 
     simulationInfo.contextID = undefined;
     var result = simulationConfigService.loadConfigFile('mockedFileType');
@@ -105,7 +135,6 @@ describe('Services: simulation-config-service', function() {
     $rootScope.$digest();
 
     expect(storageServerMock.getFileContent).toHaveBeenCalled();
-
   });
 
   it('should save config file to collabs', function() {
@@ -129,8 +158,4 @@ describe('Services: simulation-config-service', function() {
 
     expect(storageServerMock.setFileContent).toHaveBeenCalled();
   });
-
 });
-
-
-

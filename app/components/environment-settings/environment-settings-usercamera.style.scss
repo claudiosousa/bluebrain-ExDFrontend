@@ -21,14 +21,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "environment-settings-panel.style";
+@import 'environment-settings-panel.style';
 
 .environment-settings-usercamera-reset {
-  margin:10px 10px 10px 70px;
+  margin: 10px 10px 10px 70px;
 }
 
 .environment-settings-usercamera-wrapper {
-  display:flex;
+  display: flex;
 }
 
 .environment-settings-usercamera-curves {
@@ -42,7 +42,7 @@
   min-width: 200px;
   max-width: 250px;
   flex-grow: 1;
-  margin:32px 0px 0px 0px;
+  margin: 32px 0px 0px 0px;
 }
 
 .environment-settings-usercamera-levels-title {

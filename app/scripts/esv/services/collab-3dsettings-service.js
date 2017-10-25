@@ -21,53 +21,61 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function ()
-{
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .service('collab3DSettingsService', ['gz3d', 'simulationConfigService','userNavigationService', 'simulationInfo',
-      function (gz3d, simulationConfigService, userNavigationService, simulationInfo)
-      {
-        var loadSettings = function ()
-        {
-          if (gz3d.scene.defaultComposerSettings === undefined)
-          {
-            gz3d.scene.defaultComposerSettings = JSON.parse(JSON.stringify(gz3d.scene.composerSettings));
-          }
+  angular.module('exdFrontendApp').service('collab3DSettingsService', [
+    'gz3d',
+    'simulationConfigService',
+    'userNavigationService',
+    'simulationInfo',
+    function(
+      gz3d,
+      simulationConfigService,
+      userNavigationService,
+      simulationInfo
+    ) {
+      var loadSettings = function() {
+        if (gz3d.scene.defaultComposerSettings === undefined) {
+          gz3d.scene.defaultComposerSettings = JSON.parse(
+            JSON.stringify(gz3d.scene.composerSettings)
+          );
+        }
 
-          return simulationConfigService.loadConfigFile('3d-settings')
-            .then(function (fileContent)
-            {
-              gz3d.scene.composerSettings = JSON.parse(fileContent);
-              gz3d.scene.applyComposerSettings(true);
-              gz3d.scene.defaultComposerSettings = JSON.parse(JSON.stringify(gz3d.scene.composerSettings));
+        return simulationConfigService
+          .loadConfigFile('3d-settings')
+          .then(function(fileContent) {
+            gz3d.scene.composerSettings = JSON.parse(fileContent);
+            gz3d.scene.applyComposerSettings(true);
+            gz3d.scene.defaultComposerSettings = JSON.parse(
+              JSON.stringify(gz3d.scene.composerSettings)
+            );
 
-              if (gz3d.scene.composerSettings.defaultCameraMode==='lookatrobot')
-              {
-                if (userNavigationService.lookatRobotControls)
-                {
-                  userNavigationService.setLookatRobotCamera();
-                }
-                else
-                {
-                  userNavigationService.initAsLookatRobot = true;
-                }
+            if (
+              gz3d.scene.composerSettings.defaultCameraMode === 'lookatrobot'
+            ) {
+              if (userNavigationService.lookatRobotControls) {
+                userNavigationService.setLookatRobotCamera();
+              } else {
+                userNavigationService.initAsLookatRobot = true;
               }
+            }
 
-              return fileContent;
-            });
-        };
+            return fileContent;
+          });
+      };
 
-        var saveSettings = function ()
-        {
-          simulationConfigService.saveConfigFile('3d-settings', JSON.stringify(gz3d.scene.composerSettings));
-        };
+      var saveSettings = function() {
+        simulationConfigService.saveConfigFile(
+          '3d-settings',
+          JSON.stringify(gz3d.scene.composerSettings)
+        );
+      };
 
-        return {
-          loadSettings: loadSettings,
-          saveSettings: saveSettings
-        };
-      }]
-    );
-} ());
+      return {
+        loadSettings: loadSettings,
+        saveSettings: saveSettings
+      };
+    }
+  ]);
+})();

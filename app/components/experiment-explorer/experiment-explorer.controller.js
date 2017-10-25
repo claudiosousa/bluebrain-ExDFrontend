@@ -21,12 +21,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   class ExperimentExplorerController {
-
-    constructor($scope, $element, $location, $stateParams, $q, $log, $uibModal, clbErrorDialog, storageServer) {
+    constructor(
+      $scope,
+      $element,
+      $location,
+      $stateParams,
+      $q,
+      $log,
+      $uibModal,
+      clbErrorDialog,
+      storageServer
+    ) {
       this.$scope = $scope;
       this.$location = $location;
       this.$stateParams = $stateParams;
@@ -44,9 +53,9 @@
     loadExperimentList() {
       this.storageServer
         .getExperiments()
-        .then(exps => this.experimentList = exps)
+        .then(exps => (this.experimentList = exps))
         .catch(err => this.onError('Failed to load experiments', err))
-        .finally(() => this.experimentsLoaded = true);
+        .finally(() => (this.experimentsLoaded = true));
     }
 
     loadParentFileList() {
@@ -65,10 +74,12 @@
         .then(files => {
           selectedParent.files = files.filter(f => f.type === 'file');
           selectedParent.folders = files.filter(f => f.type === 'folder');
-          selectedParent.folders.forEach(f => f.parentFolder = selectedParent);
+          selectedParent.folders.forEach(
+            f => (f.parentFolder = selectedParent)
+          );
         })
         .catch(err => this.onError('Failed to load experiment files', err))
-        .finally(() => selectedParent.loadingFiles = false);
+        .finally(() => (selectedParent.loadingFiles = false));
     }
 
     onError(msg, err) {
@@ -97,10 +108,11 @@
         currentParent = currentParent.parentFolder;
 
       let unselectChildren = parent => {
-        parent.folders && parent.folders.forEach(f => {
-          f.selected = false;
-          unselectChildren(f);
-        });
+        parent.folders &&
+          parent.folders.forEach(f => {
+            f.selected = false;
+            unselectChildren(f);
+          });
       };
 
       unselectChildren(currentParent);
@@ -123,26 +135,27 @@
     }
 
     createFolder() {
-      this.$uibModal.open({
-        templateUrl: 'experiment-explorer-folder-name.html',
-        show: true,
-        backdrop: 'static',
-        scope: this.$scope,
-        keyboard: true,
-        windowClass: 'modal-window',
-        //size: 'lg'
-      }).result.then(newfolder => {
-        if (!newfolder)
-          return;
-        let parent = this.selectedParent;
-        parent.creating = true;
+      this.$uibModal
+        .open({
+          templateUrl: 'experiment-explorer-folder-name.html',
+          show: true,
+          backdrop: 'static',
+          scope: this.$scope,
+          keyboard: true,
+          windowClass: 'modal-window'
+          //size: 'lg'
+        })
+        .result.then(newfolder => {
+          if (!newfolder) return;
+          let parent = this.selectedParent;
+          parent.creating = true;
 
-        this.storageServer
-          .createFolder(parent.uuid, newfolder)
-          .then(() => this.selectParent(parent))
-          .catch(err => this.onError('Failed to create folder', err))
-          .finally(() => parent.creating = false);
-      });
+          this.storageServer
+            .createFolder(parent.uuid, newfolder)
+            .then(() => this.selectParent(parent))
+            .catch(err => this.onError('Failed to create folder', err))
+            .finally(() => (parent.creating = false));
+        });
     }
 
     deleteFolder(folder) {
@@ -152,7 +165,7 @@
         .deleteFolder(this.selectedParent.uuid, folder.uuid)
         .then(() => this.selectParent(parent))
         .catch(err => this.onError('Failed to delete folder', err))
-        .finally(() => folder.deleting = false);
+        .finally(() => (folder.deleting = false));
     }
 
     deleteFile(file) {
@@ -161,7 +174,7 @@
         .deleteFile(this.selectedParent.uuid, file.uuid)
         .then(() => this.loadParentFileList())
         .catch(err => this.onError('Failed to delete file', err))
-        .finally(() => file.deleting = false);
+        .finally(() => (file.deleting = false));
     }
 
     downloadFile(file) {
@@ -175,10 +188,12 @@
           link.click();
         })
         .catch(err => this.onError('Failed to download file', err))
-        .finally(() => file.downloading = false);
+        .finally(() => (file.downloading = false));
     }
 
-    uploadFileClick() { this.experimentInput.click(); }
+    uploadFileClick() {
+      this.experimentInput.click();
+    }
 
     uploadFile(e) {
       let selectedParent = this.selectedParent;
@@ -190,14 +205,20 @@
           textReader.onload = e => resolve([f.name, e.target.result]);
           textReader.readAsArrayBuffer(f);
         }).then(([filename, filecontent]) =>
-          this.storageServer.setBlobContent(this.selectedParent.uuid, filename, filecontent, true)
+          this.storageServer.setBlobContent(
+            this.selectedParent.uuid,
+            filename,
+            filecontent,
+            true
           )
+        )
       );
 
-      this.$q.all(filesData)
+      this.$q
+        .all(filesData)
         .then(() => this.loadParentFileList())
         .catch(err => this.onError('Failed to upload file', err))
-        .finally(() => selectedParent.uploading = false);
+        .finally(() => (selectedParent.uploading = false));
     }
 
     static get FILE_TYPES() {
@@ -212,9 +233,9 @@
         [/.*\.sdf$/i, 'Model file'],
         [/.*\.json$/i, 'Configuration file'],
         [/.*\.png$/i, 'PNG image'],
-        [/.*\.jpe?g$/i, 'JPEG image'],
+        [/.*\.jpe?g$/i, 'JPEG image']
       ];
-    };
+    }
 
     getFileExtension(f) {
       let parts = f.name.split('.');
@@ -222,12 +243,10 @@
     }
 
     getFileType(f) {
-      if (f.type === 'folder')
-        return 'folder';
+      if (f.type === 'folder') return 'folder';
 
       for (let [regexp, desc] of ExperimentExplorerController.FILE_TYPES)
-        if (regexp.test(f.name))
-          return desc;
+        if (regexp.test(f.name)) return desc;
 
       return `${f.extension} file`;
     }
@@ -248,9 +267,9 @@
         '3ds': 'file-text-o',
         bibi: 'file-text-o',
         sdf: 'file-text-o',
-        exc: 'file-text-o',
+        exc: 'file-text-o'
       };
-    };
+    }
 
     getFileIcon(f) {
       return ExperimentExplorerController.FILE_ICONS[f.extension] || 'file-o';
@@ -262,16 +281,18 @@
     }
   }
 
-  angular.module('experimentExplorer', ['storageServer']).controller('ExperimentExplorerController', [
-    '$scope',
-    '$element',
-    '$location',
-    '$stateParams',
-    '$q',
-    '$log',
-    '$uibModal',
-    'clbErrorDialog',
-    'storageServer',
-    (...args) => new ExperimentExplorerController(...args)
-  ]);
+  angular
+    .module('experimentExplorer', ['storageServer'])
+    .controller('ExperimentExplorerController', [
+      '$scope',
+      '$element',
+      '$location',
+      '$stateParams',
+      '$q',
+      '$log',
+      '$uibModal',
+      'clbErrorDialog',
+      'storageServer',
+      (...args) => new ExperimentExplorerController(...args)
+    ]);
 })();

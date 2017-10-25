@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   /**
@@ -31,17 +31,34 @@
    * @name exdFrontendApp.autoSaveService
    * @description Service responsible for auto saving the work in progress
    */
-    angular.module('exdFrontendApp')
+  angular
+    .module('exdFrontendApp')
     .constant('AUTO_SAVE_INTERVAL', 20 * 1000)
     .constant('AUTO_SAVE_FILE', 'env_editor.autosaved')
-    .service('autoSaveService', ['$stateParams', '$q', 'AUTO_SAVE_INTERVAL', 'AUTO_SAVE_FILE', 'tempFileService', 'environmentService',
-      function ($stateParams, $q, AUTO_SAVE_INTERVAL, AUTO_SAVE_FILE, tempFileService, environmentService) {
-
+    .service('autoSaveService', [
+      '$stateParams',
+      '$q',
+      'AUTO_SAVE_INTERVAL',
+      'AUTO_SAVE_FILE',
+      'tempFileService',
+      'environmentService',
+      function(
+        $stateParams,
+        $q,
+        AUTO_SAVE_INTERVAL,
+        AUTO_SAVE_FILE,
+        tempFileService,
+        environmentService
+      ) {
         var dirtyDataCol = {},
           loaded = false,
           retrieving = false,
           foundAutoSavedCallbacks = {},
-          scheduleDirtyDataSaving = _.throttle(saveDirtyData, AUTO_SAVE_INTERVAL, { leading: false });
+          scheduleDirtyDataSaving = _.throttle(
+            saveDirtyData,
+            AUTO_SAVE_INTERVAL,
+            { leading: false }
+          );
 
         return {
           saveDirtyData: saveDirtyData,
@@ -56,9 +73,10 @@
          * @method saveDirtyData
          * @instance
          */
-        function saveDirtyData(){
-          return tempFileService.saveDirtyData(AUTO_SAVE_FILE, true, dirtyDataCol)
-            .catch(function(){
+        function saveDirtyData() {
+          return tempFileService
+            .saveDirtyData(AUTO_SAVE_FILE, true, dirtyDataCol)
+            .catch(function() {
               scheduleDirtyDataSaving();
             });
         }
@@ -71,8 +89,7 @@
          * @param {} dirtyData
          */
         function setDirty(dirtyType, dirtyData) {
-          if (!environmentService.isPrivateExperiment())
-            return;
+          if (!environmentService.isPrivateExperiment()) return;
           dirtyDataCol[dirtyType] = dirtyData;
           scheduleDirtyDataSaving();
         }
@@ -84,13 +101,10 @@
          * @param {} dirtyType
          */
         function clearDirty(dirtyType) {
-          if(!environmentService.isPrivateExperiment())
-            return;
+          if (!environmentService.isPrivateExperiment()) return;
           delete dirtyDataCol[dirtyType];
-          if(_.isEmpty(dirtyDataCol))
-            removeAutoSavedWork();
-          else
-            scheduleDirtyDataSaving();
+          if (_.isEmpty(dirtyDataCol)) removeAutoSavedWork();
+          else scheduleDirtyDataSaving();
         }
         /**
          * Clear the dirty data set for a dirty type
@@ -109,24 +123,24 @@
          * @method checkAutoSavedWork
          * @return CallExpression
          */
-        function checkAutoSavedWork(){
-          if(retrieving || loaded){
+        function checkAutoSavedWork() {
+          if (retrieving || loaded) {
             return $q.reject();
           }
           retrieving = true;
-          return tempFileService.checkSavedWork(AUTO_SAVE_FILE, foundAutoSavedCallbacks, true)
-            .then(_.spread(function(savedWork, applySaved) {
-              if (applySaved)
-                removeAutoSavedWork();
-              else
-                dirtyDataCol = savedWork;
-            }))
-            .catch(function(reason){
-              if (reason === 'discard')
-                removeAutoSavedWork();
+          return tempFileService
+            .checkSavedWork(AUTO_SAVE_FILE, foundAutoSavedCallbacks, true)
+            .then(
+              _.spread(function(savedWork, applySaved) {
+                if (applySaved) removeAutoSavedWork();
+                else dirtyDataCol = savedWork;
+              })
+            )
+            .catch(function(reason) {
+              if (reason === 'discard') removeAutoSavedWork();
               return $q.reject();
             })
-            .finally(function(){
+            .finally(function() {
               retrieving = false;
               loaded = true;
             });
@@ -141,6 +155,6 @@
         function registerFoundAutoSavedCallback(dirtyType, cb) {
           foundAutoSavedCallbacks[dirtyType] = cb;
         }
-      }]
-    );
-} ());
+      }
+    ]);
+})();

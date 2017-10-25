@@ -24,37 +24,52 @@
 (function() {
   'use strict';
 
-  angular.module('nrpUser', ['bbpConfig', 'storageServer']).service('nrpUser', ['$window', '$q', 'storageServer', 'bbpConfig',
+  angular.module('nrpUser', ['bbpConfig', 'storageServer']).service('nrpUser', [
+    '$window',
+    '$q',
+    'storageServer',
+    'bbpConfig',
     function($window, $q, storageServer, bbpConfig) {
-
       var getCurrentUser = () => storageServer.getCurrentUser();
 
-      var getCurrentUserGroups = _.memoize(() => storageServer.getCurrentUserGroups());
+      var getCurrentUserGroups = _.memoize(() =>
+        storageServer.getCurrentUserGroups()
+      );
 
-      var getReservation = () => $window.sessionStorage.getItem('clusterReservation');
+      var getReservation = () =>
+        $window.sessionStorage.getItem('clusterReservation');
 
-      let isGroupMember = group => getCurrentUserGroups().then(groups => groups.some(g => g.name === group));
+      let isGroupMember = group =>
+        getCurrentUserGroups().then(groups =>
+          groups.some(g => g.name === group)
+        );
 
-      var getOwnerName = userId => storageServer.getUser(userId)
-        .then(({ displayName }) => displayName)
-        .catch(() => 'Unkwown');
+      var getOwnerName = userId =>
+        storageServer
+          .getUser(userId)
+          .then(({ displayName }) => displayName)
+          .catch(() => 'Unkwown');
 
       let getCurrentUserInfo = () =>
-        $q.all([
-          storageServer.getCurrentUser(),
-          isGroupMember('hbp-sp10-user-edit-rights')
-        ]).then(([{ id }, hasEditRights]) => ({
-          userID: id,
-          hasEditRights
-        }));
+        $q
+          .all([
+            storageServer.getCurrentUser(),
+            isGroupMember('hbp-sp10-user-edit-rights')
+          ])
+          .then(([{ id }, hasEditRights]) => ({
+            userID: id,
+            hasEditRights
+          }));
 
       return {
         getCurrentUser: _.memoize(getCurrentUser),
         getReservation: getReservation,
-        isMemberOfClusterReservationGroup: _.memoize(() => isGroupMember('hbp-sp10-cluster-reservation')),
+        isMemberOfClusterReservationGroup: _.memoize(() =>
+          isGroupMember('hbp-sp10-cluster-reservation')
+        ),
         getOwnerDisplayName: _.memoize(getOwnerName),
         getCurrentUserInfo: _.memoize(getCurrentUserInfo)
       };
-
-    }]);
-}());
+    }
+  ]);
+})();

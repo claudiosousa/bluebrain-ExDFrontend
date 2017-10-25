@@ -27,7 +27,7 @@
   padding: 10px;
   overflow: auto;
 
-  input[type="text"] {
+  input[type='text'] {
     margin-left: 5px;
   }
   input.ng-invalid {
@@ -35,9 +35,15 @@
     border-color: rgb(255, 78, 78);
   }
   .singlePopulation.ng-invalid {
-    background-color: rgb(255, 226, 226)!important;
+    background-color: rgb(255, 226, 226) !important;
   }
-  input.neuron-index-field { width: 70px; }
-  div.fixed-sized { width: 110px; }
-  div.fixed-sized-short { width: 95px; }
+  input.neuron-index-field {
+    width: 70px;
+  }
+  div.fixed-sized {
+    width: 110px;
+  }
+  div.fixed-sized-short {
+    width: 95px;
+  }
 }

@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "../../styles/esv/pop-over-viewer";
+@import '../../styles/esv/pop-over-viewer';
 
 $editorPanelStartWidth: 750px;
 $editorPanelStartWidthLargeScreen: 950px;
@@ -30,7 +30,8 @@ $editorPanelMinWidth: 400px;
 $editorPanelMinHeight: 400px;
 $editorPanelHeadingHeight: 25px;
 $editorPanelHeadingMargin: 5px;
-$editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHeadingMargin;
+$editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 *
+  $editorPanelHeadingMargin;
 
 .editor-panel-widget {
   @extend .pop-over-viewer;
@@ -81,29 +82,27 @@ $editorPanelHeadingHeightTotal: $editorPanelHeadingHeight + 2 * $editorPanelHead
     top: 5px;
     right: 5px;
   }
-
 }
 
-@media (min-width: 1024px){
+@media (min-width: 1024px) {
   .editor-panel-widget {
     width: $editorPanelStartWidthLargeScreen;
   }
 }
-  /* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
 .noselect {
-   cursor: default;
+  cursor: default;
   -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none;   /* Chrome/Safari/Opera */
-  -khtml-user-select: none;    /* Konqueror */
-  -moz-user-select: none;      /* Firefox */
-  -ms-user-select: none;       /* Internet Explorer/Edge */
-   user-select: none;           /* Non-prefixed version, currently
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                   not supported by any browser */
 }
 
-
-.tab-content  {
-    height: calc(100% - 32px);
+.tab-content {
+  height: calc(100% - 32px);
 }
 
 .tab-content {

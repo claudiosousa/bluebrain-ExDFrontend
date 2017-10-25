@@ -7,11 +7,11 @@ describe('Services: performance-monitor service', function() {
     module('performanceMonitorModule');
   });
 
-  beforeEach(inject(function(
-    _performanceMonitorService_) {
-
-    performanceMonitorService = _performanceMonitorService_;
-  }));
+  beforeEach(
+    inject(function(_performanceMonitorService_) {
+      performanceMonitorService = _performanceMonitorService_;
+    })
+  );
 
   it('should register clients correctly', function() {
     expect(performanceMonitorService.clients.length).toEqual(0);
@@ -38,8 +38,12 @@ describe('Services: performance-monitor service', function() {
     expect(config.data.labels.length).toEqual(2);
     var label = config.options.tooltips.callbacks.label;
     expect(label).toBeDefined();
-    expect(label({index: 0, datasetIndex: 0}, config.data)).toEqual('Neural Simulation: 0s');
-    expect(label({index: 1, datasetIndex: 0}, config.data)).toEqual('World simulation: 0s');
+    expect(label({ index: 0, datasetIndex: 0 }, config.data)).toEqual(
+      'Neural Simulation: 0s'
+    );
+    expect(label({ index: 1, datasetIndex: 0 }, config.data)).toEqual(
+      'World simulation: 0s'
+    );
   });
 
   it('should process messages correctly', function() {
@@ -48,7 +52,9 @@ describe('Services: performance-monitor service', function() {
     };
     performanceMonitorService.clients = [client];
 
-    expect(performanceMonitorService.config.data.datasets[0].data.length).toEqual(2);
+    expect(
+      performanceMonitorService.config.data.datasets[0].data.length
+    ).toEqual(2);
     expect(performanceMonitorService.config.data.labels.length).toEqual(2);
     performanceMonitorService.processStateChange({
       brainsimElapsedTime: 0.9,
@@ -60,9 +66,12 @@ describe('Services: performance-monitor service', function() {
     });
 
     expect(client.update).toHaveBeenCalled();
-    expect(performanceMonitorService.config.data.datasets[0].data.length).toEqual(4);
-    expect(performanceMonitorService.config.data.datasets[0].data.length).toEqual(4);
-
+    expect(
+      performanceMonitorService.config.data.datasets[0].data.length
+    ).toEqual(4);
+    expect(
+      performanceMonitorService.config.data.datasets[0].data.length
+    ).toEqual(4);
 
     performanceMonitorService.processStateChange({
       brainsimElapsedTime: 1.8,
@@ -74,7 +83,11 @@ describe('Services: performance-monitor service', function() {
     });
 
     expect(client.update).toHaveBeenCalled();
-    expect(performanceMonitorService.config.data.datasets[0].data.length).toEqual(4);
-    expect(performanceMonitorService.config.data.datasets[0].data.length).toEqual(4);
+    expect(
+      performanceMonitorService.config.data.datasets[0].data.length
+    ).toEqual(4);
+    expect(
+      performanceMonitorService.config.data.datasets[0].data.length
+    ).toEqual(4);
   });
 });

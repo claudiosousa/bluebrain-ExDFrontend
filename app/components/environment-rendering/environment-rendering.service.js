@@ -24,30 +24,45 @@
 
 /* global console: false */
 
-(function () {
+(function() {
   'use strict';
 
-  angular.module('environmentRenderingModule')
-
+  angular
+    .module('environmentRenderingModule')
     .constant('FPS_LIMIT', {
       FPS_20: 20,
       FPS_30: 30,
       FPS_60: 60,
       FPS_INFINITE: Infinity
     })
-
     .factory('environmentRenderingService', [
       '$q',
-      'STATE', 'FPS_LIMIT',
-      'gz3d', 'userNavigationService', 'simulationInfo', 'stateService', 'isNotARobotPredicate', 'userContextService',
-      'assetLoadingSplash', 'nrpAnalytics', 'collab3DSettingsService',
-      function ($q,
-                STATE, FPS_LIMIT,
-                gz3d, userNavigationService, simulationInfo, stateService, isNotARobotPredicate, userContextService,
-                assetLoadingSplash, nrpAnalytics, collab3DSettingsService) {
-
+      'STATE',
+      'FPS_LIMIT',
+      'gz3d',
+      'userNavigationService',
+      'simulationInfo',
+      'stateService',
+      'isNotARobotPredicate',
+      'userContextService',
+      'assetLoadingSplash',
+      'nrpAnalytics',
+      'collab3DSettingsService',
+      function(
+        $q,
+        STATE,
+        FPS_LIMIT,
+        gz3d,
+        userNavigationService,
+        simulationInfo,
+        stateService,
+        isNotARobotPredicate,
+        userContextService,
+        assetLoadingSplash,
+        nrpAnalytics,
+        collab3DSettingsService
+      ) {
         function EnvironmentRenderingService() {
-
           var that = this;
 
           this.tLastFrame = 0;
@@ -60,17 +75,19 @@
             return this.deferredSceneInitialized.promise;
           };
 
-          this.init = function () {
+          this.init = function() {
             this.initAnimationFrameFunctions();
 
             // default to 30 fps cap
             this.setFPSLimit(FPS_LIMIT.FPS_30);
 
-            stateService.getCurrentState().then(function () {
+            stateService.getCurrentState().then(function() {
               if (stateService.currentState !== STATE.STOPPED) {
                 gz3d.Initialize();
                 gz3d.iface.addCanDeletePredicate(isNotARobotPredicate);
-                gz3d.iface.addCanDeletePredicate(userContextService.hasEditRights);
+                gz3d.iface.addCanDeletePredicate(
+                  userContextService.hasEditRights
+                );
 
                 // Register for the status updates as well as the timing stats
                 // Note that we have two different connections here, hence we only put one as a callback for
@@ -79,23 +96,27 @@
                 stateService.addStateCallback(that.onStateChanged);
 
                 // Show the splash screen for the progress of the asset loading
-                that.assetLoadingSplashScreen = that.assetLoadingSplashScreen || assetLoadingSplash.open(that.onSceneLoaded);
-                gz3d.iface.setAssetProgressCallback(function (data) {
+                that.assetLoadingSplashScreen =
+                  that.assetLoadingSplashScreen ||
+                  assetLoadingSplash.open(that.onSceneLoaded);
+                gz3d.iface.setAssetProgressCallback(function(data) {
                   assetLoadingSplash.setProgress(data);
                 });
 
-                that.updateInitialCameraPose(simulationInfo.experimentDetails.cameraPose);
+                that.updateInitialCameraPose(
+                  simulationInfo.experimentDetails.cameraPose
+                );
 
                 that.animate();
               }
             });
 
-            this.deferredSceneInitialized.promise.then(function () {
+            this.deferredSceneInitialized.promise.then(function() {
               that.initComposerSettings();
             });
           };
 
-          this.deinit = function () {
+          this.deinit = function() {
             if (angular.isDefined(this.cancelAnimationFrame)) {
               this.cancelAnimationFrame(this.requestID);
             }
@@ -113,7 +134,7 @@
             gz3d.deInitialize();
           };
 
-          this.animate = function () {
+          this.animate = function() {
             that.requestID = that.requestAnimationFrame(that.animate);
 
             if (!that.isElementVisible()) {
@@ -126,10 +147,11 @@
             that.visible = that.isElementVisible();
 
             var tNow = Date.now();
-            var tElapsed = (that.tLastFrame === undefined) ? 0 : tNow - that.tLastFrame;
+            var tElapsed =
+              that.tLastFrame === undefined ? 0 : tNow - that.tLastFrame;
 
             if (that.needsImmediateUpdate) {
-              that.tLastFrame = tNow - (tElapsed % that.frameInterval);
+              that.tLastFrame = tNow - tElapsed % that.frameInterval;
               that.update(tElapsed);
               that.needsImmediateUpdate = false;
             } else {
@@ -137,18 +159,24 @@
               if (that.dropCycles > 0) {
                 that.dropCycles--;
                 return;
-              } else if (tElapsed >= that.skippedFramesForDropCycles * that.frameInterval) {
-                that.dropCycles = Math.min(that.maxDropCycles, Math.floor(tElapsed / that.frameInterval));
+              } else if (
+                tElapsed >=
+                that.skippedFramesForDropCycles * that.frameInterval
+              ) {
+                that.dropCycles = Math.min(
+                  that.maxDropCycles,
+                  Math.floor(tElapsed / that.frameInterval)
+                );
               }
 
               if (tElapsed >= that.frameInterval) {
-                that.tLastFrame = tNow - (tElapsed % that.frameInterval);
+                that.tLastFrame = tNow - tElapsed % that.frameInterval;
                 that.update(tElapsed);
               }
             }
           };
 
-          this.update = function (tElapsed) {
+          this.update = function(tElapsed) {
             if (!angular.isDefined(gz3d.scene)) {
               return;
             }
@@ -157,7 +185,7 @@
             gz3d.scene.render();
           };
 
-          this.initAnimationFrameFunctions = function () {
+          this.initAnimationFrameFunctions = function() {
             /**
              * global requestAnimationFrame() and cancelAnimationFrame()
              *
@@ -173,64 +201,90 @@
             // fixes from Paul Irish and Tino Zijdel
             // using 'self' instead of 'window' for compatibility with both NodeJS and IE10.
 
-            this.requestAnimationFrame = window.requestAnimationFrame.bind(window);
-            this.cancelAnimationFrame = window.cancelAnimationFrame.bind(window);
+            this.requestAnimationFrame = window.requestAnimationFrame.bind(
+              window
+            );
+            this.cancelAnimationFrame = window.cancelAnimationFrame.bind(
+              window
+            );
 
             var vendors = ['ms', 'moz', 'webkit', 'o'];
-            for (var x = 0; x < vendors.length && !this.requestAnimationFrame; x = x + 1) {
-              this.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'].bind(window);
-              this.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'].bind(window) || window[vendors[x] + 'CancelRequestAnimationFrame'].bind(window);
+            for (
+              var x = 0;
+              x < vendors.length && !this.requestAnimationFrame;
+              x = x + 1
+            ) {
+              this.requestAnimationFrame = window[
+                vendors[x] + 'RequestAnimationFrame'
+              ].bind(window);
+              this.cancelAnimationFrame =
+                window[vendors[x] + 'CancelAnimationFrame'].bind(window) ||
+                window[vendors[x] + 'CancelRequestAnimationFrame'].bind(window);
             }
 
-            if (this.requestAnimationFrame === undefined && setTimeout !== undefined) {
-              this.requestAnimationFrame = function (callback) {
+            if (
+              this.requestAnimationFrame === undefined &&
+              setTimeout !== undefined
+            ) {
+              this.requestAnimationFrame = function(callback) {
                 var currTime = Date.now(),
-                  timeToCall = Math.max(0, this.frameInterval - ( currTime - this.tLastFrame ));
-                var id = setTimeout(function () {
+                  timeToCall = Math.max(
+                    0,
+                    this.frameInterval - (currTime - this.tLastFrame)
+                  );
+                var id = setTimeout(function() {
                   callback(currTime + timeToCall);
                 }, timeToCall);
                 this.tLastFrame = currTime + timeToCall;
                 return id;
               };
-              console.info('requestAnimationFrame undefined, using self-defined');
+              console.info(
+                'requestAnimationFrame undefined, using self-defined'
+              );
             }
 
-            if (this.cancelAnimationFrame === undefined && clearTimeout !== undefined) {
-              console.info('cancelAnimationFrame undefined, using self-defined');
-              this.cancelAnimationFrame = function (id) {
+            if (
+              this.cancelAnimationFrame === undefined &&
+              clearTimeout !== undefined
+            ) {
+              console.info(
+                'cancelAnimationFrame undefined, using self-defined'
+              );
+              this.cancelAnimationFrame = function(id) {
                 clearTimeout(id);
               };
             }
           };
 
-          this.setFPSLimit = function (fps) {
+          this.setFPSLimit = function(fps) {
             this.frameInterval = 1000 / fps;
           };
 
-          this.isElementVisible = function () {
+          this.isElementVisible = function() {
             // Check page visibily
             var isPageVisible = true;
             if (typeof document.hidden !== 'undefined') {
               isPageVisible = !document.hidden;
-            }
-            else if (typeof document.msHidden !== 'undefined') {
+            } else if (typeof document.msHidden !== 'undefined') {
               isPageVisible = !document.msHidden;
-            }
-            else if (typeof document.webkitHidden !== 'undefined') {
+            } else if (typeof document.webkitHidden !== 'undefined') {
               isPageVisible = !document.webkitHidden;
             }
 
             return isPageVisible;
           };
 
-          this.updateInitialCameraPose = function (pose) {
+          this.updateInitialCameraPose = function(pose) {
             if (pose !== null) {
               gz3d.scene.setDefaultCameraPose.apply(gz3d.scene, pose);
-              userNavigationService.setDefaultPose.apply(userNavigationService, pose);
+              userNavigationService.setDefaultPose.apply(
+                userNavigationService,
+                pose
+              );
             }
           };
 
-          this.onStateChanged = function (newState) {
+          this.onStateChanged = function(newState) {
             if (newState === STATE.STOPPED) {
               if (gz3d.iface && gz3d.iface.webSocket) {
                 gz3d.iface.webSocket.disableRebirth();
@@ -238,9 +292,8 @@
             }
           };
 
-          this.onSceneLoaded = function () {
-            if (that.sceneLoading)
-            {
+          this.onSceneLoaded = function() {
+            if (that.sceneLoading) {
               delete this.assetLoadingSplashScreen;
 
               nrpAnalytics.durationEventTrack('Browser-initialization', {
@@ -257,12 +310,11 @@
           };
 
           // Init composer settings
-          this.initComposerSettings = function () {
+          this.initComposerSettings = function() {
             this.loadingEnvironmentSettingsPanel = true;
-            collab3DSettingsService.loadSettings()
-              .finally(function () {
-                that.loadingEnvironmentSettingsPanel = false;
-              });
+            collab3DSettingsService.loadSettings().finally(function() {
+              that.loadingEnvironmentSettingsPanel = false;
+            });
           };
         }
 
@@ -271,5 +323,4 @@
         return service;
       }
     ]);
-}());
-
+})();

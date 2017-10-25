@@ -21,19 +21,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "../../styles/esv/pop-over-viewer";
+@import '../../styles/esv/pop-over-viewer';
 
 $environmentSettingsPanelStartWidth: 750px;
-$environmentSettingsPanelStartWidthLargeScreen:750px;
+$environmentSettingsPanelStartWidthLargeScreen: 750px;
 $environmentSettingsPanelStartHeight: 670px;
 $environmentSettingsPanelMinWidth: 467px;
 $environmentSettingsPanelMinHeight: 200px;
 $environmentSettingsPanelHeadingHeight: 25px;
 $environmentSettingsPanelHeadingMargin: 5px;
-$environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHeight + 2 * $environmentSettingsPanelHeadingMargin;
+$environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHeight +
+  2 * $environmentSettingsPanelHeadingMargin;
 
 .environment-settings-panel-widget {
-
   .nav-tabs > li.active > a,
   .nav-tabs > li.active > a:hover,
   .nav-tabs > li.active > a:focus {
@@ -48,7 +48,7 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
   height: $environmentSettingsPanelStartHeight;
   min-width: $environmentSettingsPanelMinWidth;
   min-height: $environmentSettingsPanelMinHeight;
-  background:rgba(255,255,255,0.90);
+  background: rgba(255, 255, 255, 0.9);
 
   .environment-settings-panel-close {
     position: absolute;
@@ -79,12 +79,11 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
     background: #f8f8f8;
   }
 
-.environment-settings-panel-bottom_buttons {
+  .environment-settings-panel-bottom_buttons {
     position: absolute;
     right: 15px;
     padding: 5px 5px 5px 5px;
-}
-
+  }
 
   .environment-settings-panel-title {
     padding-left: 10px;
@@ -104,86 +103,78 @@ $environmentSettingsPanelHeadingHeightTotal: $environmentSettingsPanelHeadingHei
     top: 5px;
     right: 5px;
   }
-
 }
 
-@media (min-width: 1024px){
+@media (min-width: 1024px) {
   .environment-settings-panel-widget {
     width: $environmentSettingsPanelStartWidthLargeScreen;
   }
 }
-  /* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
 .noselect {
-   cursor: default;
+  cursor: default;
   -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none;   /* Chrome/Safari/Opera */
-  -khtml-user-select: none;    /* Konqueror */
-  -moz-user-select: none;      /* Firefox */
-  -ms-user-select: none;       /* Internet Explorer/Edge */
-   user-select: none;           /* Non-prefixed version, currently
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                   not supported by any browser */
 }
 
-input.environment-settings-checkbox[type="checkbox"],
-input.environment-settings-radio[type="radio"] {
+input.environment-settings-checkbox[type='checkbox'],
+input.environment-settings-radio[type='radio'] {
   top: -2px;
 }
 
-.environment-settings-checkbox-label
-{
- font-style: normal;
- font-weight: normal;
- font-family: Courier, monospace;
- font-size: 15px;
+.environment-settings-checkbox-label {
+  font-style: normal;
+  font-weight: normal;
+  font-family: Courier, monospace;
+  font-size: 15px;
 }
 
 .environment-settings-checkbox {
   padding: 0;
-  margin:0;
+  margin: 0;
   vertical-align: bottom;
   position: relative;
   right: 5px;
 }
 
-environment-settings-panel label
-{
+environment-settings-panel label {
   font-style: normal;
   font-weight: normal;
   font-size: 15px;
   font-family: 'Gotham', sans-serif;
 }
 
-.environment-settings-panel-disabled-label
-{
+.environment-settings-panel-disabled-label {
   color: gray;
 }
 
 .environment-settings-option-subblock {
-  margin:10px 50px 10px 10px;
+  margin: 10px 50px 10px 10px;
 }
 
-.environment-settings-textfield
-{
-  width:60px;
+.environment-settings-textfield {
+  width: 60px;
 }
 
-.esv-envsettings-slider
-{
+.esv-envsettings-slider {
   vertical-align: top;
   left: 5px;
   padding: 0px;
 }
 
-.environment-settings-hr
-{
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #dddddd;
+.environment-settings-hr {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border: 0;
+  border-top: 1px solid #dddddd;
 }
 
-input[type="range"]
-{
+input[type='range'] {
   display: inline;
   width: 200px;
   margin: 0px 20px 0px 5px;

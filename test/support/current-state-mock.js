@@ -1,56 +1,57 @@
 /**
  * Home of currentStateMockFactory service.
  */
-angular.module('currentStateMockFactory', [])
-
-/**
+angular
+  .module('currentStateMockFactory', [])
+  /**
  * Provides a mock for the current state service.
  * See environment-designer.js test for usage.
  */
-  .factory('currentStateMockFactory', function () {
+  .factory('currentStateMockFactory', function() {
     'use strict';
     return {
-      get: function () {
+      get: function() {
         var currentStateMock = {};
         var getCurrentStateSpy = jasmine.createSpy('getCurrentState');
         var setCurrentStateSpy = jasmine.createSpy('setCurrentState');
-        var ensureStateBeforeExecutingSpy = jasmine.createSpy('ensureStateBeforeExecuting');
+        var ensureStateBeforeExecutingSpy = jasmine.createSpy(
+          'ensureStateBeforeExecuting'
+        );
         var localCurrentState;
 
-        getCurrentStateSpy.and.callFake(function () {
+        getCurrentStateSpy.and.callFake(function() {
           return {
-            then: function (f) {
+            then: function(f) {
               f();
             }
           };
         });
 
-        setCurrentStateSpy.and.callFake(function (s) {
+        setCurrentStateSpy.and.callFake(function(s) {
           localCurrentState = s;
           return {
-            then: function (f) {
+            then: function(f) {
               f();
             },
-            catch: function (f) {
+            catch: function(f) {
               f();
             }
           };
         });
 
-        ensureStateBeforeExecutingSpy.and.callFake(function (s, f) {
+        ensureStateBeforeExecutingSpy.and.callFake(function(s, f) {
           localCurrentState = s;
           f();
         });
 
         return {
-          'stateService': {
+          stateService: {
             getCurrentState: getCurrentStateSpy,
             setCurrentState: setCurrentStateSpy,
             ensureStateBeforeExecuting: ensureStateBeforeExecutingSpy,
             currentState: localCurrentState
           }
-        }
-
+        };
       }
     };
   });

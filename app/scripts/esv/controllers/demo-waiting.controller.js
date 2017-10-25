@@ -22,41 +22,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 
-(function ()
-{
+(function() {
   'use strict';
-  class DemoAutorunExperimentController
-  {
-    constructor(scope, $timeout, $window, $location, experimentsFactory, environmentService, STATE)
-    {
+  class DemoAutorunExperimentController {
+    constructor(
+      scope,
+      $timeout,
+      $window,
+      $location,
+      experimentsFactory,
+      environmentService,
+      STATE
+    ) {
       scope.environmentService = environmentService;
       scope.experimentsFactory = experimentsFactory;
       var nextTimeToCheck = 10000;
 
-      scope.process = () =>
-      {
+      scope.process = () => {
         nextTimeToCheck = 500;
-        if (!scope.experimentsService)
-        {
+        if (!scope.experimentsService) {
           scope.experimentsService = scope.experimentsFactory.createExperimentsService();
           scope.experimentsService.initialize();
-          scope.experimentsService.experiments.then(experiments => scope.experiments = experiments);
+          scope.experimentsService.experiments.then(
+            experiments => (scope.experiments = experiments)
+          );
         }
-        if (scope.experiments)
-        {
-          for (let i = 0; i < scope.experiments.length; i++)
-          {
+        if (scope.experiments) {
+          for (let i = 0; i < scope.experiments.length; i++) {
             let exp = scope.experiments[i];
-            if (exp.joinableServers.length > 0)
-            {
+            if (exp.joinableServers.length > 0) {
               // One experiment is joinable
               let simul = exp.joinableServers[0];
-              if (simul.runningSimulation.state === STATE.STARTED ||
-                  simul.runningSimulation.state === STATE.PAUSED)
-              {
-                let path = '#/esv-web/experiment-view/' + simul.server + '/' + exp.id + '/' + scope.environmentService.isPrivateExperiment() + "/" + simul.runningSimulation.simulationID;
-                if (scope.experimentsService)
-                {
+              if (
+                simul.runningSimulation.state === STATE.STARTED ||
+                simul.runningSimulation.state === STATE.PAUSED
+              ) {
+                let path =
+                  '#/esv-web/experiment-view/' +
+                  simul.server +
+                  '/' +
+                  exp.id +
+                  '/' +
+                  scope.environmentService.isPrivateExperiment() +
+                  '/' +
+                  simul.runningSimulation.simulationID;
+                if (scope.experimentsService) {
                   scope.experimentsService.destroy();
                   scope.experimentsService = undefined;
                 }
@@ -74,8 +84,14 @@
   }
   angular
     .module('exdFrontendApp')
-    .controller('DemoAutorunExperimentController',
-      ['$scope', '$timeout', '$window', '$location',
-       'experimentsFactory', 'environmentService', 'STATE', (...args) => new DemoAutorunExperimentController(...args)]);
-
+    .controller('DemoAutorunExperimentController', [
+      '$scope',
+      '$timeout',
+      '$window',
+      '$location',
+      'experimentsFactory',
+      'environmentService',
+      'STATE',
+      (...args) => new DemoAutorunExperimentController(...args)
+    ]);
 })();

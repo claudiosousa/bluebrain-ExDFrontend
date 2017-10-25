@@ -21,15 +21,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('experimentServices', ['environmentServiceModule', 'slurminfoService'])
-    .service('experimentProxyService',
-    ['$http', '$q', 'bbpConfig', 'serverError',
-      function ($http, $q, bbpConfig, serverError) {
-
-        var getProxyUrl = function () {
+  angular
+    .module('experimentServices', [
+      'environmentServiceModule',
+      'slurminfoService'
+    ])
+    .service('experimentProxyService', [
+      '$http',
+      '$q',
+      'bbpConfig',
+      'serverError',
+      function($http, $q, bbpConfig, serverError) {
+        var getProxyUrl = function() {
           return bbpConfig.get('api.proxy.url');
         };
 
@@ -42,32 +48,45 @@
         };
 
         function getServerConfig(serverId) {
-          return $http.get(getProxyUrl() + '/server/' + serverId)
-            .then(function (response) { return response.data; })
+          return $http
+            .get(getProxyUrl() + '/server/' + serverId)
+            .then(function(response) {
+              return response.data;
+            })
             .catch(serverError.displayHTTPError);
         }
 
         function getImages(experimentIds) {
-          return $http.get(getProxyUrl()  + '/experimentImage/' + experimentIds.join(','))
-            .then(function (response) { return response.data; })
+          return $http
+            .get(getProxyUrl() + '/experimentImage/' + experimentIds.join(','))
+            .then(function(response) {
+              return response.data;
+            })
             .catch(serverError.displayHTTPError);
         }
 
         function getExperiments() {
-          var url = getProxyUrl()  + '/experiments';
-          return $http.get(url)
-            .then(function (response) { return response.data; });
+          var url = getProxyUrl() + '/experiments';
+          return $http.get(url).then(function(response) {
+            return response.data;
+          });
         }
 
         function getJoinableServers(contextId) {
-          return $http.get(getProxyUrl() + '/joinableServers/' + contextId)
-            .then(function (response) { return response.data; })
+          return $http
+            .get(getProxyUrl() + '/joinableServers/' + contextId)
+            .then(function(response) {
+              return response.data;
+            })
             .catch(serverError.displayHTTPError);
         }
 
         function getAvailableServers(experimentId) {
-          return $http.get(getProxyUrl() + '/availableServers/' + (experimentId || ''))
-            .then(function (response) { return response.data; })
+          return $http
+            .get(getProxyUrl() + '/availableServers/' + (experimentId || ''))
+            .then(function(response) {
+              return response.data;
+            })
             .catch(serverError.displayHTTPError);
         }
       }

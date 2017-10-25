@@ -21,20 +21,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('contextMenu', [
-        'contextMenuState',
-      function (contextMenuState) {
-        return {
-          templateUrl: 'views/esv/context-menu.html',
-          restrict: 'E',
-          scope: true,
-          link: function(scope) {
-            scope.contextMenuState = contextMenuState;
-          }
-        };
-      }]);
-}());
+  angular.module('exdFrontendApp').directive('contextMenu', [
+    'contextMenuState',
+    function(contextMenuState) {
+      return {
+        templateUrl: 'views/esv/context-menu.html',
+        restrict: 'E',
+        scope: true,
+        link: function(scope) {
+          scope.contextMenuState = contextMenuState;
+        }
+      };
+    }
+  ]);
+})();

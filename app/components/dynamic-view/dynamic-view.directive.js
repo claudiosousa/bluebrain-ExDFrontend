@@ -24,21 +24,18 @@
 
 /* global console: false */
 
-(function () {
+(function() {
   'use strict';
 
-  angular.module('dynamicViewModule')
-
-    .directive('dynamicView', [
-      function() {
-        return {
-
-          templateUrl: 'components/dynamic-view/dynamic-view.template.html',
-          restrict: 'E',
-          scope: {},
-          controller: 'DynamicViewController',
-          controllerAs: 'vm'
-        };
-      }
-    ]);
-}());
+  angular.module('dynamicViewModule').directive('dynamicView', [
+    function() {
+      return {
+        templateUrl: 'components/dynamic-view/dynamic-view.template.html',
+        restrict: 'E',
+        scope: {},
+        controller: 'DynamicViewController',
+        controllerAs: 'vm'
+      };
+    }
+  ]);
+})();

@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Directive: dynamic-view-overlay', function() {
-
   var $compile, $rootScope, $timeout;
   var element, elementScope;
 
@@ -9,11 +8,13 @@ describe('Directive: dynamic-view-overlay', function() {
   beforeEach(module('exd.templates'));
   beforeEach(module('nrpAnalyticsMock'));
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$timeout_) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $timeout = _$timeout_;
-  }));
+  beforeEach(
+    inject(function(_$rootScope_, _$compile_, _$timeout_) {
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
+      $timeout = _$timeout_;
+    })
+  );
 
   beforeEach(function() {
     var $scope = $rootScope.$new();
@@ -26,5 +27,4 @@ describe('Directive: dynamic-view-overlay', function() {
   it('should have a controller defined as vm', function() {
     expect(elementScope.vm).toBeDefined();
   });
-
 });

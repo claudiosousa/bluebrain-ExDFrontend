@@ -1,22 +1,26 @@
 'use strict';
 
-describe('Panel directives', function () {
-
-  var PANEL_DIRECTIVES = ['brainvisualizer-panel', 'editor-panel', 'environment-settings-panel'];
+describe('Panel directives', function() {
+  var PANEL_DIRECTIVES = [
+    'brainvisualizer-panel',
+    'editor-panel',
+    'environment-settings-panel'
+  ];
   var $rootScope, $compile, httpBackend;
 
   beforeEach(module('exdFrontendApp'));
-  beforeEach(inject(function (_$rootScope_, _$compile_, _$httpBackend_) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
+  beforeEach(
+    inject(function(_$rootScope_, _$compile_, _$httpBackend_) {
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
 
-    httpBackend = _$httpBackend_;
-    httpBackend.whenGET(new RegExp('.*')).respond('');
-  }));
+      httpBackend = _$httpBackend_;
+      httpBackend.whenGET(new RegExp('.*')).respond('');
+    })
+  );
 
-  it('should create child scope', function () {
-
-    PANEL_DIRECTIVES.forEach(function (directive) {
+  it('should create child scope', function() {
+    PANEL_DIRECTIVES.forEach(function(directive) {
       var directiveScope = $rootScope.$new();
       expect(directiveScope.$$childTail).toBe(null);
       $compile('<' + directive + '/>')(directiveScope);
@@ -24,5 +28,4 @@ describe('Panel directives', function () {
       expect(directiveScope.$$childTail).toBeDefined();
     });
   });
-
 });

@@ -1,7 +1,6 @@
 'use strict';
 
-describe('Controller: brainvisualizerPanelCtrl', function () {
-
+describe('Controller: brainvisualizerPanelCtrl', function() {
   // load the controller's module
   beforeEach(module('editorToolbarModule'));
   beforeEach(module('exdFrontendApp'));
@@ -9,26 +8,22 @@ describe('Controller: brainvisualizerPanelCtrl', function () {
   beforeEach(module('gz3dMock'));
   beforeEach(module('simulationInfoMock'));
 
-  var experimentCtrl,
-      scope,
-      rootScope,
-      controller,
-      editorToolbarService;
+  var experimentCtrl, scope, rootScope, controller, editorToolbarService;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller,
-                              $rootScope,
-                              _editorToolbarService_) {
-    controller = $controller;
-    rootScope = $rootScope;
-    scope = $rootScope.$new();
-    editorToolbarService = _editorToolbarService_;
+  beforeEach(
+    inject(function($controller, $rootScope, _editorToolbarService_) {
+      controller = $controller;
+      rootScope = $rootScope;
+      scope = $rootScope.$new();
+      editorToolbarService = _editorToolbarService_;
 
-    experimentCtrl = $controller('brainvisualizerPanelCtrl', {
-      $rootScope: rootScope,
-      $scope: scope,
-    });
-  }));
+      experimentCtrl = $controller('brainvisualizerPanelCtrl', {
+        $rootScope: rootScope,
+        $scope: scope
+      });
+    })
+  );
 
   it('initialized correctly', function() {
     expect(scope.simulationID).toBeDefined();

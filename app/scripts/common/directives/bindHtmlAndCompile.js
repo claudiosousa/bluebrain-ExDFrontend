@@ -21,18 +21,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('bindHtmlAndCompile', ['$compile', function ($compile) {
+  angular.module('exdFrontendApp').directive('bindHtmlAndCompile', [
+    '$compile',
+    function($compile) {
       return {
         restrict: 'A',
         scope: {
           bindHtmlAndCompile: '@'
         },
-        link: function (scope, element) {
-          scope.$watch('bindHtmlAndCompile', function (templateAttr) {
+        link: function(scope, element) {
+          scope.$watch('bindHtmlAndCompile', function(templateAttr) {
             var template = scope.$parent.$eval(templateAttr);
             var compiledHtml = $compile(template)(scope.$parent);
             element.empty();
@@ -40,5 +41,6 @@
           });
         }
       };
-    }]);
-} ());
+    }
+  ]);
+})();

@@ -21,44 +21,48 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function ()
-{
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('environmentSettingsPanel', ['gz3d', 'collab3DSettingsService', 'simulationInfo',
+  angular.module('exdFrontendApp').directive('environmentSettingsPanel', [
+    'gz3d',
+    'collab3DSettingsService',
+    'simulationInfo',
     'editorToolbarService',
-      function (gz3d, collab3DSettingsService, simulationInfo, editorToolbarService)
-      {
-        return {
-          templateUrl: 'components/environment-settings/environment-settings-panel.template.html',
-          restrict: 'E',
-          scope: true,  // create a child scope for the directive and inherits the parent scope properties
-          link: function (scope, element, attrs)
-          {
-            scope.simulationInfo = simulationInfo;
-            scope.editorToolbarService = editorToolbarService;
-            scope.gz3d = gz3d;
+    function(
+      gz3d,
+      collab3DSettingsService,
+      simulationInfo,
+      editorToolbarService
+    ) {
+      return {
+        templateUrl:
+          'components/environment-settings/environment-settings-panel.template.html',
+        restrict: 'E',
+        scope: true, // create a child scope for the directive and inherits the parent scope properties
+        link: function(scope, element, attrs) {
+          scope.simulationInfo = simulationInfo;
+          scope.editorToolbarService = editorToolbarService;
+          scope.gz3d = gz3d;
 
-            scope.resetSettings = function ()
-            {
-              if (gz3d.scene.defaultComposerSettings)
-              {
-                gz3d.scene.composerSettings = JSON.parse(JSON.stringify(gz3d.scene.defaultComposerSettings));
-                gz3d.scene.applyComposerSettings(true);
-              }
-            };
+          scope.resetSettings = function() {
+            if (gz3d.scene.defaultComposerSettings) {
+              gz3d.scene.composerSettings = JSON.parse(
+                JSON.stringify(gz3d.scene.defaultComposerSettings)
+              );
+              gz3d.scene.applyComposerSettings(true);
+            }
+          };
 
-            scope.saveSettings = function ()
-            {
-                collab3DSettingsService.saveSettings();
-            };
+          scope.saveSettings = function() {
+            collab3DSettingsService.saveSettings();
+          };
 
-            scope.closePanel = function() {
-              editorToolbarService.showEnvironmentSettingsPanel = false;
-            };
-          }
-        };
-      }
-    ]);
-} ());
+          scope.closePanel = function() {
+            editorToolbarService.showEnvironmentSettingsPanel = false;
+          };
+        }
+      };
+    }
+  ]);
+})();

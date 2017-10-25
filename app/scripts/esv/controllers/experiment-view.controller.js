@@ -24,12 +24,11 @@
 /* global console: false */
 /* global THREE: false */
 
-
-(function ()
-{
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp.Constants')
+  angular
+    .module('exdFrontendApp.Constants')
     // constants for the server side status
     .constant('STATE', {
       CREATED: 'created',
@@ -41,16 +40,23 @@
       STOPPED: 'stopped'
     });
 
-  class ExperimentViewController
-  {
-    constructor(scope, element, stateService, STATE, userContextService,
-                nrpAnalytics,environmentRenderingService,gz3d,log,
-                colorableObjectService,
-                simulationInfo,
-                contextMenuState,
-                timeout,
-                window)
-    {
+  class ExperimentViewController {
+    constructor(
+      scope,
+      element,
+      stateService,
+      STATE,
+      userContextService,
+      nrpAnalytics,
+      environmentRenderingService,
+      gz3d,
+      log,
+      colorableObjectService,
+      simulationInfo,
+      contextMenuState,
+      timeout,
+      window
+    ) {
       this.element = element;
       this.userContextService = userContextService;
       this.simulationInfo = simulationInfo;
@@ -58,18 +64,14 @@
       stateService.Initialize();
 
       // Query the state of the simulation
-      stateService.getCurrentState().then(function ()
-      {
-        if (stateService.currentState === STATE.STOPPED)
-        {
+      stateService.getCurrentState().then(function() {
+        if (stateService.currentState === STATE.STOPPED) {
           // The Simulation is already Stopped, so do nothing more but show the alert popup
           userContextService.isJoiningStoppedSimulation = true;
           nrpAnalytics.eventTrack('Join-stopped', {
             category: 'Simulation'
           });
-        }
-        else
-        {
+        } else {
           nrpAnalytics.durationEventTrack('Server-initialization', {
             category: 'Experiment'
           });
@@ -116,15 +118,19 @@
 
         // We restrict material changes to simple objects and screen glasses found in screen models of the 3D scene,
         // i.e., only visuals bearing the name screen_glass or COLORABLE_VISUAL can be modified by this function.
-        scope.setMaterialOnEntity = function (material)
-        {
+        scope.setMaterialOnEntity = function(material) {
           var selectedEntity = gz3d.scene.selectedEntity;
-          if (!selectedEntity)
-          {
-            log.error('Could not change color since there was no object selected');
+          if (!selectedEntity) {
+            log.error(
+              'Could not change color since there was no object selected'
+            );
             return;
           }
-          colorableObjectService.setEntityMaterial(simulationInfo, selectedEntity, material);
+          colorableObjectService.setEntityMaterial(
+            simulationInfo,
+            selectedEntity,
+            material
+          );
           // Hide context menu after a color was assigned
           contextMenuState.toggleContextMenu(false);
         };
@@ -133,21 +139,23 @@
         var colorableMenuItemGroup = {
           id: 'changeColor',
           visible: false,
-          items: [{
-            html: '<materials-chooser on-select="setMaterialOnEntity(material)"/>',
-            callback: function (event)
+          items: [
             {
-              event.stopPropagation();
-            },
-            visible: false
-          }],
-          hide: function ()
-          {
+              html:
+                '<materials-chooser on-select="setMaterialOnEntity(material)"/>',
+              callback: function(event) {
+                event.stopPropagation();
+              },
+              visible: false
+            }
+          ],
+          hide: function() {
             this.visible = this.items[0].visible = false;
           },
-          show: function (model)
-          {
-            var isColorableEntity = colorableObjectService.isColorableEntity(model);
+          show: function(model) {
+            var isColorableEntity = colorableObjectService.isColorableEntity(
+              model
+            );
             var show = isColorableEntity;
             return (this.visible = this.items[0].visible = show);
           }
@@ -156,12 +164,9 @@
         contextMenuState.pushItemGroup(colorableMenuItemGroup);
 
         //main context menu handler
-        scope.onContainerMouseDown = function (event)
-        {
-          if (userContextService.isOwner())
-          {
-            switch (event.button)
-            {
+        scope.onContainerMouseDown = function(event) {
+          if (userContextService.isOwner()) {
+            switch (event.button) {
               case 2:
                 //right click -> show menu
                 contextMenuState.toggleContextMenu(true, event);
@@ -176,30 +181,29 @@
           }
         };
 
-        scope.focus = function (id)
-        {
+        scope.focus = function(id) {
           // timeout makes sure that it is invoked after any other event has been triggered.
           // e.g. click events that need to run before the focus or
           // inputs elements that are in a disabled state but are enabled when those events
           // are triggered.
-          timeout(function ()
-          {
+          timeout(function() {
             var element = window.document.getElementById(id);
-            if (element)
-            {
+            if (element) {
               element.focus();
             }
           });
         };
-
       });
     }
 
-    exit(){
+    exit() {
       //calls the exit function that has been moved to the toolbar
-      const  editorToolbar = 'editor-toolbar';
-      if (this.element){ //not systematically mocked in the tests
-        const controller = angular.element(this.element.find(editorToolbar)).controller(editorToolbar);
+      const editorToolbar = 'editor-toolbar';
+      if (this.element) {
+        //not systematically mocked in the tests
+        const controller = angular
+          .element(this.element.find(editorToolbar))
+          .controller(editorToolbar);
         controller.exit();
       }
     }
@@ -207,11 +211,21 @@
 
   angular
     .module('exdFrontendApp')
-    .controller('experimentViewController', ['$scope', '$element', 'stateService', 'STATE','userContextService',
-                                              'nrpAnalytics','environmentRenderingService','gz3d','$log',
-                                              'colorableObjectService','simulationInfo','contextMenuState','$timeout',
-                                              '$window',
-      (...args) => new ExperimentViewController(...args)]);
-
+    .controller('experimentViewController', [
+      '$scope',
+      '$element',
+      'stateService',
+      'STATE',
+      'userContextService',
+      'nrpAnalytics',
+      'environmentRenderingService',
+      'gz3d',
+      '$log',
+      'colorableObjectService',
+      'simulationInfo',
+      'contextMenuState',
+      '$timeout',
+      '$window',
+      (...args) => new ExperimentViewController(...args)
+    ]);
 })();
-

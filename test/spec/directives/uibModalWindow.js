@@ -4,10 +4,12 @@ describe('Directive: uibModalWindow', function() {
   beforeEach(module('ui.bootstrap.modal'));
   beforeEach(module('uib/template/modal/window.html'));
   var element;
-  beforeEach(inject(function($rootScope, $compile) {
-    element = $compile('<section uib-modal-window></section>')($rootScope);
-    $rootScope.$digest();
-  }));
+  beforeEach(
+    inject(function($rootScope, $compile) {
+      element = $compile('<section uib-modal-window></section>')($rootScope);
+      $rootScope.$digest();
+    })
+  );
 
   it('must be patched to avoid animation racing condition', function() {
     /*

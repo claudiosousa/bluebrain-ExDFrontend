@@ -24,20 +24,19 @@
 
 /* global console: false */
 
-(function () {
+(function() {
   'use strict';
 
-  angular.module('dynamicViewOverlayModule')
-
-    .directive('dynamicViewOverlay', [
-      function() {
-        return {
-          templateUrl: 'components/dynamic-view-overlay/dynamic-view-overlay.template.html',
-          restrict: 'E',
-          scope: {},
-          controller: 'DynamicViewOverlayController',
-          controllerAs: 'vm'
-        };
-      }
-    ]);
-}());
+  angular.module('dynamicViewOverlayModule').directive('dynamicViewOverlay', [
+    function() {
+      return {
+        templateUrl:
+          'components/dynamic-view-overlay/dynamic-view-overlay.template.html',
+        restrict: 'E',
+        scope: {},
+        controller: 'DynamicViewOverlayController',
+        controllerAs: 'vm'
+      };
+    }
+  ]);
+})();

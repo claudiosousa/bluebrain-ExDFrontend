@@ -30,12 +30,14 @@
     const UNITS = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'];
 
     return (bytes, precision = 1) => {
-      if (isNaN(parseFloat(bytes)) || !isFinite(bytes))
-        return '-';
+      if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '-';
 
       let number = Math.floor(Math.log(bytes) / Math.log(1024));
-      return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) + ' ' + UNITS[number];
+      return (
+        (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) +
+        ' ' +
+        UNITS[number]
+      );
     };
   });
 })();
-

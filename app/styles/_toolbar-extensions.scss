@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "angular-hbp-common/dist/scss/hbp-common.scss";
+@import 'angular-hbp-common/dist/scss/hbp-common.scss';
 
 .hbp-toolbar-item {
   float: left;
@@ -64,12 +64,11 @@
   white-space: nowrap;
   overflow: hidden;
   border-right: 1px solid #aaaaaa;
- }
+}
 
 .hbp-toolbar-action.active {
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
 }
-
 
 .hbp-toolbar-large-tool-two-lines {
   @extend .hbp-toolbar-large-tool;
@@ -97,17 +96,17 @@
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
-.hbp-toolbar-large-tool input[type="range"] {
-    -webkit-appearance: none;
-    display: inline-block;
-    vertical-align: middle;
-    height: 1px;
-    margin: 10px;
-    width: 150px;
+.hbp-toolbar-large-tool input[type='range'] {
+  -webkit-appearance: none;
+  display: inline-block;
+  vertical-align: middle;
+  height: 1px;
+  margin: 10px;
+  width: 150px;
 }
 
-.hbp-toolbar-large-tool input[type=range]:focus {
-    outline: none;
+.hbp-toolbar-large-tool input[type='range']:focus {
+  outline: none;
 }
 
 .hbp-toolbar-large-tool input[type='range']::-moz-range-track {
@@ -117,31 +116,31 @@
   border: 0;
 }
 .hbp-toolbar-large-tool span {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 
 .hbp-time-display {
-    line-height: 10px;
-    padding-top: 3px;
-    padding-bottom: 3px;
-    display: table;
+  line-height: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  display: table;
 }
 
 .hbp-time-display div {
-    display: table-row;
+  display: table-row;
 }
 
 .hbp-time-display div div {
-     display: table-cell;
+  display: table-cell;
 }
 
 .hbp-time-display div div:first-of-type span {
-  font-size:xx-small;
+  font-size: xx-small;
 }
 
 .hbp-time-display div div:nth-of-type(2) span {
-    font-size:xx-small;
-    font-family: monospace;
+  font-size: xx-small;
+  font-family: monospace;
 }
 
 .hbp-camera-tool-container {
@@ -202,7 +201,7 @@
 }
 
 .hbp-toolbar-light-divbar {
-  position:absolute;
+  position: absolute;
   height: 40%;
   top: 30%;
   border-left: 1px solid grey;
@@ -211,17 +210,16 @@
 
 .hbp-toolbar-light-left-click {
   width: 50%;
-  height:100%;
-  position:absolute;
-  left:0px;
-  top:0px;
- }
+  height: 100%;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
 
 .hbp-toolbar-light-right-click {
   width: 50%;
-  height:100%;
-  position:absolute;
-  right:0px;
-  top:0px;
+  height: 100%;
+  position: absolute;
+  right: 0px;
+  top: 0px;
 }
-

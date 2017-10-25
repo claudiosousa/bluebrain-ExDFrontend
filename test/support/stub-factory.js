@@ -1,9 +1,9 @@
 /**
  * Home of bbpStubFactory service.
  */
-angular.module('bbpStubFactory', [])
-
-/**
+angular
+  .module('bbpStubFactory', [])
+  /**
  * Provides stub factories for common objects.
  */
   .factory('bbpStubFactory', function($q) {
@@ -24,14 +24,24 @@ angular.module('bbpStubFactory', [])
        * - reject: whether to call the error callback
        */
       promise: function(options) {
-        options = angular.extend({
-          reject: false,
-          resolve: true,
-          args: []
-        }, options);
+        options = angular.extend(
+          {
+            reject: false,
+            resolve: true,
+            args: []
+          },
+          options
+        );
         var p = {};
-        var callIt = function(cb) { if (cb) { cb.apply(p, options.args); } return p; };
-        var passIt = function() { return p; };
+        var callIt = function(cb) {
+          if (cb) {
+            cb.apply(p, options.args);
+          }
+          return p;
+        };
+        var passIt = function() {
+          return p;
+        };
         p.success = options.resolve ? callIt : passIt;
         p.error = options.reject ? callIt : passIt;
         p.then = function(success, error, complete) {

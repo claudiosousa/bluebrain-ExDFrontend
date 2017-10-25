@@ -21,58 +21,59 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "pop-over-viewer.scss";
+@import 'pop-over-viewer.scss';
 $widgetPopupStartWidth: 550px;
 $widgetPopupStartHeight: 400px;
 $widgetPopupMinWidth: 250px;
 $widgetPopupMinHeight: 120px;
 $widgetPopupHeadingHeight: 25px;
 $widgetPopupHeadingMargin: 5px;
-$widgetPopupHeadingHeightTotal: $widgetPopupHeadingHeight+2 * $widgetPopupHeadingMargin;
+$widgetPopupHeadingHeightTotal: $widgetPopupHeadingHeight+2 *
+  $widgetPopupHeadingMargin;
 
 .widget-popup {
-    @extend .pop-over-viewer;
-    display: flex;
-    top: 2%;
-    left: 2%;
-    width: $widgetPopupStartWidth;
-    height: $widgetPopupStartHeight;
-    min-width: $widgetPopupMinWidth;
-    min-height: $widgetPopupMinHeight;
-    background: rgba(255, 255, 255, 0.95);
+  @extend .pop-over-viewer;
+  display: flex;
+  top: 2%;
+  left: 2%;
+  width: $widgetPopupStartWidth;
+  height: $widgetPopupStartHeight;
+  min-width: $widgetPopupMinWidth;
+  min-height: $widgetPopupMinHeight;
+  background: rgba(255, 255, 255, 0.95);
 
-    .panel-close {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-    }
-    .widget-popup-header {
-        position: absolute;
-        width: 80%;
-        width: calc(100% - 50px);
-        height: $widgetPopupHeadingHeight;
-        margin: $widgetPopupHeadingMargin;
-        border-radius: 3px;
-        -moz-border-radius: 3px;
-        -webkit-border-radius: 3px;
-        border: 1px solid #e1e1e1;
-        background: #f8f8f8;
-    }
-    .widget-popup-title {
-        padding-left: 10px;
-        margin: $widgetPopupHeadingMargin;
-    }
-    .widget-popup-content {
-        width: 100%;
-        height: calc(100% - 2.51em);
-        padding: 15px;
-        padding-top: 5px;
-        margin: $widgetPopupHeadingHeightTotal 0 0 0;
-        overflow: auto;
-    }
-    .widget-popup-close {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-    }
+  .panel-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+  .widget-popup-header {
+    position: absolute;
+    width: 80%;
+    width: calc(100% - 50px);
+    height: $widgetPopupHeadingHeight;
+    margin: $widgetPopupHeadingMargin;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #e1e1e1;
+    background: #f8f8f8;
+  }
+  .widget-popup-title {
+    padding-left: 10px;
+    margin: $widgetPopupHeadingMargin;
+  }
+  .widget-popup-content {
+    width: 100%;
+    height: calc(100% - 2.51em);
+    padding: 15px;
+    padding-top: 5px;
+    margin: $widgetPopupHeadingHeightTotal 0 0 0;
+    overflow: auto;
+  }
+  .widget-popup-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
 }

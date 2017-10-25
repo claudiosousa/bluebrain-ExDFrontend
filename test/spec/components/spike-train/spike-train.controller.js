@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Controller: spiketrain', function() {
-
   beforeEach(module('spikeTrainModule'));
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp.Constants'));
@@ -12,53 +11,64 @@ describe('Controller: spiketrain', function() {
 
   var $element, $rootScope, $scope, $timeout;
   var mockAngularElement;
-  var spikeController, canvas, canvasParent, SPIKE_TIMELABEL_SPACE = 0;
+  var spikeController,
+    canvas,
+    canvasParent,
+    SPIKE_TIMELABEL_SPACE = 0;
   var editorToolbarService, spikeListenerService;
 
-  beforeEach(module(function ($provide) {
-    canvas = document.createElement('canvas');
-    canvasParent = document.createElement('div');
-    canvasParent.appendChild(canvas);
+  beforeEach(
+    module(function($provide) {
+      canvas = document.createElement('canvas');
+      canvasParent = document.createElement('div');
+      canvasParent.appendChild(canvas);
 
-    mockAngularElement = [
-      // the mock HTML DOM
-      {
-        getElementsByClassName: jasmine.createSpy('getElementsByClassName').and.returnValue(
-          [{}, {}]
-        ),
-        getElementsByTagName: jasmine.createSpy('getElementsByClassName').and.returnValue(
-          [{remove: jasmine.createSpy('remove')}]
-        )
-      }
-    ];
-    mockAngularElement.find = jasmine.createSpy('find').and.returnValue([canvas]);
-    $provide.value('$element', mockAngularElement);
-  }));
+      mockAngularElement = [
+        // the mock HTML DOM
+        {
+          getElementsByClassName: jasmine
+            .createSpy('getElementsByClassName')
+            .and.returnValue([{}, {}]),
+          getElementsByTagName: jasmine
+            .createSpy('getElementsByClassName')
+            .and.returnValue([{ remove: jasmine.createSpy('remove') }])
+        }
+      ];
+      mockAngularElement.find = jasmine
+        .createSpy('find')
+        .and.returnValue([canvas]);
+      $provide.value('$element', mockAngularElement);
+    })
+  );
 
-  beforeEach(inject(function(_$element_,
-                             _$rootScope_,
-                             $controller,
-                             $filter,
-                             _$timeout_,
-                             _RESET_TYPE_,
-                             _editorToolbarService_,
-                             _spikeListenerService_) {
-    $element = _$element_;
-    $rootScope = _$rootScope_;
-    $scope = $rootScope.$new();
-    $timeout = _$timeout_;
-    editorToolbarService = _editorToolbarService_;
-    spikeListenerService = _spikeListenerService_;
+  beforeEach(
+    inject(function(
+      _$element_,
+      _$rootScope_,
+      $controller,
+      $filter,
+      _$timeout_,
+      _RESET_TYPE_,
+      _editorToolbarService_,
+      _spikeListenerService_
+    ) {
+      $element = _$element_;
+      $rootScope = _$rootScope_;
+      $scope = $rootScope.$new();
+      $timeout = _$timeout_;
+      editorToolbarService = _editorToolbarService_;
+      spikeListenerService = _spikeListenerService_;
 
-    spikeController = $controller('SpikeTrainController', {
-      $filter: $filter,
-      $scope: $scope,
-      spikeListenerService: spikeListenerService,
-      SPIKE_TIMELABEL_SPACE: SPIKE_TIMELABEL_SPACE
-    });
-    var parent = document.createElement('div');
-    parent.appendChild(canvas);
-  }));
+      spikeController = $controller('SpikeTrainController', {
+        $filter: $filter,
+        $scope: $scope,
+        spikeListenerService: spikeListenerService,
+        SPIKE_TIMELABEL_SPACE: SPIKE_TIMELABEL_SPACE
+      });
+      var parent = document.createElement('div');
+      parent.appendChild(canvas);
+    })
+  );
 
   beforeEach(function() {
     spyOn(spikeController, 'drawSeparator').and.callThrough();
@@ -125,11 +135,12 @@ describe('Controller: spiketrain', function() {
 
   // canvas size is 300x150 as default
   var getCanvasData = function(x, width) {
-    return spikeController.canvasCtx.getImageData(x, 0, width, canvas.height).data;
+    return spikeController.canvasCtx.getImageData(x, 0, width, canvas.height)
+      .data;
   };
 
   var verifyAllLineColor = function(canvasData, color) {
-    for (var i = canvasData.length-1; i >=4; i = i - 4) {
+    for (var i = canvasData.length - 1; i >= 4; i = i - 4) {
       // rgba values
       expect(canvasData[i - 3]).toBe(color[0]);
       expect(canvasData[i - 2]).toBe(color[1]);
@@ -142,7 +153,11 @@ describe('Controller: spiketrain', function() {
     spyOn(spikeController, 'calculateCanvasSize');
     spikeController.visibleWidth = 300;
 
-    var fakeMessage = { neuronCount: 1, simulationTime: 0.01, spikes: [{ neuron: 0, time: 9 }] };
+    var fakeMessage = {
+      neuronCount: 1,
+      simulationTime: 0.01,
+      spikes: [{ neuron: 0, time: 9 }]
+    };
     spikeController.newSpikesMessage(fakeMessage);
 
     var black = [0, 0, 0];
@@ -173,7 +188,7 @@ describe('Controller: spiketrain', function() {
     spikeController.visibleWidth = 300;
     expect(spikeController.messages.length).toBe(0);
 
-    spikeController.startSpikeDisplay();  //second  time visible
+    spikeController.startSpikeDisplay(); //second  time visible
     expect(spikeController.messages.length).toBe(1);
     spikeController.redraw();
 
@@ -222,13 +237,18 @@ describe('Controller: spiketrain', function() {
 
     var result = spikeController.calculateCanvas();
 
-    expect(mockCanvas.setAttribute).toHaveBeenCalledWith('width', mockCanvas.parentNode.offsetWidth);
-    expect(mockCanvas.setAttribute).toHaveBeenCalledWith('height', mockCanvas.parentNode.offsetHeight - 10);
+    expect(mockCanvas.setAttribute).toHaveBeenCalledWith(
+      'width',
+      mockCanvas.parentNode.offsetWidth
+    );
+    expect(mockCanvas.setAttribute).toHaveBeenCalledWith(
+      'height',
+      mockCanvas.parentNode.offsetHeight - 10
+    );
 
     expect(spikeController.calculateCanvasSize).toHaveBeenCalled();
     expect(spikeController.redraw).toHaveBeenCalled();
 
     expect(result).toBe(true);
   });
-
 });

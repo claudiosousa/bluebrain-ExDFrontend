@@ -32,20 +32,26 @@
    * `MainCtrl` is the main application controller and is associated
    * to the `home` state.
    */
-  angular.module('exdFrontendApp')
-    .controller('MainCtrl', ['$scope', 'bbpConfig', '$log',
-      function($scope, bbpConfig, $log) {
+  angular.module('exdFrontendApp').controller('MainCtrl', [
+    '$scope',
+    'bbpConfig',
+    '$log',
+    function($scope, bbpConfig, $log) {
+      var collabIds;
+      try {
+        collabIds = bbpConfig.get('collab.collabIds');
+      } catch (e) {
+        $log.error(
+          "'collabIds' is missing in your app/config.json. Please update it from app/config.json.sample"
+        );
+      }
 
-        var collabIds;
-        try {
-          collabIds = bbpConfig.get('collab.collabIds');
-        } catch (e) {
-          $log.error('\'collabIds\' is missing in your app/config.json. Please update it from app/config.json.sample');
-        }
-
-        $scope.getCollabItemUrl = function(collabItem) {
-          return (collabIds && collabIds.neuroroboticsCollabBaseUrl) +
-            (collabIds && collabIds.pagesId && collabIds.pagesId[collabItem]);
-        };
-      }]);
-}());
+      $scope.getCollabItemUrl = function(collabItem) {
+        return (
+          (collabIds && collabIds.neuroroboticsCollabBaseUrl) +
+          (collabIds && collabIds.pagesId && collabIds.pagesId[collabItem])
+        );
+      };
+    }
+  ]);
+})();

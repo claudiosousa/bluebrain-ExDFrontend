@@ -24,40 +24,41 @@
 (function() {
   'use strict';
 
-  class EditorToolbarController
-  {
-    constructor($rootScope,
-                $scope,
-                $timeout,
-                $location,
-                $window,
-                contextMenuState,
-                userContextService,
-                stateService,
-                gz3d,
-                editorsPanelService,
-                userNavigationService,
-                objectInspectorService,
-                performanceMonitorService,
-                nrpAnalytics,
-                clbConfirm,
-                environmentService,
-                backendInterfaceService,
-                environmentRenderingService,
-                splash,
-                simulationInfo,
-                videoStreamService,
-                dynamicViewOverlayService,
-                helpTooltipService,
-                editorToolbarService,
-                gz3dViewsService,
-                clientLoggerService,
-                bbpConfig,
-                STATE,
-                NAVIGATION_MODES,
-                EDIT_MODE,
-                RESET_TYPE,
-                DYNAMIC_VIEW_CHANNELS) {
+  class EditorToolbarController {
+    constructor(
+      $rootScope,
+      $scope,
+      $timeout,
+      $location,
+      $window,
+      contextMenuState,
+      userContextService,
+      stateService,
+      gz3d,
+      editorsPanelService,
+      userNavigationService,
+      objectInspectorService,
+      performanceMonitorService,
+      nrpAnalytics,
+      clbConfirm,
+      environmentService,
+      backendInterfaceService,
+      environmentRenderingService,
+      splash,
+      simulationInfo,
+      videoStreamService,
+      dynamicViewOverlayService,
+      helpTooltipService,
+      editorToolbarService,
+      gz3dViewsService,
+      clientLoggerService,
+      bbpConfig,
+      STATE,
+      NAVIGATION_MODES,
+      EDIT_MODE,
+      RESET_TYPE,
+      DYNAMIC_VIEW_CHANNELS
+    ) {
       this.backendInterfaceService = backendInterfaceService;
       this.clientLoggerService = clientLoggerService;
       this.contextMenuState = contextMenuState;
@@ -112,30 +113,38 @@
           /* Listen for status informations */
           stateService.startListeningForStatusInformation();
           this.messageCallbackHandler = stateService.addMessageCallback(
-              (message) => this.messageCallback(message));
-          this.stateCallbackHandler = stateService.addStateCallback(
-              (newState) => this.onStateChanged(newState));
+            message => this.messageCallback(message)
+          );
+          this.stateCallbackHandler = stateService.addStateCallback(newState =>
+            this.onStateChanged(newState)
+          );
         }
       });
 
       this.checkIfVideoStreamsAvailable();
       $scope.$watch('vm.stateService.currentState', () => {
         //starting the experiment might publish new video streams, so we check again
-        if (!this.editorToolbarService.videoStreamsAvailable &&
-            this.stateService.currentState === this.STATE.STARTED) {
+        if (
+          !this.editorToolbarService.videoStreamsAvailable &&
+          this.stateService.currentState === this.STATE.STARTED
+        ) {
           this.$timeout(() => this.checkIfVideoStreamsAvailable(), 500);
         }
       });
 
       //When resetting do something
-      this.resetListenerUnbindHandler = $scope.$on('RESET',
-          (event, resetType) => {
-            if (resetType === RESET_TYPE.RESET_FULL ||
-                resetType === RESET_TYPE.RESET_WORLD) {
-              this.resetGUI();
-            }
-            this.clientLoggerService.logMessage('Reset EVENT occurred...');
-      });
+      this.resetListenerUnbindHandler = $scope.$on(
+        'RESET',
+        (event, resetType) => {
+          if (
+            resetType === RESET_TYPE.RESET_FULL ||
+            resetType === RESET_TYPE.RESET_WORLD
+          ) {
+            this.resetGUI();
+          }
+          this.clientLoggerService.logMessage('Reset EVENT occurred...');
+        }
+      );
 
       const esvPages = new Set(['esv-private', 'esv-web']);
 
@@ -168,16 +177,17 @@
         this.request = {
           resetType: this.RESET_TYPE.NO_RESET
         };
-        clbConfirm.open({
-          'title': 'Reset Menu',
-          'templateUrl': 'views/esv/reset-checklist-template.html',
-          'scope': $scope
-        }).then(() => {
-          stateService.ensureStateBeforeExecuting(
-              STATE.PAUSED,
-              () => this.__resetButtonClickHandler(this.request)
-          );
-        });
+        clbConfirm
+          .open({
+            title: 'Reset Menu',
+            templateUrl: 'views/esv/reset-checklist-template.html',
+            scope: $scope
+          })
+          .then(() => {
+            stateService.ensureStateBeforeExecuting(STATE.PAUSED, () =>
+              this.__resetButtonClickHandler(this.request)
+            );
+          });
       };
     }
 
@@ -185,7 +195,7 @@
      * Notify the widgets the reset events occurred on the backend side, e.g., from VirtualCoach
      * Hide the editor if visible, reset the UI
      */
-    resetOccuredOnServer(){
+    resetOccuredOnServer() {
       if (this.editorsPanelService.showEditorPanel) {
         this.editorsPanelService.toggleEditors();
       }
@@ -209,31 +219,37 @@
 
       /* Progress messages (except start state progress messages which are handled by another progress bar) */
       if (angular.isDefined(message.progress)) {
-
-        var stateStopFailed = this.stateService.currentState === this.STATE.STOPPED ||
-            this.stateService.currentState === this.STATE.FAILED;
-        if(this.demoMode && stateStopFailed){
+        var stateStopFailed =
+          this.stateService.currentState === this.STATE.STOPPED ||
+          this.stateService.currentState === this.STATE.FAILED;
+        if (this.demoMode && stateStopFailed) {
           this.exitSimulation();
-        }
-        else   // In demo mode, we don't show the end splash screen,
-        {
+        } else {
+          // In demo mode, we don't show the end splash screen,
           //TODO (Sandro): i think splashscreen stuff should be handled with a message callback inside the splashscreen service itself, not here
           //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
           /* splashScreen == null means it has been already closed and should not be reopened */
-          if (this.splash.splashScreen !== null &&
-              !this.environmentRenderingService.sceneLoading &&
-              (angular.isDefined(message.state) ||
+          if (
+            this.splash.splashScreen !== null &&
+            !this.environmentRenderingService.sceneLoading &&
+            (angular.isDefined(message.state) ||
               (stateStopFailed ||
-              (angular.isDefined(message.progress.subtask) &&
-              message.progress.subtask.length > 0 )))) {
-            this.splash.splashScreen = this.splash.splashScreen || this.splash.open(
-                    !message.progress.block_ui,
-                    (stateStopFailed ? (() => this.exit() ) : undefined));
+                (angular.isDefined(message.progress.subtask) &&
+                  message.progress.subtask.length > 0)))
+          ) {
+            this.splash.splashScreen =
+              this.splash.splashScreen ||
+              this.splash.open(
+                !message.progress.block_ui,
+                stateStopFailed ? () => this.exit() : undefined
+              );
           }
-          if (angular.isDefined(message.progress.done) &&
-              message.progress.done) {
+          if (
+            angular.isDefined(message.progress.done) &&
+            message.progress.done
+          ) {
             this.splash.spin = false;
-            this.splash.setMessage({headline: 'Finished'});
+            this.splash.setMessage({ headline: 'Finished' });
             /* if splash is a blocking modal (no button), then close it*/
             /* (else it is closed by the user on button click) */
             if (!this.splash.showButton) {
@@ -273,8 +289,11 @@
     }
 
     onStateChanged(newState) {
-      if (newState === this.STATE.STOPPED &&
-          this.gz3d.iface && this.gz3d.iface.webSocket) {
+      if (
+        newState === this.STATE.STOPPED &&
+        this.gz3d.iface &&
+        this.gz3d.iface.webSocket
+      ) {
         this.gz3d.iface.webSocket.disableRebirth();
       }
     }
@@ -283,7 +302,9 @@
       this.gz3d.scene.resetView(); //update the default camera position, if defined
       if (this.objectInspectorService !== null) {
         this.gz3d.scene.selectEntity(null);
-        this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
+        this.dynamicViewOverlayService.closeAllOverlaysOfType(
+          this.DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR
+        );
       }
     }
 
@@ -305,19 +326,18 @@
 
     exit(quitDemo) {
       this.exitSimulation(quitDemo);
-    };
+    }
 
     exitSimulation(quitDemo) {
       this.cleanUp();
 
-      this.splash.splashScreen = null;  // do not reopen splashscreen if further messages happen
+      this.splash.splashScreen = null; // do not reopen splashscreen if further messages happen
       if (this.environmentService.isPrivateExperiment()) {
         this.$location.path('esv-private');
       } else {
-        if (this.demoMode && !quitDemo){
+        if (this.demoMode && !quitDemo) {
           this.$location.path('esv-demo-wait');
-        }
-        else {
+        } else {
           this.$location.path('esv-web');
         }
       }
@@ -339,11 +359,11 @@
       }
 
       this.closeSimulationConnections();
-    };
+    }
 
     updateSimulation(newState) {
       this.stateService.setCurrentState(newState);
-    };
+    }
 
     // play/pause/stop button handler
     simControlButtonHandler(newState) {
@@ -352,14 +372,14 @@
       if (this.objectInspectorService !== null) {
         this.objectInspectorService.removeEventListeners();
       }
-    };
+    }
 
     setEditMode(newMode) {
       //currentMode !== newMode
       if (this.gz3d.scene.manipulationMode !== newMode) {
         this.gz3d.scene.setManipulationMode(newMode);
       }
-    };
+    }
 
     __resetButtonClickHandler(request) {
       const resetType = request.resetType;
@@ -372,30 +392,39 @@
       if (this.editorsPanelService.showEditorPanel) {
         this.editorsPanelService.toggleEditors();
       }
-      this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR);
+      this.dynamicViewOverlayService.closeAllOverlaysOfType(
+        this.DYNAMIC_VIEW_CHANNELS.OBJECT_INSPECTOR
+      );
 
       this.$timeout(() => {
-        if (resetType === this.RESET_TYPE.RESET_BRAIN ||
+        if (
+          resetType === this.RESET_TYPE.RESET_BRAIN ||
           resetType === this.RESET_TYPE.RESET_CAMERA_VIEW ||
-          resetType === this.RESET_TYPE.RESET_ROBOT_POSE ) {
+          resetType === this.RESET_TYPE.RESET_ROBOT_POSE
+        ) {
           // send out notifications on button click only for resets not currently being caught via backend messages
           // right now only resets that cause a state change in backend will be registered in messageCallback()
           this.notifyResetToWidgets(resetType);
         }
 
-        if (resetType >= 256) { // Frontend-bound reset
+        if (resetType >= 256) {
+          // Frontend-bound reset
           if (resetType === this.RESET_TYPE.RESET_CAMERA_VIEW) {
             this.gz3d.scene.resetView();
           }
-        } else { // Backend-bound reset
-          this.splash.splashScreen = this.splash.splashScreen ||
-              this.splash.open(false, undefined);
-          if (this.environmentService.isPrivateExperiment()) { //reset from collab
+        } else {
+          // Backend-bound reset
+          this.splash.splashScreen =
+            this.splash.splashScreen || this.splash.open(false, undefined);
+          if (this.environmentService.isPrivateExperiment()) {
+            //reset from collab
             //open splash screen, blocking ui (i.e. no ok button) and no closing callback
 
-            let resetWhat = '', downloadWhat = '';
+            let resetWhat = '',
+              downloadWhat = '';
 
-            ((resetType) => { //customize user message depending on the reset type
+            (resetType => {
+              //customize user message depending on the reset type
               if (resetType === this.RESET_TYPE.RESET_WORLD) {
                 resetWhat = 'Environment';
                 downloadWhat = 'World SDF ';
@@ -406,64 +435,71 @@
             })(resetType);
 
             const messageHeadline = 'Resetting ' + resetWhat;
-            const messageSubHeadline = 'Downloading ' + downloadWhat +
-                'from the Storage';
+            const messageSubHeadline =
+              'Downloading ' + downloadWhat + 'from the Storage';
 
             _.defer(() => {
               this.splash.spin = true;
-              this.splash.setMessage(
-                  {headline: messageHeadline, subHeadline: messageSubHeadline});
+              this.splash.setMessage({
+                headline: messageHeadline,
+                subHeadline: messageSubHeadline
+              });
             });
 
             this.backendInterfaceService.resetCollab(
-                request,
-                this.splash.closeSplash,
-                this.splash.closeSplash
+              request,
+              this.splash.closeSplash,
+              this.splash.closeSplash
             );
           } else {
             //other kinds of reset
             this.backendInterfaceService.reset(
-                request,
-                () => { // Success callback
-                  // do not close the splash if successful
-                  // it will be closed by messageCallback
-                  this.gz3d.scene.applyComposerSettings(true, false);
-                  this.splash.closeSplash();
-                  if (resetType === this.RESET_TYPE.RESET_BRAIN) {
-                    this.updatePanelUI();
-                  }
-                },
-                this.splash.closeSplash
+              request,
+              () => {
+                // Success callback
+                // do not close the splash if successful
+                // it will be closed by messageCallback
+                this.gz3d.scene.applyComposerSettings(true, false);
+                this.splash.closeSplash();
+                if (resetType === this.RESET_TYPE.RESET_BRAIN) {
+                  this.updatePanelUI();
+                }
+              },
+              this.splash.closeSplash
             );
           }
         }
       }, 100);
-    };
+    }
 
     // Lights management
     modifyLightClickHandler(direction, button) {
-      if ((direction < 0 && this.gz3d.isGlobalLightMinReached()) ||
-          (direction > 0 && this.gz3d.isGlobalLightMaxReached())) {
+      if (
+        (direction < 0 && this.gz3d.isGlobalLightMinReached()) ||
+        (direction > 0 && this.gz3d.isGlobalLightMaxReached())
+      ) {
         return;
       }
 
       this.gz3d.scene.emitter.emit('lightChanged', direction * 0.1);
-    };
+    }
 
     // Camera manipulation
     // This should be integrated to the tutorial story when
     // it will be implemented !
     requestMove(event, action) {
-      if (event.which === 1) { // camera control uses left button only
+      if (event.which === 1) {
+        // camera control uses left button only
         this.gz3d.scene.controls.onMouseDownManipulator(action);
       }
-    };
+    }
 
     releaseMove(event, action) {
-      if (event.which === 1) { // camera control uses left button only
+      if (event.which === 1) {
+        // camera control uses left button only
         this.gz3d.scene.controls.onMouseUpManipulator(action);
       }
-    };
+    }
 
     // robot view
     robotViewButtonClickHandler() {
@@ -473,32 +509,25 @@
 
       var allHidden = true;
 
-      this.gz3dViewsService.views.forEach(
-        (view, index, array) =>
-        {
-          if (view.name !== "main_view" && view.container !== undefined)
-          {
-            allHidden = false;
-          }
+      this.gz3dViewsService.views.forEach((view, index, array) => {
+        if (view.name !== 'main_view' && view.container !== undefined) {
+          allHidden = false;
         }
-      );
+      });
 
-      if (allHidden)
-      {
+      if (allHidden) {
         // open overlays for every view that doesn't have a container
-        this.gz3dViewsService.views.forEach(
-          (view, index, array) =>
-          {
-            if (view.container === undefined)
-            {
-              this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
-            }
+        this.gz3dViewsService.views.forEach((view, index, array) => {
+          if (view.container === undefined) {
+            this.dynamicViewOverlayService.createDynamicOverlay(
+              this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING
+            );
           }
+        });
+      } else {
+        this.dynamicViewOverlayService.closeAllOverlaysOfType(
+          this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING
         );
-      }
-      else
-      {
-        this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING);
       }
 
       this.nrpAnalytics.eventTrack('Toggle-robot-view', {
@@ -508,12 +537,14 @@
     }
 
     navigationModeMenuClickHandler() {
-      this.editorToolbarService.showNavigationModeMenu = !this.editorToolbarService.showNavigationModeMenu;
-    };
+      this.editorToolbarService.showNavigationModeMenu = !this
+        .editorToolbarService.showNavigationModeMenu;
+    }
 
     editorMenuClickHandler() {
-      this.editorToolbarService.showEditorMenu = !this.editorToolbarService.showEditorMenu;
-    };
+      this.editorToolbarService.showEditorMenu = !this.editorToolbarService
+        .showEditorMenu;
+    }
 
     setNavigationMode(mode) {
       switch (mode) {
@@ -538,7 +569,10 @@
     }
 
     codeEditorButtonClickHandler() {
-      if (this.userContextService.editIsDisabled || this.editorsPanelService.loadingEditPanel) {
+      if (
+        this.userContextService.editIsDisabled ||
+        this.editorsPanelService.loadingEditPanel
+      ) {
         return;
       } else {
         return this.editorsPanelService.toggleEditors();
@@ -546,8 +580,9 @@
     }
 
     checkIfVideoStreamsAvailable() {
-      this.videoStreamService.getStreamUrls().then((videoStreams) => {
-        this.editorToolbarService.videoStreamsAvailable = videoStreams && !!videoStreams.length;
+      this.videoStreamService.getStreamUrls().then(videoStreams => {
+        this.editorToolbarService.videoStreamsAvailable =
+          videoStreams && !!videoStreams.length;
       });
     }
 
@@ -559,67 +594,71 @@
         return;
       }
 
-      this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.STREAM_VIEWER);
-    };
+      this.dynamicViewOverlayService.createDynamicOverlay(
+        this.DYNAMIC_VIEW_CHANNELS.STREAM_VIEWER
+      );
+    }
 
     environmentSettingsClickHandler() {
       if (this.environmentRenderingService.loadingEnvironmentSettingsPanel) {
         return;
       } else {
-        this.editorToolbarService.showEnvironmentSettingsPanel = !this.editorToolbarService.isEnvironmentSettingsPanelActive;
+        this.editorToolbarService.showEnvironmentSettingsPanel = !this
+          .editorToolbarService.isEnvironmentSettingsPanelActive;
         this.nrpAnalytics.eventTrack('Toggle-environment-settings-panel', {
           category: 'Simulation-GUI',
           value: this.editorToolbarService.showEnvironmentSettingsPanel
         });
       }
-    };
+    }
 
     // Spiketrain
     spikeTrainButtonClickHandler() {
-      this.editorToolbarService.showSpikeTrain = !this.editorToolbarService.isSpikeTrainActive;
+      this.editorToolbarService.showSpikeTrain = !this.editorToolbarService
+        .isSpikeTrainActive;
       this.nrpAnalytics.eventTrack('Toggle-spike-train', {
         category: 'Simulation-GUI',
         value: this.editorToolbarService.isSpikeTrainActive
       });
-    };
+    }
   }
 
-  angular.module('editorToolbarModule', ['helpTooltipModule', 'clb-ui-dialog']).
-      controller('EditorToolbarController',
-          [
-            '$rootScope',
-            '$scope',
-            '$timeout',
-            '$location',
-            '$window',
-            'contextMenuState',
-            'userContextService',
-            'stateService',
-            'gz3d',
-            'editorsPanelService',
-            'userNavigationService',
-            'objectInspectorService',
-            'performanceMonitorService',
-            'nrpAnalytics',
-            'clbConfirm',
-            'environmentService',
-            'backendInterfaceService',
-            'environmentRenderingService',
-            'splash',
-            'simulationInfo',
-            'videoStreamService',
-            'dynamicViewOverlayService',
-            'helpTooltipService',
-            'editorToolbarService',
-            'gz3dViewsService',
-            'clientLoggerService',
-            'bbpConfig',
-            'STATE',
-            'NAVIGATION_MODES',
-            'EDIT_MODE',
-            'RESET_TYPE',
-            'DYNAMIC_VIEW_CHANNELS',
-            'LOG_TYPE',
-            (...args) => new EditorToolbarController(...args)]);
-
+  angular
+    .module('editorToolbarModule', ['helpTooltipModule', 'clb-ui-dialog'])
+    .controller('EditorToolbarController', [
+      '$rootScope',
+      '$scope',
+      '$timeout',
+      '$location',
+      '$window',
+      'contextMenuState',
+      'userContextService',
+      'stateService',
+      'gz3d',
+      'editorsPanelService',
+      'userNavigationService',
+      'objectInspectorService',
+      'performanceMonitorService',
+      'nrpAnalytics',
+      'clbConfirm',
+      'environmentService',
+      'backendInterfaceService',
+      'environmentRenderingService',
+      'splash',
+      'simulationInfo',
+      'videoStreamService',
+      'dynamicViewOverlayService',
+      'helpTooltipService',
+      'editorToolbarService',
+      'gz3dViewsService',
+      'clientLoggerService',
+      'bbpConfig',
+      'STATE',
+      'NAVIGATION_MODES',
+      'EDIT_MODE',
+      'RESET_TYPE',
+      'DYNAMIC_VIEW_CHANNELS',
+      'LOG_TYPE',
+      (...args) => new EditorToolbarController(...args)
+    ]);
 })();

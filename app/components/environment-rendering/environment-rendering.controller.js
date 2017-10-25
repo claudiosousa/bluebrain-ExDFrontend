@@ -24,25 +24,29 @@
 /* global console: false */
 /* global THREE: false */
 
-(function ()
-{
+(function() {
   'use strict';
 
   class EnvironmentRenderingController {
+    get containerElement() {
+      return this.gz3dContainerElement;
+    }
+    get INIT_WIDTH_PERCENTAGE() {
+      return 0.3;
+    }
 
-    get containerElement() { return this.gz3dContainerElement; }
-    get INIT_WIDTH_PERCENTAGE() { return 0.3; }
-
-    constructor($scope,
-                $element,
-                userContextService,
-                experimentService,
-                userNavigationService,
-                environmentRenderingService,
-                gz3dViewsService,
-                stateService,
-                videoStreamService,
-                dynamicViewOverlayService) {
+    constructor(
+      $scope,
+      $element,
+      userContextService,
+      experimentService,
+      userNavigationService,
+      environmentRenderingService,
+      gz3dViewsService,
+      stateService,
+      videoStreamService,
+      dynamicViewOverlayService
+    ) {
       this.stateService = stateService;
       this.userContextService = userContextService;
       this.experimentService = experimentService;
@@ -59,54 +63,76 @@
       $scope.$on('$destroy', () => this.onDestroy());
 
       /* initialization */
-      this.gz3dContainerElement = $element[0].getElementsByClassName('gz3d-webgl')[0];
+      this.gz3dContainerElement = $element[0].getElementsByClassName(
+        'gz3d-webgl'
+      )[0];
 
-      this.environmentRenderingService.sceneInitialized().then(
-        () => {
-          // assign a view which doesn't have a displaying container yet for now
-          this.gz3dViewsService.assignView(this.gz3dContainerElement).then(
-            (view) => {
-              this.view = view;
-              // if it's a camera view and we're inside an overlay, keep aspect ratio for that overlay
-              let overlayWrapper = this.dynamicViewOverlayService.getParentOverlayWrapper($element);
-              if (this.view.type === 'camera' && angular.isDefined(overlayWrapper)) {
-                overlayWrapper.setAttribute('keep-aspect-ratio', this.view.initAspectRatio.toString());
-                // set initial size according to aspect ratio
-                let parentWidthPx = dynamicViewOverlayService.getOverlayParentElement()[0].clientWidth;
-                let parentHeightPx = dynamicViewOverlayService.getOverlayParentElement()[0].clientHeight;
-                let height = ((this.INIT_WIDTH_PERCENTAGE * parentWidthPx) / this.view.initAspectRatio) / parentHeightPx;
-                overlayWrapper.style.width = (this.INIT_WIDTH_PERCENTAGE * 100).toString() + '%';
-                overlayWrapper.style.height = (height * 100).toString() + '%';
+      this.environmentRenderingService.sceneInitialized().then(() => {
+        // assign a view which doesn't have a displaying container yet for now
+        this.gz3dViewsService
+          .assignView(this.gz3dContainerElement)
+          .then(view => {
+            this.view = view;
+            // if it's a camera view and we're inside an overlay, keep aspect ratio for that overlay
+            let overlayWrapper = this.dynamicViewOverlayService.getParentOverlayWrapper(
+              $element
+            );
+            if (
+              this.view.type === 'camera' &&
+              angular.isDefined(overlayWrapper)
+            ) {
+              overlayWrapper.setAttribute(
+                'keep-aspect-ratio',
+                this.view.initAspectRatio.toString()
+              );
+              // set initial size according to aspect ratio
+              let parentWidthPx = dynamicViewOverlayService.getOverlayParentElement()[0]
+                .clientWidth;
+              let parentHeightPx = dynamicViewOverlayService.getOverlayParentElement()[0]
+                .clientHeight;
+              let height =
+                this.INIT_WIDTH_PERCENTAGE *
+                parentWidthPx /
+                this.view.initAspectRatio /
+                parentHeightPx;
+              overlayWrapper.style.width =
+                (this.INIT_WIDTH_PERCENTAGE * 100).toString() + '%';
+              overlayWrapper.style.height = (height * 100).toString() + '%';
 
-                // place according to index of view
-                let pos = gz3dViewsService.views.indexOf(this.view) - 1;
-                let row = Math.floor(pos / 3) % 3;
-                let column = pos % 3;
-                overlayWrapper.style.top = (row * 33).toString() + '%';
-                overlayWrapper.style.left = (column * 33).toString() + '%';
+              // place according to index of view
+              let pos = gz3dViewsService.views.indexOf(this.view) - 1;
+              let row = Math.floor(pos / 3) % 3;
+              let column = pos % 3;
+              overlayWrapper.style.top = (row * 33).toString() + '%';
+              overlayWrapper.style.left = (column * 33).toString() + '%';
 
-                // remove context menus from views other than user view
-                if (this.view !== this.gz3dViewsService.views[0]) {
-                  let contextMenu = $element[0].getElementsByTagName('context-menu')[0];
-                  contextMenu.remove();
-                }
-
-                // set up server video stream
-                this.videoStreamService.getStreamingUrlForTopic(this.view.topic).then(
-                  (streamUrl) => {
-                    this.videoUrl = streamUrl;
-                  }
-                );
+              // remove context menus from views other than user view
+              if (this.view !== this.gz3dViewsService.views[0]) {
+                let contextMenu = $element[0].getElementsByTagName(
+                  'context-menu'
+                )[0];
+                contextMenu.remove();
               }
+
+              // set up server video stream
+              this.videoStreamService
+                .getStreamingUrlForTopic(this.view.topic)
+                .then(streamUrl => {
+                  this.videoUrl = streamUrl;
+                });
             }
-          );
-        }
-      );
+          });
+      });
     }
 
     onDestroy() {
       /* de-initialization */
-      if (this.view && this.view.camera && this.view.camera.cameraHelper && this.view.camera.cameraHelper.visible) {
+      if (
+        this.view &&
+        this.view.camera &&
+        this.view.camera.cameraHelper &&
+        this.view.camera.cameraHelper.visible
+      ) {
         this.gz3dViewsService.toggleCameraHelper(this.view);
       }
 
@@ -116,7 +142,7 @@
     }
 
     isCameraView() {
-      return (this.view && this.view.type && this.view.type === 'camera');
+      return this.view && this.view.type && this.view.type === 'camera';
     }
 
     onClickFrustumIcon() {
@@ -129,7 +155,12 @@
     }
 
     getVideoUrlSource() {
-      return this.showServerStream ? this.videoUrl + '&t=' + this.stateService.currentState + this.reconnectTrials : '';
+      return this.showServerStream
+        ? this.videoUrl +
+            '&t=' +
+            this.stateService.currentState +
+            this.reconnectTrials
+        : '';
     }
   }
 
@@ -140,7 +171,8 @@
    * # EnvironmentRenderingController
    * Controller of the environmentRenderingModule
    */
-  angular.module('environmentRenderingModule')
+  angular
+    .module('environmentRenderingModule')
     .controller('EnvironmentRenderingController', [
       '$scope',
       '$element',
@@ -154,5 +186,4 @@
       'dynamicViewOverlayService',
       (...args) => new EnvironmentRenderingController(...args)
     ]);
-
-} ());
+})();

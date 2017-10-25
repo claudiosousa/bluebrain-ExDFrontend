@@ -1,69 +1,75 @@
 'use strict';
 
-describe('Controller: editorPanelCtrl', function () {
-
+describe('Controller: editorPanelCtrl', function() {
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('gz3dModule'));
 
   var $httpBackend,
-      experimentCtrl,
-      scope,
-      rootScope,
-      bbpConfig,
-      controller,
-      gz3d,
-      editorsPanelService,
-      collabContextlessUrl;
+    experimentCtrl,
+    scope,
+    rootScope,
+    bbpConfig,
+    controller,
+    gz3d,
+    editorsPanelService,
+    collabContextlessUrl;
 
   var baseEventHandlerMock = {
     suppressAnyKeyPress: jasmine.createSpy('suppressAnyKeyPress')
   };
 
-  beforeEach(module(function ($provide) {
-    $provide.value('baseEventHandler', baseEventHandlerMock);
-  }));
+  beforeEach(
+    module(function($provide) {
+      $provide.value('baseEventHandler', baseEventHandlerMock);
+    })
+  );
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller,
-                              $rootScope,
-                              _$httpBackend_,
-                              _bbpConfig_,
-                              _editorsPanelService_,
-                              _gz3d_,
-                              simulationInfo) {
-    controller = $controller;
-    $httpBackend = _$httpBackend_;
-    rootScope = $rootScope;
-    scope = $rootScope.$new();
-    bbpConfig = _bbpConfig_;
-    gz3d = _gz3d_;
-    editorsPanelService = _editorsPanelService_;
+  beforeEach(
+    inject(function(
+      $controller,
+      $rootScope,
+      _$httpBackend_,
+      _bbpConfig_,
+      _editorsPanelService_,
+      _gz3d_,
+      simulationInfo
+    ) {
+      controller = $controller;
+      $httpBackend = _$httpBackend_;
+      rootScope = $rootScope;
+      scope = $rootScope.$new();
+      bbpConfig = _bbpConfig_;
+      gz3d = _gz3d_;
+      editorsPanelService = _editorsPanelService_;
 
-    // Mock the scene controls object
-    gz3d.scene = {};
-    gz3d.scene.controls = {};
-    gz3d.scene.controls.keyboardBindingsEnabled = true;
+      // Mock the scene controls object
+      gz3d.scene = {};
+      gz3d.scene.controls = {};
+      gz3d.scene.controls.keyboardBindingsEnabled = true;
 
+      experimentCtrl = $controller('editorPanelCtrl', {
+        $rootScope: rootScope,
+        $scope: scope,
+        simulationInfo: simulationInfo
+      });
 
-    experimentCtrl = $controller('editorPanelCtrl', {
-      $rootScope: rootScope,
-      $scope: scope,
-      simulationInfo: simulationInfo
-    });
+      scope.controls.graphicalEditor.refresh = jasmine.createSpy('refresh');
 
-    scope.controls.graphicalEditor.refresh = jasmine.createSpy('refresh');
+      $httpBackend.whenGET(/\/me/).respond(200);
+    })
+  );
 
-    $httpBackend.whenGET(/\/me/).respond(200);
-  }));
+  beforeEach(function() {
+    collabContextlessUrl =
+      bbpConfig.get('api.collabContextManagement.url') +
+      '/collab/configuration';
+    $httpBackend.whenGET(collabContextlessUrl).respond(200, {});
+  });
 
-  beforeEach(function () {
-      collabContextlessUrl = bbpConfig.get('api.collabContextManagement.url') + '/collab/configuration';
-      $httpBackend.whenGET(collabContextlessUrl).respond(200, {});
-   });
-
-  it('should set the panelIsOpen on the open and close callbacks', function () {
+  it('should set the panelIsOpen on the open and close callbacks', function() {
     expect(scope.panelIsOpen).toBeFalsy();
     expect(scope.openCallback).toEqual(jasmine.any(Function));
     expect(scope.closeCallback).toEqual(jasmine.any(Function));
@@ -93,7 +99,7 @@ describe('Controller: editorPanelCtrl', function () {
     expect(scope.controls.graphicalEditor.refresh).toHaveBeenCalled();
   });
 
-  it('should disable the key bindings when an code editor tab is active and the panel is opened', function () {
+  it('should disable the key bindings when an code editor tab is active and the panel is opened', function() {
     expect(scope.panelIsOpen).toBe(false);
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBe(true);
 
@@ -128,7 +134,7 @@ describe('Controller: editorPanelCtrl', function () {
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
   });
 
-  it('should disable the key bindings when the panel is open and the disableKeyBindings function is called', function () {
+  it('should disable the key bindings when the panel is open and the disableKeyBindings function is called', function() {
     scope.panelIsOpen = true;
     gz3d.scene.controls.keyboardBindingsEnabled = true;
     scope.disableKeyBindings();
@@ -136,7 +142,7 @@ describe('Controller: editorPanelCtrl', function () {
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeFalsy();
   });
 
-  it('should NOT disable the key bindings when the panel is CLOSED and the disableKeyBindings function is called', function () {
+  it('should NOT disable the key bindings when the panel is CLOSED and the disableKeyBindings function is called', function() {
     scope.panelIsOpen = false;
     gz3d.scene.controls.keyboardBindingsEnabled = true;
     scope.disableKeyBindings();
@@ -144,19 +150,19 @@ describe('Controller: editorPanelCtrl', function () {
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
   });
 
-  it('should re-enable the key bindings', function () {
+  it('should re-enable the key bindings', function() {
     gz3d.scene.controls.keyboardBindingsEnabled = false;
     scope.reenableKeyBindings();
 
     expect(gz3d.scene.controls.keyboardBindingsEnabled).toBeTruthy();
   });
 
-  it('should not throw an error when gz3d.scene is already disposed on close', function () {
+  it('should not throw an error when gz3d.scene is already disposed on close', function() {
     gz3d.scene = undefined;
     expect(scope.reenableKeyBindings).not.toThrow();
   });
 
-  it('should set the variable showEditorPanel to be false', function () {
+  it('should set the variable showEditorPanel to be false', function() {
     editorsPanelService.showEditorPanel = true;
 
     scope.$destroy();
@@ -164,7 +170,7 @@ describe('Controller: editorPanelCtrl', function () {
     expect(editorsPanelService.showEditorPanel).toBeFalsy();
   });
 
-  it('should refresh code editors after resizing', function () {
+  it('should refresh code editors after resizing', function() {
     spyOn(document.activeElement, 'blur');
 
     scope.onResizeEnd();
@@ -174,7 +180,7 @@ describe('Controller: editorPanelCtrl', function () {
     scope.onResizeEnd();
   });
 
-  it('should watch showEditorPanel', function () {
+  it('should watch showEditorPanel', function() {
     spyOn(scope, 'openCallback');
     spyOn(scope, 'closeCallback');
 
@@ -187,7 +193,7 @@ describe('Controller: editorPanelCtrl', function () {
     expect(scope.openCallback).toHaveBeenCalled();
   });
 
-  it('should call suppressAnyKeyPress from baseEventHandler service', function () {
+  it('should call suppressAnyKeyPress from baseEventHandler service', function() {
     scope.suppressKeyPress();
     expect(baseEventHandlerMock.suppressAnyKeyPress).toHaveBeenCalled();
   });

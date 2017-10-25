@@ -31,39 +31,40 @@
   text-shadow: white 0 0 5px, white 0 0 5px, white 0 0 5px;
 }
 
-.camera-server-stream-image{
+.camera-server-stream-image {
   height: 100%;
   width: 100%;
-  position:absolute;
-  top:0;
+  position: absolute;
+  top: 0;
 }
 
-.camera-server-stream-not-available{
+.camera-server-stream-not-available {
   height: 100%;
   width: 100%;
-  background-color:rgba(0,0,0,.6);
-  color:white;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.camera-server-stream-not-available>span{
+.camera-server-stream-not-available > span {
   text-align: center;
 }
-.camera-icons{
+.camera-icons {
   position: absolute;
   right: 5px;
   top: 5px;
 }
-.camera-server-stream, .camera-frustum{
-  cursor:pointer;
-  display:inline;
-  padding:0 3px;
+.camera-server-stream,
+.camera-frustum {
+  cursor: pointer;
+  display: inline;
+  padding: 0 3px;
   text-shadow: white 0 0 3px, white 0 0 4px, white 0 0 5px;
-  color:rgba(0,0,0,.4);
+  color: rgba(0, 0, 0, 0.4);
 
-  &.camera-icon-enabled{
+  &.camera-icon-enabled {
     color: #000;
   }
 }

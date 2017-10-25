@@ -5,16 +5,14 @@
 /* global Detector: true */
 /* global document: true */
 
-
-describe('testing the gz3d service', function () {
-  var gz3d,
-    rootScope;
+describe('testing the gz3d service', function() {
+  var gz3d, rootScope;
 
   //Mock the javascript document
   document = {};
   document.getElementById = function() {
     var element = {};
-    element.appendChild = function(){};
+    element.appendChild = function() {};
     element.offsetHeight = 100;
     element.offsetWidth = 200;
     return element;
@@ -27,8 +25,12 @@ describe('testing the gz3d service', function () {
     scene: new THREE.Scene(),
     render: jasmine.createSpy('render'),
     viewManager: {
-      setCallbackCreateRenderContainer: jasmine.createSpy('setCallbackCreateRenderContainer'),
-      getViewByName: function () { return { camera: { cameraHelper: cameraHelper } }; }
+      setCallbackCreateRenderContainer: jasmine.createSpy(
+        'setCallbackCreateRenderContainer'
+      ),
+      getViewByName: function() {
+        return { camera: { cameraHelper: cameraHelper } };
+      }
     },
     getDomElement: jasmine.createSpy('getDomElement').and.returnValue({}),
     setWindowSize: jasmine.createSpy('setWindowSize')
@@ -40,12 +42,16 @@ describe('testing the gz3d service', function () {
   GZ3D.Scene = jasmine.createSpy('Scene').and.returnValue(SceneObject);
   GZ3D.Gui = jasmine.createSpy('Gui').and.returnValue(GuiObject);
   GZ3D.GZIface = jasmine.createSpy('GZIface').and.returnValue(GZIfaceObject);
-  GZ3D.SdfParser = jasmine.createSpy('SdfParser').and.returnValue(SdfParserObject);
+  GZ3D.SdfParser = jasmine
+    .createSpy('SdfParser')
+    .and.returnValue(SdfParserObject);
 
   var simulationInfo = {
     serverID: 'bbpce016',
     simulationID: 'mocked_simulation_id',
-    serverConfig: { gzweb: {assets: 'https://assets', websocket:'wss://websocket'}},
+    serverConfig: {
+      gzweb: { assets: 'https://assets', websocket: 'wss://websocket' }
+    },
     Initialize: jasmine.createSpy('Initialize')
   };
 
@@ -53,27 +59,35 @@ describe('testing the gz3d service', function () {
   bbpConfig.get = jasmine.createSpy('get').and.returnValue('toto');
 
   beforeEach(module('gz3dModule'));
-  beforeEach(module(function ($provide) {
-    $provide.value('simulationInfo', simulationInfo);
-    $provide.value('bbpConfig', bbpConfig);
-  }));
+  beforeEach(
+    module(function($provide) {
+      $provide.value('simulationInfo', simulationInfo);
+      $provide.value('bbpConfig', bbpConfig);
+    })
+  );
 
-  beforeEach(inject(function ($rootScope, _gz3d_) {
-    rootScope = $rootScope;
-    gz3d = _gz3d_;
+  beforeEach(
+    inject(function($rootScope, _gz3d_) {
+      rootScope = $rootScope;
+      gz3d = _gz3d_;
 
-    // create a mock for console
-    spyOn(console, 'error');
+      // create a mock for console
+      spyOn(console, 'error');
 
-    // Always initialize first
-    gz3d.Initialize();
-  }));
+      // Always initialize first
+      gz3d.Initialize();
+    })
+  );
 
   it('checks if all the GZ3D constructors have been called', function() {
     expect(GZ3D.Scene).toHaveBeenCalled();
     expect(GZ3D.Gui).toHaveBeenCalledWith(SceneObject);
     expect(GZ3D.GZIface).toHaveBeenCalledWith(SceneObject, GuiObject);
-    expect(GZ3D.SdfParser).toHaveBeenCalledWith(SceneObject, GuiObject , GZIfaceObject);
+    expect(GZ3D.SdfParser).toHaveBeenCalledWith(
+      SceneObject,
+      GuiObject,
+      GZIfaceObject
+    );
   });
 
   it('should Initialize', function() {
@@ -108,8 +122,7 @@ describe('testing the gz3d service', function () {
 
   it('isGlobalLightMin/MaxReached should return true or false depending on light intensity information', function() {
     var lightInfoReturnValue = { max: 0.1 };
-    gz3d.scene.findLightIntensityInfo = function()
-    {
+    gz3d.scene.findLightIntensityInfo = function() {
       return lightInfoReturnValue;
     };
     expect(gz3d.isGlobalLightMinReached()).toBe(true);
@@ -127,12 +140,16 @@ describe('testing the gz3d service', function () {
     gz3d.scene.scene.showLightHelpers = true;
     gz3d.scene.scene.add(testLightHelper);
 
-    expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(false);
+    expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(
+      false
+    );
 
     gz3d.scene.showLightHelpers = true;
 
     gz3d.setLightHelperVisibility();
 
-    expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(true);
+    expect(gz3d.scene.scene.getObjectByName('test_lightHelper').visible).toBe(
+      true
+    );
   });
 });

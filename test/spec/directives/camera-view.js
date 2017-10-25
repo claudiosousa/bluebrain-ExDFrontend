@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Directive: camera-view', function() {
-
   var $compile, $rootScope, $q;
   var refTopic = '/icub_model/right_eye_camera/image_raw';
 
@@ -18,39 +17,50 @@ describe('Directive: camera-view', function() {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
 
-  beforeEach(module(function($provide) {
-    viewMock = {
-      camera: {
-        cameraHelper: {
-          visible: false
+  beforeEach(
+    module(function($provide) {
+      viewMock = {
+        camera: {
+          cameraHelper: {
+            visible: false
+          }
         }
-      }
-    };
+      };
 
-    gz3dMock = {
-      scene: {
-        viewManager: {
-          getViewByName: jasmine.createSpy('getViewByName').and.returnValue(viewMock)
+      gz3dMock = {
+        scene: {
+          viewManager: {
+            getViewByName: jasmine
+              .createSpy('getViewByName')
+              .and.returnValue(viewMock)
+          }
         }
-      }
-    };
+      };
 
-    $provide.value('videoStreamService', videoStreamServiceMock);
-    $provide.value('gz3d', gz3dMock);
-  }));
+      $provide.value('videoStreamService', videoStreamServiceMock);
+      $provide.value('gz3d', gz3dMock);
+    })
+  );
 
   var elementScope;
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$q_) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $q = _$q_;
-  }));
-
+  beforeEach(
+    inject(function(_$rootScope_, _$compile_, _$q_) {
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
+      $q = _$q_;
+    })
+  );
 
   beforeEach(function() {
     var $scope = $rootScope.$new();
-    var element = $compile('<camera-view  topic="' + refTopic + '" camera-name=' + cameraName + '></camera-view>')($scope);
+    var element = $compile(
+      '<camera-view  topic="' +
+        refTopic +
+        '" camera-name=' +
+        cameraName +
+        '></camera-view>'
+    )($scope);
     $scope.$digest();
     elementScope = element.isolateScope();
   });
@@ -64,10 +74,12 @@ describe('Directive: camera-view', function() {
     expect(elementScope.videoUrl).toEqual(refTopic);
   });
 
- it('should have videoUrl updated on toggleServerStream()', function() {
+  it('should have videoUrl updated on toggleServerStream()', function() {
     expect(elementScope.getVideoUrlSource()).toEqual('');
     elementScope.toggleServerStream();
-    expect(elementScope.getVideoUrlSource()).toEqual('/icub_model/right_eye_camera/image_raw&t=paused1');
+    expect(elementScope.getVideoUrlSource()).toEqual(
+      '/icub_model/right_eye_camera/image_raw&t=paused1'
+    );
   });
 
   it(' - onShowFrustumChanged()', function() {
@@ -77,4 +89,3 @@ describe('Directive: camera-view', function() {
     expect(viewMock.camera.cameraHelper.visible).toEqual(true);
   });
 });
-

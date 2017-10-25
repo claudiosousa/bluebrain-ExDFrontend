@@ -24,9 +24,8 @@
 (function() {
   'use strict';
 
-  angular.module('spikeTrainModule')
-    .directive('spikeTrain', [
-      () => {
+  angular.module('spikeTrainModule').directive('spikeTrain', [
+    () => {
       return {
         templateUrl: 'components/spike-train/spike-train.template.html',
         restrict: 'E',
@@ -37,5 +36,6 @@
         controller: 'SpikeTrainController',
         controllerAs: 'vm'
       };
-    }]);
-}());
+    }
+  ]);
+})();

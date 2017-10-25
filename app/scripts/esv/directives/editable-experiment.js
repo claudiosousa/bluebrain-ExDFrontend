@@ -24,155 +24,189 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('editableExperiment', [
-      '$timeout',
-      '$window',
-      '$stateParams',
-      'clbErrorDialog',
-      'environmentService',
-      'userContextService',
-      'collabExperimentLockService',
-      'storageServer',
-      function($timeout, $window, $stateParams, clbErrorDialog, environmentService, userContextService, collabExperimentLockService, storageServer) {
-        return {
-          scope: true,
-          link: function(scope) {
+  angular.module('exdFrontendApp').directive('editableExperiment', [
+    '$timeout',
+    '$window',
+    '$stateParams',
+    'clbErrorDialog',
+    'environmentService',
+    'userContextService',
+    'collabExperimentLockService',
+    'storageServer',
+    function(
+      $timeout,
+      $window,
+      $stateParams,
+      clbErrorDialog,
+      environmentService,
+      userContextService,
+      collabExperimentLockService,
+      storageServer
+    ) {
+      return {
+        scope: true,
+        link: function(scope) {
+          scope.isSavingToCollab = false;
 
-            scope.isSavingToCollab = false;
+          let editLockEntity;
+          let lockService;
+          if (environmentService.isPrivateExperiment()) {
+            lockService = collabExperimentLockService.createLockServiceForExperimentId(
+              scope.exp.id
+            );
+          }
 
-            let editLockEntity;
-            let lockService;
-            if (environmentService.isPrivateExperiment()) {
-              lockService = collabExperimentLockService.createLockServiceForExperimentId(scope.exp.id);
+          scope.descID = 'descID';
+          scope.nameID = 'nameID';
+          scope.editing = {};
+          scope.editing[scope.descID] = false;
+          scope.editing[scope.nameID] = false;
+
+          // exposed to unit test purposes
+          scope.originalConfiguration = null;
+
+          var shouldSave = function(input, originalValue, editingKey) {
+            if (!input || input.trim().length === 0) {
+              clbErrorDialog.open({
+                type: 'InputError',
+                message: 'Name/Description of an experiment cannot be empty.'
+              });
+              return false;
             }
+            if (scope.containsTags(input)) {
+              clbErrorDialog.open({
+                type: 'InputError',
+                message:
+                  'Name/Description of an experiment cannot contain an HTML tag.'
+              });
+              return false;
+            }
+            if (input === originalValue) {
+              scope.isSavingToCollab = false;
+              scope.stopEditingExperimentDetails(editingKey);
+              return false;
+            }
+            return true;
+          };
 
-            scope.descID = "descID";
-            scope.nameID = "nameID";
-            scope.editing = {};
-            scope.editing[scope.descID] = false;
-            scope.editing[scope.nameID] = false;
+          scope.saveExperimentDetails = function(newDetails, editingKey) {
+            var originalValue =
+              editingKey === scope.nameID
+                ? scope.originalConfiguration.name
+                : scope.originalConfiguration.description;
 
-            // exposed to unit test purposes
-            scope.originalConfiguration = null;
-
-            var shouldSave = function(input, originalValue, editingKey) {
-              if (!input || input.trim().length === 0) {
-                clbErrorDialog.open({
-                  type: "InputError",
-                  message: "Name/Description of an experiment cannot be empty."
-                });
-                return false;
-              }
-              if (scope.containsTags(input)) {
-                clbErrorDialog.open({
-                  type: "InputError",
-                  message: "Name/Description of an experiment cannot contain an HTML tag."
-                });
-                return false;
-              }
-              if (input === originalValue) {
-                scope.isSavingToCollab = false;
-                scope.stopEditingExperimentDetails(editingKey);
-                return false;
-              }
-              return true;
-            };
-
-            scope.saveExperimentDetails = function(newDetails, editingKey) {
-              var originalValue = editingKey === scope.nameID ? scope.originalConfiguration.name : scope.originalConfiguration.description;
-
-              if (!shouldSave(newDetails, originalValue, editingKey)) {
-                return;
-              }
-              scope.isSavingToCollab = true;
-              if (!scope.exp.configuration.experimentFile) {
-                clbErrorDialog.open({
-                  type: "Error",
-                  message: "Something went wrong when retrieving the experiment_configuration.exc file from the collab storage. Please check the file exists and is not empty."
-                });
-                scope.isSavingToCollab = false;
-                return;
-              }
-              var xml = scope.exp.configuration.experimentFile;
-              xml = xml.replace(originalValue, newDetails);
-              storageServer.setFileContent(scope.exp.id, 'experiment_configuration.exc', xml, true)
-                .then(function(response) {
+            if (!shouldSave(newDetails, originalValue, editingKey)) {
+              return;
+            }
+            scope.isSavingToCollab = true;
+            if (!scope.exp.configuration.experimentFile) {
+              clbErrorDialog.open({
+                type: 'Error',
+                message:
+                  'Something went wrong when retrieving the experiment_configuration.exc file from the collab storage. Please check the file exists and is not empty.'
+              });
+              scope.isSavingToCollab = false;
+              return;
+            }
+            var xml = scope.exp.configuration.experimentFile;
+            xml = xml.replace(originalValue, newDetails);
+            storageServer
+              .setFileContent(
+                scope.exp.id,
+                'experiment_configuration.exc',
+                xml,
+                true
+              )
+              .then(
+                function(response) {
                   scope.isSavingToCollab = false;
                   scope.exp.configuration.experimentFile = xml;
                   scope.stopEditingExperimentDetails(editingKey);
-                }, function() {
+                },
+                function() {
                   if (editingKey === scope.nameID) {
                     scope.exp.configuration.name = originalValue;
-                  }
-                  else {
+                  } else {
                     scope.exp.configuration.description = originalValue;
                   }
 
                   scope.isSavingToCollab = false;
                   clbErrorDialog.open({
-                    type: "CollabSaveError",
-                    message: "Error while saving updated experiment details to Collab storage."
+                    type: 'CollabSaveError',
+                    message:
+                      'Error while saving updated experiment details to Collab storage.'
                   });
+                }
+              );
+          };
+
+          scope.containsTags = function(input) {
+            var div = document.createElement('div');
+            div.innerHTML = input;
+            return div.innerText !== input;
+          };
+
+          scope.stopEditingExperimentDetails = function(editingKey) {
+            lockService &&
+              lockService.releaseLock().catch(function() {
+                clbErrorDialog.open({
+                  type: 'CollabError',
+                  message:
+                    'The edit lock could not be released. Please remove it manually from the Storage area.'
                 });
-            };
+              });
+            scope.editing[editingKey] = false;
+          };
 
-            scope.containsTags = function(input) {
-              var div = document.createElement("div");
-              div.innerHTML = input;
-              return div.innerText !== input;
-            };
-
-            scope.stopEditingExperimentDetails = function(editingKey) {
-              lockService && lockService.releaseLock()
+          scope.editExperiment = function(elementID) {
+            if (lockService) {
+              scope.loadingEdit = true;
+              lockService
+                .tryAddLock()
+                .then(function(result) {
+                  if (
+                    !result.success &&
+                    result.lock &&
+                    result.lock.lockInfo.user.id !== scope.userinfo.userID
+                  ) {
+                    // save uuid
+                    editLockEntity = result.lock.lockInfo.entity;
+                    clbErrorDialog.open({
+                      type: 'AlreadyEditingError',
+                      message:
+                        'Sorry you cannot edit at this time. Only one user can edit at a time and ' +
+                        result.lock.lockInfo.user.displayName +
+                        ' started editing ' +
+                        moment(new Date(result.lock.lockInfo.date)).fromNow() +
+                        '. Please try again later.'
+                    });
+                  } else {
+                    editLockEntity = null;
+                    scope.loadingEdit = false;
+                    scope.editing[elementID] = true;
+                    scope.originalConfiguration = {
+                      name: scope.exp.configuration.name,
+                      description: scope.exp.configuration.description
+                    };
+                    $timeout(function() {
+                      $window.document.getElementById(elementID).focus();
+                    }, 0);
+                  }
+                })
                 .catch(function() {
                   clbErrorDialog.open({
-                    type: "CollabError",
-                    message: "The edit lock could not be released. Please remove it manually from the Storage area."
+                    type: 'CollabError',
+                    message:
+                      'There was an error in opening the edit feature, please try again later.'
                   });
+                })
+                .finally(function() {
+                  scope.loadingEdit = false;
                 });
-              scope.editing[editingKey] = false;
-            };
-
-            scope.editExperiment = function(elementID) {
-              if (lockService) {
-                scope.loadingEdit = true;
-                lockService.tryAddLock()
-                  .then(function(result) {
-                    if (!result.success && result.lock && result.lock.lockInfo.user.id !== scope.userinfo.userID) {
-                      // save uuid
-                      editLockEntity = result.lock.lockInfo.entity;
-                      clbErrorDialog.open({
-                        type: "AlreadyEditingError",
-                        message: "Sorry you cannot edit at this time. Only one user can edit at a time and " + result.lock.lockInfo.user.displayName + " started editing " + moment(new Date(result.lock.lockInfo.date)).fromNow() + ". Please try again later."
-                      });
-                    }
-                    else {
-                      editLockEntity = null;
-                      scope.loadingEdit = false;
-                      scope.editing[elementID] = true;
-                      scope.originalConfiguration = {
-                        name: scope.exp.configuration.name,
-                        description: scope.exp.configuration.description
-                      };
-                      $timeout(function() {
-                        $window.document.getElementById(elementID).focus();
-                      }, 0);
-                    }
-                  })
-                  .catch(function() {
-                    clbErrorDialog.open({
-                      type: "CollabError",
-                      message: "There was an error in opening the edit feature, please try again later."
-                    });
-                  })
-                  .finally(function() {
-                    scope.loadingEdit = false;
-                  });
-              }
-            };
-          }
-        };
-      }
-    ]);
-}());
+            }
+          };
+        }
+      };
+    }
+  ]);
+})();

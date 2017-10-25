@@ -21,45 +21,51 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
-  angular.module('exdFrontendApp')
-    .controller('esvExperimentsCtrl', [
-      '$scope',
-      '$location',
-      '$timeout',
-      'environmentService',
-      'storageServer',
-      'clbErrorDialog',
-      function ($scope, $location, $timeout, environmentService, storageServer, clbErrorDialog) {
+  angular.module('exdFrontendApp').controller('esvExperimentsCtrl', [
+    '$scope',
+    '$location',
+    '$timeout',
+    'environmentService',
+    'storageServer',
+    'clbErrorDialog',
+    function(
+      $scope,
+      $location,
+      $timeout,
+      environmentService,
+      storageServer,
+      clbErrorDialog
+    ) {
+      $scope.reloadExperiments = privateExperiment => {
+        $scope.showExperiments = false;
+        $scope.loadPrivateExperiments = privateExperiment;
+        if (privateExperiment) $scope.cloningAnotherExperiement = false;
+        $timeout(() => ($scope.showExperiments = true));
+      };
 
-    $scope.reloadExperiments = privateExperiment => {
-      $scope.showExperiments = false;
-      $scope.loadPrivateExperiments = privateExperiment;
-      if (privateExperiment)
-        $scope.cloningAnotherExperiement = false;
-      $timeout(() => $scope.showExperiments = true);
-    };
+      if (environmentService.isPrivateExperiment()) {
+        storageServer
+          .getExperiments()
+          .then(response => $scope.reloadExperiments(!!response.length))
+          .catch(err =>
+            clbErrorDialog.open({
+              type: 'Private experiment error',
+              message: 'Failed to retrieve private experiments'
+            })
+          );
+      } else $scope.reloadExperiments(false);
 
-    if (environmentService.isPrivateExperiment()) {
-      storageServer.getExperiments()
-        .then(response => $scope.reloadExperiments(!!response.length))
-        .catch(err => clbErrorDialog.open({
-          type: 'Private experiment error',
-          message: 'Failed to retrieve private experiments'
-        }));
-    } else
-      $scope.reloadExperiments(false);
+      $scope.cloneAnotherExperiment = () => {
+        $scope.reloadExperiments(false);
+        $scope.cloningAnotherExperiement = true;
+      };
 
-    $scope.cloneAnotherExperiment = () => {
-      $scope.reloadExperiments(false);
-      $scope.cloningAnotherExperiement = true;
-    };
-
-    $scope.directToExperimentsExplorer = () => {
-      let experimentExplorerPath = 'experiment-explorer';
-      $location.path(experimentExplorerPath);
-    };
-  }
-    ]);
+      $scope.directToExperimentsExplorer = () => {
+        let experimentExplorerPath = 'experiment-explorer';
+        $location.path(experimentExplorerPath);
+      };
+    }
+  ]);
 })();

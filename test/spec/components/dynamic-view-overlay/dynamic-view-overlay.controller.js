@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Controller: DynamicViewOverlayController', function() {
-
   var $compile, $rootScope, $scope, $q;
   var DYNAMIC_VIEW_CHANNELS;
   var element, overlayController, dynamicViewController;
@@ -15,21 +14,27 @@ describe('Controller: DynamicViewOverlayController', function() {
       height: 500
     },
     isResizeable: false,
-    allowMultipleViews: false, // default true
+    allowMultipleViews: false // default true
   };
   beforeEach(module('dynamicViewOverlayModule'));
   beforeEach(module('exd.templates'));
   beforeEach(module('dynamicViewOverlayServiceMock'));
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$q_,
-                             _DYNAMIC_VIEW_CHANNELS_,
-                             _dynamicViewOverlayService_) {
-    $rootScope = _$rootScope_;
-    $compile = _$compile_;
-    $q = _$q_;
-    DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
-    dynamicViewOverlayService = _dynamicViewOverlayService_;
-  }));
+  beforeEach(
+    inject(function(
+      _$rootScope_,
+      _$compile_,
+      _$q_,
+      _DYNAMIC_VIEW_CHANNELS_,
+      _dynamicViewOverlayService_
+    ) {
+      $rootScope = _$rootScope_;
+      $compile = _$compile_;
+      $q = _$q_;
+      DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
+      dynamicViewOverlayService = _dynamicViewOverlayService_;
+    })
+  );
 
   beforeEach(function() {
     $scope = $rootScope.$new();
@@ -37,7 +42,9 @@ describe('Controller: DynamicViewOverlayController', function() {
     $scope.$digest();
 
     overlayController = element.controller('dynamicViewOverlay');
-    dynamicViewController = overlayController.dynamicViewElement.controller('dynamicView');
+    dynamicViewController = overlayController.dynamicViewElement.controller(
+      'dynamicView'
+    );
   });
 
   beforeEach(function() {
@@ -66,7 +73,9 @@ describe('Controller: DynamicViewOverlayController', function() {
   it(' - closeOverlay()', function() {
     overlayController.closeOverlay();
     expect(overlayController.onDestroy).toHaveBeenCalled();
-    expect(dynamicViewOverlayService.removeOverlay).toHaveBeenCalledWith(overlayController.$element[0].id);
+    expect(dynamicViewOverlayService.removeOverlay).toHaveBeenCalledWith(
+      overlayController.$element[0].id
+    );
   });
 
   it(' - setDynamicViewChannel()', function() {
@@ -75,13 +84,17 @@ describe('Controller: DynamicViewOverlayController', function() {
     spyOn(overlayController, 'randomizePosition');
 
     var deferredController = $q.defer();
-    dynamicViewOverlayService.getController.and.returnValue(deferredController.promise);
+    dynamicViewOverlayService.getController.and.returnValue(
+      deferredController.promise
+    );
 
     overlayController.setDynamicViewChannel(TEST_DUMMY);
     deferredController.resolve(dynamicViewController);
     $scope.$digest();
 
-    expect(dynamicViewController.setViewContentViaChannelType).toHaveBeenCalledWith(TEST_DUMMY);
+    expect(
+      dynamicViewController.setViewContentViaChannelType
+    ).toHaveBeenCalledWith(TEST_DUMMY);
     expect(overlayController.channelType).toBe(TEST_DUMMY);
     expect(overlayController.applyChannelDefaults).toHaveBeenCalled();
     expect(overlayController.randomizePosition).toHaveBeenCalled();
@@ -97,16 +110,24 @@ describe('Controller: DynamicViewOverlayController', function() {
   });
 
   it(' - applyChannelDefaults()', function() {
-    var mockWrapper = {style: {width: '20px', height: '10px'}};
+    var mockWrapper = { style: { width: '20px', height: '10px' } };
     spyOn(element[0], 'getElementsByClassName').and.returnValue([mockWrapper]);
 
     overlayController.channelType = DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN;
     overlayController.applyChannelDefaults();
 
-    expect(mockWrapper.style.width).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.width + 'px');
-    expect(mockWrapper.style.height).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.height + 'px');
-    expect(mockWrapper.style.minWidth).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.minWidth + 'px');
-    expect(mockWrapper.style.minHeight).toBe(DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.minHeight + 'px');
+    expect(mockWrapper.style.width).toBe(
+      DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.width + 'px'
+    );
+    expect(mockWrapper.style.height).toBe(
+      DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.height + 'px'
+    );
+    expect(mockWrapper.style.minWidth).toBe(
+      DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.minWidth + 'px'
+    );
+    expect(mockWrapper.style.minHeight).toBe(
+      DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN.overlayDefaultSize.minHeight + 'px'
+    );
   });
 
   it(' - randomizePosition(), channel is not resizeable', function() {
@@ -119,23 +140,33 @@ describe('Controller: DynamicViewOverlayController', function() {
 
   it(' - randomizePosition()', function() {
     var mockWrapper = {
-      style: {width: '20px', height: '10px'},
+      style: { width: '20px', height: '10px' },
       clientWidth: 20,
       clientHeight: 10
     };
     spyOn(element[0], 'getElementsByClassName').and.returnValue([mockWrapper]);
 
-    var mockAngularWrapper = {css: jasmine.createSpy('css')};
-    var angularElementSpy = spyOn(angular, 'element').and.returnValue(mockAngularWrapper);
+    var mockAngularWrapper = { css: jasmine.createSpy('css') };
+    var angularElementSpy = spyOn(angular, 'element').and.returnValue(
+      mockAngularWrapper
+    );
 
-    var mockWrapperParent = {clientWidth: 100, clientHeight: 100};
-    dynamicViewOverlayService.getOverlayParentElement.and.returnValue([mockWrapperParent]);
+    var mockWrapperParent = { clientWidth: 100, clientHeight: 100 };
+    dynamicViewOverlayService.getOverlayParentElement.and.returnValue([
+      mockWrapperParent
+    ]);
 
     overlayController.channelType = DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN;
     overlayController.randomizePosition();
 
-    expect(mockAngularWrapper.css).toHaveBeenCalledWith('left', jasmine.any(Number));
-    expect(mockAngularWrapper.css).toHaveBeenCalledWith('top', jasmine.any(Number));
+    expect(mockAngularWrapper.css).toHaveBeenCalledWith(
+      'left',
+      jasmine.any(Number)
+    );
+    expect(mockAngularWrapper.css).toHaveBeenCalledWith(
+      'top',
+      jasmine.any(Number)
+    );
 
     angularElementSpy.and.callThrough();
   });

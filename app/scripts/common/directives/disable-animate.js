@@ -24,6 +24,10 @@
 (function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('disableAnimate', ['$animate', $animate => (scope, element) => $animate.enabled(false, element)]);
-}());
+  angular
+    .module('exdFrontendApp')
+    .directive('disableAnimate', [
+      '$animate',
+      $animate => (scope, element) => $animate.enabled(false, element)
+    ]);
+})();

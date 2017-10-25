@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   angular.module('exdFrontendApp').controller('brainvisualizerPanelCtrl', [
@@ -29,15 +29,14 @@
     '$scope',
     'simulationInfo',
     'editorToolbarService',
-    function ($rootScope,
-              $scope,
-              simulationInfo,
-              editorToolbarService) {
-
+    function($rootScope, $scope, simulationInfo, editorToolbarService) {
       $scope.simulationID = simulationInfo.simulationID;
       $scope.serverBaseUrl = simulationInfo.serverBaseUrl;
 
-      $scope.$on('$destroy', () => editorToolbarService.showBrainvisualizerPanel = false);
-
-    }]);
-}());
+      $scope.$on(
+        '$destroy',
+        () => (editorToolbarService.showBrainvisualizerPanel = false)
+      );
+    }
+  ]);
+})();

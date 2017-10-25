@@ -21,38 +21,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "environment-settings-panel.style";
+@import 'environment-settings-panel.style';
 
 .environment-settings-color-reset {
-  margin:10px 10px 10px 70px;
+  margin: 10px 10px 10px 70px;
 }
 
 .environment-settings-color-wrapper {
-  display:flex;
+  display: flex;
 }
 
 .environment-settings-color-curves {
-   width: 340px;
-   min-width: 100px;
-   flex-shrink: 0;
+  width: 340px;
+  min-width: 100px;
+  flex-shrink: 0;
 }
 
 .environment-settings-color-levels {
-   width: 50%;
-   min-width: 200px;
-   max-width: 250px;
-   flex-grow: 1;
-   margin:32px 0px 0px 0px;
+  width: 50%;
+  min-width: 200px;
+  max-width: 250px;
+  flex-grow: 1;
+  margin: 32px 0px 0px 0px;
 }
 
 .environment-settings-color-levels-title {
-    font-weight: normal;
-    font-size: 16px;
-    font-family: 'Gotham', sans-serif;
-  }
+  font-weight: normal;
+  font-size: 16px;
+  font-family: 'Gotham', sans-serif;
+}
 
 .environment-settings-color-levels label {
-    font-weight: normal;
-    font-size: 12px;
-    font-family: 'Gotham', sans-serif;
+  font-weight: normal;
+  font-size: 12px;
+  font-family: 'Gotham', sans-serif;
 }

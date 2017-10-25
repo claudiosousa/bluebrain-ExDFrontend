@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
   /* global console: false */
@@ -32,9 +32,16 @@
   const LOG_INTERVAL = 500;
 
   class LogConsoleController {
-
-    constructor($scope, $timeout, $element, stateService, clientLoggerService, editorToolbarService, STATE,
-      LOG_TYPE) {
+    constructor(
+      $scope,
+      $timeout,
+      $element,
+      stateService,
+      clientLoggerService,
+      editorToolbarService,
+      STATE,
+      LOG_TYPE
+    ) {
       this.logs = [];
       this.stateService = stateService;
       this.STATE = STATE;
@@ -56,35 +63,40 @@
 
       const that = this;
 
-      this.newMessagesReceived = function (messages) {
+      this.newMessagesReceived = function(messages) {
         $timeout(() => {
           that.logs.splice(that.logs.length, 0, ...messages);
           //remove extra logs
           that.logs.splice(0, that.logs.length - MAX_VISIBLE_LOGS);
 
           //set vertical scroll to bottom after new log current log is at the bottom
-          if (logList.scrollHeight - (logList.scrollTop + logList.clientHeight) < AUTO_SCROLL_MAX_DISTANCE) {
-            setTimeout(() => logList.scrollTop = logList.scrollHeight);
+          if (
+            logList.scrollHeight - (logList.scrollTop + logList.clientHeight) <
+            AUTO_SCROLL_MAX_DISTANCE
+          ) {
+            setTimeout(() => (logList.scrollTop = logList.scrollHeight));
           }
         });
       };
 
-      $scope.$on('$destroy', function () {
+      $scope.$on('$destroy', function() {
         logSubscription.unsubscribe();
         editorToolbarService.showLogConsole = false;
       });
     }
   }
 
-  angular.module('clientLoggerModule').controller('LogConsoleController', [
-    '$scope',
-    '$timeout',
-    '$element',
-    'stateService',
-    'clientLoggerService',
-    'editorToolbarService',
-    'STATE',
-    'LOG_TYPE',
-    (...args) => new LogConsoleController(...args)
-  ]);
+  angular
+    .module('clientLoggerModule')
+    .controller('LogConsoleController', [
+      '$scope',
+      '$timeout',
+      '$element',
+      'stateService',
+      'clientLoggerService',
+      'editorToolbarService',
+      'STATE',
+      'LOG_TYPE',
+      (...args) => new LogConsoleController(...args)
+    ]);
 })();

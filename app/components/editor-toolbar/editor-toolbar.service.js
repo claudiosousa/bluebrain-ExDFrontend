@@ -25,8 +25,11 @@
   'use strict';
 
   class EditorToolbarService {
-
-    constructor(dynamicViewOverlayService, editorsPanelService, DYNAMIC_VIEW_CHANNELS) {
+    constructor(
+      dynamicViewOverlayService,
+      editorsPanelService,
+      DYNAMIC_VIEW_CHANNELS
+    ) {
       this.showBrainvisualizerPanel = false;
       this.showLogConsole = false;
       this.showEnvironmentSettingsPanel = false;
@@ -43,83 +46,105 @@
       this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
     }
 
-    get isBrainVisualizerActive()
-    {
+    get isBrainVisualizerActive() {
       return this.showBrainvisualizerPanel;
     }
 
-    get isLogConsoleActive()
-    {
+    get isLogConsoleActive() {
       return this.showLogConsole;
     }
 
-    get isEnvironmentSettingsPanelActive()
-    {
+    get isEnvironmentSettingsPanelActive() {
       return this.showEnvironmentSettingsPanel;
     }
 
-    get isSpikeTrainActive()
-    {
+    get isSpikeTrainActive() {
       return this.showSpikeTrain;
     }
 
-    get isNavigationModeMenuActive()
-    {
+    get isNavigationModeMenuActive() {
       return this.showNavigationModeMenu;
     }
 
-    get isPerformanceViewActive()
-    {
+    get isPerformanceViewActive() {
       return this.showPerformanceView;
     }
 
     toggleLogConsole() {
-      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE).then(state => {
-        this.showLogConsole = !state;
-        if(state) {
-          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
-        } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE);
-        }
-      });
+      this.dynamicViewOverlayService
+        .isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE)
+        .then(state => {
+          this.showLogConsole = !state;
+          if (state) {
+            this.dynamicViewOverlayService.closeAllOverlaysOfType(
+              this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE
+            );
+          } else {
+            this.dynamicViewOverlayService.createDynamicOverlay(
+              this.DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE
+            );
+          }
+        });
     }
 
     toggleBrainvisualizer() {
-      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER).then(state => {
-        this.showBrainvisualizerPanel = !state;
-        if(state) {
-          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
-        } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER);
-        }
-      });
+      this.dynamicViewOverlayService
+        .isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER)
+        .then(state => {
+          this.showBrainvisualizerPanel = !state;
+          if (state) {
+            this.dynamicViewOverlayService.closeAllOverlaysOfType(
+              this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER
+            );
+          } else {
+            this.dynamicViewOverlayService.createDynamicOverlay(
+              this.DYNAMIC_VIEW_CHANNELS.BRAIN_VISUALIZER
+            );
+          }
+        });
     }
 
     toggleSpikeTrain() {
-      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN).then(state => {
-        this.showSpikeTrain = !state;
-        if(state) {
-          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
-        } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN);
-        }
-      });
+      this.dynamicViewOverlayService
+        .isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN)
+        .then(state => {
+          this.showSpikeTrain = !state;
+          if (state) {
+            this.dynamicViewOverlayService.closeAllOverlaysOfType(
+              this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN
+            );
+          } else {
+            this.dynamicViewOverlayService.createDynamicOverlay(
+              this.DYNAMIC_VIEW_CHANNELS.SPIKE_TRAIN
+            );
+          }
+        });
     }
 
     togglePerformanceView() {
-      this.dynamicViewOverlayService.isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR).then(state => {
-        this.showPerformanceView = !state;
-        if (state) {
-          this.dynamicViewOverlayService.closeAllOverlaysOfType(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR);
-        } else {
-          this.dynamicViewOverlayService.createDynamicOverlay(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR);
-        }
-      });
+      this.dynamicViewOverlayService
+        .isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR)
+        .then(state => {
+          this.showPerformanceView = !state;
+          if (state) {
+            this.dynamicViewOverlayService.closeAllOverlaysOfType(
+              this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR
+            );
+          } else {
+            this.dynamicViewOverlayService.createDynamicOverlay(
+              this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR
+            );
+          }
+        });
     }
   }
 
-  angular.module('editorToolbarModule')
-  .service('editorToolbarService', ['dynamicViewOverlayService', 'editorsPanelService', 'DYNAMIC_VIEW_CHANNELS',
-    (...args) => new EditorToolbarService(...args)]);
-
-}());
+  angular
+    .module('editorToolbarModule')
+    .service('editorToolbarService', [
+      'dynamicViewOverlayService',
+      'editorsPanelService',
+      'DYNAMIC_VIEW_CHANNELS',
+      (...args) => new EditorToolbarService(...args)
+    ]);
+})();

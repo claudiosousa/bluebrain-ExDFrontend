@@ -21,18 +21,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .directive('brainvisualizerPanel', [
-      function () {
-        return {
-          templateUrl: 'components/brain-visualizer/brain-visualizer-panel.template.html',
-          restrict: 'E',
-          scope: true,  // create a child scope for the directive and inherits the parent scope properties
-          controller: 'brainvisualizerPanelCtrl',
-        };
-      }
-    ]);
-}());
+  angular.module('exdFrontendApp').directive('brainvisualizerPanel', [
+    function() {
+      return {
+        templateUrl:
+          'components/brain-visualizer/brain-visualizer-panel.template.html',
+        restrict: 'E',
+        scope: true, // create a child scope for the directive and inherits the parent scope properties
+        controller: 'brainvisualizerPanelCtrl'
+      };
+    }
+  ]);
+})();

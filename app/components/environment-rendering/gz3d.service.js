@@ -28,27 +28,28 @@
 
 /* global self: false */
 
-
-(function () {
+(function() {
   'use strict';
 
   var gz3dModule = angular.module('gz3dModule');
 
   gz3dModule.factory('gz3d', [
-    '$rootScope', '$window', '$compile', 'simulationInfo', 'bbpConfig',
-    function ($rootScope, $window, $compile, simulationInfo, bbpConfig) {
-
+    '$rootScope',
+    '$window',
+    '$compile',
+    'simulationInfo',
+    'bbpConfig',
+    function($rootScope, $window, $compile, simulationInfo, bbpConfig) {
       /* moved from the gz3d-view.html*/
       if (!Detector.webgl) {
         Detector.addGetWebGLMessage();
       }
 
       function GZ3DService() {
-
         var that = this;
         var isInitialized = false;
 
-        this.isGlobalLightMaxReached = function () {
+        this.isGlobalLightMaxReached = function() {
           if (that.scene === undefined) {
             return false;
           }
@@ -57,13 +58,12 @@
 
           if (linfo.max >= 1.0) {
             return true;
-          }
-          else {
+          } else {
             return false;
           }
         };
 
-        this.isGlobalLightMinReached = function () {
+        this.isGlobalLightMinReached = function() {
           if (that.scene === undefined) {
             return false;
           }
@@ -71,16 +71,15 @@
           var linfo = this.scene.findLightIntensityInfo();
           if (linfo.max <= 0.1) {
             return true;
-          }
-          else {
+          } else {
             return false;
           }
         };
 
-        this.setLightHelperVisibility = function () {
-          that.scene.scene.traverse(function (node) {
+        this.setLightHelperVisibility = function() {
+          that.scene.scene.traverse(function(node) {
             if (node.name.indexOf('_lightHelper') > -1) {
-              node.visible = that.scene.showLightHelpers;  //TODO: showLightHelpers should be part of this service?
+              node.visible = that.scene.showLightHelpers; //TODO: showLightHelpers should be part of this service?
             }
           });
         };
@@ -96,10 +95,14 @@
 
           var token;
           var clientID = bbpConfig.get('auth.clientId', '');
-          var localStorageTokenKey = 'tokens-' + clientID + '@https://services.humanbrainproject.eu/oidc';
+          var localStorageTokenKey =
+            'tokens-' +
+            clientID +
+            '@https://services.humanbrainproject.eu/oidc';
           if (localStorage.getItem(localStorageTokenKey)) {
             try {
-              token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0].access_token;
+              token = JSON.parse(localStorage.getItem(localStorageTokenKey))[0]
+                .access_token;
             } catch (e) {
               // this token will be rejected by the server and the client will get a proper auth error
               token = 'malformed-token';
@@ -132,5 +135,6 @@
       }
 
       return new GZ3DService();
-  }]);
-}());
+    }
+  ]);
+})();

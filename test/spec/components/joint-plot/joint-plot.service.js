@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Service: joint-service', function() {
-
   var rosLibConnectionObject = {
     subscribe: jasmine.createSpy('subscribe'),
     unsubscribe: jasmine.createSpy('unsubscribe')
@@ -9,21 +8,27 @@ describe('Service: joint-service', function() {
 
   var roslibMock = {
     getOrCreateConnectionTo: jasmine.createSpy('getOrCreateConnectionTo'),
-    createTopic: jasmine.createSpy('createTopic').and.returnValue(rosLibConnectionObject)
+    createTopic: jasmine
+      .createSpy('createTopic')
+      .and.returnValue(rosLibConnectionObject)
   };
 
   beforeEach(module('simulationInfoMock'));
 
-  beforeEach(module(function($provide) {
-    $provide.value('roslib', roslibMock);
-  }));
+  beforeEach(
+    module(function($provide) {
+      $provide.value('roslib', roslibMock);
+    })
+  );
 
   beforeEach(module('jointPlotModule'));
 
   var jointService;
-  beforeEach(inject(function(_jointService_) {
-    jointService = _jointService_;
-  }));
+  beforeEach(
+    inject(function(_jointService_) {
+      jointService = _jointService_;
+    })
+  );
 
   beforeEach(function() {
     rosLibConnectionObject.subscribe.calls.reset();
@@ -69,7 +74,7 @@ describe('Service: joint-service', function() {
     expect(jointService.callbacks.length).toBe(1);
 
     expect(jointMessageCallback).not.toHaveBeenCalled();
-    jointService.parseMessages({'header':{'stamp':{'secs':1000,'nsecs':0}}});
+    jointService.parseMessages({ header: { stamp: { secs: 1000, nsecs: 0 } } });
     expect(jointMessageCallback).toHaveBeenCalled();
   });
 });

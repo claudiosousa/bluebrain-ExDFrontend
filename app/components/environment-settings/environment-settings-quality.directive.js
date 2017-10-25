@@ -21,80 +21,80 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function ()
-{
+(function() {
   'use strict';
-  angular.module('exdFrontendApp')
-    .directive('environmentSettingsQuality', ['gz3d', 'nrpAnalytics',
-      'editorToolbarService',
-      function (gz3d, nrpAnalytics, editorToolbarService)
-      {
-        return {
-          templateUrl: 'components/environment-settings/environment-settings-quality.template.html',
-          restrict: 'E',
-          scope: true,
-          link: function (scope, element, attrs)
-          {
-            scope.editorToolbarService = editorToolbarService;
+  angular.module('exdFrontendApp').directive('environmentSettingsQuality', [
+    'gz3d',
+    'nrpAnalytics',
+    'editorToolbarService',
+    function(gz3d, nrpAnalytics, editorToolbarService) {
+      return {
+        templateUrl:
+          'components/environment-settings/environment-settings-quality.template.html',
+        restrict: 'E',
+        scope: true,
+        link: function(scope, element, attrs) {
+          scope.editorToolbarService = editorToolbarService;
 
-            //----------------------------------------------
-            // Init the values
+          //----------------------------------------------
+          // Init the values
 
-            scope.composerSettingsToUI = function ()
-            {
-              if (editorToolbarService.showEnvironmentSettingsPanel)
-              {
-                var cs = gz3d.scene.composerSettings;
+          scope.composerSettingsToUI = function() {
+            if (editorToolbarService.showEnvironmentSettingsPanel) {
+              var cs = gz3d.scene.composerSettings;
 
-                scope.renderShadows = cs.shadows;
-                scope.renderAmbientOcclusion = cs.ssao;
-                scope.ambientOcclusionClamp = cs.ssaoClamp;
-                scope.ambientOcclusionLum = cs.ssaoLumInfluence;
-                scope.antiAliasingEnabled = cs.antiAliasing;
-                scope.renderPBR = cs.pbrMaterial===undefined?false:cs.pbrMaterial;
-              }
-            };
+              scope.renderShadows = cs.shadows;
+              scope.renderAmbientOcclusion = cs.ssao;
+              scope.ambientOcclusionClamp = cs.ssaoClamp;
+              scope.ambientOcclusionLum = cs.ssaoLumInfluence;
+              scope.antiAliasingEnabled = cs.antiAliasing;
+              scope.renderPBR =
+                cs.pbrMaterial === undefined ? false : cs.pbrMaterial;
+            }
+          };
 
-            scope.$watch('editorToolbarService.showEnvironmentSettingsPanel', function ()
-            {
+          scope.$watch(
+            'editorToolbarService.showEnvironmentSettingsPanel',
+            function() {
               scope.composerSettingsToUI();
-            });
+            }
+          );
 
-            scope.$watch('gz3d.scene.composerSettings', function ()
-            {
-              scope.composerSettingsToUI();
-            });
+          scope.$watch('gz3d.scene.composerSettings', function() {
+            scope.composerSettingsToUI();
+          });
 
+          //----------------------------------------------
+          // UI to 3D scene
 
-            //----------------------------------------------
-            // UI to 3D scene
+          scope.updateEnvQualitySettings = function() {
+            var change = false;
+            // Consider a change in ambient occlusion as a color setting, so call applyComposerSettings with first argument "updateColorCurve"" as true
+            if (
+              gz3d.scene.composerSettings.ssaoClamp !==
+                scope.ambientOcclusionClamp ||
+              gz3d.scene.composerSettings.ssaoLumInfluence !==
+                scope.ambientOcclusionLum
+            ) {
+              change = true;
+            }
+            gz3d.scene.composerSettings.shadows = scope.renderShadows;
+            gz3d.scene.composerSettings.ssao = scope.renderAmbientOcclusion;
+            gz3d.scene.composerSettings.ssaoClamp = scope.ambientOcclusionClamp;
+            gz3d.scene.composerSettings.ssaoLumInfluence =
+              scope.ambientOcclusionLum;
+            gz3d.scene.composerSettings.antiAliasing =
+              scope.antiAliasingEnabled;
+            gz3d.scene.composerSettings.pbrMaterial = scope.renderPBR;
 
-            scope.updateEnvQualitySettings = function ()
-            {
-              var change = false;
-              // Consider a change in ambient occlusion as a color setting, so call applyComposerSettings with first argument "updateColorCurve"" as true
-              if ((gz3d.scene.composerSettings.ssaoClamp !== scope.ambientOcclusionClamp) || (gz3d.scene.composerSettings.ssaoLumInfluence !== scope.ambientOcclusionLum))
-              {
-                change = true;
-              }
-              gz3d.scene.composerSettings.shadows = scope.renderShadows;
-              gz3d.scene.composerSettings.ssao = scope.renderAmbientOcclusion;
-              gz3d.scene.composerSettings.ssaoClamp = scope.ambientOcclusionClamp;
-              gz3d.scene.composerSettings.ssaoLumInfluence = scope.ambientOcclusionLum;
-              gz3d.scene.composerSettings.antiAliasing = scope.antiAliasingEnabled;
-              gz3d.scene.composerSettings.pbrMaterial = scope.renderPBR;
-
-              if (change!==true)
-              {
-                gz3d.scene.applyComposerSettings();
-              }
-              else
-              {
-                gz3d.scene.applyComposerSettings(undefined,undefined,true);
-              }
-            };
-          }
-        };
-      }
-    ]);
-} ());
+            if (change !== true) {
+              gz3d.scene.applyComposerSettings();
+            } else {
+              gz3d.scene.applyComposerSettings(undefined, undefined, true);
+            }
+          };
+        }
+      };
+    }
+  ]);
+})();

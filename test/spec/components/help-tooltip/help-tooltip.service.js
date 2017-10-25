@@ -1,20 +1,19 @@
 'use strict';
 
 describe('Service: help-service', function() {
-
   beforeEach(module('helpTooltipModule'));
 
-  var nrpAnalytics,
-    helpTooltipService,
-    HELP_CODES;
+  var nrpAnalytics, helpTooltipService, HELP_CODES;
 
-  beforeEach(inject(function(_nrpAnalytics_, _helpTooltipService_, _HELP_CODES_) {
-    nrpAnalytics = _nrpAnalytics_;
-    helpTooltipService = _helpTooltipService_;
-    HELP_CODES = _HELP_CODES_;
+  beforeEach(
+    inject(function(_nrpAnalytics_, _helpTooltipService_, _HELP_CODES_) {
+      nrpAnalytics = _nrpAnalytics_;
+      helpTooltipService = _helpTooltipService_;
+      HELP_CODES = _HELP_CODES_;
 
-    spyOn(nrpAnalytics, 'eventTrack');
-  }));
+      spyOn(nrpAnalytics, 'eventTrack');
+    })
+  );
 
   it('should be invisible by default ', function() {
     expect(helpTooltipService.visible).toBe(false);
@@ -92,11 +91,11 @@ describe('Service: help-service', function() {
     expect(helpTooltipService.visible).not.toBe(false);
 
     var event = $.Event('keydown');
-    event.keyCode = 65;//Non escape key
+    event.keyCode = 65; //Non escape key
     $(window).trigger(event);
     expect(helpTooltipService.visible).not.toBe(false);
 
-    event.keyCode = 27;//Escape key
+    event.keyCode = 27; //Escape key
     $(window).trigger(event);
     expect(helpTooltipService.visible).toBe(false);
   });

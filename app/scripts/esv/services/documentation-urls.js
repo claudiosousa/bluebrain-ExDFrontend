@@ -21,23 +21,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp.Constants')
-    .constant('HELP_BASE_URL', "https://developer.humanbrainproject.eu/docs"
-    );
+  angular
+    .module('exdFrontendApp.Constants')
+    .constant('HELP_BASE_URL', 'https://developer.humanbrainproject.eu/docs');
 
-  angular.module('exdFrontendApp').factory('documentationURLs', ['HELP_BASE_URL',
-    function (HELP_BASE_URL) {
+  angular.module('exdFrontendApp').factory('documentationURLs', [
+    'HELP_BASE_URL',
+    function(HELP_BASE_URL) {
       return {
-        getDocumentationURLs: function () {
+        getDocumentationURLs: function() {
           return {
             cleDocumentationURL: HELP_BASE_URL + '/hbp-nrp-cle/latest/',
             backendDocumentationURL: HELP_BASE_URL + '/hbp_nrp_backend/latest/',
-            platformDocumentationURL: HELP_BASE_URL + '/HBP Neurorobotics Platform/latest/'
+            platformDocumentationURL:
+              HELP_BASE_URL + '/HBP Neurorobotics Platform/latest/'
           };
         }
       };
-    }]);
+    }
+  ]);
 })();

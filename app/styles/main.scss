@@ -21,44 +21,51 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-$hbp-common-asset-path: "/bower_components/angular-hbp-common/dist/assets";
-$icon-font-path: "/bower_components/hbp-collaboratory-theme/dist/fonts/";
+$hbp-common-asset-path: '/bower_components/angular-hbp-common/dist/assets';
+$icon-font-path: '/bower_components/hbp-collaboratory-theme/dist/fonts/';
 
 // Dependencies (scss deps are injected here by grunt-wiredep).
 // bower:scss
-@import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
-@import "font-awesome/scss/font-awesome.scss";
-@import "hbp-collaboratory-theme/dist/sass/theme.scss";
+@import 'bootstrap-sass-official/assets/stylesheets/_bootstrap.scss';
+@import 'font-awesome/scss/font-awesome.scss';
+@import 'hbp-collaboratory-theme/dist/sass/theme.scss';
 // endbower
 
-@import "toolbar-extensions";
-@import "splash";
-@import url("//fonts.googleapis.com/css?family=Petit+Formal+Script");
+@import 'toolbar-extensions';
+@import 'splash';
+@import url('//fonts.googleapis.com/css?family=Petit+Formal+Script');
 
-[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+[ng\:cloak],
+[ng-cloak],
+[data-ng-cloak],
+[x-ng-cloak],
+.ng-cloak,
+.x-ng-cloak {
   display: none !important;
 }
 
-html, body, [ui-view] {
+html,
+body,
+[ui-view] {
   width: 100%;
   height: 100%;
 }
 
-body.experiment-view-route{
-  overflow:hidden;
+body.experiment-view-route {
+  overflow: hidden;
 }
 
 // Accounts for the fixed navbar
 .container-with-navbar-margin {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 .fadein,
 .fadeout {
-  -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
-  -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
-  -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
-  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.4s;
+  -webkit-transition: all cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+  -moz-transition: all cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+  -o-transition: all cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+  transition: all cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
 }
 
 .fadein.ng-hide-remove,
@@ -74,29 +81,27 @@ body.experiment-view-route{
 }
 
 .esv-contextmenu {
-    position: absolute;
-    z-index: 1000;
-    background-color: white;
-    min-width: 100px;
+  position: absolute;
+  z-index: 1000;
+  background-color: white;
+  min-width: 100px;
 }
 
 .esv-materials-chooser {
   display: flex;
   height: 30px;
 
-  .esv-materials-chooser-material{
+  .esv-materials-chooser-material {
     flex-grow: 1;
-     border: 1px solid white;
+    border: 1px solid white;
 
-    &:hover{
-      border-color:  #666;
+    &:hover {
+      border-color: #666;
     }
   }
 }
 
-@media only screen
-and (min-device-width : 768px)
-and (max-device-width : 1024px) {
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
   .esv-remove-from-touchscreen {
     display: none;
   }
@@ -107,32 +112,32 @@ and (max-device-width : 1024px) {
 // modified answer to use scss in order to only change
 // width and do not touch anything else.
 .col-xs-5ths {
-    @extend .col-xs-12;
-    width: 20%;
+  @extend .col-xs-12;
+  width: 20%;
 }
 .col-sm-5ths {
-    @extend .col-sm-12;
+  @extend .col-sm-12;
 }
 .col-md-5ths {
-    @extend .col-md-12;
+  @extend .col-md-12;
 }
 .col-lg-5ths {
-    @extend .col-lg-12;
+  @extend .col-lg-12;
 }
 @media (min-width: $screen-sm-min) {
-    .col-sm-5ths {
-        width: 20%;
-    }
+  .col-sm-5ths {
+    width: 20%;
+  }
 }
 @media (min-width: $screen-md-min) {
-    .col-md-5ths {
-        width: 20%;
-    }
+  .col-md-5ths {
+    width: 20%;
+  }
 }
 @media (min-width: $screen-lg-min) {
-    .col-lg-5ths {
-        width: 20%;
-    }
+  .col-lg-5ths {
+    width: 20%;
+  }
 }
 
 .foreground {
@@ -153,7 +158,7 @@ and (max-device-width : 1024px) {
 }
 
 .no-margin {
-margin:0px 0px 0px 0px !important;
+  margin: 0px 0px 0px 0px !important;
 }
 
 .monospace-text {
@@ -165,23 +170,23 @@ margin:0px 0px 0px 0px !important;
   border-left-color: black;
 }
 
-.label-availability{
+.label-availability {
   padding: 2px;
   border-radius: 2px;
 }
 
-input[type="checkbox"],
-input[type="radio"] {
+input[type='checkbox'],
+input[type='radio'] {
   padding: 0;
-  margin:0;
+  margin: 0;
   vertical-align: middle;
   top: -1px;
   position: relative;
 }
-input[type="checkbox"]{
+input[type='checkbox'] {
   margin-right: 6px;
 }
-input[type="radio"]{
-    margin-right: 6px;
-    margin-left: 20px;
+input[type='radio'] {
+  margin-right: 6px;
+  margin-left: 20px;
 }

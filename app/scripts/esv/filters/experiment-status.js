@@ -25,41 +25,64 @@
   'use strict';
 
   let getStatus = (experiment, clusterAvailability, minAvailable) => {
-    if (!experiment.availableServers || experiment.availableServers.length === 0)
+    if (
+      !experiment.availableServers ||
+      experiment.availableServers.length === 0
+    )
       return 2;
     else if (clusterAvailability && clusterAvailability.free > minAvailable)
       return 0;
     return 1;
   };
 
-  angular.module('exdFrontendFilters')
-    .filter('experimentStatus', ['CLUSTER_THRESHOLDS', (CLUSTER_THRESHOLDS) =>
-      (experiment, clusterAvailability) => {
+  angular
+    .module('exdFrontendFilters')
+    .filter('experimentStatus', [
+      'CLUSTER_THRESHOLDS',
+      CLUSTER_THRESHOLDS => (experiment, clusterAvailability) => {
         const STATUS_LABELS = {
           0: `Available.`,
           1: `Restricted.`,
-          2: `Unavailable.`,
+          2: `Unavailable.`
         };
 
-        let status = STATUS_LABELS[getStatus(experiment, clusterAvailability, CLUSTER_THRESHOLDS.AVAILABLE)];
+        let status =
+          STATUS_LABELS[
+            getStatus(
+              experiment,
+              clusterAvailability,
+              CLUSTER_THRESHOLDS.AVAILABLE
+            )
+          ];
         let clusterInfo = `Cluster availability: `;
-        clusterInfo += clusterAvailability ? `${clusterAvailability.free}/${clusterAvailability.total}.` : `No information available.`;
-        let backendInfo = `Backends: ${experiment.availableServers ? experiment.availableServers.length : 'No information available.'}`;
+        clusterInfo += clusterAvailability
+          ? `${clusterAvailability.free}/${clusterAvailability.total}.`
+          : `No information available.`;
+        let backendInfo = `Backends: ${experiment.availableServers
+          ? experiment.availableServers.length
+          : 'No information available.'}`;
 
         return `${status}
 ${clusterInfo}
 ${backendInfo}`;
-      }])
-
-    .filter('experimentStatusClass', ['CLUSTER_THRESHOLDS', (CLUSTER_THRESHOLDS) =>
-      (experiment, clusterAvailability) => {
+      }
+    ])
+    .filter('experimentStatusClass', [
+      'CLUSTER_THRESHOLDS',
+      CLUSTER_THRESHOLDS => (experiment, clusterAvailability) => {
         const STATUS_CLASS = {
           0: `label-success`,
           1: `label-warning`,
-          2: `label-danger`,
+          2: `label-danger`
         };
 
-        return STATUS_CLASS[getStatus(experiment, clusterAvailability, CLUSTER_THRESHOLDS.AVAILABLE)];
+        return STATUS_CLASS[
+          getStatus(
+            experiment,
+            clusterAvailability,
+            CLUSTER_THRESHOLDS.AVAILABLE
+          )
+        ];
       }
     ]);
 })();

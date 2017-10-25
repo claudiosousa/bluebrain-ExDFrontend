@@ -28,11 +28,7 @@
   /* global console: false */
 
   class DynamicViewController {
-
-    constructor($compile,
-                $element,
-                $rootScope,
-                $scope) {
+    constructor($compile, $element, $rootScope, $scope) {
       this.$compile = $compile;
       this.$element = $element;
       this.$rootScope = $rootScope;
@@ -59,7 +55,9 @@
 
       // content container should exist
       if (!angular.isDefined(this.viewContainer)) {
-        console.warn('dynamicView.setViewContent() - viewContainer element not defined!');
+        console.warn(
+          'dynamicView.setViewContent() - viewContainer element not defined!'
+        );
         return;
       }
 
@@ -76,11 +74,14 @@
     }
 
     setViewContentViaChannelType(channelType) {
-      return this.setViewContent('<' + channelType.directive + '></' + channelType.directive + '>');
+      return this.setViewContent(
+        '<' + channelType.directive + '></' + channelType.directive + '>'
+      );
     }
   }
 
-  angular.module('dynamicViewModule', [])
+  angular
+    .module('dynamicViewModule', [])
     .controller('DynamicViewController', [
       '$compile',
       '$element',
@@ -88,7 +89,6 @@
       '$scope',
       (...args) => new DynamicViewController(...args)
     ])
-
     .constant('DYNAMIC_VIEW_CHANNELS', {
       BRAIN_VISUALIZER: {
         name: 'Brain Visualizer',
@@ -98,7 +98,7 @@
           height: 700
         },
         isResizeable: true,
-        allowMultipleViews: false,
+        allowMultipleViews: false
       },
       ENVIRONMENT_RENDERING: {
         name: 'Environment Rendering',
@@ -118,7 +118,7 @@
       },
       LOG_CONSOLE: {
         name: 'Log Console',
-        directive:  'log-console',
+        directive: 'log-console',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 500,
@@ -127,9 +127,9 @@
       },
       OBJECT_INSPECTOR: {
         name: 'Object Inspector',
-        directive:  'object-inspector',
+        directive: 'object-inspector',
         isResizeable: false, // default true
-        allowMultipleViews: false, // default true
+        allowMultipleViews: false // default true
       },
       STREAM_VIEWER: {
         name: 'Stream viewer',
@@ -141,7 +141,7 @@
       },
       SPIKE_TRAIN: {
         name: 'Spike-Train',
-        directive:  'spike-train',
+        directive: 'spike-train',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 800,
@@ -152,7 +152,7 @@
       },
       PYNN_EDITOR: {
         name: 'PyNN Editor',
-        directive:  'pynn-editor',
+        directive: 'pynn-editor',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 800,
@@ -174,7 +174,7 @@
       },
       ENVIRONMENT_EDITOR: {
         name: 'Environment Editor',
-        directive:  'environment-designer',
+        directive: 'environment-designer',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 800,
@@ -185,14 +185,14 @@
       },
       TRANSFER_FUNCTION_EDITOR: {
         name: 'Transfer Function Editor',
-        directive:  'transfer-function-editor',
+        directive: 'transfer-function-editor',
         allowMultipleViews: false, // default true
         overlayDefaultSize: {
           width: 800,
           height: 500,
           minWidth: 700,
           minHeight: 300
-        },
+        }
       },
       PERFORMANCE_MONITOR: {
         name: 'Performance Monitor',
@@ -206,5 +206,4 @@
         }
       }
     });
-
 })();

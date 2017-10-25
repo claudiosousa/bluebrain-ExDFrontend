@@ -2,12 +2,17 @@
 
 'use strict';
 
-describe('Services: userNavigationService', function () {
-
+describe('Services: userNavigationService', function() {
   var userNavigationService;
   var NAVIGATION_MODES, STATE;
 
-  var $rootScope, gz3d, camera, avatar, avatarControls, firstPersonControls,lookatRobotControls;
+  var $rootScope,
+    gz3d,
+    camera,
+    avatar,
+    avatarControls,
+    firstPersonControls,
+    lookatRobotControls;
   var storageServer, simulationInfo, userProfile, roslib, stateService;
 
   beforeEach(module('simulationInfoMock'));
@@ -15,105 +20,126 @@ describe('Services: userNavigationService', function () {
   beforeEach(module('storageServerMock'));
 
   // provide mock objects
-  beforeEach(module(function ($provide) {
-    // gz3d mock
-    var gz3dMock = {
-      iface: {
-        modelInfoTopic: {
-          subscribe: jasmine.createSpy('subscribe')
-        },
-        emitter: {
-          on: jasmine.createSpy('on').and.callFake(function (event, fn) {fn();})
-        }
-      },
-      scene: {
-        scene: new THREE.Scene(),
-        getByName:function(){return null;},
-        viewManager: {
-          mainUserView: {
-            camera: new THREE.PerspectiveCamera()
+  beforeEach(
+    module(function($provide) {
+      // gz3d mock
+      var gz3dMock = {
+        iface: {
+          modelInfoTopic: {
+            subscribe: jasmine.createSpy('subscribe')
+          },
+          emitter: {
+            on: jasmine.createSpy('on').and.callFake(function(event, fn) {
+              fn();
+            })
           }
         },
-        controls: {},
-        emitter: {
-          emit: jasmine.createSpy('emit')
-        }
-      },
-      gui: {
-        emitter: {
-          emit: jasmine.createSpy('emit')
-        }
-      },
-      container: {},
-      controls: {}
-    };
-    $provide.value('gz3d', gz3dMock);
-    $provide.value('camera', gz3dMock.scene.viewManager.mainUserView.camera);
+        scene: {
+          scene: new THREE.Scene(),
+          getByName: function() {
+            return null;
+          },
+          viewManager: {
+            mainUserView: {
+              camera: new THREE.PerspectiveCamera()
+            }
+          },
+          controls: {},
+          emitter: {
+            emit: jasmine.createSpy('emit')
+          }
+        },
+        gui: {
+          emitter: {
+            emit: jasmine.createSpy('emit')
+          }
+        },
+        container: {},
+        controls: {}
+      };
+      $provide.value('gz3d', gz3dMock);
+      $provide.value('camera', gz3dMock.scene.viewManager.mainUserView.camera);
 
-    // avatar mocks
-    var avatarMock = new THREE.Object3D();
-    $provide.value('avatar', avatarMock);
+      // avatar mocks
+      var avatarMock = new THREE.Object3D();
+      $provide.value('avatar', avatarMock);
 
-    var avatarControlsMock = {
-      enabled: false,
-      avatar: null,
-      avatarRadius: 0.15,
-      avatarEyeHeight: 1.6,
-      init: jasmine.createSpy('init'),
-      createAvatarTopics: jasmine.createSpy('createAvatarTopics'),
-      applyPose: jasmine.createSpy('applyPose'),
-      setPose: jasmine.createSpy('setPose'),
-      attachEventListeners: jasmine.createSpy('attachEventListeners'),
-      detachEventListeners: jasmine.createSpy('detachEventListeners')
-    };
-    $provide.value('avatarControls', avatarControlsMock);
+      var avatarControlsMock = {
+        enabled: false,
+        avatar: null,
+        avatarRadius: 0.15,
+        avatarEyeHeight: 1.6,
+        init: jasmine.createSpy('init'),
+        createAvatarTopics: jasmine.createSpy('createAvatarTopics'),
+        applyPose: jasmine.createSpy('applyPose'),
+        setPose: jasmine.createSpy('setPose'),
+        attachEventListeners: jasmine.createSpy('attachEventListeners'),
+        detachEventListeners: jasmine.createSpy('detachEventListeners')
+      };
+      $provide.value('avatarControls', avatarControlsMock);
 
-    // look at robot mocks
-    var lookatRobotControlsMock = {
-      enabled: false,
-      domElement: {
-        addEventListener: jasmine.createSpy('addEventListener'),
-        removeEventListener: jasmine.createSpy('removeEventListener')
-      },
-      attachEventListeners: jasmine.createSpy('attachEventListeners'),
-      detachEventListeners: jasmine.createSpy('detachEventListeners')
-    };
-    $provide.value('lookatRobotControls', lookatRobotControlsMock);
+      // look at robot mocks
+      var lookatRobotControlsMock = {
+        enabled: false,
+        domElement: {
+          addEventListener: jasmine.createSpy('addEventListener'),
+          removeEventListener: jasmine.createSpy('removeEventListener')
+        },
+        attachEventListeners: jasmine.createSpy('attachEventListeners'),
+        detachEventListeners: jasmine.createSpy('detachEventListeners')
+      };
+      $provide.value('lookatRobotControls', lookatRobotControlsMock);
 
+      // free camera mocks
+      var firstPersonControlsMock = {
+        enabled: false,
+        domElement: {
+          addEventListener: jasmine.createSpy('addEventListener'),
+          removeEventListener: jasmine.createSpy('removeEventListener')
+        },
+        attachEventListeners: jasmine.createSpy('attachEventListeners'),
+        detachEventListeners: jasmine.createSpy('detachEventListeners')
+      };
+      $provide.value('firstPersonControls', firstPersonControlsMock);
 
-    // free camera mocks
-    var firstPersonControlsMock = {
-      enabled: false,
-      domElement: {
-        addEventListener: jasmine.createSpy('addEventListener'),
-        removeEventListener: jasmine.createSpy('removeEventListener')
-      },
-      attachEventListeners: jasmine.createSpy('attachEventListeners'),
-      detachEventListeners: jasmine.createSpy('detachEventListeners')
-    };
-    $provide.value('firstPersonControls', firstPersonControlsMock);
+      userProfile = {
+        id: 'mock_id',
+        displayName: 'mock_displayname'
+      };
+      var roslibMock = {};
+      $provide.value('roslib', roslibMock);
 
-     userProfile = {
-      id: 'mock_id',
-      displayName: 'mock_displayname'
-    };
-    var roslibMock = {};
-    $provide.value('roslib', roslibMock);
+      var stateServiceMock = {
+        getCurrentState: jasmine.createSpy('getCurrentState').and.returnValue({
+          then: jasmine.createSpy('then').and.callFake(function(fn) {
+            fn();
+          })
+        })
+      };
+      $provide.value('stateService', stateServiceMock);
+    })
+  );
 
-    var stateServiceMock = {
-      getCurrentState: jasmine.createSpy('getCurrentState').and.returnValue({
-        then: jasmine.createSpy('then').and.callFake(function (fn) { fn(); })})
-    };
-    $provide.value('stateService', stateServiceMock);
-  }));
-
-  beforeEach(function () {
+  beforeEach(function() {
     module('exdFrontendApp.Constants');
 
     // inject service for testing.
-    inject(function (_$rootScope_, _userNavigationService_, _NAVIGATION_MODES_, _STATE_, _gz3d_, _camera_, _avatar_, _avatarControls_,
-                     _firstPersonControls_,_lookatRobotControls_, _storageServer_,
-                     _simulationInfo_, _roslib_, _stateService_) {
+    inject(function(
+      _$rootScope_,
+      _userNavigationService_,
+      _NAVIGATION_MODES_,
+      _STATE_,
+      _gz3d_,
+      _camera_,
+      _avatar_,
+      _avatarControls_,
+      _firstPersonControls_,
+      _lookatRobotControls_,
+      _storageServer_,
+      _simulationInfo_,
+      _roslib_,
+      _stateService_
+    ) {
       userNavigationService = _userNavigationService_;
       NAVIGATION_MODES = _NAVIGATION_MODES_;
       STATE = _STATE_;
@@ -152,68 +178,99 @@ describe('Services: userNavigationService', function () {
     spyOn(userNavigationService, 'saveCurrentPose').and.callThrough();
   });
 
-
-  it(' - init()', function () {
+  it(' - init()', function() {
     // check initial values
     expect(userNavigationService.avatarNameBase).toBe('user_avatar');
     expect(userNavigationService.avatarInitialized).toBe(false);
-    expect(userNavigationService.avatarModelPathWithCollision).toBe('user_avatar_basic');
-    expect(userNavigationService.avatarModelPathNoCollision).toBe('user_avatar_basic_no-collision');
+    expect(userNavigationService.avatarModelPathWithCollision).toBe(
+      'user_avatar_basic'
+    );
+    expect(userNavigationService.avatarModelPathNoCollision).toBe(
+      'user_avatar_basic_no-collision'
+    );
     stateService.currentSate = STATE.STARTED;
     console.info(stateService.currentSate);
 
     userNavigationService.init();
     $rootScope.$digest();
-    expect(userNavigationService.rosbridgeWebsocketUrl).toBe(simulationInfo.serverConfig.rosbridge.websocket);
+    expect(userNavigationService.rosbridgeWebsocketUrl).toBe(
+      simulationInfo.serverConfig.rosbridge.websocket
+    );
     expect(userNavigationService.roslib).toBe(roslib);
 
     expect(userNavigationService.userCamera).toBe(camera);
 
-    expect(gz3d.iface.modelInfoTopic.subscribe).toHaveBeenCalledWith(jasmine.any(Function));
+    expect(gz3d.iface.modelInfoTopic.subscribe).toHaveBeenCalledWith(
+      jasmine.any(Function)
+    );
 
     expect(storageServer.getCurrentUser).toHaveBeenCalled();
-    expect(userNavigationService.setUserData).toHaveBeenCalledWith(storageServer.currentUser);
-    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + storageServer.currentUser.id);
-    expect(userNavigationService.userDisplayName).toBe(storageServer.currentUser.displayName);
+    expect(userNavigationService.setUserData).toHaveBeenCalledWith(
+      storageServer.currentUser
+    );
+    expect(userNavigationService.avatarObjectName).toBe(
+      userNavigationService.avatarNameBase + '_' + storageServer.currentUser.id
+    );
+    expect(userNavigationService.userDisplayName).toBe(
+      storageServer.currentUser.displayName
+    );
 
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
 
     // check free camera control settings are set as default
     expect(userNavigationService.freeCameraControls).toBe(firstPersonControls);
-    expect(THREE.FirstPersonControls).toHaveBeenCalledWith(gz3d.scene.viewManager.mainUserView);
-    expect(THREE.AvatarControls).toHaveBeenCalledWith(userNavigationService, gz3d);
+    expect(THREE.FirstPersonControls).toHaveBeenCalledWith(
+      gz3d.scene.viewManager.mainUserView
+    );
+    expect(THREE.AvatarControls).toHaveBeenCalledWith(
+      userNavigationService,
+      gz3d
+    );
     expect(userNavigationService.avatarControls).toBe(avatarControls);
     expect(userNavigationService.setModeFreeCamera).toHaveBeenCalled();
-    expect(userNavigationService.navigationMode).toBe(NAVIGATION_MODES.FREE_CAMERA);
+    expect(userNavigationService.navigationMode).toBe(
+      NAVIGATION_MODES.FREE_CAMERA
+    );
     expect(userNavigationService.freeCameraControls.enabled).toBe(true);
     expect(gz3d.scene.controls).toBe(userNavigationService.freeCameraControls);
   });
 
-  it(' - deinit()', function () {
-
+  it(' - deinit()', function() {
     userNavigationService.deinit();
 
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
   });
 
-  it(' - setUserData()', function () {
+  it(' - setUserData()', function() {
     userNavigationService.setUserData(userProfile);
 
     expect(userNavigationService.userID).toBe(userProfile.id);
-    expect(userNavigationService.userReferenceROSCompliant).toBe(userProfile.id);
+    expect(userNavigationService.userReferenceROSCompliant).toBe(
+      userProfile.id
+    );
     expect(userNavigationService.userDisplayName).toBe(userProfile.displayName);
-    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + userProfile.id);
+    expect(userNavigationService.avatarObjectName).toBe(
+      userNavigationService.avatarNameBase + '_' + userProfile.id
+    );
 
     // check with userID not fit for ROS topics
     userProfile.id = 'test-problematic*user?ID+01';
     var validROSString = 'test_problematic_user_ID_01';
     userNavigationService.setUserData(userProfile);
-    expect(userNavigationService.userID.match(/([^a-zA-Z0-9]+)/gi).length).toBeGreaterThan(0);
-    expect(userNavigationService.userReferenceROSCompliant).toBe(validROSString);
-    expect(userNavigationService.avatarObjectName).toBe(userNavigationService.avatarNameBase + '_' + userNavigationService.userReferenceROSCompliant);
+    expect(
+      userNavigationService.userID.match(/([^a-zA-Z0-9]+)/gi).length
+    ).toBeGreaterThan(0);
+    expect(userNavigationService.userReferenceROSCompliant).toBe(
+      validROSString
+    );
+    expect(userNavigationService.avatarObjectName).toBe(
+      userNavigationService.avatarNameBase +
+        '_' +
+        userNavigationService.userReferenceROSCompliant
+    );
   });
 
-  it(' - onModelInfo()', function () {
+  it(' - onModelInfo()', function() {
     spyOn(userNavigationService, 'initAvatar');
 
     var avatarName = 'avatarMock';
@@ -234,7 +291,7 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.initAvatar).toHaveBeenCalled();
   });
 
-  it(' - getUserAvatar()', function () {
+  it(' - getUserAvatar()', function() {
     spyOn(gz3d.scene.scene, 'traverse').and.callThrough();
 
     // test for existing avatar
@@ -252,7 +309,7 @@ describe('Services: userNavigationService', function () {
     expect(returnedAvatar).not.toBeDefined();
   });
 
-  it(' - createAvatar()', function () {
+  it(' - createAvatar()', function() {
     userNavigationService.userCamera = camera;
     userNavigationService.currentPosition = null;
     userNavigationService.defaultPosition = new THREE.Vector3();
@@ -263,8 +320,15 @@ describe('Services: userNavigationService', function () {
     userNavigationService.createAvatar(hasCollision);
 
     expect(userNavigationService.avatarControls.avatar).toBeDefined();
-    expect(userNavigationService.avatarControls.setPose).toHaveBeenCalledWith(userNavigationService.defaultPosition, userNavigationService.defaultLookAt);
-    expect(gz3d.gui.emitter.emit).toHaveBeenCalledWith('entityCreated', jasmine.any(Object), userNavigationService.avatarModelPathNoCollision);
+    expect(userNavigationService.avatarControls.setPose).toHaveBeenCalledWith(
+      userNavigationService.defaultPosition,
+      userNavigationService.defaultLookAt
+    );
+    expect(gz3d.gui.emitter.emit).toHaveBeenCalledWith(
+      'entityCreated',
+      jasmine.any(Object),
+      userNavigationService.avatarModelPathNoCollision
+    );
 
     THREE.AvatarControls.calls.reset();
     userNavigationService.currentPosition = new THREE.Vector3();
@@ -276,11 +340,18 @@ describe('Services: userNavigationService', function () {
     userNavigationService.createAvatar(hasCollision);
 
     expect(THREE.AvatarControls).not.toHaveBeenCalled();
-    expect(userNavigationService.avatarControls.setPose).toHaveBeenCalledWith(userNavigationService.currentPosition, userNavigationService.currentLookAt);
-    expect(gz3d.gui.emitter.emit).toHaveBeenCalledWith('entityCreated', jasmine.any(Object), userNavigationService.avatarModelPathWithCollision);
+    expect(userNavigationService.avatarControls.setPose).toHaveBeenCalledWith(
+      userNavigationService.currentPosition,
+      userNavigationService.currentLookAt
+    );
+    expect(gz3d.gui.emitter.emit).toHaveBeenCalledWith(
+      'entityCreated',
+      jasmine.any(Object),
+      userNavigationService.avatarModelPathWithCollision
+    );
   });
 
-  it(' - initAvatar()', function () {
+  it(' - initAvatar()', function() {
     spyOn(userNavigationService, 'getUserAvatar').and.callThrough();
     userNavigationService.freeCameraControls = firstPersonControls;
     userNavigationService.lookatRobotControls = lookatRobotControls;
@@ -290,7 +361,6 @@ describe('Services: userNavigationService', function () {
     // test for missing avatar
     userNavigationService.initAvatar();
     expect(userNavigationService.avatarInitialized).toBe(false);
-
 
     // test for existing avatar
     var avatarName = 'avatarMock';
@@ -311,7 +381,7 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.avatarInitialized).toBe(true);
   });
 
-  it(' - removeAvatar()', function () {
+  it(' - removeAvatar()', function() {
     spyOn(userNavigationService, 'getUserAvatar').and.callThrough();
     // add avatar
     var avatarName = 'avatarMock';
@@ -325,11 +395,18 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.avatarInitialized).toBe(false);
   });
 
-  it(' - setDefaultPose()', function () {
-    var mockPosition = new THREE.Vector3(1,2,3);
-    var mockLookAt = new THREE.Vector3(4,5,6);
+  it(' - setDefaultPose()', function() {
+    var mockPosition = new THREE.Vector3(1, 2, 3);
+    var mockLookAt = new THREE.Vector3(4, 5, 6);
 
-    userNavigationService.setDefaultPose(mockPosition.x, mockPosition.y, mockPosition.z, mockLookAt.x, mockLookAt.y, mockLookAt.z);
+    userNavigationService.setDefaultPose(
+      mockPosition.x,
+      mockPosition.y,
+      mockPosition.z,
+      mockLookAt.x,
+      mockLookAt.y,
+      mockLookAt.z
+    );
 
     expect(userNavigationService.defaultPosition.x).toBe(1);
     expect(userNavigationService.defaultPosition.y).toBe(2);
@@ -339,14 +416,14 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.defaultLookAt.z).toBe(6);
   });
 
-  it(' - saveCurrentPose()', function () {
+  it(' - saveCurrentPose()', function() {
     // test for missing camera
     userNavigationService.saveCurrentPose();
     expect(userNavigationService.currentPosition).not.toBeDefined();
     expect(userNavigationService.currentDirection).not.toBeDefined();
 
-    var mockPosition = new THREE.Vector3(1,2,3);
-    var mockLookAt = new THREE.Vector3(4,5,6);
+    var mockPosition = new THREE.Vector3(1, 2, 3);
+    var mockLookAt = new THREE.Vector3(4, 5, 6);
     camera.position.copy(mockPosition);
     camera.lookAt(mockLookAt);
     camera.updateMatrixWorld();
@@ -365,12 +442,18 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.currentPosition.x).toBe(cameraWorldPosition.x);
     expect(userNavigationService.currentPosition.y).toBe(cameraWorldPosition.y);
     expect(userNavigationService.currentPosition.z).toBe(cameraWorldPosition.z);
-    expect(userNavigationService.currentDirection.x).toBe(cameraWorldDirection.x);
-    expect(userNavigationService.currentDirection.y).toBe(cameraWorldDirection.y);
-    expect(userNavigationService.currentDirection.z).toBe(cameraWorldDirection.z);
+    expect(userNavigationService.currentDirection.x).toBe(
+      cameraWorldDirection.x
+    );
+    expect(userNavigationService.currentDirection.y).toBe(
+      cameraWorldDirection.y
+    );
+    expect(userNavigationService.currentDirection.z).toBe(
+      cameraWorldDirection.z
+    );
   });
 
-  it(' - setModeHumanBody()', function () {
+  it(' - setModeHumanBody()', function() {
     // test for already in HUMAN_BODY mode
     userNavigationService.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
 
@@ -391,7 +474,9 @@ describe('Services: userNavigationService', function () {
     expect(userNavigationService.saveCurrentPose).toHaveBeenCalled();
     expect(gz3d.scene.scene.add).toHaveBeenCalledWith(camera);
     expect(camera.parent).toBe(gz3d.scene.scene);
-    expect(userNavigationService.navigationMode).toBe(NAVIGATION_MODES.HUMAN_BODY);
+    expect(userNavigationService.navigationMode).toBe(
+      NAVIGATION_MODES.HUMAN_BODY
+    );
     expect(userNavigationService.freeCameraControls.enabled).toBe(false);
     expect(gz3d.scene.controls).not.toBeDefined();
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
@@ -399,7 +484,7 @@ describe('Services: userNavigationService', function () {
     expect(firstPersonControls.detachEventListeners).toHaveBeenCalled();
   });
 
-  it(' - setModeFreeCamera()', function () {
+  it(' - setModeFreeCamera()', function() {
     userNavigationService.avatarControls = avatarControls;
     // test for already in FREE_CAMERA mode
     userNavigationService.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
@@ -416,12 +501,14 @@ describe('Services: userNavigationService', function () {
     userNavigationService.navigationMode = NAVIGATION_MODES.HUMAN_BODY;
     var positionMock = new THREE.Vector3(1, 2, 3);
     userNavigationService.currentPosition = positionMock;
-    var directionMock =  new THREE.Vector3(4, 5, 6);
+    var directionMock = new THREE.Vector3(4, 5, 6);
     userNavigationService.currentDirection = directionMock;
 
     userNavigationService.setModeFreeCamera();
 
-    expect(userNavigationService.navigationMode).toBe(NAVIGATION_MODES.FREE_CAMERA);
+    expect(userNavigationService.navigationMode).toBe(
+      NAVIGATION_MODES.FREE_CAMERA
+    );
     expect(userNavigationService.saveCurrentPose).toHaveBeenCalled();
     expect(camera.parent).toBe(gz3d.scene.scene);
     expect(userNavigationService.removeAvatar).toHaveBeenCalled();
@@ -435,7 +522,7 @@ describe('Services: userNavigationService', function () {
     expect(gz3d.scene.controls).toBe(firstPersonControls);
   });
 
- it(' - setLookatRobotCamera()', function () {
+  it(' - setLookatRobotCamera()', function() {
     // test for already in LOOKAT_ROBOT mode
     userNavigationService.navigationMode = NAVIGATION_MODES.FREE_CAMERA;
     userNavigationService.lookatRobotControls = lookatRobotControls;
@@ -443,9 +530,10 @@ describe('Services: userNavigationService', function () {
 
     userNavigationService.setLookatRobotCamera();
 
-    expect(userNavigationService.navigationMode).toBe(NAVIGATION_MODES.LOOKAT_ROBOT);
+    expect(userNavigationService.navigationMode).toBe(
+      NAVIGATION_MODES.LOOKAT_ROBOT
+    );
 
     expect(gz3d.scene.controls).toBe(lookatRobotControls);
   });
-
 });

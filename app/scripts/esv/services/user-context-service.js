@@ -22,106 +22,132 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 
-(function () {
+(function() {
   'use strict';
 
-  angular.module('userContextModule', ['experimentModule', 'userNavigationModule', 'collabExperimentLockModule'])
+  angular
+    .module('userContextModule', [
+      'experimentModule',
+      'userNavigationModule',
+      'collabExperimentLockModule'
+    ])
+    .factory('userContextService', [
+      '$q',
+      '$window',
+      'experimentService',
+      'userNavigationService',
+      'collabExperimentLockService',
+      'simulationInfo',
+      'bbpConfig',
+      'storageServer',
+      'environmentService',
+      function(
+        $q,
+        $window,
+        experimentService,
+        userNavigationService,
+        collabExperimentLockService,
+        simulationInfo,
+        bbpConfig,
+        storageServer,
+        environmentService
+      ) {
+        function UserContextService() {
+          var that = this;
 
-  .factory('userContextService', [
-    '$q', '$window',  'experimentService',
-    'userNavigationService', 'collabExperimentLockService', 'simulationInfo', 'bbpConfig', 'storageServer',
-    'environmentService',
-    function (
-      $q,
-      $window,
-      experimentService,
-      userNavigationService, collabExperimentLockService, simulationInfo, bbpConfig, storageServer,
-      environmentService) {
+          this.editIsDisabled = false;
+          let _ownerId;
 
-      function UserContextService() {
+          Object.defineProperty(this, 'ownerID', { get: () => _ownerId });
+          this.userEditingID = '';
+          this.userEditing = '';
+          this.timeEditStarted = '';
+          this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
 
-        var that = this;
+          let getUserId = () => {
+            return storageServer.getCurrentUser().then(profile => profile.id);
+          };
 
-        this.editIsDisabled = false;
-        let _ownerId;
+          this.init = () => {
+            return $q
+              .all([getUserId(), experimentService.experiment])
+              .then(([userid, { ownerID }]) => {
+                this.userID = userid;
+                _ownerId = ownerID;
+                if (
+                  environmentService.isPrivateExperiment() &&
+                  this.isOwner()
+                ) {
+                  // only use locks if we are in a collab
+                  this.lockService = collabExperimentLockService.createLockServiceForExperimentId(
+                    simulationInfo.experimentID
+                  );
+                  this.cancelLockSubscription = this.lockService.onLockChanged(
+                    this.onLockChangedCallback
+                  );
+                }
+              });
+          };
 
-        Object.defineProperty(this, 'ownerID', { get: ()=>  _ownerId } );
-        this.userEditingID = '';
-        this.userEditing = '';
-        this.timeEditStarted = '';
-        this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
+          this.deinit = function() {
+            if (!environmentService.isPrivateExperiment()) return;
+            this.cancelLockSubscription && this.cancelLockSubscription();
+            this.removeEditLock(true);
+          };
 
-        let getUserId = () => {
-            return storageServer.getCurrentUser()
-              .then(profile => profile.id);
-        };
-
-        this.init = () => {
-          return $q.all([getUserId(), experimentService.experiment])
-            .then(([userid, { ownerID }]) => {
-              this.userID = userid;
-              _ownerId = ownerID;
-              if (environmentService.isPrivateExperiment() && this.isOwner()) {
-                // only use locks if we are in a collab
-                this.lockService = collabExperimentLockService.createLockServiceForExperimentId(simulationInfo.experimentID);
-                this.cancelLockSubscription = this.lockService.onLockChanged(this.onLockChangedCallback);
+          this.onLockChangedCallback = function(result) {
+            if (result.locked && result.lockInfo.user.id === that.userID) {
+              // don't lock edit button if the current user is the owner of the lock.
+              that.setEditDisabled(false);
+            } else {
+              if (result.locked) {
+                that.setLockDateAndUser(result.lockInfo);
               }
-            });
-        };
-
-        this.deinit = function() {
-          if (!environmentService.isPrivateExperiment())
-            return;
-          this.cancelLockSubscription && this.cancelLockSubscription();
-          this.removeEditLock(true);
-        };
-
-        this.onLockChangedCallback = function (result) {
-          if (result.locked && result.lockInfo.user.id === that.userID) {
-            // don't lock edit button if the current user is the owner of the lock.
-            that.setEditDisabled(false);
-          } else {
-            if (result.locked) {
-              that.setLockDateAndUser(result.lockInfo);
+              that.setEditDisabled(result.locked);
             }
-            that.setEditDisabled(result.locked);
-          }
-        };
+          };
 
-        this.isOwner = function() {
-          return this.userID !== undefined && this.userID === this.ownerID && !this.demoMode;
-        };
+          this.isOwner = function() {
+            return (
+              this.userID !== undefined &&
+              this.userID === this.ownerID &&
+              !this.demoMode
+            );
+          };
 
-        this.hasEditRights = function (entity) {
-          return that.isOwner() || userNavigationService.isUserAvatar(entity);
-        };
+          this.hasEditRights = function(entity) {
+            return that.isOwner() || userNavigationService.isUserAvatar(entity);
+          };
 
-        this.setLockDateAndUser = function(lockInfo) {
-          this.userEditing = lockInfo.user.displayName;
-          this.userEditingID = lockInfo.user.id;
-          this.timeEditStarted = moment(new Date(lockInfo.date)).fromNow();
-        };
+          this.setLockDateAndUser = function(lockInfo) {
+            this.userEditing = lockInfo.user.displayName;
+            this.userEditingID = lockInfo.user.id;
+            this.timeEditStarted = moment(new Date(lockInfo.date)).fromNow();
+          };
 
-        // set edit mode
-        this.setEditDisabled = function(state) {
-          this.editIsDisabled = state;
-        };
+          // set edit mode
+          this.setEditDisabled = function(state) {
+            this.editIsDisabled = state;
+          };
 
-        this.removeEditLock = function(skipResponse) {
-          return this.lockService && this.lockService.releaseLock()
-          .catch(function () {
-            if (!skipResponse) {
-              $window.alert("I could not release the edit lock. Please remove it manually from the Storage area.");
-            }
-          });
-        };
+          this.removeEditLock = function(skipResponse) {
+            return (
+              this.lockService &&
+              this.lockService.releaseLock().catch(function() {
+                if (!skipResponse) {
+                  $window.alert(
+                    'I could not release the edit lock. Please remove it manually from the Storage area.'
+                  );
+                }
+              })
+            );
+          };
+        }
+
+        var service = new UserContextService();
+        service.initialized = service.init();
+
+        return service;
       }
-
-      var service = new UserContextService();
-      service.initialized = service.init();
-
-      return service;
-    }
-  ]);
-}());
-
+    ]);
+})();

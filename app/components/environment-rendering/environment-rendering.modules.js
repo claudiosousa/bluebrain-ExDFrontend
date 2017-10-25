@@ -22,10 +22,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
 
-(function () {
+(function() {
   'use strict';
 
   angular.module('gz3dModule', []);
   angular.module('environmentRenderingModule', ['gz3dModule']);
-
-}());
+})();

@@ -27,12 +27,21 @@
   n3Charts.Factory.Transition.defaultDuration = 0;
 
   class JoinPlotController {
-
     //visible seconds
-    static get WINDOW_TIME() { return 10; }
-    get properties() { return ["position", "velocity", "effort"]; }
+    static get WINDOW_TIME() {
+      return 10;
+    }
+    get properties() {
+      return ['position', 'velocity', 'effort'];
+    }
 
-    constructor($element, scope, RESET_TYPE, jointService, dynamicViewOverlayService) {
+    constructor(
+      $element,
+      scope,
+      RESET_TYPE,
+      jointService,
+      dynamicViewOverlayService
+    ) {
       this.plot = {
         curves: {},
         options: {
@@ -56,31 +65,33 @@
       this.selectedProperty = { name: this.properties[0] };
 
       scope.$on('RESET', (event, resetType) => {
-        if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW)
-          this.clearPlot();
+        if (resetType !== RESET_TYPE.RESET_CAMERA_VIEW) this.clearPlot();
       });
 
-      let messageCallback = (msg) => this.onNewJointMessage(msg);
+      let messageCallback = msg => this.onNewJointMessage(msg);
       jointService.subscribe(messageCallback);
 
       scope.$on('$destroy', () => jointService.unsubscribe(messageCallback));
 
       // if we are inside an overlay, set size at start
       // linechart keeps increasing in size with every draw if container doesn't have a set size
-      let overlayWrapper = dynamicViewOverlayService.getParentOverlayWrapper($element);
+      let overlayWrapper = dynamicViewOverlayService.getParentOverlayWrapper(
+        $element
+      );
       if (overlayWrapper) {
         overlayWrapper.style.height = '300px';
       }
     }
 
     onNewJointMessage(message) {
-      if (!this.allJoints)
-        this.initializeJoints(message.name);
+      if (!this.allJoints) this.initializeJoints(message.name);
 
-      var currentTime = message.header.stamp.secs + message.header.stamp.nsecs * 0.000000001;
+      var currentTime =
+        message.header.stamp.secs + message.header.stamp.nsecs * 0.000000001;
       if (currentTime > this.plot.options.axes.x.max) {
         this.plot.options.axes.x.max = currentTime;
-        this.plot.options.axes.x.min = currentTime - JoinPlotController.WINDOW_TIME;
+        this.plot.options.axes.x.min =
+          currentTime - JoinPlotController.WINDOW_TIME;
       }
 
       _.forOwn(this.plot.curves, values => {
@@ -110,7 +121,8 @@
         this.properties.forEach(prop => {
           let curveName = joint.name + '_' + prop;
           this.plot.curves[curveName] = [];
-          this.plot.options.series.push({ //chart series = cartesian multiplication curves * properties
+          this.plot.options.series.push({
+            //chart series = cartesian multiplication curves * properties
             key: 'y',
             joint,
             prop,
@@ -125,14 +137,15 @@
     }
 
     clearPlot() {
-      _.forOwn(this.plot.curves, values => values.length = 0);
+      _.forOwn(this.plot.curves, values => (values.length = 0));
       this.plot.options.axes.x.min = 0;
       this.plot.options.axes.x.max = JoinPlotController.WINDOW_TIME;
     }
 
     updateVisibleSeries() {
       this.plot.options.series.forEach(serie => {
-        serie.visible = serie.prop === this.selectedProperty.name && !!serie.joint.selected;
+        serie.visible =
+          serie.prop === this.selectedProperty.name && !!serie.joint.selected;
       });
     }
   }
@@ -145,6 +158,6 @@
       'RESET_TYPE',
       'jointService',
       'dynamicViewOverlayService',
-      (...args) => new JoinPlotController(...args)]);
-
+      (...args) => new JoinPlotController(...args)
+    ]);
 })();

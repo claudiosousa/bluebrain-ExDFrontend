@@ -21,7 +21,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-@import "../../styles/esv/pop-over-viewer";
+@import '../../styles/esv/pop-over-viewer';
 
 $objectInspectorMinWidth: 280px;
 $objectInspectorMinHeight: 40px;
@@ -108,14 +108,13 @@ $objectInspectorMinHeight: 40px;
 }
 
 .oi-input-field-caption {
-    display: inline;
-    margin-left: 26px;
-
+  display: inline;
+  margin-left: 26px;
 }
 
 .oi-input-field {
-    max-width: 60px;
-    margin-left: 10px;
+  max-width: 60px;
+  margin-left: 10px;
 }
 
 .vec3-num-input-list {
@@ -193,10 +192,10 @@ $objectInspectorMinHeight: 40px;
 }
 
 .btn-rounded {
-  box-shadow: inset -2px -2px 10px 0px rgba(0,0,0,0.2);
+  box-shadow: inset -2px -2px 10px 0px rgba(0, 0, 0, 0.2);
 }
 
 .btn-rounded:active,
 .btn-rounded.active {
-  box-shadow: inset 3px 3px 10px 0px rgba(0,0,0,0.3);
+  box-shadow: inset 3px 3px 10px 0px rgba(0, 0, 0, 0.3);
 }

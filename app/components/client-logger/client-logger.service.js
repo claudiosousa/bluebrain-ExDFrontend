@@ -34,9 +34,18 @@
    */
   class ClientLoggerService {
     // number of points per second
-    get logs() { return this.multicasted; }
+    get logs() {
+      return this.multicasted;
+    }
 
-    constructor(roslib, simulationInfo, bbpConfig, dynamicViewOverlayService, DYNAMIC_VIEW_CHANNELS, LOG_TYPE) {
+    constructor(
+      roslib,
+      simulationInfo,
+      bbpConfig,
+      dynamicViewOverlayService,
+      DYNAMIC_VIEW_CHANNELS,
+      LOG_TYPE
+    ) {
       this.roslib = roslib;
       this.websocket = simulationInfo.serverConfig.rosbridge.websocket;
       this.rosTopic = bbpConfig.get('ros-topics').logs;
@@ -59,22 +68,23 @@
         .multicast(this.subject) //we multicast the observable to the subject
         .refCount(); // auto handle the reference count: call 'subscribe' on ref count 0->1 and call unsubscribe on 1->0
 
-      var consoleLogReceived = (log) => {
-        dynamicViewOverlayService.isOverlayOpen(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE).then(
-            (isConsoleOpen) => {
-              if (!isConsoleOpen) {
-                this.missedConsoleLogs++;
-              }
-            });
+      var consoleLogReceived = log => {
+        dynamicViewOverlayService
+          .isOverlayOpen(DYNAMIC_VIEW_CHANNELS.LOG_CONSOLE)
+          .then(isConsoleOpen => {
+            if (!isConsoleOpen) {
+              this.missedConsoleLogs++;
+            }
+          });
         log.time = moment().format('HH:mm:ss');
         this.logHistory.push(log);
       };
-      this.logSubscription = this.logs.filter(log => log.level === LOG_TYPE.INFO).
-          subscribe((log) => consoleLogReceived(log));
+      this.logSubscription = this.logs
+        .filter(log => log.level === LOG_TYPE.INFO)
+        .subscribe(log => consoleLogReceived(log));
     }
 
-    onExit()
-    {
+    onExit() {
       this.logSubscription.unsubscribe();
     }
 
@@ -97,8 +107,15 @@
     */
     subscribeRosTopic(newMessageReceived) {
       var rosConnection = this.roslib.getOrCreateConnectionTo(this.websocket);
-      this.topicSubscriber = this.roslib.createTopic(rosConnection, this.rosTopic, 'cle_ros_msgs/ClientLoggerMessage');
-      this.topicSubscription = this.topicSubscriber.subscribe(newMessageReceived, true);
+      this.topicSubscriber = this.roslib.createTopic(
+        rosConnection,
+        this.rosTopic,
+        'cle_ros_msgs/ClientLoggerMessage'
+      );
+      this.topicSubscription = this.topicSubscriber.subscribe(
+        newMessageReceived,
+        true
+      );
     }
 
     /**
@@ -107,7 +124,8 @@
     * @method unsubscribeRosTopic
     */
     unsubscribeRosTopic() {
-      this.topicSubscriber && this.topicSubscriber.unsubscribe(this.topicSubscription);
+      this.topicSubscriber &&
+        this.topicSubscriber.unsubscribe(this.topicSubscription);
       delete this.topicSubscriber;
       delete this.topicSubscription;
     }
@@ -131,12 +149,19 @@
     }
   }
 
-  angular.module('clientLoggerModule', []).
-      service('clientLoggerService',
-          ['roslib', 'simulationInfo', 'bbpConfig', 'dynamicViewOverlayService',
-            'DYNAMIC_VIEW_CHANNELS', 'LOG_TYPE', (...args) => new ClientLoggerService(...args)]).
-      constant('LOG_TYPE', {
-        INFO: 1,
-        ADVERTS: 2
-      });
-}());
+  angular
+    .module('clientLoggerModule', [])
+    .service('clientLoggerService', [
+      'roslib',
+      'simulationInfo',
+      'bbpConfig',
+      'dynamicViewOverlayService',
+      'DYNAMIC_VIEW_CHANNELS',
+      'LOG_TYPE',
+      (...args) => new ClientLoggerService(...args)
+    ])
+    .constant('LOG_TYPE', {
+      INFO: 1,
+      ADVERTS: 2
+    });
+})();

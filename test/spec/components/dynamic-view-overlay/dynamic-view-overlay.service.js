@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Service: dynamicViewOverlayService', function() {
-
   var $q, $rootScope, $timeout;
   var dynamicViewOverlayService, nrpAnalytics;
 
@@ -9,11 +8,11 @@ describe('Service: dynamicViewOverlayService', function() {
     name: 'TEST',
     directive: 'test',
     isResizeable: false, // default true
-    allowMultipleViews: false, // default true
+    allowMultipleViews: false // default true
   };
   var TEST_DUMMY_MULTI_VIEW = {
     name: 'TEST',
-    directive: 'test',
+    directive: 'test'
   };
 
   beforeEach(module('exd.templates'));
@@ -21,17 +20,20 @@ describe('Service: dynamicViewOverlayService', function() {
   beforeEach(module('nrpAnalyticsMock'));
 
   beforeEach(
-    inject(function(_$q_,
-                    _$rootScope_,
-                    _$timeout_,
-                    _dynamicViewOverlayService_,
-                    _nrpAnalytics_) {
+    inject(function(
+      _$q_,
+      _$rootScope_,
+      _$timeout_,
+      _dynamicViewOverlayService_,
+      _nrpAnalytics_
+    ) {
       $q = _$q_;
       $rootScope = _$rootScope_;
       $timeout = _$timeout_;
       dynamicViewOverlayService = _dynamicViewOverlayService_;
       nrpAnalytics = _nrpAnalytics_;
-  }));
+    })
+  );
 
   it(' - constructor()', function() {
     expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(0);
@@ -39,16 +41,22 @@ describe('Service: dynamicViewOverlayService', function() {
   });
 
   it(' - OVERLAY_WRAPPER_CLASS_SELECTOR (getter)', function() {
-    expect(dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS).toBe('dynamic-view-overlay-wrapper');
+    expect(dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS).toBe(
+      'dynamic-view-overlay-wrapper'
+    );
   });
 
   it(' - DYNAMIC_VIEW_CONTAINER_CLASS (getter)', function() {
-    expect(dynamicViewOverlayService.DYNAMIC_VIEW_CONTAINER_CLASS).toBe('dynamic-view-container');
+    expect(dynamicViewOverlayService.DYNAMIC_VIEW_CONTAINER_CLASS).toBe(
+      'dynamic-view-container'
+    );
   });
 
   it(' - createOverlay()', function() {
     var defferedOverlayController = $q.defer();
-    spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
+    spyOn(dynamicViewOverlayService, 'getController').and.returnValue(
+      defferedOverlayController.promise
+    );
     // set up overlay controller mock
     var mockOverlayController = {
       setDynamicViewChannel: jasmine.createSpy('setDynamicViewChannel'),
@@ -64,7 +72,10 @@ describe('Service: dynamicViewOverlayService', function() {
       directive: 'test-channel'
     };
 
-    var overlay = dynamicViewOverlayService.createOverlay(channel, parentElement);
+    var overlay = dynamicViewOverlayService.createOverlay(
+      channel,
+      parentElement
+    );
 
     defferedOverlayController.resolve(mockOverlayController);
     $rootScope.$digest();
@@ -75,7 +86,9 @@ describe('Service: dynamicViewOverlayService', function() {
     expect(dynamicViewOverlayService.overlayIDCount).toBe(idCount + 1);
 
     expect(overlay[0].parentElement).toBe(parentElement);
-    expect(mockOverlayController.setDynamicViewChannel).toHaveBeenCalledWith(channel);
+    expect(mockOverlayController.setDynamicViewChannel).toHaveBeenCalledWith(
+      channel
+    );
 
     // check on destroy
     overlay.scope().$destroy();
@@ -83,7 +96,7 @@ describe('Service: dynamicViewOverlayService', function() {
       'Toggle-' + channel.directive,
       {
         category: 'Simulation-GUI',
-        value: false,
+        value: false
       }
     );
 
@@ -92,9 +105,10 @@ describe('Service: dynamicViewOverlayService', function() {
 
   it(' - createOverlay(), no parentElement specified', function() {
     var mockParent = document.createElement('div');
-    spyOn(dynamicViewOverlayService, 'getOverlayParentElement').and.returnValue(
-      [mockParent]
-    );
+    spyOn(
+      dynamicViewOverlayService,
+      'getOverlayParentElement'
+    ).and.returnValue([mockParent]);
 
     var channelName = 'test-component';
     var overlay = dynamicViewOverlayService.createOverlay(channelName);
@@ -121,7 +135,9 @@ describe('Service: dynamicViewOverlayService', function() {
 
   it(' - closeAllOverlaysOfType()', function() {
     var defferedOverlayController = $q.defer();
-    spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
+    spyOn(dynamicViewOverlayService, 'getController').and.returnValue(
+      defferedOverlayController.promise
+    );
     // set up overlay controller mock
     var channelType = 'test-channel';
     var mockOverlayController = {
@@ -141,7 +157,9 @@ describe('Service: dynamicViewOverlayService', function() {
   it(' - getOverlayParentElement()', function() {
     spyOn(angular, 'element').and.callThrough();
     dynamicViewOverlayService.getOverlayParentElement();
-    expect(angular.element).toHaveBeenCalledWith(dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR);
+    expect(angular.element).toHaveBeenCalledWith(
+      dynamicViewOverlayService.OVERLAY_PARENT_SELECTOR
+    );
   });
 
   it(' - getParentOverlayWrapper()', function() {
@@ -151,20 +169,22 @@ describe('Service: dynamicViewOverlayService', function() {
     };
 
     var result = dynamicViewOverlayService.getParentOverlayWrapper(mockElement);
-    expect(mockElement.parents).toHaveBeenCalledWith('.'+dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS);
+    expect(mockElement.parents).toHaveBeenCalledWith(
+      '.' + dynamicViewOverlayService.OVERLAY_WRAPPER_CLASS
+    );
     expect(result).toBe(parentsArray[0]);
   });
 
   it('should create a dynamic overlay for the given component', function() {
     spyOn(dynamicViewOverlayService, 'createOverlay');
     // fake no view open
-    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-      {
+    dynamicViewOverlayService.isOverlayOpen = jasmine
+      .createSpy('isOverlayOpen')
+      .and.returnValue({
         then: jasmine.createSpy('then').and.callFake(function(fn) {
           return fn(false);
         })
-      }
-    );
+      });
 
     dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY);
 
@@ -175,40 +195,43 @@ describe('Service: dynamicViewOverlayService', function() {
     spyOn(dynamicViewOverlayService, 'createOverlay');
 
     // fake view open
-    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue({
+    dynamicViewOverlayService.isOverlayOpen = jasmine
+      .createSpy('isOverlayOpen')
+      .and.returnValue({
         then: jasmine.createSpy('then').and.callFake(function(fn) {
           return fn(true);
         })
-      }
-    );
+      });
 
     // no new view should be created, as we already have one
     dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY);
-    expect(dynamicViewOverlayService.createOverlay).not.toHaveBeenCalledWith(TEST_DUMMY);
+    expect(dynamicViewOverlayService.createOverlay).not.toHaveBeenCalledWith(
+      TEST_DUMMY
+    );
   });
 
   it('should create multiple instances of a dynamic view', function() {
     spyOn(dynamicViewOverlayService, 'createOverlay');
     // fake no view open
-    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-      {
+    dynamicViewOverlayService.isOverlayOpen = jasmine
+      .createSpy('isOverlayOpen')
+      .and.returnValue({
         then: jasmine.createSpy('then').and.callFake(function(fn) {
           return fn(false);
         })
-      }
-    );
+      });
 
     dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY_MULTI_VIEW);
     expect(dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(1);
 
     // although a view is open, a new one should be created
-    dynamicViewOverlayService.isOverlayOpen = jasmine.createSpy('isOverlayOpen').and.returnValue(
-      {
+    dynamicViewOverlayService.isOverlayOpen = jasmine
+      .createSpy('isOverlayOpen')
+      .and.returnValue({
         then: jasmine.createSpy('then').and.callFake(function(fn) {
           return fn(true);
         })
-      }
-    );
+      });
     dynamicViewOverlayService.createDynamicOverlay(TEST_DUMMY_MULTI_VIEW);
     expect(dynamicViewOverlayService.createOverlay).toHaveBeenCalledTimes(2);
   });
@@ -221,7 +244,9 @@ describe('Service: dynamicViewOverlayService', function() {
 
     beforeEach(function() {
       defferedOverlayController = $q.defer();
-      spyOn(dynamicViewOverlayService, 'getController').and.returnValue(defferedOverlayController.promise);
+      spyOn(dynamicViewOverlayService, 'getController').and.returnValue(
+        defferedOverlayController.promise
+      );
       // set up overlay controller mock
       var channelName = 'test-channel';
       var mockOverlayController = {
@@ -245,18 +270,22 @@ describe('Service: dynamicViewOverlayService', function() {
 
       // Test the stuff
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(1);
-      dynamicViewOverlayService.isOverlayOpen('test-channel').then(function(result) {
-      expect(result).toBeTruthy();
-    });
+      dynamicViewOverlayService
+        .isOverlayOpen('test-channel')
+        .then(function(result) {
+          expect(result).toBeTruthy();
+        });
       $rootScope.$digest();
     });
 
     it(' - return false if there is no element', function() {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(0);
 
-    dynamicViewOverlayService.isOverlayOpen('test-channel').then(function(result) {
-      expect(result).toBeFalsy();
-    });
+      dynamicViewOverlayService
+        .isOverlayOpen('test-channel')
+        .then(function(result) {
+          expect(result).toBeFalsy();
+        });
       $rootScope.$digest();
     });
 
@@ -271,12 +300,13 @@ describe('Service: dynamicViewOverlayService', function() {
       dynamicViewOverlayService.overlays[htmlID] = overlayMock;
 
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(1);
-      dynamicViewOverlayService.isOverlayOpen('other-channel').then(function(result) {
-        expect(result).toBeFalsy();
-      });
+      dynamicViewOverlayService
+        .isOverlayOpen('other-channel')
+        .then(function(result) {
+          expect(result).toBeFalsy();
+        });
       $rootScope.$digest();
     });
-
   });
 
   describe(' - isOverlayOpen multiple entries', function() {
@@ -284,8 +314,10 @@ describe('Service: dynamicViewOverlayService', function() {
     var defferedOverlayController = {};
     var idCount, htmlID;
 
-    beforeEach(function () {
-      spyOn(dynamicViewOverlayService, 'getController').and.callFake(function (overlay) {
+    beforeEach(function() {
+      spyOn(dynamicViewOverlayService, 'getController').and.callFake(function(
+        overlay
+      ) {
         return defferedOverlayController[overlay.id].promise;
       });
 
@@ -312,19 +344,23 @@ describe('Service: dynamicViewOverlayService', function() {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
     });
 
-    it(' - return true if there is at least one element shown', function () {
+    it(' - return true if there is at least one element shown', function() {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
-      dynamicViewOverlayService.isOverlayOpen('test-channel-0').then(function (result) {
-        expect(result).toBeTruthy();
-      });
+      dynamicViewOverlayService
+        .isOverlayOpen('test-channel-0')
+        .then(function(result) {
+          expect(result).toBeTruthy();
+        });
       $rootScope.$digest();
     });
 
-    it(' - return true if there is at least one element shown', function () {
+    it(' - return true if there is at least one element shown', function() {
       expect(Object.keys(dynamicViewOverlayService.overlays).length).toBe(3);
-      dynamicViewOverlayService.isOverlayOpen('test-channel-2').then(function (result) {
-        expect(result).toBeTruthy();
-      });
+      dynamicViewOverlayService
+        .isOverlayOpen('test-channel-2')
+        .then(function(result) {
+          expect(result).toBeTruthy();
+        });
       $rootScope.$digest();
     });
   });

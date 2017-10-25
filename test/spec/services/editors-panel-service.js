@@ -1,45 +1,54 @@
-
 'use strict';
 
-describe('Services: editorsPanelService', function () {
-
+describe('Services: editorsPanelService', function() {
   var editorsPanelService;
   var $window, $q, $rootScope, $scope;
   var environmentService, simulationInfo, userContextService, nrpAnalytics;
   var cancelLockSubscription, deferredLock;
 
   // provide mock objects
-  beforeEach(module(function ($provide) {
-    var environmentServiceMock = {
-      isPrivateExperiment: jasmine.createSpy('isPrivateExperiment')
-    };
-    $provide.value('environmentService', environmentServiceMock);
+  beforeEach(
+    module(function($provide) {
+      var environmentServiceMock = {
+        isPrivateExperiment: jasmine.createSpy('isPrivateExperiment')
+      };
+      $provide.value('environmentService', environmentServiceMock);
 
-    cancelLockSubscription = jasmine.createSpy('cancelLockSubscription');
-    var userContextServiceMock = {
-      lockService: {
-        onLockChanged: jasmine.createSpy('onLockChanged').and.returnValue(cancelLockSubscription),
-        tryAddLock: jasmine.createSpy('tryAddLock')
-      },
-      setLockDateAndUser: jasmine.createSpy('setLockDateAndUser'),
-      setEditDisabled: jasmine.createSpy('setEditDisabled'),
-      removeEditLock: jasmine.createSpy('removeEditLock')
-    };
-    $provide.value('userContextService', userContextServiceMock);
+      cancelLockSubscription = jasmine.createSpy('cancelLockSubscription');
+      var userContextServiceMock = {
+        lockService: {
+          onLockChanged: jasmine
+            .createSpy('onLockChanged')
+            .and.returnValue(cancelLockSubscription),
+          tryAddLock: jasmine.createSpy('tryAddLock')
+        },
+        setLockDateAndUser: jasmine.createSpy('setLockDateAndUser'),
+        setEditDisabled: jasmine.createSpy('setEditDisabled'),
+        removeEditLock: jasmine.createSpy('removeEditLock')
+      };
+      $provide.value('userContextService', userContextServiceMock);
 
-    var nrpAnalyticsMock = {
-      eventTrack: jasmine.createSpy('eventTrack')
-    };
-    $provide.value('nrpAnalytics', nrpAnalyticsMock);
-  }));
+      var nrpAnalyticsMock = {
+        eventTrack: jasmine.createSpy('eventTrack')
+      };
+      $provide.value('nrpAnalytics', nrpAnalyticsMock);
+    })
+  );
 
-  beforeEach(function () {
+  beforeEach(function() {
     module('editorsPanelModule');
     module('simulationInfoMock');
 
-    inject(function (_$window_, _$q_, _$rootScope_,
-                     _editorsPanelService_, _environmentService_, _simulationInfo_, _userContextService_,
-                     _nrpAnalytics_) {
+    inject(function(
+      _$window_,
+      _$q_,
+      _$rootScope_,
+      _editorsPanelService_,
+      _environmentService_,
+      _simulationInfo_,
+      _userContextService_,
+      _nrpAnalytics_
+    ) {
       $window = _$window_;
       $q = _$q_;
       $rootScope = _$rootScope_;
@@ -53,16 +62,21 @@ describe('Services: editorsPanelService', function () {
     });
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     deferredLock = $q.defer();
-    deferredLock.promise.then = jasmine.createSpy('then').and.returnValue(deferredLock.promise);
-    deferredLock.promise.catch = jasmine.createSpy('catch').and.returnValue(deferredLock.promise);
+    deferredLock.promise.then = jasmine
+      .createSpy('then')
+      .and.returnValue(deferredLock.promise);
+    deferredLock.promise.catch = jasmine
+      .createSpy('catch')
+      .and.returnValue(deferredLock.promise);
 
-    userContextService.lockService.tryAddLock.and.returnValue(deferredLock.promise);
+    userContextService.lockService.tryAddLock.and.returnValue(
+      deferredLock.promise
+    );
   });
 
-  describe(' - independent tests', function () {
-
+  describe(' - independent tests', function() {
     it(' - showEditorsPanel()', function() {
       expect(editorsPanelService.showEditorPanel).toBe(false);
 
@@ -78,7 +92,7 @@ describe('Services: editorsPanelService', function () {
       var lockChange = {
         locked: false
       };
-      userContextService.userEditingID =userContextService.userID = 'testID';
+      userContextService.userEditingID = userContextService.userID = 'testID';
       editorsPanelService.showEditorPanel = true;
 
       editorsPanelService.onLockChanged(lockChange);
@@ -118,28 +132,30 @@ describe('Services: editorsPanelService', function () {
       expect(userContextService.userEditingID).toBe(userContextService.userID);
       expect(editorsPanelService.showEditorsPanel).toHaveBeenCalled();
     });
-
   });
 
-  describe(' - private experiment', function () {
-
+  describe(' - private experiment', function() {
     beforeEach(function() {
       environmentService.isPrivateExperiment.and.returnValue(true);
       editorsPanelService.init();
     });
 
-    it(' - init()', function () {
-      expect(userContextService.lockService.onLockChanged).toHaveBeenCalledWith(editorsPanelService.onLockChanged);
-      expect(editorsPanelService.cancelLockSubscription).toBe(cancelLockSubscription);
+    it(' - init()', function() {
+      expect(userContextService.lockService.onLockChanged).toHaveBeenCalledWith(
+        editorsPanelService.onLockChanged
+      );
+      expect(editorsPanelService.cancelLockSubscription).toBe(
+        cancelLockSubscription
+      );
     });
 
-    it(' - deinit()', function () {
+    it(' - deinit()', function() {
       editorsPanelService.deinit();
 
       expect(cancelLockSubscription).toHaveBeenCalled();
     });
 
-    it(' - toggleEditors()', function () {
+    it(' - toggleEditors()', function() {
       spyOn(editorsPanelService, 'showEditorsPanel').and.callThrough();
 
       // test when not showing
@@ -148,7 +164,9 @@ describe('Services: editorsPanelService', function () {
       editorsPanelService.toggleEditors();
 
       expect(userContextService.lockService.tryAddLock).toHaveBeenCalled();
-      expect(deferredLock.promise.then).toHaveBeenCalledWith(editorsPanelService.onTryAddLock);
+      expect(deferredLock.promise.then).toHaveBeenCalledWith(
+        editorsPanelService.onTryAddLock
+      );
       expect(editorsPanelService.loadingEditPanel).toBe(true);
 
       // test when showing
@@ -159,17 +177,15 @@ describe('Services: editorsPanelService', function () {
       expect(editorsPanelService.showEditorsPanel).toHaveBeenCalled();
       expect(userContextService.removeEditLock).toHaveBeenCalled();
     });
-
   });
 
-  describe(' - non-private experiment', function () {
-
+  describe(' - non-private experiment', function() {
     beforeEach(function() {
       environmentService.isPrivateExperiment.and.returnValue(false);
       editorsPanelService.init();
     });
 
-    it(' - toggleEditors()', function () {
+    it(' - toggleEditors()', function() {
       spyOn(editorsPanelService, 'showEditorsPanel').and.callThrough();
 
       expect(editorsPanelService.showEditorPanel).toBe(false);
@@ -178,7 +194,5 @@ describe('Services: editorsPanelService', function () {
 
       expect(editorsPanelService.showEditorPanel).toBe(true);
     });
-
   });
-
 });

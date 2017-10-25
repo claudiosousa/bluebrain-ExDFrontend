@@ -21,66 +21,67 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END**/
-(function () {
+(function() {
   'use strict';
 
-  angular.module('exdFrontendApp')
-    .service('codeEditorsServices', [
-      '$timeout',
-      'userContextService',
-      function ($timeout, userContextService) {
+  angular.module('exdFrontendApp').service('codeEditorsServices', [
+    '$timeout',
+    'userContextService',
+    function($timeout, userContextService) {
+      return {
+        getDefaultEditorOptions: getDefaultEditorOptions,
+        getEditor: getEditor,
+        getEditorChild: getEditorChild,
+        refreshEditor: refreshEditor,
+        refreshAllEditors: refreshAllEditors,
+        resetEditor: resetEditor,
+        ownerOnlyOptions: ownerOnlyOptions
+      };
 
+      function getDefaultEditorOptions() {
         return {
-          getDefaultEditorOptions: getDefaultEditorOptions,
-          getEditor: getEditor,
-          getEditorChild: getEditorChild,
-          refreshEditor: refreshEditor,
-          refreshAllEditors: refreshAllEditors,
-          resetEditor: resetEditor,
-          ownerOnlyOptions: ownerOnlyOptions
+          lineWrapping: true,
+          lineNumbers: true,
+          readOnly: false,
+          indentUnit: 4,
+          mode: 'text/x-python'
         };
+      }
 
-        function getDefaultEditorOptions() {
-          return {
-            lineWrapping : true,
-            lineNumbers: true,
-            readOnly: false,
-            indentUnit: 4,
-            mode: 'text/x-python'
-          };
-        }
+      function ownerOnlyOptions(options) {
+        return userContextService.isOwner()
+          ? options
+          : _.assign(options, { readOnly: 'nocursor' });
+      }
 
-        function ownerOnlyOptions(options) {
-          return userContextService.isOwner() ? options : _.assign(options, { readOnly: 'nocursor' });
-        }
+      function getEditor(id) {
+        var codeMirrorDiv = document.getElementById(id).firstChild;
+        return codeMirrorDiv.CodeMirror;
+      }
 
-        function getEditor(id) {
-          var codeMirrorDiv = document.getElementById(id).firstChild;
-          return codeMirrorDiv.CodeMirror;
-        }
+      function getEditorChild(id, parent) {
+        var codeMirrorDiv = parent.querySelector('#' + id).firstChild;
+        return codeMirrorDiv.CodeMirror;
+      }
 
-        function getEditorChild(id, parent) {
-          var codeMirrorDiv = parent.querySelector('#' + id).firstChild;
-          return codeMirrorDiv.CodeMirror;
-        }
+      function refreshEditor(editor) {
+        $timeout(function() {
+          editor.refresh();
+        }, 100);
+      }
 
-        function refreshEditor(editor) {
-          $timeout(function() {
-            editor.refresh();
-          }, 100);
-        }
+      function refreshAllEditors(ids) {
+        $timeout(function() {
+          _.forEach(ids, function(id) {
+            refreshEditor(getEditor(id));
+          });
+        }, 100);
+      }
 
-        function refreshAllEditors(ids) {
-          $timeout(function() {
-            _.forEach(ids, function(id) {
-              refreshEditor(getEditor(id));
-            });
-          }, 100);
-        }
-
-        function resetEditor(editor) {
-          editor.clearHistory();
-          editor.markClean();
-        }
-      }]);
-} ());
+      function resetEditor(editor) {
+        editor.clearHistory();
+        editor.markClean();
+      }
+    }
+  ]);
+})();

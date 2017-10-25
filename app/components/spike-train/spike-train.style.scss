@@ -29,7 +29,6 @@ $spikeTrainMargin: 5px;
 $spikeTrainMinWidth: 700px;
 $spikeTrainMinHeight: 160px;
 
-
 .spikegraph {
   display: flex;
   height: 100%;
@@ -57,7 +56,7 @@ $spikeTrainMinHeight: 160px;
 }
 
 .spikegraph .leftaxis .spikearrow:before {
-  content: "";
+  content: '';
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-bottom: 8px solid black;

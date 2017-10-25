@@ -1,9 +1,10 @@
-(function () {
+(function() {
   'use strict';
 
-  angular.module('contextMenuStateMock', [])
-  .service('contextMenuState', function () {
-    this.toggleContextMenu = jasmine.createSpy('toggleContextMenu');
-    this.pushItemGroup = jasmine.createSpy('pushItemGroup');
-  });
-}());
+  angular
+    .module('contextMenuStateMock', [])
+    .service('contextMenuState', function() {
+      this.toggleContextMenu = jasmine.createSpy('toggleContextMenu');
+      this.pushItemGroup = jasmine.createSpy('pushItemGroup');
+    });
+})();
