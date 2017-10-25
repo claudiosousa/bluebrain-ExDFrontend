@@ -222,11 +222,16 @@ describe('Directive: transferFunctionEditor', function () {
   describe('Retrieving transferFunctions', function () {
     var tf1Name = 'tf1';
     var tf1Code = '@customdecorator(toto)\ndef ' + tf1Name + '(var1, var2):\n\t#put your code here';
+    var tf2Name = 'tf2';
+    var tf2Code = '@customdecorator(toto)\ndef ' + tf2Name + '(var1, var2):\n\t#put your code here';
     var response = { data: {'tf1': tf1Code} };
-    var expectedTf1, expected;
+    var expectedTf1, expectedTf2, expected;
 
     beforeEach(function(){
-      expectedTf1 = new ScriptObject('tf1', tf1Code);
+      expectedTf1 = new ScriptObject(tf1Name, tf1Code);
+      expectedTf2 = new ScriptObject(tf2Name, tf2Code);
+      expectedTf1.local = false;
+      expectedTf2.local = false;
       expected = [expectedTf1];
       $timeout.flush();
     });
@@ -243,6 +248,17 @@ describe('Directive: transferFunctionEditor', function () {
 
       // The tfs should be refreshed on initialization
       expect(codeEditorsServices.refreshAllEditors).toHaveBeenCalled();
+    });
+
+    it('should remove retrieved transfer functions properly', function () {
+      spyOn(document, 'getElementById').and.returnValue({ firstChild: { CodeMirror: editorMock}});
+      var addTfs = backendInterfaceService.getTransferFunctions.calls.mostRecent().args[0];
+      addTfs({ data: {'tf1': tf1Code, 'tf2': tf2Code}});
+      expect(_.findIndex(isolateScope.transferFunctions, expectedTf1)).not.toBe(-1);
+      expect(_.findIndex(isolateScope.transferFunctions, expectedTf2)).not.toBe(-1);
+      addTfs(response);
+      expect(_.findIndex(isolateScope.transferFunctions, expectedTf1)).not.toBe(-1);
+      expect(_.findIndex(isolateScope.transferFunctions, expectedTf2)).toBe(-1);
     });
   });
 
