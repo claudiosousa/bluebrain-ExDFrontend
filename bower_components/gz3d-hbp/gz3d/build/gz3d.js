@@ -3247,7 +3247,8 @@ gzangular.controller('insertControl', ['$scope', '$http', function ($scope, $htt
     guiEvents.emit('openTab', tab, 'insertMenu');
   };
 
-  $http.get('./model_library.json').then(function (res)
+  const model_library_path = GZ3D.assetsPath + '/libraries/model_library.json';
+  $http.get(model_library_path).then(function (res)
   {
     modelList = res.data;
   });
