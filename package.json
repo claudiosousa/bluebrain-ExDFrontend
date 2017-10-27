@@ -76,7 +76,7 @@
     "build": "grunt build",
     "tag": "grunt publish",
     "prettify":
-      "node_modules/prettier/bin/prettier.js  \"{app/**/,test/**/,./}*.{js,json,scss}\" --write",
+      "node_modules/prettier/bin/prettier.js  \"**/*.{js,json,scss}\" --write",
     "lint": "grunt eslint",
     "postinstall":
       "rm -rf node_modules/grunt-contrib-uglify/node_modules/uglify-js/",
