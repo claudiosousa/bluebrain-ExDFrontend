@@ -170,6 +170,12 @@
           templateUrl: 'views/esv/esv-experiments.html',
           controller: 'esvExperimentsCtrl',
           resolve: {
+            currentUser: [
+              'storageServer',
+              function(storageServer) {
+                return storageServer.getCurrentUser();
+              }
+            ],
             setCollabState: [
               'environmentService',
               function(environmentService) {
@@ -229,6 +235,12 @@
           templateUrl: 'views/esv/esv-experiments.html',
           controller: 'esvExperimentsCtrl',
           resolve: {
+            currentUser: [
+              'storageServer',
+              function(storageServer) {
+                return storageServer.getCurrentUser();
+              }
+            ],
             setCollabState: [
               'environmentService',
               function(environmentService) {
