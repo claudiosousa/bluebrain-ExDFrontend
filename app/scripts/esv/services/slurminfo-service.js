@@ -69,6 +69,7 @@
         let clusterAvailability$ = Rx.Observable
           .timer(0, SERVER_POLL_INTERVAL)
           .switchMap(() => rsc.get().$promise)
+          .filter(e => e)
           .map(({ free, nodes }) => ({ free, total: nodes[3] }));
 
         return clusterAvailability$.multicast(new Rx.Subject()).refCount();
