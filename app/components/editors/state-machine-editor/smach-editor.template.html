@@ -32,11 +32,13 @@
       </div>
     </div>
     <button type="button" class="btn btn-default btn-md"
+            owner-only
             ng-click="update(stateMachine)"
             ng-disabled="!stateMachine.dirty || stateService.statePending">
       <i class="glyphicon glyphicon-ok-circle"></i><span> Apply</span>
     </button>
     <button type="button" class="btn btn-default btn-md"
+            owner-only
             ng-disabled="stateService.statePending"
             ng-click="delete(stateMachine)">
       <i class="glyphicon glyphicon-remove"></i><span> Delete</span>
