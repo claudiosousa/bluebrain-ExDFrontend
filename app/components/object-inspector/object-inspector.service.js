@@ -278,6 +278,8 @@
                 });
               }
             });
+
+            gz3d.scene.refresh3DViews();
           };
 
           this.onKeyUp = function(event) {

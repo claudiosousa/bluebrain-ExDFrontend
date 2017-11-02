@@ -33,7 +33,8 @@ describe('testing the gz3d service', function() {
       }
     },
     getDomElement: jasmine.createSpy('getDomElement').and.returnValue({}),
-    setWindowSize: jasmine.createSpy('setWindowSize')
+    setWindowSize: jasmine.createSpy('setWindowSize'),
+    refresh3DViews: jasmine.createSpy('refresh3DViews')
   };
   var GuiObject = {};
   var GZIfaceObject = { addCanDeletePredicate: angular.noop };

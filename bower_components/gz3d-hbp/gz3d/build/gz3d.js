@@ -1673,6 +1673,7 @@ GZ3D.Composer = function (gz3dScene)
     }
     this.normalizedMasterSettings = null;
 
+
     //-----------------------------------
     // Sun, lens flare
 
@@ -1928,11 +1929,16 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                             function ()
                             {
                                 that.pbrTotalLoadingTextures -= 1;
+                                if (that.pbrTotalLoadingTextures===0)
+                                {
+                                    that.gz3dScene.refresh3DViews();
+                                }
                             },
                             undefined,
                             function ()
                             {
                                 that.pbrTotalLoadingTextures -= 1;
+                                that.gz3dScene.refresh3DViews();
                             });
 
                         materialParams[maptype].wrapS = THREE.RepeatWrapping;
@@ -2087,6 +2093,8 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
 {
     var that = this;
 
+    this.gz3dScene.refresh3DViews();
+
     var cs = this.gz3dScene.composerSettings;
     if (cs.pbrMaterial === undefined)
     {
@@ -2180,6 +2188,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
                 function ()
                 {
                     that.loadingSkyBox = false;
+                    that.gz3dScene.refresh3DViews();
                 }
             );
             this.currenSkyBoxTexture.format = THREE.RGBFormat;
@@ -2317,6 +2326,8 @@ GZ3D.Composer.prototype.applyComposerSettingsToModel = function (model)
     {
         updatePBRForModel(node);
     });
+
+    this.gz3dScene.refresh3DViews();
 };
 
 /**
@@ -2379,7 +2390,6 @@ GZ3D.Composer.prototype.render = function (view)
     {
         this.initView(view);
     }
-
 
     view.renderer.clear();
 
@@ -3246,6 +3256,7 @@ gzangular.controller('insertControl', ['$scope', '$http', function ($scope, $htt
   {
     guiEvents.emit('openTab', tab, 'insertMenu');
   };
+
 }]);
 
 
@@ -7394,6 +7405,8 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
         }
       }
     }
+
+    scope.gz3dScene.refresh3DViews();
   };
 
   /**
@@ -7776,6 +7789,7 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
 
     moveHoverMesh = obj;
     scope.gz3dScene.dontRebuildCubemapNow = moveHoverMesh!==null;
+    scope.gz3dScene.refresh3DViews();
   }
 
   function processNaturalMoveHover(event)
@@ -8467,6 +8481,9 @@ GZ3D.MultiView.prototype.createView = function (name, cameraParams) {
     };
   }
 
+  view.needsRefresh = true;
+  view.cameraViewCurrentMatrix = camera.matrixWorld.clone();
+
   this.views.push(view);
 
   return view;
@@ -8529,12 +8546,21 @@ GZ3D.MultiView.prototype.renderViews = function () {
     var view = this.views[i];
 
     if (this.isViewVisible(view)) {
-      //this.renderToIndividualCanvases(view);
-      this.updateView(view);
-      this.gz3dScene.composer.render(view);
+      if (view.needsRefresh ||
+        view.canvas.width!==view.container.clientWidth ||
+        view.canvas.height!==view.container.clientHeight ||
+        !view.camera.matrixWorld.equals(view.cameraViewCurrentMatrix) )
+      {
+        view.needsRefresh = false;
+        view.cameraViewCurrentMatrix = view.camera.matrixWorld.clone();
 
-      if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
-        view.canvas.getContext('2d').drawImage(this.renderer.domElement, 0, 0);
+        //this.renderToIndividualCanvases(view);
+        this.updateView(view);
+        this.gz3dScene.composer.render(view);
+
+        if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
+          view.canvas.getContext('2d').drawImage(this.renderer.domElement, 0, 0);
+        }
       }
     }
   }
@@ -9850,12 +9876,10 @@ GZ3D.Scene.prototype.updateUI = function()
       this.naturalAutoAlignMode)
     {
       this.controls.enabled = false;
-      //this.controls.update();
     }
     else
     {
       this.controls.enabled = true;
-      //this.controls.update();
     }
   }
 
@@ -9872,6 +9896,7 @@ GZ3D.Scene.prototype.add = function(model)
   model.viewAs = 'normal';
   this.scene.add(model);
   this.updateDynamicEnvMap();
+  this.refresh3DViews();
 };
 
 /**
@@ -9882,6 +9907,7 @@ GZ3D.Scene.prototype.remove = function(model)
 {
   this.scene.remove(model);
   this.updateDynamicEnvMap();
+  this.refresh3DViews();
 };
 
 /**
@@ -9926,6 +9952,7 @@ GZ3D.Scene.prototype.setPose = function(model, position, orientation)
   model.quaternion.x = orientation.x;
   model.quaternion.y = orientation.y;
   model.quaternion.z = orientation.z;
+  this.refresh3DViews();
 };
 
 /**
@@ -9936,6 +9963,7 @@ GZ3D.Scene.prototype.setPose = function(model, position, orientation)
 GZ3D.Scene.prototype.setScale = function(model, scale) {
   model.scale.copy(scale);
   model.updateMatrixWorld();
+  this.refresh3DViews();
 };
 
 GZ3D.Scene.prototype.removeAll = function()
@@ -9944,6 +9972,7 @@ GZ3D.Scene.prototype.removeAll = function()
   {
     this.scene.remove(this.scene.children[0]);
   }
+  this.refresh3DViews();
 };
 
 /**
@@ -10988,6 +11017,7 @@ GZ3D.Scene.prototype.setMaterial = function(obj, material)
     }
 
     this.updateDynamicEnvMap();
+    this.refresh3DViews();
   }
 };
 
@@ -11019,6 +11049,7 @@ GZ3D.Scene.prototype.setManipulationMode = function(mode)
     }
   }
 
+  this.refresh3DViews();
 };
 
 /**
@@ -11051,7 +11082,7 @@ GZ3D.Scene.prototype.showCollision = function(show)
     }
   }
   this.showCollisions = show;
-
+  this.refresh3DViews();
 };
 
 /**
@@ -11084,6 +11115,7 @@ GZ3D.Scene.prototype.resetView = function()
   this.camera.up = new THREE.Vector3(0, 0, 1);
   this.camera.lookAt(this.defaultCameraLookAt);
   this.camera.updateMatrix();
+  this.refresh3DViews();
 };
 
 /**
@@ -11117,6 +11149,7 @@ GZ3D.Scene.prototype.setCameraPose = function(xPos, yPos, zPos, xLookAt, yLookAt
   this.camera.position = new THREE.Vector3(xPos, yPos, zPos);
   this.camera.lookAt(new THREE.Vector3(xLookAt, yLookAt, zLookAt));
   this.camera.updateMatrix();
+  this.refresh3DViews();
 };
 
 /**
@@ -11226,6 +11259,7 @@ GZ3D.Scene.prototype.showBoundingBox = function(model)
 
   // Add box as model's child
   model.add(this.boundingBox);
+  this.refresh3DViews();
 };
 
 /**
@@ -11238,6 +11272,7 @@ GZ3D.Scene.prototype.hideBoundingBox = function()
     this.boundingBox.parent.remove(this.boundingBox);
   }
   this.boundingBox.visible = false;
+  this.refresh3DViews();
 };
 
 /**
@@ -11255,6 +11290,7 @@ GZ3D.Scene.prototype.onRightClick = function(event, callback)
   {
     callback(model);
   }
+  this.refresh3DViews();
 };
 
 
@@ -11329,6 +11365,7 @@ GZ3D.Scene.prototype.setViewAs = function(model, viewAs)
     }
   }
   model.viewAs = viewAs;
+  this.refresh3DViews();
 };
 
 /**
@@ -11394,6 +11431,8 @@ GZ3D.Scene.prototype.selectEntity = function(object)
     this.hideBoundingBox();
     this.selectedEntity = null;
     guiEvents.emit('setTreeDeselected');
+
+    this.refresh3DViews();
   }
 };
 
@@ -11566,6 +11605,7 @@ GZ3D.Scene.prototype.viewJoints = function(model)
       }
     }
   }
+  this.refresh3DViews();
 };
 
 /**
@@ -11652,6 +11692,8 @@ GZ3D.Scene.prototype.updateLight = function(entity, msg)
       lightObj.exponent = msg.spot_falloff;
     }
   }
+
+  this.refresh3DViews();
 };
 
 GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
@@ -11676,6 +11718,8 @@ GZ3D.Scene.prototype.setShadowMaps = function(enabled) {
       }
     }
   });
+
+  this.refresh3DViews();
 };
 
 /**
@@ -11694,11 +11738,12 @@ GZ3D.Scene.prototype.applyComposerSettings = function(updateColorCurve,forcePBRU
  * Force an update of the dynamic environment map
 */
 
-  GZ3D.Scene.prototype.updateDynamicEnvMap = function()
-  {
-    this.composer.cubeMapNeedsUpdate = true;
-    this.needsImmediateUpdate = true;
-  };
+GZ3D.Scene.prototype.updateDynamicEnvMap = function()
+{
+  this.composer.cubeMapNeedsUpdate = true;
+  this.needsImmediateUpdate = true;
+  this.refresh3DViews();
+};
 
 /**
  * Apply composer settings to a specific model
@@ -11722,7 +11767,8 @@ GZ3D.Scene.prototype.setMasterSettings = function (masterSettings)
 {
     this.composer.setMasterSettings(masterSettings);
     this.needsImmediateUpdate = true;
-};
+    this.refresh3DViews();
+  };
 
 /**
  * Check a specific setting is supported by the current master setting level
@@ -11733,6 +11779,19 @@ GZ3D.Scene.prototype.setMasterSettings = function (masterSettings)
 GZ3D.Scene.prototype.isSupportedByMasterSetting = function (setting)
 {
   return this.composer.isSupportedByMasterSetting(setting);
+};
+
+/**
+ * 3D views need to be refreshed
+ *
+*/
+
+GZ3D.Scene.prototype.refresh3DViews = function ()
+{
+  for(var i=0; i<this.viewManager.views.length; i++)
+  {
+    this.viewManager.views[i].needsRefresh = true;
+  }
 };
 
 

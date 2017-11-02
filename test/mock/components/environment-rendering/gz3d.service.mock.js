@@ -23,6 +23,7 @@
     this.scene = {
       render: jasmine.createSpy('render'),
       resetView: jasmine.createSpy('resetView'),
+      refresh3DViews: jasmine.createSpy('refresh3DViews'),
       setDefaultCameraPose: jasmine.createSpy('setDefaultCameraPose'),
       container: {
         addEventListener: jasmine.createSpy('addEventListener')

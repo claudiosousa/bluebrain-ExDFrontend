@@ -408,6 +408,7 @@ THREE.LookatRobotControls = function (userView, robot)
     v.add(this.lookAtTarget.position);
     this.userView.camera.position.copy(v);
     this.userView.camera.lookAt(this.lookAtTarget.position);
+    this.userView.camera.updateMatrixWorld();
   };
 
   this.onMouseDownManipulator = function (action)

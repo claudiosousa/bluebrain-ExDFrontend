@@ -83,6 +83,7 @@
               node.visible = that.scene.showLightHelpers; //TODO: showLightHelpers should be part of this service?
             }
           });
+          that.scene.refresh3DViews();
         };
         this.MODEL_LIBRARY = 'libraries/model_library.json';
         this.Initialize = function() {
