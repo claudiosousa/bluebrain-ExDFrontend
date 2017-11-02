@@ -25,22 +25,18 @@
 (function() {
   'use strict';
 
-  angular
-    .module('exdFrontendApp.Constants')
-    .constant('EDIT_MODE', {
-      VIEW: 'view',
-      NATURAL: 'natural',
-      TRANSLATE: 'translate',
-      ROTATE: 'rotate',
-      SCALE: 'scale'
-    })
-    .constant('MODEL_LIBRARY', 'libraries/model_library.json');
+  angular.module('exdFrontendApp.Constants').constant('EDIT_MODE', {
+    VIEW: 'view',
+    NATURAL: 'natural',
+    TRANSLATE: 'translate',
+    ROTATE: 'rotate',
+    SCALE: 'scale'
+  });
 
   angular.module('exdFrontendApp').directive('environmentDesigner', [
     '$document',
     'STATE',
     'EDIT_MODE',
-    'MODEL_LIBRARY',
     'panels',
     'simulationSDFWorld',
     'bbpConfig',
@@ -61,7 +57,6 @@
       $document,
       STATE,
       EDIT_MODE,
-      MODEL_LIBRARY,
       panels,
       simulationSDFWorld,
       bbpConfig,
@@ -116,7 +111,7 @@
             scope.updateVisibleModels();
           };
 
-          const modelLibrary = scope.assetsPath + '/' + MODEL_LIBRARY;
+          const modelLibrary = scope.assetsPath + '/' + gz3d.MODEL_LIBRARY;
           $http.get(modelLibrary).then(function(res) {
             scope.categories = res.data;
 

@@ -95,6 +95,7 @@ describe('testing the gz3d service', function() {
     expect(gz3d.iface).toBeDefined();
     expect(gz3d.gui).toBeDefined();
     expect(gz3d.scene).toBeDefined();
+    expect(gz3d.MODEL_LIBRARY).toBeDefined();
   });
 
   it('should not initialize when already initialized', function() {

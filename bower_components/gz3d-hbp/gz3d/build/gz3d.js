@@ -2696,7 +2696,7 @@ var lastOpenMenu = {mainMenu: 'mainMenu', insertMenu: 'insertMenu',
 
 var tabColors = {selected: 'rgb(34, 170, 221)', unselected: 'rgb(42, 42, 42)'};
 
-var modelList = [];
+var modelList = GZ3D.modelList || [];
 
 $(function()
 {
@@ -3246,12 +3246,6 @@ gzangular.controller('insertControl', ['$scope', '$http', function ($scope, $htt
   {
     guiEvents.emit('openTab', tab, 'insertMenu');
   };
-
-  const model_library_path = GZ3D.assetsPath + '/libraries/model_library.json';
-  $http.get(model_library_path).then(function (res)
-  {
-    modelList = res.data;
-  });
 }]);
 
 

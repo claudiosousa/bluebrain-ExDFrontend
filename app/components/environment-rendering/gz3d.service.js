@@ -37,9 +37,10 @@
     '$rootScope',
     '$window',
     '$compile',
+    '$http',
     'simulationInfo',
     'bbpConfig',
-    function($rootScope, $window, $compile, simulationInfo, bbpConfig) {
+    function($rootScope, $window, $compile, $http, simulationInfo, bbpConfig) {
       /* moved from the gz3d-view.html*/
       if (!Detector.webgl) {
         Detector.addGetWebGLMessage();
@@ -83,15 +84,18 @@
             }
           });
         };
-
+        this.MODEL_LIBRARY = 'libraries/model_library.json';
         this.Initialize = function() {
           if (isInitialized) {
             return;
           }
-
           GZ3D.assetsPath = simulationInfo.serverConfig.gzweb.assets;
           GZ3D.webSocketUrl = simulationInfo.serverConfig.gzweb.websocket;
           GZ3D.animatedModel = simulationInfo.animatedModel;
+          const modelLibraryPath = GZ3D.assetsPath + '/' + this.MODEL_LIBRARY;
+          $http.get(modelLibraryPath).then(function(res) {
+            GZ3D.modelList = res.data;
+          });
 
           var token;
           var clientID = bbpConfig.get('auth.clientId', '');
