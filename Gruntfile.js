@@ -712,7 +712,7 @@ module.exports = function(grunt) {
     },
 
     exec: {
-      tagLatestNpm: 'npm tag exdfrontend@<%= pkg.version %> latest'
+      tagLatestNpm: 'npm dist-tag add exdfrontend@<%= pkg.version %> latest'
     },
 
     jsdoc: {
