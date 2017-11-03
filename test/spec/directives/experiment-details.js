@@ -26,14 +26,8 @@ describe('Directive: experiment-details', function() {
 
   var scope, $httpBackend;
   beforeEach(
-    inject(function(
-      $compile,
-      $rootScope,
-      _$httpBackend_,
-      _nrpFrontendVersion_
-    ) {
+    inject(function($compile, $rootScope, _$httpBackend_) {
       $httpBackend = _$httpBackend_;
-      _nrpFrontendVersion_ = nrpFrontendVersion;
 
       var element = $compile('<experiment-details/>')($rootScope);
       $rootScope.$digest();

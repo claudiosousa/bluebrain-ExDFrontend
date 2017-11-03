@@ -3,8 +3,6 @@
 describe('Directive: transferFunctionEditor', function() {
   var $rootScope,
     $compile,
-    $httpBackend,
-    $log,
     $timeout,
     $scope,
     isolateScope,
@@ -12,15 +10,11 @@ describe('Directive: transferFunctionEditor', function() {
     element,
     backendInterfaceService,
     currentStateMock,
-    roslib,
     stateService,
     STATE,
-    documentationURLs,
-    SIMULATION_FACTORY_CLE_ERROR,
     SOURCE_TYPE,
     pythonCodeHelper,
     ScriptObject,
-    simulationInfo,
     clbConfirm,
     clbErrorDialog,
     downloadFileService,
@@ -99,20 +93,14 @@ describe('Directive: transferFunctionEditor', function() {
     inject(function(
       _$rootScope_,
       _$compile_,
-      _$httpBackend_,
-      _$log_,
       _$timeout_,
       _backendInterfaceService_,
       $templateCache,
       _currentStateMockFactory_,
-      _documentationURLs_,
-      _roslib_,
       _stateService_,
       _STATE_,
-      _SIMULATION_FACTORY_CLE_ERROR_,
       _SOURCE_TYPE_,
       _pythonCodeHelper_,
-      _simulationInfo_,
       _clbConfirm_,
       _clbErrorDialog_,
       _downloadFileService_,
@@ -121,16 +109,10 @@ describe('Directive: transferFunctionEditor', function() {
       _$q_,
       _environmentService_
     ) {
-      simulationInfo = _simulationInfo_;
       $rootScope = _$rootScope_;
       $compile = _$compile_;
-      $httpBackend = _$httpBackend_;
-      $log = _$log_;
       $timeout = _$timeout_;
-      documentationURLs = _documentationURLs_;
-      roslib = _roslib_;
       STATE = _STATE_;
-      SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
       SOURCE_TYPE = _SOURCE_TYPE_;
       stateService = _stateService_;
       backendInterfaceService = _backendInterfaceService_;

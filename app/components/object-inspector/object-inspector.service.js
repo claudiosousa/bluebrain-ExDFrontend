@@ -378,7 +378,7 @@
             }
           };
 
-          this.onAxisMoveEnd = function(event) {
+          this.onAxisMoveEnd = function() {
             if (gz3d.scene === null) {
               return;
             }
@@ -401,7 +401,7 @@
 
           this.isLightSelected = this.checkLightSelected;
 
-          this.onUpdateNeeded = function(event) {
+          this.onUpdateNeeded = function() {
             if (gz3d.scene === null) {
               return;
             }

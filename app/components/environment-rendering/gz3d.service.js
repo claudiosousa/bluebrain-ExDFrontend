@@ -24,7 +24,6 @@
 /* global console: false */
 /* global GZ3D: false */
 /* global Detector: false */
-/* global Stats: false */
 
 /* global self: false */
 

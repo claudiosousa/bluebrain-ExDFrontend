@@ -2,16 +2,9 @@
 
 describe('Services: experimentService', function() {
   var experimentService,
-    simulationInfo,
-    nrpUser,
     simulationControlObject,
-    bbpConfig,
     experimentsFactoryObject,
-    nrpFrontendVersion,
-    nrpBackendVersions,
-    rootScope,
-    $httpBackend,
-    $q;
+    rootScope;
 
   var simulationData = {
     owner: 'Some owner id',
@@ -61,31 +54,9 @@ describe('Services: experimentService', function() {
   );
 
   beforeEach(
-    inject(function(_$q_) {
-      $q = _$q_;
-    })
-  );
-
-  beforeEach(
-    inject(function(
-      _experimentService_,
-      _$rootScope_,
-      _simulationInfo_,
-      _nrpUser_,
-      _nrpFrontendVersion_,
-      _nrpBackendVersions_,
-      _bbpConfig_,
-      _$httpBackend_
-    ) {
+    inject(function(_experimentService_, _$rootScope_) {
       experimentService = _experimentService_;
-      simulationInfo = _simulationInfo_;
-      nrpUser = _nrpUser_;
-
-      bbpConfig = _bbpConfig_;
-      nrpFrontendVersion = _nrpFrontendVersion_;
-      nrpBackendVersions = _nrpBackendVersions_;
       rootScope = _$rootScope_;
-      $httpBackend = _$httpBackend_;
       rootScope.$digest();
     })
   );

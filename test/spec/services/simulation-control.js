@@ -1,15 +1,10 @@
 'use strict';
 
-var TestDataGenerator = window.TestDataGenerator;
-
 describe('Services: server-info-service', function() {
-  var storageServer,
-    bbpStubFactory,
-    simulationControl,
+  var simulationControl,
     simulationState,
     simulationGenerator,
     objectControl,
-    scope,
     STATE;
 
   // load the service to test and mock the necessary service
@@ -17,7 +12,7 @@ describe('Services: server-info-service', function() {
   beforeEach(module('bbpStubFactory'));
   beforeEach(module('storageServerMock'));
 
-  var httpBackend, simulations, returnSimulations, experimentTemplates;
+  var httpBackend, simulations;
 
   beforeEach(
     inject(function(
@@ -25,7 +20,6 @@ describe('Services: server-info-service', function() {
       $rootScope,
       $timeout,
       _storageServer_,
-      _bbpStubFactory_,
       _simulationControl_,
       _simulationState_,
       _simulationGenerator_,
@@ -33,9 +27,6 @@ describe('Services: server-info-service', function() {
       _STATE_
     ) {
       httpBackend = _$httpBackend_;
-      scope = $rootScope.$new();
-      storageServer = _storageServer_;
-      bbpStubFactory = _bbpStubFactory_;
       simulationControl = _simulationControl_;
       simulationState = _simulationState_;
       simulationGenerator = _simulationGenerator_;
@@ -87,20 +78,6 @@ describe('Services: server-info-service', function() {
           owner: 'invalid-id'
         }
       ];
-
-      // The return simulations' entries are simply augmented with 'serverID' (being 'bbpce016')
-      returnSimulations = (function() {
-        simulations.forEach(function(element) {
-          element.serverID = 'bbpce016';
-        });
-        return simulations;
-      })();
-
-      experimentTemplates = {
-        '1': TestDataGenerator.createTestExperiment(),
-        '2': TestDataGenerator.createTestExperiment(),
-        '3': TestDataGenerator.createTestExperiment()
-      };
 
       httpBackend
         .whenGET('http://bbpce016.epfl.ch:8080/simulation')
@@ -305,7 +282,7 @@ describe('experimentSimulationService', function() {
 describe('Services: error handling', function() {
   var httpBackend;
   var serverError, simulationControl;
-  var simulationGenerator, simulationState, experimentSimulationService;
+  var simulationState;
   var objectControl;
 
   beforeEach(module('exd.templates', 'simulationControlServices'));
@@ -340,9 +317,7 @@ describe('Services: error handling', function() {
     inject(function(
       $httpBackend,
       _simulationControl_,
-      _simulationGenerator_,
       _simulationState_,
-      _experimentSimulationService_,
       _objectControl_,
       _serverError_
     ) {
@@ -350,9 +325,7 @@ describe('Services: error handling', function() {
       serverError = _serverError_;
       serverError.displayHTTPError.calls.reset();
       simulationControl = _simulationControl_;
-      simulationGenerator = _simulationGenerator_;
       simulationState = _simulationState_;
-      experimentSimulationService = _experimentSimulationService_;
       objectControl = _objectControl_;
       httpBackend.whenPUT(/\/simulation/).respond(500);
     })

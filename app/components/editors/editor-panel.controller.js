@@ -113,7 +113,7 @@
             ([tabIndex, tabName]) =>
               tabIndex === $scope.activeTabIndex && tabName
           )
-          .map(([tabIndex, tabName]) => $scope.controls[tabName])
+          .map(([tabIndex, tabName]) => $scope.controls[tabName]) // eslint-disable-line no-unused-vars
           .first();
 
         selectedTab && selectedTab.refresh && selectedTab.refresh();

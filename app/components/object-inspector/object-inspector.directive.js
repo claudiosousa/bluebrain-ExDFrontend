@@ -46,7 +46,7 @@
           'components/object-inspector/object-inspector.template.html',
         restrict: 'E',
         scope: true,
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.minimized = false;
           scope.collapsedTransform = false;
           scope.collapsedVisuals = false;

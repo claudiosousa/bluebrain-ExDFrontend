@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Service: dynamicViewOverlayService', function() {
-  var $q, $rootScope, $timeout;
+  var $q, $rootScope;
   var dynamicViewOverlayService, nrpAnalytics;
 
   var TEST_DUMMY = {
@@ -23,13 +23,11 @@ describe('Service: dynamicViewOverlayService', function() {
     inject(function(
       _$q_,
       _$rootScope_,
-      _$timeout_,
       _dynamicViewOverlayService_,
       _nrpAnalytics_
     ) {
       $q = _$q_;
       $rootScope = _$rootScope_;
-      $timeout = _$timeout_;
       dynamicViewOverlayService = _dynamicViewOverlayService_;
       nrpAnalytics = _nrpAnalytics_;
     })

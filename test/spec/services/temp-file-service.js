@@ -9,7 +9,6 @@ describe('Services: tempFileService', function() {
     nrpModalService,
     stateParams,
     previouslySavedFile,
-    createFileResponse,
     environmentService;
   var $rootScope, tempFileService, $q;
 
@@ -67,7 +66,6 @@ describe('Services: tempFileService', function() {
       environmentService.setPrivateExperiment(true);
 
       previouslySavedFile = undefined; //by default, there is now previously auto saved file
-      createFileResponse = $q.when(); //succeeds by default
     })
   );
 

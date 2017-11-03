@@ -41,8 +41,7 @@
       collabConfigService,
       $window,
       nrpUser,
-      environmentService,
-      storageServer
+      environmentService
     ) {
       $scope.pageState = {};
       $scope.isPrivateExperiment = environmentService.isPrivateExperiment();

@@ -85,7 +85,7 @@
   });
 
   describe('Controller: ModalInstanceCtrl', function() {
-    var $timeout, scope, log, splash, Ctrl;
+    var $timeout, scope, log, splash;
 
     beforeEach(module('exd.templates'));
     beforeEach(module('exdFrontendApp'));
@@ -99,7 +99,7 @@
         spyOn(log, 'error');
         spyOn(scope, '$apply');
 
-        Ctrl = $controller('ModalInstanceCtrl', {
+        $controller('ModalInstanceCtrl', {
           $scope: scope
         });
       })

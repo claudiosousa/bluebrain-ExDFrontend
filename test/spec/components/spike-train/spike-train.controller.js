@@ -9,7 +9,7 @@ describe('Controller: spiketrain', function() {
   beforeEach(module('editorToolbarServiceMock'));
   beforeEach(module('spikeListenerServiceMock'));
 
-  var $element, $rootScope, $scope, $timeout;
+  var $rootScope, $scope, $timeout;
   var mockAngularElement;
   var spikeController,
     canvas,
@@ -43,7 +43,6 @@ describe('Controller: spiketrain', function() {
 
   beforeEach(
     inject(function(
-      _$element_,
       _$rootScope_,
       $controller,
       $filter,
@@ -52,7 +51,6 @@ describe('Controller: spiketrain', function() {
       _editorToolbarService_,
       _spikeListenerService_
     ) {
-      $element = _$element_;
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       $timeout = _$timeout_;

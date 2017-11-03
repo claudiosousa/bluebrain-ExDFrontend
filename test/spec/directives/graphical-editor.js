@@ -3,25 +3,16 @@
 describe('Directive: graphicalEditor', function() {
   var $rootScope,
     $compile,
-    $httpBackend,
-    $log,
-    $timeout,
     $scope,
     isolateScope,
     transferFunctions,
     element,
     backendInterfaceService,
     currentStateMock,
-    roslib,
-    stateService,
-    STATE,
-    documentationURLs,
-    SIMULATION_FACTORY_CLE_ERROR,
     SOURCE_TYPE,
     TRANSFER_FUNCTION_TYPE,
     pythonCodeHelper,
-    ScriptObject,
-    simulationInfo;
+    ScriptObject;
 
   var backendInterfaceServiceMock = {
     getPopulations: jasmine.createSpy('getPopulations'),
@@ -91,22 +82,12 @@ describe('Directive: graphicalEditor', function() {
       _SIMULATION_FACTORY_CLE_ERROR_,
       _SOURCE_TYPE_,
       _TRANSFER_FUNCTION_TYPE_,
-      _pythonCodeHelper_,
-      _simulationInfo_
+      _pythonCodeHelper_
     ) {
-      simulationInfo = _simulationInfo_;
       $rootScope = _$rootScope_;
       $compile = _$compile_;
-      $httpBackend = _$httpBackend_;
-      $log = _$log_;
-      $timeout = _$timeout_;
-      documentationURLs = _documentationURLs_;
-      roslib = _roslib_;
-      STATE = _STATE_;
-      SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
       SOURCE_TYPE = _SOURCE_TYPE_;
       TRANSFER_FUNCTION_TYPE = _TRANSFER_FUNCTION_TYPE_;
-      stateService = _stateService_;
       backendInterfaceService = _backendInterfaceService_;
       currentStateMock = _currentStateMockFactory_.get().stateService;
       editorMock.getLineHandle = jasmine

@@ -3,12 +3,7 @@
 describe('Services: userContextService', function() {
   var userContextService;
 
-  var $rootScope, $scope, $window, $q;
-  var userNavigationService,
-    collabExperimentLockService,
-    simulationInfo,
-    bbpConfig,
-    environmentService;
+  var $rootScope, simulationInfo, environmentService;
 
   var lockServiceMock, cancelLockServiceMock;
 
@@ -71,32 +66,19 @@ describe('Services: userContextService', function() {
     })
   );
 
-  var httpBackend, experimentService;
+  var httpBackend;
   // inject dependencies
   beforeEach(function() {
     inject(function(
       _$rootScope_,
-      _$window_,
-      _$q_,
       $httpBackend,
       _userContextService_,
-      _userNavigationService_,
-      _collabExperimentLockService_,
       _simulationInfo_,
-      _bbpConfig_,
-      _environmentService_,
-      _experimentService_
+      _environmentService_
     ) {
       userContextService = _userContextService_;
-      experimentService = _experimentService_;
       $rootScope = _$rootScope_;
-      $scope = $rootScope.$new();
-      $window = _$window_;
-      $q = _$q_;
-      userNavigationService = _userNavigationService_;
-      collabExperimentLockService = _collabExperimentLockService_;
       simulationInfo = _simulationInfo_;
-      bbpConfig = _bbpConfig_;
       environmentService = _environmentService_;
       httpBackend = $httpBackend;
 

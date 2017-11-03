@@ -55,7 +55,7 @@
 
           let hideLogSubscription = advertLogs$
             .debounce(log => Rx.Observable.timer(log.duration))
-            .subscribe(message => (scope.showAdvert = false)); //hide it
+            .subscribe(() => (scope.showAdvert = false)); //hide it
 
           scope.$on('$destroy', () => {
             showLogSubscription.unsubscribe();

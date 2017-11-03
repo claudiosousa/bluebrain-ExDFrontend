@@ -102,7 +102,7 @@
         var isDone = true;
         var loadedAssets = 0;
 
-        angular.forEach(data.assets, function(element, index) {
+        angular.forEach(data.assets, function(element) {
           loadedAssets += element.done ? 1 : 0;
           isDone = isDone && element.done;
           $scope.isError = $scope.isError || element.error;

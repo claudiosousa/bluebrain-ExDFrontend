@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: render settings user camera frustum', function() {
-  var $rootScope, element, gz3dMock, editorToolbarService;
+  var $rootScope, gz3dMock, editorToolbarService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -25,7 +25,7 @@ describe('Directive: render settings user camera frustum', function() {
     inject(function(_$rootScope_, $compile, _editorToolbarService_) {
       $rootScope = _$rootScope_;
       editorToolbarService = _editorToolbarService_;
-      element = $compile(
+      $compile(
         '<environment-settings-usercamera></environment-settings-usercamera>'
       )($rootScope);
       $rootScope.$digest();

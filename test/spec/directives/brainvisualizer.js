@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: brainvisualizer', function() {
-  var $rootScope, element, RESET_TYPE;
+  var $rootScope, RESET_TYPE;
 
   var spikeListenerServiceMock = {};
   var simulationConfigServiceMock = {};
@@ -176,7 +176,7 @@ describe('Directive: brainvisualizer', function() {
         window.BRAIN3D.DISPLAY_TYPE_BLENDED = 'Blended';
 
         $rootScope = _$rootScope_;
-        element = $compile('<brainvisualizer></brainvisualizer>')($rootScope);
+        $compile('<brainvisualizer></brainvisualizer>')($rootScope);
         $rootScope.$digest();
       })
     );
@@ -326,8 +326,7 @@ describe('Directive: brainvisualizer', function() {
         window.BRAIN3D.DISPLAY_TYPE_BLENDED = 'Blended';
 
         $rootScope = _$rootScope_;
-
-        element = $compile('<brainvisualizer></brainvisualizer>')($rootScope);
+        $compile('<brainvisualizer></brainvisualizer>')($rootScope);
       })
     );
 

@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: environment settings colors', function() {
-  var $rootScope, element, gz3dMock, editorToolbarService;
+  var $rootScope, gz3dMock, editorToolbarService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -22,7 +22,7 @@ describe('Directive: environment settings colors', function() {
       gz3dMock.scene.composerSettings.levelsOutBlack = 0.0;
       gz3dMock.scene.composerSettings.levelsOutWhite = 1.0;
 
-      gz3dMock.scene.applyComposerSettings = function(updateCurve) {};
+      gz3dMock.scene.applyComposerSettings = function() {};
 
       $provide.value('gz3d', gz3dMock);
     })
@@ -32,7 +32,7 @@ describe('Directive: environment settings colors', function() {
     inject(function(_$rootScope_, $compile, _editorToolbarService_) {
       $rootScope = _$rootScope_;
       editorToolbarService = _editorToolbarService_;
-      element = $compile(
+      $compile(
         '<environment-settings-colors></environment-settings-colors>'
       )($rootScope);
       $rootScope.$digest();

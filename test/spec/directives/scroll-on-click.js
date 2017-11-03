@@ -2,12 +2,12 @@
 
 describe('Directive: scrollOnClick', function() {
   beforeEach(module('exdFrontendApp'));
-  var $scope, element;
+  var $scope;
 
   beforeEach(
     inject(function($rootScope, $compile) {
       $scope = $rootScope.$new();
-      element = $compile(
+      $compile(
         '<a scroll-on-click href="#target">Scroll down</a><div id="target">Target</div>'
       )($scope);
       $scope.$digest();

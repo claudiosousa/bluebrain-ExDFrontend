@@ -31,7 +31,7 @@
           templateUrl:
             'components/alerts/browser-support/browser-support.template.html',
           scope: true,
-          link: function(scope, element) {
+          link: function(scope) {
             scope.dismissWarning =
               $window.sessionStorage.getItem('unsupportedBrowserWarning') ===
               'dismissed';

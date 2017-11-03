@@ -13,7 +13,6 @@ describe('Directive: editable-experiment', function() {
     environmentService,
     storageServer,
     clbErrorDialog,
-    experimentsFactory,
     ctx = 'some_context',
     collabExperimentResponse = {
       contextID: ctx,
@@ -40,8 +39,7 @@ describe('Directive: editable-experiment', function() {
       collabExperimentLockService,
       _environmentService_,
       _storageServer_,
-      _clbErrorDialog_,
-      _experimentsFactory_
+      _clbErrorDialog_
     ) {
       $window = _$window_;
       $timeout = _$timeout_;
@@ -50,7 +48,6 @@ describe('Directive: editable-experiment', function() {
       storageServer = _storageServer_;
       environmentService = _environmentService_;
       clbErrorDialog = _clbErrorDialog_;
-      experimentsFactory = _experimentsFactory_;
 
       spyOn(
         collabExperimentLockService,
@@ -96,12 +93,10 @@ describe('Directive: editable-experiment', function() {
   });
 
   describe(', private experiment,', function() {
-    var collabExperimentFile;
     var lockPromiseResponse;
 
     beforeEach(
       inject(function($compile) {
-        collabExperimentFile = '';
         environmentService.setPrivateExperiment(true);
         lockPromiseResponse = window.$q.when(lockResponse);
         $httpBackend
@@ -216,8 +211,6 @@ describe('Directive: editable-experiment', function() {
 
     it('test saveExperimentDetails doesnt bother to save if name hasnt changed', function() {
       scope.exp = { configuration: { name: 'newName' } };
-      //eslint-disable-next-line camelcase
-      collabExperimentFile = ['xml', { entity_type: 'file' }];
       spyOn(storageServer, 'setFileContent').and.returnValue(
         window.$q.when('')
       );
@@ -234,8 +227,6 @@ describe('Directive: editable-experiment', function() {
 
     it('test saveExperimentDetails doesnt bother to save if description hasnt changed', function() {
       scope.exp = { configuration: { description: 'newDesc' } };
-      //eslint-disable-next-line camelcase
-      collabExperimentFile = ['xml', { entity_type: 'file' }];
       spyOn(storageServer, 'setFileContent').and.returnValue(
         window.$q.when('')
       );
@@ -251,8 +242,6 @@ describe('Directive: editable-experiment', function() {
     });
 
     it('test saveExperimentDetails when everything goes well saving name', function() {
-      //eslint-disable-next-line camelcase
-      collabExperimentFile = ['xml', { entity_type: 'file' }];
       spyOn(storageServer, 'setFileContent').and.returnValue(
         window.$q.when('')
       );
@@ -269,8 +258,6 @@ describe('Directive: editable-experiment', function() {
     });
 
     it('test saveExperimentDetails when everything goes well saving description', function() {
-      //eslint-disable-next-line camelcase
-      collabExperimentFile = ['xml', { entity_type: 'file' }];
       spyOn(storageServer, 'setFileContent').and.returnValue(
         window.$q.when('')
       );
@@ -285,8 +272,6 @@ describe('Directive: editable-experiment', function() {
       expect(scope.isSavingToCollab).toBe(false);
     });
     it('test saveExperimentDetails when there is an error saving the new details to the collab', function() {
-      //eslint-disable-next-line camelcase
-      collabExperimentFile = ['xml', { entity_type: 'file' }];
       spyOn(storageServer, 'setFileContent').and.returnValue(
         window.$q.reject('')
       );

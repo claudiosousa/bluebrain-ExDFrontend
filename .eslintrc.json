@@ -7,8 +7,6 @@
   "rules": {
     "linebreak-style": ["error", "unix"],
     "no-console": "off",
-    "no-unused-vars": ["off"],
-    "no-unused": ["off"],
     "camelcase": "error"
   },
   "plugins": ["prettier"],

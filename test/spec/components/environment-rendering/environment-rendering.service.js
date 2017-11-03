@@ -1,21 +1,18 @@
 'use strict';
 
 describe('Services: environmentRenderingService', function() {
-  var $q, $rootScope;
-
   var STATE;
 
   var environmentRenderingService;
   var stateService,
+    $rootScope,
     gz3d,
     userContextService,
     assetLoadingSplash,
     simulationInfo,
-    nrpAnalytics,
     isNotARobotPredicate,
     userNavigationService,
-    collab3DSettingsService,
-    bbpConfig;
+    collab3DSettingsService;
 
   var frameInterval, lastFrameTime;
 
@@ -84,11 +81,9 @@ describe('Services: environmentRenderingService', function() {
 
     // inject service for testing.
     inject(function(
-      _$q_,
       _$rootScope_,
       _STATE_,
       _environmentRenderingService_,
-      _nrpAnalytics_,
       _stateService_,
       _gz3d_,
       _isNotARobotPredicate_,
@@ -96,15 +91,11 @@ describe('Services: environmentRenderingService', function() {
       _assetLoadingSplash_,
       _simulationInfo_,
       _userNavigationService_,
-      _collab3DSettingsService_,
-      _bbpConfig_
+      _collab3DSettingsService_
     ) {
-      $q = _$q_;
-      $rootScope = _$rootScope_;
       STATE = _STATE_;
-
+      $rootScope = _$rootScope_;
       environmentRenderingService = _environmentRenderingService_;
-      nrpAnalytics = _nrpAnalytics_;
       stateService = _stateService_;
       gz3d = _gz3d_;
       isNotARobotPredicate = _isNotARobotPredicate_;
@@ -113,7 +104,6 @@ describe('Services: environmentRenderingService', function() {
       simulationInfo = _simulationInfo_;
       userNavigationService = _userNavigationService_;
       collab3DSettingsService = _collab3DSettingsService_;
-      bbpConfig = _bbpConfig_;
     });
   });
 

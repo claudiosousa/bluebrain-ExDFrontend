@@ -2,8 +2,8 @@
 
 describe('Services: editorsPanelService', function() {
   var editorsPanelService;
-  var $window, $q, $rootScope, $scope;
-  var environmentService, simulationInfo, userContextService, nrpAnalytics;
+  var $window, $q;
+  var environmentService, userContextService;
   var cancelLockSubscription, deferredLock;
 
   // provide mock objects
@@ -42,23 +42,15 @@ describe('Services: editorsPanelService', function() {
     inject(function(
       _$window_,
       _$q_,
-      _$rootScope_,
       _editorsPanelService_,
       _environmentService_,
-      _simulationInfo_,
-      _userContextService_,
-      _nrpAnalytics_
+      _userContextService_
     ) {
       $window = _$window_;
       $q = _$q_;
-      $rootScope = _$rootScope_;
-      $scope = $rootScope.$new();
-
       editorsPanelService = _editorsPanelService_;
       environmentService = _environmentService_;
-      simulationInfo = _simulationInfo_;
       userContextService = _userContextService_;
-      nrpAnalytics = _nrpAnalytics_;
     });
   });
 

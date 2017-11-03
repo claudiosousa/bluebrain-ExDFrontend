@@ -180,7 +180,7 @@
             thisStateService.currentState = data.state;
             deferred.resolve();
           },
-          function(data) {
+          function() {
             deferred.reject();
           }
         );
@@ -213,7 +213,7 @@
             triggerStateCallbacks();
             deferred.resolve();
           },
-          function(data) {
+          function() {
             thisStateService.statePending = false;
             deferred.reject();
           }

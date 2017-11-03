@@ -41,7 +41,7 @@
           'components/environment-settings/environment-settings-usercamera.template.html',
         restrict: 'E',
         scope: true,
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.editorToolbarService = editorToolbarService;
           scope.gz3dViewsService = gz3dViewsService;
           scope.userNavigationService = userNavigationService;
@@ -81,7 +81,7 @@
           //----------------------------------------------
           // UI to 3D scene
 
-          scope.updateFrustumSettings = function(p) {
+          scope.updateFrustumSettings = function() {
             gz3d.scene.applyComposerSettings();
           };
         }

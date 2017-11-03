@@ -1,14 +1,6 @@
 'use strict';
 
 describe('Services: BaseExperimentsService', function() {
-  var $rootScope;
-
-  beforeEach(
-    inject(function(_$rootScope_) {
-      $rootScope = _$rootScope_;
-    })
-  );
-
   it('should throw if instantiated', function() {
     expect(function() {
       new window.BaseExperimentsService();

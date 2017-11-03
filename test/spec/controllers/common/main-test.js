@@ -6,19 +6,18 @@ describe('Controller: MainCtrl', function() {
   beforeEach(module('exd.templates'));
   beforeEach(module('nrpUserMock'));
 
-  var controller, scope, $window, $log, $controller;
+  var scope, $log, $controller;
 
   // Initialize the controller and a mock scope
   beforeEach(
     inject(function(_$controller_, _$window_, _$log_, $rootScope) {
-      $window = _$window_;
+      $controller = _$controller_;
       scope = $rootScope.$new();
       spyOn(scope, '$apply');
       /* global _: false */
       spyOn(_, 'defer');
       $log = _$log_;
-      $controller = _$controller_;
-      controller = $controller('MainCtrl', {
+      $controller('MainCtrl', {
         $scope: scope
       });
     })

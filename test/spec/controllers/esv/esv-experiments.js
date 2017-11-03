@@ -88,15 +88,13 @@
       bbpConfig,
       proxyUrl,
       roslib,
-      oidcUrl,
       experimentsFactory,
       SERVER_POLL_INTERVAL,
       $window,
       storageServer,
       $q,
       clbErrorDialog,
-      collabConfigService,
-      experimentSimulationService;
+      collabConfigService;
 
     var serverErrorMock = {
       displayHTTPError: jasmine
@@ -148,8 +146,7 @@
         _storageServer_,
         _$q_,
         _clbErrorDialog_,
-        _collabConfigService_,
-        _experimentSimulationService_
+        _collabConfigService_
       ) {
         $http = _$http_;
         $controller = _$controller_;
@@ -166,14 +163,12 @@
         experimentsFactory = _experimentsFactory_;
         SERVER_POLL_INTERVAL = _SERVER_POLL_INTERVAL_;
         proxyUrl = bbpConfig.get('api.proxy.url');
-        oidcUrl = bbpConfig.get('api.user.v0');
         $window = _$window_;
         storageServer = _storageServer_;
         $q = _$q_;
         clbErrorDialog = _clbErrorDialog_;
         environmentService = _environmentService_;
         collabConfigService = _collabConfigService_;
-        experimentSimulationService = _experimentSimulationService_;
       })
     );
 

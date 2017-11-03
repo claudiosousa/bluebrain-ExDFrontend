@@ -31,13 +31,10 @@ describe('Services: collab-service', function() {
   );
 
   it('should save a configuration', function() {
-    var result;
     collabConfigService.clone(
       null,
       { experimentID: 'FakeExperimentID' },
-      function(data) {
-        result = data;
-      }
+      function() {}
     );
     httpBackend.expectPUT(cloneServiceUrl, {
       experimentID: 'FakeExperimentID'

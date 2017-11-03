@@ -48,7 +48,6 @@
         link: function(scope) {
           scope.isSavingToCollab = false;
 
-          let editLockEntity;
           let lockService;
           if (environmentService.isPrivateExperiment()) {
             lockService = collabExperimentLockService.createLockServiceForExperimentId(
@@ -118,7 +117,7 @@
                 true
               )
               .then(
-                function(response) {
+                function() {
                   scope.isSavingToCollab = false;
                   scope.exp.configuration.experimentFile = xml;
                   scope.stopEditingExperimentDetails(editingKey);
@@ -170,7 +169,6 @@
                     result.lock.lockInfo.user.id !== scope.userinfo.userID
                   ) {
                     // save uuid
-                    editLockEntity = result.lock.lockInfo.entity;
                     clbErrorDialog.open({
                       type: 'AlreadyEditingError',
                       message:
@@ -181,7 +179,6 @@
                         '. Please try again later.'
                     });
                   } else {
-                    editLockEntity = null;
                     scope.loadingEdit = false;
                     scope.editing[elementID] = true;
                     scope.originalConfiguration = {

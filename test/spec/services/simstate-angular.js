@@ -3,7 +3,7 @@
 describe('Services: simulation state', function() {
   var simulationStateSpy;
   var updateSpy, stateSpy;
-  var stateService, q, httpBackend, STATE, roslib;
+  var stateService, STATE, roslib;
 
   var rosConnectionObject = {
     close: jasmine.createSpy('close'),
@@ -22,7 +22,7 @@ describe('Services: simulation state', function() {
     module('simulationControlServices', function($provide) {
       $provide.decorator('simulationState', function() {
         simulationStateSpy = jasmine.createSpy('simulationState');
-        return simulationStateSpy.and.callFake(function(s) {
+        return simulationStateSpy.and.callFake(function() {
           return {
             state: stateSpy,
             update: updateSpy
@@ -83,10 +83,8 @@ describe('Services: simulation state', function() {
   );
 
   beforeEach(
-    inject(function(_stateService_, $q, _$httpBackend_, _STATE_, _roslib_) {
+    inject(function(_stateService_, _STATE_, _roslib_) {
       stateService = _stateService_;
-      q = $q;
-      httpBackend = _$httpBackend_;
       STATE = _STATE_;
       roslib = _roslib_;
 
@@ -259,7 +257,7 @@ describe('Services: simulation state', function() {
       success({ state: 'FAKE_STATE_123' });
     };
 
-    simulationStateSpy.and.callFake(function(s) {
+    simulationStateSpy.and.callFake(function() {
       return {
         state: stateTestSpy,
         update: updateSpy
@@ -274,7 +272,7 @@ describe('Services: simulation state', function() {
       error({ state: 'FAKE_STATE_123' });
     };
 
-    simulationStateSpy.and.callFake(function(s) {
+    simulationStateSpy.and.callFake(function() {
       return {
         state: stateTestSpy,
         update: updateSpy
@@ -288,7 +286,7 @@ describe('Services: simulation state', function() {
     var updateTestSpy = function(parameters, nextParameters, success) {
       success({ state: nextParameters.state });
     };
-    simulationStateSpy.and.callFake(function(s) {
+    simulationStateSpy.and.callFake(function() {
       return {
         state: stateSpy,
         update: updateTestSpy
@@ -302,7 +300,7 @@ describe('Services: simulation state', function() {
     var updateTestSpy = function(parameters, nextParameters, success, error) {
       error({ state: nextParameters.state });
     };
-    simulationStateSpy.and.callFake(function(s) {
+    simulationStateSpy.and.callFake(function() {
       return {
         state: stateSpy,
         update: updateTestSpy

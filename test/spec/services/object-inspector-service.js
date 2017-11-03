@@ -20,7 +20,6 @@ describe('Services: objectInspectorService', function() {
     objectInspectorService,
     colorableObjectService;
   var gz3d, stateService, EDIT_MODE, STATE, OBJECT_VIEW_MODE;
-  var elementScope, element;
   var mockObject;
 
   var htmlMock = {};
@@ -99,10 +98,8 @@ describe('Services: objectInspectorService', function() {
     });
 
     $scope = $rootScope.$new();
-    element = $compile('<object-inspector></object-inspector>')($scope);
+    $compile('<object-inspector></object-inspector>')($scope);
     $scope.$digest();
-
-    elementScope = element.isolateScope();
   });
 
   // check to see if it has the expected function
@@ -261,8 +258,6 @@ describe('Services: objectInspectorService', function() {
   var axes = ['x', 'y', 'z'];
 
   angular.forEach(axes, function(axis) {
-    var idx = 'T' + axis.toUpperCase();
-
     it('should NOT update the selected object while translating, if the new value is undefined', function() {
       spyOn(objectInspectorService, 'onObjectChange');
 
@@ -288,8 +283,6 @@ describe('Services: objectInspectorService', function() {
       expect(objectInspectorService.onObjectChange).toHaveBeenCalled();
     });
 
-    idx = 'S' + axis.toUpperCase();
-
     it('should NOT update the selected object while scaling, if the new value is 0', function() {
       spyOn(objectInspectorService, 'onObjectChange');
       //new value is 0
@@ -313,8 +306,6 @@ describe('Services: objectInspectorService', function() {
       //must not invoke onObjectChange
       expect(objectInspectorService.onObjectChange).not.toHaveBeenCalled();
     });
-
-    idx = 'R' + axis.toUpperCase();
 
     it('should NOT update the selected object while rotating, if the new value is undefined', function() {
       spyOn(objectInspectorService, 'onObjectChange');
@@ -675,8 +666,7 @@ describe('Services: objectInspectorService', function() {
 });
 
 describe('Services: objectInspectorService2', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var objectInspectorService, gz3d;
 
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
@@ -693,22 +683,9 @@ describe('Services: objectInspectorService2', function() {
     module('simulationInfoService');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
 
     gz3d.scene = null;
@@ -731,8 +708,7 @@ describe('Services: objectInspectorService2', function() {
 });
 
 describe('Services: objectInspectorService3', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var gz3d, objectInspectorService;
 
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
@@ -750,22 +726,9 @@ describe('Services: objectInspectorService3', function() {
     module('gz3dMock');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
 
     gz3d.scene.manipulationMode = 'translate';
@@ -786,9 +749,7 @@ describe('Services: objectInspectorService3', function() {
 });
 
 describe('Services: objectInspectorService4', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
-
+  var gz3d, objectInspectorService;
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('stateServiceMock'));
@@ -805,22 +766,9 @@ describe('Services: objectInspectorService4', function() {
     module('gz3dMock');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
     gz3d.scene.manipulationMode = 'translate';
     gz3d.scene.modelManipulator.pickerMeshes = { TX: 'test' };
@@ -834,8 +782,7 @@ describe('Services: objectInspectorService4', function() {
 });
 
 describe('Services: objectInspectorService5', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var gz3d, objectInspectorService;
 
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
@@ -853,22 +800,9 @@ describe('Services: objectInspectorService5', function() {
     module('gz3dMock');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
 
     gz3d.scene.manipulationMode = 'rotate';
@@ -889,8 +823,7 @@ describe('Services: objectInspectorService5', function() {
 });
 
 describe('Services: objectInspectorService6', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var gz3d, objectInspectorService;
 
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
@@ -909,22 +842,9 @@ describe('Services: objectInspectorService6', function() {
     module('gz3dMock');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
 
     gz3d.scene.manipulationMode = 'rotate';
@@ -963,8 +883,7 @@ describe('Services: objectInspectorService6', function() {
 });
 
 describe('Services: objectInspectorService7', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var gz3d, objectInspectorService;
 
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
@@ -982,22 +901,9 @@ describe('Services: objectInspectorService7', function() {
     module('gz3dMock');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
 
     gz3d.scene.manipulationMode = 'rotate';
@@ -1016,8 +922,7 @@ describe('Services: objectInspectorService7', function() {
 });
 
 describe('Services: objectInspectorService8', function() {
-  var $timeout, objectInspectorService, colorableObjectService;
-  var gz3d, stateService, EDIT_MODE, STATE;
+  var gz3d, objectInspectorService;
 
   beforeEach(module('exd.templates')); // import html template
   beforeEach(module('exdFrontendApp'));
@@ -1035,22 +940,9 @@ describe('Services: objectInspectorService8', function() {
     module('gz3dMock');
 
     // inject service for testing.
-    inject(function(
-      _$timeout_,
-      _objectInspectorService_,
-      _gz3d_,
-      _stateService_,
-      _EDIT_MODE_,
-      _STATE_,
-      _colorableObjectService_
-    ) {
-      $timeout = _$timeout_;
+    inject(function(_objectInspectorService_, _gz3d_) {
       objectInspectorService = _objectInspectorService_;
       gz3d = _gz3d_;
-      stateService = _stateService_;
-      EDIT_MODE = _EDIT_MODE_;
-      STATE = _STATE_;
-      colorableObjectService = _colorableObjectService_;
     });
 
     gz3d.scene.manipulationMode = 'translate';

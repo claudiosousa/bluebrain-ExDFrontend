@@ -22,7 +22,7 @@ describe('Services: video-stream-service', function() {
 
   var videoUrl = 'http://video-url/';
 
-  var $httpBackend, $rootScope, $compile, $log, videoStreamService;
+  var $httpBackend, $rootScope, $log, videoStreamService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -45,13 +45,11 @@ describe('Services: video-stream-service', function() {
     inject(function(
       _$httpBackend_,
       _$rootScope_,
-      _$compile_,
       _$log_,
       _videoStreamService_
     ) {
       $httpBackend = _$httpBackend_;
       $rootScope = _$rootScope_;
-      $compile = _$compile_;
       $log = _$log_;
       videoStreamService = _videoStreamService_;
 

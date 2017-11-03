@@ -2,7 +2,7 @@
 'use strict';
 
 describe('Directive: environment settings master', function() {
-  var $rootScope, element, gz3dMock;
+  var $rootScope, gz3dMock;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -28,7 +28,7 @@ describe('Directive: environment settings master', function() {
   beforeEach(
     inject(function(_$rootScope_, $compile) {
       $rootScope = _$rootScope_;
-      element = $compile(
+      $compile(
         '<environment-settings-master></environment-settings-master>'
       )($rootScope);
       $rootScope.$digest();

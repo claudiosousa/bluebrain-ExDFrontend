@@ -13,13 +13,11 @@ describe('Services: collab-experiment-lock-service', function() {
     collabExperimentLockService,
     $rootScope,
     $q,
-    collabConfigResponse,
     $interval,
     nrpUser,
     createdLockService,
     userBaseUrl,
     LOCK_FILE_VALIDITY_MAX_AGE_HOURS,
-    clbStorage,
     lockFileRequest;
 
   // loads the service to test and mock the necessary service
@@ -34,7 +32,6 @@ describe('Services: collab-experiment-lock-service', function() {
       _$interval_,
       _$q_,
       _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_,
-      _clbStorage_,
       _nrpUser_
     ) {
       httpBackend = _$httpBackend_;
@@ -44,7 +41,6 @@ describe('Services: collab-experiment-lock-service', function() {
       $interval = _$interval_;
       $q = _$q_;
       LOCK_FILE_VALIDITY_MAX_AGE_HOURS = _LOCK_FILE_VALIDITY_MAX_AGE_HOURS_;
-      clbStorage = _clbStorage_;
       nrpUser = _nrpUser_;
 
       userBaseUrl = bbpConfig.get('api.user.v0');
@@ -55,7 +51,7 @@ describe('Services: collab-experiment-lock-service', function() {
       httpBackend.whenGET(userBaseUrl + '/user/me').respond({});
       httpBackend.whenGET(userBaseUrl + '/user/me/groups').respond({});
 
-      collabConfigResponse = httpBackend
+      httpBackend
         .whenGET(
           bbpConfig.get('api.collabContextManagement.url') +
             '/collab/configuration/' +

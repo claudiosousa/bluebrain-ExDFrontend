@@ -126,7 +126,7 @@
               }
             });
 
-            this.displayHumanNavInfo = function(event) {
+            this.displayHumanNavInfo = function() {
               if (
                 stateService.currentState === STATE.PAUSED &&
                 that.showHumanNavInfoDiv === false
@@ -335,7 +335,6 @@
           },
 
           setModeHumanBody: function() {
-            const that = this;
             document.addEventListener('keydown', this.displayHumanNavInfo);
 
             if (this.navigationMode === NAVIGATION_MODES.HUMAN_BODY) {

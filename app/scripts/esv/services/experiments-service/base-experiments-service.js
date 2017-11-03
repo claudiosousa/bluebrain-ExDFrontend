@@ -74,7 +74,7 @@
         if (exp.imageData !== undefined) return;
         this.getExperimentImage(exp)
           .then(imageData => (exp.imageData = imageData))
-          .catch(e => (exp.imageData = false));
+          .catch(() => (exp.imageData = false));
       });
     }
 

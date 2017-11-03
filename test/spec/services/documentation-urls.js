@@ -1,12 +1,11 @@
 'use strict';
 
 describe('Services: documentation-urls', function() {
-  var documentationURLs, rootScope;
+  var documentationURLs;
   beforeEach(module('exdFrontendApp'));
   beforeEach(
-    inject(function(_documentationURLs_, $rootScope) {
+    inject(function(_documentationURLs_) {
       documentationURLs = _documentationURLs_;
-      rootScope = $rootScope;
     })
   );
 
