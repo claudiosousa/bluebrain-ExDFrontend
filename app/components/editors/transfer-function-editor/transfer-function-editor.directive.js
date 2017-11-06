@@ -344,22 +344,6 @@
               scope.unbindListenerUpdatePanelUI();
             });
 
-            function ensurePauseStateAndExecute(fn) {
-              var deferred = $q.defer();
-
-              var restart = stateService.currentState === STATE.STARTED;
-              stateService.ensureStateBeforeExecuting(STATE.PAUSED, function() {
-                fn(function() {
-                  if (restart) {
-                    return stateService.setCurrentState(STATE.STARTED);
-                  }
-                  deferred.resolve();
-                });
-              });
-
-              return deferred.promise;
-            }
-
             function cleanError(transferFunction, errorType) {
               var error = transferFunction.error[errorType];
               if (error && error.lineHandle) {
@@ -383,46 +367,40 @@
             };
 
             scope.update = function(transferFunction, newTf) {
-              return ensurePauseStateAndExecute(function(cb) {
-                cleanError(transferFunction, scope.ERROR.RUNTIME);
-                delete transferFunction.error[scope.ERROR.LOADING];
-                if (newTf) {
-                  backendInterfaceService.addTransferFunction(
-                    transferFunction.code,
-                    function() {
-                      transferFunction.dirty = false;
-                      transferFunction.local = false;
-                      transferFunction.id = pythonCodeHelper.getFunctionName(
-                        transferFunction.code
-                      );
-                      scope.cleanCompileError(transferFunction);
-                      cb();
-                    },
-                    function(data) {
-                      serverError.displayHTTPError(data);
-                      cb();
-                    }
-                  );
-                } else {
-                  backendInterfaceService.editTransferFunction(
-                    transferFunction.id,
-                    transferFunction.code,
-                    function() {
-                      transferFunction.dirty = false;
-                      transferFunction.local = false;
-                      transferFunction.id = pythonCodeHelper.getFunctionName(
-                        transferFunction.code
-                      );
-                      scope.cleanCompileError(transferFunction);
-                      cb();
-                    },
-                    function(data) {
-                      serverError.displayHTTPError(data);
-                      cb();
-                    }
-                  );
-                }
-              });
+              cleanError(transferFunction, scope.ERROR.RUNTIME);
+              delete transferFunction.error[scope.ERROR.LOADING];
+              if (newTf) {
+                backendInterfaceService.addTransferFunction(
+                  transferFunction.code,
+                  function() {
+                    transferFunction.dirty = false;
+                    transferFunction.local = false;
+                    transferFunction.id = pythonCodeHelper.getFunctionName(
+                      transferFunction.code
+                    );
+                    scope.cleanCompileError(transferFunction);
+                  },
+                  function(data) {
+                    serverError.displayHTTPError(data);
+                  }
+                );
+              } else {
+                backendInterfaceService.editTransferFunction(
+                  transferFunction.id,
+                  transferFunction.code,
+                  function() {
+                    transferFunction.dirty = false;
+                    transferFunction.local = false;
+                    transferFunction.id = pythonCodeHelper.getFunctionName(
+                      transferFunction.code
+                    );
+                    scope.cleanCompileError(transferFunction);
+                  },
+                  function(data) {
+                    serverError.displayHTTPError(data);
+                  }
+                );
+              }
             };
 
             scope.onTransferFunctionChange = function(transferFunction) {
@@ -448,15 +426,11 @@
                   if (transferFunction.local) {
                     return scope.transferFunctions.splice(index, 1);
                   } else {
-                    return ensurePauseStateAndExecute(function(cb) {
-                      backendInterfaceService.deleteTransferFunction(
-                        transferFunction.id,
-                        function() {
-                          cb();
-                        }
-                      );
-                      scope.transferFunctions.splice(index, 1);
-                    });
+                    backendInterfaceService.deleteTransferFunction(
+                      transferFunction.id,
+                      function() {}
+                    );
+                    scope.transferFunctions.splice(index, 1);
                   }
                 })
               );
@@ -624,23 +598,18 @@
                 });
                 return deferred.promise;
               }
-              return ensurePauseStateAndExecute(function(cb) {
-                // Removes all TFs
-                return scope
-                  .delete(scope.transferFunctions)
-                  .then(function() {
-                    // Upload new TFs to back-end
-                    scope.transferFunctions = tfs;
-                    return $q.all(
-                      scope.transferFunctions.map(function(tf) {
-                        scope.onTransferFunctionChange(tf);
-                        tf.id = tf.name;
-                        tf.local = true;
-                        return scope.update(tf, true);
-                      })
-                    );
+              // Removes all TFs
+              return scope.delete(scope.transferFunctions).then(function() {
+                // Upload new TFs to back-end
+                scope.transferFunctions = tfs;
+                return $q.all(
+                  scope.transferFunctions.map(function(tf) {
+                    scope.onTransferFunctionChange(tf);
+                    tf.id = tf.name;
+                    tf.local = true;
+                    return scope.update(tf, true);
                   })
-                  .then(cb);
+                );
               });
             }
 

@@ -299,61 +299,59 @@
             var restart = stateService.currentState === STATE.STARTED;
             scope.loading = true;
             var populations = objectifyPopulations(scope.populations);
-            stateService.ensureStateBeforeExecuting(STATE.PAUSED, function() {
-              backendInterfaceService.setBrain(
-                scope.pynnScript.code,
-                scope.stringsToLists(populations),
-                'py',
-                'text',
-                changePopulation,
-                function() {
-                  // Success callback
-                  scope.loading = false;
-                  codeEditorsServices.getEditor('codeEditor').markClean();
-                  scope.clearError();
-                  scope.localBrainDirty = false;
-                  if (restart) {
-                    stateService.setCurrentState(STATE.STARTED);
-                  }
-
-                  $rootScope.$broadcast('pynn.populationsChanged');
-                },
-                function(result) {
-                  // Failure callback
-                  scope.loading = false;
-                  scope.clearError();
-                  if (result.data.handle_population_change) {
-                    clbConfirm
-                      .open({
-                        title: 'Confirm changing neural network',
-                        confirmLabel: 'Yes',
-                        cancelLabel: 'Cancel',
-                        template:
-                          'Applying your changes may update the population name your transfer functions. Do you wish to continue?',
-                        closable: false
-                      })
-                      .then(scope.agreeAction, function() {});
-                  } else if (
-                    result.data.error_line === -1 &&
-                    result.data.error_column === -1
-                  ) {
-                    scope.refresh();
-                    clbErrorDialog.open({
-                      type: 'Impossible to delete population',
-                      message:
-                        'Please remove all references to the population in the transfer functions and try again.',
-                      data: { error: result.data.error_message }
-                    });
-                  } else {
-                    scope.markError(
-                      result.data.error_message,
-                      result.data.error_line,
-                      result.data.error_column
-                    );
-                  }
+            backendInterfaceService.setBrain(
+              scope.pynnScript.code,
+              scope.stringsToLists(populations),
+              'py',
+              'text',
+              changePopulation,
+              function() {
+                // Success callback
+                scope.loading = false;
+                codeEditorsServices.getEditor('codeEditor').markClean();
+                scope.clearError();
+                scope.localBrainDirty = false;
+                if (restart) {
+                  stateService.setCurrentState(STATE.STARTED);
                 }
-              );
-            });
+
+                $rootScope.$broadcast('pynn.populationsChanged');
+              },
+              function(result) {
+                // Failure callback
+                scope.loading = false;
+                scope.clearError();
+                if (result.data.handle_population_change) {
+                  clbConfirm
+                    .open({
+                      title: 'Confirm changing neural network',
+                      confirmLabel: 'Yes',
+                      cancelLabel: 'Cancel',
+                      template:
+                        'Applying your changes may update population references of your transfer functions. Do you wish to continue?',
+                      closable: false
+                    })
+                    .then(scope.agreeAction, function() {});
+                } else if (
+                  result.data.error_line === -1 &&
+                  result.data.error_column === -1
+                ) {
+                  scope.refresh();
+                  clbErrorDialog.open({
+                    type: 'Impossible to delete population',
+                    message:
+                      'Please remove all references to the population in the transfer functions and try again.',
+                    data: { error: result.data.error_message }
+                  });
+                } else {
+                  scope.markError(
+                    result.data.error_message,
+                    result.data.error_line,
+                    result.data.error_column
+                  );
+                }
+              }
+            );
           };
 
           scope.saveIntoCollabStorage = function() {
