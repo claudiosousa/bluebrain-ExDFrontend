@@ -7,13 +7,7 @@ describe('Controller: environmentSettingsPanelCtrl', function() {
 
   beforeEach(module('simulationInfoMock'));
 
-  var experimentCtrl,
-    scope,
-    rootScope,
-    bbpConfig,
-    controller,
-    gz3d,
-    editorToolbarService;
+  var scope, rootScope, gz3d, editorToolbarService;
 
   var simulationInfo;
 
@@ -41,10 +35,8 @@ describe('Controller: environmentSettingsPanelCtrl', function() {
       _editorToolbarService_,
       _simulationInfo_
     ) {
-      controller = $controller;
       rootScope = $rootScope;
       scope = $rootScope.$new();
-      bbpConfig = _bbpConfig_;
       gz3d = _gz3d_;
       editorToolbarService = _editorToolbarService_;
       simulationInfo = _simulationInfo_;
@@ -54,21 +46,7 @@ describe('Controller: environmentSettingsPanelCtrl', function() {
       gz3d.scene.controls = {};
       gz3d.scene.controls.keyboardBindingsEnabled = true;
 
-      /*simulationInfo = {
-      mode : undefined,
-      serverID : 'bbpce016',
-      simulationID : 'mocked_simulation_id',
-      serverConfig: {
-        gzweb: {},
-        rosbridge: {
-          topics: {
-            cleError: {}
-          }
-        }
-      }
-    };*/
-
-      experimentCtrl = $controller('environmentSettingsPanelCtrl', {
+      $controller('environmentSettingsPanelCtrl', {
         $rootScope: rootScope,
         $scope: scope,
         simulationInfo: simulationInfo,

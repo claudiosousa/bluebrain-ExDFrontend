@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: environment settings quality', function() {
-  var $rootScope, element, gz3dMock, editorToolbarService;
+  var $rootScope, gz3dMock, editorToolbarService;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -19,7 +19,7 @@ describe('Directive: environment settings quality', function() {
     inject(function(_$rootScope_, $compile, _editorToolbarService_) {
       $rootScope = _$rootScope_;
       editorToolbarService = _editorToolbarService_;
-      element = $compile(
+      $compile(
         '<environment-settings-quality></environment-settings-quality>'
       )($rootScope);
       $rootScope.$digest();

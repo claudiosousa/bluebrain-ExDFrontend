@@ -80,22 +80,12 @@
       $timeout,
       $templateCache,
       $compile,
-      $stateParams,
-      $interval,
       environmentService,
       $location,
       bbpConfig,
       proxyUrl,
-      roslib,
       oidcUrl,
-      experimentsFactory,
-      SERVER_POLL_INTERVAL,
-      $window,
-      $q,
-      collabExperimentLockService,
-      nrpBackendVersions,
-      nrpFrontendVersion,
-      collabConfigService;
+      $q;
 
     var serverErrorMock = {
       displayHTTPError: jasmine
@@ -151,11 +141,7 @@
         _experimentsFactory_,
         _SERVER_POLL_INTERVAL_,
         _$window_,
-        _$q_,
-        _collabExperimentLockService_,
-        _nrpBackendVersions_,
-        _nrpFrontendVersion_,
-        _collabConfigService_
+        _$q_
       ) {
         $controller = _$controller_;
         $httpBackend = _$httpBackend_;
@@ -163,23 +149,13 @@
         $rootScope = _$rootScope_;
         $timeout = _$timeout_;
         $compile = _$compile_;
-        $stateParams = _$stateParams_;
-        $interval = _$interval_;
         $location = _$location_;
         bbpConfig = _bbpConfig_;
-        roslib = _roslib_;
-        experimentsFactory = _experimentsFactory_;
-        SERVER_POLL_INTERVAL = _SERVER_POLL_INTERVAL_;
         proxyUrl = bbpConfig.get('api.proxy.url');
         oidcUrl = bbpConfig.get('api.user.v0');
-        $window = _$window_;
 
         $q = _$q_;
-        collabExperimentLockService = _collabExperimentLockService_;
         environmentService = _environmentService_;
-        nrpBackendVersions = _nrpBackendVersions_;
-        nrpFrontendVersion = _nrpFrontendVersion_;
-        collabConfigService = _collabConfigService_;
       })
     );
 

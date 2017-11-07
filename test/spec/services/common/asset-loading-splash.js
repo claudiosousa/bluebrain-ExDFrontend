@@ -98,7 +98,7 @@
   });
 
   describe('Controller: AssetLoadingSplashCtrl', function() {
-    var scope, timeout, assetLoadingSplash, Ctrl;
+    var scope, timeout, assetLoadingSplash;
 
     var assetLoadingSplashMock = {};
     var scopeMock = {};
@@ -125,7 +125,7 @@
 
         scope.$apply = jasmine.createSpy('$apply');
 
-        Ctrl = $controller('AssetLoadingSplashCtrl', {
+        $controller('AssetLoadingSplashCtrl', {
           $scope: scope
         });
       })

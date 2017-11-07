@@ -48,7 +48,7 @@
           'components/environment-settings/environment-settings-environment.template.html',
         restrict: 'E',
         scope: true,
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.editorToolbarService = editorToolbarService;
 
           //----------------------------------------------

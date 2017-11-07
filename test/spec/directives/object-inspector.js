@@ -1,8 +1,7 @@
 'use strict';
 
 describe('Directive: object-inspector', function() {
-  var $rootScope, $compile, $scope, $document;
-  var objectInspectorElement;
+  var $rootScope, $compile, $scope;
   var gz3d;
   var elementScope;
   var dynamicViewOverlayService;
@@ -27,13 +26,11 @@ describe('Directive: object-inspector', function() {
     inject(function(
       _$rootScope_,
       _$compile_,
-      _$document_,
       _gz3d_,
       _dynamicViewOverlayService_
     ) {
       $rootScope = _$rootScope_;
       $compile = _$compile_;
-      $document = _$document_;
       gz3d = _gz3d_;
       dynamicViewOverlayService = _dynamicViewOverlayService_;
 
@@ -56,9 +53,7 @@ describe('Directive: object-inspector', function() {
 
   beforeEach(function() {
     $scope = $rootScope.$new();
-    objectInspectorElement = $compile('<object-inspector></object-inspector>')(
-      $scope
-    );
+    $compile('<object-inspector></object-inspector>')($scope);
     $scope.$digest();
 
     elementScope = $scope.$$childTail;

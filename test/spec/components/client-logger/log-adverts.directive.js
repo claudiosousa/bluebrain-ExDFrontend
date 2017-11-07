@@ -5,12 +5,7 @@ describe('Directive: logAdverts', function() {
   beforeEach(module('clientLoggerModule'));
   beforeEach(module('exd.templates')); // import html template
 
-  var $rootScope,
-    $timeout,
-    element,
-    childScope,
-    clientLoggerServiceMock,
-    LOG_TYPE;
+  var $rootScope, childScope, clientLoggerServiceMock, LOG_TYPE;
 
   beforeEach(
     module(function($provide) {
@@ -24,8 +19,7 @@ describe('Directive: logAdverts', function() {
   beforeEach(
     inject(function(_$rootScope_, _$timeout_, $compile, _LOG_TYPE_) {
       $rootScope = _$rootScope_;
-      $timeout = _$timeout_;
-      element = $compile('<log-adverts></log-adverts>')($rootScope);
+      $compile('<log-adverts></log-adverts>')($rootScope);
       $rootScope.$digest();
       childScope = $rootScope.$$childHead;
       LOG_TYPE = _LOG_TYPE_;

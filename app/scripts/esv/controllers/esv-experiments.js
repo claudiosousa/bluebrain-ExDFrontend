@@ -49,7 +49,7 @@
         storageServer
           .getExperiments()
           .then(response => $scope.reloadExperiments(!!response.length))
-          .catch(err =>
+          .catch(() =>
             clbErrorDialog.open({
               type: 'Private experiment error',
               message: 'Failed to retrieve private experiments'

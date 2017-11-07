@@ -25,8 +25,7 @@
   'use strict';
 
   angular.module('jointPlotModule').directive('jointPlot', [
-    '$timeout',
-    function($timeout) {
+    function() {
       return {
         templateUrl: 'components/joint-plot/joint-plot.template.html',
         restrict: 'E',

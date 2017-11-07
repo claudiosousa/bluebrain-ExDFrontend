@@ -6,35 +6,21 @@ describe('Controller: EnvironmentRenderingController', function() {
   var environmentRenderingController,
     controller,
     $scope,
-    $element,
     $rootScope,
     log,
-    timeout,
     window,
     stateService,
-    simulationInfo,
-    contextMenuState,
-    exampleProgressData,
-    simulations,
-    fakeSimulationData,
-    nrpBackendVersions,
-    nrpFrontendVersion,
-    STATE,
     gz3d,
     userNavigationService,
     collabExperimentLockServiceMock = {},
     lockServiceMock,
     $q,
     callback,
-    onLockChangedCallback,
     lockServiceCancelCallback,
-    environmentService,
     userContextService,
     simulationStateObject,
     simulationControlObject,
     nrpBackendVersionsObject,
-    colorableObjectService,
-    experimentService,
     gz3dViewsService,
     environmentRenderingService,
     dynamicViewOverlayService,
@@ -159,7 +145,6 @@ describe('Controller: EnvironmentRenderingController', function() {
       _contextMenuState_,
       _nrpBackendVersions_,
       _nrpFrontendVersion_,
-      _STATE_,
       _gz3d_,
       _userNavigationService_,
       _$q_,
@@ -174,25 +159,15 @@ describe('Controller: EnvironmentRenderingController', function() {
     ) {
       controller = $controller;
       $rootScope = _$rootScope_;
-      $element = _$element_;
       log = _$log_;
       $scope = $rootScope.$new();
-      timeout = _$timeout_;
       window = _$window_;
       window.location.reload = function() {};
-      simulationInfo = _simulationInfo_;
-      experimentService = _experimentService_;
       stateService = _stateService_;
-      contextMenuState = _contextMenuState_;
-      nrpBackendVersions = _nrpBackendVersions_;
-      nrpFrontendVersion = _nrpFrontendVersion_;
-      STATE = _STATE_;
       gz3d = _gz3d_;
       userNavigationService = _userNavigationService_;
       $q = _$q_;
-      environmentService = _environmentService_;
       userContextService = _userContextService_;
-      colorableObjectService = _colorableObjectService_;
       gz3dViewsService = _gz3dViewsService_;
       environmentRenderingService = _environmentRenderingService_;
       dynamicViewOverlayService = _dynamicViewOverlayService_;
@@ -206,8 +181,7 @@ describe('Controller: EnvironmentRenderingController', function() {
           .and.returnValue(callback.promise),
         onLockChanged: jasmine
           .createSpy('onLockChanged')
-          .and.callFake(function(fn) {
-            onLockChangedCallback = fn;
+          .and.callFake(function() {
             return lockServiceCancelCallback;
           }),
         releaseLock: jasmine
@@ -216,77 +190,6 @@ describe('Controller: EnvironmentRenderingController', function() {
       };
       collabExperimentLockServiceMock.createLockServiceForExperimentId = function() {
         return lockServiceMock;
-      };
-
-      simulations = [
-        {
-          simulationID: 0,
-          experimentConfiguration: 'fakeExperiment0',
-          state: STATE.CREATED
-        },
-        {
-          simulationID: 1,
-          experimentConfiguration: 'fakeExperiment1',
-          state: STATE.INITIALIZED
-        },
-        {
-          simulationID: 2,
-          experimentConfiguration: 'fakeExperiment2',
-          state: STATE.PAUSED
-        },
-        {
-          simulationID: 3,
-          experimentConfiguration: 'fakeExperiment3',
-          state: STATE.STARTED
-        },
-        {
-          simulationID: 4,
-          experimentConfiguration: 'fakeExperiment4',
-          state: STATE.STOPPED
-        },
-        {
-          simulationID: 5,
-          experimentConfiguration: 'fakeExperiment5',
-          state: STATE.INITIALIZED
-        },
-        {
-          simulationID: 6,
-          experimentConfiguration: 'fakeExperiment6',
-          state: STATE.CREATED
-        }
-      ];
-
-      exampleProgressData = [
-        {
-          id: 'test::id::mesh1',
-          url: 'http://some_fake_url.com:1234/bla1.mesh',
-          progress: 0,
-          total: 1,
-          done: false
-        },
-        {
-          id: 'test::id::mesh2',
-          url: 'http://some_fake_url.com:1234/bla2.mesh',
-          progress: 700,
-          total: 1000,
-          done: false
-        },
-        {
-          id: 'test::id::mesh3',
-          url: 'http://some_fake_url.com:1234/bla3.mesh',
-          progress: 200,
-          total: 200,
-          done: true
-        }
-      ];
-
-      $scope.activeSimulation = undefined;
-
-      fakeSimulationData = {
-        owner: '1234',
-        state: STATE.INITIALIZED,
-        simulationID: 1,
-        experimentConfiguration: 'FakeExperiment'
       };
 
       userContextService.hasEditRights.and.callFake(function(entity) {
@@ -315,8 +218,6 @@ describe('Controller: EnvironmentRenderingController', function() {
   );
 
   describe('(ViewMode)', function() {
-    var currentUserInfo1234, currentUserInfo1234Hash, otherUserInfo4321;
-
     beforeEach(function() {
       environmentRenderingController = controller(
         'EnvironmentRenderingController',
@@ -325,22 +226,6 @@ describe('Controller: EnvironmentRenderingController', function() {
           $scope: $scope
         }
       );
-
-      currentUserInfo1234 = {
-        displayName: 'John Does',
-        id: '1234'
-      };
-
-      currentUserInfo1234Hash = {
-        '1234': {
-          displayName: 'John Does'
-        }
-      };
-
-      otherUserInfo4321 = {
-        displayName: 'John Dont',
-        id: '4321'
-      };
 
       spyOn(environmentRenderingController, 'onDestroy').and.callThrough();
     });

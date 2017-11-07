@@ -10,9 +10,7 @@ describe('Services: experimentsFactory', function() {
     clbErrorDialog,
     FAIL_ON_SELECTED_SERVER_ERROR,
     FAIL_ON_ALL_SERVERS_ERROR,
-    slurminfoService,
-    environmentService,
-    experimentSimulationService;
+    environmentService;
 
   beforeEach(module('experimentServices'));
   beforeEach(module('exdFrontendApp'));
@@ -28,9 +26,7 @@ describe('Services: experimentsFactory', function() {
       _clbErrorDialog_,
       _FAIL_ON_SELECTED_SERVER_ERROR_,
       _FAIL_ON_ALL_SERVERS_ERROR_,
-      _slurminfoService_,
-      _environmentService_,
-      _experimentSimulationService_
+      _environmentService_
     ) {
       $q = _$q_;
       experimentProxyService = _experimentProxyService_;
@@ -41,9 +37,7 @@ describe('Services: experimentsFactory', function() {
       clbErrorDialog = _clbErrorDialog_;
       FAIL_ON_SELECTED_SERVER_ERROR = _FAIL_ON_SELECTED_SERVER_ERROR_;
       FAIL_ON_ALL_SERVERS_ERROR = _FAIL_ON_ALL_SERVERS_ERROR_;
-      slurminfoService = _slurminfoService_;
       environmentService = _environmentService_;
-      experimentSimulationService = _experimentSimulationService_;
 
       _$httpBackend_.whenGET(new RegExp('.*')).respond({});
       spyOn(console, 'error');

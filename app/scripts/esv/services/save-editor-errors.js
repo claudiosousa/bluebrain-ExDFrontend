@@ -48,8 +48,7 @@
         This service can be used to save data (which contains Python errors) to an error file. e.g. TFs, SMs, Brain Editor.
         It's needed as if they are saved to the normal file, further simulations are not possible.
         */
-        var dirtyDataCol = {},
-          loaded = false,
+        var loaded = false,
           foundCallbacks = {};
 
         return {

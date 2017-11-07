@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: environment settings environment', function() {
-  var $rootScope, element, gz3dMock;
+  var $rootScope, gz3dMock;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -33,7 +33,7 @@ describe('Directive: environment settings environment', function() {
       $httpBackend.whenGET('http://proxy/identity').respond(200);
 
       $rootScope = _$rootScope_;
-      element = $compile(
+      $compile(
         '<environment-settings-environment></environment-settings-environment>'
       )($rootScope);
       $rootScope.$digest();

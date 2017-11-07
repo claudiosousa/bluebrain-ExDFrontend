@@ -80,7 +80,7 @@
         scope: {
           control: '='
         },
-        link: function(scope, element, attrs) {
+        link: function(scope, element) {
           scope.isPrivateExperiment = environmentService.isPrivateExperiment();
           scope.isSavingToCollab = false;
           scope.collabDirty = false;
@@ -365,7 +365,7 @@
               textReader.onload = function(e) {
                 $timeout(function() {
                   var code = e.target.result;
-                  var sm = scope.create(code);
+                  scope.create(code);
                 });
               };
               textReader.readAsText(file);

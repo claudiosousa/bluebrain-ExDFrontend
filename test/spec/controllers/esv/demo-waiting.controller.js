@@ -3,16 +3,7 @@
 describe('Controller: demo-waiting', function() {
   beforeEach(module('exdFrontendApp'));
 
-  var $rootScope,
-    $compile,
-    bbpConfig,
-    scope,
-    controller,
-    $httpBackend,
-    STATE,
-    $timeout,
-    location,
-    demoWaitCtrl;
+  var $rootScope, bbpConfig, scope, $httpBackend, STATE, $timeout, location;
 
   var experiments = {
     developementExperiment: {
@@ -40,7 +31,6 @@ describe('Controller: demo-waiting', function() {
     inject(function(
       $controller,
       _$rootScope_,
-      _$compile_,
       _bbpConfig_,
       _$httpBackend_,
       _STATE_,
@@ -48,9 +38,7 @@ describe('Controller: demo-waiting', function() {
       _$window_,
       _$location_
     ) {
-      controller = $controller;
       $rootScope = _$rootScope_;
-      $compile = _$compile_;
       bbpConfig = _bbpConfig_;
       $httpBackend = _$httpBackend_;
       STATE = _STATE_;
@@ -67,7 +55,7 @@ describe('Controller: demo-waiting', function() {
         .whenGET(new RegExp(proxyUrl + '/experimentImage/'))
         .respond(200, {});
       $httpBackend.whenGET(new RegExp(proxyUrl + '/identity')).respond(200, {});
-      demoWaitCtrl = $controller('DemoAutorunExperimentController', {
+      $controller('DemoAutorunExperimentController', {
         $scope: scope,
         $timeout: $timeout,
         $window: windowMock,

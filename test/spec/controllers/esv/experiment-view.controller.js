@@ -2,7 +2,6 @@
 
 describe('Controller: ExperimentViewController', function() {
   var ExperimentViewController,
-    rootScope,
     controller,
     scope,
     log,
@@ -18,13 +17,11 @@ describe('Controller: ExperimentViewController', function() {
     userContextService,
     simulationStateObject,
     simulationControlObject,
-    fakeSimulationData,
     environmentService,
     lockServiceMock,
     collabExperimentLockServiceMock = {},
     q,
-    callback,
-    onLockChangedCallback;
+    callback;
 
   var nrpAnalyticsMock = {
     durationEventTrack: jasmine.createSpy('durationEventTrack'),
@@ -98,7 +95,6 @@ describe('Controller: ExperimentViewController', function() {
       _$q_
     ) {
       controller = $controller;
-      rootScope = $rootScope;
       log = _$log_;
       scope = $rootScope.$new();
       timeout = _$timeout_;
@@ -124,20 +120,12 @@ describe('Controller: ExperimentViewController', function() {
           .and.returnValue(callback.promise),
         onLockChanged: jasmine
           .createSpy('onLockChanged')
-          .and.callFake(function(fn) {
-            onLockChangedCallback = fn;
+          .and.callFake(function() {
             return lockServiceCancelCallback;
           }),
         releaseLock: jasmine
           .createSpy('releaseLock')
           .and.returnValue(callback.promise)
-      };
-
-      fakeSimulationData = {
-        owner: '1234',
-        state: STATE.INITIALIZED,
-        simulationID: 1,
-        experimentConfiguration: 'FakeExperiment'
       };
       // create mock for $log
       spyOn(log, 'error');

@@ -79,7 +79,7 @@
           control: '='
         },
         replace: true,
-        link: function(scope, element, attrs) {
+        link: function(scope, element) {
           let messageCallbackHandler = stateService.addMessageCallback(
             message => {
               if (message.action === 'setbrain')
@@ -236,7 +236,7 @@
           function objectifyPopulations(neuroPopulations) {
             var populations = angular.copy(neuroPopulations);
             var populationsObject = {};
-            angular.forEach(populations, function(population, index) {
+            angular.forEach(populations, function(population) {
               var name = population.name;
               delete population.name;
               populationsObject[name] = population;

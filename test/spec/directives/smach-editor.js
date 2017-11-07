@@ -5,7 +5,6 @@ describe('Directive: smachEditor', function() {
 
   var $rootScope,
     $compile,
-    $httpBackend,
     $scope,
     isolateScope,
     element,
@@ -14,10 +13,6 @@ describe('Directive: smachEditor', function() {
     ScriptObject,
     stateMachines,
     $timeout,
-    simulationInfo,
-    roslib,
-    STATE,
-    SIMULATION_FACTORY_CLE_ERROR,
     SOURCE_TYPE,
     codeEditorsServices,
     clbConfirm,
@@ -97,16 +92,11 @@ describe('Directive: smachEditor', function() {
   beforeEach(
     inject(function(
       _$rootScope_,
-      _$httpBackend_,
       _$compile_,
       _backendInterfaceService_,
       $templateCache,
       _pythonCodeHelper_,
       _$timeout_,
-      _simulationInfo_,
-      _roslib_,
-      _STATE_,
-      _SIMULATION_FACTORY_CLE_ERROR_,
       _SOURCE_TYPE_,
       _codeEditorsServices_,
       _clbConfirm_,
@@ -115,17 +105,12 @@ describe('Directive: smachEditor', function() {
       _editorToolbarService_
     ) {
       $rootScope = _$rootScope_;
-      $httpBackend = _$httpBackend_;
       $compile = _$compile_;
       backendInterfaceService = _backendInterfaceService_;
       pythonCodeHelper = _pythonCodeHelper_;
       ScriptObject = pythonCodeHelper.ScriptObject;
-      roslib = _roslib_;
-      STATE = _STATE_;
-      SIMULATION_FACTORY_CLE_ERROR = _SIMULATION_FACTORY_CLE_ERROR_;
       SOURCE_TYPE = _SOURCE_TYPE_;
       $timeout = _$timeout_;
-      simulationInfo = _simulationInfo_;
       codeEditorsServices = _codeEditorsServices_;
       clbConfirm = _clbConfirm_;
       $q = _$q_;

@@ -10,14 +10,11 @@ describe('Directive: pynnEditor', function() {
 
   var $rootScope,
     $compile,
-    $httpBackend,
     $scope,
     isolateScope,
     element,
     RESET_TYPE,
     backendInterfaceService,
-    pythonCodeHelper,
-    ScriptObject,
     $timeout,
     clbErrorDialog,
     codeEditorsServices;
@@ -105,7 +102,6 @@ describe('Directive: pynnEditor', function() {
     })
   );
 
-  var simulationInfoMock;
   beforeEach(
     inject(function(
       _$rootScope_,
@@ -114,23 +110,17 @@ describe('Directive: pynnEditor', function() {
       _RESET_TYPE_,
       _backendInterfaceService_,
       $templateCache,
-      _pythonCodeHelper_,
       _$timeout_,
       _clbErrorDialog_,
-      _codeEditorsServices_,
-      simulationInfo
+      _codeEditorsServices_
     ) {
       $rootScope = _$rootScope_;
-      $httpBackend = _$httpBackend_;
       $compile = _$compile_;
       RESET_TYPE = _RESET_TYPE_;
       backendInterfaceService = _backendInterfaceService_;
-      pythonCodeHelper = _pythonCodeHelper_;
-      ScriptObject = pythonCodeHelper.ScriptObject;
       $timeout = _$timeout_;
       clbErrorDialog = _clbErrorDialog_;
       codeEditorsServices = _codeEditorsServices_;
-      simulationInfoMock = simulationInfo;
 
       autoSaveServiceMock.registerFoundAutoSavedCallback.calls.reset();
       $scope = $rootScope.$new();

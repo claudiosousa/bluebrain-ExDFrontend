@@ -8,17 +8,16 @@ describe('Controller: brainvisualizerPanelCtrl', function() {
   beforeEach(module('gz3dMock'));
   beforeEach(module('simulationInfoMock'));
 
-  var experimentCtrl, scope, rootScope, controller, editorToolbarService;
+  var scope, rootScope, editorToolbarService;
 
   // Initialize the controller and a mock scope
   beforeEach(
     inject(function($controller, $rootScope, _editorToolbarService_) {
-      controller = $controller;
       rootScope = $rootScope;
       scope = $rootScope.$new();
       editorToolbarService = _editorToolbarService_;
 
-      experimentCtrl = $controller('brainvisualizerPanelCtrl', {
+      $controller('brainvisualizerPanelCtrl', {
         $rootScope: rootScope,
         $scope: scope
       });

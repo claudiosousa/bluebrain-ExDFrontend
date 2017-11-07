@@ -263,14 +263,6 @@
             if (scope.transferFunction) {
               var transferFunction = scope.transferFunction;
               scope.setTFtype(transferFunction);
-              var backendTF = {
-                name: transferFunction.name,
-                type: transferFunction.type,
-                code: transferFunction.code,
-                devices: transferFunction.devices,
-                topics: transferFunction.topics,
-                variables: transferFunction.variables
-              };
               return ensurePauseStateAndExecute(function(cb) {
                 delete transferFunction.error[scope.ERROR.RUNTIME];
                 delete transferFunction.error[scope.ERROR.LOADING];

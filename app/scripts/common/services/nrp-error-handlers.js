@@ -37,7 +37,7 @@
         '$q',
         function($q) {
           return {
-            responseError: function(error, a, b) {
+            responseError: function(error) {
               var server = error.config.url.match(/\/\/([^:/]*)/);
               error.server = server && server[1];
               return $q.reject(error);

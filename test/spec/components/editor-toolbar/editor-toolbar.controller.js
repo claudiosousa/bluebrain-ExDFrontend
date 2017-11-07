@@ -6,7 +6,6 @@ describe('Controller: EditorToolbarController', function() {
     $scope,
     $timeout,
     $window,
-    $q,
     location,
     editorToolbarController,
     stateService,
@@ -19,8 +18,6 @@ describe('Controller: EditorToolbarController', function() {
     backendInterfaceService,
     splash,
     environmentRenderingService,
-    objectInspectorService,
-    performanceMonitorService,
     simulationInfo,
     editorToolbarService,
     gz3dViewsService,
@@ -123,7 +120,6 @@ describe('Controller: EditorToolbarController', function() {
       _$timeout_,
       _$location_,
       _$window_,
-      _$q_,
       _stateService_,
       _userContextService_,
       _userNavigationService_,
@@ -134,8 +130,6 @@ describe('Controller: EditorToolbarController', function() {
       _backendInterfaceService_,
       _splash_,
       _environmentRenderingService_,
-      _objectInspectorService_,
-      _performanceMonitorService_,
       _simulationInfo_,
       _editorToolbarService_,
       _gz3dViewsService_,
@@ -153,7 +147,6 @@ describe('Controller: EditorToolbarController', function() {
       $timeout = _$timeout_;
       location = _$location_;
       $window = _$window_;
-      $q = _$q_;
       stateService = _stateService_;
       userContextService = _userContextService_;
       gz3d = _gz3d_;
@@ -164,8 +157,6 @@ describe('Controller: EditorToolbarController', function() {
       backendInterfaceService = _backendInterfaceService_;
       splash = _splash_;
       environmentRenderingService = _environmentRenderingService_;
-      objectInspectorService = _objectInspectorService_;
-      performanceMonitorService = _performanceMonitorService_;
       simulationInfo = _simulationInfo_;
       editorToolbarService = _editorToolbarService_;
       gz3dViewsService = _gz3dViewsService_;
@@ -904,14 +895,7 @@ describe('Controller: EditorToolbarController', function() {
 
 // TODO: refactor more so in belongs to a new simulationService whatever
 describe('Controller: Gz3dViewCtrl - mocked window', function() {
-  var editorToolbar,
-    controller,
-    scope,
-    rootScope,
-    stateService,
-    window,
-    document,
-    environmentRenderingService;
+  var editorToolbar, controller, scope, rootScope, window;
 
   // load the controller's module
   beforeEach(module('exdFrontendApp'));
@@ -939,21 +923,11 @@ describe('Controller: Gz3dViewCtrl - mocked window', function() {
 
   // Initialize the controller and a mock scope
   beforeEach(
-    inject(function(
-      $controller,
-      $rootScope,
-      _stateService_,
-      _$window_,
-      _$document_,
-      _environmentRenderingService_
-    ) {
+    inject(function($controller, $rootScope, _$window_) {
       controller = $controller;
       rootScope = $rootScope;
       scope = $rootScope.$new();
-      stateService = _stateService_;
       window = _$window_;
-      document = _$document_;
-      environmentRenderingService = _environmentRenderingService_;
 
       spyOn(window, 'stop').and.returnValue(null);
     })

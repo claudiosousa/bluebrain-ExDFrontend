@@ -31,7 +31,7 @@
           templateUrl:
             'components/alerts/cluster-reservation/cluster-reservation.template.html',
           scope: true,
-          link: function(scope, element) {
+          link: function(scope) {
             // Cluster reservation warning
             nrpUser
               .isMemberOfClusterReservationGroup()

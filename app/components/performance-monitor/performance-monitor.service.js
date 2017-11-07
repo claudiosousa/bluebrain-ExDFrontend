@@ -17,7 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * ---LICENSE-END **/
 /* global THREE: false */
-/* global GZ3D: false */
 /* global console: false */
 
 (function() {
@@ -28,8 +27,6 @@
     .factory('performanceMonitorService', [
       function() {
         function PerformanceMonitorService() {
-          var that = this;
-
           var backgroundColors = [
             'rgb(255, 99, 132)',
             'rgb(75, 192, 192)',

@@ -3,7 +3,6 @@
 
   describe('Directive: EditorToolbar', function() {
     var $compile, $rootScope, $scope;
-    var editorToolbarService, clientLoggerService;
     var element;
 
     beforeEach(module('editorToolbarModule'));
@@ -28,16 +27,9 @@
     beforeEach(module('gz3dViewsServiceMock'));
 
     beforeEach(
-      inject(function(
-        _$rootScope_,
-        _$compile_,
-        _editorToolbarService_,
-        _clientLoggerService_
-      ) {
+      inject(function(_$rootScope_, _$compile_) {
         $rootScope = _$rootScope_;
         $compile = _$compile_;
-        editorToolbarService = _editorToolbarService_;
-        clientLoggerService = _clientLoggerService_;
       })
     );
 

@@ -42,15 +42,14 @@
       $http,
       newExperimentProxyService,
       collabConfigService,
-      $window,
-      $stateParams
+      $window
     ) {
       return {
         templateUrl: 'views/esv/new-experiment-wizard.html',
         restrict: 'E',
         replace: true,
         scope: true, // create a child scope for the directive and inherits the parent scope properties
-        link: function($scope, element, attrs) {
+        link: function($scope) {
           $scope.query = '';
           $scope.entities = null;
           $scope.entityPageState = {};

@@ -78,7 +78,7 @@
         templateUrl:
           'components/editors/environment-editor/environment-editor.template.html',
         restrict: 'E',
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.stateService = stateService;
           scope.STATE = STATE;
 
@@ -163,7 +163,7 @@
             }
           };
 
-          scope.selectCreatedEntity = function(event) {
+          scope.selectCreatedEntity = function() {
             /*eslint-disable camelcase*/
             scope.gz3d.gui.guiEvents._events.notification_popup =
               scope.default_notification_popup_handle;

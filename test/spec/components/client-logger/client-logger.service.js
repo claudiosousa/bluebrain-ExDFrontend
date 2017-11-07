@@ -4,15 +4,13 @@ describe('Directive: client-logger', function() {
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
 
-  var susbscribeCallback, clientLoggerService;
+  var clientLoggerService;
   var dynamicViewOverlayService;
   var LOG_TYPE;
   var DYNAMIC_VIEW_CHANNELS;
 
   var topicSubscriberMock = {
-    subscribe: jasmine.createSpy('subscribe').and.callFake(function(fn) {
-      susbscribeCallback = fn;
-    }),
+    subscribe: jasmine.createSpy('subscribe').and.callFake(function() {}),
     unsubscribe: jasmine.createSpy('unsubscribeTopic')
   };
 

@@ -6,12 +6,10 @@ describe('Directive: environment-designer', function() {
     stateService,
     panels,
     contextMenuState,
-    objectInspectorService,
     simulationSDFWorld,
     simulationInfo,
     backendInterfaceService,
     clbErrorDialog,
-    environmentService,
     dynamicViewOverlayService,
     DYNAMIC_VIEW_CHANNELS,
     httpBackend;
@@ -72,14 +70,12 @@ describe('Directive: environment-designer', function() {
       $scope.STATE = STATE;
       DYNAMIC_VIEW_CHANNELS = _DYNAMIC_VIEW_CHANNELS_;
       contextMenuState = _contextMenuState_;
-      objectInspectorService = _objectInspectorService_;
       stateService = _stateService_;
       simulationInfo = _simulationInfo_;
       panels = _panels_;
       simulationSDFWorld = _simulationSDFWorld_;
       backendInterfaceService = _backendInterfaceService_;
       clbErrorDialog = _clbErrorDialog_;
-      environmentService = _environmentService_;
       dynamicViewOverlayService = _dynamicViewOverlayService_;
       httpBackend = _$httpBackend_;
 

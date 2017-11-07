@@ -40,7 +40,7 @@
           'components/environment-settings/environment-settings-panel.template.html',
         restrict: 'E',
         scope: true, // create a child scope for the directive and inherits the parent scope properties
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.simulationInfo = simulationInfo;
           scope.editorToolbarService = editorToolbarService;
           scope.gz3d = gz3d;

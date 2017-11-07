@@ -6,7 +6,7 @@
 /* global document: true */
 
 describe('testing the gz3d service', function() {
-  var gz3d, rootScope;
+  var gz3d;
 
   //Mock the javascript document
   document = {};
@@ -69,7 +69,6 @@ describe('testing the gz3d service', function() {
 
   beforeEach(
     inject(function($rootScope, _gz3d_) {
-      rootScope = $rootScope;
       gz3d = _gz3d_;
 
       // create a mock for console

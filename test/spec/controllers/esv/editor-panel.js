@@ -7,11 +7,9 @@ describe('Controller: editorPanelCtrl', function() {
   beforeEach(module('gz3dModule'));
 
   var $httpBackend,
-    experimentCtrl,
     scope,
     rootScope,
     bbpConfig,
-    controller,
     gz3d,
     editorsPanelService,
     collabContextlessUrl;
@@ -37,7 +35,6 @@ describe('Controller: editorPanelCtrl', function() {
       _gz3d_,
       simulationInfo
     ) {
-      controller = $controller;
       $httpBackend = _$httpBackend_;
       rootScope = $rootScope;
       scope = $rootScope.$new();
@@ -50,7 +47,7 @@ describe('Controller: editorPanelCtrl', function() {
       gz3d.scene.controls = {};
       gz3d.scene.controls.keyboardBindingsEnabled = true;
 
-      experimentCtrl = $controller('editorPanelCtrl', {
+      $controller('editorPanelCtrl', {
         $rootScope: rootScope,
         $scope: scope,
         simulationInfo: simulationInfo

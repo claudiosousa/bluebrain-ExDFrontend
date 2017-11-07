@@ -35,7 +35,7 @@
           selectedColorChannel: '=',
           onChange: '&'
         },
-        link: function(scope, element, attrs) {
+        link: function(scope, element) {
           //------------------------------------------
           // Init
 
@@ -394,11 +394,11 @@
             }
           };
 
-          scope.mouseUp = function(e) {
+          scope.mouseUp = function() {
             scope.draggingPointIndex = -1;
           };
 
-          scope.mouseOut = function(e) {
+          scope.mouseOut = function() {
             scope.draggingPointIndex = -1;
           };
 

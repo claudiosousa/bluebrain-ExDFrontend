@@ -52,7 +52,7 @@
           }
         });
 
-      let transformFileResponse = (data, header, status) => {
+      let transformFileResponse = (data, header) => {
         let uuid = header('uuid');
         let filename = header('content-disposition');
         filename = filename && FILE_REGEXP.exec(filename);

@@ -1,15 +1,14 @@
 'use strict';
 
 describe('Directive: context-menu', function() {
-  var $rootScope, $compile, $scope, $document, element;
+  var $rootScope, $compile, $scope, element;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
   beforeEach(
-    inject(function(_$rootScope_, _$compile_, _$document_) {
+    inject(function(_$rootScope_, _$compile_) {
       $rootScope = _$rootScope_;
       $compile = _$compile_;
-      $document = _$document_;
       $scope = $rootScope.$new();
       element = $compile('<context-menu />')($scope);
       $scope.$digest();

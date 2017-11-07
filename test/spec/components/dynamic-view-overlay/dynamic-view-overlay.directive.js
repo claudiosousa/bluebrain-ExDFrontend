@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: dynamic-view-overlay', function() {
-  var $compile, $rootScope, $timeout;
+  var $compile, $rootScope;
   var element, elementScope;
 
   beforeEach(module('dynamicViewOverlayModule'));
@@ -9,10 +9,9 @@ describe('Directive: dynamic-view-overlay', function() {
   beforeEach(module('nrpAnalyticsMock'));
 
   beforeEach(
-    inject(function(_$rootScope_, _$compile_, _$timeout_) {
+    inject(function(_$rootScope_, _$compile_) {
       $rootScope = _$rootScope_;
       $compile = _$compile_;
-      $timeout = _$timeout_;
     })
   );
 

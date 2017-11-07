@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Directive: performance-monitor', function() {
-  var $timeout, $rootScope, $scope;
+  var $rootScope, $scope;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('performanceMonitorServiceMock'));
@@ -10,9 +10,8 @@ describe('Directive: performance-monitor', function() {
   var elementScope, controller;
 
   beforeEach(
-    inject(function(_$rootScope_, $compile, _$timeout_) {
+    inject(function(_$rootScope_, $compile) {
       $rootScope = _$rootScope_;
-      $timeout = _$timeout_;
       $scope = $rootScope.$new();
       $scope.visible = false;
       var element = $compile(

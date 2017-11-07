@@ -29,7 +29,7 @@
     '$q',
     'storageServer',
     'bbpConfig',
-    function($window, $q, storageServer, bbpConfig) {
+    function($window, $q, storageServer) {
       var getCurrentUser = () => storageServer.getCurrentUser();
 
       var getCurrentUserGroups = _.memoize(() =>

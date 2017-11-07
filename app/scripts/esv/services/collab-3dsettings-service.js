@@ -29,12 +29,7 @@
     'simulationConfigService',
     'userNavigationService',
     'simulationInfo',
-    function(
-      gz3d,
-      simulationConfigService,
-      userNavigationService,
-      simulationInfo
-    ) {
+    function(gz3d, simulationConfigService, userNavigationService) {
       var loadSettings = function() {
         if (gz3d.scene.defaultComposerSettings === undefined) {
           gz3d.scene.defaultComposerSettings = JSON.parse(

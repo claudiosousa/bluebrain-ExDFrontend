@@ -473,7 +473,7 @@
     }
 
     // Lights management
-    modifyLightClickHandler(direction, button) {
+    modifyLightClickHandler(direction) {
       if (
         (direction < 0 && this.gz3d.isGlobalLightMinReached()) ||
         (direction > 0 && this.gz3d.isGlobalLightMaxReached())
@@ -509,7 +509,7 @@
 
       var allHidden = true;
 
-      this.gz3dViewsService.views.forEach((view, index, array) => {
+      this.gz3dViewsService.views.forEach(view => {
         if (view.name !== 'main_view' && view.container !== undefined) {
           allHidden = false;
         }
@@ -517,7 +517,7 @@
 
       if (allHidden) {
         // open overlays for every view that doesn't have a container
-        this.gz3dViewsService.views.forEach((view, index, array) => {
+        this.gz3dViewsService.views.forEach(view => {
           if (view.container === undefined) {
             this.dynamicViewOverlayService.createDynamicOverlay(
               this.DYNAMIC_VIEW_CHANNELS.ENVIRONMENT_RENDERING

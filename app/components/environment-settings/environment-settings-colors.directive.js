@@ -33,7 +33,7 @@
           'components/environment-settings/environment-settings-colors.template.html',
         restrict: 'E',
         scope: true,
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.editorToolbarService = editorToolbarService;
 
           //----------------------------------------------
@@ -63,7 +63,7 @@
           //----------------------------------------------
           // UI to 3D scene
 
-          scope.updateEnvColorSettings = function(p) {
+          scope.updateEnvColorSettings = function() {
             gz3d.scene.composerSettings.levelsInGamma =
               1.0 - (scope.inGamma - 1.0);
             gz3d.scene.applyComposerSettings(undefined, undefined, true);

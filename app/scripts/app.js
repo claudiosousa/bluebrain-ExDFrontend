@@ -33,7 +33,7 @@
    * Main module of the application.
    */
 
-  var app = angular
+  angular
     .module('exdFrontendApp', [
       'ngAnimate',
       'ngCookies',
@@ -342,13 +342,7 @@
       '$rootScope',
       '$location',
       function($rootScope, $location) {
-        $rootScope.$on('$stateChangeSuccess', function(
-          event,
-          toState,
-          toParams,
-          fromState,
-          fromParams
-        ) {
+        $rootScope.$on('$stateChangeSuccess', function() {
           var currentPath = $location.path();
           window.parent.postMessage(
             {
@@ -375,8 +369,7 @@
     ])
     .run([
       'storageServer',
-      '$location',
-      function(storageServer, $location) {
+      function() {
         // storageServer.getExperiments();
       }
     ]);

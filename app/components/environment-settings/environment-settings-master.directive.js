@@ -35,7 +35,7 @@
           'components/environment-settings/environment-settings-master.template.html',
         restrict: 'E',
         scope: true,
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           scope.editorToolbarService = editorToolbarService;
 
           scope.masterSettings = [
