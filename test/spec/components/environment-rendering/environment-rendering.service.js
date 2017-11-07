@@ -159,9 +159,6 @@ describe('Services: environmentRenderingService', function() {
     expect(stateService.addStateCallback).toHaveBeenCalledWith(
       environmentRenderingService.onStateChanged
     );
-    expect(assetLoadingSplash.open).toHaveBeenCalledWith(
-      environmentRenderingService.onSceneLoaded
-    );
     expect(environmentRenderingService.assetLoadingSplashScreen).toBeDefined();
     expect(gz3d.iface.setAssetProgressCallback).toHaveBeenCalledWith(
       jasmine.any(Function)
@@ -402,6 +399,7 @@ describe('Services: environmentRenderingService', function() {
     environmentRenderingService.sceneLoading = true;
 
     environmentRenderingService.onSceneLoaded();
+    environmentRenderingService.onSceneReady();
 
     expect(
       environmentRenderingService.assetLoadingSplashScreen

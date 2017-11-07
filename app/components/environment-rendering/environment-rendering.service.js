@@ -35,7 +35,7 @@
       FPS_60: 60,
       FPS_INFINITE: Infinity
     })
-    .factory('environmentRenderingService', [
+    .service('environmentRenderingService', [
       '$q',
       'STATE',
       'FPS_LIMIT',
@@ -48,6 +48,7 @@
       'assetLoadingSplash',
       'nrpAnalytics',
       'collab3DSettingsService',
+      '$timeout',
       function(
         $q,
         STATE,
@@ -60,7 +61,8 @@
         userContextService,
         assetLoadingSplash,
         nrpAnalytics,
-        collab3DSettingsService
+        collab3DSettingsService,
+        $timeout
       ) {
         function EnvironmentRenderingService() {
           var that = this;
@@ -70,6 +72,7 @@
           this.skippedFramesForDropCycles = 5;
           this.sceneLoading = true;
           this.deferredSceneInitialized = $q.defer();
+          this.scene3DSettingsReady = false;
 
           this.sceneInitialized = function() {
             return this.deferredSceneInitialized.promise;
@@ -97,8 +100,7 @@
 
                 // Show the splash screen for the progress of the asset loading
                 that.assetLoadingSplashScreen =
-                  that.assetLoadingSplashScreen ||
-                  assetLoadingSplash.open(that.onSceneLoaded);
+                  that.assetLoadingSplashScreen || assetLoadingSplash.open();
                 gz3d.iface.setAssetProgressCallback(function(data) {
                   assetLoadingSplash.setProgress(data);
                 });
@@ -293,20 +295,22 @@
           };
 
           this.onSceneLoaded = function() {
-            if (that.sceneLoading) {
-              delete this.assetLoadingSplashScreen;
-
+            if (this.sceneLoading) {
               nrpAnalytics.durationEventTrack('Browser-initialization', {
                 category: 'Simulation'
               });
               nrpAnalytics.tickDurationEvent('Simulate');
 
               gz3d.scene.showLightHelpers = false;
-              that.deferredSceneInitialized.resolve();
+              this.deferredSceneInitialized.resolve();
               gz3d.setLightHelperVisibility();
               userNavigationService.init();
-              that.sceneLoading = false;
             }
+          };
+
+          this.onSceneReady = function() {
+            delete this.assetLoadingSplashScreen;
+            this.sceneLoading = false;
           };
 
           // Init composer settings
@@ -314,6 +318,9 @@
             this.loadingEnvironmentSettingsPanel = true;
             collab3DSettingsService.loadSettings().finally(function() {
               that.loadingEnvironmentSettingsPanel = false;
+              $timeout(() => {
+                that.scene3DSettingsReady = true;
+              });
             });
           };
         }

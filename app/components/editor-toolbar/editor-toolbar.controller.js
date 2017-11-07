@@ -219,6 +219,11 @@
 
       /* Progress messages (except start state progress messages which are handled by another progress bar) */
       if (angular.isDefined(message.progress)) {
+        if (angular.isDefined(message.progress.subtask)) {
+          var loadingModel =
+            message.progress.subtask.indexOf('Loading model') !== -1; // Loading Model messages are already handled by the asset loading splash screen.
+        }
+
         var stateStopFailed =
           this.stateService.currentState === this.STATE.STOPPED ||
           this.stateService.currentState === this.STATE.FAILED;
@@ -230,6 +235,7 @@
           //TODO: but first onSimulationDone() has to be moved to experiment service or replaced
           /* splashScreen == null means it has been already closed and should not be reopened */
           if (
+            !loadingModel &&
             this.splash.splashScreen !== null &&
             !this.environmentRenderingService.sceneLoading &&
             (angular.isDefined(message.state) ||
