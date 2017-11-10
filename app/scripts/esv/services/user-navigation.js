@@ -33,6 +33,12 @@
       HUMAN_BODY: 'HumanBody',
       LOOKAT_ROBOT: 'LookatRobot'
     })
+    .constant('CAMERA_SENSITIVITY_RANGE', {
+      TRANSLATION_MIN: 0.05,
+      TRANSLATION_MAX: 2.0,
+      ROTATION_MIN: 0.1,
+      ROTATION_MAX: 2
+    })
     .factory('userNavigationService', [
       '$timeout',
       'NAVIGATION_MODES',
