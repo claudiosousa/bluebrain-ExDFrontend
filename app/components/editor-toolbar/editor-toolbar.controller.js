@@ -175,7 +175,8 @@
       this.resetButtonClickHandler = function() {
         // this.request takes the radio button value from reset-checklist-template.html - TODO: can we refactor this as ClickHandler parameter?
         this.request = {
-          resetType: this.RESET_TYPE.NO_RESET
+          resetType: this.RESET_TYPE.NO_RESET,
+          contextId: this.simulationInfo.contextID
         };
         clbConfirm
           .open({

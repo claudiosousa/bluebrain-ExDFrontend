@@ -456,7 +456,8 @@
           experimentID: experimentID,
           brainProcesses: brainProcesses,
           reservation: reservation,
-          creationUniqueID: (Date.now() + Math.random()).toString()
+          creationUniqueID: (Date.now() + Math.random()).toString(),
+          ctxId: $stateParams.ctx
         };
 
         if (environmentConfiguration) {
