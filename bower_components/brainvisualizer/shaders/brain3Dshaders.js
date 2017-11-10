@@ -95,7 +95,10 @@ void main() { \
   outColor = texture2D( texture, gl_PointCoord ); \
  \
     if ( outColor.a < 0.2 ) discard; \
-     \
+    outColor.r *= outColor.a; \
+    outColor.g *= outColor.a; \
+    outColor.b *= outColor.a; \
+       \
 	gl_FragColor = outColor * vec4( color * vC.xyz, 1.0 ); \
  \
 } \
@@ -117,6 +120,9 @@ void main() { \
  \
 	vec4 outColor; \
   outColor = texture2D( texture, gl_PointCoord ); \
+  outColor.r *= outColor.a; \
+  outColor.g *= outColor.a; \
+  outColor.b *= outColor.a; \
   if (drawinnermask>0.0) \
   { \
     vec4 maskColor; \
