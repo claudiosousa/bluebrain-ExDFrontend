@@ -1,9 +1,9 @@
-(function () {
+(function() {
   'use strict';
 
   var phoenixRosDict = {};
 
-  ROSLIB.PhoenixRos = function (rosOptions) {
+  ROSLIB.PhoenixRos = function(rosOptions) {
     var url = rosOptions.url;
 
     var phoenixRos = phoenixRosDict[url];
@@ -27,42 +27,67 @@
 
     connect();
 
-    phoenixRosDict[url] = {
+    return (phoenixRosDict[url] = {
       close: closeRos,
       on: on,
       off: off,
       once: once,
+      roscmd: roscmd,
+      setRoscmdListener: setRoscmdListener,
+      removeRoscmdListener: removeRoscmdListener,
       disableRebirth: disableRebirth,
       callOnConnection: callOnConnection
-    };
+    });
 
-    return phoenixRosDict[url];
+    function onmessage(ros) {
+      let onmessage = ros.socket.onmessage;
+
+      return (...args) => {
+        if (args.length) {
+          try {
+            let msgdata = JSON.parse(args[0].data);
+            if (msgdata.op === 'ros_response') {
+              ros.roscmdListener &&
+                ros.roscmdListener(msgdata.msg, msgdata.running);
+            }
+          } catch (e) {}
+        }
+        onmessage(...args);
+      };
+    }
 
     function connect() {
       console.debug('Establishing websocket to: ' + url);
       var ros = new ROSLIB.Ros(rosOptions);
+      ros.socket.onmessage = onmessage(ros);
+
       connections[url] = ros;
 
       //re-register events
-      _.forOwn(events, function (subscribers, topic) {
-        subscribers.forEach(function (fn) { ros.on(topic, fn); });
+      _.forOwn(events, function(subscribers, topic) {
+        subscribers.forEach(function(fn) {
+          ros.on(topic, fn);
+        });
       });
 
       //re-register subsbcriptions
-      _.forOwn(subscriptions, function (operation) {
+      _.forOwn(subscriptions, function(operation) {
         ros.callOnConnection(operation);
       });
 
-      ros.on('connection', function () {
+      ros.on('connection', function() {
         console.debug('Connected to websocket server: ' + url);
         triggerReconnectingEvent(false);
       });
 
-      ros.on('error', function (error) {
-        console.error('Error connecting to websocket server (' + url + '):', error);
+      ros.on('error', function(error) {
+        console.error(
+          'Error connecting to websocket server (' + url + '):',
+          error
+        );
       });
 
-      ros.on('close', function () {
+      ros.on('close', function() {
         clearTimeout(reconnectTimeout);
         console.debug('Connection closed to websocket server: ' + url);
         if (!reconnectOnClose) {
@@ -78,7 +103,8 @@
     }
 
     function on(topic, fn) {
-      if (topic !== 'connection') { //we don't want to notify internal reconnections
+      if (topic !== 'connection') {
+        //we don't want to notify internal reconnections
         if (!events[topic]) {
           events[topic] = [];
         }
@@ -96,6 +122,10 @@
 
     function once(topic, fn) {
       connections[url].once(topic, fn);
+    }
+
+    function roscmd(msg) {
+      connections[url].socket.send(JSON.stringify({ op: 'roscmd', msg: msg }));
     }
 
     function callOnConnection(options) {
@@ -119,35 +149,48 @@
         connections[url].close();
       }
     }
+
+    function setRoscmdListener(fn){
+      connections[url].roscmdListener = fn;
+    }
+
+    function removeRoscmdListener(){
+      delete connections[url].roscmdListener;
+    }
   }
 
   var reconnectingCallbacks = [];
   //global PhoenixRos reconnecting event
   //called with 'true' when reconnecting
   //called with 'false' when end reconnecting
-  window.ROSLIB.PhoenixRos.onReconnecting = function (callback) {
+  window.ROSLIB.PhoenixRos.onReconnecting = function(callback) {
     reconnectingCallbacks.push(callback);
-    return function () {
+    return function() {
       reconnectingCallbacks.splice(reconnectingCallbacks.indexOf(callback));
     };
   };
 
   var lastNotifiedState = false;
   function triggerReconnectingEvent(state) {
-    if (lastNotifiedState === state) { //we already notified the current state
+    if (lastNotifiedState === state) {
+      //we already notified the current state
       return;
     }
-    var someDisconnected = _.some(connections, function (con) {
+    var someDisconnected = _.some(connections, function(con) {
       return !con.isConnected;
     });
 
-    if (someDisconnected !== state) {//only notify 'reconnection' when all are reconnected
+    if (someDisconnected !== state) {
+      //only notify 'reconnection' when all are reconnected
       return;
     }
     lastNotifiedState = state;
-    reconnectingCallbacks.forEach(function (fn) { fn(state); });//notify reconnecting event
+    reconnectingCallbacks.forEach(function(fn) {
+      fn(state);
+    }); //notify reconnecting event
   }
 })();
+
 var GZ3D = GZ3D || {
   REVISION : '1',
   assetsPath: 'http://localhost:8080/assets',

@@ -96,7 +96,8 @@
       'clusterReservation',
       'demoCarousel',
       'experimentExplorer',
-      'experimentList'
+      'experimentList',
+      'rosTerminalModule'
     ])
     // Routes
     .config([
@@ -316,9 +317,12 @@
       }
     ])
     .run([
+      '$rootScope',
       '$log',
+      'baseEventHandler',
       'environmentService',
-      function($log, environmentService) {
+      function($rootScope, $log, baseEventHandler, environmentService) {
+        $rootScope.suppressKeyPress = baseEventHandler.suppressAnyKeyPress;
         if (environmentService.isDevMode()) return;
         window.console.debug = $log.debug;
       }

@@ -284,6 +284,14 @@
             <!-- log console icon -->
         </div>
 
+        <!-- ROS terminal -->
+        <div class="hbp-toolbar-action hide-overflow" 
+            help-tooltip="ROS_TERMINAL" 
+            ng-class="{'active': vm.editorToolbarService.isRosTerminalVisible}"
+            ng-click="vm.editorToolbarService.toggleRosTerminal()">
+            <i class="vertcenter" style="font-weight: bold;">ROS</i>
+        </div>
+
         <!-- owner information -->
         <div ng-if="vm.userContextService.isOwner() === false"
              class="hbp-toolbar-large-tool-two-lines default-cursor"

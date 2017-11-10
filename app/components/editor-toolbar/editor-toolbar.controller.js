@@ -57,7 +57,8 @@
       NAVIGATION_MODES,
       EDIT_MODE,
       RESET_TYPE,
-      DYNAMIC_VIEW_CHANNELS
+      DYNAMIC_VIEW_CHANNELS,
+      rosCommanderService
     ) {
       this.backendInterfaceService = backendInterfaceService;
       this.clientLoggerService = clientLoggerService;
@@ -81,6 +82,7 @@
       this.videoStreamService = videoStreamService;
       this.demoMode = bbpConfig.get('demomode.demoCarousel', false);
       this.gz3dViewsService = gz3dViewsService;
+      this.rosCommanderService = rosCommanderService;
 
       this.DYNAMIC_VIEW_CHANNELS = DYNAMIC_VIEW_CHANNELS;
       this.EDIT_MODE = EDIT_MODE;
@@ -630,7 +632,11 @@
   }
 
   angular
-    .module('editorToolbarModule', ['helpTooltipModule', 'clb-ui-dialog'])
+    .module('editorToolbarModule', [
+      'helpTooltipModule',
+      'clb-ui-dialog',
+      'rosTerminalModule'
+    ])
     .controller('EditorToolbarController', [
       '$rootScope',
       '$scope',
@@ -664,7 +670,7 @@
       'EDIT_MODE',
       'RESET_TYPE',
       'DYNAMIC_VIEW_CHANNELS',
-      'LOG_TYPE',
+      'rosCommanderService',
       (...args) => new EditorToolbarController(...args)
     ]);
 })();

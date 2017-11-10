@@ -204,6 +204,15 @@
           minWidth: 400,
           minHeight: 450
         }
+      },
+      ROS_TERMINAL: {
+        name: 'ROS Terminal',
+        directive: 'ros-terminal',
+        allowMultipleViews: false,
+        overlayDefaultSize: {
+          width: 700,
+          height: 450
+        }
       }
     });
 })();

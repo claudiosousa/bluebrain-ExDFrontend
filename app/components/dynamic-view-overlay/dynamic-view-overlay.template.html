@@ -3,7 +3,7 @@
 <!-- endbuild -->
 
 <div movable movable-anchor=".titlebar-name" show-on-top resizeable="true"
-     class="dynamic-view-overlay-wrapper">
+     class="dynamic-view-overlay-wrapper" channel="{{vm.channelType.directive}}">
   <div class="dynamic-view-overlay-titlebar">
     <h6 class="titlebar-name">{{vm.channelType.name}}</h6>
     <button type="button" class="titlebar-button-close" data-ng-click="vm.closeOverlay()">×</button>

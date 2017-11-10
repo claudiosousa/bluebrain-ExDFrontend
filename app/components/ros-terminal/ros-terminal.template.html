@@ -1,0 +1,17 @@
+<div class="ros-terminal-popup" ng-class="{'focused':focused}" ng-keydown="$root.suppressKeyPress($event)">
+  <!-- build:css(.tmp) components/ros-terminal/ros-terminal.style.css -->
+  <link rel="stylesheet" href="components/ros-terminal/ros-terminal.style.css" />
+  <!-- endbuild -->
+
+  <div class="ros-command-list widget-content">
+    <div class="ros-command" ng-repeat="cmd in commands">
+      <span ng-if="cmd.type==='cmd'" class="ros-prompt">ros-terminal #</span>
+      <span class="ros-command-text">{{cmd.data}}</span>
+    </div>
+    <div class="ros-input-line" ng-hide="running">
+      <span class="ros-prompt">ros-terminal #</span>
+      <input class="ros-command-line" autofocus ng-model="cmdLine" style="visibility:none" autocorrect="off" autocapitalize="off"
+        spellcheck="false" tabindex="0">
+    </div>
+  </div>
+</div>

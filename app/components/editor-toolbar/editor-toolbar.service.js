@@ -54,6 +54,10 @@
       return this.showLogConsole;
     }
 
+    get isRosTerminalVisible() {
+      return this.showRosTerminal;
+    }
+
     get isEnvironmentSettingsPanelActive() {
       return this.showEnvironmentSettingsPanel;
     }
@@ -135,6 +139,22 @@
               this.DYNAMIC_VIEW_CHANNELS.PERFORMANCE_MONITOR
             );
           }
+        });
+    }
+
+    toggleRosTerminal() {
+      this.dynamicViewOverlayService
+        .isOverlayOpen(this.DYNAMIC_VIEW_CHANNELS.ROS_TERMINAL)
+        .then(visible => {
+          let action = visible
+            ? 'closeAllOverlaysOfType'
+            : 'createDynamicOverlay';
+
+          this.dynamicViewOverlayService[action](
+            this.DYNAMIC_VIEW_CHANNELS.ROS_TERMINAL
+          );
+
+          this.showRosTerminal = !visible;
         });
     }
   }

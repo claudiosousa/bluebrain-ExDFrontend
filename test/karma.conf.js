@@ -114,6 +114,7 @@ module.exports = function(config) {
       // (these files will be instrumented by Istanbul)
       'app/scripts/*/**/*.js': ['babel', 'coverage'],
       'app/components/**/*.js': ['babel', 'coverage'],
+      'bower_components/gz3d-hbp/gz3d/build/gz3d.js': ['babel'],
       'app/components/**/*.html': ['ng-html2js'],
       'app/views/**/*.html': ['ng-html2js']
     },
