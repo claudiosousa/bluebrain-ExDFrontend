@@ -512,6 +512,7 @@ describe('Directive: smachEditor', function() {
       };
       spyOn(window, 'FileReader').and.returnValue(fileReaderMock);
       spyOn(Date, 'now').and.returnValue(666);
+      spyOn(codeEditorsServices, 'getEditor').and.returnValue(editorMock);
 
       isolateScope.loadStateMachine('someFile');
       expect(window.FileReader).toHaveBeenCalled();
