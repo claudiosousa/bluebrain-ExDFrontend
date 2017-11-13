@@ -7330,6 +7330,8 @@ GZ3D.Manipulator = function(gz3dScene, mobile)
     }
 
     this.object.updateMatrixWorld();
+    this.gz3dScene.updateBoundingBox(this.object);
+
     worldPosition.setFromMatrixPosition(this.object.matrixWorld);
 
     this.userView.camera.updateMatrixWorld();
@@ -9953,6 +9955,7 @@ GZ3D.Scene.prototype.setPose = function(model, position, orientation)
   model.quaternion.y = orientation.y;
   model.quaternion.z = orientation.z;
   this.refresh3DViews();
+  this.updateBoundingBox(model);
 };
 
 /**
@@ -9964,6 +9967,7 @@ GZ3D.Scene.prototype.setScale = function(model, scale) {
   model.scale.copy(scale);
   model.updateMatrixWorld();
   this.refresh3DViews();
+  this.updateBoundingBox(model);
 };
 
 GZ3D.Scene.prototype.removeAll = function()
@@ -11175,6 +11179,77 @@ GZ3D.Scene.prototype.showRadialMenu = function(e)
 };
 
 /**
+ * Update bounding box for a model. The box is aligned with the world.
+ * @param {THREE.Object3D} model
+ */
+GZ3D.Scene.prototype.updateBoundingBox = function(model)
+{
+  if (typeof model === 'string')
+  {
+    model = this.scene.getObjectByName(model);
+  }
+
+  if (this.boundingBox.visible && model===this.boundingBox.boundingBoxObject)
+  {
+    var box = new THREE.Box3();
+    var prevAngle = model.rotation.clone();
+    var prevPos = model.position.clone();
+    model.rotation.copy(new THREE.Euler( 0, 0, 0, 'XYZ' ));
+    model.position.copy(new THREE.Vector3(0,0,0));
+    model.updateMatrixWorld();
+    box.setFromObject(model);
+    model.rotation.copy(prevAngle);
+    model.position.copy(prevPos);
+    this.boundingBox.rotation.copy(prevAngle);
+    this.boundingBox.position.copy(prevPos);
+    model.updateMatrixWorld();
+    this.boundingBox.updateMatrixWorld();
+    
+    var vertex = new THREE.Vector3(box.max.x, box.max.y, box.max.z); // 0
+    this.boundingBox.geometry.vertices[0].copy(vertex);
+    this.boundingBox.geometry.vertices[7].copy(vertex);
+    this.boundingBox.geometry.vertices[16].copy(vertex);
+
+    vertex.set(box.min.x, box.max.y, box.max.z); // 1
+    this.boundingBox.geometry.vertices[1].copy(vertex);
+    this.boundingBox.geometry.vertices[2].copy(vertex);
+    this.boundingBox.geometry.vertices[18].copy(vertex);
+
+    vertex.set(box.min.x, box.min.y, box.max.z); // 2
+    this.boundingBox.geometry.vertices[3].copy(vertex);
+    this.boundingBox.geometry.vertices[4].copy(vertex);
+    this.boundingBox.geometry.vertices[20].copy(vertex);
+
+    vertex.set(box.max.x, box.min.y, box.max.z); // 3
+    this.boundingBox.geometry.vertices[5].copy(vertex);
+    this.boundingBox.geometry.vertices[6].copy(vertex);
+    this.boundingBox.geometry.vertices[22].copy(vertex);
+
+    vertex.set(box.max.x, box.max.y, box.min.z); // 4
+    this.boundingBox.geometry.vertices[8].copy(vertex);
+    this.boundingBox.geometry.vertices[15].copy(vertex);
+    this.boundingBox.geometry.vertices[17].copy(vertex);
+
+    vertex.set(box.min.x, box.max.y, box.min.z); // 5
+    this.boundingBox.geometry.vertices[9].copy(vertex);
+    this.boundingBox.geometry.vertices[10].copy(vertex);
+    this.boundingBox.geometry.vertices[19].copy(vertex);
+
+    vertex.set(box.min.x, box.min.y, box.min.z); // 6
+    this.boundingBox.geometry.vertices[11].copy(vertex);
+    this.boundingBox.geometry.vertices[12].copy(vertex);
+    this.boundingBox.geometry.vertices[21].copy(vertex);
+
+    vertex.set(box.max.x, box.min.y, box.min.z); // 7
+    this.boundingBox.geometry.vertices[13].copy(vertex);
+    this.boundingBox.geometry.vertices[14].copy(vertex);
+    this.boundingBox.geometry.vertices[23].copy(vertex);
+
+    this.boundingBox.geometry.verticesNeedUpdate = true;
+  }
+};
+
+/**
  * Show bounding box for a model. The box is aligned with the world.
  * @param {THREE.Object3D} model
  */
@@ -11187,7 +11262,7 @@ GZ3D.Scene.prototype.showBoundingBox = function(model)
 
   if (this.boundingBox.visible)
   {
-    if (this.boundingBox.parent === model)
+    if (this.boundingBox.boundingBoxObject === model)
     {
       return;
     }
@@ -11196,69 +11271,16 @@ GZ3D.Scene.prototype.showBoundingBox = function(model)
       this.hideBoundingBox();
     }
   }
-  var box = new THREE.Box3();
-  // w.r.t. world
-  box.setFromObject(model);
-  // center vertices with object
-  box.min.sub(model.position);
-  box.min.divide(model.scale);
 
-  box.max.sub(model.position);
-  box.max.divide(model.scale);
-
-  var vertex = new THREE.Vector3(box.max.x, box.max.y, box.max.z); // 0
-  this.boundingBox.geometry.vertices[0].copy(vertex);
-  this.boundingBox.geometry.vertices[7].copy(vertex);
-  this.boundingBox.geometry.vertices[16].copy(vertex);
-
-  vertex.set(box.min.x, box.max.y, box.max.z); // 1
-  this.boundingBox.geometry.vertices[1].copy(vertex);
-  this.boundingBox.geometry.vertices[2].copy(vertex);
-  this.boundingBox.geometry.vertices[18].copy(vertex);
-
-  vertex.set(box.min.x, box.min.y, box.max.z); // 2
-  this.boundingBox.geometry.vertices[3].copy(vertex);
-  this.boundingBox.geometry.vertices[4].copy(vertex);
-  this.boundingBox.geometry.vertices[20].copy(vertex);
-
-  vertex.set(box.max.x, box.min.y, box.max.z); // 3
-  this.boundingBox.geometry.vertices[5].copy(vertex);
-  this.boundingBox.geometry.vertices[6].copy(vertex);
-  this.boundingBox.geometry.vertices[22].copy(vertex);
-
-  vertex.set(box.max.x, box.max.y, box.min.z); // 4
-  this.boundingBox.geometry.vertices[8].copy(vertex);
-  this.boundingBox.geometry.vertices[15].copy(vertex);
-  this.boundingBox.geometry.vertices[17].copy(vertex);
-
-  vertex.set(box.min.x, box.max.y, box.min.z); // 5
-  this.boundingBox.geometry.vertices[9].copy(vertex);
-  this.boundingBox.geometry.vertices[10].copy(vertex);
-  this.boundingBox.geometry.vertices[19].copy(vertex);
-
-  vertex.set(box.min.x, box.min.y, box.min.z); // 6
-  this.boundingBox.geometry.vertices[11].copy(vertex);
-  this.boundingBox.geometry.vertices[12].copy(vertex);
-  this.boundingBox.geometry.vertices[21].copy(vertex);
-
-  vertex.set(box.max.x, box.min.y, box.min.z); // 7
-  this.boundingBox.geometry.vertices[13].copy(vertex);
-  this.boundingBox.geometry.vertices[14].copy(vertex);
-  this.boundingBox.geometry.vertices[23].copy(vertex);
-
-  this.boundingBox.geometry.verticesNeedUpdate = true;
-
-  // rotate the box back to the world
-  var modelRotation = new THREE.Matrix4();
-  modelRotation.extractRotation(model.matrixWorld);
-  var modelInverse = new THREE.Matrix4();
-  modelInverse.getInverse(modelRotation);
-  this.boundingBox.quaternion.setFromRotationMatrix(modelInverse);
   this.boundingBox.name = 'boundingBox';
   this.boundingBox.visible = true;
 
+  this.boundingBox.boundingBoxObject = model;
+
+  this.updateBoundingBox(model);
+
   // Add box as model's child
-  model.add(this.boundingBox);
+  this.scene.add(this.boundingBox);
   this.refresh3DViews();
 };
 
@@ -11267,9 +11289,10 @@ GZ3D.Scene.prototype.showBoundingBox = function(model)
  */
 GZ3D.Scene.prototype.hideBoundingBox = function()
 {
-  if(this.boundingBox.parent)
+  if(this.boundingBox.boundingBoxObject)
   {
-    this.boundingBox.parent.remove(this.boundingBox);
+    this.scene.remove(this.boundingBox);
+    this.boundingBox.boundingBoxObject = undefined;
   }
   this.boundingBox.visible = false;
   this.refresh3DViews();
