@@ -8390,7 +8390,8 @@ GZ3D.MultiplyShader = {
 
 GZ3D.RENDER_MODE = {
   MULTIPLE_CONTEXTS: 1,
-  OFFSCREEN_AND_COPY_TO_CANVAS: 2
+  OFFSCREEN_AND_COPY_TO_CANVAS: 2,
+  DYNAMIC: 3
 };
 
 
@@ -8406,8 +8407,10 @@ GZ3D.MULTIVIEW_DEFAULT_CAMERA_PARAMS = {
 GZ3D.MultiView = function (gz3dScene) {
   this.gz3dScene = gz3dScene;
 
-  this.renderMode = GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS;
-  if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
+  this.renderMode = GZ3D.RENDER_MODE.DYNAMIC;
+  if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS ||
+      this.renderMode === GZ3D.RENDER_MODE.DYNAMIC)
+  {
     this.renderer = this.createRenderer();
   }
   this.views = [];
@@ -8456,7 +8459,21 @@ GZ3D.MultiView.prototype.createView = function (name, cameraParams) {
   cameraHelper.update();
 
   var view;
-  if (this.renderMode === GZ3D.RENDER_MODE.MULTIPLE_CONTEXTS) {
+
+  if (this.renderMode===GZ3D.RENDER_MODE.DYNAMIC)
+  {
+     // assemble view
+      view = {
+        name: name,
+        camera: camera,
+        container: undefined,
+        renderer: this.renderer,
+        canvas: this.renderer.domElement,
+        initAspectRatio: cameraParams.aspectRatio,
+        masterView: this.views.length===0           // First view is the master view, it owns the renderer and renders directly on screen
+      };                                            // Master view may be changed later, if another view is bigger than this view
+  }
+  else if (this.renderMode === GZ3D.RENDER_MODE.MULTIPLE_CONTEXTS) {
     // renderer
     var renderer = this.createRenderer();
 
@@ -8501,11 +8518,11 @@ GZ3D.MultiView.prototype.getViewByName = function (name) {
 
 GZ3D.MultiView.prototype.isViewVisible = function (view) {
   if (view.container) {
-      return (view.container.style.visibility === 'visible');
+      return (view.container.style.visibility === 'visible' &&
+              view.container.className.indexOf('ng-hide')===-1);
   } else {
     return false;
   }
-
 };
 
 GZ3D.MultiView.prototype.setViewContainerElement = function (view, containerElement) {
@@ -8513,7 +8530,23 @@ GZ3D.MultiView.prototype.setViewContainerElement = function (view, containerElem
     return false;
   }
 
-  if (this.renderMode === GZ3D.RENDER_MODE.MULTIPLE_CONTEXTS) {
+  if (this.renderMode === GZ3D.RENDER_MODE.DYNAMIC)
+  {
+    if (view.masterView)
+    {
+      view.container = containerElement;
+      view.container.appendChild(view.renderer.domElement);
+      view.container.style.visibility = 'visible';
+    }
+    else
+    {
+      view.container = containerElement;
+      view.canvas = document.createElement('canvas');
+      view.container.appendChild(view.canvas);
+      view.container.style.visibility = 'visible';
+    }
+  }
+  else if (this.renderMode === GZ3D.RENDER_MODE.MULTIPLE_CONTEXTS) {
     view.container = containerElement;
     view.container.appendChild(view.renderer.domElement);
     view.container.style.visibility = 'visible';
@@ -8541,28 +8574,133 @@ GZ3D.MultiView.prototype.updateView = function (view) {
   view.renderer.setScissor(0, 0, width, height);
 };
 
-GZ3D.MultiView.prototype.renderViews = function () {
-  for (var i = 0, l = this.views.length; i < l; i = i + 1) {
+GZ3D.MultiView.prototype.updateMasterView = function () {
+
+  // The master view should be the larger canvas
+
+  var maxSize = 0;
+  var maxSizeView;
+  var masterView;
+
+  for (var i = 0, l = this.views.length; i < l; i = i + 1)
+  {
     var view = this.views[i];
 
-    if (this.isViewVisible(view)) {
+    if (this.isViewVisible(view))
+    {
+      var nPixels = view.canvas.width * view.canvas.height;
+
+      if (view.masterView)
+      {
+        masterView = view;
+      }
+
+      if (i===0)
+      {
+        maxSize = nPixels;
+        maxSizeView = view;
+      }
+      else
+      {
+        if (nPixels>maxSize)
+        {
+          maxSize = nPixels;
+          maxSizeView = view;
+        }
+      }
+    }
+  }
+
+  if (maxSizeView && !maxSizeView.masterView )
+  {
+      // The masterView is not the biggest one anymore, it should be updated
+
+      maxSizeView.masterView = true;
+      maxSizeView.container.appendChild(this.renderer.domElement);
+
+      if (masterView)
+      {
+        masterView.container.appendChild(maxSizeView.canvas);
+        masterView.canvas = maxSizeView.canvas;
+        masterView.masterView = false;
+      }
+      else
+      {
+        maxSizeView.container.removeChild(maxSizeView.canvas);
+      }
+
+      maxSizeView.canvas = this.renderer.domElement;
+    }
+};
+
+GZ3D.MultiView.prototype.renderViews = function () {
+
+  var masterView, oneViewNeedRefresh, i, l, view;
+
+  if (this.renderMode===GZ3D.RENDER_MODE.DYNAMIC)
+  {
+    this.updateMasterView();
+  }
+
+  for (i = 0, l = this.views.length; i < l; i = i + 1)
+  {
+    view = this.views[i];
+
+    if (this.isViewVisible(view))
+    {
       if (view.needsRefresh ||
         view.canvas.width!==view.container.clientWidth ||
         view.canvas.height!==view.container.clientHeight ||
         !view.camera.matrixWorld.equals(view.cameraViewCurrentMatrix) )
       {
+        oneViewNeedRefresh = true;
+      }
+    }
+  }
+
+  if (oneViewNeedRefresh)
+  {
+    for (i = 0, l = this.views.length; i < l; i = i + 1)
+    {
+      view = this.views[i];
+
+      if (this.isViewVisible(view))
+      {
         view.needsRefresh = false;
         view.cameraViewCurrentMatrix = view.camera.matrixWorld.clone();
 
-        //this.renderToIndividualCanvases(view);
-        this.updateView(view);
-        this.gz3dScene.composer.render(view);
+        if (this.renderMode === GZ3D.RENDER_MODE.DYNAMIC)
+        {
+          if ( !view.masterView )
+          {
+            this.updateView(view);
+            this.gz3dScene.composer.render(view);
+            view.canvas.getContext('2d').drawImage(this.renderer.domElement, 0, 0,view.canvas.width,view.canvas.height,
+                                                                            0, 0,view.canvas.width,view.canvas.height);
+          }
+          else
+          {
+            masterView = view;
+          }
+        }
+        else
+        {
+          this.updateView(view);
+          this.gz3dScene.composer.render(view);
 
-        if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS) {
-          view.canvas.getContext('2d').drawImage(this.renderer.domElement, 0, 0);
+          if (this.renderMode === GZ3D.RENDER_MODE.OFFSCREEN_AND_COPY_TO_CANVAS)
+          {
+            view.canvas.getContext('2d').drawImage(this.renderer.domElement, 0, 0);
+          }
         }
       }
     }
+  }
+
+  if (masterView)
+  {
+    this.updateView(masterView);
+    this.gz3dScene.composer.render(masterView);
   }
 };
 
