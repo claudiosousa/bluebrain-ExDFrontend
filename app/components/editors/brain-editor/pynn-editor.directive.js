@@ -100,14 +100,18 @@
             return simulationInfo.experimentDetails.brainProcesses > 1;
           };
 
-          scope.editorOptions = angular.extend(
-            {},
-            codeEditorsServices.getDefaultEditorOptions(),
-            { readOnly: scope.isMultipleBrains() && 'nocursor' }
-          );
-          scope.editorOptions = codeEditorsServices.ownerOnlyOptions(
-            scope.editorOptions
-          );
+          scope.editorOptions = {};
+
+          $timeout(() => {
+            scope.editorOptions = angular.extend(
+              {},
+              codeEditorsServices.getDefaultEditorOptions(),
+              { readOnly: scope.isMultipleBrains() && 'nocursor' }
+            );
+            scope.editorOptions = codeEditorsServices.ownerOnlyOptions(
+              scope.editorOptions
+            );
+          });
 
           scope.resetListenerUnbindHandler = scope.$on('RESET', function(
             event,
