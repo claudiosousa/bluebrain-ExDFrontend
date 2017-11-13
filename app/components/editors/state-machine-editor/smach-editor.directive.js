@@ -303,6 +303,14 @@
             scope.collabDirty = environmentService.isPrivateExperiment();
             autoSaveService.setDirty(DIRTY_TYPE, scope.stateMachines);
 
+            $timeout(function() {
+              codeEditorsServices.refreshEditor(
+                codeEditorsServices.getEditor(
+                  'state-machine-' + stateMachine.id
+                )
+              );
+            });
+
             return stateMachine;
           };
 
