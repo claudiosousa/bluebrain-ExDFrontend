@@ -75,9 +75,11 @@
     "validate": "grunt validate",
     "build": "grunt build",
     "tag": "grunt publish",
-    "prettify": "node_modules/prettier/bin/prettier.js  \"**/*.{js,json,scss}\" --write",
+    "prettify":
+      "node_modules/prettier/bin/prettier.js  \"**/*.{js,json,scss}\" --write",
     "lint": "grunt eslint",
-    "postinstall": "rm -rf node_modules/grunt-contrib-uglify/node_modules/uglify-js/",
+    "postinstall":
+      "rm -rf node_modules/grunt-contrib-uglify/node_modules/uglify-js/",
     "precommit": "lint-staged"
   },
   "lint-staged": {
@@ -98,10 +100,7 @@
     "type": "git",
     "url": "ssh://bbpcode.epfl.ch/neurorobotics/ExDFrontend"
   },
-  "files": [
-    "package.json",
-    "dist"
-  ],
+  "files": ["package.json", "dist"],
   "keywords": [
     "angular",
     "application",

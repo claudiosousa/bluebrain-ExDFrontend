@@ -48,7 +48,6 @@
     'TRANSFER_FUNCTION_TYPE',
     'simulationInfo',
     'codeEditorsServices',
-    '$q',
     function(
       $log,
       backendInterfaceService,
@@ -63,8 +62,7 @@
       SOURCE_TYPE,
       TRANSFER_FUNCTION_TYPE,
       simulationInfo,
-      codeEditorsServices,
-      $q
+      codeEditorsServices
     ) {
       return {
         templateUrl:
@@ -94,22 +92,6 @@
           scope.TRANSFER_FUNCTION_TYPE = TRANSFER_FUNCTION_TYPE;
 
           scope.editorOptions = codeEditorsServices.getDefaultEditorOptions();
-
-          function ensurePauseStateAndExecute(fn) {
-            var deferred = $q.defer();
-
-            var restart = stateService.currentState === STATE.STARTED;
-            stateService.ensureStateBeforeExecuting(STATE.PAUSED, function() {
-              fn(function() {
-                if (restart) {
-                  return stateService.setCurrentState(STATE.STARTED);
-                }
-                deferred.resolve();
-              });
-            });
-
-            return deferred.promise;
-          }
 
           scope.onNewErrorMessageReceived = function(msg) {
             if (
@@ -263,23 +245,19 @@
             if (scope.transferFunction) {
               var transferFunction = scope.transferFunction;
               scope.setTFtype(transferFunction);
-              return ensurePauseStateAndExecute(function(cb) {
-                delete transferFunction.error[scope.ERROR.RUNTIME];
-                delete transferFunction.error[scope.ERROR.LOADING];
-                backendInterfaceService.setStructuredTransferFunction(
-                  transferFunction,
-                  function() {
-                    transferFunction.dirty = false;
-                    transferFunction.local = false;
-                    scope.cleanCompileError(transferFunction);
-                    cb();
-                  },
-                  function(data) {
-                    serverError.displayHTTPError(data);
-                    cb();
-                  }
-                );
-              });
+              delete transferFunction.error[scope.ERROR.RUNTIME];
+              delete transferFunction.error[scope.ERROR.LOADING];
+              backendInterfaceService.setStructuredTransferFunction(
+                transferFunction,
+                function() {
+                  transferFunction.dirty = false;
+                  transferFunction.local = false;
+                  scope.cleanCompileError(transferFunction);
+                },
+                function(data) {
+                  serverError.displayHTTPError(data);
+                }
+              );
             }
           };
 
@@ -597,13 +575,11 @@
               if (transferFunction.local) {
                 deleteInternal(scope, index);
               } else {
-                return ensurePauseStateAndExecute(function(cb) {
-                  backendInterfaceService.deleteTransferFunction(
-                    transferFunction.name,
-                    cb
-                  );
-                  deleteInternal(scope, index);
-                });
+                backendInterfaceService.deleteTransferFunction(
+                  transferFunction.name,
+                  function() {}
+                );
+                deleteInternal(scope, index);
               }
             }
           };

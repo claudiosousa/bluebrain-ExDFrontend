@@ -9,9 +9,6 @@ describe('Directive: transferFunctionEditor', function() {
     transferFunctions,
     element,
     backendInterfaceService,
-    currentStateMock,
-    stateService,
-    STATE,
     SOURCE_TYPE,
     pythonCodeHelper,
     ScriptObject,
@@ -74,14 +71,12 @@ describe('Directive: transferFunctionEditor', function() {
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates')); // import html template
-  beforeEach(module('currentStateMockFactory'));
   beforeEach(module('simulationInfoMock'));
   beforeEach(module('userContextServiceMock'));
   beforeEach(
     module(function($provide) {
       $provide.value('backendInterfaceService', backendInterfaceServiceMock);
       $provide.value('documentationURLs', documentationURLsMock);
-      $provide.value('stateService', currentStateMock);
       $provide.value('roslib', roslibMock);
       $provide.value('autoSaveService', autoSaveServiceMock);
       $provide.value('saveErrorsService', saveErrorsServiceMock);
@@ -96,9 +91,6 @@ describe('Directive: transferFunctionEditor', function() {
       _$timeout_,
       _backendInterfaceService_,
       $templateCache,
-      _currentStateMockFactory_,
-      _stateService_,
-      _STATE_,
       _SOURCE_TYPE_,
       _pythonCodeHelper_,
       _clbConfirm_,
@@ -112,11 +104,8 @@ describe('Directive: transferFunctionEditor', function() {
       $rootScope = _$rootScope_;
       $compile = _$compile_;
       $timeout = _$timeout_;
-      STATE = _STATE_;
       SOURCE_TYPE = _SOURCE_TYPE_;
-      stateService = _stateService_;
       backendInterfaceService = _backendInterfaceService_;
-      currentStateMock = _currentStateMockFactory_.get().stateService;
       editorMock.addLineClass = jasmine.createSpy('addLineClass');
       editorMock.removeLineClass = jasmine.createSpy('removeLineClass');
       pythonCodeHelper = _pythonCodeHelper_;
@@ -363,30 +352,6 @@ describe('Directive: transferFunctionEditor', function() {
       expect(tf1.id).toEqual('toto');
     });
 
-    it('should restart the simulation if it was paused for update and the update succeeded', function() {
-      var tf1 = isolateScope.transferFunctions[0];
-      stateService.currentState = STATE.STARTED;
-      isolateScope.update(tf1, false);
-      backendInterfaceService.editTransferFunction.calls.mostRecent().args[2]();
-      expect(stateService.setCurrentState.calls.count()).toBe(1);
-      stateService.currentState = STATE.PAUSED;
-      isolateScope.update(tf1, false);
-      backendInterfaceService.editTransferFunction.calls.mostRecent().args[2]();
-      expect(stateService.setCurrentState.calls.count()).toBe(1);
-    });
-
-    it('should restart the simulation if it was paused for update and the update failed', function() {
-      var tf1 = isolateScope.transferFunctions[0];
-      stateService.currentState = STATE.STARTED;
-      isolateScope.update(tf1, false);
-      backendInterfaceService.editTransferFunction.calls.mostRecent().args[3]();
-      expect(stateService.setCurrentState.calls.count()).toBe(1);
-      stateService.currentState = STATE.PAUSED;
-      isolateScope.update(tf1, false);
-      backendInterfaceService.editTransferFunction.calls.mostRecent().args[3]();
-      expect(stateService.setCurrentState.calls.count()).toBe(1);
-    });
-
     it('should delete a tf properly', function() {
       var tf1 = transferFunctions[0];
       isolateScope.delete(tf1);
@@ -403,23 +368,6 @@ describe('Directive: transferFunctionEditor', function() {
       expect(
         backendInterfaceService.deleteTransferFunction
       ).not.toHaveBeenCalledWith('tf2', jasmine.any(Function));
-    });
-
-    it('should restart the simulation if it was paused for a delete operation', function() {
-      var tf1 = transferFunctions[0];
-      stateService.currentState = STATE.STARTED;
-      isolateScope.delete(tf1);
-      backendInterfaceService.deleteTransferFunction.calls
-        .mostRecent()
-        .args[1]();
-      expect(stateService.setCurrentState.calls.count()).toBe(1);
-      stateService.currentState = STATE.PAUSED;
-      var tf2 = transferFunctions[1];
-      isolateScope.delete(tf2);
-      backendInterfaceService.deleteTransferFunction.calls
-        .mostRecent()
-        .args[1]();
-      expect(stateService.setCurrentState.calls.count()).toBe(1);
     });
 
     it('should remove tf from array for a local delete operation', function() {
