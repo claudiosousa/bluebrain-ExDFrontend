@@ -24,12 +24,14 @@
 (function() {
   'use strict';
   angular.module('exdFrontendApp').directive('environmentSettingsUsercamera', [
+    'CAMERA_SENSITIVITY_RANGE',
     'gz3d',
     'nrpAnalytics',
     'editorToolbarService',
     'gz3dViewsService',
     'userNavigationService',
     function(
+      CAMERA_SENSITIVITY_RANGE,
       gz3d,
       nrpAnalytics,
       editorToolbarService,
@@ -42,6 +44,8 @@
         restrict: 'E',
         scope: true,
         link: function(scope) {
+          scope.CAMERA_SENSITIVITY_RANGE = CAMERA_SENSITIVITY_RANGE;
+
           scope.editorToolbarService = editorToolbarService;
           scope.gz3dViewsService = gz3dViewsService;
           scope.userNavigationService = userNavigationService;

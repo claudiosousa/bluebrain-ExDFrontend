@@ -25,11 +25,17 @@
   'use strict';
 
   angular.module('exdFrontendApp').service('collab3DSettingsService', [
+    'CAMERA_SENSITIVITY_RANGE',
     'gz3d',
     'simulationConfigService',
     'userNavigationService',
     'simulationInfo',
-    function(gz3d, simulationConfigService, userNavigationService) {
+    function(
+      CAMERA_SENSITIVITY_RANGE,
+      gz3d,
+      simulationConfigService,
+      userNavigationService
+    ) {
       var loadSettings = function() {
         if (gz3d.scene.defaultComposerSettings === undefined) {
           gz3d.scene.defaultComposerSettings = JSON.parse(
@@ -53,6 +59,37 @@
                 userNavigationService.setLookatRobotCamera();
               } else {
                 userNavigationService.initAsLookatRobot = true;
+              }
+            }
+
+            if (
+              angular.isDefined(gz3d.scene.composerSettings.cameraSensitivity)
+            ) {
+              if (
+                angular.isDefined(
+                  gz3d.scene.composerSettings.cameraSensitivity.translation
+                )
+              ) {
+                userNavigationService.translationSensitivity = Math.min(
+                  CAMERA_SENSITIVITY_RANGE.TRANSLATION_MAX,
+                  Math.max(
+                    CAMERA_SENSITIVITY_RANGE.TRANSLATION_MIN,
+                    gz3d.scene.composerSettings.cameraSensitivity.translation
+                  )
+                );
+              }
+              if (
+                angular.isDefined(
+                  gz3d.scene.composerSettings.cameraSensitivity.rotation
+                )
+              ) {
+                userNavigationService.rotationSensitivity = Math.min(
+                  CAMERA_SENSITIVITY_RANGE.ROTATION_MAX,
+                  Math.max(
+                    CAMERA_SENSITIVITY_RANGE.ROTATION_MIN,
+                    gz3d.scene.composerSettings.cameraSensitivity.rotation
+                  )
+                );
               }
             }
 
