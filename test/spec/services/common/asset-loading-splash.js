@@ -101,6 +101,10 @@
     var scope, timeout, assetLoadingSplash;
 
     var assetLoadingSplashMock = {};
+    var environmentRenderingServiceMock = {
+      onSceneLoaded: jasmine.createSpy('onSceneLoaded'),
+      scene3DSettingsReady: true
+    };
     var scopeMock = {};
     var timeoutMock = jasmine.createSpy('$timeout');
 
@@ -110,6 +114,10 @@
         $provide.value('assetLoadingSplash', assetLoadingSplashMock);
         $provide.value('$scope', scopeMock);
         $provide.value('$timeout', timeoutMock);
+        $provide.value(
+          'environmentRenderingService',
+          environmentRenderingServiceMock
+        );
       })
     );
     beforeEach(
@@ -155,7 +163,9 @@
       expect(assetLoadingSplash.close).toHaveBeenCalled();
     });
 
-    it('should close the splash when done without error', function() {
+    it('should watch gz3d when assets are loaded without error', function() {
+      scope.$watch = jasmine.createSpy('$watch');
+
       exampleData.assets[0].progress = 1;
       exampleData.assets[0].done = true;
       exampleData.assets[1].progress = 1000;
@@ -163,7 +173,7 @@
       assetLoadingSplash.setProgressObserver.calls
         .mostRecent()
         .args[0](exampleData);
-      expect(assetLoadingSplash.close).toHaveBeenCalled();
+      expect(scope.$watch).toHaveBeenCalled();
 
       var ncalls = timeout.calls.count();
       timeout.calls.argsFor(ncalls - 1)[0]();

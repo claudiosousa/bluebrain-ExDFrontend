@@ -88,11 +88,22 @@
     '$scope',
     '$timeout',
     'assetLoadingSplash',
-    function($scope, $timeout, assetLoadingSplash) {
+    'environmentRenderingService',
+    'gz3d',
+    function(
+      $scope,
+      $timeout,
+      assetLoadingSplash,
+      environmentRenderingService,
+      gz3d
+    ) {
       $scope.progressData = {};
       $scope.isError = false;
       $scope.loadedAssets = 0;
       $scope.totalAssets = 0;
+      $scope.preparing3DScene = false;
+      $scope.environmentRenderingService = environmentRenderingService;
+      $scope.preparing3DSceneMessage = 'Loading settings';
 
       $scope.close = function() {
         assetLoadingSplash.close();
@@ -107,9 +118,29 @@
           isDone = isDone && element.done;
           $scope.isError = $scope.isError || element.error;
         });
+
         if (data.prepared && isDone && !$scope.isError) {
-          // if there were errors, a button is showed for the user to explicitly close the splash
-          assetLoadingSplash.close();
+          $scope.preparing3DScene = true;
+
+          environmentRenderingService.onSceneLoaded();
+
+          $scope.$watch(
+            'environmentRenderingService.scene3DSettingsReady',
+            () => {
+              if (environmentRenderingService.scene3DSettingsReady) {
+                gz3d.scene.setScenePreparationReadyCallback(function(
+                  progressMessage
+                ) {
+                  if (progressMessage === null) {
+                    assetLoadingSplash.close();
+                    environmentRenderingService.onSceneReady();
+                  } else {
+                    $scope.preparing3DSceneMessage = progressMessage;
+                  }
+                });
+              }
+            }
+          );
         }
 
         // We use $timeout to prevent "digest already in progress" error.

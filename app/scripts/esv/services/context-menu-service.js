@@ -139,7 +139,10 @@
               }
             } else {
               this.hideMenu();
-              this.isShown = gz3d.scene.radialMenu.showing = false;
+              if (gz3d.scene.radialMenu) {
+                gz3d.scene.radialMenu.showing = false;
+              }
+              this.isShown = false;
             }
           },
 

@@ -2377,6 +2377,46 @@ GZ3D.Composer.prototype.prepareCubeMapEnvMapRender = function (done)
 };
 
 /**
+ *
+ * Ask composer for scene preparation readyness. Returns null when all is ready or a message describing the progress state.
+ *
+ */
+
+GZ3D.Composer.prototype.scenePreparationState = function ()
+{
+    var cs = this.gz3dScene.normalizedComposerSettings;
+
+    if (this.pbrMaterial)
+    {
+        if (this.loadingPBR)
+        {
+            return 'Loading PBR textures';
+        }
+
+        if (cs.dynamicEnvMap)   // Usually done at the very end
+        {
+            if (this.cubeMapNeedsUpdate)
+            {
+                return 'Generating environment map';
+            }
+        }
+
+    }
+
+    if (this.currentSkyBoxID !== '')
+    {
+        if (this.loadingSkyBox)
+        {
+            return 'Loading sky box';
+        }
+    }
+
+
+    return null;
+};
+
+
+/**
  * Render the scene and apply the post-processing effects.
  *
  */
@@ -2507,6 +2547,18 @@ GZ3D.Composer.prototype.render = function (view)
         this.renderingView = view;
         view.composer.render();
         this.renderingView = null;
+    }
+
+    // Scene ready callback
+
+    if (this.sceneReadyCallback)
+    {
+        var prepstate = this.scenePreparationState();
+        this.sceneReadyCallback(prepstate);
+        if (prepstate===null)
+        {
+            this.sceneReadyCallback = undefined;
+        }
     }
 };
 
@@ -11931,6 +11983,19 @@ GZ3D.Scene.prototype.refresh3DViews = function ()
     this.viewManager.views[i].needsRefresh = true;
   }
 };
+
+/**
+ * Set a callback that is called when the scene preparation is done. The callback is called with null when everyhing is ready or with a progress message.
+ *
+ * @param callback
+*/
+
+GZ3D.Scene.prototype.setScenePreparationReadyCallback = function (sceneReadyCallback)
+{
+  this.composer.sceneReadyCallback = sceneReadyCallback;
+};
+
+
 
 
 /**
