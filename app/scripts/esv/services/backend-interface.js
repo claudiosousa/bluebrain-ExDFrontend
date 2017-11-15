@@ -317,7 +317,11 @@
         ) {
           return resourceBrainExperiment(simulationInfo.serverBaseUrl).save(
             { experimentId: simulationInfo.experimentID },
-            { data: pynnScript, additional_populations: brainPopulations },
+            {
+              context_id: $stateParams.ctx,
+              data: pynnScript,
+              additional_populations: brainPopulations
+            },
             successCallback,
             failureCallback
           );
@@ -397,7 +401,7 @@
         saveSDF: function(experimentId, successCallback, errorCallback) {
           return resourceSDFExperiment(simulationInfo.serverBaseUrl).save(
             { experimentId },
-            { experimentId },
+            { context_id: $stateParams.ctx, experimentId },
             successCallback,
             errorCallback
           );
