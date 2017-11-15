@@ -62,36 +62,7 @@
               }
             }
 
-            if (
-              angular.isDefined(gz3d.scene.composerSettings.cameraSensitivity)
-            ) {
-              if (
-                angular.isDefined(
-                  gz3d.scene.composerSettings.cameraSensitivity.translation
-                )
-              ) {
-                userNavigationService.translationSensitivity = Math.min(
-                  CAMERA_SENSITIVITY_RANGE.TRANSLATION_MAX,
-                  Math.max(
-                    CAMERA_SENSITIVITY_RANGE.TRANSLATION_MIN,
-                    gz3d.scene.composerSettings.cameraSensitivity.translation
-                  )
-                );
-              }
-              if (
-                angular.isDefined(
-                  gz3d.scene.composerSettings.cameraSensitivity.rotation
-                )
-              ) {
-                userNavigationService.rotationSensitivity = Math.min(
-                  CAMERA_SENSITIVITY_RANGE.ROTATION_MAX,
-                  Math.max(
-                    CAMERA_SENSITIVITY_RANGE.ROTATION_MIN,
-                    gz3d.scene.composerSettings.cameraSensitivity.rotation
-                  )
-                );
-              }
-            }
+            setDefaultNavigationSensitivity();
 
             return fileContent;
           });
@@ -104,9 +75,36 @@
         );
       };
 
+      var setDefaultNavigationSensitivity = function() {
+        var sensitivity = gz3d.scene.defaultComposerSettings.cameraSensitivity;
+        if (sensitivity && sensitivity.translation) {
+          userNavigationService.translationSensitivity = Math.min(
+            CAMERA_SENSITIVITY_RANGE.TRANSLATION_MAX,
+            Math.max(
+              CAMERA_SENSITIVITY_RANGE.TRANSLATION_MIN,
+              sensitivity.translation
+            )
+          );
+        } else {
+          userNavigationService.translationSensitivity = 1.0;
+        }
+        if (sensitivity && sensitivity.rotation) {
+          userNavigationService.rotationSensitivity = Math.min(
+            CAMERA_SENSITIVITY_RANGE.ROTATION_MAX,
+            Math.max(
+              CAMERA_SENSITIVITY_RANGE.ROTATION_MIN,
+              sensitivity.rotation
+            )
+          );
+        } else {
+          userNavigationService.rotationSensitivity = 1.0;
+        }
+      };
+
       return {
         loadSettings: loadSettings,
-        saveSettings: saveSettings
+        saveSettings: saveSettings,
+        setDefaultNavigationSensitivity: setDefaultNavigationSensitivity
       };
     }
   ]);

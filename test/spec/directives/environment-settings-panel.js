@@ -18,7 +18,10 @@ describe('Directive: 3d settings', function() {
       };
 
       collab3DSettingsService = {
-        saveSettings: jasmine.createSpy('saveSettings')
+        saveSettings: jasmine.createSpy('saveSettings'),
+        setDefaultNavigationSensitivity: jasmine.createSpy(
+          'setDefaultNavigationSensitivity'
+        )
       };
 
       GZ3D.MASTER_QUALITY_BEST = 'Best';
