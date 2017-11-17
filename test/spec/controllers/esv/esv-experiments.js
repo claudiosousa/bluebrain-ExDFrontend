@@ -9,7 +9,8 @@
   var matureExperiment = {
     configuration: {
       maturity: 'production',
-      name: 'Mature experiment name'
+      name: 'Mature experiment name',
+      tags: ['tag1']
     },
     availableServers: [{ id: hostName }],
     joinableServers: [
@@ -40,7 +41,8 @@
       developementExperiment: {
         configuration: {
           maturity: 'devel',
-          name: 'Developement experiment name'
+          name: 'Developement experiment name',
+          tags: ['tag1', 'tag2']
         },
         availableServers: [],
         joinableServers: []
@@ -249,6 +251,55 @@
       expect(expTitle.trim()).toBe(
         defaultPageOptions.experiments.matureExperiment.configuration.name
       );
+    });
+
+    it('should filter experiments by name', function() {
+      var page = renderEsvWebPage({ dev: true });
+
+      var experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(2);
+
+      $rootScope.query = 'test';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(0);
+
+      $rootScope.query = 'develop';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(1);
+
+      $rootScope.query = 'absent';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(0);
+    });
+
+    it('should filter experiments by tag', function() {
+      var page = renderEsvWebPage({ dev: true });
+
+      var experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(2);
+
+      $rootScope.query = 'tag';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(2);
+
+      $rootScope.query = 'tag1';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(2);
+
+      $rootScope.query = 'tag2';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(1);
+
+      $rootScope.query = 'tag3';
+      $rootScope.$digest();
+      experiments = page.find('.experiment-box');
+      expect(experiments.length).toBe(0);
     });
 
     it('should show all experiments in dev mode', function() {
