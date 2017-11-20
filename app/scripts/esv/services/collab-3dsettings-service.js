@@ -94,6 +94,9 @@
             }
 
             return fileContent;
+          })
+          .catch(function() {
+            gz3d.scene.applyComposerSettings(true);
           });
       };
 

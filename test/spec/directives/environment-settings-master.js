@@ -2,7 +2,10 @@
 'use strict';
 
 describe('Directive: environment settings master', function() {
-  var $rootScope, gz3dMock;
+  var $rootScope,
+    gz3dMock,
+    clbConfirmMock,
+    reloadPage = false;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('exd.templates'));
@@ -14,14 +17,32 @@ describe('Directive: environment settings master', function() {
       GZ3D.MASTER_QUALITY_LOW = 'Low';
       GZ3D.MASTER_QUALITY_MINIMAL = 'Minimal';
 
-      gz3dMock = {
-        scene: { composer: { currentMasterSettings: GZ3D.MASTER_QUALITY_BEST } }
+      clbConfirmMock = {
+        open: function() {
+          return {
+            then: function(success, failure) {
+              if (reloadPage === true) {
+                success();
+              } else {
+                failure();
+              }
+            }
+          };
+        }
       };
-      gz3dMock.scene.setMasterSettings = function(n) {
+
+      gz3dMock = {
+        scene: {
+          composer: { currentMasterSettings: GZ3D.MASTER_QUALITY_MIDDLE }
+        }
+      };
+      gz3dMock.scene.setMasterSettings = function(n, apply) {
         this.composer.currentMasterSettings = n;
+        this.composer.applied = apply;
       };
 
       $provide.value('gz3d', gz3dMock);
+      $provide.value('clbConfirm', clbConfirmMock);
     })
   );
 
@@ -47,5 +68,19 @@ describe('Directive: environment settings master', function() {
     expect(gz3dMock.scene.composer.currentMasterSettings).toBe(
       GZ3D.MASTER_QUALITY_MINIMAL
     );
+  });
+
+  it('should ask to reload the page when switching to best', function() {
+    reloadPage = false;
+    $rootScope.$$childTail.setMasterSettings(GZ3D.MASTER_QUALITY_BEST);
+    expect(gz3dMock.scene.composer.currentMasterSettings).toBe(
+      GZ3D.MASTER_QUALITY_BEST
+    );
+  });
+
+  it('should ask to reload the page when switching to best without applying', function() {
+    reloadPage = true;
+    $rootScope.$$childTail.setMasterSettings(GZ3D.MASTER_QUALITY_BEST);
+    expect(gz3dMock.scene.composer.applied).toBe(false);
   });
 });

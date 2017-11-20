@@ -1705,14 +1705,15 @@ GZ3D.Composer = function (gz3dScene)
     this.currenSkyBoxTexture = null;
     this.currentSkyBoxID = '';
     this.loadingSkyBox = false;
+    this.settingsReady = false;
 
     this.pbrMaterial = false;
     this.pbrTotalLoadingTextures = 0;
-    this.currentMasterSettings = localStorage.getItem('GZ3DMaster3DSettings');
+    this.currentMasterSettings = localStorage.getItem('GZ3DMaster3DSettingsV2');
 
     if (!this.currentMasterSettings)
     {
-        this.currentMasterSettings = GZ3D.MASTER_QUALITY_BEST;
+        this.currentMasterSettings = GZ3D.MASTER_QUALITY_MIDDLE;
     }
     this.normalizedMasterSettings = null;
 
@@ -1844,8 +1845,12 @@ GZ3D.Composer.prototype.initView = function (view)
     //-------------------------------------------------------
     // RGB Curves
 
-    view.rgbCurvesShader = new THREE.ShaderPass(GZ3D.RGBCurvesShader);
-    view.rgbCurvesShader.enabled = false;
+    if (!view.rgbCurvesShader)
+    {
+        view.rgbCurvesShader = new THREE.ShaderPass(GZ3D.RGBCurvesShader);
+        view.rgbCurvesShader.enabled = false;
+    }
+
     view.composer.addPass(view.rgbCurvesShader);
 
     //-------------------------------------------------------
@@ -1885,12 +1890,7 @@ GZ3D.Composer.prototype.initView = function (view)
     var copyPass = new THREE.ShaderPass(THREE.CopyShader);
     copyPass.renderToScreen = true;
     view.composer.addPass(copyPass);
-
-    //---------------------------------
-    // Apply the initial settings
-
-    this.applyComposerSettings(true);
-};
+ };
 
 
 /**
@@ -1904,10 +1904,10 @@ GZ3D.Composer.prototype.applyUserCameraSettings = function ()
     var i;
     var cs = this.gz3dScene.normalizedComposerSettings;
 
-    if (!cs.verticalFOV) {cs.verticalFOV = 60;}
-    if (!cs.nearClippingDistance) {cs.nearClippingDistance = 0.15;}
-    if (!cs.farClippingDistance) {cs.farClippingDistance = 100.0;}
-    if (!cs.showCameraHelper) {cs.showCameraHelper =false;}
+    if (!cs.verticalFOV) { cs.verticalFOV = 60; }
+    if (!cs.nearClippingDistance) { cs.nearClippingDistance = 0.15; }
+    if (!cs.farClippingDistance) { cs.farClippingDistance = 100.0; }
+    if (!cs.showCameraHelper) { cs.showCameraHelper = false; }
 
     for (i = 0; i < this.gz3dScene.viewManager.views.length; i++)
     {
@@ -1932,6 +1932,7 @@ GZ3D.Composer.prototype.applyUserCameraSettings = function ()
     }
 };
 
+
 /**
  * Update PBR Material
  *
@@ -1940,6 +1941,9 @@ GZ3D.Composer.prototype.applyUserCameraSettings = function ()
 GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 {
     var cs = this.gz3dScene.normalizedComposerSettings;
+    var materialParams = {};
+    var textureLoader;
+    var that = this;
 
     if (this.pbrMaterial)
     {
@@ -1951,28 +1955,32 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
 
                 // Load textures
 
-                var materialParams = {};
-                var textureLoader = new THREE.TextureLoader();
+                textureLoader = new THREE.TextureLoader();
 
                 if (!this.loadedPBRTextures)
                 {
                     this.loadedPBRTextures = {};
                 }
 
-                var that = this;
-
                 Object.keys(node.material.pbrMaterialDescription).forEach(function (maptype)
                 {
-                    if (!that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]])
+                    var mappath = node.material.pbrMaterialDescription[maptype];
+
+                    if (that.currentMasterSettings !== GZ3D.MASTER_QUALITY_BEST)
+                    {
+                        mappath = mappath.replace('PBR','LOWPBR');
+                    }
+
+                    if (!that.loadedPBRTextures[mappath])
                     {
                         that.loadingPBR = true;
                         that.pbrTotalLoadingTextures += 1;
 
-                        materialParams[maptype] = textureLoader.load(node.material.pbrMaterialDescription[maptype],
+                        materialParams[maptype] = textureLoader.load(mappath,
                             function ()
                             {
                                 that.pbrTotalLoadingTextures -= 1;
-                                if (that.pbrTotalLoadingTextures===0)
+                                if (that.pbrTotalLoadingTextures === 0)
                                 {
                                     that.gz3dScene.refresh3DViews();
                                 }
@@ -1985,12 +1993,18 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                             });
 
                         materialParams[maptype].wrapS = THREE.RepeatWrapping;
-                        that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]] = materialParams[maptype];
+                        that.loadedPBRTextures[mappath] = materialParams[maptype];
                     }
                     else
                     {
-                        materialParams[maptype] = that.loadedPBRTextures[node.material.pbrMaterialDescription[maptype]];
+                        materialParams[maptype] = that.loadedPBRTextures[mappath];
                     }
+
+                    if (maptype==='map')
+                    {
+                        node.material.map = materialParams[maptype];
+                    }
+
                 });
 
                 node.pbrMeshMaterial = new THREE.MeshStandardMaterial(materialParams);
@@ -2013,8 +2027,6 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
                 node.pbrMeshMaterial.metalness = 1.0;
                 node.pbrMeshMaterial.skinning = node.stdMeshMaterial.skinning;
                 node.pbrMeshMaterial.aoMapIntensity = cs.pbrAOMapIntensity ? cs.pbrAOMapIntensity : 1.0;
-
-
             }
 
             if (cs.dynamicEnvMap)
@@ -2027,7 +2039,6 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
             else
             {
                 node.pbrMeshMaterial.envMap = this.currenSkyBoxTexture; // Use the sky box if no custom env map texture has been defined
-
             }
 
             if (!this.loadingPBR)
@@ -2043,6 +2054,66 @@ GZ3D.Composer.prototype.updatePBRMaterial = function (node)
         {
             node.material = node.stdMeshMaterial;
             node.material.needsUpdate = true;
+        }
+
+        if (node.material.pbrMaterialDescription !== undefined && !node.material.map)
+        {
+            if (node.pbrMeshMaterial)
+            {
+                node.material.map = node.pbrMeshMaterial.map;
+            }
+            else
+            {
+                var maptype = 'map';
+                if (maptype in node.material.pbrMaterialDescription)
+                {
+                    var mappath = node.material.pbrMaterialDescription[maptype];
+
+                    if (this.currentMasterSettings !== GZ3D.MASTER_QUALITY_BEST)
+                    {
+                        mappath = mappath.replace('PBR','LOWPBR');
+                    }
+
+                    if (!this.loadedPBRTextures)
+                    {
+                        this.loadedPBRTextures = {};
+                    }
+
+                    if (!this.loadedPBRTextures[mappath])
+                    {
+                        this.loadingPBR = true;
+                        this.pbrTotalLoadingTextures += 1;
+
+                        textureLoader = new THREE.TextureLoader();
+
+                        node.material.map = materialParams[maptype] = textureLoader.load(mappath,
+                            function ()
+                            {
+                                that.pbrTotalLoadingTextures -= 1;
+                                if (that.pbrTotalLoadingTextures === 0)
+                                {
+                                    that.gz3dScene.refresh3DViews();
+                                }
+                            },
+                            undefined,
+                            function ()
+                            {
+                                that.pbrTotalLoadingTextures -= 1;
+                                that.gz3dScene.refresh3DViews();
+                            });
+
+                        this.loadedPBRTextures[mappath] = materialParams[maptype];
+                    }
+                    else
+                    {
+                        materialParams[maptype] = this.loadedPBRTextures[mappath];
+                        if (maptype==='map')
+                        {
+                            node.material.map = materialParams[maptype];
+                        }
+                    }
+                }
+            }
         }
     }
 };
@@ -2137,6 +2208,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
     var that = this;
 
     this.gz3dScene.refresh3DViews();
+    this.settingsReady = true;
 
     var cs = this.gz3dScene.composerSettings;
     if (cs.pbrMaterial === undefined)
@@ -2218,7 +2290,14 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
         else
         {
             var name = this.currentSkyBoxID;
-            path = GZ3D.assetsPath + '/sky/' + name + '/' + name + '-';
+            var filename = this.currentSkyBoxID;
+
+            if (this.currentMasterSettings !== GZ3D.MASTER_QUALITY_BEST)
+            {
+                filename = 'LOWSKY_' + filename;
+            }
+
+            path = GZ3D.assetsPath + '/sky/' + name + '/' + filename + '-';
             format = '.jpg';
             urls = [
                 path + 'px' + format, path + 'nx' + format,
@@ -2279,63 +2358,63 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
         }
     }
 
-    // Now updates per-view settings. Please note that most of the settings need no update since
-    // they are used directly from the render pass.
+    // Color curve
 
-    this.gz3dScene.viewManager.views.forEach(function (view)
+    if (updateColorCurve)
     {
-        if (that.gz3dScene.viewManager.isViewVisible(view))
+        this.gz3dScene.viewManager.views.forEach(function (view)
         {
-            // Color curve
-
-            if (updateColorCurve && view.rgbCurvesShader !== undefined)
+            if (!view.rgbCurvesShader)
             {
-                if ((cs.rgbCurve['red'] === undefined || cs.rgbCurve['red'].length < 2) &&
-                    (cs.rgbCurve['green'] === undefined || cs.rgbCurve['green'].length < 2) &&
-                    (cs.rgbCurve['blue'] === undefined || cs.rgbCurve['blue'].length < 2))
-                {
-                    view.rgbCurvesShader.enabled = false;   // We don't need RGB curve correction, simply disable the shader pass
-                }
-                else
-                {
-                    view.rgbCurvesShader.enabled = true;
-
-                    var rgbCurves = [{ 'color': 'red', 'curve': [] },
-                        { 'color': 'green', 'curve': [] },
-                        { 'color': 'blue', 'curve': [] }];
-
-                    // Prepare the curve. Vertices need to be converted to ThreeJS vectors.
-
-                    rgbCurves.forEach(function (channel)
-                    {
-                        var color = channel['color'];
-
-                        if ((cs.rgbCurve[color] === undefined || cs.rgbCurve[color].length < 2))
-                        {
-                            // The curve is empty, fill the chanel with a simple linear curve (no color correction).
-
-                            channel['curve'].push(new THREE.Vector3(0, 0, 0));
-                            channel['curve'].push(new THREE.Vector3(0, 1, 0));
-                        }
-                        else
-                        {
-                            // Convert to vectors
-
-                            cs.rgbCurve[color].forEach(function (vi)
-                            {
-                                channel['curve'].push(new THREE.Vector3(vi[0], vi[1], 0));
-                            });
-                        }
-                    });
-
-                    // Pass the new curve to the color correction shader.
-
-                    GZ3D.RGBCurvesShader.setupCurve(rgbCurves[0]['curve'], rgbCurves[1]['curve'], rgbCurves[2]['curve'], view.rgbCurvesShader);
-                }
+                view.rgbCurvesShader = new THREE.ShaderPass(GZ3D.RGBCurvesShader);
+                view.rgbCurvesShader.enabled = false;
             }
-        }
-    });
+                // Color curve
 
+            if ((cs.rgbCurve['red'] === undefined || cs.rgbCurve['red'].length < 2) &&
+                (cs.rgbCurve['green'] === undefined || cs.rgbCurve['green'].length < 2) &&
+                (cs.rgbCurve['blue'] === undefined || cs.rgbCurve['blue'].length < 2))
+            {
+                view.rgbCurvesShader.enabled = false;   // We don't need RGB curve correction, simply disable the shader pass
+            }
+            else
+            {
+                view.rgbCurvesShader.enabled = true;
+
+                var rgbCurves = [{ 'color': 'red', 'curve': [] },
+                { 'color': 'green', 'curve': [] },
+                { 'color': 'blue', 'curve': [] }];
+
+                // Prepare the curve. Vertices need to be converted to ThreeJS vectors.
+
+                rgbCurves.forEach(function (channel)
+                {
+                    var color = channel['color'];
+
+                    if ((cs.rgbCurve[color] === undefined || cs.rgbCurve[color].length < 2))
+                    {
+                        // The curve is empty, fill the chanel with a simple linear curve (no color correction).
+
+                        channel['curve'].push(new THREE.Vector3(0, 0, 0));
+                        channel['curve'].push(new THREE.Vector3(0, 1, 0));
+                    }
+                    else
+                    {
+                        // Convert to vectors
+
+                        cs.rgbCurve[color].forEach(function (vi)
+                        {
+                            channel['curve'].push(new THREE.Vector3(vi[0], vi[1], 0));
+                        });
+                    }
+                });
+
+                // Pass the new curve to the color correction shader.
+
+                GZ3D.RGBCurvesShader.setupCurve(rgbCurves[0]['curve'], rgbCurves[1]['curve'], rgbCurves[2]['curve'], view.rgbCurvesShader);
+            }
+        });
+    }
 };
 
 /**
@@ -2476,6 +2555,11 @@ GZ3D.Composer.prototype.render = function (view)
 
     view.renderer.clear();
 
+    if (!this.settingsReady)
+    {
+        return;
+    }
+
     if (this.pbrMaterial)
     {
         if (this.loadingPBR && this.pbrTotalLoadingTextures === 0)
@@ -2591,7 +2675,15 @@ GZ3D.Composer.prototype.render = function (view)
         view.composer.render();
         this.renderingView = null;
     }
+};
 
+/**
+ * Check scene ready
+ *
+ */
+
+GZ3D.Composer.prototype.checkSceneReady = function ()
+{
     // Scene ready callback
 
     if (this.sceneReadyCallback)
@@ -2604,6 +2696,7 @@ GZ3D.Composer.prototype.render = function (view)
         }
     }
 };
+
 
 /**
  * Apply master settings to composer settings
@@ -2636,14 +2729,14 @@ GZ3D.Composer.prototype.updateComposerWithMasterSettings = function ()
                 this.gz3dScene.normalizedComposerSettings.shadows = false;
                 this.gz3dScene.normalizedComposerSettings.skyBox = '';
                 this.gz3dScene.normalizedComposerSettings.pbrMaterial = false;
+                this.gz3dScene.normalizedComposerSettings.fog = false;
+                this.gz3dScene.normalizedComposerSettings.sun = '';
             /* falls through */
 
             case GZ3D.MASTER_QUALITY_MIDDLE:
                 this.gz3dScene.normalizedComposerSettings.ssaoDisplay = false;
                 this.gz3dScene.normalizedComposerSettings.ssao = false;
                 this.gz3dScene.normalizedComposerSettings.bloom = false;
-                this.gz3dScene.normalizedComposerSettings.fog = false;
-                this.gz3dScene.normalizedComposerSettings.sun = '';
 
                 if (this.gz3dScene.normalizedComposerSettings.shadowSettings)
                 {
@@ -2669,14 +2762,17 @@ GZ3D.Composer.prototype.updateComposerWithMasterSettings = function ()
  *
  */
 
-GZ3D.Composer.prototype.setMasterSettings = function (masterSettings)
+GZ3D.Composer.prototype.setMasterSettings = function (masterSettings, applySettings)
 {
     if (masterSettings !== this.currentMasterSettings)
     {
-        this.currentMasterSettings = masterSettings;
-        this.applyComposerSettings(true, true);
-        this.normalizedMasterSetting = null;
-        localStorage.setItem('GZ3DMaster3DSettings', this.currentMasterSettings);
+        if (applySettings)
+        {
+            this.currentMasterSettings = masterSettings;
+            this.applyComposerSettings(true, true);
+            this.normalizedMasterSetting = null;
+        }
+        localStorage.setItem('GZ3DMaster3DSettingsV2', masterSettings);
     }
 };
 
@@ -8799,6 +8895,8 @@ GZ3D.MultiView.prototype.renderViews = function () {
     this.updateView(masterView);
     this.gz3dScene.composer.render(masterView);
   }
+
+  this.gz3dScene.composer.checkSceneReady();
 };
 
 GZ3D.MultiView.prototype.setCameraHelperVisibility = function (view, visible) {
@@ -11437,7 +11535,7 @@ GZ3D.Scene.prototype.updateBoundingBox = function(model)
     this.boundingBox.position.copy(prevPos);
     model.updateMatrixWorld();
     this.boundingBox.updateMatrixWorld();
-    
+
     var vertex = new THREE.Vector3(box.max.x, box.max.y, box.max.z); // 0
     this.boundingBox.geometry.vertices[0].copy(vertex);
     this.boundingBox.geometry.vertices[7].copy(vertex);
@@ -12019,11 +12117,14 @@ GZ3D.Scene.prototype.applyComposerSettingsToModel = function(model)
  * @param master settings
 */
 
-GZ3D.Scene.prototype.setMasterSettings = function (masterSettings)
+GZ3D.Scene.prototype.setMasterSettings = function (masterSettings, applySettings)
 {
-    this.composer.setMasterSettings(masterSettings);
-    this.needsImmediateUpdate = true;
-    this.refresh3DViews();
+    this.composer.setMasterSettings(masterSettings, applySettings);
+    if (applySettings)
+    {
+      this.needsImmediateUpdate = true;
+      this.refresh3DViews();
+    }
   };
 
 /**

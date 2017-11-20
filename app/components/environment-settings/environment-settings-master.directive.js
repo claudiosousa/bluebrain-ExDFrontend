@@ -29,7 +29,9 @@
     'gz3d',
     'nrpAnalytics',
     'editorToolbarService',
-    function(gz3d, nrpAnalytics, editorToolbarService) {
+    'clbConfirm',
+    '$window',
+    function(gz3d, nrpAnalytics, editorToolbarService, clbConfirm, $window) {
       return {
         templateUrl:
           'components/environment-settings/environment-settings-master.template.html',
@@ -77,10 +79,37 @@
           });
 
           //----------------------------------------------
-          // UI to 3D scene
+          // Master settings
 
           scope.setMasterSettings = function(master) {
-            gz3d.scene.setMasterSettings(master);
+            if (gz3d.scene.composer.currentMasterSettings !== master) {
+              if (
+                master === GZ3D.MASTER_QUALITY_BEST ||
+                gz3d.scene.composer.currentMasterSettings ===
+                  GZ3D.MASTER_QUALITY_BEST
+              ) {
+                clbConfirm
+                  .open({
+                    title: 'Master settings',
+                    confirmLabel: 'Reload Now',
+                    cancelLabel: 'Later',
+                    template:
+                      'The page needs to be reloaded to reflect the new settings.',
+                    closable: false
+                  })
+                  .then(
+                    function() {
+                      gz3d.scene.setMasterSettings(master, false);
+                      $window.location.reload();
+                    },
+                    function() {
+                      gz3d.scene.setMasterSettings(master, false);
+                    }
+                  );
+              } else {
+                gz3d.scene.setMasterSettings(master, true);
+              }
+            }
           };
         }
       };

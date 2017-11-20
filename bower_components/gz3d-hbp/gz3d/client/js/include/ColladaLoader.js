@@ -3793,23 +3793,26 @@ THREE.ColladaLoader = function () {
 
 								if ( surface !== undefined ) {
 
-									var image = images[ surface.init_from ];
+									 var image = images[ surface.init_from ];
 
 									if ( image ) {
 
-										var loader = new THREE.TextureLoader();
-										var texture = loader.load( baseUrl + image.init_from);
+										if (image.init_from.indexOf("PBR_") < 0  &&  image.init_from.indexOf("PBRFULL_") < 0)
+										{
+											var loader = new THREE.TextureLoader();
+											var texture = loader.load( baseUrl + image.init_from);
 
-										texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
-										texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
-										texture.offset.x = cot.texOpts.offsetU;
-										texture.offset.y = cot.texOpts.offsetV;
-										texture.repeat.x = cot.texOpts.repeatU;
-										texture.repeat.y = cot.texOpts.repeatV;
-										props[keys[prop]] = texture;
+											texture.wrapS = cot.texOpts.wrapU ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+											texture.wrapT = cot.texOpts.wrapV ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+											texture.offset.x = cot.texOpts.offsetU;
+											texture.offset.y = cot.texOpts.offsetV;
+											texture.repeat.x = cot.texOpts.repeatU;
+											texture.repeat.y = cot.texOpts.repeatV;
+											props[keys[prop]] = texture;
 
-										// Texture with baked lighting?
-										if (prop === 'emission') props['emissive'] = 0xffffff;
+											// Texture with baked lighting?
+											if (prop === 'emission') props['emissive'] = 0xffffff;
+										}
 
 									}
 
