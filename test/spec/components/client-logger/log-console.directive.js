@@ -99,7 +99,7 @@ describe('Directive: logConsole', function() {
 
     it('should respect missed message collected by editor toolbar', function() {
       $timeout.flush();
-      expect(clientLoggerController.logs.length).toBe(0);
+      expect(clientLoggerController.logs.length).toBe(4);
     });
   });
 

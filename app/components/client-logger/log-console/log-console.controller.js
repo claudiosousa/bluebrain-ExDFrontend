@@ -46,7 +46,6 @@
       this.stateService = stateService;
       this.STATE = STATE;
       const logList = $element.find('.log-list')[0];
-
       // notify toolbar to reset the displayed log counter
 
       clientLoggerService.resetLoggedMessages();
@@ -63,6 +62,25 @@
 
       const that = this;
 
+      function scrollToBottom() {
+        if (
+          logList.scrollHeight - (logList.scrollTop + logList.clientHeight) <
+          AUTO_SCROLL_MAX_DISTANCE
+        ) {
+          setTimeout(() => (logList.scrollTop = logList.scrollHeight));
+        }
+      }
+      //Present the first MAX_VISIBLE_LOGS messages in the history
+      that.logs = clientLoggerService.getLogHistory
+        .slice(-MAX_VISIBLE_LOGS)
+        .map(log => {
+          return {
+            msg: log.message,
+            time: log.time
+          };
+        });
+      scrollToBottom();
+
       this.newMessagesReceived = function(messages) {
         $timeout(() => {
           that.logs.splice(that.logs.length, 0, ...messages);
@@ -70,12 +88,7 @@
           that.logs.splice(0, that.logs.length - MAX_VISIBLE_LOGS);
 
           //set vertical scroll to bottom after new log current log is at the bottom
-          if (
-            logList.scrollHeight - (logList.scrollTop + logList.clientHeight) <
-            AUTO_SCROLL_MAX_DISTANCE
-          ) {
-            setTimeout(() => (logList.scrollTop = logList.scrollHeight));
-          }
+          scrollToBottom();
         });
       };
 
