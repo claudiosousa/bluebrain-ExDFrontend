@@ -2219,7 +2219,7 @@ GZ3D.Composer.prototype.applyComposerSettings = function (updateColorCurve, forc
         {
             var name = this.currentSkyBoxID;
             path = GZ3D.assetsPath + '/sky/' + name + '/' + name + '-';
-            format = '.png';
+            format = '.jpg';
             urls = [
                 path + 'px' + format, path + 'nx' + format,
                 path + 'nz' + format, path + 'pz' + format,
