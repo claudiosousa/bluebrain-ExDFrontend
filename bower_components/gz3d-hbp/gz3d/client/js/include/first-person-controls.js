@@ -338,6 +338,20 @@ THREE.FirstPersonControls = function(userView)
     }
 
     var speed = 0.0;
+    var speedFactor;
+
+    if (this.shiftHold)
+    {
+      speedFactor = this.speedUpFactor;
+    }
+    else if (this.altHold)
+    {
+      speedFactor = this.speedDownFactor;
+    }
+    else
+    {
+      speedFactor = 1.0;
+    }
 
     this.translationSensitivity = translationSensitivity;
     this.rotationSensitivity = rotationSensitivity;
@@ -348,14 +362,8 @@ THREE.FirstPersonControls = function(userView)
         this.userView.camera.position.copy(this.initialPosition);
       }
 
-      speed = delta * this.movementSpeed * this.translationSensitivity;
-      if (this.shiftHold) {
-        speed = speed * this.speedUpFactor;
-      }
-      else if (this.altHold)
-      {
-        speed = speed * this.speedDownFactor;
-      }
+      speed = delta * this.movementSpeed * this.translationSensitivity*speedFactor;
+
 
       if (this.moveForward) {
         this.userView.camera.translateZ(-speed);
@@ -378,7 +386,7 @@ THREE.FirstPersonControls = function(userView)
 
       /* --- rotation by means of a manipulator --- */
       var KEYBOARD_ROTATION_SPEED_FACTOR = 0.002;
-      var keyboardRotationSpeed = KEYBOARD_ROTATION_SPEED_FACTOR * delta * this.rotationSensitivity;
+      var keyboardRotationSpeed = KEYBOARD_ROTATION_SPEED_FACTOR * delta * this.rotationSensitivity*speedFactor;
       if (this.rotateUp || this.rotateDown) {
         var sign = this.rotateUp ? 1.0 : -1.0;
         this.fpRotate(0.0, sign * keyboardRotationSpeed);

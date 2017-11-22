@@ -30,6 +30,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
   this.MOUSE_ROTATION_SPEED = 0.01;
   this.KEYBOARD_ROTATION_SPEED = 0.05;
   this.SHIFT_SPEEDUP_FACTOR = 3.0;
+  this.ALT_SPEEDUP_FACTOR = 0.1;
   this.TOUCH_ROTATION_SPEED = 0.01;
   this.TOUCH_MOVE_THRESHOLD = 20;
 
@@ -44,6 +45,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
   this.zenithOnRotStart = this.zenith;
 
   this.shiftHold = false;
+  this.altHold = false;
   this.moveForward = false;
   this.moveBackward = false;
   this.moveLeft = false;
@@ -294,6 +296,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
       return;
     }
     that.shiftHold = event.shiftKey;
+    that.altHold = event.altKey;
     switch(event.code) {
       case "ArrowUp":
         that.keyboardRotateUp = true; break;
@@ -332,6 +335,7 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
       return;
     }
     that.shiftHold = event.shiftKey;
+    that.altHold = event.altKey;
     switch(event.code) {
       case "ArrowUp":
         that.keyboardRotateUp = false; break;
@@ -480,7 +484,12 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
 
   this.updateSphericalAnglesFromUserInput = function(timeDelta, rotationSensitivity) {
     /* --- rotation by means of a manipulator --- */
-    var speedup = this.shiftHold ? 2 : 1;
+    var speedup ;
+
+    if (this.shiftHold) speedup = 2.0;
+    else if (this.altHold) speedup = 0.3;
+    else speedup = 1.0;
+
     var keyboardRotationSpeed = speedup * this.KEYBOARD_ROTATION_SPEED * rotationSensitivity;
     if (this.keyboardRotateUp || this.keyboardRotateDown) {
       var sign = this.keyboardRotateUp ? 1.0 : -1.0;
@@ -575,10 +584,22 @@ THREE.AvatarControls = function(userNavigationService, gz3d)
   };
 
   this.updateLinearVelocity = function(delta, translationSensitivity) {
-    var speed = this.MOVEMENT_SPEED * translationSensitivity;
+
+    var speedFactor;
+
     if (this.shiftHold) {
-      speed = speed * this.SHIFT_SPEEDUP_FACTOR;
+      speedFactor =  this.SHIFT_SPEEDUP_FACTOR;
     }
+    else if (this.altHold)
+    {
+      speedFactor = this.ALT_SPEEDUP_FACTOR;
+    }
+    else
+    {
+      speedFactor = 1.0;
+    }
+
+    var speed = this.MOVEMENT_SPEED * translationSensitivity * speedFactor;
 
     this.linearVelocity.set(0, 0, 0);
     if (this.moveForward) {
