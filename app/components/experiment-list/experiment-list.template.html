@@ -4,7 +4,7 @@
     <div ng-if="!experiments">
       <i class="fa fa-2x fa-spinner fa-spin"></i>&nbsp; <i>{{config.loadingMessage}}</i>
     </div>
-    <div ng-show="experiments" ng-repeat="exp in experiments | filter:query | filter : (!devMode || '') && {configuration:{maturity:'production'}}  | orderBy:'configuration.name':false"
+    <div ng-show="experiments" ng-repeat="exp in filteredExperiments | orderBy:'configuration.name':false"
       class="experiment-box" ng-mouseenter="isHovered = true" ng-mouseleave="isHovered = false" ng-mouseup="isHovered = false"
       ng-click="selectExperiment(exp);" editable-experiment experiment-details="exp">
       <div class="list-entry-container left-right" ng-class="{selected: (exp.id == pageState.selected) || isHovered}">
