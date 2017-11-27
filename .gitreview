@@ -2,5 +2,5 @@
 host=bbpcode.epfl.ch
 port=22
 project=neurorobotics/ExDFrontend
-defaultbranch=master
+defaultbranch=development
 defaultremote=origin
