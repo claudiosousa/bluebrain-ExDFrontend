@@ -2897,8 +2897,6 @@ var lastOpenMenu = {mainMenu: 'mainMenu', insertMenu: 'insertMenu',
 
 var tabColors = {selected: 'rgb(34, 170, 221)', unselected: 'rgb(42, 42, 42)'};
 
-var modelList = GZ3D.modelList || [];
-
 $(function()
 {
   //Initialize
@@ -3289,13 +3287,16 @@ function getNameFromPath(path)
     return 'Directional Light';
   }
 
-  for(var i = 0; i < modelList.length; ++i)
+  if (GZ3D.modelList)
   {
-    for(var j = 0; j < modelList[i].models.length; ++j)
+    for(var i = 0; i < GZ3D.modelList.length; ++i)
     {
-      if(modelList[i].models[j].modelPath === path)
+      for(var j = 0; j < GZ3D.modelList[i].models.length; ++j)
       {
-        return modelList[i].models[j].modelTitle;
+        if(GZ3D.modelList[i].models[j].modelPath === path)
+        {
+          return GZ3D.modelList[i].models[j].modelTitle;
+        }
       }
     }
   }
@@ -4601,13 +4602,16 @@ GZ3D.Gui.findBaseModelName = function (modelName)
       }
     }
 
-    for (i = 0; i < modelList.length; ++i)
+    if (GZ3D.modelList)
     {
-      for (j = 0; j < modelList[i].models.length; ++j)
+      for (i = 0; i < GZ3D.modelList.length; ++i)
       {
-        if (modelName === modelList[i].models[j].modelPath)
+        for (j = 0; j < GZ3D.modelList[i].models.length; ++j)
         {
-          return modelName;
+          if (modelName === GZ3D.modelList[i].models[j].modelPath)
+          {
+            return modelName;
+          }
         }
       }
     }
@@ -4648,17 +4652,21 @@ GZ3D.Gui.prototype.canModelBeDuplicated = function(modelName)
  */
 GZ3D.Gui.prototype.findModelThumbnail = function(instanceName)
 {
-  for(var i = 0; i < modelList.length; ++i)
+  if (GZ3D.modelList)
   {
-    for(var j = 0; j < modelList[i].models.length; ++j)
+    for(var i = 0; i < GZ3D.modelList.length; ++i)
     {
-      var path = modelList[i].models[j].modelPath;
-      if(instanceName.indexOf(path) >= 0)
+      for(var j = 0; j < GZ3D.modelList[i].models.length; ++j)
       {
-        return '/assets/'+path+'/thumbnails/0.png';
+        var path = GZ3D.modelList[i].models[j].modelPath;
+        if(instanceName.indexOf(path) >= 0)
+        {
+          return '/assets/'+path+'/thumbnails/0.png';
+        }
       }
     }
   }
+
   if(instanceName.indexOf('box') >= 0)
   {
     return 'style/images/box.png';
