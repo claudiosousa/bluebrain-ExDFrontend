@@ -36,6 +36,13 @@
 
   angular
     .module('exdFrontendApp.Constants')
+    // constants for CLE error types
+    .constant('FRONTEND_ERROR', {
+      INPUT: 'Input'
+    });
+
+  angular
+    .module('exdFrontendApp.Constants')
     // Constants for CLE error source types
     .constant('SOURCE_TYPE', {
       TRANSFER_FUNCTION: 'Transfer Function',
@@ -47,8 +54,8 @@
     .constant(
       'DEFAULT_TF_CODE',
       "@nrp.Robot2Neuron()\ndef {0}(t):\n\
-    #log the first timestep (20ms), each couple of seconds\n\
-    if (t%2<0.02):\n\
+      #log the first timestep (20ms), each couple of seconds\n\
+      if (t%2<0.02):\n\
         clientLogger.info('Time: ', t)"
     )
     .directive('transferFunctionEditor', [
@@ -62,6 +69,7 @@
       '$timeout',
       'documentationURLs',
       'SIMULATION_FACTORY_CLE_ERROR',
+      'FRONTEND_ERROR',
       'SOURCE_TYPE',
       'simulationInfo',
       'clbConfirm',
@@ -87,6 +95,7 @@
         $timeout,
         documentationURLs,
         SIMULATION_FACTORY_CLE_ERROR,
+        FRONTEND_ERROR,
         SOURCE_TYPE,
         simulationInfo,
         clbConfirm,
@@ -283,6 +292,8 @@
                     scope.transferFunctions.splice(i, 1);
                   }
                 }
+
+                scope.updateRegexPatterns();
               });
             }
 
@@ -359,6 +370,19 @@
               delete transferFunction.error[errorType];
             }
 
+            scope.onTransferFunctionChange = function(transferFunction) {
+              transferFunction.name = pythonCodeHelper.getFunctionName(
+                transferFunction.code
+              );
+              transferFunction.dirty = true;
+              scope.collabDirty = environmentService.isPrivateExperiment();
+              autoSaveService.setDirty(DIRTY_TYPE, scope.transferFunctions);
+              if (transferFunction.local) {
+                transferFunction.id = transferFunction.name;
+              }
+              scope.updateRegexPatterns();
+            };
+
             scope.cleanCompileError = function(transferFunction) {
               cleanError(transferFunction, scope.ERROR.COMPILE);
 
@@ -369,6 +393,9 @@
             scope.update = function(transferFunction, newTf) {
               cleanError(transferFunction, scope.ERROR.RUNTIME);
               delete transferFunction.error[scope.ERROR.LOADING];
+
+              scope.updateRegexPatterns();
+
               if (newTf) {
                 backendInterfaceService.addTransferFunction(
                   transferFunction.code,
@@ -413,6 +440,8 @@
               if (transferFunction.local) {
                 transferFunction.id = transferFunction.name;
               }
+
+              scope.updateRegexPatterns();
             };
 
             scope.delete = function(transferFunctions) {
@@ -612,6 +641,48 @@
                 );
               });
             }
+
+            function tfNames() {
+              var names = scope.transferFunctions.map(function(obj) {
+                return obj.name;
+              });
+              return names;
+            }
+
+            function generateRegexPattern(currentTransferFunctionNames, index) {
+              var pattern = '([A-z_]+[\\w_]*)$';
+              var tfNames = angular.copy(currentTransferFunctionNames);
+              tfNames.splice(index, 1);
+              tfNames = tfNames.filter(function(item) {
+                return item !== undefined;
+              });
+              if (tfNames.length === 0) {
+                return pattern;
+              } else {
+                var exclude = '^\\b(?!\\b' + tfNames.join('\\b|\\b') + '\\b)';
+                return exclude + pattern;
+              }
+            }
+
+            scope.updateRegexPatterns = function() {
+              for (var i = 0; i < scope.transferFunctions.length; i++) {
+                scope.transferFunctions[i].regex = generateRegexPattern(
+                  tfNames(),
+                  i
+                );
+                if (
+                  !new RegExp(scope.transferFunctions[i].regex).test(
+                    scope.transferFunctions[i].name
+                  )
+                ) {
+                  scope.transferFunctions[i].error[FRONTEND_ERROR.INPUT] = {
+                    message: 'Duplicate transfer function names'
+                  };
+                } else {
+                  delete scope.transferFunctions[i].error.Input;
+                }
+              }
+            };
 
             scope.loadTransferFunctions = function(file) {
               if (file && !file.$error) {

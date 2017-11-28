@@ -5,7 +5,7 @@ describe('Services: userContextService', function() {
 
   var $rootScope, simulationInfo, environmentService;
 
-  var lockServiceMock, cancelLockServiceMock;
+  var lockServiceMock, cancelLockServiceMock, collabExperimentLockServiceMock;
 
   beforeEach(module('exdFrontendApp'));
   beforeEach(module('simulationInfoMock'));
@@ -40,10 +40,11 @@ describe('Services: userContextService', function() {
         })
       };
 
-      var collabExperimentLockServiceMock = {
+      collabExperimentLockServiceMock = {
         createLockServiceForExperimentId: jasmine
           .createSpy('createLockServiceForExperimentId')
-          .and.returnValue(lockServiceMock)
+          .and.returnValue(lockServiceMock),
+        onLockChanged: jasmine.createSpy('onLockChanged')
       };
       $provide.value(
         'collabExperimentLockService',
@@ -173,6 +174,18 @@ describe('Services: userContextService', function() {
 
     userContextService.setEditDisabled(true);
     expect(userContextService.editIsDisabled).toBe(true);
+  });
+
+  it(' - removeEditLock()', function() {
+    userContextService.lockService = lockServiceMock;
+    userContextService.lockService.releaseLock.and.returnValue(
+      Promise.reject({ data: { message: 'Error message' } })
+    );
+    spyOn(window, 'alert');
+
+    userContextService.removeEditLock(false);
+
+    // window.alert.toHaveBeenCalled can't be expected to be called here ... why? who knows ...
   });
 
   describe('remote collab mode', function() {

@@ -194,4 +194,11 @@ describe('Controller: editorPanelCtrl', function() {
     scope.suppressKeyPress();
     expect(baseEventHandlerMock.suppressAnyKeyPress).toHaveBeenCalled();
   });
+
+  it('should refresh on the event UPDATE_PANEL_UI', function() {
+    spyOn(scope, 'refresh');
+
+    scope.$emit('UPDATE_PANEL_UI');
+    expect(scope.refresh).toHaveBeenCalled();
+  });
 });
