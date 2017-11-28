@@ -25,11 +25,13 @@
   'use strict';
 
   angular.module('exdFrontendApp').directive('environmentSettingsPanel', [
+    'CAMERA_SENSITIVITY_RANGE',
     'gz3d',
     'collab3DSettingsService',
     'simulationInfo',
     'editorToolbarService',
     function(
+      CAMERA_SENSITIVITY_RANGE,
       gz3d,
       collab3DSettingsService,
       simulationInfo,
@@ -52,6 +54,7 @@
               );
               gz3d.scene.applyComposerSettings(true);
             }
+            collab3DSettingsService.setDefaultNavigationSensitivity();
           };
 
           scope.saveSettings = function() {
