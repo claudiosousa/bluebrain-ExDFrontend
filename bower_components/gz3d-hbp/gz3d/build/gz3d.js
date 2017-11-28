@@ -6264,29 +6264,42 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
 
         var modelUri = uriPath + '/' + modelName;
 
-        // Progress update: Add this asset to the assetProgressArray, always do this before async call
-        // for dae-s below so that asset list is the proper length for splash progress without blocking
-        var element = {};
-        element.id = parent.name;
-        element.url = modelUri;
-        element.progress = 0;
-        element.totalSize = 0;
-        element.done = false;
-        GZ3D.assetProgressData.assets.push(element);
-
-        // HBP Change (Luc): we assume that all requested collada files are
-        // are web-compliant 
-        if (modelUri.indexOf('.dae') !== -1)
+        if (modelUri in this.scene.cachedModels)
         {
-          var checkModel = new XMLHttpRequest();
-          // We use a double technique to disable the cache for these requests:
-          // 1. We create a custom url by adding the time as a parameter.
-          // 2. We add the If-Modified-Since header with a date far in the future (end of the HBP project)
-          // Since browsers and servers vary in their behaviour, we use both of these tricks.
-          // PS: These requests do not load the dae files, they just verify if they exist on the server
-          checkModel.open('HEAD', modelUri + '?timestamp=' + new Date().getTime());
-          checkModel.setRequestHeader('If-Modified-Since', 'Sat, 1 Jan 2026 00:00:00 GMT');
-          checkModel.onload = function() {
+          var cachedData = this.scene.cachedModels[modelUri];
+
+          if (cachedData.referenceObject)
+          {
+            parent.add(cachedData.referenceObject.clone());
+            loadGeom(parent);
+          }
+          else
+          {
+            cachedData.objects.push(parent);
+          }
+        }
+        else
+        {
+          this.scene.cachedModels[modelUri] =
+          {
+            referenceObject:null,
+            objects:[parent]
+          };
+
+          // Progress update: Add this asset to the assetProgressArray, always do this before async call
+          // for dae-s below so that asset list is the proper length for splash progress without blocking
+          var element = {};
+          element.id = parent.name;
+          element.url = modelUri;
+          element.progress = 0;
+          element.totalSize = 0;
+          element.done = false;
+          GZ3D.assetProgressData.assets.push(element);
+
+          // HBP Change (Luc): we assume that all requested collada files are
+          // are web-compliant
+          if (modelUri.indexOf('.dae') !== -1)
+          {
             var materialName = parent.name + '::' + element.url;
             that.entityMaterial[materialName] = mat;
 
@@ -6306,8 +6319,15 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
                       }
                     }
                   }
-                  parent.add(dae);
-                  loadGeom(parent);
+
+                  cachedData = that.scene.cachedModels[modelUri];
+                  cachedData.referenceObject = dae;
+                  for(var i = 0; i<cachedData.objects.length; i++)
+                  {
+                    cachedData.objects[i].add( (i===0) ? dae:dae.clone() );
+                    loadGeom(cachedData.objects[i]);
+                  }
+
                   // Progress update: execute callback
                   element.done = true;
                   if (GZ3D.assetProgressCallback) {
@@ -6321,42 +6341,15 @@ GZ3D.GZIface.prototype.createGeom = function(geom, material, parent, modelScale)
                     GZ3D.assetProgressCallback(GZ3D.assetProgressData);
                   }
                 });
-          };
-
-          // check for model collada file, retry a few times in case of intermittent network issues
-          // (note: exception is only for network/routing issues or other failures, not if model does not exist)
-          // if all trials fail, reflect an error in the assets loading screen
-          var retries = 5;
-          var checked = false;
-          while (!checked && retries > 0) {
-
-            try {
-              --retries;
-              checkModel.send();
-              checked = true;
-            }
-            catch(err) {
-              // log the network failure
-              console.error(modelUri + ': error when checking for collada file');
-              console.error(err);
-
-              // all retries failed, mark the asset as failed
-              if (retries === 0) {
-                element.error = true;
-                if (GZ3D.assetProgressCallback) {
-                  GZ3D.assetProgressCallback(GZ3D.assetProgressData);
-                }
-              }
-            }
           }
-        }
 
-        // non-dae mesh, not supported by the mesh pipeline, log and display a loading error
-        else {
-          console.error('Unsupported model mesh, non dae file: ' + modelUri);
-          element.error = true;
-          if (GZ3D.assetProgressCallback) {
-            GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+          // non-dae mesh, not supported by the mesh pipeline, log and display a loading error
+          else {
+            console.error('Unsupported model mesh, non dae file: ' + modelUri);
+            element.error = true;
+            if (GZ3D.assetProgressCallback) {
+              GZ3D.assetProgressCallback(GZ3D.assetProgressData);
+            }
           }
         }
       }
@@ -9476,7 +9469,9 @@ GZ3D.Scene.prototype.init = function()
   this.name = 'default';
   this.scene = new THREE.Scene();
   // this.scene.name = this.name;
-  this.meshes = {};
+
+  // Loaded models cache
+  this.cachedModels = {};
 
   // only support one heightmap for now.
   this.heightmap = null;
@@ -11105,17 +11100,15 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
 {
   var dae;
   var mesh = null;
-  /*
-  // Crashes: issue #36
-  if (this.meshes[uri])
+
+  var cachedModel = this.cachedModels[uri];
+  if (cachedModel && cachedModel.referenceObject)
   {
-    dae = this.meshes[uri];
-    dae = dae.clone();
+    dae = cachedModel.referenceObject.clone();
     this.useColladaSubMesh(dae, submesh, centerSubmesh);
     callback(dae);
     return;
   }
-  */
 
   var loader = new THREE.ColladaLoader();
   // var loader = new ColladaLoader2();
@@ -11137,7 +11130,6 @@ GZ3D.Scene.prototype.loadCollada = function(uri, submesh, centerSubmesh,
     dae = collada.scene;
     dae.updateMatrix();
     that.prepareColladaMesh(dae);
-    that.meshes[thatURI] = dae;
     dae = dae.clone();
     that.useColladaSubMesh(dae, thatSubmesh, centerSubmesh);
 
@@ -12614,7 +12606,7 @@ GZ3D.SdfParser.prototype.createGeom = function(geom, mat, parent)
           parent.scale.z = scale.z;
         }
 
-        var modelUri = this.MATERIAL_ROOT + '/' + modelName;
+        var modelUri = this.MATERIAL_ROOT + modelName;
         var materialName = parent.name + '::' + modelUri;
         this.entityMaterial[materialName] = material;
 
