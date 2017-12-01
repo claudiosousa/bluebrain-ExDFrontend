@@ -209,23 +209,25 @@
     }
   }
 
+  ExperimentViewController.$$ngIsClass = true;
+  ExperimentViewController.$inject = [
+    '$scope',
+    '$element',
+    'stateService',
+    'STATE',
+    'userContextService',
+    'nrpAnalytics',
+    'environmentRenderingService',
+    'gz3d',
+    '$log',
+    'colorableObjectService',
+    'simulationInfo',
+    'contextMenuState',
+    '$timeout',
+    '$window'
+  ];
+
   angular
     .module('exdFrontendApp')
-    .controller('experimentViewController', [
-      '$scope',
-      '$element',
-      'stateService',
-      'STATE',
-      'userContextService',
-      'nrpAnalytics',
-      'environmentRenderingService',
-      'gz3d',
-      '$log',
-      'colorableObjectService',
-      'simulationInfo',
-      'contextMenuState',
-      '$timeout',
-      '$window',
-      (...args) => new ExperimentViewController(...args)
-    ]);
+    .controller('experimentViewController', ExperimentViewController);
 })();

@@ -214,6 +214,16 @@
     }
   }
 
+  StorageServer.$$ngIsClass = true;
+  StorageServer.$inject = [
+    '$resource',
+    '$window',
+    '$q',
+    '$stateParams',
+    'bbpConfig',
+    'storageServerTokenManager'
+  ];
+
   class StorageServerTokenManager {
     constructor($location, bbpConfig) {
       this.$location = $location;
@@ -261,22 +271,13 @@
     }
   }
 
+  StorageServerTokenManager.$$ngIsClass = true;
+  StorageServerTokenManager.$inject = ['$location', 'bbpConfig'];
+
   angular
     .module('storageServer', ['ngResource', 'bbpConfig', 'ui.router'])
-    .service('storageServer', [
-      '$resource',
-      '$window',
-      '$q',
-      '$stateParams',
-      'bbpConfig',
-      'storageServerTokenManager',
-      (...args) => new StorageServer(...args)
-    ])
-    .service('storageServerTokenManager', [
-      '$location',
-      'bbpConfig',
-      (...args) => new StorageServerTokenManager(...args)
-    ])
+    .service('storageServer', StorageServer)
+    .service('storageServerTokenManager', StorageServerTokenManager)
     .factory('storageServerRequestInterceptor', [
       'storageServerTokenManager',
       storageServerTokenManager => ({
